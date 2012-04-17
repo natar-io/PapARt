@@ -61,7 +61,7 @@ public class ARTagDetector {
         this(-1, fileName, w, h, framerate, yamlCameraProj, cameraFile, paperSheets);
     }
 
-    private ARTagDetector(int device, String videoFile, int w, int h, int framerate, String yamlCameraProj, String cameraFile, PaperSheet[] paperSheets) {
+    protected ARTagDetector(int device, String videoFile, int w, int h, int framerate, String yamlCameraProj, String cameraFile, PaperSheet[] paperSheets) {
 
         this.cameraFile = cameraFile;
 
@@ -194,17 +194,21 @@ public class ARTagDetector {
         }
 
         ARMultiMarkerInfoT multiMarkerConfig = tracker.getMultiMarkerConfig();
-//        DoubleBuffer buff = multiMarkerConfig.trans().asBuffer();
-        DoubleBuffer buff = multiMarkerConfig.trans().asBuffer(12);
+        DoubleBuffer buff = multiMarkerConfig.trans().asBuffer();
+//        DoubleBuffer buff = multiMarkerConfig.trans().asBuffer(12);
 
         for (int i=0, k=0 ; i < 12; i++) {
-            transfo[i] = (float) buff.get(i);
-//            transfos[i] = (float) multiMarkerConfig.trans().get(i);
+//            transfo[i] = (float) buff.get(i);
+            transfo[i] = (float) multiMarkerConfig.trans().get(i);
         }
-        return null;
-
+        return transfo;
     }
 
+    
+    public HashMap<PaperSheet, float[]> getTransfoMap(){
+        return transfosMap;
+    }
+    
     public float[][] findMultiMarkers(boolean undistort, boolean copy) {
         try {
             iimg = grabber.grab();

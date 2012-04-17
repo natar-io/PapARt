@@ -321,6 +321,32 @@ public class Screen {
         return pos;
     }
 
+    
+    // Available only if pos3D is being updated elsewhere...
+    public void updatePos(){
+        
+             pos.m00 = pos3D[0];
+        pos.m01 = pos3D[1];
+        pos.m02 = pos3D[2];
+        pos.m03 = pos3D[3];
+        pos.m10 = pos3D[4];
+        pos.m11 = pos3D[5];
+        pos.m12 = pos3D[6];
+        pos.m13 = pos3D[7];
+        pos.m20 = pos3D[8];
+        pos.m12 = pos3D[9];
+        pos.m22 = pos3D[10];
+        pos.m23 = pos3D[11];
+
+        posPaper.x = pos3D[3];
+        posPaper.y = pos3D[7];
+        posPaper.z = pos3D[11];
+        
+        posPaperP.x = pos3D[3];
+        posPaperP.y = pos3D[7];
+        posPaperP.z = pos3D[11];   
+    }
+    
     public void setPos(float pos3D[]) {
         this.pos3D = pos3D;
         pos.m00 = pos3D[0];
@@ -335,7 +361,6 @@ public class Screen {
         pos.m12 = pos3D[9];
         pos.m22 = pos3D[10];
         pos.m23 = pos3D[11];
-
 
         posPaper.x = pos3D[3];
         posPaper.y = pos3D[7];

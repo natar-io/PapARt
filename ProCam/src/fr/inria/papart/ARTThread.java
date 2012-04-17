@@ -16,36 +16,44 @@ import toxi.geom.Vec3D;
 class ARTThread extends Thread{
 
     private ARTagDetector art;
-    private Screen[] screens = null;
+    private PaperSheet[] sheets = null;
     private boolean undistort; 
+    private boolean compute;
     
     public boolean stop;
     
-    public ARTThread(ARTagDetector art, Screen[] screens){
-        this(art, screens, true);
+    public ARTThread(ARTagDetector art, PaperSheet[] sheets){
+        this(art, sheets, true);
     }
     
-    public ARTThread(ARTagDetector art, Screen[] screens, boolean undistort){
+    public ARTThread(ARTagDetector art, PaperSheet[] sheets, boolean undistort){
         this.undistort = undistort;
 	this.art = art;
-	this.screens = screens;
+	this.sheets = sheets;
 	stop = false;
     }
     
     public void run(){
 	while(!stop){
-	    compute();
+            art.grab(undistort);
+            if(compute)
+                compute();
 	}
     }
 
     public void compute(){
-	float[][] allPos = art.findMultiMarkers(undistort, false);
-	
-	// TODO: assert same size !!
-	int k=0;
-	for(Screen screen : screens){
-            screen.setPos(allPos[k++]);
-	}
+//	float[][] allPos = art.findMultiMarkers(undistort, false);
+        for(PaperSheet sheet : sheets){
+           art.findMarkers(sheet);
+        }
+    }
+
+    public boolean isCompute() {
+        return compute;
+    }
+
+    public void setCompute(boolean compute) {
+        this.compute = compute;
     }
 
     public void stopThread(){
