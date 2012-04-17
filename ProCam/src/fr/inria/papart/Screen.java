@@ -15,7 +15,7 @@ import toxi.geom.Vec3D;
 
 /** 
  * This class implements a virtual screen.
- * 
+ * The position of the screen has to be passed. It no longers handles a camera. 
  * 
  * @author jeremylaviole
  */
