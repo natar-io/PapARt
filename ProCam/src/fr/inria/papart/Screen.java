@@ -17,7 +17,7 @@ import toxi.geom.Vec3D;
  * 
  * @author jeremylaviole
  */
-class Screen {
+public class Screen {
 
     //       private PVector userPos = new PVector(-paperSheetWidth/2, -paperSheetHeight/2 +500, 300);
     //       private PVector userPos = new PVector(paperSheetWidth/2, paperSheetHeight/2, 500);
@@ -91,6 +91,12 @@ class Screen {
     public void initTouch(ProjCam pc) {
         computePlane(pc);
         computeHomography(pc);
+    }
+    
+    public void initTouch(Projector proj) {
+        // TODO !
+//        computePlane(pc);
+//        computeHomography(pc);
     }
 
     

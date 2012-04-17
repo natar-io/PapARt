@@ -8,6 +8,9 @@ import codeanticode.glgraphics.GLTextureFilter;
 import com.googlecode.javacv.CameraDevice;
 import com.googlecode.javacv.ProjectorDevice;
 import com.googlecode.javacv.processing.ARTagDetector;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import javax.media.opengl.GL;
 import processing.core.PApplet;
 import processing.core.PImage;
@@ -21,101 +24,53 @@ import toxi.processing.ToxiclibsSupport;
 public class Projector{
 
 
-    protected int posX, posY, frameWidth, frameHeight;
-    protected int vw, vh;
+    private PApplet parent;
 
     public GLGraphicsOffScreen graphics;
-    public Screen Screen, userInterfaceScreen;
-    public Screen[] screens;
+    public ArrayList<Screen> screens;
+    
+    
+    // TODO: this has to be useless.
+    protected GLTexture finalImage; 
 
-    protected GLSLShader shader;
-    protected GLTextureFilter lensFilter;
-    protected GLTexture tex2;
-
-    protected ToxiclibsSupport screenGFX;
-    public ARTagDetector art;
+    // Projector information
     protected ProjectorDevice proj;
-    protected CameraDevice cameraDevice;
+    protected PMatrix3D projIntrinsicsP3D, projExtrinsicsP3D, projExtrinsicsP3DInv;
 
-    protected PMatrix3D projExtrinsicsP3D, projExtrinsicsP3DInv;
-    protected PMatrix3D projIntrinsicsP3D, camIntrinsicsP3D;
+    // Resolution
+    protected int frameWidth, frameHeight;
 
-    protected ARTThread artThread;
-
+    // OpenGL information
     public float[] projectionMatrixGL = new float[16];
     protected GLTexture myMap;
-
-
-    protected Matrix4x4 transformationRender1Render2;
-    protected PMatrix3D projectionInit, projectionInitCam;
-
+    protected PMatrix3D projectionInit;
+    protected GLTextureFilter lensFilter;
     private GL gl = null;
-    //    private PApplet parent;
-    public PApplet parent;
     
-    public float offscreenScale;
-    PVector offscreenSize; 
-    //    protected boolean useGSVideo;
-
-    public Projector(String calibrationYAML, String calibrationData, int width, int height){
+    
+    public Projector(PApplet parent, String calibrationYAML, String calibrationData, int width, int height){
+        this(parent, calibrationYAML, calibrationData, width, height, 0);
+    }
+    
+    public Projector(PApplet parent, String calibrationYAML, String calibrationData, int width, int height, int AA){
 
 	frameWidth = width;
 	frameHeight = height;
 	this.parent = parent;
 
-        // TODO: same with AA ? 
-//        graphics = new GLGraphicsOffScreen(parent, width, height, useAA, antiAliasing);
-
         // create the offscreen rendering for this projector.
+        if(AA > 0){
+        graphics = new GLGraphicsOffScreen(parent, width, height, true, AA);
+        }else{
         graphics = new GLGraphicsOffScreen(parent, width, height);
-
-
-
-
+        }
         loadInternalParams(calibrationYAML);
-	
-
-	float p00, p11, p02, p12;
-
-
-
-	// ----------- OPENGL --------------
-        // Reusing the internal projector parameters for the scene rendering.
-        
-        p00 = 2*projIntrinsicsP3D.m00 / frameWidth ;
-	p11 = 2*projIntrinsicsP3D.m11 / frameHeight ;
-	p02 = -(2*projIntrinsicsP3D.m02 / frameWidth  -1);
-	p12 = -(2*projIntrinsicsP3D.m12 / frameHeight -1);
-
-	graphics.beginDraw();
-
-        // TODO: magic numbers !!!
-	// frustum only for near and far...
-	graphics.frustum(0, 0, 0, 0, 200 , 2000);
-	graphics.projection.m00 = p00;
-	graphics.projection.m11 = p11;
-	graphics.projection.m02 = p02;
-	graphics.projection.m12 = p12;
-
-        // Save these good parameters
-	projectionInit = graphics.projection.get();
-
-
-	graphics.projection.transpose();
-	graphics.projection.get(projectionMatrixGL);
-	graphics.projection.transpose();
-	graphics.endDraw();
-
-	// TODO: shader useless now ?
-	
-        	lensFilter = new GLTextureFilter(parent, "projDistort.xml");
-	tex2 = new GLTexture(parent, width, height);
-
-        shader = new GLSLShader(parent, "distortVert.glsl", "distortFrag.glsl");
+	initProjection();
+	initModelView();
 	initDistortMap(proj);
-
     }
 
+    
     private void loadInternalParams(String calibrationYAML){
         	// Load the camera parameters. 
 	try{
@@ -149,13 +104,88 @@ public class Projector{
 //					      0, 0, 0, 1);
 
 	}  catch(Exception e){ 
-	    parent.die("Error reading the calibration file : " + calibrationYAML + " \n" + e);
+	    // TODO: Exception creation !!
+            System.out.println("Error !!!!!");
+            System.err.println("Error reading the calibration file : " + calibrationYAML + " \n" + e);
 	}
+    }
     
+    private void initProjection(){
+	float p00, p11, p02, p12;
 
+	// ----------- OPENGL --------------
+        // Reusing the internal projector parameters for the scene rendering.
+        
+        p00 = 2*projIntrinsicsP3D.m00 / frameWidth ;
+	p11 = 2*projIntrinsicsP3D.m11 / frameHeight ;
+	p02 = -(2*projIntrinsicsP3D.m02 / frameWidth  -1);
+	p12 = -(2*projIntrinsicsP3D.m12 / frameHeight -1);
+
+	graphics.beginDraw();
+
+        // TODO: magic numbers !!!
+	// frustum only for near and far...
+	graphics.frustum(0, 0, 0, 0, 200 , 2000);
+	graphics.projection.m00 = p00;
+	graphics.projection.m11 = p11;
+	graphics.projection.m02 = p02;
+	graphics.projection.m12 = p12;
+
+        // Save these good parameters
+	projectionInit = graphics.projection.get();
+
+
+	graphics.projection.transpose();
+	graphics.projection.get(projectionMatrixGL);
+	graphics.projection.transpose();
+	graphics.endDraw();
 
     }
     
+        
+    private void initModelView(){
+    	graphics.beginDraw();
+	graphics.clear(0);
+	graphics.resetMatrix();
+
+	graphics.scale(1, 1, -1);
+	graphics.modelview.apply(projExtrinsicsP3D);
+	modelview1 = graphics.modelview.get();
+    }
+    
+    // Actual GLGraphics BUG :  projection has to be loaded directly into OpenGL.
+    protected void loadProjection(){
+	gl = graphics.beginGL();
+	gl.glMatrixMode(GL.GL_PROJECTION);
+	gl.glLoadMatrixf(projectionMatrixGL, 0);
+	gl.glMatrixMode(GL.GL_MODELVIEW);
+	graphics.endGL();
+    }
+    
+    private void loadModelView(){
+        graphics.beginDraw();
+        graphics.modelview.set(getModelview1());
+        graphics.endDraw();
+    }
+    
+    
+    public PMatrix3D modelview1;
+    public void loadGraphics(){
+
+	graphics.beginDraw();
+	graphics.clear(0);
+	graphics.endDraw();
+
+        loadProjection();
+        loadModelView();
+   }
+
+    // TODO: un truc genre hasTouch // classe héritant
+    public void loadTouch(){
+	for(Screen screen: screens){
+	    screen.initTouch(this);
+	}        
+    }
     
     /**
      * This function initializes the distorsion map used by the distorsion shader. 
@@ -163,7 +193,10 @@ public class Projector{
      * @param proj 
      */
     private void initDistortMap(ProjectorDevice proj){
-	myMap = new GLTexture(parent, frameWidth, frameHeight, GLTexture.FLOAT);
+	lensFilter = new GLTextureFilter(parent, "projDistort.xml");
+	finalImage = new GLTexture(parent, frameWidth, frameHeight);
+
+        myMap = new GLTexture(parent, frameWidth, frameHeight, GLTexture.FLOAT);
 	float[] mapTmp = new float[ frameWidth *  frameHeight *3];
 	int k =0;
 	for(int y=0; y < frameHeight ; y++){
@@ -178,49 +211,13 @@ public class Projector{
 	myMap.putBuffer(mapTmp, 3);
     }
     
+   
     
-    // TODO: remove this from here ?
-    public PVector getCamViewPoint(PVector pt){
-      PVector tmp = new PVector();
-      camIntrinsicsP3D.mult(new PVector(pt.x, pt.y, pt.z), tmp);
-      return new PVector(tmp.x / tmp.z, tmp.y / tmp.z);
-    }
-
-    
-    public boolean isReady(){
-    	// if(useGSVideo){
-    	//   if (!video.available()) {
-    	//     return;
-    	//   }
-    	//   video.read();
-    	//   pos3D = art.findMarkers(video);
-    	// }else{
-	return true;
-	//    	return !(pos == null);
-    }
-
-    public void initProjection(){
-	gl = graphics.beginGL();
-	gl.glMatrixMode(GL.GL_PROJECTION);
-	gl.glLoadMatrixf(projectionMatrixGL, 0);
-	gl.glMatrixMode(GL.GL_MODELVIEW);
-	graphics.endGL();
-    }
-
-
-    public void distortImageDraw(){
+    public PImage distortImageDraw(){
 	GLTexture off = graphics.getTexture();
 
-	////////  3D PROJECTION  //////////////
-	graphics.beginDraw();
-	graphics.clear(0);
-	initProjection();
-	graphics.resetMatrix();
-
-	// Setting the camera
-	graphics.scale(1, 1, -1);
-	graphics.modelview.apply(projExtrinsicsP3D);
-    
+        loadGraphics();
+        
 	// TODO: disable depth test ?
 	// Setting the scene
 	for(Screen screen: screens){
@@ -231,7 +228,7 @@ public class Projector{
 	    graphics.image(off2, 0, 0, screen.size.x, screen.size.y);	    
 	    graphics.popMatrix();
 	}
-
+        
 	// // Draw the paperSheet
 	// OLD VERSION
 	// graphics.modelview.apply(pos); 
@@ -241,8 +238,9 @@ public class Projector{
 
 	// DISTORTION SHADER
 	off = graphics.getTexture();
-	lensFilter.apply(new GLTexture[]{off, myMap}, tex2);
-	parent.image(tex2, posX, posY, frameWidth, frameHeight);
+	lensFilter.apply(new GLTexture[]{off, myMap}, finalImage);
+	return finalImage;
+//        parent.image(finalImage, posX, posY, frameWidth, frameHeight);
     }
 
 
@@ -258,70 +256,13 @@ public class Projector{
 	  return ret;
     }
 
-   
-    public PMatrix3D modelview1;
-    public void prepare(){
-
-	//	artThread.compute();
-	////////  3D PROJECTION  //////////////
-	graphics.beginDraw();
-	graphics.clear(0);
-	initProjection();
-	graphics.resetMatrix();
-
-	// Setting the camera
-	graphics.scale(1, 1, -1);
-	graphics.modelview.apply(projExtrinsicsP3D);
-	modelview1 = graphics.modelview.get();
-
-	for(Screen screen: screens){
-	    screen.initTouch(this);
-	}
-	graphics.endDraw();
-   }
-
-
-
-
-    public PImage getCameraImage(){
-	return art.getImage();
+//    public void addScreen(Screen s, String name){
+//        screensMap.put(name, s);
+//    }
+    public void addScreen(Screen s){
+        screens.add(s);
     }
 
-    public void close(){
-	artThread.stopThread();
-	art.close();
-    }
-
-    ///////////// CUSTOM CALLS /////////////////
-
-
-    // use  prepareGraphics before !!!
-    public GLGraphicsOffScreen startPaperScreen(){
-	Screen.initDraw();
-	return Screen.thisGraphics;
-    }
-
-    public GLGraphicsOffScreen startPaperScreenLeft(){
-	Screen.initDrawLeft();
-	return Screen.thisGraphics;
-    }
-    public GLGraphicsOffScreen startPaperScreenRight(){
-	Screen.initDrawRight();
-	return Screen.thisGraphics;
-    }
-
-    public GLGraphicsOffScreen startPaperScreenRightOnly(){
-	Screen.initDrawRightOnly();
-	return Screen.thisGraphics;
-    }
-
-    public GLGraphicsOffScreen startInterfaceScreen(){
-	userInterfaceScreen.initDraw();
-	return userInterfaceScreen.thisGraphics;
-    }
-    public ToxiclibsSupport getToxi(){
-	return screenGFX;
-    }
 
     GLGraphicsOffScreen getGraphics() {
         return this.graphics;

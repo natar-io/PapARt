@@ -42,8 +42,6 @@ class ProjCam{
 
     protected ARTThread artThread;
 
-
-
     public float[] projectionMatrixGL = new float[16];
     protected GLTexture myMap;
 
