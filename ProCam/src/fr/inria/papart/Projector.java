@@ -7,7 +7,6 @@ import codeanticode.glgraphics.GLTexture;
 import codeanticode.glgraphics.GLTextureFilter;
 import com.googlecode.javacv.CameraDevice;
 import com.googlecode.javacv.ProjectorDevice;
-import com.googlecode.javacv.processing.ARTagDetector;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;

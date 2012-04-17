@@ -7,7 +7,6 @@ import codeanticode.glgraphics.GLTexture;
 import codeanticode.glgraphics.GLTextureFilter;
 import com.googlecode.javacv.CameraDevice;
 import com.googlecode.javacv.ProjectorDevice;
-import com.googlecode.javacv.processing.ARTagDetector;
 import javax.media.opengl.GL;
 import processing.core.PApplet;
 import processing.core.PImage;
@@ -123,7 +122,7 @@ class ProjCam{
 
 	//////// Augmented Reality initialization ///////////
 	try {
-	    com.googlecode.javacv.processing.Utils.
+	    fr.inria.papart.Utils.
 		convertARParam(parent, calibrationYAML, calibrationData, vw, vh);
 	    //    com.googlecode.javacv.processing.Utils.convertProjParam(parent, calibrationYAML, calibrationDATA1, 
 	    // frameSizeX, frameHeight);
