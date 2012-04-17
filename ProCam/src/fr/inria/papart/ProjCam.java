@@ -93,7 +93,7 @@ class ProjCam{
 	screens[0] = Screen;
 	screens[1] = userInterfaceScreen;
 
-	screenGFX = new ToxiclibsSupport(parent, Screen.g);
+	screenGFX = new ToxiclibsSupport(parent, Screen.thisGraphics);
 
 	// TODO: fix GSVideo
 	//	this.useGSVideo = gsvideo;
@@ -232,16 +232,17 @@ class ProjCam{
 //	println("ProjCam init OK");
     }
 
+    /**
+     * This function initializes the distorsion map used by the distorsion shader. 
+     * The texture is of the size of the projector resolution.
+     * @param proj 
+     */
     private void initDistortMap(ProjectorDevice proj){
 	myMap = new GLTexture(parent, frameWidth, frameHeight, GLTexture.FLOAT);
 	float[] mapTmp = new float[ frameWidth *  frameHeight *3];
 	int k =0;
 	for(int y=0; y < frameHeight ; y++){
 	    for(int x=0; x < frameWidth ; x++){
-		
-		// mapTmp[k++] = (float)x / width;
-		// mapTmp[k++] = (float)y / height;
-		// mapTmp[k++] = 0;
 		
 		double[] out = proj.undistort(x,y);
 		mapTmp[k++] = (float) out[0] / frameWidth;
@@ -252,6 +253,8 @@ class ProjCam{
 	myMap.putBuffer(mapTmp, 3);
     }
     
+    
+    // TODO: remove this from here ?
     public PVector getCamViewPoint(PVector pt){
       PVector tmp = new PVector();
       camIntrinsicsP3D.mult(new PVector(pt.x, pt.y, pt.z), tmp);
@@ -347,7 +350,7 @@ class ProjCam{
 	modelview1 = graphics.modelview.get();
 
 	for(Screen screen: screens){
-	    screen.initTouch();
+	    screen.initTouch(this);
 	}
 	graphics.endDraw();
    }
@@ -370,29 +373,45 @@ class ProjCam{
     // use  prepareGraphics before !!!
     public GLGraphicsOffScreen startPaperScreen(){
 	Screen.initDraw();
-	return Screen.g;
+	return Screen.thisGraphics;
     }
 
     public GLGraphicsOffScreen startPaperScreenLeft(){
 	Screen.initDrawLeft();
-	return Screen.g;
+	return Screen.thisGraphics;
     }
     public GLGraphicsOffScreen startPaperScreenRight(){
 	Screen.initDrawRight();
-	return Screen.g;
+	return Screen.thisGraphics;
     }
 
     public GLGraphicsOffScreen startPaperScreenRightOnly(){
 	Screen.initDrawRightOnly();
-	return Screen.g;
+	return Screen.thisGraphics;
     }
 
     public GLGraphicsOffScreen startInterfaceScreen(){
 	userInterfaceScreen.initDraw();
-	return userInterfaceScreen.g;
+	return userInterfaceScreen.thisGraphics;
     }
     public ToxiclibsSupport getToxi(){
 	return screenGFX;
+    }
+
+    GLGraphicsOffScreen getGraphics() {
+        return this.graphics;
+    }
+
+    PMatrix3D getModelview1() {
+        return this.modelview1;
+    }
+
+    PMatrix3D getProjectionInit() {
+        return this.projectionInit;
+    }
+
+    ProjectorDevice getProjectorDevice() {
+        return this.proj;
     }
 
 

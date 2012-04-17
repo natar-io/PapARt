@@ -78,13 +78,7 @@ class ARTThread extends Thread{
 	// TODO: assert same size !!
 	int k=0;
 	for(Screen screen : screens){
-	    screen.pos3D = allPos[k++];
-	    screen.pos = new PMatrix3D(screen.pos3D[0], screen.pos3D[1], screen.pos3D[2], screen.pos3D[3], 
-				       screen.pos3D[4], screen.pos3D[5], screen.pos3D[6], screen.pos3D[7], 
-				       screen.pos3D[8], screen.pos3D[9], screen.pos3D[10],screen.pos3D[11],
-				       0, 0, 0, 1);
-	    screen.posPaper = new Vec3D(screen.pos3D[3], screen.pos3D[7], screen.pos3D[11]);
-	    screen.posPaperP = new PVector(screen.pos3D[3], screen.pos3D[7], screen.pos3D[11]);
+            screen.setPos(allPos[k++]);
 	}
     }
 
