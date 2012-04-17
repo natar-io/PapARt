@@ -266,7 +266,6 @@ class Screen {
      * @return Position of the pointer.
      */
     public ReadonlyVec3D projectPointer(ProjCam pc, float px, float py, int width, int height) {
-        GLGraphicsOffScreen projGraphics = pc.getGraphics();
         
         PMatrix3D projMat = pc.getProjectionInit().get();
         PMatrix3D modvw = pc.getModelview1();
