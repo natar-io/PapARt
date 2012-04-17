@@ -2,22 +2,14 @@ package fr.inria.papart;
 
 
 import codeanticode.glgraphics.GLGraphicsOffScreen;
-import codeanticode.glgraphics.GLSLShader;
 import codeanticode.glgraphics.GLTexture;
 import codeanticode.glgraphics.GLTextureFilter;
-import com.googlecode.javacv.CameraDevice;
 import com.googlecode.javacv.ProjectorDevice;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import javax.media.opengl.GL;
 import processing.core.PApplet;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
-import processing.core.PVector;
-import toxi.geom.Matrix4x4;
-import toxi.processing.ToxiclibsSupport;
-
 
 
 public class Projector{
@@ -42,16 +34,30 @@ public class Projector{
     // OpenGL information
     public float[] projectionMatrixGL = new float[16];
     protected GLTexture myMap;
+    public PMatrix3D modelview1;
     protected PMatrix3D projectionInit;
     protected GLTextureFilter lensFilter;
     private GL gl = null;
     
-    
-    public Projector(PApplet parent, String calibrationYAML, String calibrationData, int width, int height){
-        this(parent, calibrationYAML, calibrationData, width, height, 0);
+    /**
+     * Projector allows the use of a projector for Spatial Augmented reality setup. 
+     * This class creates an OpenGL context which allows 3D projection.
+     * 
+     * @param parent
+     * @param calibrationYAML calibration file : OpenCV format
+     * @param width  resolution X
+     * @param height resolution Y
+     * @param near   OpenGL near plane (in mm) or the units used for calibration.
+     * @param far    OpenGL far plane  (in mm) or the units used for calibration.
+     */
+    public Projector(PApplet parent, String calibrationYAML, 
+             int width, int height, 
+            float near, float far){
+        this(parent, calibrationYAML,  width, height,near, far, 0);
     }
     
-    public Projector(PApplet parent, String calibrationYAML, String calibrationData, int width, int height, int AA){
+    public Projector(PApplet parent, String calibrationYAML,
+             int width, int height, float near, float far, int AA){
 
 	frameWidth = width;
 	frameHeight = height;
@@ -64,7 +70,7 @@ public class Projector{
         graphics = new GLGraphicsOffScreen(parent, width, height);
         }
         loadInternalParams(calibrationYAML);
-	initProjection();
+	initProjection(near, far);
 	initModelView();
 	initDistortMap(proj);
     }
@@ -109,7 +115,7 @@ public class Projector{
 	}
     }
     
-    private void initProjection(){
+    protected void initProjection(float near, float far){
 	float p00, p11, p02, p12;
 
 	// ----------- OPENGL --------------
@@ -123,8 +129,7 @@ public class Projector{
 	graphics.beginDraw();
 
         // TODO: magic numbers !!!
-	// frustum only for near and far...
-	graphics.frustum(0, 0, 0, 0, 200 , 2000);
+	graphics.frustum(0, 0, 0, 0, near, far);
 	graphics.projection.m00 = p00;
 	graphics.projection.m11 = p11;
 	graphics.projection.m02 = p02;
@@ -140,9 +145,8 @@ public class Projector{
 	graphics.endDraw();
 
     }
-    
         
-    private void initModelView(){
+    protected void initModelView(){
     	graphics.beginDraw();
 	graphics.clear(0);
 	graphics.resetMatrix();
@@ -166,9 +170,7 @@ public class Projector{
         graphics.modelview.set(getModelview1());
         graphics.endDraw();
     }
-    
-    
-    public PMatrix3D modelview1;
+        
     public void loadGraphics(){
 
 	graphics.beginDraw();
@@ -210,14 +212,12 @@ public class Projector{
 	myMap.putBuffer(mapTmp, 3);
     }
     
-   
-    
     public PImage distortImageDraw(){
 	GLTexture off = graphics.getTexture();
 
         loadGraphics();
         
-	// TODO: disable depth test ?
+	// TODO: depth test ?
 	// Setting the scene
 	for(Screen screen: screens){
 	    //	    GLTexture off2 = shadowMapScreen.getTexture();
@@ -236,22 +236,6 @@ public class Projector{
 //        parent.image(finalImage, posX, posY, frameWidth, frameHeight);
     }
 
-
-    public PVector computePosOnPaper(PVector position){
-	  graphics.pushMatrix();
-	  PVector ret = new PVector();   
-	  graphics.translate(position.x, position.y, position.z);
-	  projExtrinsicsP3DInv.mult(new PVector(graphics.modelview.m03, 
-						graphics.modelview.m13, 
-						-graphics.modelview.m23),
-				    ret);   
-	  graphics.popMatrix();
-	  return ret;
-    }
-
-//    public void addScreen(Screen s, String name){
-//        screensMap.put(name, s);
-//    }
     public void addScreen(Screen s){
         screens.add(s);
     }
@@ -272,6 +256,23 @@ public class Projector{
     ProjectorDevice getProjectorDevice() {
         return this.proj;
     }
-
+    
+    //    /**
+//     * TODO: find the use of this function ?? 
+//     * 
+//     * @param position
+//     * @return 
+//     */
+//    public PVector computePosOnPaper(PVector position){
+//	  graphics.pushMatrix();
+//	  PVector ret = new PVector();   
+//	  graphics.translate(position.x, position.y, position.z);
+//	  projExtrinsicsP3DInv.mult(new PVector(graphics.modelview.m03, 
+//						graphics.modelview.m13, 
+//						-graphics.modelview.m23),
+//				    ret);   
+//	  graphics.popMatrix();
+//	  return ret;
+//    }
 
 }

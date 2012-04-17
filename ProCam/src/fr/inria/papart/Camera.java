@@ -40,6 +40,18 @@ public class Camera {
         }
     }
 
+    /**
+     * This object helds, a camera object. From a video stream, it extracts sub-images, and detect 
+     * marker boards using ARToolKitPlus. 
+     * 
+     * @param parent
+     * @param camNo
+     * @param width
+     * @param height
+     * @param calibrationYAML
+     * @param calibrationData
+     * @param sheets 
+     */
     public Camera(PApplet parent, int camNo,
             int width, int height,
             String calibrationYAML, String calibrationData,
@@ -85,6 +97,9 @@ public class Camera {
         }
     }
 
+    /**
+     * It makes the camera update continuously. 
+     */
     public void setThread() {
         if (thread == null) {
             thread = new ARTThread(art, sheets);
@@ -94,11 +109,18 @@ public class Camera {
         }
     }
 
+    /**
+     * Stops the update thread.
+     */
     public void stopThread() {
         thread.stopThread();
         thread = null;
     }
 
+    /**
+     * If the video is threaded, this sets if the tracking is on or not. 
+     * @param auto automatic Tag detection: ON if true. 
+     */
     public void setAutoUpdate(boolean auto) {
         if (thread != null) {
             thread.setCompute(auto);
@@ -107,12 +129,21 @@ public class Camera {
         }
     }
 
+    /**
+     * Gets the 2D location in the image of a 3D point. 
+     * @param pt  3D point seen by the camera. 
+     * @return 2D location of the 3D point in the image. 
+     */
     public PVector getCamViewPoint(PVector pt) {
         PVector tmp = new PVector();
         camIntrinsicsP3D.mult(new PVector(pt.x, pt.y, pt.z), tmp);
+        //TODO: lens distorsion ?
         return new PVector(tmp.x / tmp.z, tmp.y / tmp.z);
     }
 
+    /**
+     * Asks the camera to grab an image. Not to use with the threaded option.
+     */
     public void grab() {
         if (thread != null) {
             art.grab();
@@ -125,18 +156,87 @@ public class Camera {
         trackedViews.put(sheet, view);
     }
 
+    
     public PImage getView(PaperSheet sheet) {
-        float[] pos = art.findMarkers(sheet);
         TrackedView trackedView = trackedViews.get(sheet);
-        if(trackedView == null){
+        if (trackedView == null) {
             System.err.println("Error: paper sheet not registered as tracked view.");
             return null;
         }
-        
-        
+        float[] pos = art.findMarkers(sheet);
         trackedView.setPos(pos);
         trackedView.computeCorners(this);
         return trackedView.getImage(art.getImageIpl());
+    }
+
+    /**
+     * This function is typically to be used with high resolution camera. 
+     * It stops the video stream, takes a picture, takes the zone of interests and 
+     * returns it as an image. It restarts the video stream before exiting. 
+     * 
+     * @param sheet
+     * @return image
+     */
+    public PImage stopGetViewStart(PaperSheet sheet) {
+        if (thread != null) {
+            System.err.println("Camera : Error: stopGetViewStart is to use only when thread is started");
+            return null;
+        }
+        boolean wasAutoUpdate = thread.isCompute();
+        thread.stopThread();
+        this.grab();
+
+        TrackedView trackedView = trackedViews.get(sheet);
+        if (trackedView == null) {
+            System.err.println("Error: paper sheet not registered as tracked view.");
+            return null;
+        }
+        float[] pos = art.findMarkers(sheet);
+        trackedView.setPos(pos);
+        trackedView.computeCorners(this);
+        PImage out = trackedView.getImage(art.getImageIpl());
+
+        setThread();
+        thread.setCompute(wasAutoUpdate);
+
+        return out;
+    }
+
+    /**
+     * This function is typically to be used with high resolution camera. 
+     * It stops the video stream, takes a picture, takess the zone of interests and 
+     * returns it as an array of images. It restarts the video stream before exiting. 
+     * 
+     * @param sheet
+     * @return image
+     */
+    public PImage[] stopGetViewStart(PaperSheet[] sheets) {
+        if (thread != null) {
+            System.err.println("Camera : Error: stopGetViewStart is to use only when thread is started");
+            return null;
+        }
+        boolean wasAutoUpdate = thread.isCompute();
+        thread.stopThread();
+        this.grab();
+
+        PImage[] out = new PImage[sheets.length];
+        int k = 0;
+
+        for (PaperSheet sheet : sheets) {
+            TrackedView trackedView = trackedViews.get(sheet);
+            if (trackedView == null) {
+                System.err.println("Error: paper sheet not registered as tracked view.");
+                return null;
+            }
+            float[] pos = art.findMarkers(sheet);
+            trackedView.setPos(pos);
+            trackedView.computeCorners(this);
+            out[k++] = trackedView.getImage(art.getImageIpl());
+        }
+        setThread();
+        thread.setCompute(wasAutoUpdate);
+
+        return out;
     }
 
     public PImage getLastPaperView(PaperSheet sheet) {

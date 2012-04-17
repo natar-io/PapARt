@@ -51,15 +51,11 @@ public class Screen {
     private float halfEyeDist = 20; // 2cm
 
   
-    /**
-     * 
-     * @param parent
-     * @param projcam
-     * @param size
-     * @param scale 
-     */
-    public Screen(PApplet parent, 
-            ProjCam projcam, PVector size, float scale, boolean useAA, int AAValue) {
+    public Screen(PApplet parent, PVector size, float scale) {
+        this(parent, size, scale, false, 1);
+    }
+    
+    public Screen(PApplet parent, PVector size, float scale, boolean useAA, int AAValue) {
         thisGraphics = new GLGraphicsOffScreen(parent, (int) (size.x * scale), (int) (size.y * scale), useAA, AAValue);
         this.size = size.get();
         this.scale = scale;
@@ -72,7 +68,7 @@ public class Screen {
     }
 
     ////////////////// 3D SPACE TO PAPER HOMOGRAPHY ///////////////
-    private void initHomography() {
+    protected void initHomography() {
         homography = new Homography(parent, 3, 3, 4);
         homography.setPoint(false, 0, new PVector(0, 0, 0));
         homography.setPoint(false, 1, new PVector(1, 0, 0));
@@ -81,19 +77,6 @@ public class Screen {
     }
 
         
-//    PVector[] screenP, outScreenP;
- 
-//    private void initImageGetter() {
-//        screenP = new PVector[4];
-//        outScreenP = new PVector[4];
-//
-//        // TODO:  Magic numbers !!!
-//        outScreenP[0] = new PVector(0, 480);
-//        outScreenP[1] = new PVector(640, 480);
-//        outScreenP[2] = new PVector(640, 0);
-//        outScreenP[3] = new PVector(0, 0);
-//    }
-
     public GLTexture getTexture() {
         return thisGraphics.getTexture();
     }
@@ -102,7 +85,6 @@ public class Screen {
         computePlane(proj);
         computeHomography(proj);
     }
-
     
     public GLGraphicsOffScreen getGraphics(){
         return thisGraphics;
