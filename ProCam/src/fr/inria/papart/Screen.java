@@ -24,22 +24,28 @@ public class Screen {
     //    public PVector userPos = new PVector(0, -700, 1300);
 
     private PApplet parent;
+    
+    // The current graphics
     public GLGraphicsOffScreen thisGraphics;
-    public PVector initPos = null;
-    public PMatrix3D initPosM = null;
-    public float[] pos3D;
-    public Vec3D posPaper;
-    public PVector posPaperP;
-    public PMatrix3D pos;
+    
+    // Position holding...
+    private PVector initPos = null;
+    private PMatrix3D initPosM = null;
+    private float[] pos3D;
+    private Vec3D posPaper;
+    private PVector posPaperP;
+    private PMatrix3D pos;
 
-    public PVector size, drawingSize;
-    public float scale;
-    public Plane plane = new Plane();
+    
+    private PVector size;
+    private float scale;
+    private Plane plane = new Plane();
     private static final int nbPaperPosRender = 4;
-    PVector[] paperPosScreen = new PVector[nbPaperPosRender];
-    PVector[] paperPosRender1 = new PVector[nbPaperPosRender];
+    
+    private PVector[] paperPosScreen = new PVector[nbPaperPosRender];
+    private PVector[] paperPosRender1 = new PVector[nbPaperPosRender];
     protected Homography homography;
-    PVector[] screenP, outScreenP;
+
     protected Matrix4x4 transformationProjPaper;
     
     private float halfEyeDist = 20; // 2cm
@@ -52,9 +58,10 @@ public class Screen {
      * @param size
      * @param scale 
      */
-    public Screen(PApplet parent, ProjCam projcam, PVector size, float scale, boolean useAA, int AAValue) {
+    public Screen(PApplet parent, 
+            ProjCam projcam, PVector size, float scale, boolean useAA, int AAValue) {
         thisGraphics = new GLGraphicsOffScreen(parent, (int) (size.x * scale), (int) (size.y * scale), useAA, AAValue);
-        this.size = size;
+        this.size = size.get();
         this.scale = scale;
         this.parent = parent;
         pos = new PMatrix3D();
@@ -73,6 +80,9 @@ public class Screen {
         homography.setPoint(false, 3, new PVector(0, 1, 0));
     }
 
+        
+//    PVector[] screenP, outScreenP;
+ 
 //    private void initImageGetter() {
 //        screenP = new PVector[4];
 //        outScreenP = new PVector[4];
@@ -88,17 +98,15 @@ public class Screen {
         return thisGraphics.getTexture();
     }
 
-    public void initTouch(ProjCam pc) {
-        computePlane(pc);
-        computeHomography(pc);
-    }
-    
     public void initTouch(Projector proj) {
-        // TODO !
-//        computePlane(pc);
-//        computeHomography(pc);
+        computePlane(proj);
+        computeHomography(proj);
     }
 
+    
+    public GLGraphicsOffScreen getGraphics(){
+        return thisGraphics;
+    }
     
     public void initDraw(PVector userPos){
         initDraw(userPos, 40, 5000);
@@ -161,12 +169,11 @@ public class Screen {
         thisGraphics.frustum(left, right, bottom, top, nearPlane, farPlane);
     }
 
-    protected void computeScreenPosition(ProjCam pc) {
+    protected void computeScreenPosition(Projector projector) {
 
-        
-        GLGraphicsOffScreen projGraphics = pc.getGraphics();
+        GLGraphicsOffScreen projGraphics = projector.getGraphics();
         projGraphics.pushMatrix();
-        projGraphics.modelview.apply(pc.projExtrinsicsP3DInv); // camera view - instead of projector view
+        projGraphics.modelview.apply(projector.projExtrinsicsP3DInv); // camera view - instead of projector view
         projGraphics.pushMatrix();
         projGraphics.modelview.apply(pos);    // Go te the paper position
 
@@ -198,7 +205,7 @@ public class Screen {
         projGraphics.popMatrix();
     }
 
-    protected void computeHomography(ProjCam pc) {
+    protected void computeHomography(Projector pc) {
         computeScreenPosition(pc);
         for (int i = 0; i < 4; i++) {
             homography.setPoint(true, i, paperPosRender1[i]);
@@ -212,8 +219,8 @@ public class Screen {
     }
 
     ///////////////////// PLANE COMPUTATION  ////////////////
-    private Plane computePlane(ProjCam pc) {
-        GLGraphicsOffScreen projGraphics = pc.getGraphics();
+    private Plane computePlane(Projector projector) {
+        GLGraphicsOffScreen projGraphics = projector.getGraphics();
         projGraphics.pushMatrix();
         projGraphics.modelview.apply(pos);    // Go te the paper position
         projGraphics.translate(0, 0, 10);
@@ -222,7 +229,7 @@ public class Screen {
         PMatrix3D mv = projGraphics.modelview;
         PVector p1 = new PVector(mv.m03, mv.m13, -mv.m23);  // get the current Point
         PVector normale = new PVector();
-        pc.projExtrinsicsP3DInv.mult(p1, normale);   // move the currentPoint 
+        projector.projExtrinsicsP3DInv.mult(p1, normale);   // move the currentPoint 
         plane.set(posPaper);
         plane.normal.set(new Vec3D(normale.x, normale.y, normale.z));
         //    screenGFX.plane(plane, 100);
@@ -234,13 +241,13 @@ public class Screen {
     ///////////////////// POINTER PROJECTION  ////////////////
     // GluUnproject
     // TODO: not working ???
-    public ReadonlyVec3D projectMouse(ProjCam pc, int mouseX, int mouseY, int width, int height) {
+    public ReadonlyVec3D projectMouse(Projector projector, int mouseX, int mouseY, int width, int height) {
 
-        GLGraphicsOffScreen projGraphics = pc.getGraphics();
-        PMatrix3D projMat = pc.projectionInit.get();
+        GLGraphicsOffScreen projGraphics = projector.getGraphics();
+        PMatrix3D projMat = projector.projectionInit.get();
         PMatrix3D modvw = projGraphics.modelview.get();
 
-        double[] mouseDist = pc.proj.undistort(mouseX, mouseY);
+        double[] mouseDist = projector.proj.undistort(mouseX, mouseY);
         float x = 2 * (float) mouseDist[0] / (float) width - 1;
         float y = 2 * (float) mouseDist[1] / (float) height - 1;
 
@@ -271,13 +278,13 @@ public class Screen {
      * @param height  real screen height (resolution)
      * @return Position of the pointer.
      */
-    public ReadonlyVec3D projectPointer(ProjCam pc, float px, float py, int width, int height) {
+    public ReadonlyVec3D projectPointer(Projector projector, float px, float py, int width, int height) {
         
-        PMatrix3D projMat = pc.getProjectionInit().get();
-        PMatrix3D modvw = pc.getModelview1();
+        PMatrix3D projMat = projector.getProjectionInit().get();
+        PMatrix3D modvw = projector.getModelview1();
         //	PMatrix3D modvw = graphics.modelview.get();
 
-        double[] pointerDist = pc.getProjectorDevice().undistort(px * width, py * height);
+        double[] pointerDist = projector.getProjectorDevice().undistort(px * width, py * height);
         float x = 2 * (float) pointerDist[0] / (float) width - 1;
         float y = 2 * (float) pointerDist[1] / (float) height - 1;
 
@@ -304,6 +311,14 @@ public class Screen {
 
     public void setHalfEyeDist(float halfEyeDist) {
         this.halfEyeDist = halfEyeDist;
+    }
+    
+    public PVector getSize(){
+        return size;
+    }
+    
+    public PMatrix3D getPos(){
+        return pos;
     }
 
     public void setPos(float pos3D[]) {
@@ -332,473 +347,4 @@ public class Screen {
         
     }
     
-
-//////////////////////////////
-    ////////////////////// 
-    ////// Old functions do not use ////
-    
-        // TODO: remove fixed user position. At leasted fixed here...
-    public PVector userPos = new PVector(0, 400, 400);
-
-    
-    public void initDraw() {
-
-        if (initPos == null) {
-            initPos = posPaperP.get();
-            initPosM = pos.get();
-        }
-
-        thisGraphics.beginDraw();
-        thisGraphics.clear(0);
-
-        float nearPlane = 10;
-        float farPlane = 2000 * scale;
-        PVector paperCameraPos = new PVector();
-
-        // // TODO : refaire tout ça, plus clair et juste !
-        // // Test 1
-        // PVector tmp = initPos.get();
-        // tmp.sub(posPaperP); //  tmp =  currentPos - initPos   (Position)
-
-        // // Get the current paperSheet position
-        // PMatrix3D newPos = pos.get();
-        // newPos.invert();
-
-        // PVector zero = new PVector();
-        // PVector initMiddle = new PVector();
-        // // Get the initial point from camera's POV
-        // initPosM.mult(zero, initMiddle);
-
-        // // TODO vrpn
-        // initMiddle.add(userPos);
-
-        // // We have the Fixed (!) user position. 
-
-        // // Get the current paperSheet position
-        // PMatrix3D newPos = pos.get();
-        // newPos.invert();
-        // newPos.m03 = 0;
-        // newPos.m13 = 0;
-        // newPos.m23 = 0;   // inverse of the Transformation (without position)
-
-        // ////
-
-
-
-        // PVector tmp2;
-
-        // tmp2.mult(-scale);
-        // //	tmp2.mult(-1);
-
-        // tmp2.add(tmp);  
-
-        // newPos.mult(tmp2, paperCameraPos);
-
-
-        // ancienne version...  Erreur d'orientation, qui vient toujours du pt de vue du projo
-
-        // get the position at the beginning of the program.
-        PVector tmp = initPos.get();
-        tmp.sub(posPaperP); //  tmp =  currentPos - initPos   (Position)
-
-        // Get the current paperSheet position
-        PMatrix3D newPos = pos.get();
-
-
-        // TODO: WTF ?
-//	if(stopProj)
-//	  newPos = stopPos.get();
-
-        newPos.invert();
-        newPos.m03 = 0;
-        newPos.m13 = 0;
-        newPos.m23 = 0;   // inverse of the Transformation (without position)
-
-        ///////////////////////////////////////////////////////
-        // TODO: calculer le déplacement relatif de la feuille.
-        ///////////////////////////////////////////////////////
-
-        PVector tmp2;
-//	if(isUsingVRPN){
-//	  updateGtPosition();
-//	  tmp2 = gameTrak0.get(); 
-//	  tmp2.sub(trakInit0);
-//	  tmp2.mult(1000);
-//
-//	  float tz = tmp2.z;
-//	  tmp2.z = tmp2.y;
-//	  tmp2.y = tz;
-//
-//
-//	  PVector tmp3 = gameTrak1.get(); 
-//	  tmp3.sub(trakInit1);
-//	  tmp3.mult(1000);
-//
-//	  tz = tmp3.z;
-//	  tmp3.z = tmp3.y;
-//	  tmp3.y = tz;
-//
-//	  // println("trak0 " + tmp2);
-//	  tmp2.add(tmp3);
-//	  tmp2.mult(0.5);
-//
-//	  tmp2.add(userPos);
-//	}
-//	else{
-        tmp2 = userPos.get();
-//	}
-        tmp2.mult(-scale);
-        //	tmp2.mult(-1);
-
-        tmp2.add(tmp);
-
-        newPos.mult(tmp2, paperCameraPos);
-
-        // http://www.gamedev.net/topic/597564-view-and-projection-matrices-for-vr-window-using-head-tracking/
-        thisGraphics.camera(paperCameraPos.x, paperCameraPos.y, paperCameraPos.z,
-                paperCameraPos.x, paperCameraPos.y, 0,
-                0, 1, 0);
-
-        float nearFactor = nearPlane / paperCameraPos.z;
-
-        //	float left =   nearFactor * (-offscreenSize.x / 2f - paperCameraPos.x);
-        // float left =   nearFactor * ( 0- paperCameraPos.x);
-        // float right =  nearFactor * ( size.x*scale - paperCameraPos.x);
-        // float top =    nearFactor * ( size.y*scale  - paperCameraPos.y);
-        // float bottom = nearFactor * ( 0 - paperCameraPos.y);
-
-
-        float left = nearFactor * (-scale * size.x / 2f - paperCameraPos.x);
-        float right = nearFactor * (scale * size.x / 2f - paperCameraPos.x);
-        float top = nearFactor * (scale * size.y / 2f - paperCameraPos.y);
-        float bottom = nearFactor * (-scale * size.y / 2f - paperCameraPos.y);
-
-        /* float left =   nearFactor * ( -size.x /2f - paperCameraPos.x); */
-        /* float right =  nearFactor * ( size.x /2f  - paperCameraPos.x); */
-        /* float top =    nearFactor * ( size.y /2f  - paperCameraPos.y); */
-        /* float bottom = nearFactor * ( -size.y /2f - paperCameraPos.y); */
-
-        thisGraphics.frustum(left, right, bottom, top, nearPlane, farPlane);
-    }
-
-    //////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////
-    public PVector initDrawExtern(PVector camPos, PVector camDir) {
-
-        if (initPos == null) {
-            initPos = posPaperP.get();
-            initPosM = pos.get();
-        }
-
-        float nearPlane = 10;
-        float farPlane = 2000 * scale;
-        PVector paperCameraPos = new PVector();
-
-        // get the position at the beginning of the program.
-        PVector tmp = initPos.get();
-        tmp.sub(posPaperP); //  tmp =  currentPos - initPos   (Position)
-
-        // Get the current paperSheet position
-        PMatrix3D newPos = pos.get();
-
-//	if(stopProj)
-//	  newPos = stopPos.get();
-
-        newPos.invert();
-        newPos.m03 = 0;
-        newPos.m13 = 0;
-        newPos.m23 = 0;   // inverse of the Transformation (without position)
-
-        ///////////////////////////////////////////////////////
-        // TODO: calculer le déplacement relatif de la feuille.
-        ///////////////////////////////////////////////////////
-
-        PVector tmp2;
-        tmp2 = camPos.get();
-        tmp2.mult(-scale);
-        //		tmp2.mult(-1);
-
-        tmp2.add(tmp);
-
-        newPos.mult(tmp2, paperCameraPos);
-
-        // http://www.gamedev.net/topic/597564-view-and-projection-matrices-for-vr-window-using-head-tracking/
-        // g.camera(paperCameraPos.x, paperCameraPos.y, paperCameraPos.z, 
-        // 	 camDir.x, camDir.y, 0,
-        // 	 //		 paperCameraPos.x, paperCameraPos.y, 0, 
-        // 	 0, 1, 0);
-        //	g.frustum(left, right, bottom, top, nearPlane, farPlane);
-        return paperCameraPos;
-
-    }
-
-    //////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////
-    public void initDrawLeft() {
-
-        if (initPos == null) {
-            initPos = posPaperP.get();
-        }
-
-        thisGraphics.beginDraw();
-        thisGraphics.clear(0);
-
-        float nearPlane = 10;
-        float farPlane = 2000 * scale;
-
-        // get the position at the beginning of the program.
-        PVector tmp = initPos.get();
-        tmp.sub(posPaperP); //  tmp =  currentPos - initPos   (Position)
-
-        // Get the current paperSheet position
-        PMatrix3D newPos = pos.get();
-        newPos.invert();
-        newPos.m03 = 0;
-        newPos.m13 = 0;
-        newPos.m23 = 0;   // inverse of the Transformation (without position)
-
-        ///////////////////////////////////////////////////////
-        // TODO: calculer le déplacement relatif de la feuille.
-        ///////////////////////////////////////////////////////
-
-        PVector paperCameraPos = new PVector();
-
-        PVector tmp2;
-//	if(isUsingVRPN){
-//	  updateGtPosition();
-//	  tmp2 = gameTrak0.get(); 
-//	  tmp2.sub(trakInit0);
-//	  tmp2.mult(1000);
-//
-//	  float tz = tmp2.z;
-//	  tmp2.z = tmp2.y;
-//	  tmp2.y = tz;
-//
-//
-//	  PVector tmp3 = gameTrak1.get(); 
-//	  tmp3.sub(trakInit1);
-//	  tmp3.mult(1000);
-//
-//	  tz = tmp3.z;
-//	  tmp3.z = tmp3.y;
-//	  tmp3.y = tz;
-//
-//	  // println("trak0 " + tmp2);
-//	  tmp2.add(tmp3);
-//	  tmp2.mult(0.5);
-//
-//	  tmp2.add(userPos);
-//	}
-//	else{
-        tmp2 = userPos.get();
-//	}
-
-        tmp2.add(-halfEyeDist, 0, 0);
-        tmp2.mult(-scale);
-        //	tmp2.mult(-1);
-        tmp2.add(tmp);
-        newPos.mult(tmp2, paperCameraPos);
-
-        // http://www.gamedev.net/topic/597564-view-and-projection-matrices-for-vr-window-using-head-tracking/
-        thisGraphics.camera(paperCameraPos.x, paperCameraPos.y, paperCameraPos.z,
-                paperCameraPos.x, paperCameraPos.y, 0,
-                0, 1, 0);
-
-        float nearFactor = nearPlane / paperCameraPos.z;
-
-        //	float left =   nearFactor * (-offscreenSize.x / 2f - paperCameraPos.x);
-        // float left =   nearFactor * ( 0- paperCameraPos.x);
-        // float right =  nearFactor * ( size.x*scale - paperCameraPos.x);
-        // float top =    nearFactor * ( size.y*scale  - paperCameraPos.y);
-        // float bottom = nearFactor * ( 0 - paperCameraPos.y);
-
-        float left = nearFactor * (-scale * size.x / 2f - paperCameraPos.x);
-        float right = nearFactor * (scale * size.x / 2f - paperCameraPos.x);
-        float top = nearFactor * (scale * size.y / 2f - paperCameraPos.y);
-        float bottom = nearFactor * (-scale * size.y / 2f - paperCameraPos.y);
-
-        thisGraphics.frustum(left, right, bottom, top, nearPlane, farPlane);
-    }
-
-    public void initDrawRight() {
-
-        if (initPos == null) {
-            initPos = posPaperP.get();
-        }
-
-        // g.beginDraw();
-        // g.clear(0); 
-
-        float nearPlane = 10;
-        float farPlane = 2000 * scale;
-
-        // get the position at the beginning of the program.
-        PVector tmp = initPos.get();
-        tmp.sub(posPaperP); //  tmp =  currentPos - initPos   (Position)
-
-        // Get the current paperSheet position
-        PMatrix3D newPos = pos.get();
-        newPos.invert();
-        newPos.m03 = 0;
-        newPos.m13 = 0;
-        newPos.m23 = 0;   // inverse of the Transformation (without position)
-
-        ///////////////////////////////////////////////////////
-        // TODO: calculer le déplacement relatif de la feuille.
-        ///////////////////////////////////////////////////////
-
-        PVector paperCameraPos = new PVector();
-        PVector tmp2;
-//	if(isUsingVRPN){
-//	  updateGtPosition();
-//	  tmp2 = gameTrak0.get(); 
-//	  tmp2.sub(trakInit0);
-//	  tmp2.mult(1000);
-//
-//	  float tz = tmp2.z;
-//	  tmp2.z = tmp2.y;
-//	  tmp2.y = tz;
-//
-//
-//	  PVector tmp3 = gameTrak1.get(); 
-//	  tmp3.sub(trakInit1);
-//	  tmp3.mult(1000);
-//
-//	  tz = tmp3.z;
-//	  tmp3.z = tmp3.y;
-//	  tmp3.y = tz;
-//
-//	  // println("trak0 " + tmp2);
-//	  tmp2.add(tmp3);
-//	  tmp2.mult(0.5);
-//
-//	  tmp2.add(userPos);
-//	}
-//	else{
-        tmp2 = userPos.get();
-//	}
-
-        tmp2.add(halfEyeDist, 0, 0);
-        tmp2.mult(-scale);
-        //	tmp2.mult(-1);
-        tmp2.add(tmp);
-        newPos.mult(tmp2, paperCameraPos);
-
-        // http://www.gamedev.net/topic/597564-view-and-projection-matrices-for-vr-window-using-head-tracking/
-        thisGraphics.camera(paperCameraPos.x, paperCameraPos.y, paperCameraPos.z,
-                paperCameraPos.x, paperCameraPos.y, 0,
-                0, 1, 0);
-
-        float nearFactor = nearPlane / paperCameraPos.z;
-
-        //	float left =   nearFactor * (-offscreenSize.x / 2f - paperCameraPos.x);
-        // float left =   nearFactor * ( 0- paperCameraPos.x);
-        // float right =  nearFactor * ( size.x*scale - paperCameraPos.x);
-        // float top =    nearFactor * ( size.y*scale  - paperCameraPos.y);
-        // float bottom = nearFactor * ( 0 - paperCameraPos.y);
-
-
-        float left = nearFactor * (-scale * size.x / 2f - paperCameraPos.x);
-        float right = nearFactor * (scale * size.x / 2f - paperCameraPos.x);
-        float top = nearFactor * (scale * size.y / 2f - paperCameraPos.y);
-        float bottom = nearFactor * (-scale * size.y / 2f - paperCameraPos.y);
-
-        /* float left =   nearFactor * ( -size.x /2f - paperCameraPos.x); */
-        /* float right =  nearFactor * ( size.x /2f  - paperCameraPos.x); */
-        /* float top =    nearFactor * ( size.y /2f  - paperCameraPos.y); */
-        /* float bottom = nearFactor * ( -size.y /2f - paperCameraPos.y); */
-
-        thisGraphics.frustum(left, right, bottom, top, nearPlane, farPlane);
-    }
-
-    public void initDrawRightOnly() {
-
-        if (initPos == null) {
-            initPos = posPaperP.get();
-        }
-
-        thisGraphics.beginDraw();
-        thisGraphics.clear(0);
-
-        float nearPlane = 10;
-        float farPlane = 2000 * scale;
-
-        // get the position at the beginning of the program.
-        PVector tmp = initPos.get();
-        tmp.sub(posPaperP); //  tmp =  currentPos - initPos   (Position)
-
-        // Get the current paperSheet position
-        PMatrix3D newPos = pos.get();
-        newPos.invert();
-        newPos.m03 = 0;
-        newPos.m13 = 0;
-        newPos.m23 = 0;   // inverse of the Transformation (without position)
-
-        ///////////////////////////////////////////////////////
-        // TODO: calculer le déplacement relatif de la feuille.
-        ///////////////////////////////////////////////////////
-
-        PVector paperCameraPos = new PVector();
-        PVector tmp2;
-//	if(isUsingVRPN){
-//	  updateGtPosition();
-//	  tmp2 = gameTrak0.get(); 
-//	  tmp2.sub(trakInit0);
-//	  tmp2.mult(1000);
-//
-//	  float tz = tmp2.z;
-//	  tmp2.z = tmp2.y;
-//	  tmp2.y = tz;
-//
-//
-//	  PVector tmp3 = gameTrak1.get(); 
-//	  tmp3.sub(trakInit1);
-//	  tmp3.mult(1000);
-//
-//	  tz = tmp3.z;
-//	  tmp3.z = tmp3.y;
-//	  tmp3.y = tz;
-//
-//	  // println("trak0 " + tmp2);
-//	  tmp2.add(tmp3);
-//	  tmp2.mult(0.5);
-//
-//	  tmp2.add(userPos);
-//	}
-//	else{
-        tmp2 = userPos.get();
-//	}
-
-        tmp2.add(halfEyeDist, 0, 0);
-        tmp2.mult(-scale);
-        //	tmp2.mult(-1);
-        tmp2.add(tmp);
-        newPos.mult(tmp2, paperCameraPos);
-
-        // http://www.gamedev.net/topic/597564-view-and-projection-matrices-for-vr-window-using-head-tracking/
-        thisGraphics.camera(paperCameraPos.x, paperCameraPos.y, paperCameraPos.z,
-                paperCameraPos.x, paperCameraPos.y, 0,
-                0, 1, 0);
-
-        float nearFactor = nearPlane / paperCameraPos.z;
-
-        //	float left =   nearFactor * (-offscreenSize.x / 2f - paperCameraPos.x);
-        // float left =   nearFactor * ( 0- paperCameraPos.x);
-        // float right =  nearFactor * ( size.x*scale - paperCameraPos.x);
-        // float top =    nearFactor * ( size.y*scale  - paperCameraPos.y);
-        // float bottom = nearFactor * ( 0 - paperCameraPos.y);
-
-
-        float left = nearFactor * (-scale * size.x / 2f - paperCameraPos.x);
-        float right = nearFactor * (scale * size.x / 2f - paperCameraPos.x);
-        float top = nearFactor * (scale * size.y / 2f - paperCameraPos.y);
-        float bottom = nearFactor * (-scale * size.y / 2f - paperCameraPos.y);
-
-        /* float left =   nearFactor * ( -size.x /2f - paperCameraPos.x); */
-        /* float right =  nearFactor * ( size.x /2f  - paperCameraPos.x); */
-        /* float top =    nearFactor * ( size.y /2f  - paperCameraPos.y); */
-        /* float bottom = nearFactor * ( -size.y /2f - paperCameraPos.y); */
-
-        thisGraphics.frustum(left, right, bottom, top, nearPlane, farPlane);
-    }
 }

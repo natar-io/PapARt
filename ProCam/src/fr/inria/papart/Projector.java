@@ -224,16 +224,10 @@ public class Projector{
 	    //	    GLTexture off2 = shadowMapScreen.getTexture();
 	    GLTexture off2 = screen.getTexture();
 	    graphics.pushMatrix();
-	    graphics.modelview.apply(screen.pos); 
-	    graphics.image(off2, 0, 0, screen.size.x, screen.size.y);	    
+	    graphics.modelview.apply(screen.getPos()); 
+	    graphics.image(off2, 0, 0, screen.getSize().x, screen.getSize().y);	    
 	    graphics.popMatrix();
 	}
-        
-	// // Draw the paperSheet
-	// OLD VERSION
-	// graphics.modelview.apply(pos); 
-	// graphics.image(off2, 0, 0, paperSheetWidth, paperSheetHeight);
-
 	graphics.endDraw();
 
 	// DISTORTION SHADER
