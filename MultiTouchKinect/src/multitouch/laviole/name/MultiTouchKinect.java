@@ -69,7 +69,50 @@ public class MultiTouchKinect {
         }
         transform = homography.getTransformation();
     }
+    
+    public MultiTouchKinect(PApplet applet, String configurationFile) {
 
+        MyApplet.init(applet);
+        KinectVisu.initKinect();
+        this.applet = applet;
+
+        backgroundValidPoints = new boolean[MyApplet.w * MyApplet.h];
+        validPoints = new boolean[MyApplet.w * MyApplet.h];
+
+        // TODO: memory occupation of Vec3D ? 
+        kinectPoints = new Vec3D[MyApplet.w * MyApplet.h];
+        projPoints = new Vec3D[MyApplet.w * MyApplet.h];
+
+        for (int k = 0; k < MyApplet.w * MyApplet.h; k++) {
+            backgroundValidPoints[k] = true;
+        }
+//        depthf = new float[MyApplet.w * MyApplet.h];
+
+        // TODO: here load from XML file...
+//        planeSelection = new PlaneSelection(planeFile);
+//        kinectVisu = new KinectVisu(planeParametersfilename);
+
+        // Kinect homography calibration
+//        try {
+//            // TODO: load from XML file
+////            homography = new Homography(homographyFilename);
+//        } catch (FileNotFoundException e) {
+////            System.out.println("Homography file " + homographyFilename + " not found : " + e);
+//            applet.die("Homography file not found");
+//        } catch (NullPointerException e) {
+//            applet.die("Null pointer Exception " + e);
+//        }
+        transform = homography.getTransformation();
+    }
+
+    public ArrayList<TouchPoint> getTouchPoint2D() {
+        return touchPoint2D;
+    }
+
+    public ArrayList<TouchPoint> getTouchPoint3D() {
+        return touchPoint3D;
+    }
+    
     public void updateKinect(int[] depth) {
         this.depth = depth;
 

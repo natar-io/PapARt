@@ -260,12 +260,15 @@ public class Screen {
      * @param height  real screen height (resolution)
      * @return Position of the pointer.
      */
-    public ReadonlyVec3D projectPointer(Projector projector, float px, float py, int width, int height) {
+    public ReadonlyVec3D projectPointer(Projector projector, float px, float py) {
         
         PMatrix3D projMat = projector.getProjectionInit().get();
         PMatrix3D modvw = projector.getModelview1();
         //	PMatrix3D modvw = graphics.modelview.get();
 
+        int width = projector.getWidth();
+        int height = projector.getHeight();
+        
         double[] pointerDist = projector.getProjectorDevice().undistort(px * width, py * height);
         float x = 2 * (float) pointerDist[0] / (float) width - 1;
         float y = 2 * (float) pointerDist[1] / (float) height - 1;

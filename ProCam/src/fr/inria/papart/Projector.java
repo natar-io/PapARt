@@ -275,4 +275,12 @@ public class Projector{
 //	  return ret;
 //    }
 
+    public int getWidth() {
+        return frameWidth;
+    }
+    
+    public int getHeight() {
+        return frameHeight;
+    }
+
 }

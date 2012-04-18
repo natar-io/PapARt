@@ -5,17 +5,12 @@
 package fr.inria.papart;
 
 import com.googlecode.javacpp.BytePointer;
-import com.googlecode.javacpp.DoublePointer;
-import com.googlecode.javacpp.IntPointer;
 import com.googlecode.javacv.CameraDevice;
 import com.googlecode.javacv.FrameGrabber;
 import com.googlecode.javacv.FrameGrabber.ImageMode;
 import com.googlecode.javacv.MarkerDetector;
 import com.googlecode.javacv.OpenCVFrameGrabber;
-import com.googlecode.javacv.ProjectorDevice;
 import com.googlecode.javacv.cpp.ARToolKitPlus;
-import com.googlecode.javacv.cpp.ARToolKitPlus.ARMarkerInfo;
-import com.googlecode.javacv.cpp.ARToolKitPlus.ARMultiEachMarkerInfoT;
 import com.googlecode.javacv.cpp.ARToolKitPlus.ARMultiMarkerInfoT;
 import com.googlecode.javacv.cpp.ARToolKitPlus.ArtLogFunction;
 import com.googlecode.javacv.cpp.ARToolKitPlus.MultiTracker;
@@ -207,6 +202,24 @@ public class ARTagDetector {
     
     public HashMap<PaperSheet, float[]> getTransfoMap(){
         return transfosMap;
+    }
+    
+    public PImage getImage() {
+        return pimg;
+    }
+
+    public IplImage getImageIpl() {
+        if (img2 == null) {
+            return iimg;
+        }
+        return img2;
+    }
+
+    public void close() {
+        try {
+            grabber.stop();
+        } catch (Exception e) {
+        }
     }
     
     public float[][] findMultiMarkers(boolean undistort, boolean copy) {
@@ -479,21 +492,5 @@ public class ARTagDetector {
 //        return null;
 //    }
 
-    public PImage getImage() {
-        return pimg;
-    }
 
-    public IplImage getImageIpl() {
-        if (img2 == null) {
-            return iimg;
-        }
-        return img2;
-    }
-
-    public void close() {
-        try {
-            grabber.stop();
-        } catch (Exception e) {
-        }
-    }
 }
