@@ -9,7 +9,7 @@ import com.googlecode.javacpp.DoublePointer;
 import com.googlecode.javacpp.IntPointer;
 import com.googlecode.javacv.CameraDevice;
 import com.googlecode.javacv.FrameGrabber;
-import com.googlecode.javacv.FrameGrabber.ColorMode;
+import com.googlecode.javacv.FrameGrabber.ImageMode;
 import com.googlecode.javacv.MarkerDetector;
 import com.googlecode.javacv.OpenCVFrameGrabber;
 import com.googlecode.javacv.ProjectorDevice;
@@ -90,7 +90,7 @@ public class ARTagDetector {
             }
             grabber.setImageWidth(w);
             grabber.setImageHeight(h);
-            grabber.setColorMode(ColorMode.RAW);
+            grabber.setImageMode(ImageMode.RAW);
             grabber.setFrameRate(framerate);
             grabber.setDeinterlace(true);
 
@@ -277,204 +277,207 @@ public class ARTagDetector {
     IntBuffer ib = null;
 // ------------------------ Working. ----------------
 
-    public float[] findMarkers(PImage img) {
-
-        if (bp == null) {
-            bp = new BytePointer(imgSizeByte);
-//            bb = bp.asByteBuffer();
-//            bb = bp.asByteBuffer(imgSizeByte);
-            ib = bb.asIntBuffer();
-        }
-
-        try {
-
-            int k;
-
-//            BufferedImage bufferedImage = (BufferedImage) img.getImage();
-//            int[] imgData = new int[648 * 480];
-//            imgData = bufferedImage.getRGB(0, 0, 640, 480, imgData, 0, 1);
-//            System.out.println(imgData);
-
-//            Raster data = bufferedImage.getData();
+    
+    // Old functions to delete... 
+    
+//    public float[] findMarkers(PImage img) {
 //
-//            DataBuffer dataBuffer = data.getDataBuffer();
-//            DataBufferInt dbi = (DataBufferInt) dataBuffer;
-//            int[] imgData = dbi.getData();
-
-//            ib.put(img.pixels);
+//        if (bp == null) {
+//            bp = new BytePointer(imgSizeByte);
+////            bb = bp.asByteBuffer();
+////            bb = bp.asByteBuffer(imgSizeByte);
+//            ib = bb.asIntBuffer();
+//        }
 //
-//            for (int i = 0; i < 8; i++) {
-//                System.out.print(bb.get(i) + " ");
+//        try {
+//
+//            int k;
+//
+////            BufferedImage bufferedImage = (BufferedImage) img.getImage();
+////            int[] imgData = new int[648 * 480];
+////            imgData = bufferedImage.getRGB(0, 0, 640, 480, imgData, 0, 1);
+////            System.out.println(imgData);
+//
+////            Raster data = bufferedImage.getData();
+////
+////            DataBuffer dataBuffer = data.getDataBuffer();
+////            DataBufferInt dbi = (DataBufferInt) dataBuffer;
+////            int[] imgData = dbi.getData();
+//
+////            ib.put(img.pixels);
+////
+////            for (int i = 0; i < 8; i++) {
+////                System.out.print(bb.get(i) + " ");
+////            }
+////            System.out.print("\n");
+////
+////            ib.rewind();
+//
+//            int[] px = img.pixels;
+//            k = 0;
+//            for (int i = 0; i < 640 * 480; i++) {
+////                bb.put(k++, (byte) (px[i]>> 24));
+//                bb.put(k++, (byte) (px[i] >> 16));
+//                bb.put(k++, (byte) (px[i] >> 8));
+//                bb.put(k++, (byte) (px[i]));
 //            }
-//            System.out.print("\n");
 //
-//            ib.rewind();
-
-            int[] px = img.pixels;
-            k = 0;
-            for (int i = 0; i < 640 * 480; i++) {
-//                bb.put(k++, (byte) (px[i]>> 24));
-                bb.put(k++, (byte) (px[i] >> 16));
-                bb.put(k++, (byte) (px[i] >> 8));
-                bb.put(k++, (byte) (px[i]));
-            }
-
-//            for (int i = 0; i < 8; i++) {
-//                       System.out.print(bb.get(i) + " ");
+////            for (int i = 0; i < 8; i++) {
+////                       System.out.print(bb.get(i) + " ");
+////            }
+////            System.out.print("\n");
+//
+//
+//            tracker.calc(bp);
+//
+//            numDetect = tracker.getNumDetectedMarkers();
+////            System.out.println(numDetect + " detected ");
+//
+//            if (numDetect < 0) {
+//                return null;
 //            }
-//            System.out.print("\n");
-
-
-            tracker.calc(bp);
-
-            numDetect = tracker.getNumDetectedMarkers();
-//            System.out.println(numDetect + " detected ");
-
-            if (numDetect < 0) {
-                return null;
-            }
-
-            tracker.getDetectedMarker(0);
-
-            ARMultiMarkerInfoT multiMarkerConfig = tracker.getMultiMarkerConfig();
-//            DoubleBuffer buff = multiMarkerConfig.trans().asBuffer(12);
-            DoubleBuffer buff = multiMarkerConfig.trans().asBuffer();
-            k = 0;
-            for (int i = 0; i < 12; i++) {
-                transfo[i] = (float) buff.get(k++);
-            }
-
-            return transfo;
-
-        } catch (Exception e) {
-            System.out.println("Exception : " + e);
-        }
-        return null;
-    }
-
-    public float[] findMarkers(boolean undistort) {
-        return findMarkers(undistort, false);
-    }
-
-    public float[] findMarkers(boolean undistort, boolean copy) {
-        try {
-            iimg = grabber.grab();
-
-            if (undistort) {
-                if (img2 == null) {
-                    img2 = iimg.clone();
-                }
-                cam.undistort(iimg, img2);
-                tracker.calc(img2.imageData());
-            } else {
-                tracker.calc(iimg.imageData());
-            }
-
-            numDetect = tracker.getNumDetectedMarkers();
-//            System.out.println(numDetect + " detected ");
-
-            if (numDetect < 0) {
-                return transfo;
-            }
-
-            tracker.getDetectedMarker(0);
-
-            ARMultiMarkerInfoT multiMarkerConfig = tracker.getMultiMarkerConfig();
-//            DoubleBuffer buff = multiMarkerConfig.trans().asBuffer(12);
-            DoubleBuffer buff = multiMarkerConfig.trans().asBuffer();
-            int k = 0;
+//
+//            tracker.getDetectedMarker(0);
+//
+//            ARMultiMarkerInfoT multiMarkerConfig = tracker.getMultiMarkerConfig();
+////            DoubleBuffer buff = multiMarkerConfig.trans().asBuffer(12);
+//            DoubleBuffer buff = multiMarkerConfig.trans().asBuffer();
+//            k = 0;
 //            for (int i = 0; i < 12; i++) {
 //                transfo[i] = (float) buff.get(k++);
 //            }
-
-            for (int i = 0; i < 12; i++) {
-                transfo[i] = (float) multiMarkerConfig.trans().get(k++);
-            }
-
-            // Image drawing
-            if (copy) {
-                ByteBuffer buff1 = iimg.getByteBuffer();
-                pimg.loadPixels();
-                for (int i = 0; i
-                        < iimg.width() * iimg.height(); i++) {
-                    int offset = i * 3;
-//            ret.pixels[i] = applet.color(buff.get(offset + 0) & 0xff, buff.get(offset + 1) & 0xFF, buff.get(offset + 2) & 0xff);
-                    pimg.pixels[i] = (buff1.get(offset + 2) & 0xFF) << 16
-                            | (buff1.get(offset + 1) & 0xFF) << 8
-                            | (buff1.get(offset) & 0xFF);
-                }
-                pimg.updatePixels();
-            }
-            return transfo;
-
-        } catch (Exception e) {
-            System.out.println("Exception in findMarkers " + e);
-        }
-
-        return null;
-    }
-
-    public float[][] findMultiMarkers(boolean undistort, boolean copy) {
-        try {
-            iimg = grabber.grab();
-
-            if (undistort) {
-                if (img2 == null) {
-                    img2 = iimg.clone();
-                }
-                cam.undistort(iimg, img2);
-                for (MultiTracker tracker : trackers) {
-                    tracker.calc(img2.imageData());
-                }
-            } else {
-                for (MultiTracker tracker : trackers) {
-                    tracker.calc(img2.imageData());
-                }
-            }
-
-            int trackId = 0;
-            for (MultiTracker tracker : trackers) {
-                if (tracker.getNumDetectedMarkers() < 0) {
-                    continue;
-                }
-
-                ARMultiMarkerInfoT multiMarkerConfig = tracker.getMultiMarkerConfig();
-//                DoubleBuffer buff = multiMarkerConfig.trans().asBuffer(12);
-                DoubleBuffer buff = multiMarkerConfig.trans().asBuffer();
-                int k = 0;
-
-//                for (int i = 0; i < 12; i++) {
-//                    transfos[trackId][i] = (float) buff.get(k++);
-//                }
-                for (int i = 0; i < 12; i++) {
-                    transfos[trackId][i] = (float) multiMarkerConfig.trans().get(k++);
-                }
-
 //
-                trackId++;
-            }
-
-            // Image drawing
-            if (copy) {
-                ByteBuffer buff1 = iimg.getByteBuffer();
-                pimg.loadPixels();
-                for (int i = 0; i
-                        < iimg.width() * iimg.height(); i++) {
-                    int offset = i * 3;
-                    pimg.pixels[i] = (buff1.get(offset + 2) & 0xFF) << 16
-                            | (buff1.get(offset + 1) & 0xFF) << 8
-                            | (buff1.get(offset) & 0xFF);
-                }
-                pimg.updatePixels();
-            }
-            return transfos;
-
-        } catch (Exception e) {
-            System.out.println("Exception in findMarkers " + e);
-        }
-
-        return null;
-    }
+//            return transfo;
+//
+//        } catch (Exception e) {
+//            System.out.println("Exception : " + e);
+//        }
+//        return null;
+//    }
+//
+//    public float[] findMarkers(boolean undistort) {
+//        return findMarkers(undistort, false);
+//    }
+//
+//    public float[] findMarkers(boolean undistort, boolean copy) {
+//        try {
+//            iimg = grabber.grab();
+//
+//            if (undistort) {
+//                if (img2 == null) {
+//                    img2 = iimg.clone();
+//                }
+//                cam.undistort(iimg, img2);
+//                tracker.calc(img2.imageData());
+//            } else {
+//                tracker.calc(iimg.imageData());
+//            }
+//
+//            numDetect = tracker.getNumDetectedMarkers();
+////            System.out.println(numDetect + " detected ");
+//
+//            if (numDetect < 0) {
+//                return transfo;
+//            }
+//
+//            tracker.getDetectedMarker(0);
+//
+//            ARMultiMarkerInfoT multiMarkerConfig = tracker.getMultiMarkerConfig();
+////            DoubleBuffer buff = multiMarkerConfig.trans().asBuffer(12);
+//            DoubleBuffer buff = multiMarkerConfig.trans().asBuffer();
+//            int k = 0;
+////            for (int i = 0; i < 12; i++) {
+////                transfo[i] = (float) buff.get(k++);
+////            }
+//
+//            for (int i = 0; i < 12; i++) {
+//                transfo[i] = (float) multiMarkerConfig.trans().get(k++);
+//            }
+//
+//            // Image drawing
+//            if (copy) {
+//                ByteBuffer buff1 = iimg.getByteBuffer();
+//                pimg.loadPixels();
+//                for (int i = 0; i
+//                        < iimg.width() * iimg.height(); i++) {
+//                    int offset = i * 3;
+////            ret.pixels[i] = applet.color(buff.get(offset + 0) & 0xff, buff.get(offset + 1) & 0xFF, buff.get(offset + 2) & 0xff);
+//                    pimg.pixels[i] = (buff1.get(offset + 2) & 0xFF) << 16
+//                            | (buff1.get(offset + 1) & 0xFF) << 8
+//                            | (buff1.get(offset) & 0xFF);
+//                }
+//                pimg.updatePixels();
+//            }
+//            return transfo;
+//
+//        } catch (Exception e) {
+//            System.out.println("Exception in findMarkers " + e);
+//        }
+//
+//        return null;
+//    }
+//
+//    public float[][] findMultiMarkers(boolean undistort, boolean copy) {
+//        try {
+//            iimg = grabber.grab();
+//
+//            if (undistort) {
+//                if (img2 == null) {
+//                    img2 = iimg.clone();
+//                }
+//                cam.undistort(iimg, img2);
+//                for (MultiTracker tracker : trackers) {
+//                    tracker.calc(img2.imageData());
+//                }
+//            } else {
+//                for (MultiTracker tracker : trackers) {
+//                    tracker.calc(img2.imageData());
+//                }
+//            }
+//
+//            int trackId = 0;
+//            for (MultiTracker tracker : trackers) {
+//                if (tracker.getNumDetectedMarkers() < 0) {
+//                    continue;
+//                }
+//
+//                ARMultiMarkerInfoT multiMarkerConfig = tracker.getMultiMarkerConfig();
+////                DoubleBuffer buff = multiMarkerConfig.trans().asBuffer(12);
+//                DoubleBuffer buff = multiMarkerConfig.trans().asBuffer();
+//                int k = 0;
+//
+////                for (int i = 0; i < 12; i++) {
+////                    transfos[trackId][i] = (float) buff.get(k++);
+////                }
+//                for (int i = 0; i < 12; i++) {
+//                    transfos[trackId][i] = (float) multiMarkerConfig.trans().get(k++);
+//                }
+//
+////
+//                trackId++;
+//            }
+//
+//            // Image drawing
+//            if (copy) {
+//                ByteBuffer buff1 = iimg.getByteBuffer();
+//                pimg.loadPixels();
+//                for (int i = 0; i
+//                        < iimg.width() * iimg.height(); i++) {
+//                    int offset = i * 3;
+//                    pimg.pixels[i] = (buff1.get(offset + 2) & 0xFF) << 16
+//                            | (buff1.get(offset + 1) & 0xFF) << 8
+//                            | (buff1.get(offset) & 0xFF);
+//                }
+//                pimg.updatePixels();
+//            }
+//            return transfos;
+//
+//        } catch (Exception e) {
+//            System.out.println("Exception in findMarkers " + e);
+//        }
+//
+//        return null;
+//    }
 
     public PImage getImage() {
         return pimg;
