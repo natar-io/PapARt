@@ -65,7 +65,9 @@ class TouchInput {
         return projectTouchToScreen(screen, projector, true, true, true, true);
     }
 
-    TouchElement projectTouchToScreen(Screen screen, Projector projector, boolean is2D, boolean is3D, boolean isSpeed2D, boolean isSpeed3D) {
+    TouchElement projectTouchToScreen(Screen screen, Projector projector, 
+            boolean is2D, boolean is3D,
+            boolean isSpeed2D, boolean isSpeed3D) {
 
         ArrayList<PVector> position2D = null, position3D = null, speed2D = null, speed3D = null;
 

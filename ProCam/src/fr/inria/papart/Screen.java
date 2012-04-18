@@ -187,6 +187,15 @@ public class Screen {
         projGraphics.popMatrix();
     }
 
+    
+    
+    /////////////// NOTE : these 2 functions can be changed into a simple call... /////
+    
+    /** 
+     * Used for pointer projection
+     * 
+     * @param pc 
+     */
     protected void computeHomography(Projector pc) {
         computeScreenPosition(pc);
         for (int i = 0; i < 4; i++) {
@@ -196,6 +205,11 @@ public class Screen {
         transformationProjPaper = homography.getTransformation();
     }
 
+    /**
+     * Get the position on the screen of a 3D point.
+     * @param v
+     * @return 
+     */
     public Vec3D applyProjPaper(ReadonlyVec3D v) {
         return transformationProjPaper.applyTo(v);
     }
@@ -254,10 +268,8 @@ public class Screen {
      * Projects the position of a pointer in normalized screen space.
      * 
      * 
-     * @param px  Normalized x position (0,1)
-     * @param py  Normalized y position (0,1)
-     * @param width   real screen width (resolution)
-     * @param height  real screen height (resolution)
+     * @param px  Normalized x position (0,1) in projector space
+     * @param py  Normalized y position (0,1) in projector space
      * @return Position of the pointer.
      */
     public ReadonlyVec3D projectPointer(Projector projector, float px, float py) {
