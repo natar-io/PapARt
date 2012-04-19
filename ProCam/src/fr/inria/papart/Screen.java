@@ -68,7 +68,7 @@ public class Screen {
     }
 
     ////////////////// 3D SPACE TO PAPER HOMOGRAPHY ///////////////
-   private void initHomography() {
+    private void initHomography() {
         homography = new Homography(parent, 3, 3, 4);
         homography.setPoint(false, 0, new PVector(0, 0, 0));
         homography.setPoint(false, 1, new PVector(1, 0, 0));
@@ -89,16 +89,16 @@ public class Screen {
         return thisGraphics;
     }
 
-    public void initDraw(PVector userPos) {
-        initDraw(userPos, 40, 5000);
+    public GLGraphicsOffScreen initDraw(PVector userPos) {
+        return initDraw(userPos, 40, 5000);
     }
 
-    public void initDraw(PVector userPos, float nearPlane, float farPlane) {
-        initDraw(userPos, nearPlane, farPlane, false, false, true);
+    public GLGraphicsOffScreen initDraw(PVector userPos, float nearPlane, float farPlane) {
+        return initDraw(userPos, nearPlane, farPlane, false, false, true);
     }
 
     // TODO: optionnal args.
-    public void initDraw(PVector userPos, float nearPlane, float farPlane, boolean isAnaglyph, boolean isLeft, boolean isOnly) {
+    public GLGraphicsOffScreen initDraw(PVector userPos, float nearPlane, float farPlane, boolean isAnaglyph, boolean isLeft, boolean isOnly) {
         if (initPos == null) {
             initPos = posPaperP.get();
             initPosM = pos.get();
@@ -148,6 +148,57 @@ public class Screen {
         float bottom = nearFactor * (-scale * size.y / 2f - paperCameraPos.y);
 
         thisGraphics.frustum(left, right, bottom, top, nearPlane, farPlane);
+
+        return thisGraphics;
+    }
+    
+    public GLGraphicsOffScreen initDrawLite() {
+        if (initPos == null) {
+            initPos = posPaperP.get();
+            initPosM = pos.get();
+        }
+
+        thisGraphics.beginDraw();
+
+        float nearPlane = 20;
+        float farPlane = 2000;
+
+        PVector paperCameraPos = new PVector();
+        PVector userPos = new PVector();
+
+        // get the position at the start of the program.
+        PVector tmp = initPos.get();
+        tmp.sub(posPaperP); //  tmp =  currentPos - initPos   (Position)
+
+        // Get the current paperSheet position
+        PMatrix3D newPos = pos.get();
+
+        newPos.invert();
+        newPos.m03 = 0;
+        newPos.m13 = 0;
+        newPos.m23 = 0;   // inverse of the Transformation (without position)
+
+        PVector tmp2 = userPos.get();
+        tmp2.mult(-scale);
+        tmp2.add(tmp);
+
+        newPos.mult(tmp2, paperCameraPos);
+
+        // http://www.gamedev.net/topic/597564-view-and-projection-matrices-for-vr-window-using-head-tracking/
+        thisGraphics.camera(paperCameraPos.x, paperCameraPos.y, paperCameraPos.z,
+                paperCameraPos.x, paperCameraPos.y, 0,
+                0, 1, 0);
+
+        float nearFactor = nearPlane / paperCameraPos.z;
+
+        float left = nearFactor * (-scale * size.x / 2f - paperCameraPos.x);
+        float right = nearFactor * (scale * size.x / 2f - paperCameraPos.x);
+        float top = nearFactor * (scale * size.y / 2f - paperCameraPos.y);
+        float bottom = nearFactor * (-scale * size.y / 2f - paperCameraPos.y);
+
+        thisGraphics.frustum(left, right, bottom, top, nearPlane, farPlane);
+
+        return thisGraphics;
     }
 
     protected void computeScreenPosition(Projector projector) {
@@ -316,17 +367,49 @@ public class Screen {
     // Available only if pos3D is being updated elsewhere...
     public void updatePos() {
 
+
+        pos = new PMatrix3D(pos3D[0], pos3D[1], pos3D[2], pos3D[3],
+                pos3D[4], pos3D[5], pos3D[6], pos3D[7],
+                pos3D[8], pos3D[9], pos3D[10], pos3D[11],
+                0, 0, 0, 1);
+//        pos.m00 = pos3D[0];
+//        pos.m01 = pos3D[1];
+//        pos.m02 = pos3D[2];
+//        pos.m03 = pos3D[3];
+//        pos.m10 = pos3D[4];
+//        pos.m11 = pos3D[5];
+//        pos.m12 = pos3D[6];
+//        pos.m13 = pos3D[7];
+//        pos.m20 = pos3D[8];
+//        pos.m12 = pos3D[9];
+//        pos.m22 = pos3D[10];
+//        pos.m23 = pos3D[11];
+
+        posPaper.x = pos3D[3];
+        posPaper.y = pos3D[7];
+        posPaper.z = pos3D[11];
+
+        posPaperP.x = pos3D[3];
+        posPaperP.y = pos3D[7];
+        posPaperP.z = pos3D[11];
+    }
+
+    public void updatePosT() {
+
         pos.m00 = pos3D[0];
-        pos.m01 = pos3D[1];
-        pos.m02 = pos3D[2];
-        pos.m03 = pos3D[3];
-        pos.m10 = pos3D[4];
+        pos.m01 = pos3D[4];
+        pos.m02 = pos3D[8];
+
+        pos.m10 = pos3D[1];
         pos.m11 = pos3D[5];
-        pos.m12 = pos3D[6];
-        pos.m13 = pos3D[7];
-        pos.m20 = pos3D[8];
         pos.m12 = pos3D[9];
+
+        pos.m20 = pos3D[2];
+        pos.m12 = pos3D[6];
         pos.m22 = pos3D[10];
+
+        pos.m03 = pos3D[3];
+        pos.m13 = pos3D[7];
         pos.m23 = pos3D[11];
 
         posPaper.x = pos3D[3];

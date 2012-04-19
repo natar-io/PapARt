@@ -92,15 +92,6 @@ public class Projector {
             projExtrinsicsP3DInv = projExtrinsicsP3D.get();
             projExtrinsicsP3DInv.invert();
 
-
-            // TODO: get these from somewhere...
-//	    double[] camMat = cameraDevice.cameraMatrix.get();
-//
-//	    camIntrinsicsP3D = new PMatrix3D((float) camMat[0], (float) camMat[1], (float) camMat[2], 0,
-//					      (float) camMat[3], (float) camMat[4], (float) camMat[5], 0,
-//					      (float) camMat[6], (float) camMat[7], (float) camMat[8], 0,
-//					      0, 0, 0, 1);
-
         } catch (Exception e) {
             // TODO: Exception creation !!
             System.out.println("Error !!!!!");
@@ -114,13 +105,9 @@ public class Projector {
         // ----------- OPENGL --------------
         // Reusing the internal projector parameters for the scene rendering.
 
-        // Working params
-//        p00 = 2 * projIntrinsicsP3D.m00 / frameWidth;
-//        p11 = 2 * projIntrinsicsP3D.m11 / frameHeight;
-//        p02 = -(2 * projIntrinsicsP3D.m02 / frameWidth - 1);
-//        p12 = -(2 * projIntrinsicsP3D.m12 / frameHeight - 1);
+        PMatrix3D oldProj = graphics.projection.get();
 
-        
+        // Working params
         p00 = 2 * projIntrinsicsP3D.m00 / frameWidth;
         p11 = 2 * projIntrinsicsP3D.m11 / frameHeight;
         p02 = -(2 * projIntrinsicsP3D.m02 / frameWidth - 1);
@@ -140,7 +127,8 @@ public class Projector {
 
         graphics.projection.transpose();
         graphics.projection.get(projectionMatrixGL);
-        graphics.projection.transpose();
+
+        graphics.projection.set(oldProj);
         graphics.endDraw();
     }
 
@@ -191,7 +179,6 @@ public class Projector {
         gl.glPushMatrix();
         gl.glLoadMatrixf(projectionMatrixGL, 0);
         gl.glMatrixMode(GL.GL_MODELVIEW);
-        graphics.projection.set(this.projectionInit);
         graphics.endGL();
     }
 
@@ -226,33 +213,48 @@ public class Projector {
         }
     }
 
-    public PImage distortImageDraw() {
-        GLTexture off = graphics.getTexture();
+    public void drawScreens() {
 
-//        loadGraphics();
-//        loadProjection();
+        ////////  3D PROJECTION  //////////////
         graphics.beginDraw();
-        // TODO: depth test ?
-        // Setting the scene
+
+        // clear the screen
+        graphics.clear(0);
+
+        // load the projector parameters into OpenGL
+        loadProjection();
+
+        // make the modelview matrix as the default matrix
+        graphics.resetMatrix();
+
+        // Setting the projector as a projector (inverse camera)
+        graphics.scale(1, 1, -1);
+
+        // Place the projector to his projection respective to the origin (camera here)
+        graphics.modelview.apply(getExtrinsics());
+
         for (Screen screen : screens) {
-            //	    GLTexture off2 = shadowMapScreen.getTexture();
-            GLTexture off2 = screen.getTexture();
             graphics.pushMatrix();
+
+            // Goto to the screen position
             graphics.modelview.apply(screen.getPos());
-            graphics.image(off2, 0, 0, screen.getSize().x, screen.getSize().y);
+
+            // Draw the screen image
+            graphics.image(screen.getTexture(), 0, 0, screen.getSize().x, screen.getSize().y);
             graphics.popMatrix();
         }
 
-        // DISTORTION SHADER
+        // Put the projection matrix back to normal
+        unLoadProjection();
+        graphics.endDraw();
+    }
+
+    public PImage distort() {
+        GLTexture off = graphics.getTexture();
 
         // TODO: BUG : works once, cannot be disabled and enabled
         off = graphics.getTexture();
         lensFilter.apply(new GLTexture[]{off, myMap}, off);
-
-//        unLoadProjection();
-        graphics.endDraw();
-//        lensFilter.apply(new GLTexture[]{off, myMap}, finalImage);
-//        return finalImage;
 
         return off;
 //        parent.image(finalImage, posX, posY, frameWidth, frameHeight);
