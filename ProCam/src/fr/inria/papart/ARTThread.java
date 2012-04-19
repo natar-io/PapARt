@@ -16,17 +16,17 @@ import toxi.geom.Vec3D;
 class ARTThread extends Thread{
 
     private ARTagDetector art;
-    private PaperSheet[] sheets = null;
+    private MarkerBoard[] sheets = null;
     private boolean undistort; 
     private boolean compute;
     
     public boolean stop;
     
-    public ARTThread(ARTagDetector art, PaperSheet[] sheets){
+    public ARTThread(ARTagDetector art, MarkerBoard[] sheets){
         this(art, sheets, true);
     }
     
-    public ARTThread(ARTagDetector art, PaperSheet[] sheets, boolean undistort){
+    public ARTThread(ARTagDetector art, MarkerBoard[] sheets, boolean undistort){
         this.undistort = undistort;
 	this.art = art;
 	this.sheets = sheets;
@@ -43,7 +43,7 @@ class ARTThread extends Thread{
 
     public void compute(){
 //	float[][] allPos = art.findMultiMarkers(undistort, false);
-        for(PaperSheet sheet : sheets){
+        for(MarkerBoard sheet : sheets){
            art.findMarkers(sheet);
         }
     }

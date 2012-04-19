@@ -27,8 +27,8 @@ public class Camera {
     public PApplet parent;
     public float offscreenScale;
     PVector offscreenSize;
-    HashMap<PaperSheet, TrackedView> trackedViews;
-    PaperSheet[] sheets;
+    HashMap<MarkerBoard, TrackedView> trackedViews;
+    MarkerBoard[] sheets;
     ARTThread thread = null;
 
     static public void convertARParams(PApplet parent, String calibrationYAML,
@@ -55,21 +55,21 @@ public class Camera {
     public Camera(PApplet parent, int camNo,
             int width, int height,
             String calibrationYAML, String calibrationData,
-            PaperSheet[] sheets) {
+            MarkerBoard[] sheets) {
         this(parent, camNo, null, width, height, calibrationYAML, calibrationData, sheets);
     }
 
     public Camera(PApplet parent, String fileName,
             int width, int height,
             String calibrationYAML, String calibrationData,
-            PaperSheet[] sheets) {
+            MarkerBoard[] sheets) {
         this(parent, -1, fileName, width, height, calibrationYAML, calibrationData, sheets);
     }
 
     protected Camera(PApplet parent, int camNo, String videoFile,
             int width, int height,
             String calibrationYAML, String calibrationData,
-            PaperSheet[] sheets) {
+            MarkerBoard[] sheets) {
 
 
         art = new ARTagDetector(camNo, videoFile, width, height, 60, calibrationYAML,
@@ -77,7 +77,7 @@ public class Camera {
                 sheets);
 
         this.sheets = sheets;
-        this.trackedViews = new HashMap<PaperSheet, TrackedView>();
+        this.trackedViews = new HashMap<MarkerBoard, TrackedView>();
 
         // Load the camera parameters. 
         try {
@@ -129,6 +129,10 @@ public class Camera {
         }
     }
 
+    public float[] getPosPointer(MarkerBoard board){
+        return art.getPointerFrom(board);
+    }
+
     /**
      * Gets the 2D location in the image of a 3D point. 
      * @param pt  3D point seen by the camera. 
@@ -152,12 +156,12 @@ public class Camera {
         }
     }
 
-    public void addTrackedView(PaperSheet sheet, TrackedView view) {
+    public void addTrackedView(MarkerBoard sheet, TrackedView view) {
         trackedViews.put(sheet, view);
     }
 
     
-    public PImage getView(PaperSheet sheet) {
+    public PImage getView(MarkerBoard sheet) {
         TrackedView trackedView = trackedViews.get(sheet);
         if (trackedView == null) {
             System.err.println("Error: paper sheet not registered as tracked view.");
@@ -177,7 +181,7 @@ public class Camera {
      * @param sheet
      * @return image
      */
-    public PImage stopGetViewStart(PaperSheet sheet) {
+    public PImage stopGetViewStart(MarkerBoard sheet) {
         if (thread != null) {
             System.err.println("Camera : Error: stopGetViewStart is to use only when thread is started");
             return null;
@@ -210,7 +214,7 @@ public class Camera {
      * @param sheet
      * @return image
      */
-    public PImage[] stopGetViewStart(PaperSheet[] sheets) {
+    public PImage[] stopGetViewStart(MarkerBoard[] sheets) {
         if (thread != null) {
             System.err.println("Camera : Error: stopGetViewStart is to use only when thread is started");
             return null;
@@ -222,7 +226,7 @@ public class Camera {
         PImage[] out = new PImage[sheets.length];
         int k = 0;
 
-        for (PaperSheet sheet : sheets) {
+        for (MarkerBoard sheet : sheets) {
             TrackedView trackedView = trackedViews.get(sheet);
             if (trackedView == null) {
                 System.err.println("Error: paper sheet not registered as tracked view.");
@@ -239,7 +243,7 @@ public class Camera {
         return out;
     }
 
-    public PImage getLastPaperView(PaperSheet sheet) {
+    public PImage getLastPaperView(MarkerBoard sheet) {
         return trackedViews.get(sheet).img;
     }
 

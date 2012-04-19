@@ -30,40 +30,29 @@ import processing.core.PImage;
  */
 public class ARTagDetector {
 
-    private PApplet applet;
     private FrameGrabber grabber;
     private IplImage iimg;
-    public PImage pimg;
-    private MarkerDetector markerDetector;
+    private PImage pimg;
     private CameraDevice cam;
-    private MultiTracker tracker = null;
-    private MultiTracker[] trackers = null;
-    private String cameraFile;
-    private float[] transfo;
-    private float[][] transfos;
-    int numDetect;
-    public double[] projection = new double[12];
-    public double[] modelview = new double[12];
     private IplImage img2 = null;
-    HashMap<PaperSheet, float[]> transfosMap;
-    HashMap<PaperSheet, MultiTracker> trackerMap;
+    private HashMap<MarkerBoard, float[]> transfosMap;
+    private HashMap<MarkerBoard, MultiTracker> trackerMap;
+    private boolean lastUndistorted;
 
-    public ARTagDetector(int device, int w, int h, int framerate, String yamlCameraProj, String cameraFile, PaperSheet[] paperSheets) {
+    public ARTagDetector(int device, int w, int h, int framerate, String yamlCameraProj, String cameraFile, MarkerBoard[] paperSheets) {
         this(device, null, w, h, framerate, yamlCameraProj, cameraFile, paperSheets);
     }
 
-    public ARTagDetector(String fileName, int w, int h, int framerate, String yamlCameraProj, String cameraFile, PaperSheet[] paperSheets) {
+    public ARTagDetector(String fileName, int w, int h, int framerate, String yamlCameraProj, String cameraFile, MarkerBoard[] paperSheets) {
         this(-1, fileName, w, h, framerate, yamlCameraProj, cameraFile, paperSheets);
     }
 
-    protected ARTagDetector(int device, String videoFile, int w, int h, int framerate, String yamlCameraProj, String cameraFile, PaperSheet[] paperSheets) {
-
-        this.cameraFile = cameraFile;
+    protected ARTagDetector(int device, String videoFile, int w, int h, int framerate, String yamlCameraProj, String cameraFile, MarkerBoard[] paperSheets) {
 
         // check the files
         File f1 = new File(cameraFile);
         assert (f1.exists());
-        for (PaperSheet p : paperSheets) {
+        for (MarkerBoard p : paperSheets) {
             String name = p.getFileName();
             File f2 = new File(name);
             assert (f2.exists());
@@ -99,13 +88,10 @@ public class ARTagDetector {
             ARToolKitPlus.Logger log = new ARToolKitPlus.Logger(null);
 
             // ARToolkitPlus tracker 
-            trackers = new MultiTracker[paperSheets.length];
-            int k = 0;
+            transfosMap = new HashMap<MarkerBoard, float[]>();
+            trackerMap = new HashMap<MarkerBoard, MultiTracker>();
 
-            transfosMap = new HashMap<PaperSheet, float[]>();
-            trackerMap = new HashMap<PaperSheet, MultiTracker>();
-
-            for (PaperSheet sheet : paperSheets) {
+            for (MarkerBoard sheet : paperSheets) {
 
                 MultiTracker tracker = new MultiTracker(w, h);
 
@@ -151,7 +137,7 @@ public class ARTagDetector {
     public void grab(boolean undistort, boolean copy) {
         try {
             iimg = grabber.grab();
-
+            this.lastUndistorted = undistort;
             if (undistort) {
                 if (img2 == null) {
                     img2 = iimg.clone();
@@ -178,32 +164,47 @@ public class ARTagDetector {
         }
     }
 
-    public float[] findMarkers(PaperSheet sheet) {
+    public float[] findMarkers(MarkerBoard sheet) {
 
+
+        //                for (MultiTracker tracker : trackers) {
+//                    tracker.calc(img2.imageData());
+//                }
         MultiTracker tracker = trackerMap.get(sheet);
         float[] transfo = transfosMap.get(sheet);
 
+        if (lastUndistorted) {
+            tracker.calc(img2.imageData());
+        } else {
+            tracker.calc(iimg.imageData());
+        }
 
-        if (tracker.getNumDetectedMarkers() < 0) {
+        if (tracker.getNumDetectedMarkers() <= 0) {
+//            System.out.println("No marker found...");
             return transfo;
         }
 
         ARMultiMarkerInfoT multiMarkerConfig = tracker.getMultiMarkerConfig();
-        DoubleBuffer buff = multiMarkerConfig.trans().asBuffer();
+//        DoubleBuffer buff = multiMarkerConfig.trans().asBuffer();
 //        DoubleBuffer buff = multiMarkerConfig.trans().asBuffer(12);
 
-        for (int i=0, k=0 ; i < 12; i++) {
-//            transfo[i] = (float) buff.get(i);
+        for (int i = 0; i < 12; i++) {
             transfo[i] = (float) multiMarkerConfig.trans().get(i);
         }
+
+//            transfo[11] = - (float) multiMarkerConfig.trans().get();
+
         return transfo;
     }
 
-    
-    public HashMap<PaperSheet, float[]> getTransfoMap(){
+    public HashMap<MarkerBoard, float[]> getTransfoMap() {
         return transfosMap;
     }
-    
+
+    public float[] getPointerFrom(MarkerBoard board) {
+        return transfosMap.get(board);
+    }
+
     public PImage getImage() {
         return pimg;
     }
@@ -221,78 +222,74 @@ public class ARTagDetector {
         } catch (Exception e) {
         }
     }
-    
-    public float[][] findMultiMarkers(boolean undistort, boolean copy) {
-        try {
-            iimg = grabber.grab();
-
-            if (undistort) {
-                if (img2 == null) {
-                    img2 = iimg.clone();
-                }
-                cam.undistort(iimg, img2);
-                for (MultiTracker tracker : trackers) {
-                    tracker.calc(img2.imageData());
-                }
-            } else {
-                for (MultiTracker tracker : trackers) {
-                    tracker.calc(img2.imageData());
-                }
-            }
-
-            int trackId = 0;
-            for (MultiTracker tracker : trackers) {
-                if (tracker.getNumDetectedMarkers() < 0) {
-                    continue;
-                }
-
-                ARMultiMarkerInfoT multiMarkerConfig = tracker.getMultiMarkerConfig();
-//                DoubleBuffer buff = multiMarkerConfig.trans().asBuffer(12);
-                DoubleBuffer buff = multiMarkerConfig.trans().asBuffer();
-                int k = 0;
-
-//                for (int i = 0; i < 12; i++) {
-//                    transfos[trackId][i] = (float) buff.get(k++);
-//                }
-                for (int i = 0; i < 12; i++) {
-                    transfos[trackId][i] = (float) multiMarkerConfig.trans().get(k++);
-                }
-
+//    public float[][] findMultiMarkers(boolean undistort, boolean copy) {
+//        try {
+//            iimg = grabber.grab();
 //
-                trackId++;
-            }
-
-            // Image drawing
-            if (copy) {
-                ByteBuffer buff1 = iimg.getByteBuffer();
-                pimg.loadPixels();
-                for (int i = 0; i
-                        < iimg.width() * iimg.height(); i++) {
-                    int offset = i * 3;
-                    pimg.pixels[i] = (buff1.get(offset + 2) & 0xFF) << 16
-                            | (buff1.get(offset + 1) & 0xFF) << 8
-                            | (buff1.get(offset) & 0xFF);
-                }
-                pimg.updatePixels();
-            }
-            return transfos;
-
-        } catch (Exception e) {
-            System.out.println("Exception in findMarkers " + e);
-        }
-
-        return null;
-    }
+//            if (undistort) {
+//                if (img2 == null) {
+//                    img2 = iimg.clone();
+//                }
+//                cam.undistort(iimg, img2);
+//                for (MultiTracker tracker : trackers) {
+//                    tracker.calc(img2.imageData());
+//                }
+//            } else {
+//                for (MultiTracker tracker : trackers) {
+//                    tracker.calc(img2.imageData());
+//                }
+//            }
+//
+//            int trackId = 0;
+//            for (MultiTracker tracker : trackers) {
+//                if (tracker.getNumDetectedMarkers() < 0) {
+//                    continue;
+//                }
+//
+//                ARMultiMarkerInfoT multiMarkerConfig = tracker.getMultiMarkerConfig();
+////                DoubleBuffer buff = multiMarkerConfig.trans().asBuffer(12);
+//                DoubleBuffer buff = multiMarkerConfig.trans().asBuffer();
+//                int k = 0;
+//
+////                for (int i = 0; i < 12; i++) {
+////                    transfos[trackId][i] = (float) buff.get(k++);
+////                }
+//                for (int i = 0; i < 12; i++) {
+//                    transfos[trackId][i] = (float) multiMarkerConfig.trans().get(k++);
+//                }
+//
+////
+//                trackId++;
+//            }
+//
+//            // Image drawing
+//            if (copy) {
+//                ByteBuffer buff1 = iimg.getByteBuffer();
+//                pimg.loadPixels();
+//                for (int i = 0; i
+//                        < iimg.width() * iimg.height(); i++) {
+//                    int offset = i * 3;
+//                    pimg.pixels[i] = (buff1.get(offset + 2) & 0xFF) << 16
+//                            | (buff1.get(offset + 1) & 0xFF) << 8
+//                            | (buff1.get(offset) & 0xFF);
+//                }
+//                pimg.updatePixels();
+//            }
+//            return transfos;
+//
+//        } catch (Exception e) {
+//            System.out.println("Exception in findMarkers " + e);
+//        }
+//
+//        return null;
+//    }
     // findMarkers avec une autre bibliothèque d'entrée vidéo que JavaCV
     int imgSizeByte = 640 * 480 * 4;
     BytePointer bp = null;
     ByteBuffer bb = null;
     IntBuffer ib = null;
 // ------------------------ Working. ----------------
-
-    
     // Old functions to delete... 
-    
 //    public float[] findMarkers(PImage img) {
 //
 //        if (bp == null) {
@@ -491,6 +488,4 @@ public class ARTagDetector {
 //
 //        return null;
 //    }
-
-
 }

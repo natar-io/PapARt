@@ -1,5 +1,6 @@
 package fr.inria.papart;
 
+import fr.inria.papart.tools.Homography;
 import codeanticode.glgraphics.GLGraphicsOffScreen;
 import codeanticode.glgraphics.GLTexture;
 import processing.core.PApplet;
@@ -22,12 +23,9 @@ public class Screen {
     //       private PVector userPos = new PVector(-paperSheetWidth/2, -paperSheetHeight/2 +500, 300);
     //       private PVector userPos = new PVector(paperSheetWidth/2, paperSheetHeight/2, 500);
     //    public PVector userPos = new PVector(0, -700, 1300);
-
     private PApplet parent;
-    
     // The current graphics
     public GLGraphicsOffScreen thisGraphics;
-    
     // Position holding...
     private PVector initPos = null;
     private PMatrix3D initPosM = null;
@@ -35,26 +33,20 @@ public class Screen {
     private Vec3D posPaper;
     private PVector posPaperP;
     private PMatrix3D pos;
-
-    
     private PVector size;
     private float scale;
     private Plane plane = new Plane();
     private static final int nbPaperPosRender = 4;
-    
     private PVector[] paperPosScreen = new PVector[nbPaperPosRender];
     private PVector[] paperPosRender1 = new PVector[nbPaperPosRender];
     protected Homography homography;
-
     protected Matrix4x4 transformationProjPaper;
-    
     private float halfEyeDist = 20; // 2cm
 
-  
     public Screen(PApplet parent, PVector size, float scale) {
         this(parent, size, scale, false, 1);
     }
-    
+
     public Screen(PApplet parent, PVector size, float scale, boolean useAA, int AAValue) {
         thisGraphics = new GLGraphicsOffScreen(parent, (int) (size.x * scale), (int) (size.y * scale), useAA, AAValue);
         this.size = size.get();
@@ -67,8 +59,16 @@ public class Screen {
 //        initImageGetter();
     }
 
+    public void setAutoUpdatePos(Camera camera, MarkerBoard board) {
+        pos3D = camera.getPosPointer(board);
+    }
+
+    public void setManualUpdatePos() {
+        pos3D = new float[16];
+    }
+
     ////////////////// 3D SPACE TO PAPER HOMOGRAPHY ///////////////
-    protected void initHomography() {
+   private void initHomography() {
         homography = new Homography(parent, 3, 3, 4);
         homography.setPoint(false, 0, new PVector(0, 0, 0));
         homography.setPoint(false, 1, new PVector(1, 0, 0));
@@ -76,7 +76,6 @@ public class Screen {
         homography.setPoint(false, 3, new PVector(0, 1, 0));
     }
 
-        
     public GLTexture getTexture() {
         return thisGraphics.getTexture();
     }
@@ -85,19 +84,19 @@ public class Screen {
         computePlane(proj);
         computeHomography(proj);
     }
-    
-    public GLGraphicsOffScreen getGraphics(){
+
+    public GLGraphicsOffScreen getGraphics() {
         return thisGraphics;
     }
-    
-    public void initDraw(PVector userPos){
+
+    public void initDraw(PVector userPos) {
         initDraw(userPos, 40, 5000);
     }
-    
-    public void initDraw(PVector userPos, float nearPlane, float farPlane){
+
+    public void initDraw(PVector userPos, float nearPlane, float farPlane) {
         initDraw(userPos, nearPlane, farPlane, false, false, true);
     }
-    
+
     // TODO: optionnal args.
     public void initDraw(PVector userPos, float nearPlane, float farPlane, boolean isAnaglyph, boolean isLeft, boolean isOnly) {
         if (initPos == null) {
@@ -105,11 +104,11 @@ public class Screen {
             initPosM = pos.get();
         }
 
-        if(isOnly){
-        thisGraphics.beginDraw();
-        thisGraphics.clear(0);
+        if (isOnly) {
+            thisGraphics.beginDraw();
+            thisGraphics.clear(0);
         }
-        
+
 //	float nearPlane = 10;
 //	float farPlane = 2000 * scale;
         PVector paperCameraPos = new PVector();
@@ -187,16 +186,13 @@ public class Screen {
         projGraphics.popMatrix();
     }
 
-    
-    
     /////////////// NOTE : these 2 functions can be changed into a simple call... /////
-    
     /** 
      * Used for pointer projection
      * 
      * @param pc 
      */
-    protected void computeHomography(Projector pc) {
+    private void computeHomography(Projector pc) {
         computeScreenPosition(pc);
         for (int i = 0; i < 4; i++) {
             homography.setPoint(true, i, paperPosRender1[i]);
@@ -273,14 +269,14 @@ public class Screen {
      * @return Position of the pointer.
      */
     public ReadonlyVec3D projectPointer(Projector projector, float px, float py) {
-        
+
         PMatrix3D projMat = projector.getProjectionInit().get();
         PMatrix3D modvw = projector.getModelview1();
         //	PMatrix3D modvw = graphics.modelview.get();
 
         int width = projector.getWidth();
         int height = projector.getHeight();
-        
+
         double[] pointerDist = projector.getProjectorDevice().undistort(px * width, py * height);
         float x = 2 * (float) pointerDist[0] / (float) width - 1;
         float y = 2 * (float) pointerDist[1] / (float) height - 1;
@@ -300,29 +296,27 @@ public class Screen {
         ReadonlyVec3D res = plane.getIntersectionWithRay(ray);
         return res;
     }
-    
-    
-      public float getHalfEyeDist() {
+
+    public float getHalfEyeDist() {
         return halfEyeDist;
     }
 
     public void setHalfEyeDist(float halfEyeDist) {
         this.halfEyeDist = halfEyeDist;
     }
-    
-    public PVector getSize(){
+
+    public PVector getSize() {
         return size;
     }
-    
-    public PMatrix3D getPos(){
+
+    public PMatrix3D getPos() {
         return pos;
     }
 
-    
     // Available only if pos3D is being updated elsewhere...
-    public void updatePos(){
-        
-             pos.m00 = pos3D[0];
+    public void updatePos() {
+
+        pos.m00 = pos3D[0];
         pos.m01 = pos3D[1];
         pos.m02 = pos3D[2];
         pos.m03 = pos3D[3];
@@ -338,13 +332,15 @@ public class Screen {
         posPaper.x = pos3D[3];
         posPaper.y = pos3D[7];
         posPaper.z = pos3D[11];
-        
+
         posPaperP.x = pos3D[3];
         posPaperP.y = pos3D[7];
-        posPaperP.z = pos3D[11];   
+        posPaperP.z = pos3D[11];
     }
-    
+
     public void setPos(float pos3D[]) {
+
+        // TODO: not optimal, need to check the pos3D creation / deletion
         this.pos3D = pos3D;
         pos.m00 = pos3D[0];
         pos.m01 = pos3D[1];
@@ -362,11 +358,10 @@ public class Screen {
         posPaper.x = pos3D[3];
         posPaper.y = pos3D[7];
         posPaper.z = pos3D[11];
-        
+
         posPaperP.x = pos3D[3];
         posPaperP.y = pos3D[7];
         posPaperP.z = pos3D[11];
-        
+
     }
-    
 }

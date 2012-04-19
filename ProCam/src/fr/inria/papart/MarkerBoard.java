@@ -8,13 +8,13 @@ package fr.inria.papart;
  *
  * @author jeremylaviole
  */
-public class PaperSheet {
+public class MarkerBoard {
     
     private String fileName, name;
     private int width;
     private int height;
     
-    public PaperSheet(String fileName, String name, int width, int height){
+    public MarkerBoard(String fileName, String name, int width, int height){
         this.fileName = fileName;
         this.width = width;
         this.height = height;
