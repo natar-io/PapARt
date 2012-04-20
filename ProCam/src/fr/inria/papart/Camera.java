@@ -10,6 +10,7 @@ package fr.inria.papart;
  */
 import com.googlecode.javacv.CameraDevice;
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import processing.core.PApplet;
@@ -27,7 +28,7 @@ public class Camera {
     public PApplet parent;
     public float offscreenScale;
     PVector offscreenSize;
-    HashMap<MarkerBoard, TrackedView> trackedViews;
+    ArrayList<TrackedView> trackedViews;
     MarkerBoard[] sheets;
     ARTThread thread = null;
 
@@ -77,7 +78,7 @@ public class Camera {
                 sheets);
 
         this.sheets = sheets;
-        this.trackedViews = new HashMap<MarkerBoard, TrackedView>();
+        this.trackedViews = new ArrayList<TrackedView>();
 
         // Load the camera parameters. 
         try {
@@ -101,8 +102,15 @@ public class Camera {
      * It makes the camera update continuously. 
      */
     public void setThread() {
+        setThread(true);
+    }
+
+    /**
+     * It makes the camera update continuously.
+     */
+    public void setThread(boolean undistort) {
         if (thread == null) {
-            thread = new ARTThread(art, sheets);
+            thread = new ARTThread(art, sheets, undistort);
             thread.start();
         } else {
             System.err.println("Camera: Error Thread already launched");
@@ -129,7 +137,7 @@ public class Camera {
         }
     }
 
-    public float[] getPosPointer(MarkerBoard board){
+    public float[] getPosPointer(MarkerBoard board) {
         return art.getPointerFrom(board);
     }
 
@@ -149,25 +157,53 @@ public class Camera {
      * Asks the camera to grab an image. Not to use with the threaded option.
      */
     public void grab() {
-        if (thread != null) {
-            art.grab();
+        grab(true);
+    }
+
+    public void grab(boolean undistort) {
+        if (thread == null) {
+            art.grab(undistort);
         } else {
             System.err.println("Camera: Please use Grab() only while not threaded.");
         }
     }
 
-    public void addTrackedView(MarkerBoard sheet, TrackedView view) {
-        trackedViews.put(sheet, view);
+    /**
+     * Add a tracked view to the camera. This camera must be tracking the board already.
+     * Returns true if the camera is already tracking. 
+     * @param view
+     * @return
+     */
+    public boolean addTrackedView(TrackedView view) {
+        trackedViews.add(view);
+//        System.out.println("board already tracked ?" + art.getTransfoMap().containsKey(view.getBoard()));
+        return art.getTransfoMap().containsKey(view.getBoard());
     }
 
-    
-    public PImage getView(MarkerBoard sheet) {
-        TrackedView trackedView = trackedViews.get(sheet);
+    /**
+     * Get an image from the view. 
+     * @param trackedView
+     * @return
+     */
+    public PImage getView(TrackedView trackedView) {
+        return getView(trackedView, true);
+    }
+
+    /**
+     * Get an image from the view.
+     * @param trackedView
+     * @return
+     */
+    public PImage getView(TrackedView trackedView, boolean undistort) {
         if (trackedView == null) {
             System.err.println("Error: paper sheet not registered as tracked view.");
             return null;
         }
-        float[] pos = art.findMarkers(sheet);
+
+//        grab(undistort);
+        if(!art.isReady(undistort))
+            return null;
+        float[] pos = art.findMarkers(trackedView.getBoard());
         trackedView.setPos(pos);
         trackedView.computeCorners(this);
         return trackedView.getImage(art.getImageIpl());
@@ -181,21 +217,20 @@ public class Camera {
      * @param sheet
      * @return image
      */
-    public PImage stopGetViewStart(MarkerBoard sheet) {
-        if (thread != null) {
+    public PImage stopGetViewStart(TrackedView trackedView) {
+        if (thread == null) {
             System.err.println("Camera : Error: stopGetViewStart is to use only when thread is started");
             return null;
         }
         boolean wasAutoUpdate = thread.isCompute();
-        thread.stopThread();
+        stopThread();
         this.grab();
 
-        TrackedView trackedView = trackedViews.get(sheet);
         if (trackedView == null) {
             System.err.println("Error: paper sheet not registered as tracked view.");
             return null;
         }
-        float[] pos = art.findMarkers(sheet);
+        float[] pos = art.findMarkers(trackedView.getBoard());
         trackedView.setPos(pos);
         trackedView.computeCorners(this);
         PImage out = trackedView.getImage(art.getImageIpl());
@@ -214,8 +249,8 @@ public class Camera {
      * @param sheet
      * @return image
      */
-    public PImage[] stopGetViewStart(MarkerBoard[] sheets) {
-        if (thread != null) {
+    public PImage[] stopGetViewStart(TrackedView[] trackedViews) {
+        if (thread == null) {
             System.err.println("Camera : Error: stopGetViewStart is to use only when thread is started");
             return null;
         }
@@ -226,13 +261,12 @@ public class Camera {
         PImage[] out = new PImage[sheets.length];
         int k = 0;
 
-        for (MarkerBoard sheet : sheets) {
-            TrackedView trackedView = trackedViews.get(sheet);
+        for (TrackedView trackedView : trackedViews) {
             if (trackedView == null) {
                 System.err.println("Error: paper sheet not registered as tracked view.");
                 return null;
             }
-            float[] pos = art.findMarkers(sheet);
+            float[] pos = art.findMarkers(trackedView.getBoard());
             trackedView.setPos(pos);
             trackedView.computeCorners(this);
             out[k++] = trackedView.getImage(art.getImageIpl());
@@ -243,10 +277,9 @@ public class Camera {
         return out;
     }
 
-    public PImage getLastPaperView(MarkerBoard sheet) {
-        return trackedViews.get(sheet).img;
-    }
-
+//    public PImage getLastPaperView(MarkerBoard sheet) {
+//        return trackedViews.get(sheet).img;
+//    }
     public void close() {
         art.close();
     }

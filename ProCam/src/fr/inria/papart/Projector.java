@@ -234,6 +234,9 @@ public class Projector {
         graphics.modelview.apply(getExtrinsics());
 
         for (Screen screen : screens) {
+            if(!screen.isDrawing())
+                continue;
+
             graphics.pushMatrix();
 
             // Goto to the screen position

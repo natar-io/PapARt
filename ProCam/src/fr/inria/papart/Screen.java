@@ -42,6 +42,7 @@ public class Screen {
     protected Homography homography;
     protected Matrix4x4 transformationProjPaper;
     private float halfEyeDist = 20; // 2cm
+    private boolean isDrawing = true;
 
     public Screen(PApplet parent, PVector size, float scale) {
         this(parent, size, scale, false, 1);
@@ -66,6 +67,15 @@ public class Screen {
     public void setManualUpdatePos() {
         pos3D = new float[16];
     }
+
+    public boolean isDrawing() {
+        return isDrawing;
+    }
+
+    public void setDrawing(boolean isDrawing) {
+        this.isDrawing = isDrawing;
+    }
+
 
     ////////////////// 3D SPACE TO PAPER HOMOGRAPHY ///////////////
     private void initHomography() {

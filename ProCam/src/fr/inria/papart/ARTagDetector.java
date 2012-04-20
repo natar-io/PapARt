@@ -166,10 +166,6 @@ public class ARTagDetector {
 
     public float[] findMarkers(MarkerBoard sheet) {
 
-
-        //                for (MultiTracker tracker : trackers) {
-//                    tracker.calc(img2.imageData());
-//                }
         MultiTracker tracker = trackerMap.get(sheet);
         float[] transfo = transfosMap.get(sheet);
 
@@ -192,9 +188,13 @@ public class ARTagDetector {
             transfo[i] = (float) multiMarkerConfig.trans().get(i);
         }
 
-//            transfo[11] = - (float) multiMarkerConfig.trans().get();
-
         return transfo;
+    }
+
+    public boolean isReady(boolean undistort){
+        if(undistort)
+            return img2 != null;
+        return iimg != null;
     }
 
     public HashMap<MarkerBoard, float[]> getTransfoMap() {

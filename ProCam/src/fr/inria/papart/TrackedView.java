@@ -15,21 +15,17 @@ import processing.core.PVector;
  * @author jeremylaviole
  */
 public class TrackedView {
-    
-    
-    PImage img = null;
-    IplImage tmpImg = null;
-    PMatrix3D pos;
-    PVector[] cornerPos;
-    PVector size;
-    PVector[] screenP = new PVector[4];
-    PVector[] outScreenP = new PVector[4];
 
-    public TrackedView(float sheetW, float sheetH, int outWidth, int outHeight,
-            int videoWidth, int videoHeight) {
-        size = new PVector(sheetW, sheetH);
+    private PImage img = null;
+    private IplImage tmpImg = null;
+    private PMatrix3D pos;
+    private PVector[] cornerPos;
+    private MarkerBoard board;
+    private PVector[] screenP = new PVector[4];
+    private PVector[] outScreenP = new PVector[4];
 
-  
+    public TrackedView(MarkerBoard board, int outWidth, int outHeight) {
+        this.board = board;
         img = new PImage(outWidth, outHeight, PApplet.RGB);
         cornerPos = new PVector[4];
         screenP = new PVector[4];
@@ -39,13 +35,18 @@ public class TrackedView {
             cornerPos[i] = new PVector();
         }
 
-        outScreenP[0] = new PVector(0, videoHeight);
-        outScreenP[1] = new PVector(videoWidth, videoHeight);
-        outScreenP[2] = new PVector(videoWidth, 0);
+//        outScreenP[0] = new PVector(0, videoHeight);
+//        outScreenP[1] = new PVector(videoWidth, videoHeight);
+//        outScreenP[2] = new PVector(videoWidth, 0);
+//        outScreenP[3] = new PVector(0, 0);
+
+        outScreenP[0] = new PVector(0, outHeight);
+        outScreenP[1] = new PVector(outWidth, outHeight);
+        outScreenP[2] = new PVector(outWidth, 0);
         outScreenP[3] = new PVector(0, 0);
     }
 
-    public void setPos(float[] pos3D) {
+    protected void setPos(float[] pos3D) {
         pos = new PMatrix3D(pos3D[0], pos3D[1], pos3D[2], pos3D[3],
                 pos3D[4], pos3D[5], pos3D[6], pos3D[7],
                 pos3D[8], pos3D[9], pos3D[10], pos3D[11],
@@ -55,7 +56,7 @@ public class TrackedView {
         //	pos.print();
     }
 
-    public void computeCorners(Camera cam) {
+    protected void computeCorners(Camera cam) {
         PMatrix3D newPos = pos.get();
 
         cornerPos[0].x = newPos.m03;
@@ -65,17 +66,17 @@ public class TrackedView {
         PMatrix3D tmp = new PMatrix3D();
         tmp.apply(pos);
 
-        tmp.translate(size.x, 0, 0);
+        tmp.translate(board.width, 0, 0);
         cornerPos[1].x = tmp.m03;
         cornerPos[1].y = tmp.m13;
         cornerPos[1].z = tmp.m23;
 
-        tmp.translate(0, size.y, 0);
+        tmp.translate(0, board.height, 0);
         cornerPos[2].x = tmp.m03;
         cornerPos[2].y = tmp.m13;
         cornerPos[2].z = tmp.m23;
 
-        tmp.translate(-size.x, 0, 0);
+        tmp.translate(-board.width, 0, 0);
         cornerPos[3].x = tmp.m03;
         cornerPos[3].y = tmp.m13;
         cornerPos[3].z = tmp.m23;
@@ -85,7 +86,7 @@ public class TrackedView {
         }
     }
 
-    public PImage getImage(IplImage iplImg) {
+    protected PImage getImage(IplImage iplImg) {
         if (tmpImg == null) {
             tmpImg = Utils.createImageFrom(iplImg, img);
         }
@@ -93,5 +94,8 @@ public class TrackedView {
         Utils.remapImage(screenP, outScreenP, iplImg, tmpImg, img);
         return img;
     }
-    
+
+    public MarkerBoard getBoard(){
+        return this.board;
+    }
 }

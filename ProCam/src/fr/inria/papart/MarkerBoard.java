@@ -11,8 +11,8 @@ package fr.inria.papart;
 public class MarkerBoard {
     
     private String fileName, name;
-    private int width;
-    private int height;
+    protected int width;
+    protected int height;
     
     public MarkerBoard(String fileName, String name, int width, int height){
         this.fileName = fileName;

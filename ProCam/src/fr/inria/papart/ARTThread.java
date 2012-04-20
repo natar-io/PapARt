@@ -33,6 +33,7 @@ class ARTThread extends Thread{
 	stop = false;
     }
     
+    @Override
     public void run(){
 	while(!stop){
             art.grab(undistort);
