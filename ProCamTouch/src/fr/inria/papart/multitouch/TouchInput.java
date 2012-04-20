@@ -1,11 +1,11 @@
 
+package fr.inria.papart.multitouch;
+
+import fr.inria.papart.multitouchKinect.MultiTouchKinect;
+import fr.inria.papart.multitouchKinect.TouchPoint;
 import fr.inria.papart.Projector;
 import fr.inria.papart.Screen;
-import fr.inria.papart.multitouch.TouchElement;
 import java.util.ArrayList;
-import java.util.concurrent.Semaphore;
-import multitouch.laviole.name.MultiTouchKinect;
-import multitouch.laviole.name.TouchPoint;
 import processing.core.PApplet;
 import processing.core.PVector;
 import toxi.geom.ReadonlyVec3D;
@@ -15,7 +15,7 @@ import toxi.geom.Vec3D;
  * Touch input, using a Kinect device for now. 
  * @author jeremylaviole
  */
-class TouchInput {
+public class TouchInput {
 
     private boolean isTouch2DActive = false;
     private boolean isTouch3DActive = false;
@@ -37,18 +37,16 @@ class TouchInput {
         touchPoints3D = mtk.getTouchPoint3D();
     }
 
-    void startTouch(int[] depth, int touchHeight) {
-
+    public void startTouch(int[] depth, float touchHeight) {
         this.touchHeight = touchHeight;
         mtk.updateKinect(depth);
-        ArrayList<TouchPoint> touchPoints;
 
         // This updates the values of touchPoints2D and touchPoints3D
         mtk.find2DTouch(touch2DPrecision);
         mtk.find3DTouch(touch3DPrecision, touchHeight);
     }
 
-    void endTouch() {
+    public void endTouch() {
         //     try{
         // kinectMutex.acquire();
         //     }catch(Exception e){}
@@ -57,15 +55,15 @@ class TouchInput {
         mtk.touch3DFound();
     }
 
-    TouchElement projectTouchToScreen(Screen screen, Projector projector, boolean is2D, boolean is3D) {
+    public TouchElement projectTouchToScreen(Screen screen, Projector projector, boolean is2D, boolean is3D) {
         return projectTouchToScreen(screen, projector, true, true, false, false);
     }
 
-    TouchElement projectTouchToScreen(Screen screen, Projector projector) {
+    public TouchElement projectTouchToScreen(Screen screen, Projector projector) {
         return projectTouchToScreen(screen, projector, true, true, true, true);
     }
 
-    TouchElement projectTouchToScreen(Screen screen, Projector projector, 
+    public TouchElement projectTouchToScreen(Screen screen, Projector projector,
             boolean is2D, boolean is3D,
             boolean isSpeed2D, boolean isSpeed3D) {
 
@@ -115,7 +113,7 @@ class TouchInput {
                         res2 = null;
                     }
 
-
+                    System.out.println("res " + res);
                     if (res != null) {
                         Vec3D transfo = screen.applyProjPaper(res);
                         transfo.x /= transfo.z;
@@ -124,6 +122,8 @@ class TouchInput {
                         // inside the paper sheet 	      
                         if (transfo.x >= 0 && transfo.x <= 1 && transfo.y >= 0 && transfo.y <= 1) {
                             position2D.add(new PVector(transfo.x, transfo.y));
+//                            position2D.add(new PVector(transfo.x * screen.getSize().x * screen.getScale(),
+//                                        transfo.y* screen.getSize().y * screen.getScale()));
                         }
 
                         if (res2 != null) {

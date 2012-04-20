@@ -14,7 +14,7 @@ import fr.inria.iparla.drawingapp.shape.Rectangle;
 import fr.inria.iparla.drawingapp.shape.Shape;
 import fr.inria.iparla.drawingapp.shape.Triangle;
 import java.util.ArrayList;
-import multitouch.laviole.name.TouchPoint;
+import fr.inria.papart.multitouchKinect.TouchPoint;
 import processing.core.PApplet;
 import processing.core.PFont;
 import processing.core.PGraphics3D;

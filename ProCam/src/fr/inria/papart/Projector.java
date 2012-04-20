@@ -25,7 +25,6 @@ public class Projector {
     // OpenGL information
     private float[] projectionMatrixGL = new float[16];
     protected GLTexture myMap;
-    public PMatrix3D modelview1;
     protected PMatrix3D projectionInit;
     protected GLTextureFilter lensFilter;
     private GL gl = null;
@@ -136,7 +135,7 @@ public class Projector {
         graphics.beginDraw();
         graphics.resetMatrix();
 //        graphics.scale(1, 1, -1);
-        modelview1 = graphics.modelview.get();
+//        modelview1 = graphics.modelview.get();
         graphics.endDraw();
     }
 
@@ -190,10 +189,14 @@ public class Projector {
         graphics.endGL();
     }
 
-    public void loadModelView() {
-        graphics.modelview.set(getModelview1());
-    }
+//    public void loadModelView() {
+//        graphics.modelview.set(getModelview1());
+//    }
 
+    /**
+     * No to use ? !
+     * @return
+     */
     public GLGraphicsOffScreen loadGraphics() {
 
 //	graphics.beginDraw();
@@ -201,7 +204,7 @@ public class Projector {
 //	graphics.endDraw();
 
         loadProjection();
-        loadModelView();
+//        loadModelView();
 
         return graphics;
     }
@@ -272,9 +275,9 @@ public class Projector {
     }
 
     // TODO: public or protected ?
-    public PMatrix3D getModelview1() {
-        return this.modelview1;
-    }
+//    public PMatrix3D getModelview1() {
+//        return this.modelview1;
+//    }
 
     public PMatrix3D getProjectionInit() {
         return this.projectionInit;

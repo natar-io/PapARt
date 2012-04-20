@@ -4,7 +4,7 @@
  */
 package fr.inria.iparla.drawingapp;
 
-import multitouch.laviole.name.TouchPoint;
+import fr.inria.papart.multitouchKinect.TouchPoint;
 import processing.core.PApplet;
 import processing.core.PGraphics3D;
 import processing.core.PVector;

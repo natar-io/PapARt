@@ -332,7 +332,9 @@ public class Screen {
     public ReadonlyVec3D projectPointer(Projector projector, float px, float py) {
 
         PMatrix3D projMat = projector.getProjectionInit().get();
-        PMatrix3D modvw = projector.getModelview1();
+//        PMatrix3D modvw = projector.getModelview1();
+        PMatrix3D modvw = new PMatrix3D();
+        modvw.scale(1, 1, -1);
         //	PMatrix3D modvw = graphics.modelview.get();
 
         int width = projector.getWidth();
@@ -372,6 +374,10 @@ public class Screen {
 
     public PMatrix3D getPos() {
         return pos;
+    }
+
+    public float getScale(){
+        return this.scale;
     }
 
     // Available only if pos3D is being updated elsewhere...
