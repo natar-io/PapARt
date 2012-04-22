@@ -1,4 +1,3 @@
-
 package fr.inria.papart.multitouch;
 
 import fr.inria.papart.multitouchKinect.MultiTouchKinect;
@@ -11,8 +10,9 @@ import processing.core.PVector;
 import toxi.geom.ReadonlyVec3D;
 import toxi.geom.Vec3D;
 
-/** 
- * Touch input, using a Kinect device for now. 
+/**
+ * Touch input, using a Kinect device for now.
+ *
  * @author jeremylaviole
  */
 public class TouchInput {
@@ -25,7 +25,7 @@ public class TouchInput {
     private float touchHeight;
 
     public TouchInput(PApplet applet, String calibrationFile) {
-        this(applet, calibrationFile, 3, 7);
+        this(applet, calibrationFile, 2, 8);
         // TODO: use XML calibration file.
     }
 
@@ -55,12 +55,16 @@ public class TouchInput {
         mtk.touch3DFound();
     }
 
-    public TouchElement projectTouchToScreen(Screen screen, Projector projector, boolean is2D, boolean is3D) {
-        return projectTouchToScreen(screen, projector, true, true, false, false);
+    public ArrayList<TouchPoint> getTouchPoints2D() {
+        return touchPoints2D;
     }
 
     public TouchElement projectTouchToScreen(Screen screen, Projector projector) {
         return projectTouchToScreen(screen, projector, true, true, true, true);
+    }
+
+    public TouchElement projectTouchToScreen(Screen screen, Projector projector, boolean is2D, boolean is3D) {
+        return projectTouchToScreen(screen, projector, is2D, is3D, false, false);
     }
 
     public TouchElement projectTouchToScreen(Screen screen, Projector projector,
@@ -104,7 +108,7 @@ public class TouchInput {
                 if (tp.v.x >= 0 && tp.v.x < 1
                         && tp.v.y >= 0 && tp.v.y < 1) {
 
-                    ReadonlyVec3D res, res2;
+                    PVector res, res2;
                     res = screen.projectPointer(projector, tp.v.x, tp.v.y);
 
                     if (isSpeed2D) {
@@ -113,28 +117,20 @@ public class TouchInput {
                         res2 = null;
                     }
 
-                    System.out.println("res " + res);
                     if (res != null) {
-                        Vec3D transfo = screen.applyProjPaper(res);
-                        transfo.x /= transfo.z;
-                        transfo.y /= transfo.z;
 
                         // inside the paper sheet 	      
-                        if (transfo.x >= 0 && transfo.x <= 1 && transfo.y >= 0 && transfo.y <= 1) {
-                            position2D.add(new PVector(transfo.x, transfo.y));
-//                            position2D.add(new PVector(transfo.x * screen.getSize().x * screen.getScale(),
-//                                        transfo.y* screen.getSize().y * screen.getScale()));
+                        if (res.x >= 0 && res.x <= 1 && res.y >= 0 && res.y <= 1) {
+                            position2D.add(new PVector(res.x, res.y));
+//                            position2D.add(new PVector(res.x * screen.getSize().x * screen.getScale(),
+//                                        res.y* screen.getSize().y * screen.getScale()));
                         }
 
                         if (res2 != null) {
-                            Vec3D transfo2 = screen.applyProjPaper(res2);
-                            transfo2.x /= transfo2.z;
-                            transfo2.y /= transfo2.z;
-
                             // inside the paper sheet 	      
-                            if (transfo2.x >= 0 && transfo2.x <= 1 && transfo2.y >= 0 && transfo2.y <= 1) {
-                                speed2D.add(new PVector(transfo.x - transfo2.x,
-                                        transfo.y - transfo2.y));
+                            if (res2.x >= 0 && res2.x <= 1 && res2.y >= 0 && res2.y <= 1) {
+                                speed2D.add(new PVector(res.x - res2.x,
+                                        res.y - res2.y));
                             }
                         }
                     }
@@ -151,7 +147,7 @@ public class TouchInput {
                 if (tp.v.x >= 0 && tp.v.x < 1
                         && tp.v.y >= 0 && tp.v.y < 1) {
 
-                    ReadonlyVec3D res, res2;
+                    PVector res, res2;
                     res = screen.projectPointer(projector, tp.v.x, tp.v.y);
 
                     if (isSpeed3D) {
@@ -161,25 +157,19 @@ public class TouchInput {
                     }
 
                     if (res != null) {
-                        Vec3D transfo = screen.applyProjPaper(res);
-                        transfo.x /= transfo.z;
-                        transfo.y /= transfo.z;
 
                         // inside the paper sheet 	      
-                        if (transfo.x >= 0 && transfo.x <= 1 && transfo.y >= 0 && transfo.y <= 1) {
-                            position3D.add(new PVector(transfo.x, transfo.y, 1000 * tp.v.z * touchHeight));
+                        if (res.x >= 0 && res.x <= 1 && res.y >= 0 && res.y <= 1) {
+                            position3D.add(new PVector(res.x, res.y, tp.v.z ));
                         }
 
                         if (res2 != null) {
-                            Vec3D transfo2 = screen.applyProjPaper(res2);
-                            transfo2.x /= transfo2.z;
-                            transfo2.y /= transfo2.z;
 
                             // inside the paper sheet 	      
-                            //			if(transfo2.x >= 0 && transfo2.x <= 1 && transfo2.y >= 0 && transfo2.y <= 1)
-                            speed3D.add(new PVector(transfo.x - transfo2.x,
-                                    transfo.y - transfo2.y,
-                                    1000 * (tp.v.z - tp.oldV.z) * touchHeight));
+                            //			if(res2.x >= 0 && res2.x <= 1 && res2.y >= 0 && res2.y <= 1)
+                            speed3D.add(new PVector(res.x - res2.x,
+                                    res.y - res2.y,
+                                    (tp.v.z - tp.oldV.z) ));
                         }
                     }
 
@@ -190,5 +180,4 @@ public class TouchInput {
 
         return elem;
     }
-    
 }
