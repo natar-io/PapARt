@@ -198,10 +198,7 @@ is divided into following sections:
         <property name="javac.fork" value="${jdkBug6558476}"/>
         <property name="jar.index" value="false"/>
         <property name="jar.index.metainf" value="${jar.index}"/>
-<<<<<<< HEAD
         <property name="copylibs.rebase" value="true"/>
-=======
->>>>>>> 97f8394b38801f22d2a0095a7e7f870c01658128
         <available file="${meta.inf.dir}/persistence.xml" property="has.persistence.xml"/>
     </target>
     <target name="-post-init">
@@ -388,10 +385,6 @@ is divided into following sections:
                 <property environment="env"/>
                 <resolve name="profiler.current.path" value="${profiler.info.pathvar}"/>
                 <java classname="@{classname}" dir="${profiler.info.dir}" fork="true" jvm="${profiler.info.jvm}">
-<<<<<<< HEAD
-                    <jvmarg line="${endorsed.classpath.cmd.line.arg}"/>
-=======
->>>>>>> 97f8394b38801f22d2a0095a7e7f870c01658128
                     <jvmarg value="${profiler.info.jvmargs.agent}"/>
                     <jvmarg line="${profiler.info.jvmargs}"/>
                     <env key="${profiler.info.pathvar}" path="${profiler.info.agentpath}:${profiler.current.path}"/>
@@ -522,11 +515,7 @@ is divided into following sections:
                     </chainedmapper>
                 </pathconvert>
                 <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" classpath="${libs.CopyLibs.classpath}" name="copylibs"/>
-<<<<<<< HEAD
                 <copylibs compress="${jar.compress}" index="${jar.index}" indexMetaInf="${jar.index.metainf}" jarfile="${dist.jar}" manifest="@{manifest}" rebase="${copylibs.rebase}" runtimeclasspath="${run.classpath.without.build.classes.dir}">
-=======
-                <copylibs compress="${jar.compress}" index="${jar.index}" indexMetaInf="${jar.index.metainf}" jarfile="${dist.jar}" manifest="@{manifest}" runtimeclasspath="${run.classpath.without.build.classes.dir}">
->>>>>>> 97f8394b38801f22d2a0095a7e7f870c01658128
                     <fileset dir="${build.classes.dir}"/>
                     <manifest>
                         <attribute name="Class-Path" value="${jar.classpath}"/>
@@ -696,7 +685,7 @@ is divided into following sections:
             <map from="${build.classes.dir.resolved}" to="${dist.jar.resolved}"/>
         </pathconvert>
         <echo level="info">java -cp "${run.classpath.with.dist.jar}" ${main.class}</echo>
-<<<<<<< HEAD
+
     </target>
     <target depends="init" if="do.archive" name="-do-jar-with-libraries-create-manifest" unless="manifest.available">
         <tempfile deleteonexit="true" destdir="${build.dir}" property="tmp.manifest.file"/>
@@ -711,22 +700,6 @@ is divided into following sections:
             <attribute name="Main-Class" value="${main.class}"/>
         </manifest>
     </target>
-=======
-    </target>
-    <target depends="init" if="do.archive" name="-do-jar-with-libraries-create-manifest" unless="manifest.available">
-        <tempfile deleteonexit="true" destdir="${build.dir}" property="tmp.manifest.file"/>
-        <touch file="${tmp.manifest.file}" verbose="false"/>
-    </target>
-    <target depends="init" if="do.archive+manifest.available" name="-do-jar-with-libraries-copy-manifest">
-        <tempfile deleteonexit="true" destdir="${build.dir}" property="tmp.manifest.file"/>
-        <copy file="${manifest.file}" tofile="${tmp.manifest.file}"/>
-    </target>
-    <target depends="init,-do-jar-with-libraries-create-manifest,-do-jar-with-libraries-copy-manifest" if="do.archive+main.class.available" name="-do-jar-with-libraries-set-main">
-        <manifest file="${tmp.manifest.file}" mode="update">
-            <attribute name="Main-Class" value="${main.class}"/>
-        </manifest>
-    </target>
->>>>>>> 97f8394b38801f22d2a0095a7e7f870c01658128
     <target depends="init,-do-jar-with-libraries-create-manifest,-do-jar-with-libraries-copy-manifest" if="do.archive+splashscreen.available" name="-do-jar-with-libraries-set-splashscreen">
         <basename file="${application.splash}" property="splashscreen.basename"/>
         <mkdir dir="${build.classes.dir}/META-INF"/>

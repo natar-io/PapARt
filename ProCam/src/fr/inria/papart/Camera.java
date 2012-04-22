@@ -143,6 +143,7 @@ public class Camera {
 
     /**
      * Gets the 2D location in the image of a 3D point. 
+     * TODO: undistort ?
      * @param pt  3D point seen by the camera. 
      * @return 2D location of the 3D point in the image. 
      */

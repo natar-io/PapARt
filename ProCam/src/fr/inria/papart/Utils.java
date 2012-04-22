@@ -23,6 +23,20 @@ import processing.core.*;
  */
 public class Utils {
 
+    static public PVector mult(PMatrix3D mat, PVector source, PVector target) {
+        if (target == null) {
+            target = new PVector();
+        }
+        target.x = mat.m00 * source.x + mat.m01 * source.y + mat.m02 * source.z + mat.m03;
+        target.y = mat.m10 * source.x + mat.m11 * source.y + mat.m12 * source.z + mat.m13;
+        target.z = mat.m20 * source.x + mat.m21 * source.y + mat.m22 * source.z + mat.m23;
+        float tw = mat.m30 * source.x + mat.m31 * source.y + mat.m32 * source.z + mat.m33;
+        if (tw != 0 && tw != 1) {
+            target.div(tw);
+        }
+        return target;
+    }
+
     static public IplImage createImageFrom(IplImage imgIn, PImage Pout) {
         // TODO: avoid this creation !!
         CvSize outSize = new CvSize();
@@ -52,7 +66,7 @@ public class Utils {
         }
         imgOut.updatePixels();
         imgL.updatePixels();
-        
+
     }
 
     static public void remapImage(PVector[] in, PVector[] out, IplImage imgIn, IplImage imgTmp, PImage Pout) {
@@ -85,8 +99,8 @@ public class Utils {
     }
 
     static public void IplImageToPImage(IplImage img, PApplet applet, boolean RGB, PImage ret) {
- 
-        IplImageToPImage(img,RGB, ret);
+
+        IplImageToPImage(img, RGB, ret);
 
 //        assert (img.width() == ret.width);
 //        assert (img.height() == ret.height);
@@ -157,7 +171,9 @@ public class Utils {
         //   return ret;
     }
 
-    /*  Deprecated */
+    /*
+     * Deprecated
+     */
     static public void PImageToIplImage(IplImage img, PApplet applet, boolean RGB, PImage ret) {
 
         ByteBuffer buff = img.getByteBuffer();
