@@ -6,7 +6,7 @@ package com.googlecode.javacv.processing;
 
 import com.googlecode.javacv.DC1394FrameGrabber;
 import com.googlecode.javacv.FrameGrabber;
-import com.googlecode.javacv.FrameGrabber.ColorMode;
+import com.googlecode.javacv.FrameGrabber.ImageMode;
 import com.googlecode.javacv.OpenCVFrameGrabber;
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
 import java.awt.image.BufferedImage;
@@ -68,7 +68,7 @@ public class ProcessingGrabber extends Thread {
         grabber.setImageWidth(w);
         grabber.setImageHeight(h);
         grabber.setFrameRate(framerate);
-        grabber.setColorMode(ColorMode.RAW);
+        grabber.setImageMode(ImageMode.RAW);
         grabber.setDeinterlace(true);
         this.framerate = framerate;
         this.imgType = imgType;
