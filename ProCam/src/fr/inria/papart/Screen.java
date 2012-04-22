@@ -1,16 +1,12 @@
 package fr.inria.papart;
 
-import fr.inria.papart.tools.Homography;
 import codeanticode.glgraphics.GLGraphicsOffScreen;
 import codeanticode.glgraphics.GLTexture;
+import fr.inria.papart.tools.Homography;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
-import toxi.geom.Matrix4x4;
-import toxi.geom.Plane;
-import toxi.geom.Ray3D;
-import toxi.geom.ReadonlyVec3D;
-import toxi.geom.Vec3D;
+import toxi.geom.*;
 
 /**
  * This class implements a virtual screen. The position of the screen has to be
@@ -37,7 +33,7 @@ public class Screen {
     private float scale;
     private Plane plane = new Plane();
     private static final int nbPaperPosRender = 4;
-    private PVector[] paperPosRender1 = new PVector[nbPaperPosRender];
+    private PVector[] paperPosCorners3D = new PVector[nbPaperPosRender];
     protected Homography homography;
     protected Matrix4x4 transformationProjPaper;
     private float halfEyeDist = 20; // 2cm
@@ -59,22 +55,6 @@ public class Screen {
 //        initImageGetter();
     }
 
-    public void setAutoUpdatePos(Camera camera, MarkerBoard board) {
-        pos3D = camera.getPosPointer(board);
-    }
-
-    public void setManualUpdatePos() {
-        pos3D = new float[16];
-    }
-
-    public boolean isDrawing() {
-        return isDrawing;
-    }
-
-    public void setDrawing(boolean isDrawing) {
-        this.isDrawing = isDrawing;
-    }
-
     ////////////////// 3D SPACE TO PAPER HOMOGRAPHY ///////////////
     private void initHomography() {
         homography = new Homography(parent, 3, 3, 4);
@@ -88,9 +68,36 @@ public class Screen {
         return thisGraphics.getTexture();
     }
 
-    public void initTouch(Projector proj) {
-        computePlane(proj);
-        computeHomography(proj);
+    public void computeScreenPosTransform() {
+
+        ///////////////////// PLANE COMPUTATION  //////////////////
+        PMatrix3D mat = pos.get();
+
+        PVector origin = new PVector(mat.m03, mat.m13, mat.m23);
+
+        // got a little higher for the normal.
+        mat.translate(0, 0, 10);
+        PVector normal = new PVector(mat.m03, mat.m13, mat.m23);
+
+        plane.set(new Vec3D(origin.x, origin.y, origin.z));
+        plane.normal.set(new Vec3D(normal.x, normal.y, normal.z));
+
+        // go back to the paper place
+        mat.translate(0, 0, -10);
+
+        paperPosCorners3D[0] = new PVector(mat.m03, mat.m13, mat.m23);
+        mat.translate(size.x, 0, 0);
+        paperPosCorners3D[1] = new PVector(mat.m03, mat.m13, mat.m23);
+        mat.translate(0, size.y, 0);
+        paperPosCorners3D[2] = new PVector(mat.m03, mat.m13, mat.m23);
+        mat.translate(-size.x, 0, 0);
+        paperPosCorners3D[3] = new PVector(mat.m03, mat.m13, mat.m23);
+
+        for (int i = 0; i < 4; i++) {
+            homography.setPoint(true, i, paperPosCorners3D[i]);
+        }
+        homography.compute();
+        transformationProjPaper = homography.getTransformation();
     }
 
     public GLGraphicsOffScreen getGraphics() {
@@ -160,213 +167,19 @@ public class Screen {
         return thisGraphics;
     }
 
-    /**
-     * TO remove ??
-     *
-     * @return
-     */
-    public GLGraphicsOffScreen initDrawLite() {
-        if (initPos == null) {
-            initPos = posPaperP.get();
-            initPosM = pos.get();
-        }
-
-        thisGraphics.beginDraw();
-
-        float nearPlane = 20;
-        float farPlane = 2000;
-
-        PVector paperCameraPos = new PVector();
-        PVector userPos = new PVector();
-
-        // get the position at the start of the program.
-        PVector tmp = initPos.get();
-        tmp.sub(posPaperP); //  tmp =  currentPos - initPos   (Position)
-
-        // Get the current paperSheet position
-        PMatrix3D newPos = pos.get();
-
-        newPos.invert();
-        newPos.m03 = 0;
-        newPos.m13 = 0;
-        newPos.m23 = 0;   // inverse of the Transformation (without position)
-
-        PVector tmp2 = userPos.get();
-        tmp2.mult(-scale);
-        tmp2.add(tmp);
-
-        newPos.mult(tmp2, paperCameraPos);
-
-        // http://www.gamedev.net/topic/597564-view-and-projection-matrices-for-vr-window-using-head-tracking/
-        thisGraphics.camera(paperCameraPos.x, paperCameraPos.y, paperCameraPos.z,
-                paperCameraPos.x, paperCameraPos.y, 0,
-                0, 1, 0);
-
-        float nearFactor = nearPlane / paperCameraPos.z;
-
-        float left = nearFactor * (-scale * size.x / 2f - paperCameraPos.x);
-        float right = nearFactor * (scale * size.x / 2f - paperCameraPos.x);
-        float top = nearFactor * (scale * size.y / 2f - paperCameraPos.y);
-        float bottom = nearFactor * (-scale * size.y / 2f - paperCameraPos.y);
-
-        thisGraphics.frustum(left, right, bottom, top, nearPlane, farPlane);
-
-        return thisGraphics;
-    }
-
-    /**
-     * Compute the position of the screen into the 3D scene.
-     *
-     * @param projector
-     */
-    protected void computeScreenPosition(Projector projector) {
-
-
-        // TODO: optimisation no more new ?
-
-        PMatrix3D mat = new PMatrix3D(1, 0, 0, 0,
-                0, 1, 0, 0,
-                0, 0, 1, 0,
-                0, 0, 0, 1);
-//        proj.scale(1, 1, -1);  // or is it ?
-
-        // go to the projector view || or stay camera view ?!
-//        proj.apply(projector.projExtrinsicsP3D);
-
-        // go to the paper place
-        mat.apply(pos);
-        paperPosRender1[0] = new PVector(mat.m03, mat.m13, mat.m23);
-        mat.translate(size.x, 0, 0);
-        paperPosRender1[1] = new PVector(mat.m03, mat.m13, mat.m23);
-        mat.translate(0, size.y, 0);
-        paperPosRender1[2] = new PVector(mat.m03, mat.m13, mat.m23);
-        mat.translate(-size.x, 0, 0);
-        paperPosRender1[3] = new PVector(mat.m03, mat.m13, mat.m23);
-
-
-//        GLGraphicsOffScreen projGraphics = projector.getGraphics();
-//        projGraphics.pushMatrix();
-//        projGraphics.modelview.apply(projector.projExtrinsicsP3DInv); // camera view - instead of projector view
-//        projGraphics.pushMatrix();
-//        projGraphics.modelview.apply(pos);    // Go te the paper position
-//
-//        paperPosRender1[0] = posPaperP.get();
-//
-//        projGraphics.translate(size.x, 0, 0);
-//        paperPosRender1[1] = new PVector(projGraphics.modelview.m03,
-//                projGraphics.modelview.m13,
-//                -projGraphics.modelview.m23);
-//
-//        projGraphics.translate(0, size.y, 0);
-//        paperPosRender1[2] = new PVector(projGraphics.modelview.m03,
-//                projGraphics.modelview.m13,
-//                -projGraphics.modelview.m23);
-//
-//        projGraphics.translate(-size.x, 0, 0);
-//        paperPosRender1[3] = new PVector(projGraphics.modelview.m03,
-//                projGraphics.modelview.m13,
-//                -projGraphics.modelview.m23);
-//        projGraphics.popMatrix();
-//
-////        // ScreenX from camera view
-////        for (int i = 0; i < nbPaperPosRender; i++) {
-////            paperPosScreen[i] =
-////                    new PVector(projGraphics.screenX(paperPosRender1[i].x, paperPosRender1[i].y, -paperPosRender1[i].z),
-////                    projGraphics.screenY(paperPosRender1[i].x, paperPosRender1[i].y, -paperPosRender1[i].z),
-////                    projGraphics.screenZ(paperPosRender1[i].x, paperPosRender1[i].y, -paperPosRender1[i].z));
-////        }
-//        projGraphics.popMatrix();
-    }
-
-    /////////////// NOTE : these 2 functions can be changed into a simple call... /////
-    /**
-     * Used for pointer projection
-     *
-     * @param pc
-     */
-    private void computeHomography(Projector pc) {
-        computeScreenPosition(pc);
-        for (int i = 0; i < 4; i++) {
-            homography.setPoint(true, i, paperPosRender1[i]);
-        }
-        homography.compute();
-        transformationProjPaper = homography.getTransformation();
-    }
-
-    /**
-     * Get the position on the screen of a 3D point.
-     *
-     * @param v
-     * @return
-     */
-    public Vec3D applyProjPaper(ReadonlyVec3D v) {
-        return transformationProjPaper.applyTo(v);
-    }
-
-    ///////////////////// PLANE COMPUTATION  //////////////////
-    private Plane computePlane(Projector projector) {
-
-        PMatrix3D proj = new PMatrix3D(1, 0, 0, 0,
-                0, 1, 0, 0,
-                0, 0, 1, 0,
-                0, 0, 0, 1);
-        // create a modelview matrix, like the projector one.
-//        proj.scale(1, 1, -1);  // or is it ?
-
-        // go to the projector view || or stay camera view ?!
-//        proj.apply(projector.projExtrinsicsP3D);
-
-        // go to the paper place
-        proj.apply(pos);
-
-        PVector center = new PVector(proj.m03, proj.m13, proj.m23);
-
-        // got a little higher for the normal.
-        proj.translate(0, 0, 10);
-        PVector normal = new PVector(proj.m03, proj.m13, proj.m23);
-
-//        projector.projExtrinsicsP3DInv.mult(center, center);
-//        projector.projExtrinsicsP3DInv.mult(normal, normal);
-//
-//             System.out.println("normale 1" + normal);
-
-        plane.set(new Vec3D(center.x, center.y, center.z));
-        plane.normal.set(new Vec3D(normal.x, normal.y, normal.z));
-
-//        System.out.println("Plane center " + center);
-//        System.out.println("Plane normal " + normal);
-//        System.out.println("Pos paper : " + posPaper);
-
-//   
-//        GLGraphicsOffScreen projGraphics = projector.getGraphics();
-//        projGraphics.pushMatrix();
-//        projGraphics.resetMatrix();
-//
-//        projGraphics.modelview.apply(pos);    // Go te the paper position
-//        projGraphics.translate(0, 0, 10);
-//
-//        // Do the TWO INVERT operations,  invert Z again and apply the inverse of the projExtrinsics
-//        PMatrix3D mv = projGraphics.modelview;
-//        
-//        PVector p1 = new PVector(mv.m03, mv.m13, mv.m23);  // get the current Point
-//        PVector normale = new PVector();
-//        projector.projExtrinsicsP3DInv.mult(p1, normale);   // move the currentPoint 
-//
-//        System.out.println("normale 2" + normale);
-//
-////        plane.set(posPaper);
-////        plane.normal.set(new Vec3D(normale.x, normale.y, normale.z));
-//        //    screenGFX.plane(plane, 100);
-//        projGraphics.popMatrix();
-
-//        System.out.println("Plane : " + plane);
-
-        return plane;
-    }
-
     ///////////////////// POINTER PROJECTION  ////////////////
     // GluUnproject
     // TODO: not working ???
+    /**
+     * UNSAFE DO NOT USE
+     *
+     * @param projector
+     * @param mouseX
+     * @param mouseY
+     * @param width
+     * @param height
+     * @return
+     */
     public ReadonlyVec3D projectMouse(Projector projector, int mouseX, int mouseY, int width, int height) {
 
         GLGraphicsOffScreen projGraphics = projector.getGraphics();
@@ -395,8 +208,8 @@ public class Screen {
 
     // TODO: more doc...
     /**
-     * Projects the position of a pointer in normalized screen space.
-     * If you need to undistort the pointer, do so before passing px and py.
+     * Projects the position of a pointer in normalized screen space. If you
+     * need to undistort the pointer, do so before passing px and py.
      *
      * @param px Normalized x position (0,1) in projector space
      * @param py Normalized y position (0,1) in projector space
@@ -412,7 +225,7 @@ public class Screen {
         projIntr.scale(1, 1, -1);
         // Set to the origin, as the plane was computed from the origin
         projIntr.apply(projector.getExtrinsics());
-        
+
         // invert for the inverse projection
         projIntr.invert();
 
@@ -439,6 +252,22 @@ public class Screen {
         PVector out = new PVector(res.x() / res.z(),
                 res.y() / res.z(), 0);
         return out;
+    }
+
+    public void setAutoUpdatePos(Camera camera, MarkerBoard board) {
+        pos3D = camera.getPosPointer(board);
+    }
+
+    public void setManualUpdatePos() {
+        pos3D = new float[16];
+    }
+
+    public boolean isDrawing() {
+        return isDrawing;
+    }
+
+    public void setDrawing(boolean isDrawing) {
+        this.isDrawing = isDrawing;
     }
 
     public float getHalfEyeDist() {

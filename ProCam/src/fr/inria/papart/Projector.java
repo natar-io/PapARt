@@ -210,9 +210,12 @@ public class Projector {
     }
 
     // TODO: un truc genre hasTouch // classe héritant
+    /**
+     * For all the screens computes the transformation from 3D space to screen space
+     */
     public void loadTouch() {
         for (Screen screen : screens) {
-            screen.initTouch(this);
+            screen.computeScreenPosTransform();
         }
     }
 
