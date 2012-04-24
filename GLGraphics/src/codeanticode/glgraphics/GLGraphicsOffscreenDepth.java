@@ -7,10 +7,10 @@ import javax.media.opengl.*;
 import com.sun.opengl.util.BufferUtil;
 
 /**
- * This class implements OpenGL renderer for off-screen depth rendering. The result of the
- * frame rendering is available as a texture that can be obtained by calling the
- * @getTexture method. Multisampling for antialiased rendering can be used depending
- * on the hardware capabilities.
+ * This class implements OpenGL renderer for off-screen depth rendering. The
+ * result of the frame rendering is available as a texture that can be obtained
+ * by calling the @getTexture method. Multisampling for antialiased rendering
+ * can be used depending on the hardware capabilities.
  */
 public class GLGraphicsOffscreenDepth extends GLGraphicsOffScreen implements GLConstants {
 
@@ -58,72 +58,23 @@ public class GLGraphicsOffscreenDepth extends GLGraphicsOffScreen implements GLC
         // Creating arrays for FBO and depth&stencil buffer.
         FBO = new GLFramebufferObject(gl);
 
+        // TODO: useless ??
+//        colorTex = new GLTexture(parent, width, height, new GLTextureParameters());
+
         // Create depth and stencil buffers.
-        depthStencilBuffer = GLState.createGLResource(GL_RENDER_BUFFER);
+//        depthStencilBuffer = GLState.createGLResource(GL_RENDER_BUFFER);
 
         // Creating color texture.
         depthTex = new GLTextureDepth(parent, width, height, GL.GL_DEPTH_COMPONENT);
 
-
-        // TODO: impossible
-//        if (multisampleEnabled) {
-//            multisampleFBO = new GLFramebufferObject(gl);
-//
-//            // Creating handle for multisample color buffer.
-//            colorBufferMulti = GLState.createGLResource(GL_RENDER_BUFFER);
-//
-//            // Bind render buffer.
-//            gl.glBindRenderbufferEXT(GL.GL_RENDERBUFFER_EXT, colorBufferMulti);
-//
-//            gl.glRenderbufferStorageMultisampleEXT(GL.GL_RENDERBUFFER_EXT, multisampleLevel,
-//                    GL.GL_RGBA8, width, height);
-//
-//            // Bind depth-stencil buffer.
-//            gl.glBindRenderbufferEXT(GL.GL_RENDERBUFFER_EXT, depthStencilBuffer);
-//
-//            // Allocating space for multisample depth buffer
-//            gl.glRenderbufferStorageMultisampleEXT(GL.GL_RENDERBUFFER_EXT, multisampleLevel,
-//                    GL_DEPTH24_STENCIL8, width, height);
-//
-//            // Creating handle for multisample FBO
-//            glstate.pushFramebuffer();
-//            glstate.setFramebuffer(multisampleFBO);
-//
-//            gl.glFramebufferRenderbufferEXT(GL.GL_FRAMEBUFFER_EXT, GL.GL_COLOR_ATTACHMENT0_EXT,
-//                    GL.GL_RENDERBUFFER_EXT, colorBufferMulti);
-//            gl.glFramebufferRenderbufferEXT(GL.GL_FRAMEBUFFER_EXT, GL.GL_DEPTH_ATTACHMENT_EXT,
-//                    GL.GL_RENDERBUFFER_EXT, depthStencilBuffer);
-//            gl.glFramebufferRenderbufferEXT(GL.GL_FRAMEBUFFER_EXT, GL.GL_STENCIL_ATTACHMENT_EXT,
-//                    GL.GL_RENDERBUFFER_EXT, depthStencilBuffer);
-//
-//            // Clearing all the bound buffers.
-//            gl.glClearColor(0f, 0f, 0f, 0.0f);
-//            gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT | GL.GL_STENCIL_BUFFER_BIT);
-//
-//            glstate.pushFramebuffer();
-//            glstate.setFramebuffer(FBO);
-//
-//            gl.glFramebufferTexture2DEXT(GL.GL_FRAMEBUFFER_EXT, GL.GL_COLOR_ATTACHMENT0_EXT,
-//                    GL.GL_TEXTURE_2D, colorTex.getTextureID(), 0);
-//
-//            stat = gl.glCheckFramebufferStatusEXT(GL.GL_FRAMEBUFFER_EXT);
-//            GLUtils.printFramebufferError(stat);
-//
-//            // Clearing color buffer only.
-//            gl.glClearColor(0f, 0f, 0f, 0.0f);
-//            gl.glClear(GL.GL_COLOR_BUFFER_BIT);
-//
-//            glstate.popFramebuffer();
-//            glstate.popFramebuffer();
-//        } else {
-        // / Regular, no multisampling, FBO setup.
-
-        gl.glBindRenderbufferEXT(GL.GL_RENDERBUFFER_EXT, depthStencilBuffer);
-        gl.glRenderbufferStorageEXT(GL.GL_RENDERBUFFER_EXT, GL_DEPTH24_STENCIL8, width, height);
+//        gl.glBindRenderbufferEXT(GL.GL_RENDERBUFFER_EXT, depthStencilBuffer);
+//        gl.glRenderbufferStorageEXT(GL.GL_RENDERBUFFER_EXT, GL_DEPTH24_STENCIL8, width, height);
 
         glstate.pushFramebuffer();
         glstate.setFramebuffer(FBO);
 
+        gl.glDrawBuffer(GL.GL_NONE);
+        gl.glReadBuffer(GL.GL_NONE);
 //        gl.glFramebufferTexture2DEXT(GL.GL_FRAMEBUFFER_EXT, GL.GL_COLOR_ATTACHMENT0_EXT,
 //                colorTex.getTextureTarget(), colorTex.getTextureID(), 0);
         gl.glFramebufferRenderbufferEXT(GL.GL_FRAMEBUFFER_EXT, GL.GL_DEPTH_ATTACHMENT_EXT,
@@ -134,8 +85,8 @@ public class GLGraphicsOffscreenDepth extends GLGraphicsOffScreen implements GLC
         FBO.checkFBO();
 
         // Clearing all the bound buffers.
-        gl.glClearColor(0f, 0f, 0f, 0.0f);
-        gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT | GL.GL_STENCIL_BUFFER_BIT);
+//        gl.glClearColor(0f, 0f, 0f, 0.0f);
+        gl.glClear(GL.GL_DEPTH_BUFFER_BIT);
 
         glstate.popFramebuffer();
 //        }
@@ -204,17 +155,20 @@ public class GLGraphicsOffscreenDepth extends GLGraphicsOffScreen implements GLC
 //        } else {
         glstate.pushFramebuffer();
         glstate.setFramebuffer(FBO);
-// HERE
-        gl.glDrawBuffer(GL.GL_NONE);
-        gl.glReadBuffer(GL.GL_NONE);
+
 
         gl.glFramebufferTexture2DEXT(GL.GL_FRAMEBUFFER_EXT, GL.GL_DEPTH_ATTACHMENT_EXT,
                 GL.GL_TEXTURE_2D, depthTex.getTextureID(), 0);
-//            FBO.setDrawBuffer(colorTex);
+// TODO: color 
+//        FBO.setDrawBuffer(colorTex);
 
+                
+// HERE TODO: useless ???
+        gl.glDrawBuffer(GL.GL_NONE);
+        gl.glReadBuffer(GL.GL_NONE);
 
         // Clearing Z-buffer to ensure that the new elements are drawn properly.
-        gl.glClearColor(0f, 0f, 0f, 0.0f);
+//        gl.glClearColor(0f, 0f, 0f, 0.0f);
         gl.glClear(GL.GL_DEPTH_BUFFER_BIT);
         gl.glColorMask(false, false, false, false);
         gl.glCullFace(GL.GL_FRONT);

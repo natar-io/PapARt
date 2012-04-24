@@ -4,6 +4,7 @@
  */
 package fr.inria.papart;
 
+import com.googlecode.javacv.cpp.opencv_core.CvMat;
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
 import processing.core.PApplet;
 import processing.core.PImage;
@@ -91,11 +92,12 @@ public class TrackedView {
             tmpImg = Utils.createImageFrom(iplImg, img);
         }
 
-        Utils.remapImage(screenP, outScreenP, iplImg, tmpImg, img);
+        CvMat homography = Utils.createHomography(screenP, outScreenP);
+        Utils.remapImage(homography, iplImg, tmpImg, img);
         return img;
     }
 
-    public MarkerBoard getBoard(){
+    public MarkerBoard getBoard() {
         return this.board;
     }
 }

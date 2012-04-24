@@ -22,12 +22,9 @@ public class Camera {
 
     protected int width, height;
     public ARTagDetector art;
-    protected CameraDevice cameraDevice;
     // Camera parameters
     protected PMatrix3D camIntrinsicsP3D;
     public PApplet parent;
-    public float offscreenScale;
-    PVector offscreenSize;
     ArrayList<TrackedView> trackedViews;
     MarkerBoard[] sheets;
     ARTThread thread = null;
@@ -42,16 +39,16 @@ public class Camera {
     }
 
     /**
-     * This object helds, a camera object. From a video stream, it extracts sub-images, and detect 
-     * marker boards using ARToolKitPlus. 
-     * 
+     * This object helds, a camera object. From a video stream, it extracts
+     * sub-images, and detect marker boards using ARToolKitPlus.
+     *
      * @param parent
      * @param camNo
      * @param width
      * @param height
      * @param calibrationYAML
      * @param calibrationData
-     * @param sheets 
+     * @param sheets
      */
     public Camera(PApplet parent, int camNo,
             int width, int height,
@@ -83,9 +80,11 @@ public class Camera {
         // Load the camera parameters. 
         try {
             CameraDevice[] camDev = CameraDevice.read(calibrationYAML);
-            if (camDev.length > 0) {
-                cameraDevice = camDev[0];
+
+            if (camDev.length <= 0) {
+                throw new Exception("No camera device in the calibration file: " + calibrationYAML);
             }
+            CameraDevice cameraDevice = camDev[0];
 
             double[] camMat = cameraDevice.cameraMatrix.get();
             camIntrinsicsP3D = new PMatrix3D((float) camMat[0], (float) camMat[1], (float) camMat[2], 0,
@@ -99,7 +98,7 @@ public class Camera {
     }
 
     /**
-     * It makes the camera update continuously. 
+     * It makes the camera update continuously.
      */
     public void setThread() {
         setThread(true);
@@ -126,8 +125,9 @@ public class Camera {
     }
 
     /**
-     * If the video is threaded, this sets if the tracking is on or not. 
-     * @param auto automatic Tag detection: ON if true. 
+     * If the video is threaded, this sets if the tracking is on or not.
+     *
+     * @param auto automatic Tag detection: ON if true.
      */
     public void setAutoUpdate(boolean auto) {
         if (thread != null) {
@@ -142,10 +142,10 @@ public class Camera {
     }
 
     /**
-     * Gets the 2D location in the image of a 3D point. 
-     * TODO: undistort ?
-     * @param pt  3D point seen by the camera. 
-     * @return 2D location of the 3D point in the image. 
+     * Gets the 2D location in the image of a 3D point. TODO: undistort ?
+     *
+     * @param pt 3D point seen by the camera.
+     * @return 2D location of the 3D point in the image.
      */
     public PVector getCamViewPoint(PVector pt) {
         PVector tmp = new PVector();
@@ -170,8 +170,9 @@ public class Camera {
     }
 
     /**
-     * Add a tracked view to the camera. This camera must be tracking the board already.
-     * Returns true if the camera is already tracking. 
+     * Add a tracked view to the camera. This camera must be tracking the board
+     * already. Returns true if the camera is already tracking.
+     *
      * @param view
      * @return
      */
@@ -182,7 +183,8 @@ public class Camera {
     }
 
     /**
-     * Get an image from the view. 
+     * Get an image from the view.
+     *
      * @param trackedView
      * @return
      */
@@ -192,6 +194,7 @@ public class Camera {
 
     /**
      * Get an image from the view.
+     *
      * @param trackedView
      * @return
      */
@@ -202,8 +205,9 @@ public class Camera {
         }
 
 //        grab(undistort);
-        if(!art.isReady(undistort))
+        if (!art.isReady(undistort)) {
             return null;
+        }
         float[] pos = art.findMarkers(trackedView.getBoard());
         trackedView.setPos(pos);
         trackedView.computeCorners(this);
@@ -211,10 +215,10 @@ public class Camera {
     }
 
     /**
-     * This function is typically to be used with high resolution camera. 
-     * It stops the video stream, takes a picture, takes the zone of interests and 
-     * returns it as an image. It restarts the video stream before exiting. 
-     * 
+     * This function is typically to be used with high resolution camera. It
+     * stops the video stream, takes a picture, takes the zone of interests and
+     * returns it as an image. It restarts the video stream before exiting.
+     *
      * @param sheet
      * @return image
      */
@@ -243,10 +247,11 @@ public class Camera {
     }
 
     /**
-     * This function is typically to be used with high resolution camera. 
-     * It stops the video stream, takes a picture, takess the zone of interests and 
-     * returns it as an array of images. It restarts the video stream before exiting. 
-     * 
+     * This function is typically to be used with high resolution camera. It
+     * stops the video stream, takes a picture, takess the zone of interests and
+     * returns it as an array of images. It restarts the video stream before
+     * exiting.
+     *
      * @param sheet
      * @return image
      */

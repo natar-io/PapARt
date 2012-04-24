@@ -16,7 +16,7 @@ public class Projector {
     public GLGraphicsOffScreen graphics;
     public ArrayList<Screen> screens;
     // TODO: this has to be useless.
-//    protected GLTexture finalImage;
+    protected GLTexture finalImage;
     // Projector information
     protected ProjectorDevice proj;
     protected PMatrix3D projIntrinsicsP3D, projExtrinsicsP3D, projExtrinsicsP3DInv;
@@ -30,15 +30,15 @@ public class Projector {
     private GL gl = null;
 
     /**
-     * Projector allows the use of a projector for Spatial Augmented reality setup. 
-     * This class creates an OpenGL context which allows 3D projection.
-     * 
+     * Projector allows the use of a projector for Spatial Augmented reality
+     * setup. This class creates an OpenGL context which allows 3D projection.
+     *
      * @param parent
      * @param calibrationYAML calibration file : OpenCV format
-     * @param width  resolution X
+     * @param width resolution X
      * @param height resolution Y
-     * @param near   OpenGL near plane (in mm) or the units used for calibration.
-     * @param far    OpenGL far plane  (in mm) or the units used for calibration.
+     * @param near OpenGL near plane (in mm) or the units used for calibration.
+     * @param far OpenGL far plane (in mm) or the units used for calibration.
      */
     public Projector(PApplet parent, String calibrationYAML,
             int width, int height,
@@ -64,7 +64,7 @@ public class Projector {
         loadInternalParams(calibrationYAML);
         initProjection(near, far);
         initModelView();
-        initDistortMap(proj);
+        initDistortMap();
     }
 
     private void loadInternalParams(String calibrationYAML) {
@@ -141,6 +141,7 @@ public class Projector {
 
     /**
      * graphics.modelview.apply(projExtrinsicsP3D);
+     *
      * @return
      */
     public PMatrix3D getExtrinsics() {
@@ -148,26 +149,61 @@ public class Projector {
     }
 
     /**
-     * This function initializes the distorsion map used by the distorsion shader.
-     * The texture is of the size of the projector resolution.
+     * This function initializes the distorsion map used by the distorsion
+     * shader. The texture is of the size of the projector resolution.
+     *
      * @param proj
      */
-    private void initDistortMap(ProjectorDevice proj) {
+    private void initDistortMap() {
         lensFilter = new GLTextureFilter(parent, "projDistort.xml");
-//        finalImage = new GLTexture(parent, frameWidth, frameHeight);
+        finalImage = new GLTexture(parent, frameWidth, frameHeight);
 
         myMap = new GLTexture(parent, frameWidth, frameHeight, GLTexture.FLOAT);
         float[] mapTmp = new float[frameWidth * frameHeight * 3];
         int k = 0;
+        
         for (int y = 0; y < frameHeight; y++) {
             for (int x = 0; x < frameWidth; x++) {
 
                 double[] out = proj.undistort(x, y);
-                mapTmp[k++] = (float) out[0] / frameWidth;
-                mapTmp[k++] = (float) out[1] / frameHeight;
+//                double[] out = proj.distort(x, y);
+                mapTmp[k++] = (float) (out[0] / frameWidth);
+                mapTmp[k++] = (float) (out[1] / frameHeight);
                 mapTmp[k++] = 0;
             }
         }
+
+
+//        double[] coord = new double[frameWidth * frameHeight * 2];
+//        k = 0;
+//        for (int y = 0; y < frameHeight; y++) {
+//            for (int x = 0; x < frameWidth; x++) {
+//                coord[k++] = x;
+//                coord[k++] = y;
+//            }
+//        }
+//
+//        int k2 = 0;
+//        k=0;
+//        double[] out = proj.undistort(coord);
+//        for (int y = 0; y < frameHeight; y++) {
+//            for (int x = 0; x < frameWidth; x++) {
+//
+//                mapTmp[k++] = (float) (out[k2++] / frameWidth);
+//                mapTmp[k++] = (float) (out[k2++] / frameHeight);
+//                mapTmp[k++] = 0;
+//            }
+//        }
+        
+        // linear mapping
+//        k = 0;
+//        for (int y = 0; y < frameHeight; y++) {
+//            for (int x = 0; x < frameWidth; x++) {
+//                mapTmp[k++] = (float )x / (float)frameWidth;
+//                mapTmp[k++] = (float) y / (float) frameHeight;
+//                mapTmp[k++] = 0;
+//            }
+//        }
         myMap.putBuffer(mapTmp, 3);
     }
 
@@ -189,29 +225,10 @@ public class Projector {
         graphics.endGL();
     }
 
-//    public void loadModelView() {
-//        graphics.modelview.set(getModelview1());
-//    }
-
-    /**
-     * No to use ? !
-     * @return
-     */
-    public GLGraphicsOffScreen loadGraphics() {
-
-//	graphics.beginDraw();
-//	graphics.clear(0);
-//	graphics.endDraw();
-
-        loadProjection();
-//        loadModelView();
-
-        return graphics;
-    }
-
     // TODO: un truc genre hasTouch // classe héritant
     /**
-     * For all the screens computes the transformation from 3D space to screen space
+     * For all the screens computes the transformation from 3D space to screen
+     * space
      */
     public void loadTouch() {
         for (Screen screen : screens) {
@@ -240,8 +257,9 @@ public class Projector {
         graphics.modelview.apply(getExtrinsics());
 
         for (Screen screen : screens) {
-            if(!screen.isDrawing())
+            if (!screen.isDrawing()) {
                 continue;
+            }
 
             graphics.pushMatrix();
 
@@ -258,15 +276,25 @@ public class Projector {
         graphics.endDraw();
     }
 
-    public PImage distort() {
-        GLTexture off = graphics.getTexture();
+    /**
+     * Distort the image and returns it (not working).
+     *
+     * @return
+     */
+    public PImage distort(boolean distort) {
+//        return graphics.getTexture();
+
+        if (!distort) {
+            return graphics.getTexture();
+        }
 
         // TODO: BUG : works once, cannot be disabled and enabled
-        off = graphics.getTexture();
-        lensFilter.apply(new GLTexture[]{off, myMap}, off);
+        GLTexture off = graphics.getTexture();
+//        lensFilter.apply(new GLTexture[]{off, myMap}, off);
+        lensFilter.apply(new GLTexture[]{off, myMap}, finalImage);
+//        lensFilter.apply(new GLTexture[]{off, myMap}, off);
 
-        return off;
-//        parent.image(finalImage, posX, posY, frameWidth, frameHeight);
+        return finalImage;
     }
 
     public void addScreen(Screen s) {
@@ -281,7 +309,6 @@ public class Projector {
 //    public PMatrix3D getModelview1() {
 //        return this.modelview1;
 //    }
-
     public PMatrix3D getProjectionInit() {
         return this.projectionInit;
     }

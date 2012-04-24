@@ -13,7 +13,7 @@ import processing.core.PVector;
 import processing.opengl.PGraphicsOpenGL;
 
 /**
- *
+ * DEPRECATED
  * @author jeremy
  */
 public class GLShadowMap {

@@ -2,10 +2,10 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package fr.inria.iparla.drawingapp.shape;
+package fr.inria.papart.drawingapp.shape;
 
-import fr.inria.iparla.drawingapp.Descriptor;
-import fr.inria.iparla.drawingapp.PositionDescriptor;
+import fr.inria.papart.drawingapp.Descriptor;
+import fr.inria.papart.drawingapp.PositionDescriptor;
 import processing.core.PGraphics3D;
 import processing.core.PVector;
 

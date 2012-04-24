@@ -12,6 +12,7 @@ import com.googlecode.javacv.cpp.ARToolKitPlus.Tracker;
 import com.googlecode.javacv.cpp.opencv_imgproc;
 import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.opencv_calib3d.*;
+import java.awt.image.BufferedImage;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -65,10 +66,36 @@ public class Utils {
 //            pO[i] = pL[i];
         }
         imgOut.updatePixels();
-        imgL.updatePixels();
+//        imgL.updatePixels();
 
     }
 
+        static public CvMat createHomography(PVector[] in, PVector[] out){
+
+        CvMat srcPoints;
+        CvMat dstPoints;
+        int nbPoints = in.length;
+        CvMat homography;
+
+        // TODO: no create map
+        srcPoints = cvCreateMat(2, in.length, CV_32FC1);
+        dstPoints = cvCreateMat(2, in.length, CV_32FC1);
+        homography = cvCreateMat(3, 3, CV_32FC1);
+
+        for (int i = 0; i < in.length; i++) {
+            srcPoints.put(i, in[i].x);
+            srcPoints.put(i + nbPoints, in[i].y);
+            dstPoints.put(i, out[i].x);
+            dstPoints.put(i + nbPoints, out[i].y);
+        }
+
+        cvFindHomography(srcPoints, dstPoints, homography);
+//       It is better to use : GetPerspectiveTransform
+        return homography;
+    }
+    
+    
+    
     static public void remapImage(PVector[] in, PVector[] out, IplImage imgIn, IplImage imgTmp, PImage Pout) {
 
         CvMat srcPoints;
@@ -76,6 +103,7 @@ public class Utils {
         int nbPoints = in.length;
         CvMat homography;
 
+        // TODO: no create map
         srcPoints = cvCreateMat(2, in.length, CV_32FC1);
         dstPoints = cvCreateMat(2, in.length, CV_32FC1);
         homography = cvCreateMat(3, 3, CV_32FC1);
@@ -90,59 +118,39 @@ public class Utils {
         cvFindHomography(srcPoints, dstPoints, homography);
 //       It is better to use : GetPerspectiveTransform
 
-
         opencv_imgproc.cvWarpPerspective(imgIn, imgTmp, homography);
         // opencv_imgproc.CV_INTER_LINEAR ); //                opencv_imgproc.CV_WARP_FILL_OUTLIERS);
 //                getFillColor());
         IplImageToPImage(imgTmp, false, Pout);
 
     }
+    
+    static public void remapImage(CvMat homography, IplImage imgIn, IplImage imgTmp, PImage Pout) {
+       
+        opencv_imgproc.cvWarpPerspective(imgIn, imgTmp, homography);
+        // opencv_imgproc.CV_INTER_LINEAR ); //                opencv_imgproc.CV_WARP_FILL_OUTLIERS);
+//                getFillColor());
+          IplImageToPImage(imgTmp, false, Pout);
 
-    static public void IplImageToPImage(IplImage img, PApplet applet, boolean RGB, PImage ret) {
-
-        IplImageToPImage(img, RGB, ret);
-
-//        assert (img.width() == ret.width);
-//        assert (img.height() == ret.height);
-//
-////        BufferedImage bimg = new BufferedImage();
-//        ByteBuffer buff = img.getByteBuffer();
-//
-//        //  PImage ret = new PImage(img.width(), img.height(), PApplet.RGB);
-//        ret.loadPixels();
-//        if (RGB) {
-//            for (int i = 0; i < img.width() * img.height(); i++) {
-//                int offset = i * 3;
-////            ret.pixels[i] = applet.color(buff.get(offset + 0) & 0xff, buff.get(offset + 1) & 0xFF, buff.get(offset + 2) & 0xff);
-//
-//                ret.pixels[i] = (buff.get(offset) & 0xFF) << 16
-//                        | (buff.get(offset + 1) & 0xFF) << 8
-//                        | (buff.get(offset + 2) & 0xFF);
-//
-//            }
-//        } else {
-//            for (int i = 0; i < img.width() * img.height(); i++) {
-//                int offset = i * 3;
-////            ret.pixels[i] = applet.color(buff.get(offset + 0) & 0xff, buff.get(offset + 1) & 0xFF, buff.get(offset + 2) & 0xff);
-//
-//                ret.pixels[i] = (buff.get(offset + 2) & 0xFF) << 16
-//                        | (buff.get(offset + 1) & 0xFF) << 8
-//                        | (buff.get(offset) & 0xFF);
-//
-//            }
-//
-//        }
-//        ret.updatePixels();
-//        //   return ret;
     }
 
+    static public void IplImageToPImage(IplImage img, PApplet applet, boolean RGB, PImage ret) {
+        IplImageToPImage(img, RGB, ret);
+    }
+
+    static int conversionCount = 0;
+    
     static public void IplImageToPImage(IplImage img, boolean RGB, PImage ret) {
 
+        conversionCount++;
+        if(conversionCount % 30 == 0)
+            System.gc();
+        
         assert (img.width() == ret.width);
         assert (img.height() == ret.height);
 //        BufferedImage bimg = new BufferedImage();
         ByteBuffer buff = img.getByteBuffer();
-
+        
         //  PImage ret = new PImage(img.width(), img.height(), PApplet.RGB);
         ret.loadPixels();
         if (RGB) {
@@ -167,11 +175,14 @@ public class Utils {
             }
 
         }
+        
+        buff = null;
         ret.updatePixels();
         //   return ret;
     }
 
-    /*
+    /**
+     * 
      * Deprecated
      */
     static public void PImageToIplImage(IplImage img, PApplet applet, boolean RGB, PImage ret) {
@@ -200,11 +211,6 @@ public class Utils {
         ret.updatePixels();
     }
 
-    void test(IplImage img) {
-        Tracker track = new Tracker();
-//        Camera cam = new Camera(img.imageData());
-
-    }
     //                                   int int  12 double  4 double
     static final int SIZE_OF_PARAM_SET = 4 + 4 + (3 * 4 * 8) + (4 * 8);
 

@@ -28,4 +28,8 @@ public class MarkerBoard {
     public String getName(){
         return name;
     }
+    
+    public String toString(){
+        return "MarkerBoard " + getName();
+    }
 }

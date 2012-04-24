@@ -2,17 +2,17 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package fr.inria.iparla.drawingapp;
+package fr.inria.papart.drawingapp;
 
-import fr.inria.iparla.drawingapp.shape.Arc;
-import fr.inria.iparla.drawingapp.shape.Bezier;
-import fr.inria.iparla.drawingapp.shape.Curve;
-import fr.inria.iparla.drawingapp.shape.Ellipse;
-import fr.inria.iparla.drawingapp.shape.Line;
-import fr.inria.iparla.drawingapp.shape.Quad;
-import fr.inria.iparla.drawingapp.shape.Rectangle;
-import fr.inria.iparla.drawingapp.shape.Shape;
-import fr.inria.iparla.drawingapp.shape.Triangle;
+import fr.inria.papart.drawingapp.shape.Arc;
+import fr.inria.papart.drawingapp.shape.Bezier;
+import fr.inria.papart.drawingapp.shape.Curve;
+import fr.inria.papart.drawingapp.shape.Ellipse;
+import fr.inria.papart.drawingapp.shape.Line;
+import fr.inria.papart.drawingapp.shape.Quad;
+import fr.inria.papart.drawingapp.shape.Rectangle;
+import fr.inria.papart.drawingapp.shape.Shape;
+import fr.inria.papart.drawingapp.shape.Triangle;
 import java.util.ArrayList;
 import fr.inria.papart.multitouchKinect.TouchPoint;
 import processing.core.PApplet;

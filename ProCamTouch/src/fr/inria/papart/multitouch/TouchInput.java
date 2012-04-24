@@ -25,7 +25,7 @@ public class TouchInput {
     private float touchHeight;
 
     public TouchInput(PApplet applet, String calibrationFile) {
-        this(applet, calibrationFile, 2, 8);
+        this(applet, calibrationFile, 1, 8);
         // TODO: use XML calibration file.
     }
 

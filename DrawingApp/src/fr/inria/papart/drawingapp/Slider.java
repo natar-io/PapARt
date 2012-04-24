@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package fr.inria.iparla.drawingapp;
+package fr.inria.papart.drawingapp;
 
 import fr.inria.papart.multitouchKinect.TouchPoint;
 import processing.core.PApplet;

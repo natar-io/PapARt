@@ -116,7 +116,6 @@ public class ARTagDetector {
                     transfo[12 + i] = 0;
                 }
                 transfo[15] = 0;
-
                 trackerMap.put(sheet, tracker);
                 transfosMap.put(sheet, transfo);
             }
@@ -187,13 +186,14 @@ public class ARTagDetector {
         for (int i = 0; i < 12; i++) {
             transfo[i] = (float) multiMarkerConfig.trans().get(i);
         }
-
+        
         return transfo;
     }
 
-    public boolean isReady(boolean undistort){
-        if(undistort)
+    public boolean isReady(boolean undistort) {
+        if (undistort) {
             return img2 != null;
+        }
         return iimg != null;
     }
 

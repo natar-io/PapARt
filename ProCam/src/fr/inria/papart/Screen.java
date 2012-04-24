@@ -76,14 +76,14 @@ public class Screen {
         PVector origin = new PVector(mat.m03, mat.m13, mat.m23);
 
         // got a little higher for the normal.
-        mat.translate(0, 0, 10);
+        mat.translate(0, 0, 20);
         PVector normal = new PVector(mat.m03, mat.m13, mat.m23);
 
         plane.set(new Vec3D(origin.x, origin.y, origin.z));
         plane.normal.set(new Vec3D(normal.x, normal.y, normal.z));
 
         // go back to the paper place
-        mat.translate(0, 0, -10);
+        mat.translate(0, 0, -20);
 
         paperPosCorners3D[0] = new PVector(mat.m03, mat.m13, mat.m23);
         mat.translate(size.x, 0, 0);
@@ -217,8 +217,12 @@ public class Screen {
      */
     public PVector projectPointer(Projector projector, float px, float py) {
 
-        float x = px * 2 - 1;
-        float y = py * 2 - 1;
+//        float x = px * 2 - 1;
+//        float y = py * 2 - 1;
+        double[] undist = projector.proj.undistort(px * projector.getWidth(), py * projector.getHeight());
+
+        float x = (float) undist[0] / projector.getWidth() * 2 - 1;
+        float y = (float) undist[1] / projector.getHeight() * 2 - 1;
 
         // First get the projector transformation. 
         PMatrix3D projIntr = projector.getProjectionInit().get();
@@ -254,14 +258,14 @@ public class Screen {
         return out;
     }
 
-    public void setAutoUpdatePos(Camera camera, MarkerBoard board) {
+    public boolean setAutoUpdatePos(Camera camera, MarkerBoard board) {
         pos3D = camera.getPosPointer(board);
+        return pos3D != null;
     }
 
-    public void setManualUpdatePos() {
-        pos3D = new float[16];
-    }
-
+//    public void setManualUpdatePos() {
+//        pos3D = new float[16];
+//    }
     public boolean isDrawing() {
         return isDrawing;
     }
@@ -282,6 +286,14 @@ public class Screen {
         return size;
     }
 
+    public float getDrawSizeX() {
+        return size.x * scale;
+    }
+
+    public float getDrawSizeY() {
+        return size.y * scale;
+    }
+
     public PMatrix3D getPos() {
         return pos;
     }
@@ -292,8 +304,7 @@ public class Screen {
 
     // Available only if pos3D is being updated elsewhere...
     public void updatePos() {
-
-
+        // TODO: no more allocation. 
         pos = new PMatrix3D(pos3D[0], pos3D[1], pos3D[2], pos3D[3],
                 pos3D[4], pos3D[5], pos3D[6], pos3D[7],
                 pos3D[8], pos3D[9], pos3D[10], pos3D[11],
@@ -320,23 +331,27 @@ public class Screen {
         posPaperP.z = pos3D[11];
     }
 
-    public void updatePosT() {
+    // Available only if pos3D is being updated elsewhere...
+    public void updatePos(Camera camera, MarkerBoard board) {
 
-        pos.m00 = pos3D[0];
-        pos.m01 = pos3D[4];
-        pos.m02 = pos3D[8];
+        pos3D = camera.getPosPointer(board);
 
-        pos.m10 = pos3D[1];
-        pos.m11 = pos3D[5];
-        pos.m12 = pos3D[9];
-
-        pos.m20 = pos3D[2];
-        pos.m12 = pos3D[6];
-        pos.m22 = pos3D[10];
-
-        pos.m03 = pos3D[3];
-        pos.m13 = pos3D[7];
-        pos.m23 = pos3D[11];
+        pos = new PMatrix3D(pos3D[0], pos3D[1], pos3D[2], pos3D[3],
+                pos3D[4], pos3D[5], pos3D[6], pos3D[7],
+                pos3D[8], pos3D[9], pos3D[10], pos3D[11],
+                0, 0, 0, 1);
+//        pos.m00 = pos3D[0];
+//        pos.m01 = pos3D[1];
+//        pos.m02 = pos3D[2];
+//        pos.m03 = pos3D[3];
+//        pos.m10 = pos3D[4];
+//        pos.m11 = pos3D[5];
+//        pos.m12 = pos3D[6];
+//        pos.m13 = pos3D[7];
+//        pos.m20 = pos3D[8];
+//        pos.m12 = pos3D[9];
+//        pos.m22 = pos3D[10];
+//        pos.m23 = pos3D[11];
 
         posPaper.x = pos3D[3];
         posPaper.y = pos3D[7];
@@ -346,31 +361,30 @@ public class Screen {
         posPaperP.y = pos3D[7];
         posPaperP.z = pos3D[11];
     }
-
-    public void setPos(float pos3D[]) {
-
-        // TODO: not optimal, need to check the pos3D creation / deletion
-        this.pos3D = pos3D;
-        pos.m00 = pos3D[0];
-        pos.m01 = pos3D[1];
-        pos.m02 = pos3D[2];
-        pos.m03 = pos3D[3];
-        pos.m10 = pos3D[4];
-        pos.m11 = pos3D[5];
-        pos.m12 = pos3D[6];
-        pos.m13 = pos3D[7];
-        pos.m20 = pos3D[8];
-        pos.m12 = pos3D[9];
-        pos.m22 = pos3D[10];
-        pos.m23 = pos3D[11];
-
-        posPaper.x = pos3D[3];
-        posPaper.y = pos3D[7];
-        posPaper.z = pos3D[11];
-
-        posPaperP.x = pos3D[3];
-        posPaperP.y = pos3D[7];
-        posPaperP.z = pos3D[11];
-
-    }
+//    public void setPos(float pos3D[]) {
+//
+//        // TODO: not optimal, need to check the pos3D creation / deletion
+//        this.pos3D = pos3D;
+//        pos.m00 = pos3D[0];
+//        pos.m01 = pos3D[1];
+//        pos.m02 = pos3D[2];
+//        pos.m03 = pos3D[3];
+//        pos.m10 = pos3D[4];
+//        pos.m11 = pos3D[5];
+//        pos.m12 = pos3D[6];
+//        pos.m13 = pos3D[7];
+//        pos.m20 = pos3D[8];
+//        pos.m12 = pos3D[9];
+//        pos.m22 = pos3D[10];
+//        pos.m23 = pos3D[11];
+//
+//        posPaper.x = pos3D[3];
+//        posPaper.y = pos3D[7];
+//        posPaper.z = pos3D[11];
+//
+//        posPaperP.x = pos3D[3];
+//        posPaperP.y = pos3D[7];
+//        posPaperP.z = pos3D[11];
+//
+//    }
 }
