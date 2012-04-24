@@ -7,6 +7,7 @@ import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import toxi.geom.*;
+import toxi.processing.ToxiclibsSupport;
 
 /**
  * This class implements a virtual screen. The position of the screen has to be
@@ -31,7 +32,7 @@ public class Screen {
     private PMatrix3D pos;
     private PVector size;
     private float scale;
-    private Plane plane = new Plane();
+    protected Plane plane = new Plane();
     private static final int nbPaperPosRender = 4;
     private PVector[] paperPosCorners3D = new PVector[nbPaperPosRender];
     protected Homography homography;
@@ -76,14 +77,18 @@ public class Screen {
         PVector origin = new PVector(mat.m03, mat.m13, mat.m23);
 
         // got a little higher for the normal.
-        mat.translate(0, 0, 20);
+
+        size.x += 20;
+        size.y += 20;
+
+        mat.translate(0, 0, -20);
         PVector normal = new PVector(mat.m03, mat.m13, mat.m23);
 
         plane.set(new Vec3D(origin.x, origin.y, origin.z));
         plane.normal.set(new Vec3D(normal.x, normal.y, normal.z));
 
         // go back to the paper place
-        mat.translate(0, 0, -20);
+        mat.translate(0, 0, 20);
 
         paperPosCorners3D[0] = new PVector(mat.m03, mat.m13, mat.m23);
         mat.translate(size.x, 0, 0);
@@ -92,6 +97,9 @@ public class Screen {
         paperPosCorners3D[2] = new PVector(mat.m03, mat.m13, mat.m23);
         mat.translate(-size.x, 0, 0);
         paperPosCorners3D[3] = new PVector(mat.m03, mat.m13, mat.m23);
+
+        size.x -= 20;
+        size.y -= 20;
 
         for (int i = 0; i < 4; i++) {
             homography.setPoint(true, i, paperPosCorners3D[i]);
@@ -204,58 +212,6 @@ public class Screen {
 
         ReadonlyVec3D res = plane.getIntersectionWithRay(ray);
         return res;
-    }
-
-    // TODO: more doc...
-    /**
-     * Projects the position of a pointer in normalized screen space. If you
-     * need to undistort the pointer, do so before passing px and py.
-     *
-     * @param px Normalized x position (0,1) in projector space
-     * @param py Normalized y position (0,1) in projector space
-     * @return Position of the pointer.
-     */
-    public PVector projectPointer(Projector projector, float px, float py) {
-
-//        float x = px * 2 - 1;
-//        float y = py * 2 - 1;
-        double[] undist = projector.proj.undistort(px * projector.getWidth(), py * projector.getHeight());
-
-        float x = (float) undist[0] / projector.getWidth() * 2 - 1;
-        float y = (float) undist[1] / projector.getHeight() * 2 - 1;
-
-        // First get the projector transformation. 
-        PMatrix3D projIntr = projector.getProjectionInit().get();
-        projIntr.scale(1, 1, -1);
-        // Set to the origin, as the plane was computed from the origin
-        projIntr.apply(projector.getExtrinsics());
-
-        // invert for the inverse projection
-        projIntr.invert();
-
-        // We get a 3D ray from the position 
-        PVector p1 = new PVector(x, y, -1);
-        PVector p2 = new PVector(x, y, 1f);
-        PVector out1 = new PVector();
-        PVector out2 = new PVector();
-        // z also between -1 and 1f
-
-        // view of the point from the projector.
-        Utils.mult(projIntr, p1, out1);
-        Utils.mult(projIntr, p2, out2);
-
-        Ray3D ray = new Ray3D(new Vec3D(out1.x, out1.y, out1.z),
-                new Vec3D(out2.x, out2.y, out2.z));
-
-        ReadonlyVec3D res = plane.getIntersectionWithRay(ray);
-        if (res == null) {
-            return null;
-        }
-
-        res = transformationProjPaper.applyTo(res);
-        PVector out = new PVector(res.x() / res.z(),
-                res.y() / res.z(), 0);
-        return out;
     }
 
     public boolean setAutoUpdatePos(Camera camera, MarkerBoard board) {

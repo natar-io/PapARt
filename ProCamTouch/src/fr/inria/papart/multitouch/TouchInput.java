@@ -109,10 +109,10 @@ public class TouchInput {
                         && tp.v.y >= 0 && tp.v.y < 1) {
 
                     PVector res, res2;
-                    res = screen.projectPointer(projector, tp.v.x, tp.v.y);
-
+                    res = projector.projectPointer(screen, tp.v.x, tp.v.y);
+                    
                     if (isSpeed2D) {
-                        res2 = (tp.oldV != null) ? screen.projectPointer(projector, tp.oldV.x, tp.oldV.y) : null;
+                        res2 = (tp.oldV != null) ? projector.projectPointer(screen, tp.oldV.x, tp.oldV.y) : null;
                     } else {
                         res2 = null;
                     }
@@ -148,10 +148,10 @@ public class TouchInput {
                         && tp.v.y >= 0 && tp.v.y < 1) {
 
                     PVector res, res2;
-                    res = screen.projectPointer(projector, tp.v.x, tp.v.y);
+                    res = projector.projectPointer(screen, tp.v.x, tp.v.y);
 
                     if (isSpeed3D) {
-                        res2 = (tp.oldV != null) ? screen.projectPointer(projector, tp.oldV.x, tp.oldV.y) : null;
+                        res2 = (tp.oldV != null) ? projector.projectPointer(screen, tp.oldV.x, tp.oldV.y) : null;
                     } else {
                         res2 = null;
                     }
