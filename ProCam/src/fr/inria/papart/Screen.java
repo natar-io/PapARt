@@ -78,9 +78,6 @@ public class Screen {
 
         // got a little higher for the normal.
 
-        size.x += 20;
-        size.y += 20;
-
         mat.translate(0, 0, -20);
         PVector normal = new PVector(mat.m03, mat.m13, mat.m23);
 
@@ -97,9 +94,6 @@ public class Screen {
         paperPosCorners3D[2] = new PVector(mat.m03, mat.m13, mat.m23);
         mat.translate(-size.x, 0, 0);
         paperPosCorners3D[3] = new PVector(mat.m03, mat.m13, mat.m23);
-
-        size.x -= 20;
-        size.y -= 20;
 
         for (int i = 0; i < 4; i++) {
             homography.setPoint(true, i, paperPosCorners3D[i]);
@@ -343,4 +337,22 @@ public class Screen {
 //        posPaperP.z = pos3D[11];
 //
 //    }
+
+    public PVector getZMinMax() {
+        
+        float znear = 300000;
+        float zfar = 0;
+        
+        for(int i =0; i < 4; i++){
+            
+           if(paperPosCorners3D[i].z < znear){
+                znear = paperPosCorners3D[i].z;
+           }
+           if(paperPosCorners3D[i].z > zfar){
+                zfar = paperPosCorners3D[i].z;
+           }
+           
+        }
+        return new PVector(znear, zfar);
+    }
 }

@@ -124,8 +124,10 @@ public class Projector {
         // Working params
         p00 = 2 * projIntrinsicsP3D.m00 / frameWidth;
         p11 = 2 * projIntrinsicsP3D.m11 / frameHeight;
-        p02 = -(2 * projIntrinsicsP3D.m02 / frameWidth - 1);
-        p12 = -(2 * projIntrinsicsP3D.m12 / frameHeight - 1);
+        p02 = -((projIntrinsicsP3D.m02 / frameWidth) * 2 - 1);
+//        p02 = -(2 * projIntrinsicsP3D.m02 / frameWidth  - 1);
+//        p12 = -(2 * projIntrinsicsP3D.m12 / frameHeight - 1);
+        p12 = -((projIntrinsicsP3D.m12 / frameHeight) * 2 - 1);
 
         graphics.beginDraw();
 
@@ -284,29 +286,12 @@ public class Projector {
             graphics.modelview.apply(screen.getPos());
 
             // Draw the screen image
-             graphics.image(screen.getTexture(), 0, 0, screen.getSize().x, screen.getSize().y);
+            graphics.image(screen.getTexture(), 0, 0, screen.getSize().x, screen.getSize().y);
 
             graphics.popMatrix();
 
             graphics.strokeWeight(4);
             graphics.stroke(200);
-            if (out1 != null) {
-//                toxi.sphere(new Sphere(new Vec3D(out1.x, out1.y, out1.z), 0.2f), 8);
-//                toxi.sphere(new Sphere(new Vec3D(out2.x, out2.y, out2.z), 0.2f), 8);
-//                toxi.point(new Vec3D(out2.x, out2.y, out2.z));
-            }
-            if (inter != null) {
-                toxi.sphere(new Sphere(inter, 2f), 8);
-                System.out.println("inter " + inter);
-            }
-
-            if (ray != null) {
-
-                toxi.ray(ray, dist);
-            }
-
-//            toxi.plane(screen.plane, 150);
-
         }
 
         // Put the projection matrix back to normal
@@ -335,6 +320,27 @@ public class Projector {
         return finalImage;
     }
 
+    private PMatrix3D createProjection(PVector nearFar) {
+
+        PMatrix3D init = graphics.projection.get();
+        graphics.beginDraw();
+
+        // TODO: magic numbers !!!
+        graphics.frustum(0, 0, 0, 0, nearFar.x, nearFar.y);
+
+        graphics.projection.m00 = projectionInit.m00;
+        graphics.projection.m11 = projectionInit.m11;
+        graphics.projection.m02 = projectionInit.m02;
+        graphics.projection.m12 = projectionInit.m12;
+
+        PMatrix3D out = graphics.projection.get();
+
+        graphics.endDraw();
+        graphics.projection.set(init);
+
+        return out;
+    }
+
     // TODO: more doc...
     /**
      * Projects the position of a pointer in normalized screen space. If you
@@ -353,44 +359,26 @@ public class Projector {
         float x = (float) undist[0] / getWidth() * 2 - 1;
         float y = (float) undist[1] / getHeight() * 2 - 1;
 
+        // Not the cleaniest method...
+        PMatrix3D invProjModelView = createProjection(screen.getZMinMax());
+        invProjModelView.scale(1, 1, -1);
+        invProjModelView.apply(getExtrinsics());
+        invProjModelView.invert();
 
-//        float prof = (posPaperP.z / (projector.zfar - projector.znear)) * 2 - 1;
-//        float prof = posPaperP.z / projector.zfar;
-//        System.out.println("profondeur : " + prof);
-        // We get a 3D ray from the position 
-//        PVector p1 = new PVector(x, y, 0);
-        PVector p1 = new PVector(x, y, -1);
-//        PVector p2 = new PVector(x, y, prof);
+        PVector p1 = new PVector(x, y, -1f);
         PVector p2 = new PVector(x, y, 1f);
-//        PVector p2 = new PVector(x, y, 0.85f);
-//        PVector out1 = new PVector();
-//        PVector out2 = new PVector();
-        out1 = new PVector();
-        out2 = new PVector();
-        // z also between -1 and 1f
+        PVector out1 = new PVector();
+        PVector out2 = new PVector();
 
         // view of the point from the projector.
         Utils.mult(invProjModelView, p1, out1);
         Utils.mult(invProjModelView, p2, out2);
 
-        System.out.println("out 1 " + out1);
-        System.out.println("out 2 " + out2);
-        ray = new Ray3D(new Vec3D(out1.x, out1.y, out1.z),
+        Ray3D ray = new Ray3D(new Vec3D(out1.x, out1.y, out1.z),
                 new Vec3D(out2.x, out2.y, out2.z));
 
-//        ReadonlyVec3D res = screen.plane.getIntersectionWithRay(ray);
-        inter = screen.plane.getIntersectionWithRay(ray);
-        dist = screen.plane.intersectRayDistance(ray);
-
-        System.out.println("Dist " + dist);
-        System.out.println("inter " + inter);
-
-//        PVector out3 = new PVector();
-//        float prof = dist / (float) zfar * 2 - 1;
-//
-//        PVector p3 = new PVector(0, 0, prof);
-//        Utils.mult(invProjModelView, p3, out3);
-//        System.out.println("prof et out 3 " + prof + "  " + out3);
+        ReadonlyVec3D inter = screen.plane.getIntersectionWithRay(ray);
+//        dist = screen.plane.intersectRayDistance(ray);
 
         if (inter == null) {
             return null;
@@ -399,14 +387,9 @@ public class Projector {
         Vec3D res = screen.transformationProjPaper.applyTo(inter);
         PVector out = new PVector(res.x() / res.z(),
                 res.y() / res.z(), 1);
-                System.out.println("out " + out);
         return out;
     }
-    // TEMPORARY 
-    PVector out1 = null, out2 = null;
-    private Ray3D ray = null;
-    private ReadonlyVec3D inter = null;
-float dist;
+
     public void addScreen(Screen s) {
         screens.add(s);
     }
