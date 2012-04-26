@@ -283,6 +283,12 @@ public class Camera {
         return out;
     }
 
+    public PImage getPImage(){
+        // TODO: verif non thread etc...
+        art.grab(true, true);
+        return art.getImage();
+    }
+    
 //    public PImage getLastPaperView(MarkerBoard sheet) {
 //        return trackedViews.get(sheet).img;
 //    }
