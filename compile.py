@@ -2,7 +2,7 @@
 import os
 
 
-sketchbookFolder = "../sketchbook/libraries/"
+sketchbookFolder = "../../sketchbook/libraries/"
 
 files = os.listdir(os.getcwd())
 
@@ -11,6 +11,6 @@ for file in files:
       print("entering folder " + file + "...")
       os.chdir(file)
       os.system("ant")
-      os.system("ln -s dist/" + file +".jar " + sketchbookFolder + file + "/library/")
+      os.system("ln -s dist/" + file +".jar " + sketchbookFolder + file + "/library/" + file + ".jar")
       os.chdir(os.pardir)
 
