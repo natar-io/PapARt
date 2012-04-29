@@ -236,12 +236,12 @@ public class Screen {
         return size;
     }
 
-    public float getDrawSizeX() {
-        return size.x * scale;
+    public int getDrawSizeX() {
+        return (int)  (size.x * scale);
     }
 
-    public float getDrawSizeY() {
-        return size.y * scale;
+    public int getDrawSizeY() {
+        return (int) (size.y * scale);
     }
 
     public PMatrix3D getPos() {
