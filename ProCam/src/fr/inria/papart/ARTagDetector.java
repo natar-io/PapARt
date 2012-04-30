@@ -5,24 +5,40 @@
 package fr.inria.papart;
 
 import com.googlecode.javacpp.BytePointer;
-import com.googlecode.javacv.CameraDevice;
-import com.googlecode.javacv.FrameGrabber;
+import com.googlecode.javacv.CameraDevice.Settings;
 import com.googlecode.javacv.FrameGrabber.ImageMode;
-import com.googlecode.javacv.MarkerDetector;
 import com.googlecode.javacv.OpenCVFrameGrabber;
 import com.googlecode.javacv.cpp.ARToolKitPlus;
 import com.googlecode.javacv.cpp.ARToolKitPlus.ARMultiMarkerInfoT;
 import com.googlecode.javacv.cpp.ARToolKitPlus.ArtLogFunction;
 import com.googlecode.javacv.cpp.ARToolKitPlus.MultiTracker;
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
+import com.googlecode.javacv.procamcalib.CalibrationWorker.ColorSettings;
+import com.googlecode.javacv.procamcalib.CalibrationWorker.GeometricSettings;
+
+import com.googlecode.javacv.CameraDevice;
+import com.googlecode.javacv.CameraSettings;
+import com.googlecode.javacv.FrameGrabber;
+import com.googlecode.javacv.Marker;
+import com.googlecode.javacv.MarkerDetector;
+import com.googlecode.javacv.ProjectiveDevice;
+import com.googlecode.javacv.ProjectorSettings;
+import com.googlecode.javacv.procamcalib.CalibrationWorker;
+
+import java.beans.IntrospectionException;
+import java.beans.PropertyVetoException;
+import java.beans.XMLDecoder;
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.DoubleBuffer;
 import java.nio.IntBuffer;
 import java.util.HashMap;
 import java.util.logging.Logger;
 import processing.core.PApplet;
 import processing.core.PImage;
+import processing.core.PVector;
 
 /**
  *
@@ -36,8 +52,10 @@ public class ARTagDetector {
     private CameraDevice cam;
     private IplImage img2 = null;
     private HashMap<MarkerBoard, float[]> transfosMap;
+    private HashMap<MarkerBoard, PVector> lastPosMap;
     private HashMap<MarkerBoard, MultiTracker> trackerMap;
     private boolean lastUndistorted;
+    static private boolean useSafeMode = false;
 
     public ARTagDetector(int device, int w, int h, int framerate, String yamlCameraProj, String cameraFile, MarkerBoard[] paperSheets) {
         this(device, null, w, h, framerate, yamlCameraProj, cameraFile, paperSheets);
@@ -70,13 +88,51 @@ public class ARTagDetector {
             if (device == -1) {
                 grabber = new OpenCVFrameGrabber(videoFile);
             } else {
-                grabber = new OpenCVFrameGrabber(device);
+
+                if (videoFile == null) {
+                    grabber = new OpenCVFrameGrabber(device);
+                } else {
+                    loadSettings(new File(videoFile));
+                    System.out.println("Settings loaded");
+//                    cam.setSettings((Settings) cameraSettings);
+//                    grabber = cam.createFrameGrabber();
+
+                                        System.out.println("Settings set");
+
+                    CameraDevice.Settings[] cs = cameraSettings.toArray();
+                    CameraDevice[] cameraDevices = new CameraDevice[cs.length];
+//                        cameraDevices = Arrays.copyOf(cameraDevices, cs.length);
+
+                    FrameGrabber[] frameGrabbers = new FrameGrabber[cs.length];
+                    for (int i = 0; i < cs.length; i++) {
+                        if (cameraDevices[i] == null) {
+                            cameraDevices[i] = new CameraDevice(cs[i]);
+                        } else {
+                            cameraDevices[i].setSettings(cs[i]);
+                        }
+                    }
+
+                    for (int i = 0; i < cameraDevices.length; i++) {
+                        frameGrabbers[i] = cameraDevices[i].createFrameGrabber();
+
+//                    grabber = cameraSettings.getFrameGrabber();
+                        System.out.println("Camera started");
+                    }
+                    
+                    grabber = frameGrabbers[0];
+                }
             }
-            grabber.setImageWidth(w);
-            grabber.setImageHeight(h);
-            grabber.setImageMode(ImageMode.RAW);
-            grabber.setFrameRate(framerate);
-            grabber.setDeinterlace(true);
+
+            if (device != 1 && videoFile != null) {
+            } else {
+
+                grabber.setImageWidth(w);
+                grabber.setImageHeight(h);
+                grabber.setImageMode(ImageMode.RAW);
+                grabber.setFrameRate(framerate);
+                grabber.setDeinterlace(true);
+                grabber.setNumBuffers(2);
+            }
 
             ArtLogFunction f = new ArtLogFunction() {
 
@@ -89,6 +145,9 @@ public class ARTagDetector {
 
             // ARToolkitPlus tracker 
             transfosMap = new HashMap<MarkerBoard, float[]>();
+            if (useSafeMode) {
+                lastPosMap = new HashMap<MarkerBoard, PVector>();
+            }
             trackerMap = new HashMap<MarkerBoard, MultiTracker>();
 
             for (MarkerBoard sheet : paperSheets) {
@@ -117,11 +176,44 @@ public class ARTagDetector {
                 }
                 transfo[15] = 0;
                 trackerMap.put(sheet, tracker);
+
+                if (useSafeMode) {
+                    lastPosMap.put(sheet, new PVector());
+                }
                 transfosMap.put(sheet, transfo);
             }
             grabber.start();
         } catch (Exception e) {
             System.out.println(e);
+        }
+    }
+    // From ProCamCalib
+    CameraSettings cameraSettings;
+    File calibrationFile;
+
+    private void loadSettings(File file) throws IOException, IntrospectionException, PropertyVetoException {
+        if (file == null) {
+            cameraSettings = null;
+        } else {
+            XMLDecoder decoder = new XMLDecoder(new BufferedInputStream(new FileInputStream(file)));
+
+            System.out.println("HEERERER");
+
+            System.out.println("HEERERER");
+            cameraSettings = (CameraSettings) decoder.readObject();
+            ProjectorSettings projectorSettings = (ProjectorSettings) decoder.readObject();
+            Marker.ArraySettings markerSettings = (Marker.ArraySettings) decoder.readObject();
+            MarkerDetector.Settings markerDetectorSettings = (MarkerDetector.Settings) decoder.readObject();
+            CalibrationWorker.GeometricSettings geometricCalibratorSettings = (CalibrationWorker.GeometricSettings) decoder.readObject();
+            CalibrationWorker.ColorSettings colorCalibratorSettings = (CalibrationWorker.ColorSettings) decoder.readObject();
+
+            try {
+                String s = (String) decoder.readObject();
+                calibrationFile = s == null ? null : new File(s);
+            } catch (java.lang.ArrayIndexOutOfBoundsException ex) {
+            }
+            decoder.close();
+            System.out.println("HEERERER");
         }
     }
 
@@ -183,10 +275,25 @@ public class ARTagDetector {
 //        DoubleBuffer buff = multiMarkerConfig.trans().asBuffer();
 //        DoubleBuffer buff = multiMarkerConfig.trans().asBuffer(12);
 
+        if (useSafeMode) {
+            PVector newPos = new PVector((float) multiMarkerConfig.trans().get(3),
+                    (float) multiMarkerConfig.trans().get(7),
+                    (float) multiMarkerConfig.trans().get(11));
+
+            PVector lastPos = lastPosMap.get(sheet);
+            System.out.println("Distance " + newPos.dist(lastPos));
+            if (newPos.dist(lastPos) > 30 && lastPos.x != 0 && lastPos.y != 0 && lastPos.z != 0) {
+                System.out.println("Tracking lost");
+                return transfo;
+            }
+
+            lastPos.set(newPos);
+        }
+
         for (int i = 0; i < 12; i++) {
             transfo[i] = (float) multiMarkerConfig.trans().get(i);
         }
-        
+
         return transfo;
     }
 

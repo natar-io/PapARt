@@ -64,9 +64,9 @@ public class Camera {
         this(parent, -1, fileName, width, height, calibrationYAML, calibrationData, sheets);
     }
 
-    protected Camera(PApplet parent, int camNo, String videoFile,
+    public Camera(PApplet parent, int camNo, String videoFile,
             int width, int height,
-            String calibrationYAML, String calibrationData,
+            String calibrationYAML, String calibrationData, 
             MarkerBoard[] sheets) {
 
 

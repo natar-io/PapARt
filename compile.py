@@ -11,6 +11,6 @@ for file in files:
       print("entering folder " + file + "...")
       os.chdir(file)
       os.system("ant")
-      os.system("ln -s dist/" + file +".jar " + sketchbookFolder + file + "/library/" + file + ".jar")
+      os.system("ln -s " + os.getcwd() + "/dist/" + file +".jar " + sketchbookFolder + file + "/library/" + file + ".jar")
       os.chdir(os.pardir)
 
