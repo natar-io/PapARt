@@ -20,7 +20,6 @@ import processing.core.PVector;
 
 public class Camera {
 
-    protected int width, height;
     public ARTagDetector art;
     // Camera parameters
     protected PMatrix3D camIntrinsicsP3D;
@@ -64,6 +63,11 @@ public class Camera {
         this(parent, -1, fileName, width, height, calibrationYAML, calibrationData, sheets);
     }
 
+    public Camera(PApplet parent, String settingsFile, String calibrationYAML, String calibrationData,
+            MarkerBoard[] sheets){
+         this(parent, -1, settingsFile, -1, -1, calibrationYAML, calibrationData, sheets);
+    }
+    
     public Camera(PApplet parent, int camNo, String videoFile,
             int width, int height,
             String calibrationYAML, String calibrationData, 
@@ -199,7 +203,8 @@ public class Camera {
      * @return
      */
     public PImage getView(TrackedView trackedView, boolean undistort) {
-        if (trackedView == null) {
+          
+           if (trackedView == null) {
             System.err.println("Error: paper sheet not registered as tracked view.");
             return null;
         }

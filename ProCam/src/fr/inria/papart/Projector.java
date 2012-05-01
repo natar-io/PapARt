@@ -4,6 +4,7 @@ import codeanticode.glgraphics.GLGraphicsOffScreen;
 import codeanticode.glgraphics.GLTexture;
 import codeanticode.glgraphics.GLTextureFilter;
 import com.googlecode.javacv.ProjectorDevice;
+import fr.inria.papart.multitouchKinect.TouchPoint;
 import java.util.ArrayList;
 import javax.media.opengl.GL;
 import processing.core.PApplet;
@@ -389,6 +390,12 @@ public class Projector {
                 res.y() / res.z(), 1);
         return out;
     }
+
+//    public PVector projectPointer(Screen screen, TouchPoint tp) {
+//        PVector out = projectPointer(screen, tp.v.x, tp.v.y);
+//        out.z = screen.plane.getDistanceToPoint(tp.vKinect);
+//        return out;
+//    }
 
     public void addScreen(Screen s) {
         screens.add(s);

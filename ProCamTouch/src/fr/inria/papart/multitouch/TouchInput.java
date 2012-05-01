@@ -59,6 +59,10 @@ public class TouchInput {
         return touchPoints2D;
     }
 
+    public ArrayList<TouchPoint> getTouchPoints3D() {
+        return touchPoints3D;
+    }
+
     public TouchElement projectTouchToScreen(Screen screen, Projector projector) {
         return projectTouchToScreen(screen, projector, true, true, true, true);
     }
@@ -110,7 +114,7 @@ public class TouchInput {
 
                     PVector res, res2;
                     res = projector.projectPointer(screen, tp.v.x, tp.v.y);
-                    
+
                     if (isSpeed2D) {
                         res2 = (tp.oldV != null) ? projector.projectPointer(screen, tp.oldV.x, tp.oldV.y) : null;
                     } else {
@@ -149,9 +153,13 @@ public class TouchInput {
 
                     PVector res, res2;
                     res = projector.projectPointer(screen, tp.v.x, tp.v.y);
+//                    res = projector.projectPointer(screen, tp);
+                    res.z = tp.v.z;
 
-                    if (isSpeed3D) {
-                        res2 = (tp.oldV != null) ? projector.projectPointer(screen, tp.oldV.x, tp.oldV.y) : null;
+                    if (isSpeed3D && tp.oldV != null) {
+                        res2 = projector.projectPointer(screen, tp.oldV.x, tp.oldV.y);
+                        res2.z = tp.oldV.z;
+//                        res2 = (tp.oldV != null) ? projector.projectPointer(screen, tp) : null;
                     } else {
                         res2 = null;
                     }
@@ -160,7 +168,7 @@ public class TouchInput {
 
                         // inside the paper sheet 	      
                         if (res.x >= 0 && res.x <= 1 && res.y >= 0 && res.y <= 1) {
-                            position3D.add(new PVector(res.x, res.y, tp.v.z ));
+                            position3D.add(new PVector(res.x, res.y, tp.v.z));
                         }
 
                         if (res2 != null) {
@@ -169,7 +177,7 @@ public class TouchInput {
                             //			if(res2.x >= 0 && res2.x <= 1 && res2.y >= 0 && res2.y <= 1)
                             speed3D.add(new PVector(res.x - res2.x,
                                     res.y - res2.y,
-                                    (tp.v.z - tp.oldV.z) ));
+                                    (tp.v.z - tp.oldV.z)));
                         }
                     }
 

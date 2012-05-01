@@ -52,10 +52,10 @@ public class ARTagDetector {
     private CameraDevice cam;
     private IplImage img2 = null;
     private HashMap<MarkerBoard, float[]> transfosMap;
-    private HashMap<MarkerBoard, PVector> lastPosMap;
     private HashMap<MarkerBoard, MultiTracker> trackerMap;
     private boolean lastUndistorted;
-    static private boolean useSafeMode = false;
+    //    private HashMap<MarkerBoard, PVector> lastPosMap;
+//    static private boolean useSafeMode = false;
 
     public ARTagDetector(int device, int w, int h, int framerate, String yamlCameraProj, String cameraFile, MarkerBoard[] paperSheets) {
         this(device, null, w, h, framerate, yamlCameraProj, cameraFile, paperSheets);
@@ -65,6 +65,8 @@ public class ARTagDetector {
         this(-1, fileName, w, h, framerate, yamlCameraProj, cameraFile, paperSheets);
     }
 
+    // TODO: ARTagDetector avec CameraDevice en parametre...
+    // TODO: Gestion du Grabber dans la classe Camera...
     protected ARTagDetector(int device, String videoFile, int w, int h, int framerate, String yamlCameraProj, String cameraFile, MarkerBoard[] paperSheets) {
 
         // check the files
@@ -83,49 +85,47 @@ public class ARTagDetector {
                 cam = c[0];
             }
 
-            pimg = new PImage(w, h, PApplet.RGB);
+            boolean useConfig = w == -1 && h == -1;
 
-            if (device == -1) {
-                grabber = new OpenCVFrameGrabber(videoFile);
-            } else {
 
-                if (videoFile == null) {
-                    grabber = new OpenCVFrameGrabber(device);
-                } else {
-                    loadSettings(new File(videoFile));
-                    System.out.println("Settings loaded");
-//                    cam.setSettings((Settings) cameraSettings);
-//                    grabber = cam.createFrameGrabber();
-
-                                        System.out.println("Settings set");
-
-                    CameraDevice.Settings[] cs = cameraSettings.toArray();
-                    CameraDevice[] cameraDevices = new CameraDevice[cs.length];
+            // TODO: load camera id ... or camera name ...
+            if (useConfig) {
+                loadSettings(new File(videoFile));
+                CameraDevice.Settings[] cs = cameraSettings.toArray();
+                CameraDevice[] cameraDevices = new CameraDevice[cs.length];
 //                        cameraDevices = Arrays.copyOf(cameraDevices, cs.length);
 
-                    FrameGrabber[] frameGrabbers = new FrameGrabber[cs.length];
-                    for (int i = 0; i < cs.length; i++) {
-                        if (cameraDevices[i] == null) {
-                            cameraDevices[i] = new CameraDevice(cs[i]);
-                        } else {
-                            cameraDevices[i].setSettings(cs[i]);
-                        }
+                FrameGrabber[] frameGrabbers = new FrameGrabber[cs.length];
+                for (int i = 0; i < cs.length; i++) {
+                    if (cameraDevices[i] == null) {
+                        cameraDevices[i] = new CameraDevice(cs[i]);
+                    } else {
+                        cameraDevices[i].setSettings(cs[i]);
                     }
+                }
 
-                    for (int i = 0; i < cameraDevices.length; i++) {
-                        frameGrabbers[i] = cameraDevices[i].createFrameGrabber();
+                for (int i = 0; i < cameraDevices.length; i++) {
+                    frameGrabbers[i] = cameraDevices[i].createFrameGrabber();
+                }
 
-//                    grabber = cameraSettings.getFrameGrabber();
-                        System.out.println("Camera started");
+                grabber = frameGrabbers[0];
+                w = grabber.getImageWidth();
+                h = grabber.getImageHeight();
+                System.out.println("Camera with width and height : "
+                        + grabber.getImageWidth() + "x" + grabber.getImageHeight());
+            } else {
+
+                if (device == -1) {
+                    grabber = new OpenCVFrameGrabber(videoFile);
+                } else {
+                    if (videoFile == null) {
+                        grabber = new OpenCVFrameGrabber(device);
+
                     }
-                    
-                    grabber = frameGrabbers[0];
                 }
             }
 
-            if (device != 1 && videoFile != null) {
-            } else {
-
+            if (!useConfig) {
                 grabber.setImageWidth(w);
                 grabber.setImageHeight(h);
                 grabber.setImageMode(ImageMode.RAW);
@@ -133,6 +133,8 @@ public class ARTagDetector {
                 grabber.setDeinterlace(true);
                 grabber.setNumBuffers(2);
             }
+
+            pimg = new PImage(w, h, PApplet.RGB);
 
             ArtLogFunction f = new ArtLogFunction() {
 
@@ -145,9 +147,9 @@ public class ARTagDetector {
 
             // ARToolkitPlus tracker 
             transfosMap = new HashMap<MarkerBoard, float[]>();
-            if (useSafeMode) {
-                lastPosMap = new HashMap<MarkerBoard, PVector>();
-            }
+//            if (useSafeMode) {
+//                lastPosMap = new HashMap<MarkerBoard, PVector>();
+//            }
             trackerMap = new HashMap<MarkerBoard, MultiTracker>();
 
             for (MarkerBoard sheet : paperSheets) {
@@ -177,9 +179,9 @@ public class ARTagDetector {
                 transfo[15] = 0;
                 trackerMap.put(sheet, tracker);
 
-                if (useSafeMode) {
-                    lastPosMap.put(sheet, new PVector());
-                }
+//                if (useSafeMode) {
+//                    lastPosMap.put(sheet, new PVector());
+//                }
                 transfosMap.put(sheet, transfo);
             }
             grabber.start();
@@ -197,9 +199,6 @@ public class ARTagDetector {
         } else {
             XMLDecoder decoder = new XMLDecoder(new BufferedInputStream(new FileInputStream(file)));
 
-            System.out.println("HEERERER");
-
-            System.out.println("HEERERER");
             cameraSettings = (CameraSettings) decoder.readObject();
             ProjectorSettings projectorSettings = (ProjectorSettings) decoder.readObject();
             Marker.ArraySettings markerSettings = (Marker.ArraySettings) decoder.readObject();
@@ -213,7 +212,6 @@ public class ARTagDetector {
             } catch (java.lang.ArrayIndexOutOfBoundsException ex) {
             }
             decoder.close();
-            System.out.println("HEERERER");
         }
     }
 
@@ -227,8 +225,11 @@ public class ARTagDetector {
 
     public void grab(boolean undistort, boolean copy) {
         try {
-            iimg = grabber.grab();
+
             this.lastUndistorted = undistort;
+
+            iimg = grabber.grab();
+            
             if (undistort) {
                 if (img2 == null) {
                     img2 = iimg.clone();
@@ -249,7 +250,6 @@ public class ARTagDetector {
                 }
                 pimg.updatePixels();
             }
-
         } catch (Exception e) {
             System.out.println("Exception in findMarkers " + e);
         }
@@ -272,23 +272,21 @@ public class ARTagDetector {
         }
 
         ARMultiMarkerInfoT multiMarkerConfig = tracker.getMultiMarkerConfig();
-//        DoubleBuffer buff = multiMarkerConfig.trans().asBuffer();
-//        DoubleBuffer buff = multiMarkerConfig.trans().asBuffer(12);
 
-        if (useSafeMode) {
-            PVector newPos = new PVector((float) multiMarkerConfig.trans().get(3),
-                    (float) multiMarkerConfig.trans().get(7),
-                    (float) multiMarkerConfig.trans().get(11));
-
-            PVector lastPos = lastPosMap.get(sheet);
-            System.out.println("Distance " + newPos.dist(lastPos));
-            if (newPos.dist(lastPos) > 30 && lastPos.x != 0 && lastPos.y != 0 && lastPos.z != 0) {
-                System.out.println("Tracking lost");
-                return transfo;
-            }
-
-            lastPos.set(newPos);
-        }
+//        if (useSafeMode) {
+//            PVector newPos = new PVector((float) multiMarkerConfig.trans().get(3),
+//                    (float) multiMarkerConfig.trans().get(7),
+//                    (float) multiMarkerConfig.trans().get(11));
+//
+//            PVector lastPos = lastPosMap.get(sheet);
+//            System.out.println("Distance " + newPos.dist(lastPos));
+//            if (newPos.dist(lastPos) > 30 && lastPos.x != 0 && lastPos.y != 0 && lastPos.z != 0) {
+//                System.out.println("Tracking lost");
+//                return transfo;
+//            }
+//
+//            lastPos.set(newPos);
+//        }
 
         for (int i = 0; i < 12; i++) {
             transfo[i] = (float) multiMarkerConfig.trans().get(i);

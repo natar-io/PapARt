@@ -120,6 +120,22 @@ public class Touch3D {
             int[] depth, boolean[] isValidPoints,
             Plane plane,
             Matrix4x4 homographyTransform,
+            PlaneSelection planeSelection, int skip) {
+       
+        return find3D(validPoints,
+                points, projPoints,
+                depth, isValidPoints,
+                plane,
+                homographyTransform,
+                planeSelection, skip,
+                1);
+    }
+
+    public static ArrayList<TouchPoint> find3D(ArrayList<Integer> validPoints,
+            Vec3D[] points, Vec3D[] projPoints,
+            int[] depth, boolean[] isValidPoints,
+            Plane plane,
+            Matrix4x4 homographyTransform,
             PlaneSelection planeSelection, int skip,
             float height3D) {
 
