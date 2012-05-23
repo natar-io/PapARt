@@ -154,11 +154,12 @@ public class TouchInput {
                     PVector res, res2;
                     res = projector.projectPointer(screen, tp.v.x, tp.v.y);
 //                    res = projector.projectPointer(screen, tp);
-                    res.z = tp.v.z;
-
+                    
                     if (isSpeed3D && tp.oldV != null) {
                         res2 = projector.projectPointer(screen, tp.oldV.x, tp.oldV.y);
-                        res2.z = tp.oldV.z;
+                        
+                        if(res2 != null)
+                            res2.z = tp.oldV.z;
 //                        res2 = (tp.oldV != null) ? projector.projectPointer(screen, tp) : null;
                     } else {
                         res2 = null;
@@ -166,6 +167,7 @@ public class TouchInput {
 
                     if (res != null) {
 
+                         res.z = tp.v.z;
                         // inside the paper sheet 	      
                         if (res.x >= 0 && res.x <= 1 && res.y >= 0 && res.y <= 1) {
                             position3D.add(new PVector(res.x, res.y, tp.v.z));

@@ -114,16 +114,21 @@ public class Screen {
         return initDraw(userPos, nearPlane, farPlane, false, false, true);
     }
 
-    // TODO: optionnal args.
     public GLGraphicsOffScreen initDraw(PVector userPos, float nearPlane, float farPlane, boolean isAnaglyph, boolean isLeft, boolean isOnly) {
+        return initDraw(userPos, nearPlane, farPlane, isAnaglyph, isLeft, isOnly, thisGraphics);
+    }
+    // TODO: optionnal args.
+    public GLGraphicsOffScreen initDraw(PVector userPos, float nearPlane, float farPlane, boolean isAnaglyph, boolean isLeft, boolean isOnly, GLGraphicsOffScreen graphics) {
         if (initPos == null) {
+            System.out.println("InitPos ");
+            pos.print();
             initPos = posPaperP.get();
             initPosM = pos.get();
         }
 
         if (isOnly) {
-            thisGraphics.beginDraw();
-            thisGraphics.clear(0);
+            graphics.beginDraw();
+            graphics.clear(0);
         }
 
 //	float nearPlane = 10;
@@ -153,7 +158,7 @@ public class Screen {
         newPos.mult(tmp2, paperCameraPos);
 
         // http://www.gamedev.net/topic/597564-view-and-projection-matrices-for-vr-window-using-head-tracking/
-        thisGraphics.camera(paperCameraPos.x, paperCameraPos.y, paperCameraPos.z,
+        graphics.camera(paperCameraPos.x, paperCameraPos.y, paperCameraPos.z,
                 paperCameraPos.x, paperCameraPos.y, 0,
                 0, 1, 0);
 
@@ -164,9 +169,9 @@ public class Screen {
         float top = nearFactor * (scale * size.y / 2f - paperCameraPos.y);
         float bottom = nearFactor * (-scale * size.y / 2f - paperCameraPos.y);
 
-        thisGraphics.frustum(left, right, bottom, top, nearPlane, farPlane);
+        graphics.frustum(left, right, bottom, top, nearPlane, farPlane);
 
-        return thisGraphics;
+        return graphics;
     }
 
     ///////////////////// POINTER PROJECTION  ////////////////
@@ -281,6 +286,11 @@ public class Screen {
         posPaperP.z = pos3D[11];
     }
 
+    
+    public void setPos(PMatrix3D position){
+        pos = position.get();
+    }
+    
     // Available only if pos3D is being updated elsewhere...
     public void updatePos(Camera camera, MarkerBoard board) {
 

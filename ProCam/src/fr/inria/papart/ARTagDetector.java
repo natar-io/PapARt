@@ -131,7 +131,10 @@ public class ARTagDetector {
                 grabber.setImageMode(ImageMode.RAW);
                 grabber.setFrameRate(framerate);
                 grabber.setDeinterlace(true);
-                grabber.setNumBuffers(2);
+//                grabber.setTriggerMode(false);
+//                grabber.setNumBuffers(6);
+//                grabber.setTriggerMode(true);
+//                grabber.flush();
             }
 
             pimg = new PImage(w, h, PApplet.RGB);
@@ -227,7 +230,7 @@ public class ARTagDetector {
         try {
 
             this.lastUndistorted = undistort;
-
+//            grabber.trigger();
             iimg = grabber.grab();
             
             if (undistort) {

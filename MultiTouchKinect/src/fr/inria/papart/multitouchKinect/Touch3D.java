@@ -153,8 +153,8 @@ public class Touch3D {
         int minSize = 30; // in pixels
 
 //        ClosestComparator cc = new ClosestComparator(projPoints);
-        ClosestComparatorY cch = new ClosestComparatorY(projPoints);
-//        ClosestComparatorHeight cch = new ClosestComparatorHeight(points,planeSelection);
+//        ClosestComparatorY cch = new ClosestComparatorY(projPoints);
+        ClosestComparatorHeight cch = new ClosestComparatorHeight(points,planeSelection);
 
         // remove too small elements
         for (ArrayList<Integer> vint : allNeighbourhood) {

@@ -84,8 +84,8 @@ public class Touch {
             return null;
         }
 
-        int searchDepth = 3 * skip; // on each direction
-        int searchDepth2 = 2 * skip; // on each direction
+        int searchDepth = 5 * skip; // on each direction
+        int searchDepth2 = 5 * skip; // on each direction
 
         ////  Each detected Point is going to be parsed.
         boolean readPoints[] = new boolean[MyApplet.w * MyApplet.h];

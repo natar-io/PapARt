@@ -291,6 +291,7 @@ public class Camera {
     public PImage getPImage(){
         // TODO: verif non thread etc...
         art.grab(true, true);
+//        art.grab(false, true);
         return art.getImage();
     }
     
