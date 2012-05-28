@@ -87,6 +87,16 @@ public class TrackedView {
         }
     }
 
+    protected IplImage getImageIpl(IplImage iplImg) {
+        if (tmpImg == null) {
+            tmpImg = Utils.createImageFrom(iplImg, img);
+        }
+
+        CvMat homography = Utils.createHomography(screenP, outScreenP);
+        Utils.remapImageIpl(homography, iplImg, tmpImg);
+        return tmpImg;
+    }
+
     protected PImage getImage(IplImage iplImg) {
         if (tmpImg == null) {
             tmpImg = Utils.createImageFrom(iplImg, img);
@@ -99,5 +109,39 @@ public class TrackedView {
 
     public MarkerBoard getBoard() {
         return this.board;
+    }
+    
+    
+    
+    
+    
+    protected void computeCorners(ImageWithTags itw) {
+        PMatrix3D newPos = pos.get();
+
+        cornerPos[0].x = newPos.m03;
+        cornerPos[0].y = newPos.m13;
+        cornerPos[0].z = newPos.m23;
+
+        PMatrix3D tmp = new PMatrix3D();
+        tmp.apply(pos);
+
+        tmp.translate(board.width, 0, 0);
+        cornerPos[1].x = tmp.m03;
+        cornerPos[1].y = tmp.m13;
+        cornerPos[1].z = tmp.m23;
+
+        tmp.translate(0, board.height, 0);
+        cornerPos[2].x = tmp.m03;
+        cornerPos[2].y = tmp.m13;
+        cornerPos[2].z = tmp.m23;
+
+        tmp.translate(-board.width, 0, 0);
+        cornerPos[3].x = tmp.m03;
+        cornerPos[3].y = tmp.m13;
+        cornerPos[3].z = tmp.m23;
+
+        for (int i = 0; i < 4; i++) {
+            screenP[i] = itw.getCamViewPoint(cornerPos[i]);
+        }
     }
 }

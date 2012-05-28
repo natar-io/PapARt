@@ -133,6 +133,14 @@ public class Utils {
           IplImageToPImage(imgTmp, false, Pout);
 
     }
+    
+        
+    static public void remapImageIpl(CvMat homography, IplImage imgIn, IplImage imgOut) {
+       
+        opencv_imgproc.cvWarpPerspective(imgIn, imgOut, homography);
+        // opencv_imgproc.CV_INTER_LINEAR ); //                opencv_imgproc.CV_WARP_FILL_OUTLIERS);
+//                getFillColor());
+    }
 
     static public void IplImageToPImage(IplImage img, PApplet applet, boolean RGB, PImage ret) {
         IplImageToPImage(img, RGB, ret);
@@ -257,6 +265,7 @@ public class Utils {
         return;
     }
 
+    
     static public void convertProjParam(PApplet pa, String inputYAML, String outputDAT, int w, int h) throws Exception {
 
         ProjectorDevice proj = null;

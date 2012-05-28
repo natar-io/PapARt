@@ -165,6 +165,7 @@ public class MultiTouchKinect {
     }
 
     public ArrayList<TouchPoint> find2DTouch(int skip) {
+        
         assert (skip > 0);
         kinectVisu.kinectVisuSkip = skip;
         ArrayList<Integer> imgVec = kinectVisu.view(validPoints, kinectPoints, projPoints,
@@ -185,7 +186,7 @@ public class MultiTouchKinect {
             }
             return touchPoints;
         }
-
+           
         // many previous points, try to find correspondances.
         ArrayList<TouchPointTracker> tpt = new ArrayList<TouchPointTracker>();
         for (TouchPoint tpNew : touchPoints) {
@@ -316,6 +317,7 @@ public class MultiTouchKinect {
             for (TouchPoint tp : touchPoints) {
                 tp.updateTime = applet.millis();
                 touchPoint3D.add(tp);
+//                tp.filter();
             }
             return touchPoints;
         }
@@ -346,6 +348,7 @@ public class MultiTouchKinect {
                 tp.updateTime = applet.millis();
                 touchPoint3D.add(tp);
                 ret.add(tp);
+//                tp.filter();
             }
         }
 

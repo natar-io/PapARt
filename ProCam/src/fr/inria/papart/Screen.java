@@ -39,6 +39,7 @@ public class Screen {
     protected Matrix4x4 transformationProjPaper;
     private float halfEyeDist = 20; // 2cm
     private boolean isDrawing = true;
+    private OneEuroFilter[] filters = null;
 
     public Screen(PApplet parent, PVector size, float scale) {
         this(parent, size, scale, false, 1);
@@ -54,6 +55,29 @@ public class Screen {
         posPaperP = new PVector();
         initHomography();
 //        initImageGetter();
+    }
+
+    public void setFiltering(double freq, double minCutOff) {
+        if (filters == null) {
+            initFilters(freq);
+        }
+        try {
+            for (int i = 0; i < 12; i++) {
+                filters[i].setFrequency(freq);
+                filters[i].setMinCutoff(minCutOff);
+            }
+        } catch (Exception e) {
+        }
+
+    }
+
+    private void initFilters(double freq) {
+        try {
+            for (int i = 0; i < 12; i++) {
+                filters[i] = new OneEuroFilter(freq);
+            }
+        } catch (Exception e) {
+        }
     }
 
     ////////////////// 3D SPACE TO PAPER HOMOGRAPHY ///////////////
@@ -118,6 +142,7 @@ public class Screen {
         return initDraw(userPos, nearPlane, farPlane, isAnaglyph, isLeft, isOnly, thisGraphics);
     }
     // TODO: optionnal args.
+
     public GLGraphicsOffScreen initDraw(PVector userPos, float nearPlane, float farPlane, boolean isAnaglyph, boolean isLeft, boolean isOnly, GLGraphicsOffScreen graphics) {
         if (initPos == null) {
             System.out.println("InitPos ");
@@ -242,7 +267,7 @@ public class Screen {
     }
 
     public int getDrawSizeX() {
-        return (int)  (size.x * scale);
+        return (int) (size.x * scale);
     }
 
     public int getDrawSizeY() {
@@ -259,23 +284,45 @@ public class Screen {
 
     // Available only if pos3D is being updated elsewhere...
     public void updatePos() {
-        // TODO: no more allocation. 
-        pos = new PMatrix3D(pos3D[0], pos3D[1], pos3D[2], pos3D[3],
-                pos3D[4], pos3D[5], pos3D[6], pos3D[7],
-                pos3D[8], pos3D[9], pos3D[10], pos3D[11],
-                0, 0, 0, 1);
-//        pos.m00 = pos3D[0];
-//        pos.m01 = pos3D[1];
-//        pos.m02 = pos3D[2];
-//        pos.m03 = pos3D[3];
-//        pos.m10 = pos3D[4];
-//        pos.m11 = pos3D[5];
-//        pos.m12 = pos3D[6];
-//        pos.m13 = pos3D[7];
-//        pos.m20 = pos3D[8];
-//        pos.m12 = pos3D[9];
-//        pos.m22 = pos3D[10];
-//        pos.m23 = pos3D[11];
+
+        if (pos == null) {
+            pos = new PMatrix3D(pos3D[0], pos3D[1], pos3D[2], pos3D[3],
+                    pos3D[4], pos3D[5], pos3D[6], pos3D[7],
+                    pos3D[8], pos3D[9], pos3D[10], pos3D[11],
+                    0, 0, 0, 1);
+        } else {
+
+            if (filters != null) {
+                try {
+                    pos.m00 = (float) filters[0].filter(pos3D[0]);
+                    pos.m01 = (float) filters[1].filter(pos3D[1]);
+                    pos.m02 = (float) filters[2].filter(pos3D[2]);
+                    pos.m03 = (float) filters[3].filter(pos3D[3]);
+                    pos.m10 = (float) filters[4].filter(pos3D[4]);
+                    pos.m11 = (float) filters[5].filter(pos3D[5]);
+                    pos.m12 = (float) filters[6].filter(pos3D[6]);
+                    pos.m13 = (float) filters[7].filter(pos3D[7]);
+                    pos.m20 = (float) filters[8].filter(pos3D[8]);
+                    pos.m12 = (float) filters[9].filter(pos3D[9]);
+                    pos.m22 = (float) filters[10].filter(pos3D[10]);
+                    pos.m23 = (float) filters[11].filter(pos3D[11]);
+                } catch (Exception e) {
+                }
+            } else {
+                pos.m00 = pos3D[0];
+                pos.m01 = pos3D[1];
+                pos.m02 = pos3D[2];
+                pos.m03 = pos3D[3];
+                pos.m10 = pos3D[4];
+                pos.m11 = pos3D[5];
+                pos.m12 = pos3D[6];
+                pos.m13 = pos3D[7];
+                pos.m20 = pos3D[8];
+                pos.m12 = pos3D[9];
+                pos.m22 = pos3D[10];
+                pos.m23 = pos3D[11];
+            }
+        }
 
         posPaper.x = pos3D[3];
         posPaper.y = pos3D[7];
@@ -286,11 +333,10 @@ public class Screen {
         posPaperP.z = pos3D[11];
     }
 
-    
-    public void setPos(PMatrix3D position){
+    public void setPos(PMatrix3D position) {
         pos = position.get();
     }
-    
+
     // Available only if pos3D is being updated elsewhere...
     public void updatePos(Camera camera, MarkerBoard board) {
 
@@ -349,19 +395,19 @@ public class Screen {
 //    }
 
     public PVector getZMinMax() {
-        
+
         float znear = 300000;
         float zfar = 0;
-        
-        for(int i =0; i < 4; i++){
-            
-           if(paperPosCorners3D[i].z < znear){
+
+        for (int i = 0; i < 4; i++) {
+
+            if (paperPosCorners3D[i].z < znear) {
                 znear = paperPosCorners3D[i].z;
-           }
-           if(paperPosCorners3D[i].z > zfar){
+            }
+            if (paperPosCorners3D[i].z > zfar) {
                 zfar = paperPosCorners3D[i].z;
-           }
-           
+            }
+
         }
         return new PVector(znear, zfar);
     }

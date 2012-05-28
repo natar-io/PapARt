@@ -54,7 +54,7 @@ public class ARTagDetector {
     private HashMap<MarkerBoard, float[]> transfosMap;
     private HashMap<MarkerBoard, MultiTracker> trackerMap;
     private boolean lastUndistorted;
-    //    private HashMap<MarkerBoard, PVector> lastPosMap;
+        private HashMap<MarkerBoard, PVector> lastPosMap;
 //    static private boolean useSafeMode = false;
 
     public ARTagDetector(int device, int w, int h, int framerate, String yamlCameraProj, String cameraFile, MarkerBoard[] paperSheets) {
@@ -151,7 +151,7 @@ public class ARTagDetector {
             // ARToolkitPlus tracker 
             transfosMap = new HashMap<MarkerBoard, float[]>();
 //            if (useSafeMode) {
-//                lastPosMap = new HashMap<MarkerBoard, PVector>();
+                lastPosMap = new HashMap<MarkerBoard, PVector>();
 //            }
             trackerMap = new HashMap<MarkerBoard, MultiTracker>();
 
@@ -183,7 +183,7 @@ public class ARTagDetector {
                 trackerMap.put(sheet, tracker);
 
 //                if (useSafeMode) {
-//                    lastPosMap.put(sheet, new PVector());
+                    lastPosMap.put(sheet, new PVector());
 //                }
                 transfosMap.put(sheet, transfo);
             }
@@ -276,19 +276,20 @@ public class ARTagDetector {
 
         ARMultiMarkerInfoT multiMarkerConfig = tracker.getMultiMarkerConfig();
 
+// SAFE MODE -- QBUF lost
 //        if (useSafeMode) {
-//            PVector newPos = new PVector((float) multiMarkerConfig.trans().get(3),
-//                    (float) multiMarkerConfig.trans().get(7),
-//                    (float) multiMarkerConfig.trans().get(11));
-//
-//            PVector lastPos = lastPosMap.get(sheet);
+            PVector newPos = new PVector((float) multiMarkerConfig.trans().get(3),
+                    (float) multiMarkerConfig.trans().get(7),
+                    (float) multiMarkerConfig.trans().get(11));
+
+            PVector lastPos = lastPosMap.get(sheet);
 //            System.out.println("Distance " + newPos.dist(lastPos));
-//            if (newPos.dist(lastPos) > 30 && lastPos.x != 0 && lastPos.y != 0 && lastPos.z != 0) {
+            if (newPos.dist(lastPos) > 300 && lastPos.x != 0 && lastPos.y != 0 && lastPos.z != 0) {
 //                System.out.println("Tracking lost");
-//                return transfo;
-//            }
-//
-//            lastPos.set(newPos);
+                return transfo;
+            }
+
+            lastPos.set(newPos);
 //        }
 
         for (int i = 0; i < 12; i++) {

@@ -27,19 +27,49 @@ public class TouchPoint {
     public int idPressed;
     private static int globalID = 0;
     protected int updateTime = 0;
-    
+    private OneEuroFilter[] filters;
+
     public TouchPoint() {
         id = globalID++;
         toDelete = false;
+        try {
+            filters = new OneEuroFilter[3];
+            for (int i = 0; i < 3; i++) {
+                filters[i] = new OneEuroFilter(30);
+            }
+        } catch (Exception e) {
+            System.out.println("OneEuro Exception. Pay now." + e);
+        }
     }
 
-    public boolean isObselete(int currentTime, int duration){
+//    public void init() {
+//        try {
+//            v.x = (float) filters[0].filter(v.x);
+//            v.y = (float) filters[1].filter(v.y);
+//            v.z = (float) filters[2].filter(v.z);
+//        } catch (Exception e) {
+//            System.out.println("OneEuro init Exception. Pay now.");
+//        }
+//    }
+    public void filter() {
+        try {
+            v.x = (float) filters[0].filter(v.x);
+            v.y = (float) filters[1].filter(v.y);
+            v.z = (float) filters[2].filter(v.z);
+        } catch (Exception e) {
+            System.out.println("OneEuro init Exception. Pay now." + e);
+        }
+    }
+
+    public boolean isObselete(int currentTime, int duration) {
         return (currentTime - updateTime) > duration;
     }
-    
+
     // TODO: speed etc..
     public boolean updateWith(TouchPoint tp, int currentTime) {
 
+        filter();
+        
         if (isUpdated || tp.isUpdated) {
             return false;
         }
@@ -53,11 +83,20 @@ public class TouchPoint {
         tp.updateTime = currentTime;
         this.updateTime = currentTime;
         tp.toDelete = true;
-        
+
         // Implementation 1 --  Half smooth with the previous
 //    v.addSelf(tp.v);
 //    v.scaleSelf(0.5f);
 //    isCloseToPlane = tp.isCloseToPlane;
+
+
+//        try {
+//            v.x = (float) filters[0].filter(v.x);
+//            v.y = (float) filters[1].filter(v.y);
+//            v.z = (float) filters[2].filter(v.z);
+//        } catch (Exception e) {
+//            System.out.println("OneEuro init Exception. Pay now.");
+//        }
 
         // Implementation 2 --  Replace the ArrayList
         oldV = v;
@@ -67,6 +106,7 @@ public class TouchPoint {
         confidence = tp.confidence;
         isCloseToPlane = tp.isCloseToPlane;
 
+        filter();
         return true;
 
     }
