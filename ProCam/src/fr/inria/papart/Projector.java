@@ -70,9 +70,9 @@ public class Projector {
 
         // create the offscreen rendering for this projector.
         if (AA > 0) {
-            graphics = new GLGraphicsOffScreen(parent, width, height, true, AA);
+            this.graphics = new GLGraphicsOffScreen(parent, width, height, true, AA);
         } else {
-            graphics = new GLGraphicsOffScreen(parent, width, height);
+            this.graphics = new GLGraphicsOffScreen(parent, width, height);
         }
 
         screens = new ArrayList<Screen>();
@@ -80,7 +80,7 @@ public class Projector {
         initProjection();
         computeInv();
         initDistortMap();
-        toxi = new ToxiclibsSupport(parent, graphics);
+        toxi = new ToxiclibsSupport(parent, this.graphics);
     }
 
     private void loadInternalParams(String calibrationYAML) {
@@ -120,7 +120,7 @@ public class Projector {
         // ----------- OPENGL --------------
         // Reusing the internal projector parameters for the scene rendering.
 
-        PMatrix3D oldProj = graphics.projection.get();
+        PMatrix3D oldProj = this.graphics.projection.get();
 
         // Working params
         p00 = 2 * projIntrinsicsP3D.m00 / frameWidth;
@@ -130,23 +130,23 @@ public class Projector {
 //        p12 = -(2 * projIntrinsicsP3D.m12 / frameHeight - 1);
         p12 = -((projIntrinsicsP3D.m12 / frameHeight) * 2 - 1);
 
-        graphics.beginDraw();
+        this.graphics.beginDraw();
 
         // TODO: magic numbers !!!
-        graphics.frustum(0, 0, 0, 0, znear, zfar);
-        graphics.projection.m00 = p00;
-        graphics.projection.m11 = p11;
-        graphics.projection.m02 = p02;
-        graphics.projection.m12 = p12;
+        this.graphics.frustum(0, 0, 0, 0, znear, zfar);
+        this.graphics.projection.m00 = p00;
+        this.graphics.projection.m11 = p11;
+        this.graphics.projection.m02 = p02;
+        this.graphics.projection.m12 = p12;
 
         // Save these good parameters
-        projectionInit = graphics.projection.get();
+        projectionInit = this.graphics.projection.get();
 
-        graphics.projection.transpose();
-        graphics.projection.get(projectionMatrixGL);
+        this.graphics.projection.transpose();
+        this.graphics.projection.get(projectionMatrixGL);
 
-        graphics.projection.set(oldProj);
-        graphics.endDraw();
+        this.graphics.projection.set(oldProj);
+        this.graphics.endDraw();
     }
 
     private void computeInv() {
@@ -229,20 +229,20 @@ public class Projector {
 
     // Actual GLGraphics BUG :  projection has to be loaded directly into OpenGL.
     public void loadProjection() {
-        gl = graphics.beginGL();
+        gl = this.graphics.beginGL();
         gl.glMatrixMode(GL.GL_PROJECTION);
         gl.glPushMatrix();
         gl.glLoadMatrixf(projectionMatrixGL, 0);
         gl.glMatrixMode(GL.GL_MODELVIEW);
-        graphics.endGL();
+        this.graphics.endGL();
     }
 
     public void unLoadProjection() {
-        gl = graphics.beginGL();
+        gl = this.graphics.beginGL();
         gl.glMatrixMode(GL.GL_PROJECTION);
         gl.glPopMatrix();
         gl.glMatrixMode(GL.GL_MODELVIEW);
-        graphics.endGL();
+        this.graphics.endGL();
     }
 
     // TODO: un truc genre hasTouch // classe héritant
@@ -259,45 +259,40 @@ public class Projector {
     public void drawScreens() {
 
         ////////  3D PROJECTION  //////////////
-        graphics.beginDraw();
+        this.graphics.beginDraw();
 
         // clear the screen
-        graphics.clear(0);
+        this.graphics.clear(0);
 
         // load the projector parameters into OpenGL
         loadProjection();
 
         // make the modelview matrix as the default matrix
-        graphics.resetMatrix();
+        this.graphics.resetMatrix();
 
         // Setting the projector as a projector (inverse camera)
-        graphics.scale(1, 1, -1);
+        this.graphics.scale(1, 1, -1);
 
         // Place the projector to his projection respective to the origin (camera here)
-        graphics.modelview.apply(getExtrinsics());
+        this.graphics.modelview.apply(getExtrinsics());
 
         for (Screen screen : screens) {
             if (!screen.isDrawing()) {
                 continue;
             }
-
-            graphics.pushMatrix();
+            this.graphics.pushMatrix();
 
             // Goto to the screen position
-            graphics.modelview.apply(screen.getPos());
+            this.graphics.modelview.apply(screen.getPos());
 
             // Draw the screen image
-            graphics.image(screen.getTexture(), 0, 0, screen.getSize().x, screen.getSize().y);
-
-            graphics.popMatrix();
-
-            graphics.strokeWeight(4);
-            graphics.stroke(200);
+            this.graphics.image(screen.getTexture(), 0, 0, screen.getSize().x, screen.getSize().y);
+            this.graphics.popMatrix();
         }
 
         // Put the projection matrix back to normal
         unLoadProjection();
-        graphics.endDraw();
+        this.graphics.endDraw();
     }
 
     /**
@@ -309,11 +304,12 @@ public class Projector {
 //        return graphics.getTexture();
 
         if (!distort) {
-            return graphics.getTexture();
+            System.out.println("No distort");
+            return this.graphics.getTexture();
         }
 
         // TODO: BUG : works once, cannot be disabled and enabled
-        GLTexture off = graphics.getTexture();
+        GLTexture off = this.graphics.getTexture();
 //        lensFilter.apply(new GLTexture[]{off, myMap}, off);
         lensFilter.apply(new GLTexture[]{off, myMap}, finalImage);
 //        lensFilter.apply(new GLTexture[]{off, myMap}, off);
@@ -323,21 +319,21 @@ public class Projector {
 
     private PMatrix3D createProjection(PVector nearFar) {
 
-        PMatrix3D init = graphics.projection.get();
-        graphics.beginDraw();
+        PMatrix3D init = this.graphics.projection.get();
+        this.graphics.beginDraw();
 
         // TODO: magic numbers !!!
-        graphics.frustum(0, 0, 0, 0, nearFar.x, nearFar.y);
+        this.graphics.frustum(0, 0, 0, 0, nearFar.x, nearFar.y);
 
-        graphics.projection.m00 = projectionInit.m00;
-        graphics.projection.m11 = projectionInit.m11;
-        graphics.projection.m02 = projectionInit.m02;
-        graphics.projection.m12 = projectionInit.m12;
+        this.graphics.projection.m00 = projectionInit.m00;
+        this.graphics.projection.m11 = projectionInit.m11;
+        this.graphics.projection.m02 = projectionInit.m02;
+        this.graphics.projection.m12 = projectionInit.m12;
 
-        PMatrix3D out = graphics.projection.get();
+        PMatrix3D out = this.graphics.projection.get();
 
-        graphics.endDraw();
-        graphics.projection.set(init);
+        this.graphics.endDraw();
+        this.graphics.projection.set(init);
 
         return out;
     }

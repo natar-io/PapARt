@@ -70,7 +70,7 @@ public class Utils {
 
     }
 
-        static public CvMat createHomography(PVector[] in, PVector[] out){
+    static public CvMat createHomography(PVector[] in, PVector[] out) {
 
         CvMat srcPoints;
         CvMat dstPoints;
@@ -93,9 +93,7 @@ public class Utils {
 //       It is better to use : GetPerspectiveTransform
         return homography;
     }
-    
-    
-    
+
     static public void remapImage(PVector[] in, PVector[] out, IplImage imgIn, IplImage imgTmp, PImage Pout) {
 
         CvMat srcPoints;
@@ -124,19 +122,18 @@ public class Utils {
         IplImageToPImage(imgTmp, false, Pout);
 
     }
-    
+
     static public void remapImage(CvMat homography, IplImage imgIn, IplImage imgTmp, PImage Pout) {
-       
+
         opencv_imgproc.cvWarpPerspective(imgIn, imgTmp, homography);
         // opencv_imgproc.CV_INTER_LINEAR ); //                opencv_imgproc.CV_WARP_FILL_OUTLIERS);
 //                getFillColor());
-          IplImageToPImage(imgTmp, false, Pout);
+        IplImageToPImage(imgTmp, false, Pout);
 
     }
-    
-        
+
     static public void remapImageIpl(CvMat homography, IplImage imgIn, IplImage imgOut) {
-       
+
         opencv_imgproc.cvWarpPerspective(imgIn, imgOut, homography);
         // opencv_imgproc.CV_INTER_LINEAR ); //                opencv_imgproc.CV_WARP_FILL_OUTLIERS);
 //                getFillColor());
@@ -145,48 +142,60 @@ public class Utils {
     static public void IplImageToPImage(IplImage img, PApplet applet, boolean RGB, PImage ret) {
         IplImageToPImage(img, RGB, ret);
     }
-
     static int conversionCount = 0;
-    
+
     static public void IplImageToPImage(IplImage img, boolean RGB, PImage ret) {
 
         conversionCount++;
-        if(conversionCount % 30 == 0)
+        if (conversionCount % 30 == 0) {
             System.gc();
-        
+        }
+
         assert (img.width() == ret.width);
         assert (img.height() == ret.height);
 //        BufferedImage bimg = new BufferedImage();
         ByteBuffer buff = img.getByteBuffer();
-        
-        //  PImage ret = new PImage(img.width(), img.height(), PApplet.RGB);
-        ret.loadPixels();
-        if (RGB) {
-            for (int i = 0; i < img.width() * img.height(); i++) {
-                int offset = i * 3;
+
+        if (img.nChannels() == 3) {
+
+            //  PImage ret = new PImage(img.width(), img.height(), PApplet.RGB);
+            ret.loadPixels();
+            if (RGB) {
+                for (int i = 0; i < img.width() * img.height(); i++) {
+                    int offset = i * 3;
 //            ret.pixels[i] = applet.color(buff.get(offset + 0) & 0xff, buff.get(offset + 1) & 0xFF, buff.get(offset + 2) & 0xff);
 
-                ret.pixels[i] = (buff.get(offset) & 0xFF) << 16
-                        | (buff.get(offset + 1) & 0xFF) << 8
-                        | (buff.get(offset + 2) & 0xFF);
+                    ret.pixels[i] = (buff.get(offset) & 0xFF) << 16
+                            | (buff.get(offset + 1) & 0xFF) << 8
+                            | (buff.get(offset + 2) & 0xFF);
+
+                }
+            } else {
+                for (int i = 0; i < img.width() * img.height(); i++) {
+                    int offset = i * 3;
+//            ret.pixels[i] = applet.color(buff.get(offset + 0) & 0xff, buff.get(offset + 1) & 0xFF, buff.get(offset + 2) & 0xff);
+
+                    ret.pixels[i] = (buff.get(offset + 2) & 0xFF) << 16
+                            | (buff.get(offset + 1) & 0xFF) << 8
+                            | (buff.get(offset) & 0xFF);
+
+                }
 
             }
         } else {
-            for (int i = 0; i < img.width() * img.height(); i++) {
-                int offset = i * 3;
-//            ret.pixels[i] = applet.color(buff.get(offset + 0) & 0xff, buff.get(offset + 1) & 0xFF, buff.get(offset + 2) & 0xff);
+            if (img.nChannels() == 1) {
 
-                ret.pixels[i] = (buff.get(offset + 2) & 0xFF) << 16
-                        | (buff.get(offset + 1) & 0xFF) << 8
-                        | (buff.get(offset) & 0xFF);
-
+                for (int i = 0; i < img.width() * img.height(); i++) {
+                    ret.pixels[i] =
+                            (buff.get(i) & 0xFF) << 16
+                            | (buff.get(i) & 0xFF) << 8
+                            | (buff.get(i) & 0xFF);
+                }
             }
-
         }
-        
+
         buff = null;
         ret.updatePixels();
-        //   return ret;
     }
 
     /**
@@ -218,7 +227,6 @@ public class Utils {
         }
         ret.updatePixels();
     }
-
     //                                   int int  12 double  4 double
     static final int SIZE_OF_PARAM_SET = 4 + 4 + (3 * 4 * 8) + (4 * 8);
 
@@ -265,7 +273,6 @@ public class Utils {
         return;
     }
 
-    
     static public void convertProjParam(PApplet pa, String inputYAML, String outputDAT, int w, int h) throws Exception {
 
         ProjectorDevice proj = null;

@@ -263,6 +263,8 @@ public class ARTagDetector {
         MultiTracker tracker = trackerMap.get(sheet);
         float[] transfo = transfosMap.get(sheet);
 
+//        System.out.println("undistort : " + lastUndistorted);
+        
         if (lastUndistorted) {
             tracker.calc(img2.imageData());
         } else {
@@ -278,18 +280,18 @@ public class ARTagDetector {
 
 // SAFE MODE -- QBUF lost
 //        if (useSafeMode) {
-            PVector newPos = new PVector((float) multiMarkerConfig.trans().get(3),
-                    (float) multiMarkerConfig.trans().get(7),
-                    (float) multiMarkerConfig.trans().get(11));
-
-            PVector lastPos = lastPosMap.get(sheet);
-//            System.out.println("Distance " + newPos.dist(lastPos));
-            if (newPos.dist(lastPos) > 300 && lastPos.x != 0 && lastPos.y != 0 && lastPos.z != 0) {
-//                System.out.println("Tracking lost");
-                return transfo;
-            }
-
-            lastPos.set(newPos);
+//            PVector newPos = new PVector((float) multiMarkerConfig.trans().get(3),
+//                    (float) multiMarkerConfig.trans().get(7),
+//                    (float) multiMarkerConfig.trans().get(11));
+//
+//            PVector lastPos = lastPosMap.get(sheet);
+////            System.out.println("Distance " + newPos.dist(lastPos));
+//            if (newPos.dist(lastPos) > 300 && lastPos.x != 0 && lastPos.y != 0 && lastPos.z != 0) {
+////                System.out.println("Tracking lost");
+//                return transfo;
+//            }
+//
+//            lastPos.set(newPos);
 //        }
 
         for (int i = 0; i < 12; i++) {

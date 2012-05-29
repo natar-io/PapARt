@@ -35,7 +35,7 @@ public class TouchPoint {
         try {
             filters = new OneEuroFilter[3];
             for (int i = 0; i < 3; i++) {
-                filters[i] = new OneEuroFilter(30);
+                filters[i] = new OneEuroFilter(28, 1.15, 0.001);
             }
         } catch (Exception e) {
             System.out.println("OneEuro Exception. Pay now." + e);
@@ -68,8 +68,6 @@ public class TouchPoint {
     // TODO: speed etc..
     public boolean updateWith(TouchPoint tp, int currentTime) {
 
-        filter();
-        
         if (isUpdated || tp.isUpdated) {
             return false;
         }

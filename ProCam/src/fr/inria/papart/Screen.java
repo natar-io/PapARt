@@ -285,6 +285,9 @@ public class Screen {
     // Available only if pos3D is being updated elsewhere...
     public void updatePos() {
 
+
+
+
         if (pos == null) {
             pos = new PMatrix3D(pos3D[0], pos3D[1], pos3D[2], pos3D[3],
                     pos3D[4], pos3D[5], pos3D[6], pos3D[7],
@@ -309,21 +312,20 @@ public class Screen {
                 } catch (Exception e) {
                 }
             } else {
-                pos.m00 = pos3D[0];
-                pos.m01 = pos3D[1];
-                pos.m02 = pos3D[2];
-                pos.m03 = pos3D[3];
-                pos.m10 = pos3D[4];
-                pos.m11 = pos3D[5];
-                pos.m12 = pos3D[6];
-                pos.m13 = pos3D[7];
-                pos.m20 = pos3D[8];
-                pos.m12 = pos3D[9];
-                pos.m22 = pos3D[10];
-                pos.m23 = pos3D[11];
+                pos.set(pos3D[0], pos3D[1], pos3D[2], pos3D[3],
+                    pos3D[4], pos3D[5], pos3D[6], pos3D[7],
+                    pos3D[8], pos3D[9], pos3D[10], pos3D[11],
+                    0, 0, 0, 1);
+                
             }
         }
 
+
+//        pos = new PMatrix3D(pos3D[0], pos3D[1], pos3D[2], pos3D[3],
+//                pos3D[4], pos3D[5], pos3D[6], pos3D[7],
+//                pos3D[8], pos3D[9], pos3D[10], pos3D[11],
+//                0, 0, 0, 1);
+        
         posPaper.x = pos3D[3];
         posPaper.y = pos3D[7];
         posPaper.z = pos3D[11];
