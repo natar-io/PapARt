@@ -29,6 +29,7 @@
 %% Be sure NOT to put any blank lines between parbox commands!
 %%
 
+
 \author{
 \parbox[t]{9cm}{\centering
 	     {\em Jeremy Laviole}\\
@@ -36,7 +37,6 @@
          CNRS, LaBRI, UMR 5800, F-33400 Talence, France.\\
 	     Inria, F-33400 Talence, France.\\
 	     laviole@labri.fr}
-	     
 \parbox[t]{9cm}{\centering
 	     {\em Martin Hachet}\\
 	     Inria, F-33400 Talence, France.\\
@@ -71,18 +71,35 @@ User Interfaces. - Graphical user interfaces.}
 Spatial augmented reality was first created to project textures and illuminations to physical objects (cite raskar). Nowadays, it is mostly used for advertising, featuring projection on large building and commonly called ?projection mapping?. 
 The unique ability of SAR is its penetration of the physical world. There are many uses, some are described in (cite mistry). It can be used to manipulate digital information (cite Wilson) or to manipulate the real world (cite onbody projection). Entertainment will benefit largely from SAR, the inclusion of digital games into the real world changes completely the aspect of it. (cite jeux SAR). 
 
-In this demonstration, we propose to use SAR for physical artistic creation. We use computer graphics tools to enable easier and faster drawings. This demonstration is an evolution of the demonstration we did described in (papart) which was oriented for the general public. Here we focus on the tools and challenges of integrating digital information for drawing.  
+In this demonstration, we propose to use SAR for physical artistic creation. We use computer graphics tools to enable easier and faster drawings. This demonstration is an evolution of the demonstration we did described in (papart) which was oriented for a general public exhibition. Here we focus on the tools and challenges of integrating digital information for drawing.  
 
 
-\section{System... }
+\section{SAR for drawing}
+\subsection{Firsts steps}
+
+We present one of the firsts SAR application dedicated to drawing. The first application is the projection of images such as photos on tracked paper sheets. The paper sheet is surrounded by markers and is tracked by a webcam. The camera itself is on top of a projector, projecting on a table. This kind of overhead projection allows any kind of paper and not intrusive. Any drawing or painting tools can be used to  copy or use the projected image to create a drawing. 
+ 
+ % image ? 
+
+\subsection{Interactivity}
+
+The procam system is made interactive by the addition of a depth camera. The depth camera makes the table reactive to touch and 3D pointing, consequently the projection can also be interactive. We took advantage of this to provide direct manipulation of the projection and to add menus on a separated paper sheet. The separation of the menu and the drawing space avoids many undesired selections and allows to the user to take full advantage of the projection space while drawing. Additionally, we added a pen and tablet device to get a precise input from the user. 
+
+\subsection{Merge with traditional drawing software}
+Our goal is to improve the physical creation, and the easiest way to use digital tools for physical creation is to integrate them with our system. In order to do this we added a high resolution camera which takes pictures of the drawing and saves them on the disk. The picture can be opened in any drawing software, for our examples we used The Gimp. In the drawing software, the elements to project can be created in a dedicated layer; obviously the physical drawing does not need to be projected only the added elements have to be saved. The whole process is semi-automatic, pressing a button in the projection software saves the current drawing, and pressing another one loads the projection from the disk. 
+
+\subsection{Projection of a 3D scene}
+Instead of starting from a photo or an existing image to create the drawing. We can start from a 3D scene. The scene projection is made to be simple to manipulate and visualized, consequently for now the manipulations are constrained. The virtual objects are placed on the paper sheet, and can be manipulated though the tangible interface, or indirectly using the touch interface. Moreover, the user can change the lighting conditions by setting directly the light location in the 3D scene by using the 3D pointing solution. Once the point of view of the 3D scene is set, the user can save a screen shot of the application and use is to draw as described before. 
+
+\subsection{Extension to stereoscopic drawing} 
+The view of the 3D scene provides a good perception of depth and shapes. This perception is even better using a stereoscopic visualization. We used our application to create stereoscopic drawings, the left and right images leading to two different drawings. For this, we also created dedicated tools: we could capture the two drawings, and combine them to get an instantaneous stereoscopic preview. Unfortunately, the creation of two drawings providing good bumping effects requires time and takes much more space (3 * A3 paper sheets), the demonstration of this tool will be harder to give.  
+
+\section{Fun elements and conclusion}
+Spatial augmented reality allows the creation of interactive applications, the creation of the tools described above involved the creation of many testing tools. Some of them are games and musical applications, which we generally enjoy to demonstrate and play with. 
+
+This demonstration provides an new way to consider the use of computers. By providing tools to ease and fasten the drawing, the visitors could enjoy the simple pleasure of drawing. We keep the natural elements of drawing, and we provide tools from computer graphics to enhance creativity. We would like to use the human and computers to its best, not to force the humans though repetitive tasks, or synthesize creativity in machines. 
 
 
-\section{Projection for drawing}
-* 2D image projection
-* Tablet + capture. 
-* Papart -> Projection 3D
-
-\section{Conclusion}
 
 
 
