@@ -16,8 +16,8 @@
 
 \bibliographystyle{plain}
 
-\title{Standard UIST Conference Format:\\
-       Preparing Camera-Ready Submissions}
+\title{Demo: Spatial augmented reality for \\
+       physical drawing}
 
 %%
 %% Note on formatting authors at different institutions, as shown below:
@@ -50,11 +50,8 @@
 \maketitle
 
 \abstract
-Each paper should begin with an abstract, followed by a set of keywords, both
-placed in the left column of the first page under the left half of the title.
-All body text, such as this paragraph, should be set in 10 point Times Roman
-type, with 11 points between successive baselines.  (We will repeat that later
-in this document to make sure that you do not forget.)
+Spatial augmented reality (SAR) allows the projection of virtual environments into the real world. In this demo, we propose to demonstrate our SAR tools dedicated to drawing. 
+From the most simple tools: the projection on virtual guidelines enabling to trace lines and curves just by following the guides to more advanced techniques enabling stereoscopic drawing. This demo presents how we can use computer graphics tools to ease the drawing, and how it will enable new forms of physical drawing. 
 
 \classification{H5.2 [Information interfaces and presentation]:
 User Interfaces. - Graphical user interfaces.}
@@ -72,259 +69,23 @@ User Interfaces. - Graphical user interfaces.}
   % tends to prevent words from sticking out in the margin
 
 \section{INTRODUCTION}
-The {\em UIST} proceedings represent the final archival records of
-the conference.  We would like the proceedings to have a
-uniform, high quality appearance.  To accomplish this, authors must follow
-the format specified here.
 
-In essence, we ask that whatever text formatting program you use,
-you format your paper exactly like this document.  Please
-match the type style, type size, line spacing, indentation, and layout
-format as closely as you can.  In fact, if you received this document online
-as a LaTeX file, along with its accompanying uist.sty style file, you can
-use it as a template.
+Spatial augmented reality was first created to project textures and illuminations to physical objects (cite raskar). Nowadays, it is mostly used for advertising, featuring projection on large building and commonly called ?projection mapping?. 
+The unique ability of SAR is its penetration of the physical world. There are many uses, some are described in (cite mistry). It can be used to manipulate digital information (cite Wilson) or to manipulate the real world (cite onbody projection). Entertainment will benefit largely from SAR, the inclusion of digital games into the real world changes completely the aspect of it. (cite jeux SAR). 
 
-Use an A4 or 8.5"$\times$11" sheet of paper. Center the image on the page.
-The whole image of your text must {\em completely} fit in a 17.8 cm$\times$23.5 cm box. 
-If you are not using LaTeX with the uist.sty style
-file, then the recommendations we have included here should help you match this
-sample with the facilities you do have, such as Microsoft Word.
-
-\section{TITLE AND AUTHORS}
-\textbf{The authors list should be removed for blind review.}
-
-The title, author's names and affiliations run across the full width of the
-page.  We also recommend phone number and e-mail address, if available.  (See
-the top of this page for an example of two names with different addresses.
-If only one address is needed, center all text on the page.) 
-
-Here are the typographic details:
-\begin{itemize}
-\item Title area: 1 column, 5.9 cm (2 1/3") length, 17.8 cm (7") width.
-\item Title: 18 point Helvetica Bold---mixed cases
-\item Names: 12 point Times Italic
-\item Addresses, Telephone, E-mail:  12 point Times Roman
-\end{itemize}
-
-\section{FIRST PAGE COPYRIGHT NOTICE}
-Remember to leave 2.54 cm of blank space at the bottom of the left
-column of the first  page,  as on this page. You must leave this space for
-the copyright notice on {\em all} submissions intended for publication in the
-proceedings. 
- 
-Please note that the first author of all accepted submissions
-will have to sign a copyright release form.  Those forms will be sent with the
-acceptance letters and need to be returned rapidly.  We encourage the contact 
-persons of each submission to keep track of their co-authors' locations because 
-they will be responsible for rapidly collecting the signatures.
+In this demonstration, we propose to use SAR for physical artistic creation. We use computer graphics tools to enable easier and faster drawings. This demonstration is an evolution of the demonstration we did described in (papart) which was oriented for the general public. Here we focus on the tools and challenges of integrating digital information for drawing.  
 
 
-\section{TWO COLUMNS}
-All body text should be in 10 point Times Roman, with 11 points between
-successive baselines.
-
-After the title use a double-column format as shown here. Column width is 8.5
-cm, with 0.8 cm between columns (for a total image width still equal to 17.8
-cm).  Total text length should remain between 23.2 and 24 cm (9 1/4") .
-Right margins should be justified, not ragged.   Separate each paragraph by a
-blank line (and do not indent them)  Hyphenation is at your own discretion.
-If at all possible, the two columns of the last page should be of equal length.
-(The  LaTeX uist.sty file does not do this automatically, so
-you will need to insert the commands \verb+\linebreak+ and \verb+\newpage+
-at an appropriate point on the last page to justify the current line and
-force a new column.)
-
-\section{SECTIONS}
-The title of a section should be in 9 point Helvetica Bold font in all
-capitals. Notice that the sections, subsections, and subsubsections are not
-numbered in this document, but you may number them if you want.
-
-\subsection{Subsections}
-The title of a subsection should be in 9 point Helvetica Bold with only the
-initial letters of each word capitalized. (Note: Words like ``the'' and ``a''
-are not capitalized unless they start a title.)
-
-\subsubsection{Subsubsections.} The heading for a subsubsection should be in
-9 point Helvetica Oblique (italic) with initial letters
-capitalized. (Note: Words like ``the'' and ``a'' are not capitalized
-unless they start a title.)  The subsubsection heading should {\em not}
-appear on its own separate line. 
-
-\section{TYPESETTING}
-Please use the fonts specified in this description
-so that we can produce a conference proceedings that looks like a unified
-document, rather than a collection of unrelated papers thrown
-together.  The body of your paper should use 10 point Times Roman type,
-set with an 11 point vertical spacing between baselines (also known as
-1 point of leading).
-Do not use a sans-serif font (e.g., Helvetica),  except for emphasis, headings
-and the title, as described above.
-Computer Modern Roman or another font with serifs should be used {\em only} 
-as a last resort if Times Roman is not available. 
-Macintosh users should use the font named Times.
-
-\section{FIGURES}
-Figures should be inserted at the appropriate point in your text, or
-optionally floated to the top or bottom of the page, as was done with
-Figure \ref{fig-example}.  If necessary, figures can extend up to the
-width of the full two columns: 17.8 cm (7") if necessary.  
-
-The quality of your images and figures is critical. Your paper, if accepted, will
-be printed in the high quality print proceedings, and will also be available 
-for download on the ACM Digital Library where readers may read it online
-and zoom in to see the details.
-
-Screen dumps should be captured at the screen resolution and
-use a lossless format such as TIFF.
-Photos should have a resolution of at least 150dpi, and preferably
-300dpi or 600dpi. They may be slightly compressed, e.g. in JPEG,
-if this does not degrade quality (use the "Better" or "8/10" setting).
-Diagrams, data plots and schemas should use a vector format
-rather than a raster format where possible.
-
-\begin{figure}[tb]
-\vspace{1.9in}
-\caption{A figure caption.  It is set in 9 point Helvetica type, with a
-0.5 cm wider margin on both left and right sides.} 
-\label{fig-example}
-\end{figure}
-
-Remember also that some readers may never see anything other than a 
-oor photocopy of your paper, so make sure that the figure will still be 
-readable (try to see how it looks after recopying it a couple of times).
-
-\section{PRODUCING PDF FILES}
-Submissions as well as final versions of your paper must be submitted in PDF format.
-Most typesetting systems can produce PDF either directly or by using
-a virtual printer. If you cannot produce PDF directly, you can produce
-a PostScript file and then use a PostScript to PDF converter. Either way,
-make sure that your PDF file is correct by viewing it with a standard
-PDF reader such as Adobe's Acrobat.
-
-\section{REFERENCES AND CITATIONS}
-Your references should appear in the standard CACM format: a numbered list at
-the end of the paper, ordered alphabetically by first author, and referenced by
-number in brackets as shown here~\cite{badenov91,henry-etal92,zaranka81}.
-(See the examples of citations at the end of this document, and the other
-examples on p. 12 of the April 94 issue of the {\em Communications of the
-ACM.}) 
-References should be materials accessible to the public:
-books, articles in standard journals, and papers in open conference
-proceedings. 
-Internal technical reports should be avoided unless easily accessible (i.e. you
-can give the address to obtain it).  Personal communications should be
-acknowledged, not referenced. Be sure to remove all dangling references and citations.
-
-\section{LANGUAGE, STYLE AND CONTENT}
-The written and spoken language of UIST is English. Spelling and punctuation may use
- any dialect of English (e.g., British, Canadian, US, etc.) provided this is done 
-consistently. Hyphenation is optional. To ensure suitability for an international audience, 
-please pay attention to the following:
-\begin{itemize}
-\item Try to avoid long or complex sentence structures. 
-\item Briefly define or explain all technical terms that may be unfamiliar to readers.
-\item Explain all acronyms the first time they are used in your text – e.g., 
-“Digital Signal Processing (DSP)”.
-\item Explain local references (e.g., not everyone knows all city names in a particular country).
-\item Explain “insider” comments. Ensure that your whole audience understands any
-reference whose meaning you do not describe (e.g., do not assume that everyone has 
-used a Macintosh or a particular application).
-\item Explain colloquial language and puns. Understanding phrases like “red herring” 
-may require a local knowledge of English.  Humor and irony are difficult to translate.
-\item Use unambiguous forms for culturally localized con-cepts, such as times, dates, 
-currencies and numbers (e.g., “1-5- 97” or “5/1/97” may mean 5 January or 1 May, 
-and “seven o’clock” may mean 7:00 am or 19:00).  For cur-rencies, indicate 
-equivalences – e.g., “Participants were paid 10,000 lire, or roughly \$5.”
-\item Be careful with the use of gender-specific pronouns ({\em he, she}) and other gendered 
-words ({\em chairman, manpower, man-months}). Use inclusive language that is gender-
-neutral (e.g., {\em she or he, they, s/he, chair, staff, staff-hours, person-years}). 
-See~\cite{GenderNeutral} for further advice and ex-amples regarding gender and 
-other personal attributes.
-\item If possible, use the full (extended) alphabetic character set for names of persons, 
-institutions, and places (e.g., Gr{\o}nb{\ae}k, Lafreni\'{e}re, S\^{a}nchez, Universit\"{a}t, 
-Wei{\ss}enbach, Z\"{u}llighoven, {\AA}rhus, etc.).  These characters are already included in 
-most versions of Times, Helvetica, and Arial fonts.
-\end{itemize}
-
-\section{HEADERS, FOOTERS AND PAGE NUMBERING}
-Do not use headers, footers or footnotes. Page numbers, footers and headers will
-be added when the Conference Proceedings are assembled. Papers submitted
-to the paper chairs for review should have page numbers (to help the review process). 
-
-\section{OTHER CONSIDERATIONS}
-\subsection{No Private Material}
-Presentations should not contain any proprietary or confidential
-material. Please clear all materials before submitting or presenting them.
-Submission of pictures of identifiable people should be done only with the
-understanding that responsibility for obtaining appropriate permissions rests
-with the paper's authors.
-
-\subsection{Equations}
-Displayed equations should be centered, with optional equation numbers 
-right-justified to the right margin of the column.
+\section{System... }
 
 
-% use \newpage to break the columns on the last page so they have equal length
-% if the break occurs in the middle of a paragraph, insert \linebreak before \newpage
+\section{Projection for drawing}
+* 2D image projection
+* Tablet + capture. 
+* Papart -> Projection 3D
 
-\section{BLIND REVIEW}
-For archival submissions, UIST requires a “blind review.” To prepare your 
-submission for blind review, remove author and institutional identities in 
-the title and header areas of the paper. You may also need to remove all 
-of the Acknowledgments text. Authors should \textbf{not} use anonymous citations 
-(by blanking their name or using Anonymous as an author) for references 
-to their previous work. Instead, authors should 
-refer  to previous work in 
-the third person (i.e. as if they were not the authors). This will ensure that 
-reviewers can take into 
-\linebreak
-\newpage
-account previous research by the authors. 
-Further suppression of identity in the body of the paper is left to the authors' discretion.
- For more details, 
-see the submission guidelines and checklist for your submission category.
+\section{Conclusion}
 
-\section{CONCLUSION}
-It is important that you write for the UIST audience.  Please read previous years’
-{\em Proceedings} to understand the writing style and conventions that successful 
-authors have used.  It is particularly important that you state clearly what you 
-have done, not merely what you plan to do, and explain how your work is
-different from previously published work, i.e., what is the unique contribution
-that your work makes to the field?  Please consider what the reader will learn
-from your submission, and how they will find your work useful.  If you write with
-these questions in mind, your work is more likely to be successful, both in being
-accepted into the Conference, and in influencing the work of our field.
 
-\section{ACKNOWLEDGMENTS}
-\begin{center}
-\textbf{This section should be left blank for blind review}
-\end{center}
-
-The authors would like to acknowledge the contributions of many previous
-editors in the writing and formatting of this document.  This document is based on
-the {\em CHI '94} format-ting guidelines.
-
-%%%	You can use bibtex if you like, but I've hardwired in these 
-%%%	references to avoid sending you a separate .bib file.
-\begin{thebibliography}{9}
-
-\bibitem{ACMTerms} How to Classify Works Using ACM’s Computing
-Classification System. {http://www.acm.org/class/how\_to\_use.html}.
-
-\bibitem{badenov91}  Badenov, B. Effects of prolonged use of WIMP user
-interfaces on Alces americana and Glaucomys volans.
-In {\em Proceedings of UIST '87}
-(February 30--April 1, Graceland, TN), ACM, NY, 1987, pp. 231--240.
-
-\bibitem{henry-etal92} Henry, T.R., Yeatts, A.K., Hudson, S.E., Myers, B.A.,
-and Feiner, S.K.  A nose gesture interface device: Extending virtual realities.
-{\em Presence 1}, 2 (Spring 1992), 258--261.
-
-\bibitem{GenderNeutral} Schwartz, M. Guidelines for Bias-Free Writing.
-Indiana University Press, Bloomington, IN, USA, 1995.
-
-\bibitem{zaranka81} Zaranka, W., Ed. {\em The Brand-X Anthology of Poetry:  A
-Parody Anthology.}  Apple-wood Books, Cambridge, MA, 1981.
-\end{thebibliography}
 
 \end{document}
