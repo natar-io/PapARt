@@ -122,266 +122,91 @@ This kind of SAR in context is very promising, it is a first step for a more nat
 
 \section{Motivations for SAR for physical drawing.}
 
+Coming from a background of computer science specialized in virtual reality and computer graphics, my first desire was to create tools and interactive applications in SAR. More specifically I wanted to use the power of real-time rendering for meaningful real-life applications. The solution I found is to use the power and tools of computer graphics to enhance physical drawings instead of digital drawings. 
+
+There are many advantages to create digital drawings instead of physical ones. The most important one, is the possibility to go back and try again; which is obviously impossible in the physical world. I will not list all the possibilities offered by digital drawing, but some of them can be hard to reproduce for physical creation, such as the flexibility of digital layers, the copy/paste operations, filling regions with colors and textures and zooming operations.
+
+Conversely, physical creation allows a direct contact between the artist and the creation. The result will be unique and will contain traces of all the errors corrected. The variety of tools comes from a legacy of thousands of years of artistic creations. Each pen or paint has its own smell and behaviour on the paper and tactile feeling. The bound between the artist, its tools and the resulting creation has history: from the acquisition of tools, to the whole creation process to achieve the desired result, or not. This bound may be different from digital creation, the choice of one digital brush, painting effect will not have any cost, and will generally not require to move from the computer. 
+
+My main motivation is to create tools to make the creation and drawing process easier, faster, and enabling better results. Furthermore, I would like to push the possibilities of physical drawing, making enabling drawing creations that are hard to imagine such as ...
+%anamorphic drawing or multi-perspective drawings.
+In order to use the possibilities of real-time rendering, the artist will need to visualize and modify a 3D scene. In the next section, I present the system I created enabling projection on interactive paper sheets. 
 
 
-Description du projet de thËse. Partie ‡ dÈtailler. 
+\section{Spatial augmented reality and interactiveness}
+
+\subsection*{The system}
+
+For the creation of the system, we wanted to have as less constraints as possible. No constraint on the creation tools, no constraints on the creation support, and more importantly a large freedom of movement. We do no want to change the traditional setup, but seamlessly integrate the digital elements within it. 
+
+
+The hardware system is composed of a small projector-camera (procam) set, and a depth camera (Kinect). We chose overhead projection to enable any support, and we use the Kinect to make the system interactive. The user interface is composed of tracked paper sheets, one or more is dedicated to the creation space. The paper or canvas is surrounded by markers (ARToolKitPlus) to achieve a high precision detection of its position. The whole drawing area is made tactile by the depth depth camera, even allowing 3D pointing interactions over it. Another paper sheet is used for the user interface, generally containing buttons and various indications.  
+
+
+The aim of the system is to achieve a high speed tracking and more importantly high quality projection. Every projection default in the projection process, such as distortions or a bad estimation of the camera or projector parameters will be visible by the user and impacts the user experience. The hardware used is widely available for a moderate cost, the projector used is a DLP LED projector, the camera and depth camera are video game console accessories. 
+ 
+\subsection*{3D projection and manipulation}
+
+The firsts experiments involved the projection of photos inside the tracked paper sheet. The task was to create a drawing from the projected image, the projection acts as tracing paper. From this, we had some feedback: the tracking does not have to be fast during the drawing phase. When the user moves the drawing support, he or she can wait a second or two before drawing again. Another point is that any shift between the projection and the drawing will make the drawing much harder, and less comfortable. We also included tools to change the intensity of the projection, which was necessary to add any details to the drawings. 
+
+
+The second application is the projection of a 3D scene. A 3D object is projected onto the paper sheet and behaves as if it was directly on the paper sheet. Consequently, if you see the front and want to see the back of the object, you just need to turn the paper sheet on the table. We also included rotate, scale and translate operations using the touch interface, allowing an easier modification of the scene. The point of view of scene is set to the user's head position, but generally we fixed it to make the system more robust and to keep it cheap. The 3D pointing was used to set a virtual light inside the virtual scene. The tangible interface and light placement enhance the perception of the 3D objects. We pushed it further by adding stereoscopic rendering. Using this system, we created an application and a drawing scenario for a general public exhibition in Paris. 
+
+\subsection*{General public exhibition}
+
+The exhibition lasted more than 3 month, and we were demonstrating and experimenting for more than 12 days. The aim of the demonstration was to explain our research to the general public and to make them experiment. We designed an drawing application using the projection of the 3D scene, and after  the description of the system, a visitor could come and create a drawing. In order to speed up the drawing phase, we used a simple toon shading for the rendering of the scene and a 3D model which was simple to draw. (photos de lapins !) The whole description of the system and elements of the presentation were using the touch and tangible interface; the mouse, keyboard and screen of the computer were hidden from the visitors.
+
+ 
+The reception of the general public was good, and seemed magical for some visitors. When the paper sheets are on the table, the system is interactive, but without any paper sheet it is just a table with a few pencil and an eraser. We tested our drawing system nearly on 200 visitors, and nearly every of them were impressed by the quality of their own drawing. 
+
+
+\section{Pushing the limits of the drawing}
+
+
+The first hard drawing I explored with this is stereoscopic drawing. Since recently, stereoscopic screens are widely available, and is also getting widespread in the cinema. The creation of stereoscopic drawing is hard and repetitive. Two nearly identical drawings have to be made, and the visualization of these drawings require training for free view techniques or more generally a stereoscope. In (cite), we proposed a tool to create stereoscopic drawings from a pair of generated images. The images are created using the hardware and software described above. 
+
+Just like any drawing, stereoscopic drawings require editions and adjustments. But unlike any drawing, it has to be done twice, and the differences between the two drawings will influence the depth perception of the result. We also included the possibility to take a photo of each drawing in order to have an anaglyph preview of the result. 
+
+These experiments have raised many questions and observations. The first observation is on the quality of the drawing: the depth perception will be more influenced by the quality of the shading than by the left/right disparity. We are not sure that two drawings will be required, this question is complex. If just one drawing is done, and the second one is only the changed elements for stereoscopy, the objective to enhance the real world is not achieved any more: a digital reconstruction is required to visualize the result. 
+
+\section{Perspectives of SAR for drawing}
+
+\subsection*{Interaction techniques}
+
+The inputs and interaction techniques described above allows direct and natural interactions. But, is is not precise for selection and manipulation of the digital information. In order to complement 
+these we added a highly precise tablet input (wacom); it allows to overlay digital drawing over the physical one.                          
+
+\subsection{New form of drawings}
+% Definitions of drawing
 
 
 
+% subsection applications... 
 
-%The {\em UIST} proceedings represent the final archival records of
-%the conference.  We would like the proceedings to have a
-%uniform, high quality appearance.  To accomplish this, authors must follow
-%the format specified here.
-%
-%In essence, we ask that whatever text formatting program you use,
-%you format your paper exactly like this document.  Please
-%match the type style, type size, line spacing, indentation, and layout
-%format as closely as you can.  In fact, if you received this document online
-%as a LaTeX file, along with its accompanying uist.sty style file, you can
-%use it as a template.
-%
-%Use an A4 or 8.5"$\times$11" sheet of paper. Center the image on the page.
-%The whole image of your text must {\em completely} fit in a 17.8 cm$\times$23.5 cm box. 
-%If you are not using LaTeX with the uist.sty style
-%file, then the recommendations we have included here should help you match this
-%sample with the facilities you do have, such as Microsoft Word.
-%
-%\section{TITLE AND AUTHORS}
-%\textbf{The authors list should be removed for blind review.}
-%
-%The title, author's names and affiliations run across the full width of the
-%page.  We also recommend phone number and e-mail address, if available.  (See
-%the top of this page for an example of two names with different addresses.
-%If only one address is needed, center all text on the page.) 
-%
-%Here are the typographic details:
-%\begin{itemize}
-%\item Title area: 1 column, 5.9 cm (2 1/3") length, 17.8 cm (7") width.
-%\item Title: 18 point Helvetica Bold---mixed cases
-%\item Names: 12 point Times Italic
-%\item Addresses, Telephone, E-mail:  12 point Times Roman
-%\end{itemize}
-%
-%\section{FIRST PAGE COPYRIGHT NOTICE}
-%Remember to leave 2.54 cm of blank space at the bottom of the left
-%column of the first  page,  as on this page. You must leave this space for
-%the copyright notice on {\em all} submissions intended for publication in the
-%proceedings. 
-% 
-%Please note that the first author of all accepted submissions
-%will have to sign a copyright release form.  Those forms will be sent with the
-%acceptance letters and need to be returned rapidly.  We encourage the contact 
-%persons of each submission to keep track of their co-authors' locations because 
-%they will be responsible for rapidly collecting the signatures.
-%
-%
-%\section{TWO COLUMNS}
-%All body text should be in 10 point Times Roman, with 11 points between
-%successive baselines.
-%
-%After the title use a double-column format as shown here. Column width is 8.5
-%cm, with 0.8 cm between columns (for a total image width still equal to 17.8
-%cm).  Total text length should remain between 23.2 and 24 cm (9 1/4") .
-%Right margins should be justified, not ragged.   Separate each paragraph by a
-%blank line (and do not indent them)  Hyphenation is at your own discretion.
-%If at all possible, the two columns of the last page should be of equal length.
-%(The  LaTeX uist.sty file does not do this automatically, so
-%you will need to insert the commands \verb+\linebreak+ and \verb+\newpage+
-%at an appropriate point on the last page to justify the current line and
-%force a new column.)
-%
-%\section{SECTIONS}
-%The title of a section should be in 9 point Helvetica Bold font in all
-%capitals. Notice that the sections, subsections, and subsubsections are not
-%numbered in this document, but you may number them if you want.
-%
-%\subsection{Subsections}
-%The title of a subsection should be in 9 point Helvetica Bold with only the
-%initial letters of each word capitalized. (Note: Words like ``the'' and ``a''
-%are not capitalized unless they start a title.)
-%
-%\subsubsection{Subsubsections.} The heading for a subsubsection should be in
-%9 point Helvetica Oblique (italic) with initial letters
-%capitalized. (Note: Words like ``the'' and ``a'' are not capitalized
-%unless they start a title.)  The subsubsection heading should {\em not}
-%appear on its own separate line. 
-%
-%\section{TYPESETTING}
-%Please use the fonts specified in this description
-%so that we can produce a conference proceedings that looks like a unified
-%document, rather than a collection of unrelated papers thrown
-%together.  The body of your paper should use 10 point Times Roman type,
-%set with an 11 point vertical spacing between baselines (also known as
-%1 point of leading).
-%Do not use a sans-serif font (e.g., Helvetica),  except for emphasis, headings
-%and the title, as described above.
-%Computer Modern Roman or another font with serifs should be used {\em only} 
-%as a last resort if Times Roman is not available. 
-%Macintosh users should use the font named Times.
-%
-%\section{FIGURES}
-%Figures should be inserted at the appropriate point in your text, or
-%optionally floated to the top or bottom of the page, as was done with
-%Figure \ref{fig-example}.  If necessary, figures can extend up to the
-%width of the full two columns: 17.8 cm (7") if necessary.  
-%
-%The quality of your images and figures is critical. Your paper, if accepted, will
-%be printed in the high quality print proceedings, and will also be available 
-%for download on the ACM Digital Library where readers may read it online
-%and zoom in to see the details.
-%
-%Screen dumps should be captured at the screen resolution and
-%use a lossless format such as TIFF.
-%Photos should have a resolution of at least 150dpi, and preferably
-%300dpi or 600dpi. They may be slightly compressed, e.g. in JPEG,
-%if this does not degrade quality (use the "Better" or "8/10" setting).
-%Diagrams, data plots and schemas should use a vector format
-%rather than a raster format where possible.
-%
-%\begin{figure}[tb]
-%\vspace{1.9in}
-%\caption{A figure caption.  It is set in 9 point Helvetica type, with a
-%0.5 cm wider margin on both left and right sides.} 
-%\label{fig-example}
-%\end{figure}
-%
-%Remember also that some readers may never see anything other than a 
-%oor photocopy of your paper, so make sure that the figure will still be 
-%readable (try to see how it looks after recopying it a couple of times).
-%
-%\section{PRODUCING PDF FILES}
-%Submissions as well as final versions of your paper must be submitted in PDF format.
-%Most typesetting systems can produce PDF either directly or by using
-%a virtual printer. If you cannot produce PDF directly, you can produce
-%a PostScript file and then use a PostScript to PDF converter. Either way,
-%make sure that your PDF file is correct by viewing it with a standard
-%PDF reader such as Adobe's Acrobat.
-%
-%\section{REFERENCES AND CITATIONS}
-%Your references should appear in the standard CACM format: a numbered list at
-%the end of the paper, ordered alphabetically by first author, and referenced by
-%number in brackets as shown here~\cite{badenov91,henry-etal92,zaranka81}.
-%(See the examples of citations at the end of this document, and the other
-%examples on p. 12 of the April 94 issue of the {\em Communications of the
-%ACM.}) 
-%References should be materials accessible to the public:
-%books, articles in standard journals, and papers in open conference
-%proceedings. 
-%Internal technical reports should be avoided unless easily accessible (i.e. you
-%can give the address to obtain it).  Personal communications should be
-%acknowledged, not referenced. Be sure to remove all dangling references and citations.
-%
-%\section{LANGUAGE, STYLE AND CONTENT}
-%The written and spoken language of UIST is English. Spelling and punctuation may use
-% any dialect of English (e.g., British, Canadian, US, etc.) provided this is done 
-%consistently. Hyphenation is optional. To ensure suitability for an international audience, 
-%please pay attention to the following:
-%\begin{itemize}
-%\item Try to avoid long or complex sentence structures. 
-%\item Briefly define or explain all technical terms that may be unfamiliar to readers.
-%\item Explain all acronyms the first time they are used in your text – e.g., 
-%“Digital Signal Processing (DSP)”.
-%\item Explain local references (e.g., not everyone knows all city names in a particular country).
-%\item Explain “insider” comments. Ensure that your whole audience understands any
-%reference whose meaning you do not describe (e.g., do not assume that everyone has 
-%used a Macintosh or a particular application).
-%\item Explain colloquial language and puns. Understanding phrases like “red herring” 
-%may require a local knowledge of English.  Humor and irony are difficult to translate.
-%\item Use unambiguous forms for culturally localized con-cepts, such as times, dates, 
-%currencies and numbers (e.g., “1-5- 97” or “5/1/97” may mean 5 January or 1 May, 
-%and “seven o’clock” may mean 7:00 am or 19:00).  For cur-rencies, indicate 
-%equivalences – e.g., “Participants were paid 10,000 lire, or roughly \$5.”
-%\item Be careful with the use of gender-specific pronouns ({\em he, she}) and other gendered 
-%words ({\em chairman, manpower, man-months}). Use inclusive language that is gender-
-%neutral (e.g., {\em she or he, they, s/he, chair, staff, staff-hours, person-years}). 
-%See~\cite{GenderNeutral} for further advice and ex-amples regarding gender and 
-%other personal attributes.
-%\item If possible, use the full (extended) alphabetic character set for names of persons, 
-%institutions, and places (e.g., Gr{\o}nb{\ae}k, Lafreni\'{e}re, S\^{a}nchez, Universit\"{a}t, 
-%Wei{\ss}enbach, Z\"{u}llighoven, {\AA}rhus, etc.).  These characters are already included in 
-%most versions of Times, Helvetica, and Arial fonts.
-%\end{itemize}
-%
-%\section{HEADERS, FOOTERS AND PAGE NUMBERING}
-%Do not use headers, footers or footnotes. Page numbers, footers and headers will
-%be added when the Conference Proceedings are assembled. Papers submitted
-%to the paper chairs for review should have page numbers (to help the review process). 
-%
-%\section{OTHER CONSIDERATIONS}
-%\subsection{No Private Material}
-%Presentations should not contain any proprietary or confidential
-%material. Please clear all materials before submitting or presenting them.
-%Submission of pictures of identifiable people should be done only with the
-%understanding that responsibility for obtaining appropriate permissions rests
-%with the paper's authors.
-%
-%\subsection{Equations}
-%Displayed equations should be centered, with optional equation numbers 
-%right-justified to the right margin of the column.
-%
-%
-%% use \newpage to break the columns on the last page so they have equal length
-%% if the break occurs in the middle of a paragraph, insert \linebreak before \newpage
-%
-%\section{BLIND REVIEW}
-%For archival submissions, UIST requires a “blind review.” To prepare your 
-%submission for blind review, remove author and institutional identities in 
-%the title and header areas of the paper. You may also need to remove all 
-%of the Acknowledgments text. Authors should \textbf{not} use anonymous citations 
-%(by blanking their name or using Anonymous as an author) for references 
-%to their previous work. Instead, authors should 
-%refer  to previous work in 
-%the third person (i.e. as if they were not the authors). This will ensure that 
-%reviewers can take into 
-%\linebreak
-%\newpage
-%account previous research by the authors. 
-%Further suppression of identity in the body of the paper is left to the authors' discretion.
-% For more details, 
-%see the submission guidelines and checklist for your submission category.
-%
-%\section{CONCLUSION}
-%It is important that you write for the UIST audience.  Please read previous years’
-%{\em Proceedings} to understand the writing style and conventions that successful 
-%authors have used.  It is particularly important that you state clearly what you 
-%have done, not merely what you plan to do, and explain how your work is
-%different from previously published work, i.e., what is the unique contribution
-%that your work makes to the field?  Please consider what the reader will learn
-%from your submission, and how they will find your work useful.  If you write with
-%these questions in mind, your work is more likely to be successful, both in being
-%accepted into the Conference, and in influencing the work of our field.
-%
-%\section{ACKNOWLEDGMENTS}
-%\begin{center}
-%\textbf{This section should be left blank for blind review}
-%\end{center}
-%
-%The authors would like to acknowledge the contributions of many previous
-%editors in the writing and formatting of this document.  This document is based on
-%the {\em CHI '94} format-ting guidelines.
+
+\section{Conclusion}
 
 %%%	You can use bibtex if you like, but I've hardwired in these 
 %%%	references to avoid sending you a separate .bib file.
 \begin{thebibliography}{9}
 
-\bibitem{ACMTerms} How to Classify Works Using ACM’s Computing
-Classification System. {http://www.acm.org/class/how\_to\_use.html}.
-
-\bibitem{badenov91}  Badenov, B. Effects of prolonged use of WIMP user
-interfaces on Alces americana and Glaucomys volans.
-In {\em Proceedings of UIST '87}
-(February 30--April 1, Graceland, TN), ACM, NY, 1987, pp. 231--240.
-
-\bibitem{henry-etal92} Henry, T.R., Yeatts, A.K., Hudson, S.E., Myers, B.A.,
-and Feiner, S.K.  A nose gesture interface device: Extending virtual realities.
-{\em Presence 1}, 2 (Spring 1992), 258--261.
-
-\bibitem{GenderNeutral} Schwartz, M. Guidelines for Bias-Free Writing.
-Indiana University Press, Bloomington, IN, USA, 1995.
-
-\bibitem{zaranka81} Zaranka, W., Ed. {\em The Brand-X Anthology of Poetry:  A
-Parody Anthology.}  Apple-wood Books, Cambridge, MA, 1981.
+%\bibitem{ACMTerms} How to Classify Works Using ACM’s Computing
+%Classification System. {http://www.acm.org/class/how\_to\_use.html}.
+%
+%\bibitem{badenov91}  Badenov, B. Effects of prolonged use of WIMP user
+%interfaces on Alces americana and Glaucomys volans.
+%In {\em Proceedings of UIST '87}
+%(February 30--April 1, Graceland, TN), ACM, NY, 1987, pp. 231--240.
+%
+%\bibitem{henry-etal92} Henry, T.R., Yeatts, A.K., Hudson, S.E., Myers, B.A.,
+%and Feiner, S.K.  A nose gesture interface device: Extending virtual realities.
+%{\em Presence 1}, 2 (Spring 1992), 258--261.
+%
+%\bibitem{GenderNeutral} Schwartz, M. Guidelines for Bias-Free Writing.
+%Indiana University Press, Bloomington, IN, USA, 1995.
+%
+%\bibitem{zaranka81} Zaranka, W., Ed. {\em The Brand-X Anthology of Poetry:  A
+%Parody Anthology.}  Apple-wood Books, Cambridge, MA, 1981.
 \end{thebibliography}
 
 \end{document}
