@@ -7,9 +7,10 @@
 \usepackage{caption}
 \usepackage{subcaption}
 
-\makeatletter
-\let\@copyrightspace\relax
-\makeatother
+\usepackage{dblfloatfix} 
+%\makeatletter
+%\let\@copyrightspace\relax
+%\makeatother
  
 \begin{document}
 
@@ -40,15 +41,22 @@
 \author{
 \parbox[t]{9cm}{\centering
 	     {\em Jeremy Laviole}\\
-	     Univ. Bordeaux, LaBRI, UMR 5800, F-33400 Talence, France.\\
-         CNRS, LaBRI, UMR 5800, F-33400 Talence, France.\\
-	     Inria, F-33400 Talence, France.\\
-	     laviole@labri.fr}
+	     Univ. Bordeaux, LaBRI,  UMR 5800, F-33400 Talence, France.\\
+         CNRS, LaBRI,  UMR 5800, F-33400 Talence, France.\\
+	     Inria, F-33400  Talence, France.\\
+	     laviole@labri.fr \vspace*{5mm}}
 \parbox[t]{9cm}{\centering
 	     {\em Martin Hachet}\\
 	     Inria, F-33400 Talence, France.\\
 	     LaBRI, UMR 5800, F-33400 Talence, France.\\
 	     martin.hachet@inria.fr}
+	\\
+                 \includegraphics[height=2.5cm]{mona}
+               \hspace{0.2cm}     \includegraphics[height=2.5cm]{dragon}
+                 \hspace{0.2cm}   \includegraphics[height=2.5cm]{vase}
+                 \hspace{0.2cm}   \includegraphics[height=2.5cm]{velo4}
+                \hspace{0.2cm}    \includegraphics[height=2.5cm]{laapin}  
+                \\ \centering \small Left to right bla bla bla.     
 }
 
 
@@ -80,10 +88,6 @@ User Interfaces. - Graphical user interfaces.}
   % makes some lines with lots of white space, but 	
   % tends to prevent words from sticking out in the margin
 
-
-
-
-
 \section{INTRODUCTION}
 
 For a few years now, augmented reality has reached the general public. This is due to the availability 
@@ -92,6 +96,7 @@ The augmentations are overlayed on reality and visualized though a screen.
 Even though it is convenient to navigate in the digital world by moving; for many 
 applications the users want to have the hands free to interact directly with the 
 real world and not by touching a screen. In order to overcome these limitations, the digital information can be projected into reality, this is called spatial augmented reality (SAR)~\cite{raskar1999table}.
+
 
 In SAR, the visualizations and interactions space are the same; it can create very natural user experiences. Conversely, SAR applications are bounded 
 to real-life, thus it is harder to represent data behind real objects because the projection
@@ -114,16 +119,18 @@ There are many advantages to create digital drawings instead of physical ones. T
 Conversely, physical creation allows a direct contact between the artist and the creation. The result will be unique and will contain traces of all the errors corrected. The variety of tools comes from a legacy of thousands of years of artistic creations. Each pen or paint has its own smell and behaviour on the paper and tactile feeling. The bound between the artist, its tools and the resulting creation has history: from the acquisition of tools, to the whole creation process to achieve the desired result, or not. This bound may be different from digital creation, the choice of a digital brush or effect will not have any cost, and will generally not require to move from the computer. 
 
 
-\begin{figure}[!hbtp]
-\includegraphics[width = 85mm]{DSC00299-2-rogne-annote.JPG}
-\caption{Overhead view of the system in a home configuration. The whole sensing and projecting system is mounted on a tripod, making it easily transportable.} 
-\label{fig:system}
-\end{figure}
+
 
 %My main motivation is to create tools to make the creation and drawing process easier, faster, and for better results. Furthermore, I would like to push the possibilities of physical drawing; enabling drawing creations that are hard to imagine or visualize for a human such as stereoscopic drawings.
 
 In order to use the possibilities of real-time rendering, the artist will need to visualize and modify a 3D scene. In the next section, I present the system I created enabling projection on interactive paper sheets, allowing the projection of photos to interactive 3D scenes. 
 
+
+\begin{figure}[!tb]
+\includegraphics[width = 85mm]{DSC00299-2-rogne-annote.JPG}
+\caption{View of the system in a home configuration. The whole sensing and projecting system is mounted on a tripod, making it easily transportable.} 
+\label{fig:system}
+\end{figure}
 
 
 \section{Spatial augmented reality and interactivity}
@@ -132,13 +139,15 @@ In order to use the possibilities of real-time rendering, the artist will need t
 
 For the creation of the system, we wanted to have as less constraints as possible: no constraint on the creation tools nor on the support. More importantly, we wanted to keep a large freedom of movement. Consequently, the system does not add any constraint to the traditional setup, and seamlessly integrate the digital elements within it. 
 
-
 The hardware system is composed of a small projector-camera (procam) set, and a depth camera, as seen in Figure~\ref{fig:system}. We chose overhead projection to enable any support, and we use the depth camera to make the system interactive. The user interface is composed of tracked paper sheets, one or more is dedicated to the creation space. The paper or canvas is surrounded by markers to achieve a high precision detection of its position. The whole drawing area is made tactile by the depth depth camera, even allowing 3D pointing interactions over it. Another paper sheet is used for the user interface, generally containing virtual buttons.
 
 
 The goal of the system is to achieve a high speed tracking and more importantly high fidelity projection. As the tracking speed may make the system less appealing or slow the user, a bad calibration will make it unusable. The capture and projection process requires a precise calibration to achieve the desired results. 
 The hardware used is widely available for a moderate cost, the projector used is a DLP LED projector, the camera and depth camera are video game console accessories. 
  
+ 
+
+
 \subsection*{3D projection and manipulation}
 
 The firsts experiments involved the projection of photos inside the tracked paper sheet. The task was to create a drawing from the projected image, the projection acts as tracing paper. Some results are presented in Figure~\ref{fig:lyspanda}. From these experiments, we had some user feedback; the tracking does not have to be fast during the drawing phase: when the user moves the drawing support, he or she can wait a second or two before drawing again. Another point is that any shift between the projection and the drawing will make the drawing much harder, and less comfortable. We also included tools to change the intensity of the projection, which was necessary to add any details to the drawings. 
@@ -187,7 +196,7 @@ The second application we developed allows the projection of a 3D scene. A 3D ob
 
 The exhibition lasted more than 3 month, and we were demonstrating and experimenting for more than 12 days. The aim of the demonstration was to explain our research to the general public and to let the visitors experiment. We designed a drawing application using the projection of the 3D scene. We could explain the current challenges of visualization and manipulation of virtual objects. After describing our system and solutions, we could make a quick drawing and let a visitor do another one while answering the questions.
 
-In order to speed up the drawing phase, we used a simple toon shading for the rendering of the scene and a 3D model which was simple to draw, as illustrated in Figure~\ref{fig:3lapins}}. The whole description of the system and elements of the presentation were done only using the touch and tangible interface; the mouse, keyboard and screen of the computer were hidden from the visitors.
+In order to speed up the drawing phase, we used a simple toon shading for the rendering of the scene and a 3D model which was simple to draw, as illustrated in Figure~\ref{fig:3lapins}. The whole description of the system and elements of the presentation were done only using the touch and tangible interface; the mouse, keyboard and screen of the computer were hidden from the visitors.
 
  
 The reception of the general public was good, and seemed magical for some visitors. When the paper sheets are on the table, the system is interactive, but without any paper sheet it is just a table with a few pencil and an eraser. We tested our drawing system nearly on 200 visitors, and nearly every one of them was impressed by the quality of their own drawing. 
@@ -205,24 +214,48 @@ The reception of the general public was good, and seemed magical for some visito
 \section{Pushing the limits of drawing}
 
 
-The first hard drawing I explored with this is stereoscopic drawing. Since recently, stereoscopic screens are widely available, and is also getting widespread in the cinema. The creation of stereoscopic drawing is hard and repetitive. Two nearly identical drawings have to be made, and the visualization of these drawings require training for free view techniques or more generally a stereoscope. In (cite), we proposed a tool to create stereoscopic drawings from a pair of generated images. The images are created using the hardware and software described above. 
+The first hard drawing I explored with this is stereoscopic drawing. Since recently, stereoscopic screens are widely available, and "3D" movies are getting more and more common. The creation of stereoscopic drawing is hard and repetitive: two nearly identical drawings have to be made. Moreover, the visualization of these drawings require training for free view techniques or more generally a stereoscope. In~\cite{laviole:hal-00671361}, we proposed a tool to create stereoscopic drawings from a pair of generated images. The images are created using the hardware and software described above. 
 
-Just like any drawing, stereoscopic drawings require editions and adjustments. But unlike any drawing, it has to be done twice, and the differences between the two drawings will influence the depth perception of the result. We also included the possibility to take a photo of each drawing in order to have an anaglyph preview of the result. 
+Just like any drawing, stereoscopic drawings require editions and adjustments. But unlike any drawing, it has to be done twice, and the differences between the two drawings will influence the depth perception of the result. We also included the possibility to take an image of each drawing in order to have an anaglyph preview of the result. 
 
-These experiments have raised many questions and observations. The first observation is on the quality of the drawing: the depth perception will be more influenced by the quality of the shading than by the left/right disparity. We are not sure that two drawings will be required, this question is complex. If just one drawing is done, and the second one is only the changed elements for stereoscopy, the objective to enhance the real world is not achieved any more: a digital reconstruction is required to visualize the result. 
+These experiments have raised many questions and observations. The first observation is on the quality of the drawing: the depth perception will be more influenced by the quality of the shading than by the left/right disparity. We are not sure that two drawings will be required, this question is more personal. If just one drawing is done, and the second one is only the changed elements for stereoscopy, the objective to enhance the real world is not achieved any more: a digital reconstruction is required to visualize the result. 
+
+
+\begin{figure}[!h]
+        \begin{subfigure}[b]{0.23\textwidth}
+                \centering
+                \includegraphics[width=3.9cm]{stereo1}
+                \caption{Left view}
+                \label{fig:stereo1}
+        \end{subfigure}
+        ~ %add desired spacing between images, e. g. ~, \quad, \qquad etc. 
+          %(or a blank line to force the subfigure onto a new line)
+        \begin{subfigure}[b]{0.23\textwidth}
+                \centering
+                \includegraphics[width=3.9cm]{stereo2}
+                \caption{Right view}
+                \label{fig:stereo2}
+        \end{subfigure}
+        \caption{Stereographic pair of drawings.}\label{fig:stereo}
+\end{figure}
 
 \section{Perspectives of SAR for drawing}
 
 \subsection*{Interaction techniques}
 
 The inputs and interaction techniques described above allows direct and natural interactions. But, it is not precise for selection and manipulation of the digital information. In order to complement 
-these we added a highly precise tablet input (wacom); it allows to overlay digital drawing over the physical one. We also included the possibility to capture the drawing. This way, the drawing itself can be considered as in input method, like in (cite hagbi...). 
+these we added a highly precise tablet input (wacom); it allows to overlay digital drawing over the physical one. We also included the possibility to capture the drawing. This way, the drawing itself can be considered as in input method, like in~\cite{hagbi2009shape}. 
 
 \subsection*{New forms of creation}
 
-From our first experiments, most of the users really liked the result of the mix between the real drawing and the projection. The real drawing generally makes the contour stronger and represent the interesting features of the image; while the projection provide complex texture and colors that are very hard to draw. 
+From our first experiments, most of the users really liked the result of the mix between the real drawing and the projection. The real drawing generally makes the contour stronger and represent the interesting features of the image; while the projection provide complex texture and colors that are very hard to draw. From these, we could allow the creation of hybrid drawings, partly physical and partly digital, a simple example illustrate this in Figure~\ref{velo} The physical drawing may keep blank or less intense parts allowing the projection. The projected elements, unlike drawn elements can contain animations, which enables an interactive exploration of the drawing, or animated drawings. 
 
-From these, we could allow the creation of hybrid drawings, partly physical and partly digital.  The physical drawing may blank or less intense parts allowing the projection. The projected elements, unlike drawn elements may contain animations, which enables an interactive exploration of the drawing, or animated drawings. 
+\begin{figure}[!h]
+\centering
+\includegraphics[width=65mm]{velo2}
+\caption{Photo of a mix between a physical drawing, real colors from a photo and extra colors added using an image edition software.}
+\label{fig:velo}
+\end{figure}
 
 
 \subsection*{Digital games applications}
@@ -232,19 +265,19 @@ The difficulty levels could imply new drawing skills, such as special shading te
 
 One could also create construction games, such as Sim City. Instead of creating a digital city, the city maps is drawn directly on the paper, and virtual citizens could come and create their own houses. As described above, the creation of special building could be man-made, and it will create another dimension of the game. The player will think twice when placing the schools and fire station, because moving them will require real time and effort. 
 
+\section{Extensions}
 
+Most of the applications described here are far from using advanced computer graphics techniques. However, some recent works such as ShadowDraw~\cite{leeshadowdraw} shows a desire of the computer graphics community to get closer to the physical world. we could imagine tools assisting the creation of multi-perspective drawings or complex anamorphosis. These kind of drawings require a wide variety of skills that could be compensated by programs. 
 
+Another natural extension, would be the use of the capture and reprojection for the creation of traditional animation. It would be a compelling challenge to take advantage of the digital animation tools, and port them to be used for physical images. 
 
+We proposed some tools to draw 3D objects. An interesting, though difficult approach would be to use multiple drawings to interactively construct a 3D model. The first creations of the designers are generally on paper, and they are multiple view of the objects. It makes them a perfect candidate for interactive reconstruction of the imagined 3D object. This way the designer may create more drawings, and achieve a better inner representation of the object.  
 
-% Definitions of drawing
-
-% Games interactive applications. 
-
-% subsection applications... 
-
+% anamorphose - modelisation 3D - multiperspective
 
 \section{Conclusion}
 
+In this paper I summed up the most interesting work and thoughts of nearly two years of work. The creation of the SAR installation required the acquisition of new knowledge from computer vision and computer graphics. The possibilities with this kind of installation are just starting to be explored. The creation of each application rose many questions touching the fields of computer vision, human perception, computer graphics and challenging design choices. We proposed solutions to ease the drawing, and had the possibility to try them with the general public. 
 
 \bibliographystyle{abbrv}
 \bibliography{paper}
