@@ -3,6 +3,14 @@
 \usepackage{times}
 \usepackage{uist}
 
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+
+\makeatletter
+\let\@copyrightspace\relax
+\makeatother
+ 
 \begin{document}
 
 % --- Copyright notice ---
@@ -47,11 +55,15 @@
 \maketitle
 
 \abstract
-%Each paper should begin with an abstract, followed by a set of keywords, both
-%placed in the left column of the first page under the left half of the title.
-%All body text, such as this paragraph, should be set in 10 point Times Roman
-%type, with 11 points between successive baselines.  (We will repeat that later
-%in this document to make sure that you do not forget.)
+
+Spatial augmented reality (SAR) promises the integration of digital information 
+in the real (physical) world through projection. In this doctoral symposium paper,
+I propose different tools to fasten and ease the drawing by projecting photos, 
+virtual construction lines and interactive 3D scenes. After describing them, I 
+explain some future challenges to explore such as the creation of tools which helps to create 
+drawings that are "difficult" to achieve for a human being, but easy to do by a computer. 
+Furthermore, I propose some insights for the creation of digital games and programs which 
+can take full advantages to have a human and physical constraints.
 
 \classification{H5.2 [Information interfaces and presentation]:
 User Interfaces. - Graphical user interfaces.}
@@ -60,7 +72,7 @@ User Interfaces. - Graphical user interfaces.}
   following 16 designated terms: Algorithms, Management, Measurement,
   Documentation, Performance, Design, Economics, Reliability,
   Experimentation, Security, Human Factors, Standardization,
-  Languages, Theory, Legal Aspects, Verification. See ~\cite{ACMTerms} for more details.)}
+  Languages, Theory, Legal Aspects, Verification. See for more details.)}
 
 \keywords{Spatial augmented reality, user interfaces, fine arts}
 
@@ -69,95 +81,128 @@ User Interfaces. - Graphical user interfaces.}
   % tends to prevent words from sticking out in the margin
 
 
-%
-%Idée de plan.... 
-%
-%Introduction : SAR en général, buts de la SAR, récentes avancées. 
-%
-%Direction de la thèse pour en réalité augmentée. 
-%
-%Description du projet de thèse. Partie à détailler. 
-%
-%Travaux effectués ainsi que leur placement dans la thèse. Description de l'expérience au
-%palais de la découverte. 
-%
-%Travaux en cours, possibilités et orientations. 
-%Parler de tout ? 
-
-%
-%Objectifs 
-
 
 
 
 \section{INTRODUCTION}
 
-In the past 10 years, the field of augmented reality grows steadily. This is due to the availability 
-of webcams in every laptop and mobile phone and the software such as ARToolKit.
-However, the augmentations overlayed on reality is visualized though a screen. 
-Even though it is convenient to navigate in the digital world by moving, for many 
-applications we may want to have the hands free, or to interact directly with the 
-real world and not by touching a screen.
-In order to overcome these limitations, the digital information can be projected 
-into reality. Consequently, the digital world has the possibility to merge with reality, 
-it is spatial augmented reality (SAR). (cite raskar) 
+For a few years now, augmented reality has reached the general public. This is due to the availability 
+of webcams in every laptop and mobile phone and software such as ARToolKit~\cite{wagner2007artoolkitplus}.
+The augmentations are overlayed on reality and visualized though a screen. 
+Even though it is convenient to navigate in the digital world by moving; for many 
+applications the users want to have the hands free to interact directly with the 
+real world and not by touching a screen. In order to overcome these limitations, the digital information can be projected into reality, this is called spatial augmented reality (SAR)~\cite{raskar1999table}.
 
-Spatial augmented reality mixes the benefits of being directly linked to the reality. 
-Consequently, the user experience can be enhanced and the digital part of the experience 
-can be easily forgotten by the user. Conversely, all the SAR applications are bounded 
-to real-life, it is harder to represent data behind real objects because the projection
+In SAR, the visualizations and interactions space are the same; it can create very natural user experiences. Conversely, SAR applications are bounded 
+to real-life, thus it is harder to represent data behind real objects because the projection
 support will importantly influence the visualization.
-The projection support is generally assumed to be planar, or of a fixed shape. 
-In (projo jeux) the freedom of movement of SAR is explored for video games applications. Another approach in (onbody proj), is to use SAR directly on the user's arm or a notepad to control a mobile phone or take notes.  
 Recent work in SAR explore the projection support as the main interaction element. The 
 augmented reality part will add new informations, some ideas of applications are described
-in (sixth sense). The same idea is explored in (onbody projection), where the projection guides the user's movement. machin et al created a SAR application to ease the painting process, they propose tools to help the user to mix fresh paint and to apply the different layers in the right order. 
+in \cite{mistry2009sixthsense}. The same idea is explored in \cite{sodhi2012lightguide}, where the projection guides the user's movement. 
+In~\cite{wilson2007depth} and~\cite{jones2010build} the freedom of movement of SAR is used to create games which adapts itself to the projection support. Another approach in~\cite{harrison2011omnitouch}, is to use SAR directly on the user's arm or a notepad to control a mobile phone or take notes. \cite{flagg2006projector} Flagg \textit{et. al.} created a SAR application to ease the painting process, they propose tools to help the user to mix fresh paint and to apply the different layers in the right order. 
 
-This kind of SAR in context is very promising, it is a first step for a more natural merge of the digital world and the real world. The idea is to create applications that fits into the real world, making it richer and more interactive. In this paper, I state the objectives which led to my past and current works. Then, I will conclude with a discussion of the future possibilities  
+This kind of SAR in context is very promising, it is a first step for a more natural merge of the digital world and the real world. In order to create applications that fits on the physical world, making it richer and more interactive. In this paper, I state the objectives which led to my past and current works on SAR for drawing. Then, I will conclude with a discussion of the future possibilities such as the integration of physical drawing in digital applications.
+
 
 % Direction de la thèse pour en réalité augmentée. 
 
 \section{Motivations for SAR for physical drawing.}
 
-Coming from a background of computer science specialized in virtual reality and computer graphics, my first desire was to create tools and interactive applications in SAR. More specifically I wanted to use the power of real-time rendering for meaningful real-life applications. The solution I found is to use the power and tools of computer graphics to enhance physical drawings instead of digital drawings. 
-
+Coming from a background of computer science specialized in virtual reality and computer graphics, my first desire was to create tools and interactive applications in SAR. More specifically I wanted to use the power of real-time rendering for get an unique man-made creation. 
 There are many advantages to create digital drawings instead of physical ones. The most important one, is the possibility to go back and try again; which is obviously impossible in the physical world. I will not list all the possibilities offered by digital drawing, but some of them can be hard to reproduce for physical creation, such as the flexibility of digital layers, the copy/paste operations, filling regions with colors and textures and zooming operations.
 
-Conversely, physical creation allows a direct contact between the artist and the creation. The result will be unique and will contain traces of all the errors corrected. The variety of tools comes from a legacy of thousands of years of artistic creations. Each pen or paint has its own smell and behaviour on the paper and tactile feeling. The bound between the artist, its tools and the resulting creation has history: from the acquisition of tools, to the whole creation process to achieve the desired result, or not. This bound may be different from digital creation, the choice of one digital brush, painting effect will not have any cost, and will generally not require to move from the computer. 
-
-My main motivation is to create tools to make the creation and drawing process easier, faster, and enabling better results. Furthermore, I would like to push the possibilities of physical drawing, making enabling drawing creations that are hard to imagine such as ...
-%anamorphic drawing or multi-perspective drawings.
-In order to use the possibilities of real-time rendering, the artist will need to visualize and modify a 3D scene. In the next section, I present the system I created enabling projection on interactive paper sheets. 
+Conversely, physical creation allows a direct contact between the artist and the creation. The result will be unique and will contain traces of all the errors corrected. The variety of tools comes from a legacy of thousands of years of artistic creations. Each pen or paint has its own smell and behaviour on the paper and tactile feeling. The bound between the artist, its tools and the resulting creation has history: from the acquisition of tools, to the whole creation process to achieve the desired result, or not. This bound may be different from digital creation, the choice of a digital brush or effect will not have any cost, and will generally not require to move from the computer. 
 
 
-\section{Spatial augmented reality and interactiveness}
+\begin{figure}[!hbtp]
+\includegraphics[width = 85mm]{DSC00299-2-rogne-annote.JPG}
+\caption{Overhead view of the system in a home configuration. The whole sensing and projecting system is mounted on a tripod, making it easily transportable.} 
+\label{fig:system}
+\end{figure}
+
+%My main motivation is to create tools to make the creation and drawing process easier, faster, and for better results. Furthermore, I would like to push the possibilities of physical drawing; enabling drawing creations that are hard to imagine or visualize for a human such as stereoscopic drawings.
+
+In order to use the possibilities of real-time rendering, the artist will need to visualize and modify a 3D scene. In the next section, I present the system I created enabling projection on interactive paper sheets, allowing the projection of photos to interactive 3D scenes. 
+
+
+
+\section{Spatial augmented reality and interactivity}
 
 \subsection*{The system}
 
-For the creation of the system, we wanted to have as less constraints as possible. No constraint on the creation tools, no constraints on the creation support, and more importantly a large freedom of movement. We do no want to change the traditional setup, but seamlessly integrate the digital elements within it. 
+For the creation of the system, we wanted to have as less constraints as possible: no constraint on the creation tools nor on the support. More importantly, we wanted to keep a large freedom of movement. Consequently, the system does not add any constraint to the traditional setup, and seamlessly integrate the digital elements within it. 
 
 
-The hardware system is composed of a small projector-camera (procam) set, and a depth camera (Kinect). We chose overhead projection to enable any support, and we use the Kinect to make the system interactive. The user interface is composed of tracked paper sheets, one or more is dedicated to the creation space. The paper or canvas is surrounded by markers (ARToolKitPlus) to achieve a high precision detection of its position. The whole drawing area is made tactile by the depth depth camera, even allowing 3D pointing interactions over it. Another paper sheet is used for the user interface, generally containing buttons and various indications.  
+The hardware system is composed of a small projector-camera (procam) set, and a depth camera, as seen in Figure~\ref{fig:system}. We chose overhead projection to enable any support, and we use the depth camera to make the system interactive. The user interface is composed of tracked paper sheets, one or more is dedicated to the creation space. The paper or canvas is surrounded by markers to achieve a high precision detection of its position. The whole drawing area is made tactile by the depth depth camera, even allowing 3D pointing interactions over it. Another paper sheet is used for the user interface, generally containing virtual buttons.
 
 
-The aim of the system is to achieve a high speed tracking and more importantly high quality projection. Every projection default in the projection process, such as distortions or a bad estimation of the camera or projector parameters will be visible by the user and impacts the user experience. The hardware used is widely available for a moderate cost, the projector used is a DLP LED projector, the camera and depth camera are video game console accessories. 
+The goal of the system is to achieve a high speed tracking and more importantly high fidelity projection. As the tracking speed may make the system less appealing or slow the user, a bad calibration will make it unusable. The capture and projection process requires a precise calibration to achieve the desired results. 
+The hardware used is widely available for a moderate cost, the projector used is a DLP LED projector, the camera and depth camera are video game console accessories. 
  
 \subsection*{3D projection and manipulation}
 
-The firsts experiments involved the projection of photos inside the tracked paper sheet. The task was to create a drawing from the projected image, the projection acts as tracing paper. From this, we had some feedback: the tracking does not have to be fast during the drawing phase. When the user moves the drawing support, he or she can wait a second or two before drawing again. Another point is that any shift between the projection and the drawing will make the drawing much harder, and less comfortable. We also included tools to change the intensity of the projection, which was necessary to add any details to the drawings. 
+The firsts experiments involved the projection of photos inside the tracked paper sheet. The task was to create a drawing from the projected image, the projection acts as tracing paper. Some results are presented in Figure~\ref{fig:lyspanda}. From these experiments, we had some user feedback; the tracking does not have to be fast during the drawing phase: when the user moves the drawing support, he or she can wait a second or two before drawing again. Another point is that any shift between the projection and the drawing will make the drawing much harder, and less comfortable. We also included tools to change the intensity of the projection, which was necessary to add any details to the drawings. 
+
+\begin{figure}[!h]
+        \begin{subfigure}[b]{0.20\textwidth}
+                \centering
+                \includegraphics[height=3.2cm]{lys}
+                \caption{A lily flower.}
+                \label{fig:lys}
+        \end{subfigure}%
+        ~ %add desired spacing between images, e. g. ~, \quad, \qquad etc. 
+          %(or a blank line to force the subfigure onto a new line)
+        \begin{subfigure}[b]{0.25\textwidth}
+                \centering
+                \includegraphics[height=3.2cm]{panda}
+                \caption{A red panda.}
+                \label{fig:panda}
+        \end{subfigure}
+        \caption{The projection of photos on the tracked paper sheet is a comfortable and easy way to create drawings.}\label{fig:lyspanda}
+\end{figure}
 
 
-The second application is the projection of a 3D scene. A 3D object is projected onto the paper sheet and behaves as if it was directly on the paper sheet. Consequently, if you see the front and want to see the back of the object, you just need to turn the paper sheet on the table. We also included rotate, scale and translate operations using the touch interface, allowing an easier modification of the scene. The point of view of scene is set to the user's head position, but generally we fixed it to make the system more robust and to keep it cheap. The 3D pointing was used to set a virtual light inside the virtual scene. The tangible interface and light placement enhance the perception of the 3D objects. We pushed it further by adding stereoscopic rendering. Using this system, we created an application and a drawing scenario for a general public exhibition in Paris. 
+The second application we developed allows the projection of a 3D scene. A 3D object is projected onto the paper sheet and behaves as if it was directly on the paper sheet. Consequently, if you see the front and want to see the back of the object, you just need to turn the paper sheet on the table. We also included rotate, scale and translate operations using the touch interface, allowing an easier modification of the scene. The point of view of scene is set to the user's head position, but generally we fixed it to make the system more robust and to keep it cheap. The 3D pointing was used to set a virtual light inside the virtual scene. The tangible interface and light placement enhance the perception of the 3D objects. We pushed it further by adding stereoscopic rendering. Using this system, we created an application and a drawing scenario for a general public exhibition in Paris. 
+
+
+\begin{figure}[!h]
+        \begin{subfigure}[b]{0.23\textwidth}
+                \centering
+                \includegraphics[width=3.9cm]{proj1}
+                \caption{Before rotation}
+                \label{fig:lapin1}
+        \end{subfigure}
+        ~ %add desired spacing between images, e. g. ~, \quad, \qquad etc. 
+          %(or a blank line to force the subfigure onto a new line)
+        \begin{subfigure}[b]{0.23\textwidth}
+                \centering
+                \includegraphics[width=3.9cm]{proj2}
+                \caption{After rotation}
+                \label{fig:lapin2}
+        \end{subfigure}
+        \caption{The paper sheet is used a a tangible interface. While its moving, the rendering adapts the view to the new location.}\label{fig:lapins1}
+\end{figure}
 
 \subsection*{General public exhibition}
 
-The exhibition lasted more than 3 month, and we were demonstrating and experimenting for more than 12 days. The aim of the demonstration was to explain our research to the general public and to make them experiment. We designed an drawing application using the projection of the 3D scene, and after  the description of the system, a visitor could come and create a drawing. In order to speed up the drawing phase, we used a simple toon shading for the rendering of the scene and a 3D model which was simple to draw. (photos de lapins !) The whole description of the system and elements of the presentation were using the touch and tangible interface; the mouse, keyboard and screen of the computer were hidden from the visitors.
+The exhibition lasted more than 3 month, and we were demonstrating and experimenting for more than 12 days. The aim of the demonstration was to explain our research to the general public and to let the visitors experiment. We designed a drawing application using the projection of the 3D scene. We could explain the current challenges of visualization and manipulation of virtual objects. After describing our system and solutions, we could make a quick drawing and let a visitor do another one while answering the questions.
+
+In order to speed up the drawing phase, we used a simple toon shading for the rendering of the scene and a 3D model which was simple to draw, as illustrated in Figure~\ref{fig:3lapins}}. The whole description of the system and elements of the presentation were done only using the touch and tangible interface; the mouse, keyboard and screen of the computer were hidden from the visitors.
 
  
-The reception of the general public was good, and seemed magical for some visitors. When the paper sheets are on the table, the system is interactive, but without any paper sheet it is just a table with a few pencil and an eraser. We tested our drawing system nearly on 200 visitors, and nearly every of them were impressed by the quality of their own drawing. 
+The reception of the general public was good, and seemed magical for some visitors. When the paper sheets are on the table, the system is interactive, but without any paper sheet it is just a table with a few pencil and an eraser. We tested our drawing system nearly on 200 visitors, and nearly every one of them was impressed by the quality of their own drawing. 
 
 
-\section{Pushing the limits of the drawing}
+\begin{figure}[!h]
+\centering
+\includegraphics[width=85mm]{108079240.png}
+\caption{Illustration of the drawing process. A 3D model is rendered using toon shading and projected. On the right is the resulting drawing.}
+\label{fig:3lapins}
+\end{figure}
+
+
+
+\section{Pushing the limits of drawing}
 
 
 The first hard drawing I explored with this is stereoscopic drawing. Since recently, stereoscopic screens are widely available, and is also getting widespread in the cinema. The creation of stereoscopic drawing is hard and repetitive. Two nearly identical drawings have to be made, and the visualization of these drawings require training for free view techniques or more generally a stereoscope. In (cite), we proposed a tool to create stereoscopic drawings from a pair of generated images. The images are created using the hardware and software described above. 
@@ -200,27 +245,8 @@ One could also create construction games, such as Sim City. Instead of creating 
 
 \section{Conclusion}
 
-%%%	You can use bibtex if you like, but I've hardwired in these 
-%%%	references to avoid sending you a separate .bib file.
-\begin{thebibliography}{9}
 
-%\bibitem{ACMTerms} How to Classify Works Using ACMÕs Computing
-%Classification System. {http://www.acm.org/class/how\_to\_use.html}.
-%
-%\bibitem{badenov91}  Badenov, B. Effects of prolonged use of WIMP user
-%interfaces on Alces americana and Glaucomys volans.
-%In {\em Proceedings of UIST '87}
-%(February 30--April 1, Graceland, TN), ACM, NY, 1987, pp. 231--240.
-%
-%\bibitem{henry-etal92} Henry, T.R., Yeatts, A.K., Hudson, S.E., Myers, B.A.,
-%and Feiner, S.K.  A nose gesture interface device: Extending virtual realities.
-%{\em Presence 1}, 2 (Spring 1992), 258--261.
-%
-%\bibitem{GenderNeutral} Schwartz, M. Guidelines for Bias-Free Writing.
-%Indiana University Press, Bloomington, IN, USA, 1995.
-%
-%\bibitem{zaranka81} Zaranka, W., Ed. {\em The Brand-X Anthology of Poetry:  A
-%Parody Anthology.}  Apple-wood Books, Cambridge, MA, 1981.
-\end{thebibliography}
+\bibliographystyle{abbrv}
+\bibliography{paper}
 
 \end{document}
