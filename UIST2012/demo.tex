@@ -3,6 +3,10 @@
 \usepackage{times}
 \usepackage{uist}
 
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+
 \begin{document}
 
 % --- Copyright notice ---
@@ -68,8 +72,8 @@ User Interfaces. - Graphical user interfaces.}
 
 \section{INTRODUCTION}
 
-Spatial augmented reality was first created to project textures and illuminations to physical objects (cite raskar). Nowadays, it is mostly used for advertising, featuring projection on large building and commonly called ?projection mapping?. 
-The unique ability of SAR is its penetration of the physical world. There are many uses, some are described in (cite mistry). It can be used to manipulate digital information (cite Wilson) or to manipulate the real world (cite onbody projection). Entertainment will benefit largely from SAR, the inclusion of digital games into the real world changes completely the aspect of it. (cite jeux SAR). 
+Spatial augmented reality was first created to project textures and illuminations to physical objects (cite raskar). Nowadays, it is mostly used for advertising, featuring projection on large building and commonly called "projection mapping". 
+The unique ability of SAR is its penetration of the physical world. There are many uses, some are described in (cite mistry). It can be used to manipulate digital information (cite Wilson) or to manipulate the real world (cite onbody projection). Entertainment will benefit largely from SAR, the inclusion of digital games into the real world changes completely the aspect of it~\cite{wilson2007depth}~\cite{jones2010build}.
 
 In this demonstration, we propose to use SAR for physical artistic creation. We use computer graphics tools to enable easier and faster drawings. This demonstration is an evolution of the demonstration we did described in (papart) which was oriented for a general public exhibition. Here we focus on the tools and challenges of integrating digital information for drawing.  
 
@@ -78,8 +82,12 @@ In this demonstration, we propose to use SAR for physical artistic creation. We 
 \subsection{Firsts steps}
 
 We present one of the firsts SAR application dedicated to drawing. The first application is the projection of images such as photos on tracked paper sheets. The paper sheet is surrounded by markers and is tracked by a webcam. The camera itself is on top of a projector, projecting on a table. This kind of overhead projection allows any kind of paper and not intrusive. Any drawing or painting tools can be used to  copy or use the projected image to create a drawing. 
- 
- % image ? 
+
+\begin{figure}[!b]
+\centering \includegraphics[width = 70mm]{global}
+\caption{View of the system during a public exhibition.} 
+\label{fig:system}
+\end{figure}
 
 \subsection{Interactivity}
 
@@ -91,8 +99,48 @@ Our goal is to improve the physical creation, and the easiest way to use digital
 \subsection{Projection of a 3D scene}
 Instead of starting from a photo or an existing image to create the drawing. We can start from a 3D scene. The scene projection is made to be simple to manipulate and visualized, consequently for now the manipulations are constrained. The virtual objects are placed on the paper sheet, and can be manipulated though the tangible interface, or indirectly using the touch interface. Moreover, the user can change the lighting conditions by setting directly the light location in the 3D scene by using the 3D pointing solution. Once the point of view of the 3D scene is set, the user can save a screen shot of the application and use is to draw as described before. 
 
+
+\begin{figure}[!h]
+        \begin{subfigure}[b]{0.20\textwidth}
+                \centering
+                \includegraphics[width=3.9cm]{touch}
+                \caption{Touch}
+                \label{fig:touch}
+        \end{subfigure}%
+        ~ %add desired spacing between images, e. g. ~, \quad, \qquad etc. 
+          %(or a blank line to force the subfigure onto a new line)
+        \begin{subfigure}[b]{0.25\textwidth}
+                \centering
+                \includegraphics[width=3.9cm]{point}
+                \caption{3D pointing}
+                \label{fig:point}
+        \end{subfigure}
+        \caption{The user can interact by touching or pointing in the air.}\label{fig:inter}
+\end{figure}
+
 \subsection{Extension to stereoscopic drawing} 
 The view of the 3D scene provides a good perception of depth and shapes. This perception is even better using a stereoscopic visualization. We used our application to create stereoscopic drawings, the left and right images leading to two different drawings. For this, we also created dedicated tools: we could capture the two drawings, and combine them to get an instantaneous stereoscopic preview. Unfortunately, the creation of two drawings providing good bumping effects requires time and takes much more space (3 * A3 paper sheets), the demonstration of this tool will be harder to give.  
+
+
+\begin{figure}[!h]
+        \begin{subfigure}[b]{0.20\textwidth}
+                \centering
+                \includegraphics[height=3.4cm]{lys}
+                \caption{Lily flower.}
+                \label{fig:lys}
+        \end{subfigure}%
+        ~ %add desired spacing between images, e. g. ~, \quad, \qquad etc. 
+          %(or a blank line to force the subfigure onto a new line)
+        \begin{subfigure}[b]{0.25\textwidth}
+                \centering
+                \includegraphics[height=3.4cm]{velo2}
+                \caption{Bike}
+                \label{fig:point}
+        \end{subfigure}
+        \caption{Blending projection and physical drawing creates new visual experiences.}\label{fig:inter}
+\end{figure}
+
+
 
 \section{Entertainment and conclusion}
 Spatial augmented reality allows the creation of interactive applications, the creation of the tools described above involved the creation of many testing tools. Some of them are games and musical applications, which we generally enjoy to demonstrate and play with. 
