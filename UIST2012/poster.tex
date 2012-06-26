@@ -3,8 +3,14 @@
 \usepackage{times}
 \usepackage{uist}
 
-%\usepackage{mathptmx}
 \usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+
+\usepackage{dblfloatfix} 
+
+%\usepackage{mathptmx}
+% \usepackage{graphicx}
 %\usepackage{subfig}
 %\usepackage{url}
 %\usepackage{wrapfig}
@@ -22,7 +28,7 @@
 
 \bibliographystyle{plain}
 
-\title{Poster: A link between physical and digital drawing \\
+\title{A link between physical and digital drawing \\
        through spatial augmented reality}
 
 %%
@@ -53,7 +59,7 @@
 
 \abstract
 
-Physical drawing is being more and more replaced by digital drawing. The digital world offers a wide range and tools and techniques that does not apply in the real world. In the physical world, every error will leave a mark, but it contributes to the uniqueness of the result. In this paper, we propose some basic tools to link physical drawing and digital drawing through spatial augmented reality (SAR). These tools enables a wide variety of new uses of drawing software such as The Gimp~\cite{gimp2004image}. 
+Physical drawing is being more and more replaced by digital drawing. The digital world offers a wide range and tools and techniques that does not apply in the real world. In this paper, we propose some basic tools to link physical drawing and digital drawing through spatial augmented reality (SAR). These tools enables a wide variety of new uses of image drawing and edition software.
 
 
 \classification{H5.2 [Information interfaces and presentation]:
@@ -73,72 +79,101 @@ User Interfaces. - Graphical user interfaces.}
 
 \section{INTRODUCTION}
 
-Software for digital creations are getting richer and allows a wide variety of creation and styles. They allow purely digital tools such as a clone brush or the use of loads of layers. Some of them also try to recreate physical drawing tools and techniques (cite digital wet paint etc...). 
+Software for digital creations provide a rich experience and allows a wide variety of creation styles. For many years now many researcher papers propose advanced techniques to mimic physical drawing~\cite{VBGS08}. Conversely, physical drawing or painting have interested only a few researchers~\cite{flagg2006projector}. Unilke digital creation, a physical drawing is unique and may contain traces of its history, 
+ it creates a link between the artist and the creation that is different from a digital drawing.
+The drawing or painting can be transported, has to be taken care of, and it will age. The whole creation process requires to buy materials, and each material will provide a different experience. The smell, contact with paper and the experience to master the different tools provide a creative experience very different to the digital one. 
 
-Physical drawing is very different from digital drawing, the creation is unique. The uniqueness is an important feature, it creates a link between the artist and the creation that is harder to achieve with a computer. The drawing or painting can be transported, has to be taken care of, and it will age. The whole creation process requires to buy materials, and each material will provide a different experience. The smell, contact with paper and the experience to master the different tools provide a creative experience very different to the digital one. 
-
-In this paper, we propose to use classical digital creation tools for physical artistic creations. To achieve this, the drawing is captured and sent to the drawing software. Then, the user can add new elements such as continuing shapes or colouring parts and project the additions on the physical drawing.   
+In this paper, we propose to use an image edition software (The Gimp~\cite{gimp2004image}) for physical artistic creations. To achieve this, the drawing is captured and sent to the drawing software. Then the user can add new elements, try some colourisation and project it on the physical drawing.
 
 
 \section{System overview}
 
 %\subsection{Spatial augmented reality}
 
-The Spatial augmented reality (SAR) is composed of a projector camera system (procam), an additional high resolution camera to capture the drawings, and a pen and tablet for stylus input. A multi-touch input is also available using a depth camera. For a detailed description of the procam system, please have a look at~\cite{laviole:2012}. It allows fast tracking of paper sheet and projection inside it. The tracking latency is not an issue for this kind of application, but the projection precision is the current limitation. Although high resolution cameras are relatively cheap, high resolution projection can be very expensive, the current projection precision is about 1 pixel/mm. 
+The Spatial augmented reality (SAR) is composed of a projector camera system (procam), an additional high resolution camera to capture the drawings, and a pen and tablet for stylus input. For a detailed description of the procam system, please have a look at~\cite{laviole:2012}. It allows fast tracking of paper sheet and precise projection on it. The tracking latency is not an issue for this kind of application, but the projection precision is the current limitation. Although high resolution cameras are relatively cheap, the current projectors are not made to project on small surfaces. The current projection precision is about 1 pixel/mm. 
 
 
 \begin{figure}[tb]
 \includegraphics[width = 73mm]{DSC00299-2-rogne-annote.JPG}
-\caption{A figure caption.  It is set in 9 point Helvetica type, with a
-0.5 cm wider margin on both left and right sides.} 
+\caption{Overview of the system.} 
 \label{fig:setup}
 \end{figure}
 
-The transfer from the physical world to the digital world is made by a high resolution web camera. Only the drawing is extracted from the image and save to the disk. (ref image ?). The image can be opened with an image edition software. In this paper we chose to use The Gimp, but any edition software can be used. Once the image is imported, a drawing layer has to be created. The edition of the drawing will be made on this layer and the projection will consist only in this layer. Once the  layer is done, the user can save this layer and hit the load button in the SAR tool. Consequently the physical drawing will contain the added digital informations.  
+The transfer from the physical world to the digital world is made by a high resolution web camera. 
+While drawing, the artist can add digital construction lines using the digital pen and tablet and the multi-touch interface. These direct construction are directly added on the drawing, and could also be saved and sent to the drawing software.  
 
-In order to make the system more direct, we also included some digital drawing tools into our SAR software. Some basic elements such as line, curve and freehand drawing can be done directly. The lines and curves have control points which can be placed directly using the touch interface. The tablet device allows the user to draw digital lines onto the real drawing. In the next section, we describe how to use our system by a demonstration on a simple example. 
+%Only the drawing is extracted from the image and save to the disk. (ref image ?). The image can be opened with an image edition software. In this paper we chose to use The Gimp, but any edition software can be used. Once the image is imported, a drawing layer has to be created. The edition of the drawing will be made on this layer and the projection will consist only in this layer. Once the  layer is done, the user can save this layer and hit the load button in the SAR tool. Consequently the physical drawing will contain the added digital informations.  
 
+%In order to make the system more direct, we also included some digital drawing tools into our SAR software. Some basic elements such as line, curve and freehand drawing can be done directly. The lines and curves have control points which can be placed directly using the touch interface. The tablet device allows the user to draw digital lines onto the real drawing. In the next section, we describe how to use our system by a demonstration on a simple example. 
 
-
-
-%% TODO: figure : drawing, capture, reprojection...  
-\begin{figure}[t]
-\includegraphics[width = 85mm]{fig1.pdf}
-\caption{A figure caption.  It is set in 9 point Helvetica type, with a
-0.5 cm wider margin on both left and right sides.} 
-\label{fig:1}
-\end{figure}
 
 \section{Example use}
 
-In this example, we show the firsts steps of the creation of a drawing using our system. We start by a photo (fig ...) projected on a paper sheet. The artist uses the projection to draw the first contours of the bike. Once it is done, the drawing is captured by a camera (fig ...) and the drawing is extracted (fig ...). It is then exported to the drawing software and added as a layer on the first image, as illustrated in Figure. 
-In the drawing software, we decided to try different looks for the bike by selecting the texture elements from the bike and adding coloured wheels. In the image edition software, the user can have a preview of the projection, by mixing the captured image and the new layer (fig.). Then, only the layer is projected  (fig ..). From this, the user can continue the physical drawing, or add digital elements using the tablet and digital construction line tools (fig...). The physical drawing and digital elements can be captured and saved, then imported into the edition software and so on. 
+In this example (Figure~\ref{fig:velo6illu}), we show the firsts steps of the creation of a drawing using our system. We start by a photo (\ref{fig:bike}) projected on a paper sheet. The artist uses the projection to draw the first contours of the bike. Once it is done, the drawing is captured by a camera (\ref{fig:extract}) and the drawing is extracted (\ref{fig:gimp1}); then exported to the drawing software and added as a layer on the first image, as illustrated in Figure~(\ref{fig:gimp2}). 
+In the drawing software, we decided to try different looks for the bike by selecting the texture elements from the bike and adding coloured wheels.
+In the image edition software, the user can have a preview of the projection, by mixing the captured image and the new layer (\ref{fig:gimp2}). Only the new layer is projected, the result is illustrated in~(\ref{fig:proj}). From this, the user can continue the physical drawing, or add digital elements using the tablet input. Figure~\ref{fig:zoom} shows some details of the projection on the drawing, the saddle have been painted and decorated using the tablet input. 
 
-\begin{figure}[b]
-\includegraphics[width = 85mm]{fig2.pdf}
-\caption{A figure caption.  It is set in 9 point Helvetica type, with a
-0.5 cm wider margin on both left and right sides.} 
-\label{fig:2}
+\begin{figure}[!htb]
+        \begin{subfigure}[b]{0.20\textwidth}
+                \centering
+                \includegraphics[height= 2.65cm]{DSC00024-s}
+                \caption{Photo of a bike}
+                \label{fig:bike}
+        \end{subfigure}%
+        ~ \hspace{4mm}
+        \begin{subfigure}[b]{0.20\textwidth}
+                \centering
+                \includegraphics[height= 2.65cm]{cam}
+                \caption{Webcam view.}
+                \label{fig:webcam}
+        \end{subfigure}
+        \\
+        \begin{subfigure}[b]{0.20\textwidth}
+                \centering
+                \includegraphics[height= 2.6cm]{extract}
+                \caption{Drawing after extraction.}
+                \label{fig:extract}
+        \end{subfigure}
+        ~ \hspace{4mm}
+        \begin{subfigure}[b]{0.20\textwidth}
+                \centering
+                \includegraphics[height= 2.6cm]{DSC00286}
+                \caption{Image edition software}
+                \label{fig:gimp1}
+        \end{subfigure}
+        \\
+        \begin{subfigure}[b]{0.20\textwidth}
+                \centering
+                \includegraphics[height= 2.8cm]{mix2}
+                \caption{Composition: preview}
+                \label{fig:gimp2}
+        \end{subfigure}
+        ~ \hspace{4mm}
+        \begin{subfigure}[b]{0.20\textwidth}
+                \centering
+                \includegraphics[height= 2.8cm]{velo2}
+                \caption{Composition: photo}
+                \label{fig:proj}
+        \end{subfigure}
+        \caption{From a photo (a), the user draws a first sketch captured by a webcam (b)(c); which is integrated as a layer in an image edition software (d)(e). Only the desired elements are projected (f) to continue the drawing if desired.}\label{fig:velo6illu}
 \end{figure}
+
 
 \section{Extensions}
 
-An interesting extension will be to calibrate the color of the physical tools with the projection. Using this, we would be able to simulate real colors, and result from the a specific colored pen or paint. Different pressure, or type of application could be calibrated and imported into the edition software. This way the artist could try appearances with various quantities of paint, or different pressures on a pen. This kind of feature promises future drawings, but the realisation will still be made by the artist; consequently adding some uncertainty and uniqueness on the result. 
+An interesting extension is to add color calibration between the physical tools and the projection. Using this, we would be able to simulate the output from a specific colored pen or paint. Different pressure, or type of application could be calibrated and imported into the edition software. This way the artist could try appearances with various quantities of paint, or different pressures on a pen. However, this kind of feature promises future drawings, but the realisation will still be made by the artist; consequently adding some uncertainty and uniqueness on the result. 
 
-The main extension would be to create a drawing software integrating the capture and projection. This kind of software creates interesting design challenges, and will raise the question of the utility of a computer and mouse / keyboard interfaces. Every software tools such as palettes and layer switching could be made using touch tangible menus, such as in (papart). 
+One one hand, would be to integrate our tool as a plug-in into the existing image edition software; providing a unique user interface. On the other hand, one could port the user interface of the image edition software in SAR. Considering the size of the current image edition software, it is challenging problem. Moreover, the use of tangible interface as we proposed in~\cite{laviole:2012} seems adapted, and may provide a whole experience of the drawing software. 
 
-\begin{figure}[b]
-\includegraphics[width = 85mm]{velo4.JPG}
-\caption{A figure caption.  It is set in 9 point Helvetica type, with a
-0.5 cm wider margin on both left and right sides.} 
+\begin{figure}[!tb]
+\includegraphics[width = 75mm]{velo4.JPG}
+\caption{Closer view of the drawing plus projection.} 
 \label{fig:zoom}
 \end{figure}
 
 \section{Conclusion}
 
-In this paper we proposed SAR tools which merges physical drawing and current drawing software. It allows quick transfer between the physical drawing to the drawing software and vice versa. 
-...
-
+In this paper we proposed spatial augmented reality (SAR) tools which merges physical drawing and digital drawing software. It allows a semi-automatic transfer between the physical drawing to the drawing software and vice versa. Our low-cost SAR solution allows any kind of drawing or painting and is non-intrusive. Furthermore, any image edition software can be used, and the example we provided is simple illustration of our system. We look forward to pass this tool to professional artist who will find many more uses to our system.
 
 
 \bibliographystyle{abbrv}
