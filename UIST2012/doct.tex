@@ -50,13 +50,16 @@
 	     Inria, F-33400 Talence, France.\\
 	     LaBRI, UMR 5800, F-33400 Talence, France.\\
 	     martin.hachet@inria.fr}
-	\\
-                 \includegraphics[height=2.5cm]{mona}
-               \hspace{0.2cm}     \includegraphics[height=2.5cm]{dragon}
-                 \hspace{0.2cm}   \includegraphics[height=2.5cm]{vase}
-                 \hspace{0.2cm}   \includegraphics[height=2.5cm]{velo4}
-                \hspace{0.2cm}    \includegraphics[height=2.5cm]{laapin}  
-                \\ \centering \small Left to right bla bla bla.     
+%	\\
+%                 \includegraphics[height=2.5cm]{mona}
+%               \hspace{0.2cm}     \includegraphics[height=2.5cm]{dragon}
+%                 \hspace{0.2cm}   \includegraphics[height=2.5cm]{vase}
+%                 \hspace{0.2cm}   \includegraphics[height=2.5cm]{velo4}
+%                \hspace{0.2cm}    \includegraphics[height=2.5cm]{laapin}  
+%                \\ \centering Example uses of our system: high precision projection (two projectors), pencil drawing,
+%                 stereoscopic drawing,
+                 %\\ 
+                 %digital/physical hybrid drawing and fast drawing (5mins for the rabbit).     
 }
 
 
@@ -153,7 +156,7 @@ The hardware used is widely available for a moderate cost, the projector used is
 
 \subsection*{3D projection and manipulation}
 
-The firsts experiments involved the projection of photos inside the tracked piece of paper. The task was to create a drawing from the projected image, while the projection acts as tracing paper. Some results are presented in Figure~\ref{fig:lyspanda}. From these experiments, we had some user feedback; the tracking does not have to be fast during the drawing phase: when the user moves the drawing support, he or she can wait a second or two before drawing again. Another point is that any spatial shift between the projection and the drawing will make the drawing much harder, and less comfortable. We also included tools to change the intensity of the projection, which was necessary to add any details to the drawings. 
+The firsts experiments involved the projection of photos inside the tracked piece of paper. The task was to create a drawing from the projected image, while the projection acts as tracing paper. Some results are presented in Figure~\ref{fig:lyspanda}. From these experiments, we had some user feedback; the tracking does not have to be fast during the drawing phase: when the user moves the drawing support, he or she can wait a second or two before drawing again. Another point is that any spatial shift between the projection and the drawing will make the drawing much harder, and less comfortable. We also included tools to change the intensity of the projection, which was necessary to add any details to the drawings. Each of our testers were adults, and most of them do not draw at all. Still, once they started the drawing, they took between 35 to 45 minutes uninterrupted to draw. Most of them did not take so much time drawing since their childhood. 
 
 \begin{figure}[!h]
         \begin{subfigure}[b]{0.20\textwidth}
@@ -222,9 +225,11 @@ We tested our drawing system on about 200 visitors, and nearly every one of them
 The first difficult drawing I explored with this is stereoscopic drawing. 
 Recently, stereoscopic screens are widely available, and "3D" movies are getting more and more common. The creation of stereoscopic drawing is hard and repetitive: two nearly identical drawings have to be made. Moreover, the visualization of these drawings require training for free-view techniques (without any tool) or more generally a stereoscope. In~\cite{laviole:hal-00671361}, we proposed a tool to create stereoscopic drawings from a pair of generated images. The images are created using the hardware and software described above. 
 
-Just like any drawing, stereoscopic drawings require editions and adjustments. But unlike any drawing, it has to be done twice, and the differences between the two drawings will influence the depth perception of the result. We also included the possibility to take an image of each drawing in order to have an anaglyph preview of the result. 
+Just like any typical drawing, stereoscopic drawings require editions and adjustments. 
+However, stereoscopic drawing is unique because it has to be done twice, and the differences between the two drawings will influence the depth perception of the result. We also included the possibility of taking an image of each drawing in order to have stereoscopic preview of the result (anaglyph). 
 
-These experiments have raised many questions and observations. The first observation is on the quality of the drawing: the depth perception will be more influenced by the quality of the shading than by the left/right disparity. We are not sure that two drawings will be required, this question is more personal. If just one drawing is done, and the second one is only the changed elements for stereoscopy, the objective to enhance the real world is not achieved any more: a digital reconstruction is required to visualize the result. 
+These experiments have raised many questions and observations. The first observation is on the quality of the drawing: the depth perception will be more influenced by the quality of the shading than by the left/right disparity. 
+With this kind of tools, we could reconstruct a stereoscopic drawing from two (or more) partial drawing. However the final result would be dependant of the digital world. 
 
 
 \begin{figure}[!h]
@@ -249,31 +254,32 @@ These experiments have raised many questions and observations. The first observa
 
 \subsection*{Interaction techniques}
 
-The inputs and interaction techniques described above allows direct and natural interactions. But, it is not precise for selection and manipulation of the digital information. In order to complement 
-these we added a highly precise tablet input (wacom); it allows to overlay digital drawing over the physical one. We also included the possibility to capture the drawing. This way, the drawing itself can be considered as in input method, like in~\cite{hagbi2009shape}. 
+The inputs and interaction techniques described above allow direct and natural interactions. But, it is not precise enough for selection and manipulation of digital information. In order to complement 
+these we added a highly precise tablet input (wacom); it allows to overlay digital drawing over the physical one. We also included the possibility of capturing the drawing. This way, the drawing itself can be considered as an input method, as in~\cite{hagbi2009shape}. 
 
 \subsection*{New forms of creation}
 
-From our first experiments, most of the users really liked the result of the mix between the real drawing and the projection. The real drawing generally makes the contour stronger and represent the interesting features of the image; while the projection provide complex texture and colors that are very hard to draw. From these, we could allow the creation of hybrid drawings, partly physical and partly digital, a simple example illustrate this in Figure~\ref{velo} The physical drawing may keep blank or less intense parts allowing the projection. The projected elements, unlike drawn elements can contain animations, which enables an interactive exploration of the drawing, or animated drawings. 
+From our first experiments, most of the users really liked the result of the mix between the real drawing and the projection. The real drawing generally makes the contour stronger and represent the interesting features of the image; while the projection provide complex texture and colors that are very difficult to draw. From these, we could allow the creation of hybrid drawings, partly physical and partly digital, a simple example illustrate this in Figure~\ref{fig:velo} The physical drawing may keep blank or less intense parts allowing the projection. The projected elements, unlike drawn elements can contain animations, which enables an interactive exploration of the drawing, or animated drawings. 
 
 \begin{figure}[!h]
 \centering
 \includegraphics[width=65mm]{velo2}
-\caption{Photo of a mix between a physical drawing, real colors from a photo and extra colors added using an image edition software.}
+\caption{Photo of a hybrid combination between a physical drawing, real colors from a photo and extra colors added using an image edition software.}
 \label{fig:velo}
 \end{figure}
 
 
 \subsection*{Digital games applications}
 
-The fact that a drawing leaves a trace, takes time and can contain errors makes it a good candidates for game creations. An example of games is real-time strategy games. Instead of just putting buildings using the mouse, the player could draw each building. Using more or less symbols to represent each non-moving units. The quality of the drawing could be evaluated to set its properties. The drawing process takes times, and the fact that the quality of the drawing is implied in the game will force to user to make choices on quality or speed. The limitations will not be game limitations, but also player limitations. 
-The difficulty levels could imply new drawing skills, such as special shading techniques, or high speed drawing; thus creating a pedagogical game on drawing. 
+The fact that a drawing leaves a trace, takes time and can contain errors makes it a good candidates for game creations. An example of games is real-time strategy games. Instead of just adding buildings using the mouse, the player could draw each building.  
+The quality of the drawing could be evaluated to set its properties. The drawing process takes times, and the fact that the quality of the drawing is implied in the game will force to user to make choices on quality or speed. The limitations will not be game limitations, but also player limitations. 
+The difficulty levels could imply new drawing skills, such as special shading techniques, or high speed drawing; consequently adding a pedagogical side on these games. 
 
-One could also create construction games, such as Sim City. Instead of creating a digital city, the city maps is drawn directly on the paper, and virtual citizens could come and create their own houses. As described above, the creation of special building could be man-made, and it will create another dimension of the game. The player will think twice when placing the schools and fire station, because moving them will require real time and effort. 
+One could also create construction games, such as Sim City. Instead of creating a digital city, the city map is drawn directly on the paper, and virtual citizens could come and create their own houses. As described above, the creation of special building could be man-made, and it will create another dimension of the game. The player will think twice when placing the schools and fire station, because moving them will require real time and effort. 
 
 \section{Extensions}
 
-Most of the applications described here are far from using advanced computer graphics techniques. However, some recent works such as ShadowDraw~\cite{leeshadowdraw} shows a desire of the computer graphics community to get closer to the physical world. we could imagine tools assisting the creation of multi-perspective drawings or complex anamorphosis. These kind of drawings require a wide variety of skills that could be compensated by programs. 
+Most of the applications described does not rely on advanced computer graphics techniques. However, some recent works such as ShadowDraw~\cite{leeshadowdraw} shows a desire of the computer graphics community to get closer to the physical world. We could imagine tools assisting the creation of multi-perspective drawings or complex anamorphosis. These kinds of drawings require a wide variety of skills that could be compensated by programs. 
 
 Another natural extension, would be the use of the capture and reprojection for the creation of traditional animation. It would be a compelling challenge to take advantage of the digital animation tools, and port them to be used for physical images. 
 
@@ -283,9 +289,9 @@ We proposed some tools to draw 3D objects. An interesting, though difficult appr
 
 \section{Conclusion}
 
-In this paper I summed up the most interesting work and thoughts of nearly two years of work. The creation of the SAR installation required the acquisition of new knowledge from computer vision and computer graphics. The possibilities with this kind of installation are just starting to be explored. The creation of each application rose many questions touching the fields of computer vision, human perception, computer graphics and challenging design choices. We proposed solutions to ease the drawing, and had the possibility to try them with the general public. 
+In this paper I summarized the most interesting work and thoughts of nearly two years of work. The creation of the SAR installation required the acquisition of new knowledge from computer vision and computer graphics. The possibilities with this kind of installation are just starting to be explored. The creation of each application raised many questions touching the fields of computer vision, human perception, computer graphics and challenging design choices. We proposed solutions to ease the drawing, and had the possibility to try them with the general public. 
 
-\bibliographystyle{abbrv}
+\bibliographystyle{acm}
 \bibliography{paper}
 
 \end{document}
