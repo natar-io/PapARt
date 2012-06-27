@@ -66,12 +66,12 @@
 
 Spatial augmented reality (SAR) promises the integration of digital information 
 in the real (physical) world through projection. In this doctoral symposium paper,
-I propose different tools to fasten and ease the drawing by projecting photos, 
-virtual construction lines and interactive 3D scenes. After describing them, I 
+I propose different tools to improve speed or ease the drawing by projecting photos, 
+virtual construction lines and interactive 3D scenes. After describing the tools, I 
 explain some future challenges to explore such as the creation of tools which helps to create 
 drawings that are "difficult" to achieve for a human being, but easy to do by a computer. 
 Furthermore, I propose some insights for the creation of digital games and programs which 
-can take full advantages to have a human and physical constraints.
+can take full advantages of physical drawings.
 
 \classification{H5.2 [Information interfaces and presentation]:
 User Interfaces. - Graphical user interfaces.}
@@ -82,7 +82,7 @@ User Interfaces. - Graphical user interfaces.}
   Experimentation, Security, Human Factors, Standardization,
   Languages, Theory, Legal Aspects, Verification. See for more details.)}
 
-\keywords{Spatial augmented reality, user interfaces, fine arts}
+\keywords{Spatial augmented reality, user interfaces, arts, interactive projection}
 
 \tolerance=400 
   % makes some lines with lots of white space, but 	
@@ -90,40 +90,43 @@ User Interfaces. - Graphical user interfaces.}
 
 \section{INTRODUCTION}
 
-For a few years now, augmented reality has reached the general public. This is due to the availability 
-of webcams in every laptop and mobile phone and software such as ARToolKit~\cite{wagner2007artoolkitplus}.
+In the past few years, augmented reality has reached the general public. This is due to the availability 
+of webcams in laptops and mobile phones and software such as ARToolKit~\cite{wagner2007artoolkitplus}.
 The augmentations are overlayed on reality and visualized though a screen. 
-Even though it is convenient to navigate in the digital world by moving; for many 
-applications the users want to have the hands free to interact directly with the 
-real world and not by touching a screen. In order to overcome these limitations, the digital information can be projected into reality, this is called spatial augmented reality (SAR)~\cite{raskar1999table}.
+Although it is convenient to have a view of the digital elements though a screen, it will create important limitations on the field of view. In order to overcome these limitations, the digital information can be projected into reality; this is called spatial augmented reality (SAR)~\cite{raskar1999table}.
 
 
-In SAR, the visualizations and interactions space are the same; it can create very natural user experiences. Conversely, SAR applications are bounded 
+In SAR, the visualizations and interactions space are the same; leading to more natural user experiences. Conversely, SAR applications are bounded 
 to real-life, thus it is harder to represent data behind real objects because the projection
 support will importantly influence the visualization.
-Recent work in SAR explore the projection support as the main interaction element. The 
-augmented reality part will add new informations, some ideas of applications are described
-in \cite{mistry2009sixthsense}. The same idea is explored in \cite{sodhi2012lightguide}, where the projection guides the user's movement. 
-In~\cite{wilson2007depth} and~\cite{jones2010build} the freedom of movement of SAR is used to create games which adapts itself to the projection support. Another approach in~\cite{harrison2011omnitouch}, is to use SAR directly on the user's arm or a notepad to control a mobile phone or take notes. \cite{flagg2006projector} Flagg \textit{et. al.} created a SAR application to ease the painting process, they propose tools to help the user to mix fresh paint and to apply the different layers in the right order. 
+Recent work in SAR explores the projection support as the main interaction element. The 
+augmented reality part will add new information, some ideas for applications are described
+in \cite{mistry2009sixthsense}. 
+In \cite{sodhi2012lightguide}, a similar idea is explored: the projection guides the user's movement by projecting on the user's hand. 
+In~\cite{wilson2007depth} and~\cite{jones2010build} the freedom of movement of SAR is used to create games which adapts itself to the projection support. Another approach in~\cite{harrison2011omnitouch}, is to use SAR directly on the user's arm or a notepad to control a mobile phone or take notes. Flagg \textit{et. al.}~\cite{flagg2006projector} created a SAR application to ease the painting process, they propose tools to help the user to mix fresh paint and to apply the different layers in the right order. 
 
-This kind of SAR in context is very promising, it is a first step for a more natural merge of the digital world and the real world. In order to create applications that fits on the physical world, making it richer and more interactive. In this paper, I state the objectives which led to my past and current works on SAR for drawing. Then, I will conclude with a discussion of the future possibilities such as the integration of physical drawing in digital applications.
+This kind of SAR in context is very promising; it is a first step for a more natural merge of the digital world and the real world. 
+Applications that fits on the physical world make reality richer and more interactive.
+In this paper, I state the objectives which led to my past and current works on SAR for drawing.
+ Then, I will conclude with a discussion of the future possibilities such as the integration of physical drawing in digital applications.
 
 
 % Direction de la thèse pour en réalité augmentée. 
 
 \section{Motivations for SAR for physical drawing.}
 
-Coming from a background of computer science specialized in virtual reality and computer graphics, my first desire was to create tools and interactive applications in SAR. More specifically I wanted to use the power of real-time rendering for get an unique man-made creation. 
-There are many advantages to create digital drawings instead of physical ones. The most important one, is the possibility to go back and try again; which is obviously impossible in the physical world. I will not list all the possibilities offered by digital drawing, but some of them can be hard to reproduce for physical creation, such as the flexibility of digital layers, the copy/paste operations, filling regions with colors and textures and zooming operations.
+%Coming from a background of computer science specialized in virtual reality and computer graphics, my first desire was to create tools and interactive applications in SAR. More specifically I wanted to use the power of real-time rendering for get an unique man-made creation. 
 
-Conversely, physical creation allows a direct contact between the artist and the creation. The result will be unique and will contain traces of all the errors corrected. The variety of tools comes from a legacy of thousands of years of artistic creations. Each pen or paint has its own smell and behaviour on the paper and tactile feeling. The bound between the artist, its tools and the resulting creation has history: from the acquisition of tools, to the whole creation process to achieve the desired result, or not. This bound may be different from digital creation, the choice of a digital brush or effect will not have any cost, and will generally not require to move from the computer. 
+There are many advantages to create digital drawings instead of physical ones. The most important one, is the possibility to go back and try again; which is obviously impossible in the physical world. Some of the many possibilities includes: the flexibility of digital layers, the copy/paste operations, filling regions with colors and textures and zooming operations.
 
+Conversely, physical creation allows a direct contact between the artist and the creation. The result will be unique and will contain traces of all the errors corrected. The variety of tools comes from a legacy of thousands of years of artistic creations. Each pen or paint has its own smell and behaviour on the paper and tactile feeling. The link between the artist, his or her tools and the resulting creation has history: from the acquisition of tools, to the whole creation process to achieve the desired result, or not. T
+This link may be different from digital creation, the choice of a digital brush or effect does not have any cost; the artist does not even need to leave the computer.
 
 
 
 %My main motivation is to create tools to make the creation and drawing process easier, faster, and for better results. Furthermore, I would like to push the possibilities of physical drawing; enabling drawing creations that are hard to imagine or visualize for a human such as stereoscopic drawings.
 
-In order to use the possibilities of real-time rendering, the artist will need to visualize and modify a 3D scene. In the next section, I present the system I created enabling projection on interactive paper sheets, allowing the projection of photos to interactive 3D scenes. 
+In order to use the possibilities of real-time rendering, the artist will need to visualize and modify a 3D scene. In the next section, I present the system I created which enables projection on interactive paper sheets, allowing the projection of photos to interactive 3D scenes. 
 
 
 \begin{figure}[!tb]
@@ -137,12 +140,12 @@ In order to use the possibilities of real-time rendering, the artist will need t
 
 \subsection*{The system}
 
-For the creation of the system, we wanted to have as less constraints as possible: no constraint on the creation tools nor on the support. More importantly, we wanted to keep a large freedom of movement. Consequently, the system does not add any constraint to the traditional setup, and seamlessly integrate the digital elements within it. 
+For the creation of the system, we wanted to have as few constraints as possible: no constraint on the creation tools nor on the drawing support. More importantly, we wanted to keep a large freedom of movement. Consequently, the system does not add any constraint to the traditional setup, and seamlessly integrate the digital elements within it. 
 
-The hardware system is composed of a small projector-camera (procam) set, and a depth camera, as seen in Figure~\ref{fig:system}. We chose overhead projection to enable any support, and we use the depth camera to make the system interactive. The user interface is composed of tracked paper sheets, one or more is dedicated to the creation space. The paper or canvas is surrounded by markers to achieve a high precision detection of its position. The whole drawing area is made tactile by the depth depth camera, even allowing 3D pointing interactions over it. Another paper sheet is used for the user interface, generally containing virtual buttons.
+The hardware system is composed of a small projector-camera (procam) set, and a depth camera, as seen in Figure~\ref{fig:system}. We chose overhead projection to enable any drawing support, and we use the depth camera to make the system interactive. The user interface is composed of tracked paper sheets: one or more is dedicated to the creation space. The paper or canvas is surrounded by markers to achieve a high precision detection of its position. The whole drawing area is made tactile by the depth camera, even allowing 3D pointing interactions over it. Another paper sheet is used for the user interface, generally containing virtual buttons.
 
 
-The goal of the system is to achieve a high speed tracking and more importantly high fidelity projection. As the tracking speed may make the system less appealing or slow the user, a bad calibration will make it unusable. The capture and projection process requires a precise calibration to achieve the desired results. 
+The goal of the system is to achieve a high speed tracking and more importantly high-fidelity projection. As the tracking speed may make the system less appealing or slow the user, a bad calibration will make it unusable. The capture and projection process requires a precise calibration to achieve the desired results. 
 The hardware used is widely available for a moderate cost, the projector used is a DLP LED projector, the camera and depth camera are video game console accessories. 
  
  
@@ -150,7 +153,7 @@ The hardware used is widely available for a moderate cost, the projector used is
 
 \subsection*{3D projection and manipulation}
 
-The firsts experiments involved the projection of photos inside the tracked paper sheet. The task was to create a drawing from the projected image, the projection acts as tracing paper. Some results are presented in Figure~\ref{fig:lyspanda}. From these experiments, we had some user feedback; the tracking does not have to be fast during the drawing phase: when the user moves the drawing support, he or she can wait a second or two before drawing again. Another point is that any shift between the projection and the drawing will make the drawing much harder, and less comfortable. We also included tools to change the intensity of the projection, which was necessary to add any details to the drawings. 
+The firsts experiments involved the projection of photos inside the tracked piece of paper. The task was to create a drawing from the projected image, while the projection acts as tracing paper. Some results are presented in Figure~\ref{fig:lyspanda}. From these experiments, we had some user feedback; the tracking does not have to be fast during the drawing phase: when the user moves the drawing support, he or she can wait a second or two before drawing again. Another point is that any spatial shift between the projection and the drawing will make the drawing much harder, and less comfortable. We also included tools to change the intensity of the projection, which was necessary to add any details to the drawings. 
 
 \begin{figure}[!h]
         \begin{subfigure}[b]{0.20\textwidth}
@@ -167,11 +170,12 @@ The firsts experiments involved the projection of photos inside the tracked pape
                 \caption{A red panda.}
                 \label{fig:panda}
         \end{subfigure}
-        \caption{The projection of photos on the tracked paper sheet is a comfortable and easy way to create drawings.}\label{fig:lyspanda}
+        \caption{The projection of photos on the tracked paper sheet is an easy way to create drawings, more comfortable to use than a tracer projector.}\label{fig:lyspanda}
 \end{figure}
 
 
-The second application we developed allows the projection of a 3D scene. A 3D object is projected onto the paper sheet and behaves as if it was directly on the paper sheet. Consequently, if you see the front and want to see the back of the object, you just need to turn the paper sheet on the table. We also included rotate, scale and translate operations using the touch interface, allowing an easier modification of the scene. The point of view of scene is set to the user's head position, but generally we fixed it to make the system more robust and to keep it cheap. The 3D pointing was used to set a virtual light inside the virtual scene. The tangible interface and light placement enhance the perception of the 3D objects. We pushed it further by adding stereoscopic rendering. Using this system, we created an application and a drawing scenario for a general public exhibition in Paris. 
+The second application that we developed allows the projection of a 3D scene. A 3D object is projected onto the sheet of paper and behaves as if it was directly on the piece of paper. Consequently, if you see the front and want to see the back of the object, you just need to turn the piece of paper on the table. We also included rotate, scale and translate operations using the touch interface, allowing an easier modification of the scene. 
+The point of view of the scene is set to the user's head position, but generally we held it fixed  to make the system more robust and to keep it cheap. The 3D pointing was used to set a virtual light inside the virtual scene. The tangible interface and light placement enhance the perception of the 3D objects. We enhanced it by adding stereoscopic rendering. Using this system, we created an application and a drawing scenario for a general public exhibition in Paris. 
 
 
 \begin{figure}[!h]
@@ -199,7 +203,8 @@ The exhibition lasted more than 3 month, and we were demonstrating and experimen
 In order to speed up the drawing phase, we used a simple toon shading for the rendering of the scene and a 3D model which was simple to draw, as illustrated in Figure~\ref{fig:3lapins}. The whole description of the system and elements of the presentation were done only using the touch and tangible interface; the mouse, keyboard and screen of the computer were hidden from the visitors.
 
  
-The reception of the general public was good, and seemed magical for some visitors. When the paper sheets are on the table, the system is interactive, but without any paper sheet it is just a table with a few pencil and an eraser. We tested our drawing system nearly on 200 visitors, and nearly every one of them was impressed by the quality of their own drawing. 
+The reception of the general public was positive, and seemed "magical" for some visitors. When the sheets of paper are on the table, the system is interactive, but without any piece of paper it is just a table with a few pencil and an eraser.
+We tested our drawing system on about 200 visitors, and nearly every one of them was impressed by the quality of their own drawing. 
 
 
 \begin{figure}[!h]
@@ -214,7 +219,8 @@ The reception of the general public was good, and seemed magical for some visito
 \section{Pushing the limits of drawing}
 
 
-The first hard drawing I explored with this is stereoscopic drawing. Since recently, stereoscopic screens are widely available, and "3D" movies are getting more and more common. The creation of stereoscopic drawing is hard and repetitive: two nearly identical drawings have to be made. Moreover, the visualization of these drawings require training for free view techniques or more generally a stereoscope. In~\cite{laviole:hal-00671361}, we proposed a tool to create stereoscopic drawings from a pair of generated images. The images are created using the hardware and software described above. 
+The first difficult drawing I explored with this is stereoscopic drawing. 
+Recently, stereoscopic screens are widely available, and "3D" movies are getting more and more common. The creation of stereoscopic drawing is hard and repetitive: two nearly identical drawings have to be made. Moreover, the visualization of these drawings require training for free-view techniques (without any tool) or more generally a stereoscope. In~\cite{laviole:hal-00671361}, we proposed a tool to create stereoscopic drawings from a pair of generated images. The images are created using the hardware and software described above. 
 
 Just like any drawing, stereoscopic drawings require editions and adjustments. But unlike any drawing, it has to be done twice, and the differences between the two drawings will influence the depth perception of the result. We also included the possibility to take an image of each drawing in order to have an anaglyph preview of the result. 
 
