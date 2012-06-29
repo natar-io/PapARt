@@ -1,5 +1,7 @@
 \documentclass{article}
 
+\usepackage[utf8]{inputenc}
+
 \usepackage{times}
 \usepackage{uist}
 
@@ -72,7 +74,7 @@ in the real (physical) world through projection. In this doctoral symposium pape
 I propose different tools to improve speed or ease the drawing by projecting photos, 
 virtual construction lines and interactive 3D scenes. After describing the tools, I 
 explain some future challenges to explore such as the creation of tools which helps to create 
-drawings that are "difficult" to achieve for a human being, but easy to do by a computer. 
+drawings that are “difficult” to achieve for a human being, but easy to do by a computer. 
 Furthermore, I propose some insights for the creation of digital games and programs which 
 can take full advantages of physical drawings.
 
@@ -110,7 +112,7 @@ In this paper, I state the objectives which led to my past and current works on 
  Then, I will conclude with a discussion of the future possibilities such as the integration of physical drawing in digital applications.
 
 
-% Direction de la th�se pour en r�alit� augment�e. 
+% Direction de la thèse pour en réalité augmentée. 
 
 \section{Motivations for SAR for physical drawing.}
 
@@ -118,14 +120,14 @@ In this paper, I state the objectives which led to my past and current works on 
 
 There are many advantages to create digital drawings instead of physical ones. The most important one, is the possibility to go back and try again; which is obviously impossible in the physical world. Some of the many possibilities includes: the flexibility of digital layers, the copy/paste operations, filling regions with colors and textures and zooming operations.
 
-Conversely, physical creation allows a direct contact between the artist and the creation. The result will be unique and will contain traces of all the errors corrected. The variety of tools comes from a legacy of thousands of years of artistic creations. Each pen or paint has its own smell and behaviour on the paper and tactile feeling. The link between the artist, his or her tools and the resulting creation has history: from the acquisition of tools, to the whole creation process to achieve the desired result, or not. T
-This link may be different from digital creation, the choice of a digital brush or effect does not have any cost; the artist does not even need to leave the computer.
+Conversely, physical creation allows a direct contact between the artist and the creation. The result will be unique and will contain traces of all the errors corrected. The variety of tools comes from a legacy of thousands of years of artistic creations. Each pen or paint has its own smell and behaviour on the paper and tactile feeling. The link between the artist, his or her tools and the resulting creation has history: from the acquisition of tools, to the whole creation process to achieve the desired result, or not.
+This link may be different from the one with digital creation, the choice of a digital brush or effect does not have any cost; the artist does not even need to leave the computer.
 
 
 
 %My main motivation is to create tools to make the creation and drawing process easier, faster, and for better results. Furthermore, I would like to push the possibilities of physical drawing; enabling drawing creations that are hard to imagine or visualize for a human such as stereoscopic drawings.
 
-In order to use the possibilities of real-time rendering, the artist will need to visualize and modify a 3D scene. In the next section, I present the system I created which enables projection on interactive paper sheets, allowing the projection of photos to interactive 3D scenes. 
+In order to use the possibilities of real-time rendering, the artist will need to visualize and modify a 3D scene. In the next section, I present the system I created which enables projection on interactive sheets of paper, allowing the projection of photos to interactive 3D scenes. 
 
 
 \begin{figure}[!tb]
@@ -139,20 +141,17 @@ In order to use the possibilities of real-time rendering, the artist will need t
 
 \subsection*{The system}
 
-For the creation of the system, we wanted to have as few constraints as possible: no constraint on the creation tools nor on the drawing support. More importantly, we wanted to keep a large freedom of movement. Consequently, the system does not add any constraint to the traditional setup, and seamlessly integrate the digital elements within it. 
+For the creation of the system, we wanted to have as few constraints as possible: no constraint on the creation tools nor on the drawing support. More importantly, we wanted to keep a large freedom of movement. Consequently, the system does not add any constraint to the traditional drawing configuration, and seamlessly integrate the digital elements within it. 
 
-The hardware system is composed of a small projector-camera (procam) set, and a depth camera, as seen in Figure~\ref{fig:system}. We chose overhead projection to enable any drawing support, and we use the depth camera to make the system interactive. The user interface is composed of tracked paper sheets: one or more is dedicated to the creation space. The paper or canvas is surrounded by markers to achieve a high precision detection of its position. The whole drawing area is made tactile by the depth camera, even allowing 3D pointing interactions over it. Another paper sheet is used for the user interface, generally containing virtual buttons.
-
+The hardware system is composed of a small projector-camera (procam) set, and a depth camera, as seen in Figure~\ref{fig:system}. We chose overhead projection to enable any drawing support, and we use the depth camera to make the system interactive. The user interface is composed of tracked sheets of paper: one or more is dedicated to the creation space. The paper or canvas is surrounded by markers to achieve a high precision detection of its position. The whole drawing area is made tactile by the depth camera, even allowing 3D pointing interactions over it. Another piece of paper is used for the user interface, generally containing virtual buttons.
 
 The goal of the system is to achieve a high speed tracking and more importantly high-fidelity projection. As the tracking speed may make the system less appealing or slow the user, a bad calibration will make it unusable. The capture and projection process requires a precise calibration to achieve the desired results. 
-The hardware used is widely available for a moderate cost, the projector used is a DLP LED projector, the camera and depth camera are video game console accessories. 
+The hardware used is widely available for a moderate cost, the projector used is a DLP LED projector, the camera and depth camera are video game console accessories. For more informations, please refer to~\cite{laviole:2012}.
  
- 
-
 
 \subsection*{3D projection and manipulation}
 
-The firsts experiments involved the projection of photos inside the tracked piece of paper. The task was to create a drawing from the projected image, while the projection acts as tracing paper. Some results are presented in Figure~\ref{fig:lyspanda}. From these experiments, we had some user feedback; the tracking does not have to be fast during the drawing phase: when the user moves the drawing support, he or she can wait a second or two before drawing again. Another point is that any spatial shift between the projection and the drawing will make the drawing much harder, and less comfortable. We also included tools to change the intensity of the projection, which was necessary to add any details to the drawings. Each of our testers were adults, and most of them do not draw at all. Still, once they started the drawing, they took between 35 to 45 minutes uninterrupted to draw. Most of them did not take so much time drawing since their childhood. 
+The firsts experiments involved the projection of photos inside the tracked piece of paper. The task was to create a drawing from the projected image, while the projection acts as tracing paper. Some results are presented in Figure~\ref{fig:lyspanda}. From these experiments, we had some user feedback; the tracking does not have to be fast during the drawing phase: when the user moves the drawing support, he or she can wait a second or two before drawing again. Another point is that any spatial shift between the projection and the drawing will make the drawing much harder, and less comfortable. We also included tools to change the intensity of the projection, which was necessary to add any details to the drawings. Each of our testers were adults, and most of them do not draw at all. Still, once they started the drawing, they took between 35 to 45 minutes uninterrupted to draw. Most of them did not take so much time drawing since their childhood and were happy with the result. 
 
 \begin{figure}[!h]
         \begin{subfigure}[b]{0.20\textwidth}
@@ -202,7 +201,7 @@ The exhibition lasted more than 3 month, and we were demonstrating and experimen
 In order to speed up the drawing phase, we used a simple toon shading for the rendering of the scene and a 3D model which was simple to draw, as illustrated in Figure~\ref{fig:3lapins}. The whole description of the system and elements of the presentation were done only using the touch and tangible interface; the mouse, keyboard and screen of the computer were hidden from the visitors.
 
  
-The reception of the general public was positive, and seemed "magical" for some visitors. When the sheets of paper are on the table, the system is interactive, but without any piece of paper it is just a table with a few pencil and an eraser.
+The reception of the general public was positive, and seemed “magical” for some visitors. When the sheets of paper are on the table, the system is interactive, but without any piece of paper it is just a table with a few pencil and an eraser.
 We tested our drawing system on about 200 visitors, and nearly every one of them was impressed by the quality of their own drawing. 
 
 
@@ -255,19 +254,19 @@ these we added a highly precise tablet input (wacom); it allows to overlay digit
 
 \subsection*{New forms of creation}
 
-From our first experiments, most of the users really liked the result of the mix between the real drawing and the projection. The real drawing generally makes the contour stronger and represent the interesting features of the image; while the projection provide complex texture and colors that are very difficult to draw. From these, we could allow the creation of hybrid drawings, partly physical and partly digital, a simple example illustrate this in Figure~\ref{fig:velo} The physical drawing may keep blank or less intense parts allowing the projection. The projected elements, unlike drawn elements can contain animations, which enables an interactive exploration of the drawing, or animated drawings. 
+From our first experiments, most of the users really liked the result of the mix between the real drawing and the projection. The real drawing generally makes the contour stronger and represent the interesting features of the image; while the projection provide complex texture and colors that are very difficult to draw. From these, we could allow the creation of hybrid drawings, partly physical and partly digital, a simple example illustrate this in Figure~\ref{fig:velo} The physical drawing may keep blank or less intense parts allowing the projection. The projected elements, unlike drawn elements can contain animations, which enables an interactive exploration of the drawing, or animated drawings. It could also be used for storytelling: as storyteller draws elements, it could start sounds, animations or videos around it, creating a richer experience. 
 
 \begin{figure}[!h]
 \centering
 \includegraphics[width=65mm]{velo2}
-\caption{Photo of a hybrid combination between a physical drawing, real colors from a photo and extra colors added using an image edition software.}
+\caption{Photo of a hybrid combination between a physical drawing, real colors from a photo and extra colors added using an image edition software. \vspace{-0.3cm}}
 \label{fig:velo}
 \end{figure}
 
 
 \subsection*{Digital games applications}
 
-The fact that a drawing leaves a trace, takes time and can contain errors makes it a good candidates for game creations. An example of games is real-time strategy games. Instead of just adding buildings using the mouse, the player could draw each building.  
+The fact that a drawing leaves a trace, takes time and can contain errors makes it a good candidates for game creations. For example, for real-time strategy games: instead of just adding buildings using the mouse, the player could draw each building.  
 The quality of the drawing could be evaluated to set its properties. The drawing process takes times, and the fact that the quality of the drawing is implied in the game will force to user to make choices on quality or speed. The limitations will not be game limitations, but also player limitations. 
 The difficulty levels could imply new drawing skills, such as special shading techniques, or high speed drawing; consequently adding a pedagogical side on these games. 
 
