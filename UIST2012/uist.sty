@@ -1,0 +1,275 @@
+% uist.sty
+%
+% Originally developed by Stephane Chatty [chatty@dgac.fr].
+% Modifications by Steve Feiner [feiner@cs.columbia.edu] noted with SKF.
+% Modifications by Nicolas Roussel [roussel@lri.fr] noted with NR.
+% Modifications by Emmanuel Pietriga [emmanuel.pietriga@inria.fr] noted with EP.
+%
+% uist.sty is to be used like this:
+%
+% \documentclass{article}
+% \usepackage{times}
+% \usepackage{uist}
+% \begin{document}
+%
+% % To include the ACM copyright statement, use this
+%        \conferenceinfo{UIST'06}{October 15--18, 2006, Montreux, Switzerland.}
+%        \CopyrightYear{2006}
+%        \crdata{1-59593-313-1/06/0010}
+% % If you don't want any copyright statement, use that
+%        \toappear{}
+%
+% \title{Your Title}
+%
+% \author{Your name and address}
+%
+% \maketitle
+%
+% \abstract
+% Your abstract goes here.
+%
+% \classification{...}
+% \terms{...}
+% \keywords{...}
+%
+% \section{INTRODUCTION}
+% Etc., etc. . . .
+%
+% \end{document}
+%
+
+% I (SKF) was not able to redefine the output routine in order to make
+% the two columns of the last page equal in length.  To do that, add a
+% \linebreak (to justify the current line) and \newpage (to start a
+% new column) at the right place in the text on your last page.
+
+\typeout{Style "UIST" <01 August 2005>.}
+
+% SKF: Changed pagestyle default to empty
+% change this to \pagestyle{plain} to temporarily add page numbers
+\pagestyle{empty}
+
+% fonts for headings in Helvetica. Edit if you have no such fonts
+\newfont{\helvix}{phvr at 9pt} % roman9
+\newfont{\helvixb}{phvb at 9pt} % bold9
+\newfont{\helvixo}{phvro at 9pt} % italic9
+\newfont{\helvxviiib}{phvb at 18pt} % bold18
+\def\Large{\@setsize\Large{14pt}\xiipt\@xiipt}
+
+% slight change to line spacing
+\def\@normalsize{\@setsize\normalsize{11pt}\xpt\@xpt
+\abovedisplayskip 10pt plus2pt minus5pt\belowdisplayskip \abovedisplayskip
+\abovedisplayshortskip \z@ plus3pt\belowdisplayshortskip 6pt plus3pt
+minus3pt\let\@listi\@listI}
+
+% redefined to avoid parskip after section headings
+\def\@xsect#1{\@tempskipa #1\relax
+      \ifdim \@tempskipa>\z@
+       \par \nobreak
+       \vskip \@tempskipa
+       \vskip-\parskip % added
+       \@afterheading
+    \else \global\@nobreakfalse \global\@noskipsectrue
+       \everypar{\if@noskipsec \global\@noskipsecfalse
+                   \clubpenalty\@M \hskip -\parindent
+                   \begingroup \@svsechd \endgroup \unskip
+                   \hskip -#1
+                  \else \clubpenalty \@clubpenalty
+                    \everypar{}\fi}\fi\ignorespaces}
+
+
+% all these are redefined to adjust headings style
+
+\def\section{
+  \@startsection{section}{1}{\z@}{-0.01ex plus -.2ex}{.01ex plus
+.2ex}{\helvixb}
+}
+
+\def\subsection{
+  \@startsection{subsection}{2}{\z@}{-0.01ex plus -.2ex}{.01ex plus
+.2ex}{\helvixb}
+}
+
+\def\subsubsection{
+  \@startsection{subsubsection}{3}{\z@}{0.01ex plus .2ex}{-1em}{\helvixo}
+}
+
+\def\paragraph{
+  \@startsection{paragraph}{4}{\z@}{0ex plus .2ex}{-1em}{\helvixb}
+}
+
+\def\subparagraph{
+  \@startsection{subparagraph}{4}{\parindent}{0ex plus .2ex}{-1em}{\helvixo}
+}
+
+% separation between paragraphs
+\parskip 1.75ex plus 1pt
+
+% indentation of paragraphs
+\parindent 0pt
+
+% SKF: Section numbers may be optionally used for UIST!
+% no section level is numbered
+\setcounter{secnumdepth}{0}
+
+% abstract is just another section
+% EP: replaced section* by section as section* conflicts with package amsmath
+%        removing the * does not change anything as sections are not numbered
+\def\abstract{\section{ABSTRACT}}
+
+\def\classification{\paragraph{ACM Classification:}}		 % NR
+\def\terms{\paragraph{General terms:}}		 % NR
+\def\keywords{\paragraph{Keywords:}}		 % NR
+
+\long\def\@makefntext#1{\noindent \hbox to .5em{\hss\textsuperscript{\@thefnmark}}#1}  % NR
+
+% ---------------------------------------------------------------------------
+% NR: copyright stuff, comes from http://www.acm.org/sigs/pubs/proceed/sig-alternate.cls
+
+\newfont{\crnotice}{ptmr at 8pt}
+\newfont{\confname}{ptmri at 8pt}
+
+\def\@toappear{} % Default setting blank - commands below change this.
+\long\def\toappear#1{\def\@toappear{\parbox[b]{20pc}{\baselineskip 9pt#1}}}
+\def\toappearbox#1{\def\@toappear{\raisebox{5pt}{\framebox[20pc]{\parbox[b]{19pc}{#1}}}}}
+
+\newtoks\copyrightnotice
+\def\ftype@copyrightbox{8}
+\def\@copyrightspace{
+\@float{copyrightbox}[b]
+\begin{center}
+\setlength{\unitlength}{1pc}
+\begin{picture}(20,5) %Space for copyright notice
+\put(0,-0.95){\crnotice{\@toappear}}
+\end{picture}
+\end{center}
+\end@float}
+
+\newtoks\conf
+\newtoks\confinfo
+\def\conferenceinfo#1#2{\global\conf={#1}\global\confinfo{#2}}
+
+\newtoks\copyrtyr
+\newtoks\acmcopyr
+\newtoks\boilerplate
+\global\acmcopyr={X-XXXXX-XX-X/XX/XX}  % Default - 5/11/2001 *** Gerry
+\global\copyrtyr={200X}                % Default - 3/3/2003 *** Gerry
+\def\CopyrightYear#1{\global\copyrtyr{#1}}
+\def\crdata#1{\global\acmcopyr{#1}}
+\def\permission#1{\global\boilerplate{#1}}
+%
+\global\boilerplate={Permission to make digital or hard copies of all or part of this work for personal or classroom use is granted without fee provided that copies are not made or distributed for profit or commercial advantage and that copies bear this notice and the full citation on the first page. To copy otherwise, to republish, to post on servers or to redistribute to lists, requires prior specific permission and/or a fee.}
+\newtoks\copyrightetc
+\global\copyrightetc{Copyright \the\copyrtyr\ ACM \the\acmcopyr ...\$10.00}
+
+\toappear{\the\boilerplate\par {\confname{\the\conf},} \the\confinfo.\par \the\copyrightetc.}
+
+% ---------------------------------------------------------------------------
+
+% redefined maketitle to eliminate \thispagestyle{plain} and add the copyright box
+
+\def\maketitle{\par
+ \begingroup
+ \def\thefootnote{\fnsymbol{footnote}}
+ \def\@makefnmark{\hbox to 0pt{$^{\@thefnmark}$\hss}}
+ \if@twocolumn
+   \twocolumn[\@maketitle]
+ \else
+   \global\@topnum\z@
+   \@maketitle
+ \fi
+ \@thanks
+ \endgroup
+ \setcounter{footnote}{0}
+ \let\maketitle\relax
+ \let\@maketitle\relax
+ \gdef\@thanks{}\gdef\@author{}\gdef\@title{}\let\thanks\relax
+ \@copyrightspace}
+
+% redefined title presentation
+\def\@maketitle{
+% \vbox to 2.5in{
+  \begin{center}
+ {\helvxviiib\baselineskip 20pt \@title \par}
+ \vskip 1.5em
+ {%\lineskip .5em
+ \large 
+ \begin{tabular}[t]{c}%
+ \@author
+ \end{tabular}\par}%
+ \end{center}
+ \vskip 5ex
+%\vfill}
+}
+
+% default definition for \author
+\def\authorname#1{\gdef\@authorname{#1}}
+\gdef\@authorname{Author Name}
+
+\def\authoraddr#1{\gdef\@authoraddr{#1}}
+\gdef\@authoraddr{Author Affiliation\\Street Name\\City}
+
+\author{
+  \begin{tabular}{c}
+  {\em\@authorname}\\[.4cm]
+  \@authoraddr
+  \end{tabular}
+}
+
+% redefinition of itemize  %% SKF: Modified to indent all lines past 1st.
+ \def\itemize{\ifnum \@itemdepth >3 \@toodeep\else \advance\@itemdepth \@ne
+ \edef\@itemitem{labelitem\romannumeral\the\@itemdepth}%
+ \list{\csname\@itemitem\endcsname}{\topsep -.5\parskip\parsep 0pt%
+ \itemsep 0pt\itemindent 0pt\labelwidth
+1ex\def\makelabel##1{\hss\llap{##1}}}\fi}
+ \leftmargini 2ex		 %% SKF
+ \leftmarginii 2ex		 %% SKF
+
+
+% redefinition of captions
+\long\def\@makecaption#1#2{
+ \vskip 4pt
+ \@tempdima\hsize
+  \advance\@tempdima -1cm
+ \setbox\@tempboxa\hbox{\helvix #1: #2}
+ \ifdim \wd\@tempboxa >\@tempdima
+     {\advance\leftskip .5cm \advance\rightskip .5cm\helvix\baselineskip 10pt
+#1: #2\par} % SKF: added baselineskip
+  \else
+     {\centering \hbox to\@tempdima{\hfil\box\@tempboxa\hfil}}
+ \fi}
+
+% redefined bibliography stuff to change the heading and the labels
+\def\@biblabel#1{#1.\hfill}
+
+% EP: replaced section* by section as section* conflicts with package amsmath
+%        removing the * does not change anything as sections are not numbered
+\def\thebibliography#1{\section{REFERENCES\@mkboth{REFERENCES}{REFERENCES}}
+  \list{\arabic{enumi}.}{
+    \settowidth\labelwidth{[#1]}
+    \leftmargin\labelwidth
+    \advance\leftmargin\labelsep
+    \topsep\z@
+    \parskip\z@
+    \partopsep\z@
+    \usecounter{enumi}}
+ \def\newblock{\hskip .11em plus .33em minus .07em}
+ \sloppy
+ \clubpenalty4000
+ \widowpenalty4000
+ \sfcode`\.=1000\relax}
+
+% misc. style parameters
+\twocolumn
+\flushbottom
+\columnsep .8cm		 		 % SKF: Changed from .85cm
+\textheight 23.5cm
+\textwidth 17.8cm		 % SKF: Changed from 17.85cm
+\headheight 0pt
+\headsep 0pt
+\topmargin -.125in              % FVG
+\oddsidemargin -.25in
+\evensidemargin -.25in
+% \textfloatsep 20pt		 % SKF: Assume 20pts, so copyright box is right size
+                         % NR: removed due to new copyright stuff (see below)
+\def\baselinestretch{.916666}
