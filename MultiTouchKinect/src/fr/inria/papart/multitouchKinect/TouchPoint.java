@@ -29,13 +29,18 @@ public class TouchPoint {
     protected int updateTime = 0;
     private OneEuroFilter[] filters;
 
+    
+    public static float filterFreq = 30f;
+    public static float filterCut = 1.0f;
+    public static float filterBeta = 8.000f;
+    
     public TouchPoint() {
         id = globalID++;
         toDelete = false;
         try {
             filters = new OneEuroFilter[3];
             for (int i = 0; i < 3; i++) {
-                filters[i] = new OneEuroFilter(28, 1.15, 0.001);
+                filters[i] = new OneEuroFilter(filterFreq, filterCut, filterBeta);
             }
         } catch (Exception e) {
             System.out.println("OneEuro Exception. Pay now." + e);
