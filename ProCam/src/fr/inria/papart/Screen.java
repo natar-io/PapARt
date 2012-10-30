@@ -156,33 +156,41 @@ public class Screen {
             graphics.clear(0);
         }
 
-//	float nearPlane = 10;
-//	float farPlane = 2000 * scale;
         PVector paperCameraPos = new PVector();
 
-        // get the position at the start of the program.
-        PVector tmp = initPos.get();
-        tmp.sub(posPaperP); //  tmp =  currentPos - initPos   (Position)
-
-        // Get the current paperSheet position
-        PMatrix3D newPos = pos.get();
-
-        newPos.invert();
-        newPos.m03 = 0;
-        newPos.m13 = 0;
-        newPos.m23 = 0;   // inverse of the Transformation (without position)
-
-        PVector tmp2 = userPos.get();
-
+        PVector virtualPos = userPos.get();
         if (isAnaglyph) {
-            tmp2.add(isLeft ? -halfEyeDist : halfEyeDist, 0, 0);
+            virtualPos.add(isLeft ? -halfEyeDist : halfEyeDist, 0, 0);
         }
-        tmp2.mult(-scale);
-        tmp2.add(tmp);
+        virtualPos.mult(-scale);
+        // userPos * scale - posPaper - initPos 
+        virtualPos.add(posPaperP);
+        virtualPos.sub(initPos);
 
-        newPos.mult(tmp2, paperCameraPos);
+        // virtualPos.z = -virtualPos.z;
+        
+        // Get the current paperSheet position
+        PMatrix3D rotationPaper = pos.get();
+        rotationPaper.invert();
+        rotationPaper.m03 = 0;
+        rotationPaper.m13 = 0;
+        rotationPaper.m23 = 0;   // inverse of the Transformation (without position)
+
+        rotationPaper.mult(virtualPos, paperCameraPos);
 
         // http://www.gamedev.net/topic/597564-view-and-projection-matrices-for-vr-window-using-head-tracking/
+
+//        graphics.camera(tmp2.x, tmp2.y, tmp2.z,
+//                tmp2.x, tmp2.y, 0,
+//                0, 1, 0);
+//
+//        float nearFactor = nearPlane / tmp2.z;
+//
+//        float left = nearFactor * (-scale * size.x / 2f - tmp2.x);
+//        float right = nearFactor * (scale * size.x / 2f - tmp2.x);
+//        float top = nearFactor * (scale * size.y / 2f - tmp2.y);
+//        float bottom = nearFactor * (-scale * size.y / 2f - tmp2.y);
+        
         graphics.camera(paperCameraPos.x, paperCameraPos.y, paperCameraPos.z,
                 paperCameraPos.x, paperCameraPos.y, 0,
                 0, 1, 0);
@@ -313,10 +321,10 @@ public class Screen {
                 }
             } else {
                 pos.set(pos3D[0], pos3D[1], pos3D[2], pos3D[3],
-                    pos3D[4], pos3D[5], pos3D[6], pos3D[7],
-                    pos3D[8], pos3D[9], pos3D[10], pos3D[11],
-                    0, 0, 0, 1);
-                
+                        pos3D[4], pos3D[5], pos3D[6], pos3D[7],
+                        pos3D[8], pos3D[9], pos3D[10], pos3D[11],
+                        0, 0, 0, 1);
+
             }
         }
 
@@ -325,7 +333,7 @@ public class Screen {
 //                pos3D[4], pos3D[5], pos3D[6], pos3D[7],
 //                pos3D[8], pos3D[9], pos3D[10], pos3D[11],
 //                0, 0, 0, 1);
-        
+
         posPaper.x = pos3D[3];
         posPaper.y = pos3D[7];
         posPaper.z = pos3D[11];
