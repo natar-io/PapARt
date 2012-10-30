@@ -21,10 +21,10 @@ public class Img3DVec{
   }
 
   public int X(){
-    return offset % MyApplet.w;
+    return offset % KinectCst.w;
   }
 
   public int Y(){
-    return offset / MyApplet.w;
+    return offset / KinectCst.w;
   }
 }

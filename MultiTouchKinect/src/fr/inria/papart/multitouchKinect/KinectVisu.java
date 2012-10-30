@@ -19,16 +19,16 @@ public class KinectVisu {
     public int minDepthKinectVisu = 400;
     public int maxDepthKinectVisu = 800;
     public int minXKinectVisu = 0;
-    public int maxXKinectVisu = MyApplet.w;
+    public int maxXKinectVisu = KinectCst.w;
     public int minYKinectVisu = 0;
-    public int maxYKinectVisu = MyApplet.h;
+    public int maxYKinectVisu = KinectCst.h;
     public int kinectVisuSkip = 4;
     public boolean active = true;
     float depthDiff = 5;
     boolean isDeletingBackground = false;
     boolean isBackgroundDeleted = false;
-    boolean[] backgroundValidPoints = new boolean[MyApplet.w * MyApplet.h];
-    boolean[] validPoints = new boolean[MyApplet.w * MyApplet.h];
+    boolean[] backgroundValidPoints = new boolean[KinectCst.w * KinectCst.h];
+    boolean[] validPoints = new boolean[KinectCst.w * KinectCst.h];
 
     public KinectVisu(int minD, int maxD,
             int minX, int maxX,
@@ -46,7 +46,7 @@ public class KinectVisu {
 
     public KinectVisu(String PlaneParametersfilename) {
 
-        String[] lines = MyApplet.pa.loadStrings(PlaneParametersfilename);
+        String[] lines = KinectCst.pa.loadStrings(PlaneParametersfilename);
         if (lines != null && lines.length != 0) {
 
             minDepthKinectVisu = Integer.parseInt(lines[0]);
@@ -62,8 +62,6 @@ public class KinectVisu {
     }
 
     public KinectVisu(XMLElement parametersXML) {
-
-
         // TO finish ?? 
 //        XMLElement minDepth = parametersXML.getChild("MinDepth");
 //        XMLElement maxDepth = parametersXML.getChild("MaxDepth");
@@ -90,11 +88,11 @@ public class KinectVisu {
         if (active) {
             for (int y = minYKinectVisu, i = 0; y < maxYKinectVisu; y += kinectVisuSkip) {
                 for (int x = minXKinectVisu; x < maxXKinectVisu; x += kinectVisuSkip) {
-                    int offset = (x + y * MyApplet.w);
-                    boolean good = isGoodDepth(depth[x + y * MyApplet.w]);
+                    int offset = (x + y * KinectCst.w);
+                    boolean good = isGoodDepth(depth[x + y * KinectCst.w]);
                     validPoints[offset] = good;
                     if (good) {
-                        points[offset] = depthToWorld(x, y, depth[offset]);
+                        points[offset] = KinectCst.depthToWorld(x, y, depth[offset]);
                     }
                 }
             }
@@ -106,7 +104,7 @@ public class KinectVisu {
 
                 for (int y = minYKinectVisu + kinectVisuSkip; y < maxYKinectVisu; y += kinectVisuSkip) {
                     for (int x = minXKinectVisu + kinectVisuSkip; x < maxXKinectVisu; x += kinectVisuSkip) {
-                        int offset = x + y * MyApplet.w;
+                        int offset = x + y * KinectCst.w;
 
                         if (validPoints[offset] && backgroundValidPoints[offset]
                                 && PApplet.abs(planeSelection.distanceTo(points[offset])) < distanceZ
@@ -129,7 +127,7 @@ public class KinectVisu {
                 if (isDeletingBackground) {
                     for (int y = minYKinectVisu + kinectVisuSkip; y < maxYKinectVisu; y += kinectVisuSkip) {
                         for (int x = minXKinectVisu + kinectVisuSkip; x < maxXKinectVisu; x += kinectVisuSkip) {
-                            int offset = x + y * MyApplet.w;
+                            int offset = x + y * KinectCst.w;
 
                             if (validPoints[offset]
                                     && PApplet.abs(planeSelection.distanceTo(points[offset])) < distanceZ
@@ -154,7 +152,7 @@ public class KinectVisu {
 
                     for (int y = minYKinectVisu + kinectVisuSkip; y < maxYKinectVisu; y += kinectVisuSkip) {
                         for (int x = minXKinectVisu + kinectVisuSkip; x < maxXKinectVisu; x += kinectVisuSkip) {
-                            int offset = x + y * MyApplet.w;
+                            int offset = x + y * KinectCst.w;
                             if (validPoints[offset]
                                     && PApplet.abs(planeSelection.distanceTo(points[offset])) < distanceZ
                                     && planeSelection.orientation(points[offset])) {
@@ -192,31 +190,6 @@ public class KinectVisu {
     private boolean isGoodDepth(int rawDepth) {
         return (rawDepth >= minDepthKinectVisu && rawDepth < maxDepthKinectVisu);
     }
-    static float[] depthLookUp = new float[2048];
-
-    public static void initKinect() {
-        for (int i = 0; i < depthLookUp.length; i++) {
-            depthLookUp[i] = rawDepthToMeters(i);
-        }
-    }
-
-    public static float rawDepthToMeters(int depthValue) {
-        if (depthValue < 2047) {
-            return (float) (1.0 / ((double) (depthValue) * -0.0030711016 + 3.3309495161));
-        }
-        return 0.0f;
-    }
-
-    public static Vec3D depthToWorld(int x, int y, int depthValue) {
-        final double fx_d = 1.0 / 5.9421434211923247e+02;
-        final double fy_d = 1.0 / 5.9104053696870778e+02;
-        final double cx_d = 3.3930780975300314e+02;
-        final double cy_d = 2.4273913761751615e+02;
-        Vec3D result = new Vec3D();
-        double depth = depthLookUp[depthValue]; //rawDepthToMeters(depthValue);
-        result.x = 1 * (float) ((x - cx_d) * depth * fx_d);
-        result.y = 1 * (float) ((y - cy_d) * depth * fy_d);
-        result.z = -1 * (float) (depth);
-        return result;
-    }
+   
+    
 }

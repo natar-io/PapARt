@@ -29,8 +29,8 @@ public class Touch3D {
 
         // TODO: optimisations here ?
 
-        int x = currentPoint % MyApplet.w;
-        int y = currentPoint / MyApplet.w;
+        int x = currentPoint % KinectCst.w;
+        int y = currentPoint / KinectCst.w;
 
         if (toVisit.contains(currentPoint)) {
             toVisit.remove(currentPoint);
@@ -38,17 +38,17 @@ public class Touch3D {
 
         ArrayList<Integer> ret = new ArrayList<Integer>();
 
-        int max = MyApplet.w * MyApplet.h;
+        int max = KinectCst.w * KinectCst.h;
 
         for (int j = -halfNeigh; j < halfNeigh + skip; j += skip) {
             for (int i = -halfNeigh; i < halfNeigh + skip; i += skip) {
 
-                int offset = (x + i) + (y + j) * MyApplet.w;
+                int offset = (x + i) + (y + j) * KinectCst.w;
 
                 // Avoid getting ouside the limits
                 if (!(offset >= max
-                        || (x + i) != PApplet.constrain(x + i, 0, MyApplet.w) || // to big or small in X
-                        (y + j) != PApplet.constrain(y + j, 0, MyApplet.h) || // to big or small in Y
+                        || (x + i) != PApplet.constrain(x + i, 0, KinectCst.w) || // to big or small in X
+                        (y + j) != PApplet.constrain(y + j, 0, KinectCst.h) || // to big or small in Y
                         readPoints[offset] || // already parsed point
                         !isValidPoints[offset]
                         || projPoints[offset] == null
@@ -87,7 +87,7 @@ public class Touch3D {
         int searchDepth2 = 2 * skip; // on each direction
 
         ////  Each detected Point is going to be parsed.
-        boolean readPoints[] = new boolean[MyApplet.w * MyApplet.h];
+        boolean readPoints[] = new boolean[KinectCst.w * KinectCst.h];
         Set<Integer> toVisit = new HashSet<Integer>();
 
         ArrayList<ArrayList<Integer>> allNeighbourhood = new ArrayList<ArrayList<Integer>>();

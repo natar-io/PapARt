@@ -40,18 +40,18 @@ public class MultiTouchKinect {
 
     public MultiTouchKinect(PApplet applet, String planeFile, String planeParametersfilename, String homographyFilename) {
 
-        MyApplet.init(applet);
-        KinectVisu.initKinect();
+        KinectCst.init(applet);
+        KinectCst.initKinect();
         this.applet = applet;
 
-        backgroundValidPoints = new boolean[MyApplet.w * MyApplet.h];
-        validPoints = new boolean[MyApplet.w * MyApplet.h];
+        backgroundValidPoints = new boolean[KinectCst.w * KinectCst.h];
+        validPoints = new boolean[KinectCst.w * KinectCst.h];
 
         // TODO: memory occupation of Vec3D ? 
-        kinectPoints = new Vec3D[MyApplet.w * MyApplet.h];
-        projPoints = new Vec3D[MyApplet.w * MyApplet.h];
+        kinectPoints = new Vec3D[KinectCst.w * KinectCst.h];
+        projPoints = new Vec3D[KinectCst.w * KinectCst.h];
 
-        for (int k = 0; k < MyApplet.w * MyApplet.h; k++) {
+        for (int k = 0; k < KinectCst.w * KinectCst.h; k++) {
             backgroundValidPoints[k] = true;
         }
 //        depthf = new float[MyApplet.w * MyApplet.h];
@@ -73,18 +73,18 @@ public class MultiTouchKinect {
 
     public MultiTouchKinect(PApplet applet, String configurationFile) {
 
-        MyApplet.init(applet);
-        KinectVisu.initKinect();
+        KinectCst.init(applet);
+        KinectCst.initKinect();
         this.applet = applet;
 
-        backgroundValidPoints = new boolean[MyApplet.w * MyApplet.h];
-        validPoints = new boolean[MyApplet.w * MyApplet.h];
+        backgroundValidPoints = new boolean[KinectCst.w * KinectCst.h];
+        validPoints = new boolean[KinectCst.w * KinectCst.h];
 
         // TODO: memory occupation of Vec3D ? 
-        kinectPoints = new Vec3D[MyApplet.w * MyApplet.h];
-        projPoints = new Vec3D[MyApplet.w * MyApplet.h];
+        kinectPoints = new Vec3D[KinectCst.w * KinectCst.h];
+        projPoints = new Vec3D[KinectCst.w * KinectCst.h];
 
-        for (int k = 0; k < MyApplet.w * MyApplet.h; k++) {
+        for (int k = 0; k < KinectCst.w * KinectCst.h; k++) {
             backgroundValidPoints[k] = true;
         }
 
@@ -120,7 +120,7 @@ public class MultiTouchKinect {
             }
         }
 
-        for (int k = 0; k < MyApplet.w * MyApplet.h; k++) {
+        for (int k = 0; k < KinectCst.w * KinectCst.h; k++) {
             projPoints[k] = null;
         }
 
