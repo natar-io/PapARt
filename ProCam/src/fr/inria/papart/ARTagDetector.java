@@ -5,26 +5,14 @@
 package fr.inria.papart;
 
 import com.googlecode.javacpp.BytePointer;
-import com.googlecode.javacv.CameraDevice.Settings;
 import com.googlecode.javacv.FrameGrabber.ImageMode;
-import com.googlecode.javacv.OpenCVFrameGrabber;
+import com.googlecode.javacv.*;
 import com.googlecode.javacv.cpp.ARToolKitPlus;
 import com.googlecode.javacv.cpp.ARToolKitPlus.ARMultiMarkerInfoT;
 import com.googlecode.javacv.cpp.ARToolKitPlus.ArtLogFunction;
 import com.googlecode.javacv.cpp.ARToolKitPlus.MultiTracker;
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
-import com.googlecode.javacv.procamcalib.CalibrationWorker.ColorSettings;
-import com.googlecode.javacv.procamcalib.CalibrationWorker.GeometricSettings;
-
-import com.googlecode.javacv.CameraDevice;
-import com.googlecode.javacv.CameraSettings;
-import com.googlecode.javacv.FrameGrabber;
-import com.googlecode.javacv.Marker;
-import com.googlecode.javacv.MarkerDetector;
-import com.googlecode.javacv.ProjectiveDevice;
-import com.googlecode.javacv.ProjectorSettings;
 import com.googlecode.javacv.procamcalib.CalibrationWorker;
-
 import java.beans.IntrospectionException;
 import java.beans.PropertyVetoException;
 import java.beans.XMLDecoder;
