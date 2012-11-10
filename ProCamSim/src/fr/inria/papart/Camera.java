@@ -8,10 +8,8 @@ package fr.inria.papart;
  *
  * @author jeremylaviole
  */
-import com.googlecode.javacv.CameraDevice;
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import processing.core.PApplet;
 import processing.core.PImage;
@@ -20,19 +18,18 @@ import processing.core.PVector;
 
 public class Camera {
 
-    public ARTagDetector art;
     // Camera parameters
     protected PMatrix3D camIntrinsicsP3D;
     public PApplet parent;
     ArrayList<TrackedView> trackedViews;
     MarkerBoard[] sheets;
     public PVector resolution;
-    ARTThread thread = null;
 
     static public void convertARParams(PApplet parent, String calibrationYAML,
             String calibrationData, int width, int height) {
         try {
-            fr.inria.papart.Utils.convertARParam(parent, calibrationYAML, calibrationData, width, height);
+            // TODO: check if all file exists 
+           
         } catch (Exception e) {
             PApplet.println("Conversion error. " + e);
         }
@@ -75,32 +72,11 @@ public class Camera {
             MarkerBoard[] sheets) {
 
         this.resolution = new PVector(width, height);
-        
-        art = new ARTagDetector(camNo, videoFile, width, height, 60, calibrationYAML,
-                calibrationData,
-                sheets);
-
+        // No real tag detection
         this.sheets = sheets;
         this.trackedViews = new ArrayList<TrackedView>();
 
-        // Load the camera parameters. 
-        try {
-            CameraDevice[] camDev = CameraDevice.read(calibrationYAML);
-
-            if (camDev.length <= 0) {
-                throw new Exception("No camera device in the calibration file: " + calibrationYAML);
-            }
-            CameraDevice cameraDevice = camDev[0];
-
-            double[] camMat = cameraDevice.cameraMatrix.get();
-            camIntrinsicsP3D = new PMatrix3D((float) camMat[0], (float) camMat[1], (float) camMat[2], 0,
-                    (float) camMat[3], (float) camMat[4], (float) camMat[5], 0,
-                    (float) camMat[6], (float) camMat[7], (float) camMat[8], 0,
-                    0, 0, 0, 1);
-
-        } catch (Exception e) {
-            parent.die("Error reading the calibration file : " + calibrationYAML + " \n" + e);
-        }
+        // TODO: check the files... 
     }
 
     /**
@@ -114,20 +90,13 @@ public class Camera {
      * It makes the camera update continuously.
      */
     public void setThread(boolean undistort) {
-        if (thread == null) {
-            thread = new ARTThread(art, sheets, undistort);
-            thread.start();
-        } else {
-            System.err.println("Camera: Error Thread already launched");
-        }
+        // TODO: maybe something ? '_' 
     }
 
     /**
      * Stops the update thread.
      */
     public void stopThread() {
-        thread.stopThread();
-        thread = null;
     }
 
     /**
@@ -136,15 +105,10 @@ public class Camera {
      * @param auto automatic Tag detection: ON if true.
      */
     public void setAutoUpdate(boolean auto) {
-        if (thread != null) {
-            thread.setCompute(auto);
-        } else {
-            System.err.println("Camera: Error AutoCompute only if threaded.");
-        }
     }
 
     public float[] getPosPointer(MarkerBoard board) {
-        return art.getPointerFrom(board);
+        return new float[16];
     }
 
     /**
@@ -154,10 +118,7 @@ public class Camera {
      * @return 2D location of the 3D point in the image.
      */
     public PVector getCamViewPoint(PVector pt) {
-        PVector tmp = new PVector();
-        camIntrinsicsP3D.mult(new PVector(pt.x, pt.y, pt.z), tmp);
-        //TODO: lens distorsion ?
-        return new PVector(tmp.x / tmp.z, tmp.y / tmp.z);
+        return new PVector(0, 0);
     }
 
     /**
@@ -168,11 +129,7 @@ public class Camera {
     }
 
     public void grab(boolean undistort) {
-        if (thread == null) {
-            art.grab(undistort);
-        } else {
-            System.err.println("Camera: Please use Grab() only while not threaded.");
-        }
+        // 
     }
 
     /**
@@ -185,7 +142,7 @@ public class Camera {
     public boolean addTrackedView(TrackedView view) {
         trackedViews.add(view);
 //        System.out.println("board already tracked ?" + art.getTransfoMap().containsKey(view.getBoard()));
-        return art.getTransfoMap().containsKey(view.getBoard());
+        return true;
     }
 
     /**
@@ -200,19 +157,8 @@ public class Camera {
     
     public IplImage getViewIpl(TrackedView trackedView){
         
-        if (trackedView == null) {
-            System.err.println("Error: paper sheet not registered as tracked view.");
-            return null;
-        }
-
-//        grab(undistort);
-        if (!art.isReady(true)) {
-            return null;
-        }
-        float[] pos = art.findMarkers(trackedView.getBoard());
-        trackedView.setPos(pos);
-        trackedView.computeCorners(this);
-       return trackedView.getImageIpl(art.getImageIpl());
+ // TODO: return an IPLImage....
+       return null;
     }
 
     /**
@@ -223,19 +169,8 @@ public class Camera {
      */
     public PImage getView(TrackedView trackedView, boolean undistort) {
           
-           if (trackedView == null) {
-            System.err.println("Error: paper sheet not registered as tracked view.");
-            return null;
-        }
-
-//        grab(undistort);
-        if (!art.isReady(undistort)) {
-            return null;
-        }
-        float[] pos = art.findMarkers(trackedView.getBoard());
-        trackedView.setPos(pos);
-        trackedView.computeCorners(this);
-        return trackedView.getImage(art.getImageIpl());
+        // TODO: return an image ? 
+       return null;
     }
 
     /**
@@ -247,27 +182,10 @@ public class Camera {
      * @return image
      */
     public PImage stopGetViewStart(TrackedView trackedView) {
-        if (thread == null) {
-            System.err.println("Camera : Error: stopGetViewStart is to use only when thread is started");
-            return null;
-        }
-        boolean wasAutoUpdate = thread.isCompute();
-        stopThread();
-        this.grab();
+       
+        // Too weird, not implemented
 
-        if (trackedView == null) {
-            System.err.println("Error: paper sheet not registered as tracked view.");
-            return null;
-        }
-        float[] pos = art.findMarkers(trackedView.getBoard());
-        trackedView.setPos(pos);
-        trackedView.computeCorners(this);
-        PImage out = trackedView.getImage(art.getImageIpl());
-
-        setThread();
-        thread.setCompute(wasAutoUpdate);
-
-        return out;
+        return null;
     }
 
     /**
@@ -280,44 +198,19 @@ public class Camera {
      * @return image
      */
     public PImage[] stopGetViewStart(TrackedView[] trackedViews) {
-        if (thread == null) {
-            System.err.println("Camera : Error: stopGetViewStart is to use only when thread is started");
-            return null;
-        }
-        boolean wasAutoUpdate = thread.isCompute();
-        thread.stopThread();
-        this.grab();
-
-        PImage[] out = new PImage[sheets.length];
-        int k = 0;
-
-        for (TrackedView trackedView : trackedViews) {
-            if (trackedView == null) {
-                System.err.println("Error: paper sheet not registered as tracked view.");
-                return null;
-            }
-            float[] pos = art.findMarkers(trackedView.getBoard());
-            trackedView.setPos(pos);
-            trackedView.computeCorners(this);
-            out[k++] = trackedView.getImage(art.getImageIpl());
-        }
-        setThread();
-        thread.setCompute(wasAutoUpdate);
-
-        return out;
+       // same as above
+        return null;
     }
 
     public PImage getPImage(){
-        // TODO: verif non thread etc...
-        art.grab(true, true);
-//        art.grab(false, true);
-        return art.getImage();
+        // TODO: return a PImage
+        return null;
+        
     }
     
 //    public PImage getLastPaperView(MarkerBoard sheet) {
 //        return trackedViews.get(sheet).img;
 //    }
     public void close() {
-        art.close();
     }
 }

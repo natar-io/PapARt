@@ -36,15 +36,11 @@ public class TrackedView {
             cornerPos[i] = new PVector();
         }
 
-//        outScreenP[0] = new PVector(0, videoHeight);
-//        outScreenP[1] = new PVector(videoWidth, videoHeight);
-//        outScreenP[2] = new PVector(videoWidth, 0);
-//        outScreenP[3] = new PVector(0, 0);
+        outScreenP[0] = new PVector(0, 0);
+        outScreenP[1] = new PVector(outWidth, 0);
+        outScreenP[2] = new PVector(outWidth, outHeight);
+        outScreenP[3] = new PVector(0, outHeight);
 
-        outScreenP[0] = new PVector(0, outHeight);
-        outScreenP[1] = new PVector(outWidth, outHeight);
-        outScreenP[2] = new PVector(outWidth, 0);
-        outScreenP[3] = new PVector(0, 0);
     }
 
     protected void setPos(float[] pos3D) {
@@ -110,11 +106,7 @@ public class TrackedView {
     public MarkerBoard getBoard() {
         return this.board;
     }
-    
-    
-    
-    
-    
+
     protected void computeCorners(ImageWithTags itw) {
         PMatrix3D newPos = pos.get();
 
