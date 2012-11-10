@@ -1,13 +1,10 @@
 package fr.inria.papart.multitouch;
 
-import fr.inria.papart.multitouchKinect.MultiTouchKinect;
-import fr.inria.papart.multitouchKinect.TouchPoint;
 import fr.inria.papart.Projector;
 import fr.inria.papart.Screen;
 import java.util.ArrayList;
 import processing.core.PApplet;
 import processing.core.PVector;
-import toxi.geom.ReadonlyVec3D;
 import toxi.geom.Vec3D;
 
 /**
@@ -21,7 +18,6 @@ public class TouchInput {
     private boolean isTouch3DActive = false;
     private ArrayList<TouchPoint> touchPoints2D, touchPoints3D;
     private int touch2DPrecision, touch3DPrecision;
-    private MultiTouchKinect mtk;
     private float touchHeight;
     private PApplet parent;
 
@@ -35,8 +31,6 @@ public class TouchInput {
         this.parent = applet;
         this.touch2DPrecision = precision2D;
         this.touch3DPrecision = precision3D;
-        touchPoints2D = mtk.getTouchPoint2D();
-        touchPoints3D = mtk.getTouchPoint3D();
     }
 
     public void startTouch(int[] depth, float touchHeight) {
@@ -61,11 +55,17 @@ public class TouchInput {
     }
 
     public ArrayList<TouchPoint> getTouchPoints2D() {
-        return touchPoints2D;
+        ArrayList<TouchPoint> ret = new ArrayList<TouchPoint>(1);
+        TouchPoint tp = new TouchPoint();
+        tp.v = new Vec3D(
+                (float) parent.mouseX / (float) parent.width,
+                (float) parent.mouseY / (float) parent.height, 0);
+        ret.add(tp);
+        return ret;
     }
 
     public ArrayList<TouchPoint> getTouchPoints3D() {
-        return touchPoints3D;
+        return new ArrayList<TouchPoint>(0);
     }
 
     public TouchElement projectTouchToScreen(Screen screen, Projector projector) {
@@ -109,45 +109,41 @@ public class TouchInput {
         elem.speed2D = speed2D;
         elem.speed3D = speed3D;
 
-        if (is2D && !touchPoints2D.isEmpty()) {
-            for (TouchPoint tp : touchPoints2D) {
 
-                // TODO: change this to get outside points ? 
-                // Inside the window
-                if (parent.mousePressed) {
+        // TODO: change this to get outside points ? 
+        // Inside the window
+        if (parent.mousePressed) {
 
-                    PVector res, res2;
+            PVector res, res2;
 
-                    // TODO: project the mouse ... 
-                    res = projector.projectPointer(screen, parent.mouseX, parent.mouseY);
+            // TODO: project the mouse ... 
+            res = projector.projectPointer(screen, parent.mouseX, parent.mouseY);
 
-                    if (isSpeed2D) {
-                        res2 = (tp.oldV != null) ? projector.projectPointer(screen, parent.pmouseX, parent.pmouseY) : null;
-                    } else {
-                        res2 = null;
-                    }
+            if (isSpeed2D) {
+                res2 = projector.projectPointer(screen, parent.pmouseX, parent.pmouseY);
+            } else {
+                res2 = null;
+            }
 
-                    if (res != null) {
+            if (res != null) {
 
-                        // inside the paper sheet 	      
-                        if (res.x >= 0 && res.x <= 1 && res.y >= 0 && res.y <= 1) {
-                            position2D.add(new PVector(res.x, res.y));
+                // inside the paper sheet 	      
+                if (res.x >= 0 && res.x <= 1 && res.y >= 0 && res.y <= 1) {
+                    position2D.add(new PVector(res.x, res.y));
 //                            position2D.add(new PVector(res.x * screen.getSize().x * screen.getScale(),
 //                                        res.y* screen.getSize().y * screen.getScale()));
-                        }
-
-                        if (res2 != null) {
-                            // inside the paper sheet 	      
-                            if (res2.x >= 0 && res2.x <= 1 && res2.y >= 0 && res2.y <= 1) {
-                                speed2D.add(new PVector(res.x - res2.x,
-                                        res.y - res2.y));
-                            }
-                        }
-                    }
                 }
 
+                if (res2 != null) {
+                    // inside the paper sheet 	      
+                    if (res2.x >= 0 && res2.x <= 1 && res2.y >= 0 && res2.y <= 1) {
+                        speed2D.add(new PVector(res.x - res2.x,
+                                res.y - res2.y));
+                    }
+                }
             }
         }
+
 
 
         // Simulation : 3D ??? !!! 

@@ -2,7 +2,6 @@ package fr.inria.papart;
 
 import codeanticode.glgraphics.GLGraphicsOffScreen;
 import codeanticode.glgraphics.GLTexture;
-import fr.inria.papart.tools.Homography;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
@@ -33,7 +32,6 @@ public class Screen {
     protected Plane plane = new Plane();
     private static final int nbPaperPosRender = 4;
     private PVector[] paperPosCorners3D = new PVector[nbPaperPosRender];
-    protected Homography homography;
     protected Matrix4x4 transformationProjPaper;
     private float halfEyeDist = 20; // 2cm
     private boolean isDrawing = true;
