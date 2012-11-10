@@ -128,7 +128,11 @@ public class Projector {
 
     public PVector projectPointer(Screen screen, float px, float py) {
 
-        return new PVector(0, 0);
+        // FIXME: ERRORS HERE
+        
+        return new PVector(
+                    (px - screen.position.x) / screen.getDrawSizeX(),
+                 (py - screen.position.y) / screen.getDrawSizeY());
     }
 
     public void addScreen(Screen s) {
