@@ -61,8 +61,7 @@ public class Screen {
     
     // **** Simulation API
     public void setPositionSim(PVector pos){
-        
-        
+        posPaperP = pos;
     }
     
     
