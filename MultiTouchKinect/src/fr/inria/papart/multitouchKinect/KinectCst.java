@@ -20,12 +20,14 @@ public class KinectCst {
     public static final int h = 480;
     static PApplet pa = null;
     public static float height3D = 15f;
+    public static float dx = 0.025f;
+    public static float dy = 0.00f;
 
-    static void init(PApplet applet) {
+    static public void init(PApplet applet) {
         pa = applet;
     }
 
-    static PApplet get() {
+    static public PApplet get() {
         return pa;
     }
     static float[] depthLookUp = null;
@@ -47,16 +49,16 @@ public class KinectCst {
                 -1.4779096108364480e-03, 9.9992385683542895e-01, -1.2251380107679535e-02, 0,
                 1.7470421412464927e-02, 1.2275341476520762e-02, 9.9977202419716948e-01, 0,
                 0, 0, 0, 1);
+
         trans = new Matrix4x4(
-                1, 0, 0, -1.9985242312092553e-02,
-                0, 1, 0, 7.4423738761617583e-04,
-                0, 0, 1, 1.0916736334336222e-02,
+                1, 0, 0, -0.254,
+                0, 1, 0, 0.00013,
+                0, 0, 1, -0.00218,
                 0, 0, 0, 1);
 
-        rot = rot.transpose();
+        // rot = rot.transpose();
         transform3 = rot.multiply(trans);
 
-        System.out.println(transform3);
     }
 
     public static float rawDepthToMeters(int depthValue) {
@@ -67,15 +69,27 @@ public class KinectCst {
     }
 
     public static Vec3D depthToWorld(int x, int y, int depthValue) {
-        final double fx_d = 1.0 / 5.9421434211923247e+02;
-        final double fy_d = 1.0 / 5.9104053696870778e+02;
-        final double cx_d = 3.3930780975300314e+02;
-        final double cy_d = 2.4273913761751615e+02;
+        // Working values ! 
+//        final double ifx_d = 1.0 / 590.;
+//        final double ify_d = 1.0 / 590.;
+//        final double cx_d = 317.0;
+//        final double cy_d = 244.0;
+
+        // calib values ! 
+        final double ifx_d = 1.0 / 589.03265;
+        final double ify_d = 1.0 / 587.64886;
+        final double cx_d = 319.35583;
+        final double cy_d = 253.5655;
+
         Vec3D result = new Vec3D();
-        double depth = rawDepthToMeters(depthValue); //rawDepthToMeters(depthValue);
-        result.x = (float) ((x - cx_d) * depth * fx_d);
-        result.y = (float) ((y - cy_d) * depth * fy_d);
-        result.z = -(float) (depth);
+        double depth = depthValue;
+//        double depth = depthValue >> 3;
+//        double depth = rawDepthToMeters(depthValue); //rawDepthToMeters(depthValue);
+        result.x = (float) ((x - cx_d) * depth * ifx_d);
+        result.y = (float) ((y - cy_d) * depth * ify_d);
+
+        // TODO: put it back to -z somehow ?
+        result.z = (float) (depth);
         return result;
     }
 //    static Matrix4x4 transform = new Matrix4x4(
@@ -88,7 +102,7 @@ public class KinectCst {
             1.2635359098409581e-03f, 9.9992385683542895e-01f, 1.2275341476520762e-02f, 0,
             -1.7487233004436643e-02f, -1.2251380107679535e-02f, 9.9977202419716948e-01f, 0,
             0, 0, 0, 1);
-        static Matrix4x4 transform2 = new Matrix4x4(
+    static Matrix4x4 transform2 = new Matrix4x4(
             9.9984628826577793e-01f, -1.4779096108364480e-03f, 1.7470421412464927e-02f, -1.9985242312092553e-02f,
             1.2635359098409581e-03f, 9.9992385683542895e-01f, 1.2275341476520762e-02f, 7.4423738761617583e-04f,
             -1.7487233004436643e-02f, -1.2251380107679535e-02f, 9.9977202419716948e-01f, 1.0916736334336222e-02f,
@@ -99,36 +113,62 @@ public class KinectCst {
 //            -1.7487233004436643e-02f, -1.2251380107679535e-02f, 9.9977202419716948e-01f, 1.0916736334336222e-02f,
 //            0, 0, 0, 1);
 
-    public static int WorldToColor(Vec3D pt) {
-        final double fx_rgb = 5.2921508098293293e+02;
-        final double fy_rgb = 5.2556393630057437e+02;
-        final double cx_rgb = 3.2894272028759258e+02;
-        final double cy_rgb = 2.6748068171871557e+02;
+    public static int WorldToColor(int x, int y, Vec3D pt) {
 
-//        PVector v = new PVector(pt.x, pt.y, -pt.z);
-//        PVector v2 = transform2.mult(v, new PVector());
-//        
-//        Vec3D pt2 = transform.applyTo(ptOrig);
-        Vec3D pt2 = transform3.applyTo(pt);
 
-//        pt2 = pt2.add(1.9985242312092553e-02f, -7.4423738761617583e-04f, -1.0916736334336222e-02f);
+// Working Version !
+        final float fx_rgb = 525.2362f;
+        final float fy_rgb = 525.1191f;
+        final float cx_rgb = 317.96698f;
+        final float cy_rgb = 244.86328f;
 
-//        System.out.println(pt2 + " " + pt3);
+// [u,v,kd]ir -- (doff, fir, b) --> [XYZ]ir -- (R,t) --> [XYZ]rgb -- (frgb) --> [u,v]rgb 
+        // No rotations here
+        // Translation
 
-        double invZ = 1.0f / pt2.z();
-        int px = PApplet.constrain(PApplet.round((float) ((pt2.x() * fx_rgb * invZ) + cx_rgb)), 0, 639);
-        int py = PApplet.constrain(PApplet.round((float) ((pt2.y() * fy_rgb * invZ) + cy_rgb)), 0, 479);
+//                pt.addSelf(dx, dy, -0.00218f);
 
-        
-        double invZorig = 1.0f / pt.z();
-        int pxOrig = PApplet.constrain(PApplet.round((float) ((pt.x() * fx_rgb * invZ) + cx_rgb)) - 10, 0, 639);
-        int pyOrig = PApplet.constrain(PApplet.round((float) ((pt.y() * fy_rgb * invZ) + cy_rgb)) - 28, 0, 479);
+        pt.addSelf(-15.175022f, 7.699995f, 0);
 
-//        System.out.println((px - pxOrig) + " " + (py - pyOrig));
-//        
-        px = pxOrig ;
-        py = pyOrig ;
+//        pt.addSelf(0.025f * 100f, 0.00013f * 100f, -0.00218f * 100f);
 
-        return py * KinectCst.w + px;
+        // Reprojection 
+        float invZ = 1.0f / pt.z();
+
+        int px = PApplet.constrain(PApplet.round((pt.x() * invZ * fx_rgb) + cx_rgb), 0, w - 1);
+        int py = PApplet.constrain(PApplet.round((pt.y() * invZ * fy_rgb) + cy_rgb), 0, h - 1);
+
+//        px = KinectCst.w - 1 - px;
+//        py = KinectCst.h - 1 - py;
+
+        return (int) (py * KinectCst.w + px);
     }
+//    public static int WorldToColor(Vec3D pt) {
+//        final double fx_rgb = 5.2921508098293293e+02;
+//        final double fy_rgb = 5.2556393630057437e+02;
+//        final double cx_rgb = 3.2894272028759258e+02;
+//        final double cy_rgb = 2.6748068171871557e+02;
+//
+////        PVector v = new PVector(pt.x, pt.y, -pt.z);
+////        PVector v2 = transform2.mult(v, new PVector());
+////        
+////        Vec3D pt2 = transform.applyTo(ptOrig);
+//        Vec3D pt2 = transform3.applyTo(pt);
+//
+////        pt2 = pt2.add(1.9985242312092553e-02f, -7.4423738761617583e-04f, -1.0916736334336222e-02f);
+//
+////        System.out.println(pt2 + " " + pt3);
+//        double invZ = 1.0f / pt2.z();
+//        int px = PApplet.constrain(PApplet.round((float) ((pt2.x() * fx_rgb * invZ) + cx_rgb)), 0, 639);
+//        int py = PApplet.constrain(PApplet.round((float) ((pt2.y() * fy_rgb * invZ) + cy_rgb)), 0, 479);
+//
+//        double invZorig = 1.0f / pt.z();
+//        int pxOrig = PApplet.constrain(PApplet.round((float) ((pt.x() * fx_rgb * invZ) + cx_rgb)) - 10, 0, 639);
+//        int pyOrig = PApplet.constrain(PApplet.round((float) ((pt.y() * fy_rgb * invZ) + cy_rgb)) - 28, 0, 479);
+//
+//        px = pxOrig ;
+//        py = pyOrig ;
+//
+//        return py * KinectCst.w + px;
+//    }
 }

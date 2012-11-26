@@ -227,6 +227,11 @@ public class GLGraphics extends PGraphicsOpenGL implements GLConstants {
     gl.glMatrixMode(GL.GL_MODELVIEW);
   }
   
+  
+  public boolean isGL(){
+      return glMode;
+  }
+  
   /**
    * Prepares the renderer for drawing a new frame.
    */   

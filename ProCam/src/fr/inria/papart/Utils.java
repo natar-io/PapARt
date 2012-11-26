@@ -16,6 +16,8 @@ import java.awt.image.BufferedImage;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
 import processing.core.*;
 
 /**
@@ -154,9 +156,11 @@ public class Utils {
         assert (img.width() == ret.width);
         assert (img.height() == ret.height);
 //        BufferedImage bimg = new BufferedImage();
-        ByteBuffer buff = img.getByteBuffer();
 
         if (img.nChannels() == 3) {
+
+            ByteBuffer buff = img.getByteBuffer();
+
 
             //  PImage ret = new PImage(img.width(), img.height(), PApplet.RGB);
             ret.loadPixels();
@@ -185,21 +189,123 @@ public class Utils {
         } else {
             if (img.nChannels() == 1) {
 
-                for (int i = 0; i < img.width() * img.height(); i++) {
-                    ret.pixels[i] =
-                            (buff.get(i) & 0xFF) << 16
-                            | (buff.get(i) & 0xFF) << 8
-                            | (buff.get(i) & 0xFF);
+                // TODO: no more allocations. 
+                ByteBuffer buff = img.getByteBuffer();
+                byte[] arr = new byte[img.width() * img.height()];
+                buff.get(arr);
+
+                for (int i = 0; i < img.width() * img.height() ; i ++) {
+                    
+                    int d = (arr[i] & 0xFF);
+                    
+                    ret.pixels[i] = d;
+//                    ret.pixels[i] =
+//                            (buff.get(i) & 0xFF) << 16
+//                            | (buff.get(i) & 0xFF) << 8
+//                            | (buff.get(i) & 0xFF);
                 }
+                
+                
+                ////////////// Kinect Depth //////////////
+                //                // TODO: no more allocations. 
+//                ByteBuffer buff = img.getByteBuffer();
+//                byte[] arr = new byte[2 * img.width() * img.height()];
+//                buff.get(arr);
+//
+//                for (int i = 0; i < img.width() * img.height() * 2; i += 2) {
+//                    
+//                    int d = (arr[i] & 0xFF) << 8 
+//                            | (arr[i+1] & 0xFF);
+//                    
+//                    ret.pixels[i / 2] = d;
+////                    ret.pixels[i] =
+////                            (buff.get(i) & 0xFF) << 16
+////                            | (buff.get(i) & 0xFF) << 8
+////                            | (buff.get(i) & 0xFF);
+//                }
+                
             }
         }
+        
+        
 
-        buff = null;
+//        buff = null;
+        ret.updatePixels();
+    }
+    
+    
+    static public void IplImageToPImageKinect(IplImage img, boolean RGB, PImage ret) {
+
+        conversionCount++;
+        if (conversionCount % 30 == 0) {
+            System.gc();
+        }
+
+        assert (img.width() == ret.width);
+        assert (img.height() == ret.height);
+//        BufferedImage bimg = new BufferedImage();
+
+        if (img.nChannels() == 3) {
+
+            ByteBuffer buff = img.getByteBuffer();
+
+
+            //  PImage ret = new PImage(img.width(), img.height(), PApplet.RGB);
+            ret.loadPixels();
+            if (RGB) {
+                for (int i = 0; i < img.width() * img.height(); i++) {
+                    int offset = i * 3;
+//            ret.pixels[i] = applet.color(buff.get(offset + 0) & 0xff, buff.get(offset + 1) & 0xFF, buff.get(offset + 2) & 0xff);
+
+                    ret.pixels[i] = (buff.get(offset) & 0xFF) << 16
+                            | (buff.get(offset + 1) & 0xFF) << 8
+                            | (buff.get(offset + 2) & 0xFF);
+
+                }
+            } else {
+                for (int i = 0; i < img.width() * img.height(); i++) {
+                    int offset = i * 3;
+//            ret.pixels[i] = applet.color(buff.get(offset + 0) & 0xff, buff.get(offset + 1) & 0xFF, buff.get(offset + 2) & 0xff);
+
+                    ret.pixels[i] = (buff.get(offset + 2) & 0xFF) << 16
+                            | (buff.get(offset + 1) & 0xFF) << 8
+                            | (buff.get(offset) & 0xFF);
+
+                }
+
+            }
+        } else {
+            if (img.nChannels() == 1) {
+
+                ////////////// Kinect Depth //////////////
+                //                // TODO: no more allocations. 
+                ByteBuffer buff = img.getByteBuffer();
+                byte[] arr = new byte[2 * img.width() * img.height()];
+                buff.get(arr);
+
+                for (int i = 0; i < img.width() * img.height() * 2; i += 2) {
+                    
+                    int d = (arr[i] & 0xFF) << 8 
+                            | (arr[i+1] & 0xFF);
+                    
+                    ret.pixels[i / 2] = d;
+//                    ret.pixels[i] =
+//                            (buff.get(i) & 0xFF) << 16
+//                            | (buff.get(i) & 0xFF) << 8
+//                            | (buff.get(i) & 0xFF);
+                }
+                
+            }
+        }
+        
+        
+
+//        buff = null;
         ret.updatePixels();
     }
 
     /**
-     * 
+     *
      * Deprecated
      */
     static public void PImageToIplImage(IplImage img, PApplet applet, boolean RGB, PImage ret) {

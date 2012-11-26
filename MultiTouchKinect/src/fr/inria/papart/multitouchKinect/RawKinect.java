@@ -4,6 +4,12 @@
  */
 package fr.inria.papart.multitouchKinect;
 
+import com.googlecode.javacv.cpp.opencv_core;
+import com.googlecode.javacv.cpp.opencv_core.CvSize;
+import com.googlecode.javacv.cpp.opencv_core.IplImage;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import processing.core.PApplet;
 import processing.core.PConstants;
@@ -22,10 +28,17 @@ public class RawKinect {
     Vec3D[] kinectPoints;
     int[] colorPoints;
     boolean[] validPoints;
-    int[] depth;
     PImage colorImage;
-    PImage validPointsImage;
+    PImage validPointsPImage;
+    byte[] depthRaw;
+    byte[] colorRaw;
+    byte[] validPointsRaw;
+    IplImage validPointsIpl;
+    
+    public float closeThreshold = 300f, farThreshold = 800f;
 
+    // TODO: Too many allocations ?
+    // TODO: release all this sometime ?
     public RawKinect(PApplet parent) {
         this.parent = parent;
         KinectCst.initKinect();
@@ -33,49 +46,131 @@ public class RawKinect {
         colorPoints = new int[KinectCst.w * KinectCst.h];
         validPoints = new boolean[KinectCst.w * KinectCst.h];
 
-        validPointsImage = parent.createImage(KinectCst.w, KinectCst.h, PConstants.RGB);
+        validPointsPImage = parent.createImage(KinectCst.w, KinectCst.h, PConstants.RGB);
+
+
+        colorRaw = new byte[KinectCst.w * KinectCst.h * 3];
+        depthRaw = new byte[KinectCst.w * KinectCst.h * 2];
+
+        // TODO: look for faster methods ?
+        validPointsIpl = IplImage.create(new CvSize(KinectCst.w, KinectCst.h), opencv_core.IPL_DEPTH_8U, 3);
+        validPointsRaw = new byte[KinectCst.w * KinectCst.h * 3];
+
     }
 
-    public void update(int[] depth, PImage color) {
-        this.depth = depth;
-        this.colorImage = color;
+    // TODO: use Calibration files etc...
+    public PImage updateP(IplImage depth, IplImage color) {
 
-        compute3DPos();
-    }
+        ByteBuffer depthBuff = depth.getByteBuffer();
+        ByteBuffer colorBuff = color.getByteBuffer();
 
-    protected void compute3DPos() {
+        depthBuff.get(depthRaw);
+        colorBuff.get(colorRaw);
 
-        colorImage.loadPixels();
-        validPointsImage.loadPixels();
+        validPointsPImage.loadPixels();
 
-        for (int y = 0, i = 0; y < KinectCst.h; y++) {
+        int off = 0;
+        for (int y = 0; y < KinectCst.h; y++) {
             for (int x = 0; x < KinectCst.w; x++) {
-                int offset = (x + y * KinectCst.w);
 
-                boolean good = isGoodDepth(depth[x + y * KinectCst.w]);
+                int offset = off++;
+
+                int d = (depthRaw[offset * 2] & 0xFF) << 8
+                        | (depthRaw[offset * 2 + 1] & 0xFF);
+
+                boolean good = isGoodDepth(d);
                 validPoints[offset] = good;
 
-                if (good) {
-                    kinectPoints[offset] = KinectCst.depthToWorld(x, y, depth[offset]);
-                    colorPoints[offset] = KinectCst.WorldToColor(kinectPoints[offset]);
-                    validPointsImage.pixels[offset] = colorImage.pixels[colorPoints[offset]];
-                } else {
+                validPointsPImage.pixels[offset] = parent.color(0, 0, 255);
 
-                    validPointsImage.pixels[offset] = parent.color(0, 0, 255);
+                if (good) {
+                    kinectPoints[offset] = KinectCst.depthToWorld(x, y, d);
+                    colorPoints[offset] = KinectCst.WorldToColor(x, y, kinectPoints[offset]);
+
+                    int colorOffset = colorPoints[offset] * 3;
+                    int c = (colorRaw[colorOffset + 2] & 0xFF) << 16
+                            | (colorRaw[colorOffset + 1] & 0xFF) << 8
+                            | (colorRaw[colorOffset + 0] & 0xFF);
+
+                    validPointsPImage.pixels[offset] = c;
+                }
+
+            }
+        }
+
+        validPointsPImage.updatePixels();
+
+        return validPointsPImage;
+    }
+
+    public IplImage updateIpl(IplImage depth, IplImage color) {
+
+        ByteBuffer depthBuff = depth.getByteBuffer();
+        ByteBuffer colorBuff = color.getByteBuffer();
+
+        ByteBuffer outputBuff = validPointsIpl.getByteBuffer();
+
+        depthBuff.get(depthRaw);
+        outputBuff.get(validPointsRaw);
+        colorBuff.get(colorRaw);
+
+        int off = 0;
+        for (int y = 0; y < KinectCst.h; y++) {
+            for (int x = 0; x < KinectCst.w; x++) {
+
+                int offset = off++;
+                int outputOffset = offset * 3;
+                
+                int d = (depthRaw[offset * 2] & 0xFF) << 8
+                        | (depthRaw[offset * 2 + 1] & 0xFF);
+
+                boolean good = isGoodDepth(d);
+                validPoints[offset] = good;
+
+                validPointsPImage.pixels[offset] = parent.color(0, 0, 255);
+
+                if (good) {
+                    kinectPoints[offset] = KinectCst.depthToWorld(x, y, d);
+                    colorPoints[offset] = KinectCst.WorldToColor(x, y, kinectPoints[offset]);
+
+                    int colorOffset = colorPoints[offset] * 3;
+
+
+                    validPointsRaw[outputOffset + 2] = colorRaw[colorOffset + 2];
+                    validPointsRaw[outputOffset + 1] = colorRaw[colorOffset + 1];
+                    validPointsRaw[outputOffset + 0] = colorRaw[colorOffset + 0];
+
+                } else {
+                    validPointsRaw[outputOffset + 2] = 0;
+                    validPointsRaw[outputOffset + 1] = 0;
+                    validPointsRaw[outputOffset + 0] = 0;
+
                 }
             }
         }
 
-        validPointsImage.updatePixels();
+        outputBuff = (ByteBuffer) outputBuff.rewind();
+        outputBuff.put(validPointsRaw);
+
+        return validPointsIpl;
     }
 
     public PImage getDepthColor() {
-        return validPointsImage;
+        return validPointsPImage;
     }
 
+    public boolean[] getValidPoints() {
+        return validPoints;
+    }
+
+    public Vec3D[] getDepthPoints(){
+        return kinectPoints;
+    }
+    
+    // TODO: remove this !
     public PVector findCloseColor(int c1, float error) {
 
-        colorImage.loadPixels();
+//        colorImage.loadPixels();
 
         int meanX = 0;
         int meanY = 0;
@@ -88,7 +183,7 @@ public class RawKinect {
 
 //            int c2 = colorImage.pixels[(int) (colorPoints[i].y * KinectCst.w + colorPoints[i].x)];
 
-            int c2 = validPointsImage.pixels[i];
+            int c2 = validPointsPImage.pixels[i];
 //            parent.hue(c);
 //            Vec3D c2 = new Vec3D(
 //                    (colorProcessing >> 16 & 0xFF) / 255f,
@@ -96,13 +191,11 @@ public class RawKinect {
 //                    ((colorProcessing & 0xFF)) / 255f);
             float hueDiff = parent.abs(parent.hue(c1) - parent.hue(c2));
             float intensDiff = parent.abs(parent.brightness(c1) - parent.brightness(c2));
-             float saturationDiff = parent.abs(parent.saturation(c1) - parent.saturation(c2));
-            
-            
-            
+            float saturationDiff = parent.abs(parent.saturation(c1) - parent.saturation(c2));
+
             // Check the hue difference
             if (hueDiff + intensDiff + saturationDiff < error) {
-                System.out.println("Diffs: " +  hueDiff + " " + intensDiff + " "+ saturationDiff );
+                System.out.println("Diffs: " + hueDiff + " " + intensDiff + " " + saturationDiff);
                 int x = i % KinectCst.w;
                 int y = i / KinectCst.w;
                 meanX += x;
@@ -120,6 +213,6 @@ public class RawKinect {
 
 // TODO: better depth test... 
     private boolean isGoodDepth(int rawDepth) {
-        return (rawDepth >= 200 && rawDepth < 800);
+        return (rawDepth >= closeThreshold && rawDepth < farThreshold);
     }
 }

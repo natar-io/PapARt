@@ -67,7 +67,7 @@ public class PlaneSelection {
         setValid(false);
     }
 
-    void addPoint(Vec3D point) {
+    public void addPoint(Vec3D point) {
         if (currentPoint == 3) {
             KinectCst.pa.println("Enough points are selected, calculate the plane");
             return;
@@ -75,18 +75,20 @@ public class PlaneSelection {
         points[currentPoint++] = point;
     }
 
-    boolean computePlane() {
+    public boolean computePlane() {
         Triangle3D tri = new Triangle3D(points[0],
                 points[1],
                 points[2]);
         plane = new Plane(tri);
+        
+        // TODO: check that !
         Vec3D bigPlanePos = new Vec3D(plane.x * 100, plane.y * 100, plane.z * 100);
         bigPlane = new Plane(bigPlanePos, plane.normal);
         setValid(true);
         return true;
     }
 
-    Plane computePlaneOver(float distance) {
+    public Plane computePlaneOver(float distance) {
         planeOver = new Plane(plane, plane.normal);
         planeOver.x += distance * plane.normal.x;
         planeOver.y += distance * plane.normal.y;
@@ -94,11 +96,11 @@ public class PlaneSelection {
         return planeOver;
     }
 
-    boolean orientation(Vec3D point, float value) {
+    public boolean orientation(Vec3D point, float value) {
         return plane.classifyPoint(point, 0.05f) == Plane.Classifier.BACK;
     }
 
-    boolean orientation(Vec3D p) {
+    public boolean orientation(Vec3D p) {
         float d = plane.sub(p).dot(plane.normal);
         if (d < -MathUtils.EPS) {
             return false;
@@ -108,17 +110,17 @@ public class PlaneSelection {
         return true; //ON_PLANE;
     }
 
-    float distanceTo(Vec3D point) {
+    public float distanceTo(Vec3D point) {
         return plane.getDistanceToPoint(point);
     }
 
-    void moveUpDown(float value) {
+    public void moveUpDown(float value) {
         plane.x = plane.x + value * plane.normal.x;
         plane.y = plane.y + value * plane.normal.y;
         plane.z = plane.z + value * plane.normal.z;
     }
 
-    void savePlane() {
+    public void savePlane(String filename) {
         String[] lines = new String[8];
         lines[0] = "" + plane.x;
         lines[1] = "" + plane.y;
@@ -132,7 +134,7 @@ public class PlaneSelection {
         KinectCst.pa.println("Plane successfully saved");
     }
 
-    private void loadPlane() {
+    public void loadPlane() {
         String[] lines = KinectCst.pa.loadStrings(filename);
         Vec3D pos = new Vec3D(Float.parseFloat(lines[0]), Float.parseFloat(lines[1]), Float.parseFloat(lines[2]));
         Vec3D norm = new Vec3D(Float.parseFloat(lines[3]), Float.parseFloat(lines[4]), Float.parseFloat(lines[5]));
@@ -148,7 +150,7 @@ public class PlaneSelection {
         this.valid = valid;
     }
 
-    boolean isValid() {
+    public boolean isValid() {
         return valid;
     }
     static int nbPlanes = 0;
