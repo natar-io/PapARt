@@ -236,7 +236,7 @@ public class Homography {
     }
 
     private void load(String filename) throws FileNotFoundException {
-        String[] lines = MyApplet.get().loadStrings(filename);
+        String[] lines = KinectCst.get().loadStrings(filename);
         if (lines == null) {
             throw new FileNotFoundException(filename);
         }

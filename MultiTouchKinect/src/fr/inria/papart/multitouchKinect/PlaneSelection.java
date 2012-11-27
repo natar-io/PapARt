@@ -55,7 +55,7 @@ public class PlaneSelection {
         planeHeight = Float.parseFloat(height.getContent());
 
         plane = new Plane(pos, norm);
-        MyApplet.pa.println("Plane successfully loaded");
+        KinectCst.pa.println("Plane successfully loaded");
         setValid(true);
     }
 
@@ -69,7 +69,7 @@ public class PlaneSelection {
 
     void addPoint(Vec3D point) {
         if (currentPoint == 3) {
-            MyApplet.pa.println("Enough points are selected, calculate the plane");
+            KinectCst.pa.println("Enough points are selected, calculate the plane");
             return;
         }
         points[currentPoint++] = point;
@@ -128,19 +128,19 @@ public class PlaneSelection {
         lines[5] = "" + plane.normal.z;
         lines[6] = "" + planeHeight;
         lines[7] = "" + planeSpeed;
-        MyApplet.pa.saveStrings(filename, lines);
-        MyApplet.pa.println("Plane successfully saved");
+        KinectCst.pa.saveStrings(filename, lines);
+        KinectCst.pa.println("Plane successfully saved");
     }
 
     private void loadPlane() {
-        String[] lines = MyApplet.pa.loadStrings(filename);
+        String[] lines = KinectCst.pa.loadStrings(filename);
         Vec3D pos = new Vec3D(Float.parseFloat(lines[0]), Float.parseFloat(lines[1]), Float.parseFloat(lines[2]));
         Vec3D norm = new Vec3D(Float.parseFloat(lines[3]), Float.parseFloat(lines[4]), Float.parseFloat(lines[5]));
         planeHeight = 0.05f * Float.parseFloat(lines[6]);
         planeSpeed = Float.parseFloat(lines[7]);
 
         plane = new Plane(pos, norm);
-        MyApplet.pa.println("Plane successfully loaded");
+        KinectCst.pa.println("Plane successfully loaded");
         setValid(true);
     }
 
