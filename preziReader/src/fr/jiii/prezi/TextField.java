@@ -18,9 +18,9 @@ import processing.core.PGraphics;
  *
  * @author jiii
  */
-public class TextField implements Drawable {
+public class TextField extends PreziObject {
 
-    private float x, y;
+    private float tx, ty;
     private String text = null;
     private String annotations = null;
 
@@ -36,10 +36,10 @@ public class TextField implements Drawable {
                 Element e = (Element) nNode;
                 if (e.getTagName().equalsIgnoreCase("x")) {
 
-                    x = Float.parseFloat(e.getChildNodes().item(0).getNodeValue());
+                    tx = Float.parseFloat(e.getChildNodes().item(0).getNodeValue());
                 }
                 if (e.getTagName().equalsIgnoreCase("y")) {
-                    y = Float.parseFloat(e.getChildNodes().item(0).getNodeValue());
+                    ty = Float.parseFloat(e.getChildNodes().item(0).getNodeValue());
                 }
                 if (e.getTagName().equalsIgnoreCase("text")) {
                     text = e.getChildNodes().item(0).getNodeValue();
@@ -54,11 +54,17 @@ public class TextField implements Drawable {
             }
         }
 
-        System.out.println("TextField loaded " + x + " " + y);
+        System.out.println("TextField loaded " + tx + " " + ty);
     }
 
     @Override
     public void drawSelf(PGraphics graphics) {
-        throw new UnsupportedOperationException("Not supported yet.");
+
+        if (text != null) {
+         // TODO: check textfont 
+            
+            graphics.text(text, x, y);
+        }
+
     }
 }

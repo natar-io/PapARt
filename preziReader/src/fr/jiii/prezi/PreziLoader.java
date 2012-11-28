@@ -23,9 +23,9 @@ public class PreziLoader {
     static final String fileName = "/content.xml";
     static final String dataFolder = "/prezi/repo";
     
-    public PreziLoader(PApplet parent, String file) {
+    public static Prezi loadPrezi(PApplet pa, String file) {
 
-        this.parent = parent;
+        parent = pa;
         
         try {
 
@@ -36,10 +36,12 @@ public class PreziLoader {
             doc.getDocumentElement().normalize();
             
             Prezi prezi = new Prezi(doc);
+            return prezi;
             
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+        
+        return null;
     }
 }

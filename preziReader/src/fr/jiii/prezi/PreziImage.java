@@ -19,14 +19,15 @@ import processing.core.PImage;
  *
  * @author jiii
  */
-public class PreziImage implements Drawable {
+public class PreziImage extends PreziObject {
 
     private float w, h;
     private String name;
     PImage image;
 
     public PreziImage(Element elem) {
-
+        super(elem);
+        
         NodeList children = elem.getChildNodes();
 
         for (int i = 0; i < children.getLength(); i++) {
@@ -72,7 +73,7 @@ public class PreziImage implements Drawable {
     @Override
     public void drawSelf(PGraphics graphics) {
         
+        graphics.image(image, x, y, w, h);
         
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

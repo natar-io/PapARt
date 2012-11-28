@@ -18,9 +18,9 @@ import processing.core.PGraphics;
  *
  * @author jiii
  */
-public class Shape implements Drawable {
+public class Shape extends PreziObject {
 
-    float width, height;
+    float w, h;
     String shapeType;
 
     public Shape(Element elem, String type) {
@@ -43,10 +43,10 @@ public class Shape implements Drawable {
                             Element e2 = (Element) nNode2;
                             
                             if (e2.getTagName().equalsIgnoreCase("w")) {
-                                width = Float.parseFloat(e2.getChildNodes().item(0).getNodeValue());
+                                w = Float.parseFloat(e2.getChildNodes().item(0).getNodeValue());
                             }
                             if (e2.getTagName().equalsIgnoreCase("h")) {
-                                height = Float.parseFloat(e2.getChildNodes().item(0).getNodeValue());
+                                h = Float.parseFloat(e2.getChildNodes().item(0).getNodeValue());
                             }
                         }
                     }
@@ -55,7 +55,7 @@ public class Shape implements Drawable {
             }
         }
 
-        System.out.println("Shape " + shapeType + " " + width + " " + height);
+        System.out.println("Shape " + shapeType + " " + w + " " + h);
     }
 
     @Override

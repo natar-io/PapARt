@@ -12,13 +12,16 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
 import java.io.File;
+import processing.core.PFont;
+import processing.core.PGraphics;
 
 /**
  *
  * @author jiii
  */
-public class Prezi {
+public class Prezi implements Drawable {
 
+    PFont font1, font2, font3;
     int version;
     HashMap<Integer, PreziObject> objects;
     // path 
@@ -27,7 +30,7 @@ public class Prezi {
     // config
     float x, y, width, height;
     
-    public Prezi(Document doc) {
+    public Prezi(Document doc)  {
 
         objects = new HashMap<Integer, PreziObject>();
         NodeList zuiTable = doc.getElementsByTagName("zui-table");
@@ -39,6 +42,15 @@ public class Prezi {
         
     }
 
+    public void initDraw(PGraphics graphics){
+        
+        font1 = PreziLoader.parent.loadFont("AndaleMono-48.vlw");
+        font2 = PreziLoader.parent.loadFont("AndaleMono-48.vlw");
+        font3 = PreziLoader.parent.loadFont("AndaleMono-48.vlw");
+
+        graphics.textFont(font1);
+    }
+    
     private void parseObjects(NodeList objects) {
 
         for (int i = 0; i < objects.getLength(); i++) {
@@ -88,5 +100,14 @@ public class Prezi {
 
             }
         }
+    }
+
+    @Override
+    public void drawSelf(PGraphics graphics) {
+        
+        for(PreziObject o : objects.values()){
+            o.drawSelf(graphics);
+        }
+        
     }
 }

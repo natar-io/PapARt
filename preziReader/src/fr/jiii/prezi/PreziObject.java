@@ -23,48 +23,27 @@ import sun.security.krb5.internal.APOptions;
 public class PreziObject implements Drawable {
 
     // TODO: create types...
-    
-    private int id;
-    private int parentId;
-    private String label;
-    private float x, y;
-    private float r, s;
-    private String className;
-    private String type;
-    private TextField textField = null;
-    private PreziImage image = null;
-    private Shape shape = null;
+    protected int id;
+    protected int parentId;
+    protected String label;
+    protected float x, y;
+    protected float r, s;
+    protected String className;
+    protected String type;
 
-    public PreziObject(Element elem) {
+    static public PreziObject loadObject(Element elem) {
 
-//        t id="2" type="button" x="603.4" y="711.1" r="0" s="4.0081787109375" class="bracket">
-//        this.id = Integer.parseInt(elem.getAttribute("id"));
-        parseId(elem.getAttribute("id"));
-        this.label = elem.getAttribute("label");
-        this.x = Float.parseFloat(elem.getAttribute("x"));
-        this.y = Float.parseFloat(elem.getAttribute("y"));
-        this.r = Float.parseFloat(elem.getAttribute("r"));
-        this.s = Float.parseFloat(elem.getAttribute("s"));
-        this.type = elem.getAttribute("type");
-        this.className = elem.getAttribute("class");
-
-        System.out.println("Object loaded: " + id + " " + x + " " + y);
-
+        String type = elem.getAttribute("type");
+        String className = elem.getAttribute("class");
 
         if (type != null && type.equalsIgnoreCase("image")) {
-
-            image = new PreziImage(elem);
-//      <source w="599" h="450">88496915.jpe<url>88496915.jpe</url>
-//      </source>       
+            return new PreziImage(elem);
         }
 
-
-
-
         ///////////////// TextField /////////////////
-        
+
         // check if it is 
-        // textfield, .... 
+        // textfield,  type ?
         NodeList children = elem.getChildNodes();
 
         for (int i = 0; i < children.getLength(); i++) {
@@ -74,22 +53,41 @@ public class PreziObject implements Drawable {
 
                 Element e = (Element) nNode;
                 if (e.getTagName().equalsIgnoreCase("textfield")) {
-                    textField = new TextField(e);
+                    return new TextField(e);
                 }
 
                 if (e.getTagName().equalsIgnoreCase("type")) {
-                    
+
                     String shapeType = e.getChildNodes().item(0).getNodeValue();
-                    
-                    shape = new Shape(elem, shapeType);
+
+                    return new Shape(elem, shapeType);
                 }
 
             }
         }
-
+        
+        return null;
     }
 
-    public void parseId(String id) {
+    public PreziObject(){}
+
+    public PreziObject(Element elem) {
+        loadParameters(elem);
+
+    }
+    
+    protected void loadParameters(Element elem) {
+        parseId(elem.getAttribute("id"));
+        this.label = elem.getAttribute("label");
+        this.x = Float.parseFloat(elem.getAttribute("x"));
+        this.y = Float.parseFloat(elem.getAttribute("y"));
+        this.r = Float.parseFloat(elem.getAttribute("r"));
+        this.s = Float.parseFloat(elem.getAttribute("s"));
+        this.type = elem.getAttribute("type");
+        this.className = elem.getAttribute("class");
+    }
+    
+    protected void parseId(String id) {
 
         String[] parts = id.split("_");
         if (parts.length == 2) {
@@ -107,6 +105,10 @@ public class PreziObject implements Drawable {
 
     @Override
     public void drawSelf(PGraphics graphics) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        
+        // 
+        graphics.rect(x, y, 200, 200);
+        
+        
     }
 }
