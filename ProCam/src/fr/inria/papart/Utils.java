@@ -141,6 +141,29 @@ public class Utils {
 //                getFillColor());
     }
 
+    static public int getColor(IplImage img, int x, int y, boolean RGB) {
+
+        if (img.nChannels() == 3) {
+
+            ByteBuffer buff = img.getByteBuffer();
+            int offset = (img.width() * y + x) * 3;
+
+            if (RGB) {
+
+                return (buff.get(offset) & 0xFF) << 16
+                        | (buff.get(offset + 1) & 0xFF) << 8
+                        | (buff.get(offset + 2) & 0xFF);
+            } else {
+                return (buff.get(offset + 2) & 0xFF) << 16
+                        | (buff.get(offset + 1) & 0xFF) << 8
+                        | (buff.get(offset) & 0xFF);
+            }
+        }
+
+        // Operation not supported
+        return 0;
+    }
+
     static public void IplImageToPImage(IplImage img, PApplet applet, boolean RGB, PImage ret) {
         IplImageToPImage(img, RGB, ret);
     }
@@ -194,18 +217,18 @@ public class Utils {
                 byte[] arr = new byte[img.width() * img.height()];
                 buff.get(arr);
 
-                for (int i = 0; i < img.width() * img.height() ; i ++) {
-                    
+                for (int i = 0; i < img.width() * img.height(); i++) {
+
                     int d = (arr[i] & 0xFF);
-                    
+
                     ret.pixels[i] = d;
 //                    ret.pixels[i] =
 //                            (buff.get(i) & 0xFF) << 16
 //                            | (buff.get(i) & 0xFF) << 8
 //                            | (buff.get(i) & 0xFF);
                 }
-                
-                
+
+
                 ////////////// Kinect Depth //////////////
                 //                // TODO: no more allocations. 
 //                ByteBuffer buff = img.getByteBuffer();
@@ -223,17 +246,16 @@ public class Utils {
 ////                            | (buff.get(i) & 0xFF) << 8
 ////                            | (buff.get(i) & 0xFF);
 //                }
-                
+
             }
         }
-        
-        
+
+
 
 //        buff = null;
         ret.updatePixels();
     }
-    
-    
+
     static public void IplImageToPImageKinect(IplImage img, boolean RGB, PImage ret) {
 
         conversionCount++;
@@ -284,21 +306,21 @@ public class Utils {
                 buff.get(arr);
 
                 for (int i = 0; i < img.width() * img.height() * 2; i += 2) {
-                    
-                    int d = (arr[i] & 0xFF) << 8 
-                            | (arr[i+1] & 0xFF);
-                    
+
+                    int d = (arr[i] & 0xFF) << 8
+                            | (arr[i + 1] & 0xFF);
+
                     ret.pixels[i / 2] = d;
 //                    ret.pixels[i] =
 //                            (buff.get(i) & 0xFF) << 16
 //                            | (buff.get(i) & 0xFF) << 8
 //                            | (buff.get(i) & 0xFF);
                 }
-                
+
             }
         }
-        
-        
+
+
 
 //        buff = null;
         ret.updatePixels();

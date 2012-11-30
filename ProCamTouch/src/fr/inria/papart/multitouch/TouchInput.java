@@ -1,9 +1,11 @@
 package fr.inria.papart.multitouch;
 
+import com.googlecode.javacv.cpp.opencv_core.IplImage;
 import fr.inria.papart.multitouchKinect.MultiTouchKinect;
 import fr.inria.papart.multitouchKinect.TouchPoint;
 import fr.inria.papart.Projector;
 import fr.inria.papart.Screen;
+import fr.inria.papart.kinect.Kinect;
 import java.util.ArrayList;
 import processing.core.PApplet;
 import processing.core.PVector;
@@ -23,23 +25,25 @@ public class TouchInput {
     private int touch2DPrecision, touch3DPrecision;
     private MultiTouchKinect mtk;
     private float touchHeight;
+    private Kinect kinect;
 
-    public TouchInput(PApplet applet, String calibrationFile) {
-        this(applet, calibrationFile, 1, 8);
+    public TouchInput(PApplet applet, String calibrationFile, Kinect kinect) {
+        this(applet, calibrationFile, kinect, 1, 8);
         // TODO: use XML calibration file.
     }
 
-    public TouchInput(PApplet applet, String calibrationFile, int precision2D, int precision3D) {
-        mtk = new MultiTouchKinect(applet, calibrationFile);
+    public TouchInput(PApplet applet, String calibrationFile, Kinect kinect, int precision2D, int precision3D) {
+        mtk = new MultiTouchKinect(applet, kinect, calibrationFile);
         this.touch2DPrecision = precision2D;
         this.touch3DPrecision = precision3D;
         touchPoints2D = mtk.getTouchPoint2D();
         touchPoints3D = mtk.getTouchPoint3D();
     }
 
-    public void startTouch(int[] depth, float touchHeight) {
+    public void startTouch(IplImage depthImage, float touchHeight) {
         this.touchHeight = touchHeight;
-        mtk.updateKinect(depth);
+        
+        mtk.updateKinect(depthImage, touch2DPrecision);
 
         // This updates the values of touchPoints2D and touchPoints3D
         mtk.find2DTouch(touch2DPrecision);
