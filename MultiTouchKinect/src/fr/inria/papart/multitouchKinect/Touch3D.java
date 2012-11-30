@@ -4,6 +4,8 @@
  */
 package fr.inria.papart.multitouchKinect;
 
+import fr.inria.papart.kinect.KinectCst;
+import fr.inria.papart.kinect.KinectScreenCalibration;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -12,7 +14,6 @@ import processing.core.PApplet;
 import toxi.geom.Matrix4x4;
 import toxi.geom.Plane;
 import toxi.geom.Vec3D;
-import fr.inria.papart.multitouchKinect.Util;
 
 /**
  *
@@ -23,7 +24,7 @@ public class Touch3D {
     public static ArrayList<Integer> findNeighbours3D(int currentPoint, int halfNeigh,
             ArrayList<Integer> validPoints,
             Vec3D points[], Vec3D[] projPoints,
-            int[] depth, boolean[] isValidPoints,
+            boolean[] isValidPoints,
             boolean[] readPoints,
             Set<Integer> toVisit, int skip) {
 
@@ -52,7 +53,7 @@ public class Touch3D {
                         readPoints[offset] || // already parsed point
                         !isValidPoints[offset]
                         || projPoints[offset] == null
-                        || !Util.isInside(projPoints[offset], 0.f, 1.f))) {
+                        || !Touch.isInside(projPoints[offset], 0.f, 1.f))) {
 
                     readPoints[offset] = true;
                     ret.add((Integer) offset);
@@ -75,8 +76,7 @@ public class Touch3D {
     }
 
     public static ArrayList<ArrayList<Integer>> allNeighbourhood3D(ArrayList<Integer> validPoints,
-            Vec3D points[], Vec3D projPoints[],
-            int[] depth, boolean[] isValidPoints, int skip) {
+            Vec3D points[], Vec3D projPoints[], boolean[] isValidPoints, int skip) {
 
         if (validPoints == null || validPoints.isEmpty()) {
             return null;
@@ -97,12 +97,12 @@ public class Touch3D {
             if (!readPoints[v]) {
 
                 ArrayList<Integer> n1 = findNeighbours3D(v, searchDepth, validPoints,
-                        points, projPoints, depth, isValidPoints, readPoints, toVisit, skip);
+                        points, projPoints, isValidPoints, readPoints, toVisit, skip);
 
                 while (toVisit.size() > 0) {
                     int visiting = toVisit.iterator().next();
                     n1.addAll(findNeighbours3D(visiting, searchDepth2, validPoints,
-                            points, projPoints, depth, isValidPoints, readPoints, toVisit, skip));
+                            points, projPoints, isValidPoints, readPoints, toVisit, skip));
                 }
 
                 if (n1.isEmpty()) {
@@ -116,27 +116,19 @@ public class Touch3D {
     }
 
     public static ArrayList<TouchPoint> find3D(ArrayList<Integer> validPoints,
-            Vec3D[] points, Vec3D[] projPoints,
-            int[] depth, boolean[] isValidPoints,
-            Plane plane,
-            Matrix4x4 homographyTransform,
-            PlaneSelection planeSelection, int skip) {
-       
+            Vec3D[] points, Vec3D[] projPoints, boolean[] isValidPoints,
+            KinectScreenCalibration calibration, int skip) {
+
         return find3D(validPoints,
-                points, projPoints,
-                depth, isValidPoints,
-                plane,
-                homographyTransform,
-                planeSelection, skip,
+                points, projPoints, isValidPoints,
+                calibration, skip,
                 1);
     }
 
     public static ArrayList<TouchPoint> find3D(ArrayList<Integer> validPoints,
             Vec3D[] points, Vec3D[] projPoints,
-            int[] depth, boolean[] isValidPoints,
-            Plane plane,
-            Matrix4x4 homographyTransform,
-            PlaneSelection planeSelection, int skip,
+            boolean[] isValidPoints,
+            KinectScreenCalibration calibration, int skip,
             float height3D) {
 
         if (validPoints == null || validPoints.isEmpty()) {
@@ -144,8 +136,7 @@ public class Touch3D {
         }
 
         ArrayList<ArrayList<Integer>> allNeighbourhood = allNeighbourhood3D(validPoints,
-                points, projPoints,
-                depth, isValidPoints, skip);
+                points, projPoints, isValidPoints, skip);
 
         ArrayList<TouchPoint> allTouchPoints = new ArrayList<TouchPoint>();
 
@@ -154,7 +145,7 @@ public class Touch3D {
 
 //        ClosestComparator cc = new ClosestComparator(projPoints);
 //        ClosestComparatorY cch = new ClosestComparatorY(projPoints);
-        ClosestComparatorHeight cch = new ClosestComparatorHeight(points,planeSelection);
+        ClosestComparatorHeight cch = new ClosestComparatorHeight(points, calibration);
 
         // remove too small elements
         for (ArrayList<Integer> vint : allNeighbourhood) {
@@ -187,7 +178,8 @@ public class Touch3D {
             mean2.scaleSelf(1.0f / k);
 
             tp.v = mean;
-            tp.v.z = planeSelection.distanceTo(mean2) / height3D;
+            tp.v.z = calibration.plane().distanceTo(mean2) / height3D;
+//            tp.v.z = planeSelection.distanceTo(mean2) / height3D;
             tp.vKinect = mean2;
             //      tp.isCloseToPlane = planeSelection.distanceTo(mean) < 0.1 ;
             //      println("distance : " +  planeSelection.distanceTo(mean));

@@ -4,6 +4,8 @@
  */
 package fr.inria.papart.multitouchKinect;
 
+import com.googlecode.javacv.cpp.opencv_core.IplImage;
+import fr.inria.papart.kinect.*;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,87 +20,50 @@ import toxi.geom.Vec3D;
  * @author jeremy
  */
 public class MultiTouchKinect {
-//TODO:  near dist and forget time ! as public or modifiable
 
-    static final float trackNearDist = 0.20f;
-    static final int forgetTime = 100;
+    static public final float trackNearDist = 0.20f;
+    static public final int forgetTime = 100;
     PApplet applet;
     Vec3D[] kinectPoints;
     Vec3D[] projPoints;
-    KinectVisu kinectVisu;
-    PlaneSelection planeSelection;
-    boolean[] backgroundValidPoints;
     boolean[] validPoints;
+    byte[] validPoints2;
     int[] depth;
+    int currentPrecision = 1;
 //    float[] depthf;
-    Homography homography;
-    Matrix4x4 transform;
-    int previousTime;
-    int backgroundDeletionTime;
     ArrayList<TouchPoint> touchPoint2D = new ArrayList<TouchPoint>();
     ArrayList<TouchPoint> touchPoint3D = new ArrayList<TouchPoint>();
+    private KinectScreenCalibration kinectCalibration;
+    private Kinect kinect;
+    private ArrayList<Integer> goodPointOffsets = null;
 
-    public MultiTouchKinect(PApplet applet, String planeFile, String planeParametersfilename, String homographyFilename) {
+    public MultiTouchKinect(PApplet applet, Kinect kinect, String configurationFile) {
 
+        this.kinect = kinect;
         KinectCst.init(applet);
-        KinectCst.initKinect();
         this.applet = applet;
 
-        backgroundValidPoints = new boolean[KinectCst.w * KinectCst.h];
-        validPoints = new boolean[KinectCst.w * KinectCst.h];
+        validPoints = kinect.getValidPoints();
+        kinectPoints = kinect.getDepthPoints();
 
-        // TODO: memory occupation of Vec3D ? 
-        kinectPoints = new Vec3D[KinectCst.w * KinectCst.h];
-        projPoints = new Vec3D[KinectCst.w * KinectCst.h];
+        // Not sure if used in the next versions... 
+        validPoints2 = new byte[KinectCst.size];
+        projPoints = new Vec3D[KinectCst.size];
 
-        for (int k = 0; k < KinectCst.w * KinectCst.h; k++) {
-            backgroundValidPoints[k] = true;
-        }
-//        depthf = new float[MyApplet.w * MyApplet.h];
+//        this.pointCloud = new PointCloudKinect(applet, kinect);
 
-        planeSelection = new PlaneSelection(planeFile);
-        kinectVisu = new KinectVisu(planeParametersfilename);
-
-        // Kinect homography calibration
         try {
-            homography = new Homography(homographyFilename);
+            kinectCalibration = new KinectScreenCalibration(applet, configurationFile);
+
+            System.out.println("Calibration loaded : " + kinectCalibration.plane());
         } catch (FileNotFoundException e) {
-            System.out.println("Homography file " + homographyFilename + " not found : " + e);
-            applet.die("Homography file not found");
-        } catch (NullPointerException e) {
-            applet.die("Null pointer Exception " + e);
+            System.out.println("Calibration file error :" + configurationFile + " \n" + e);
         }
-        transform = homography.getTransformation();
+
     }
 
-    public MultiTouchKinect(PApplet applet, String configurationFile) {
-
-        KinectCst.init(applet);
-        KinectCst.initKinect();
-        this.applet = applet;
-
-        backgroundValidPoints = new boolean[KinectCst.w * KinectCst.h];
-        validPoints = new boolean[KinectCst.w * KinectCst.h];
-
-        // TODO: memory occupation of Vec3D ? 
-        kinectPoints = new Vec3D[KinectCst.w * KinectCst.h];
-        projPoints = new Vec3D[KinectCst.w * KinectCst.h];
-
-        for (int k = 0; k < KinectCst.w * KinectCst.h; k++) {
-            backgroundValidPoints[k] = true;
-        }
-
-        //TODO: error handling
-//        XMLElement root = new XMLElement(applet, configurationFile);
-
-        XMLElement configuration = new XMLElement(applet, configurationFile);
-        // Same ???
-        XMLElement calibration = configuration.getChild("Calibration");
-        planeSelection = new PlaneSelection(calibration.getChild("Plane"));
-        homography = new Homography(calibration.getChild("Homography"));
-        kinectVisu = new KinectVisu(calibration.getChild("PlaneParameters"));
-
-        transform = homography.getTransformation();
+    public KinectScreenCalibration getCalibration() {
+        return this.kinectCalibration;
     }
 
     public ArrayList<TouchPoint> getTouchPoint2D() {
@@ -109,27 +74,9 @@ public class MultiTouchKinect {
         return touchPoint3D;
     }
 
-    public void updateKinect(int[] depth) {
-        this.depth = depth;
-
-        if (kinectVisu.isDeletingBackground) {
-            if ((applet.millis() - previousTime) > backgroundDeletionTime) {
-                kinectVisu.isDeletingBackground = false;
-                kinectVisu.isBackgroundDeleted = true;
-                applet.println("Background deleted");
-            }
-        }
-
-        for (int k = 0; k < KinectCst.w * KinectCst.h; k++) {
-            projPoints[k] = null;
-        }
-
-    }
-
-    public void deleteBackground(int duration) {
-        backgroundDeletionTime = duration;
-        kinectVisu.isDeletingBackground = true;
-        previousTime = applet.millis();
+    public void updateKinect(IplImage depthImage, int skip) {
+        currentPrecision = skip;
+        goodPointOffsets = kinect.updateMT(depthImage, kinectCalibration, validPoints2, projPoints, skip);
     }
 
     public Vec3D[] getKinectPoints() {
@@ -140,11 +87,6 @@ public class MultiTouchKinect {
         return projPoints;
     }
 
-    public Vec3D findHead() {
-
-        return new Vec3D();
-    }
-
     // Raw versions of the algorithm are providing each points at each time. 
     // no uptades, no tracking. 
     public ArrayList<TouchPoint> find2DTouchRaw() {
@@ -153,11 +95,8 @@ public class MultiTouchKinect {
 
     public ArrayList<TouchPoint> find2DTouchRaw(int skip) {
         assert (skip > 0);
-        kinectVisu.kinectVisuSkip = skip;
-        ArrayList<Integer> imgVec = kinectVisu.view(validPoints, kinectPoints, projPoints,
-                depth, planeSelection, planeSelection.planeHeight, true, transform);
 
-        return Touch.findMultiTouch(imgVec, kinectPoints, projPoints, depth, validPoints, planeSelection, transform, skip);
+        return Touch.findMultiTouch(goodPointOffsets, kinectPoints, projPoints, validPoints, kinectCalibration, skip);
     }
 
     public ArrayList<TouchPoint> find2DTouch() {
@@ -165,14 +104,10 @@ public class MultiTouchKinect {
     }
 
     public ArrayList<TouchPoint> find2DTouch(int skip) {
-        
+
         assert (skip > 0);
-        kinectVisu.kinectVisuSkip = skip;
-        ArrayList<Integer> imgVec = kinectVisu.view(validPoints, kinectPoints, projPoints,
-                depth, planeSelection, planeSelection.planeHeight, true, transform);
 
-        ArrayList<TouchPoint> touchPoints = Touch.findMultiTouch(imgVec, kinectPoints, projPoints, depth, validPoints, planeSelection, transform, skip);
-
+        ArrayList<TouchPoint> touchPoints = Touch.findMultiTouch(goodPointOffsets, kinectPoints, projPoints, validPoints, kinectCalibration, skip);
 
         if (touchPoints == null) {
             return null;
@@ -186,7 +121,7 @@ public class MultiTouchKinect {
             }
             return touchPoints;
         }
-           
+
         // many previous points, try to find correspondances.
         ArrayList<TouchPointTracker> tpt = new ArrayList<TouchPointTracker>();
         for (TouchPoint tpNew : touchPoints) {
@@ -285,12 +220,8 @@ public class MultiTouchKinect {
 
     public ArrayList<TouchPoint> find3DTouchRaw(int skip, float height3D) {
         assert (skip > 0);
-        kinectVisu.kinectVisuSkip = skip;
-        ArrayList<Integer> imgVec2 = kinectVisu.view(validPoints, kinectPoints, projPoints,
-                depth, planeSelection, height3D,
-                false, transform);
-        return Touch3D.find3D(imgVec2, kinectPoints, projPoints, depth,
-                validPoints, planeSelection.plane, transform, planeSelection, skip, height3D);
+
+        return Touch3D.find3D(goodPointOffsets, kinectPoints, projPoints, validPoints, kinectCalibration, skip);
     }
 
     public ArrayList<TouchPoint> find3DTouch(float height3D) {
@@ -299,14 +230,9 @@ public class MultiTouchKinect {
 
     public ArrayList<TouchPoint> find3DTouch(int skip, float height3D) {
         assert (skip > 0);
-        kinectVisu.kinectVisuSkip = skip;
-        ArrayList<Integer> imgVec2 = kinectVisu.view(validPoints, kinectPoints, projPoints,
-                depth, planeSelection, height3D,
-                false, transform);
 
         ArrayList<TouchPoint> touchPoints =
-                Touch3D.find3D(imgVec2, kinectPoints, projPoints, depth,
-                validPoints, planeSelection.plane, transform, planeSelection, skip, height3D);
+                Touch3D.find3D(goodPointOffsets, kinectPoints, projPoints, validPoints, kinectCalibration, skip, height3D);
 
         if (touchPoints == null) {
             return null;
