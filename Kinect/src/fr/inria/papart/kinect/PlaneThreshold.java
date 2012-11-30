@@ -4,6 +4,7 @@
  */
 package fr.inria.papart.kinect;
 
+import java.net.NoRouteToHostException;
 import processing.xml.XMLElement;
 import toxi.geom.Plane;
 import toxi.geom.Triangle3D;
@@ -16,13 +17,12 @@ import toxi.math.MathUtils;
  */
 public class PlaneThreshold {
 
-    float planeHeight = 1.00f;
+    protected float planeHeight = 25.00f;
     int currentPoint;
-    Plane plane;
+    protected Plane plane;
     Plane bigPlane;
     Plane planeOver;
-    Vec3D[] points;
-    boolean valid = false;
+    protected Vec3D[] points;
 
     public PlaneThreshold(String fileName) {
         loadPlane(fileName);
@@ -30,6 +30,11 @@ public class PlaneThreshold {
 
     public PlaneThreshold() {
         init();
+    }
+
+    public PlaneThreshold(Vec3D pos, Vec3D normal, float height) {
+        plane = new Plane(pos, normal);
+        this.planeHeight = height;
     }
 
 //    public PlaneThreshold(XMLElement planeXML) {
@@ -54,14 +59,12 @@ public class PlaneThreshold {
 //        KinectCst.pa.println("Plane successfully loaded");
 //        setValid(true);
 //    }
-
     private void init() {
         currentPoint = 0;
         points = new Vec3D[3];
         plane = null;
-        setValid(false);
     }
-
+    
     public void addPoint(Vec3D point) {
         if (currentPoint == 3) {
             KinectCst.pa.println("Enough points are selected, calculate the plane");
@@ -75,14 +78,25 @@ public class PlaneThreshold {
                 points[1],
                 points[2]);
         plane = new Plane(tri);
-        
+
         // TODO: check that !
         Vec3D bigPlanePos = new Vec3D(plane.x * 100, plane.y * 100, plane.z * 100);
         bigPlane = new Plane(bigPlanePos, plane.normal);
-        setValid(true);
         return true;
     }
 
+    public void setHeight(float h){
+        this.planeHeight = h;
+    }
+    
+    public float getHeight(){
+        return this.planeHeight;
+    }
+    
+    public Plane getPlane(){
+        return this.plane;
+    }
+    
     public Plane computePlaneOver(float distance) {
         planeOver = new Plane(plane, plane.normal);
         planeOver.x += distance * plane.normal.x;
@@ -104,15 +118,19 @@ public class PlaneThreshold {
         }
         return true; //ON_PLANE;
     }
+    
+    public boolean hasGoodOrientationAndDistance(Vec3D point) {
+        return orientation(point) && plane.getDistanceToPoint(point) <= planeHeight;
+    }
 
     public float distanceTo(Vec3D point) {
         return plane.getDistanceToPoint(point);
     }
 
-    public void flipNormal(){
+    public void flipNormal() {
         plane.normal = plane.normal.invert();
     }
-    
+
     public void moveUpDown(float value) {
         plane.x = plane.x + value * plane.normal.x;
         plane.y = plane.y + value * plane.normal.y;
@@ -131,6 +149,11 @@ public class PlaneThreshold {
         KinectCst.pa.saveStrings(filename, lines);
         KinectCst.pa.println("Plane successfully saved");
     }
+    
+    @Override
+    public String toString(){
+        return "Plane " + plane + " height " + planeHeight;
+    }
 
     public void loadPlane(String fileName) {
         String[] lines = KinectCst.pa.loadStrings(fileName);
@@ -140,15 +163,6 @@ public class PlaneThreshold {
 
         plane = new Plane(pos, norm);
         KinectCst.pa.println("Plane " + fileName + " successfully loaded");
-        setValid(true);
-    }
-
-    void setValid(boolean valid) {
-        this.valid = valid;
-    }
-
-    public boolean isValid() {
-        return valid;
     }
     static int nbPlanes = 0;
 

@@ -31,35 +31,25 @@ public class KinectCst {
     // For debug purposes. 
     public static float dx = -15.175022f;
     public static float dy = 7.7f;
-    static float[] depthLookUp = null;
+
 
     static public void init(PApplet applet) {
         pa = applet;
 
-        if (depthLookUp == null) {
-            depthLookUp = new float[2048];
-            for (int i = 0; i < depthLookUp.length; i++) {
-                depthLookUp[i] = rawDepthToMeters(i);
-            }
-        }
+
     }
 
     static public PApplet get() {
         return pa;
     }
 
-    public static float rawDepthToMeters(int depthValue) {
-        if (depthValue < 2047) {
-            return (float) (1.0 / ((float) (depthValue) * -0.0030711016f + 3.3309495161f));
-        }
-        return 0.0f;
-    }
 
-    public static Vec3D depthToWorld(int x, int y, int depthValue) {
+
+    public static Vec3D depthToWorld(int x, int y, float depthValue) {
 
         Vec3D result = new Vec3D();
-//        double depth = depthValue;
-        float depth = 1000 * depthLookUp[depthValue];
+        float depth = depthValue;
+//        float depth = 1000 * depthLookUp[depthValue]; 
         result.x = (float) ((x - cx_d) * depth * ifx_d);
         result.y = (float) ((y - cy_d) * depth * ify_d);
 
