@@ -110,7 +110,7 @@ public class Projector {
             // Draw the screen image
             this.graphics.image(screen.getTexture(),
                     screen.position.x, screen.position.x,
-                    screen.getSize().x, screen.getSize().y);
+                    screen.getDrawSizeX(), screen.getDrawSizeY());
             this.graphics.popMatrix();
         }
 
