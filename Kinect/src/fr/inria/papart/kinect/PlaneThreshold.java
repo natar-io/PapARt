@@ -122,6 +122,14 @@ public class PlaneThreshold {
     public boolean hasGoodOrientationAndDistance(Vec3D point) {
         return orientation(point) && plane.getDistanceToPoint(point) <= planeHeight;
     }
+ 
+    public boolean hasGoodDistance(Vec3D point) {
+        return plane.getDistanceToPoint(point) <= planeHeight;
+    }
+
+    public boolean hasGoodOrientation(Vec3D point) {
+        return orientation(point);
+    }
 
     public float distanceTo(Vec3D point) {
         return plane.getDistanceToPoint(point);

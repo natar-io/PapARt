@@ -31,7 +31,7 @@ public class PointCloudKinect {
         model.initColors();
     }
 
-    public void updateColorsProcessing(Kinect kinect) {
+    public void updateColorsProcessing() {
 
         boolean[] valid = kinect.getValidPoints();
         Vec3D[] points = kinect.getDepthPoints();
@@ -66,7 +66,7 @@ public class PointCloudKinect {
         }
     }
 
-    public void update(Kinect kinect, KinectScreenCalibration calib) {
+    public void update() {
 
         boolean[] valid = kinect.getValidPoints();
         Vec3D[] points = kinect.getDepthPoints();
@@ -89,6 +89,7 @@ public class PointCloudKinect {
 //                }
             }
         }
+
         model.endUpdateVertices();
 
         if (colors != null) {
@@ -126,30 +127,26 @@ public class PointCloudKinect {
         }
         model.endUpdateVertices();
 
-        if (colors != null) {
-            colors.loadPixels();
-            model.beginUpdateColors();
-            int k = 0;
-            for (int i = 0; i < KinectCst.size; i++) {
-                if (valid[i]) {
-                    int c = colors.pixels[i];
+        colors.loadPixels();
+        model.beginUpdateColors();
+        int k = 0;
+        for (int i = 0; i < KinectCst.size; i++) {
+            if (valid[i]) {
+                int c = colors.pixels[i];
 
-                    model.updateColor(k++,
-                            (c >> 16) & 0xFF,
-                            (c >> 8) & 0xFF,
-                            c & 0xFF);
-                }
+                model.updateColor(k++,
+                        (c >> 16) & 0xFF,
+                        (c >> 8) & 0xFF,
+                        c & 0xFF);
             }
-            model.endUpdateColors();
         }
-
+        model.endUpdateColors();
     }
 
     public void updateMultiTouch(Vec3D[] projectedPoints) {
 
         boolean[] valid = kinect.getValidPoints();
         Vec3D[] points = kinect.getDepthPoints();
-        PImage colors = kinect.getDepthColor();
 
         model.beginUpdateVertices();
         nbToDraw = 0;
@@ -162,22 +159,41 @@ public class PointCloudKinect {
         }
         model.endUpdateVertices();
 
-        if (colors != null) {
-            colors.loadPixels();
-            model.beginUpdateColors();
-            int k = 0;
-            for (int i = 0; i < KinectCst.size; i++) {
-                if (valid[i]) {
+        model.beginUpdateColors();
+        int k = 0;
+        for (int i = 0; i < KinectCst.size; i++) {
+            if (valid[i]) {
 
-                    int r = (int) (projectedPoints[i].x * 255f);
-                    int g = (int) (projectedPoints[i].y * 255f);
-                    int b = (int) (projectedPoints[i].z * 255f);
+                int c = parent.color(255, 255, 255);
 
-                    model.updateColor(k++, r, g, b);
+                if (Kinect.connectedComponent[i] > 0) {
+                    switch (Kinect.connectedComponent[i]) {
+                        case 1:
+                            c = parent.color(100, 200, 100);
+                            break;
+                        case 2:
+                            c = parent.color(0, 200, 100);
+                            break;
+                        case 3:
+                            c = parent.color(200, 200, 100);
+                            break;
+                        case 4:
+                            c = parent.color(0, 0, 200);
+                            break;
+                        case 5:
+                            c = parent.color(0, 100, 200);
+                            break;
+                        default : 
+                    }
                 }
+
+                model.updateColor(k++,
+                        (c >> 16) & 0xFF,
+                        (c >> 8) & 0xFF,
+                        c & 0xFF);
             }
-            model.endUpdateColors();
         }
+        model.endUpdateColors();
 
     }
 
