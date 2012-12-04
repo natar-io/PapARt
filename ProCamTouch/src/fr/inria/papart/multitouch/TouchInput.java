@@ -24,7 +24,6 @@ public class TouchInput {
     private ArrayList<TouchPoint> touchPoints2D, touchPoints3D;
     private int touch2DPrecision, touch3DPrecision;
     private MultiTouchKinect mtk;
-    private float touchHeight;
     private Kinect kinect;
 
     public TouchInput(PApplet applet, String calibrationFile, Kinect kinect) {
@@ -40,14 +39,13 @@ public class TouchInput {
         touchPoints3D = mtk.getTouchPoint3D();
     }
 
-    public void startTouch(IplImage depthImage, float touchHeight) {
-        this.touchHeight = touchHeight;
-        
-        mtk.updateKinect(depthImage, touch2DPrecision);
+    public void startTouch(IplImage depthImage) {
 
-        // This updates the values of touchPoints2D and touchPoints3D
+        mtk.updateKinect(depthImage, touch2DPrecision);
         mtk.find2DTouch(touch2DPrecision);
-        mtk.find3DTouch(touch3DPrecision, touchHeight);
+
+        mtk.updateKinect3D(depthImage, touch3DPrecision);
+        mtk.find3DTouch(touch3DPrecision);
     }
 
     public void endTouch() {
@@ -158,12 +156,13 @@ public class TouchInput {
                     PVector res, res2;
                     res = projector.projectPointer(screen, tp.v.x, tp.v.y);
 //                    res = projector.projectPointer(screen, tp);
-                    
+
                     if (isSpeed3D && tp.oldV != null) {
                         res2 = projector.projectPointer(screen, tp.oldV.x, tp.oldV.y);
-                        
-                        if(res2 != null)
+
+                        if (res2 != null) {
                             res2.z = tp.oldV.z;
+                        }
 //                        res2 = (tp.oldV != null) ? projector.projectPointer(screen, tp) : null;
                     } else {
                         res2 = null;
@@ -171,7 +170,7 @@ public class TouchInput {
 
                     if (res != null) {
 
-                         res.z = tp.v.z;
+                        res.z = tp.v.z;
                         // inside the paper sheet 	      
                         if (res.x >= 0 && res.x <= 1 && res.y >= 0 && res.y <= 1) {
                             position3D.add(new PVector(res.x, res.y, tp.v.z));
