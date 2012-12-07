@@ -144,21 +144,16 @@ public class MultiTouchKinect {
         // to keep the informations coherent.
         Collections.sort(tpt);
 
-        System.out.println("Begin update");
         for (TouchPointTracker tpt1 : tpt) {
-            System.out.println("Distance " + tpt1.distance);
             if (tpt1.distance < trackNearDist) {
                 tpt1.update(applet.millis());
             }
         }
-        System.out.println("end update");
-
 
         ArrayList<TouchPoint> ret = new ArrayList<TouchPoint>();
 
         for (TouchPoint tp : touchPoints) {
             if (!tp.toDelete) {
-//                System.out.println("Adding new Touchpoint : " + tp.id);
                 tp.updateTime = applet.millis();
                 touchPointList.add(tp);
                 ret.add(tp);
@@ -188,9 +183,7 @@ public class MultiTouchKinect {
             }
         }
 
-        for (TouchPoint tp : touchPointList) {
-            tp.oldV = tp.v.copy();
-        }
+
     }
 
     public ArrayList<TouchPoint> find2DTouch(int skip) {

@@ -20,18 +20,29 @@ public class KinectCst {
     public static final int h = 480;
     public static final int size = w * h;
     static PApplet pa = null;
-    public static final float ifx_d = 1.0f / 589.03265f;
-    public static final float ify_d = 1.0f / 587.64886f;
-    public static final float cx_d = 319.35583f;
+    public static final float ifx_d = 1.0f / 593.f;
+    public static final float ify_d = 1.0f / 593.f;
+    public static final float cx_d = 316.35583f;
     public static final float cy_d = 253.5655f;
     public static final float fx_rgb = 525.2362f;
     public static final float fy_rgb = 525.1191f;
-    public static final float cx_rgb = 319.96698f;
-    public static final float cy_rgb = 239.86328f;
-    // For debug purposes. 
-    public static float dx = -15.175022f;
-    public static float dy = 7.7f;
+    public static final float cx_rgb = 320.96698f;
+    public static final float cy_rgb = 240.86328f;
 
+//    public static final float ifx_d = 1.0f / 589.03265f;
+//    public static final float ify_d = 1.0f / 587.64886f;
+//    public static final float cx_d = 319.35583f;
+//    public static final float cy_d = 253.5655f;
+//    public static final float fx_rgb = 525.2362f;
+//    public static final float fy_rgb = 525.1191f;
+//    public static final float cx_rgb = 319.96698f;
+//    public static final float cy_rgb = 239.86328f;
+    // For debug purposes
+    
+//    public static float dx = -15.175022f;
+//    public static float dy = 7.7f;
+    public static float dx = -25.675062f;
+    public static float dy = 28.40f;
 
     static public void init(PApplet applet) {
         pa = applet;

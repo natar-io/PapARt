@@ -89,7 +89,7 @@ public class TouchPoint {
 
 //        System.out.println("Update " + this.id + " with " + tp.id +" distance was " + this.v.distanceTo(tp.v)  );
         
-        oldV = v;
+        oldV = v.copy();
         v = tp.v;
 
         vKinect = tp.vKinect;

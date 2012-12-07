@@ -25,7 +25,7 @@ import toxi.geom.Vec3D;
 public class Kinect {
 
     public static PApplet parent;
-    public float closeThreshold = 300f, farThreshold = 800f;
+    public float closeThreshold = 300f, farThreshold = 1200f;
     private Vec3D[] kinectPoints;
     private int[] colorPoints;
     private boolean[] validPoints;

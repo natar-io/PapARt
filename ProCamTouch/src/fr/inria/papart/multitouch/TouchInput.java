@@ -1,5 +1,6 @@
 package fr.inria.papart.multitouch;
 
+import com.googlecode.javacv.OpenKinectFrameGrabber;
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
 import fr.inria.papart.multitouchKinect.MultiTouchKinect;
 import fr.inria.papart.multitouchKinect.TouchPoint;
@@ -9,6 +10,7 @@ import fr.inria.papart.kinect.Kinect;
 import java.util.ArrayList;
 import processing.core.PApplet;
 import processing.core.PVector;
+import sun.awt.Mutex;
 import toxi.geom.ReadonlyVec3D;
 import toxi.geom.Vec3D;
 
@@ -25,18 +27,63 @@ public class TouchInput {
     private int touch2DPrecision, touch3DPrecision;
     private MultiTouchKinect mtk;
     private Kinect kinect;
+    private GrabberThread grabberThread = null;
 
+    private Mutex mutex;
+    
     public TouchInput(PApplet applet, String calibrationFile, Kinect kinect) {
-        this(applet, calibrationFile, kinect, 1, 8);
+        this(applet, calibrationFile, kinect, null, 1, 4);
         // TODO: use XML calibration file.
     }
 
     public TouchInput(PApplet applet, String calibrationFile, Kinect kinect, int precision2D, int precision3D) {
+        this(applet, calibrationFile, kinect, null, precision2D, precision3D);
+    }
+
+    public TouchInput(PApplet applet, String calibrationFile, Kinect kinect, OpenKinectFrameGrabber grabber, int precision2D, int precision3D) {
         mtk = new MultiTouchKinect(applet, kinect, calibrationFile);
         this.touch2DPrecision = precision2D;
         this.touch3DPrecision = precision3D;
         touchPoints2D = mtk.getTouchPoint2D();
         touchPoints3D = mtk.getTouchPoint3D();
+
+        mutex = new Mutex();
+        
+        if (grabber != null) {
+            grabberThread = new GrabberThread(this, grabber);
+            grabberThread.start();
+        }
+    }
+
+    class GrabberThread extends Thread {
+
+        private OpenKinectFrameGrabber grabber;
+        private TouchInput touchInput;
+        private boolean isRunning = true;
+
+        public GrabberThread(TouchInput ti, OpenKinectFrameGrabber grabber) {
+            this.grabber = grabber;
+            this.touchInput = ti;
+        }
+
+        @Override
+        public void run() {
+
+            while (isRunning) {
+                try {
+                    IplImage depthImage = grabber.grabDepth();
+                    mutex.lock();
+                    touchInput.startTouch(depthImage);
+                    touchInput.endTouch();
+                    mutex.unlock();
+                } catch (Exception e) {
+                }
+            }
+        }
+
+        public void stopThread() {
+            this.isRunning = false;
+        }
     }
 
     public void startTouch(IplImage depthImage) {
@@ -49,10 +96,6 @@ public class TouchInput {
     }
 
     public void endTouch() {
-        //     try{
-        // kinectMutex.acquire();
-        //     }catch(Exception e){}
-
         mtk.touch2DFound();
         mtk.touch3DFound();
     }
@@ -70,7 +113,7 @@ public class TouchInput {
     }
 
     public TouchElement projectTouchToScreen(Screen screen, Projector projector, boolean is2D, boolean is3D) {
-        return projectTouchToScreen(screen, projector, is2D, is3D, false, false);
+        return projectTouchToScreen(screen, projector, is2D, is3D, true, true);
     }
 
     public TouchElement projectTouchToScreen(Screen screen, Projector projector,
@@ -106,6 +149,7 @@ public class TouchInput {
         elem.speed2D = speed2D;
         elem.speed3D = speed3D;
 
+        mutex.lock();
         if (is2D && !touchPoints2D.isEmpty()) {
             for (TouchPoint tp : touchPoints2D) {
 
@@ -190,6 +234,7 @@ public class TouchInput {
             }
         }
 
+        mutex.unlock();
 
         return elem;
     }
