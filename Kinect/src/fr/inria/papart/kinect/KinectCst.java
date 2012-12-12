@@ -28,7 +28,6 @@ public class KinectCst {
     public static final float fy_rgb = 525.1191f;
     public static final float cx_rgb = 320.96698f;
     public static final float cy_rgb = 240.86328f;
-
 //    public static final float ifx_d = 1.0f / 589.03265f;
 //    public static final float ify_d = 1.0f / 587.64886f;
 //    public static final float cx_d = 319.35583f;
@@ -38,7 +37,6 @@ public class KinectCst {
 //    public static final float cx_rgb = 319.96698f;
 //    public static final float cy_rgb = 239.86328f;
     // For debug purposes
-    
 //    public static float dx = -15.175022f;
 //    public static float dy = 7.7f;
     public static float dx = -25.675062f;
@@ -52,7 +50,6 @@ public class KinectCst {
         return pa;
     }
 
-    
     public static Vec3D depthToWorld(int x, int y, float depthValue) {
 
         Vec3D result = new Vec3D();
@@ -66,7 +63,7 @@ public class KinectCst {
         return result;
     }
 
-    public static int WorldToColor(int x, int y, Vec3D pt) {
+    public static int WorldToColor(Vec3D pt) {
 
         Vec3D pt2 = new Vec3D(pt);
         pt2.addSelf(dx, dy, 0);
@@ -79,5 +76,18 @@ public class KinectCst {
 
         return (int) (py * KinectCst.w + px);
     }
-    
+
+    public static PVector WorldToColorP(Vec3D pt) {
+
+        Vec3D pt2 = new Vec3D(pt);
+        pt2.addSelf(dx, dy, 0);
+
+        // Reprojection 
+        float invZ = 1.0f / pt2.z();
+
+        int px = PApplet.constrain(PApplet.round((pt2.x() * invZ * fx_rgb) + cx_rgb), 0, w - 1);
+        int py = PApplet.constrain(PApplet.round((pt2.y() * invZ * fy_rgb) + cy_rgb), 0, h - 1);
+
+        return new PVector(px, py);
+    }
 }

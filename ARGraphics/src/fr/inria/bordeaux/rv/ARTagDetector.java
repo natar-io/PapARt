@@ -2,13 +2,12 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package fr.inria.papart;
+package fr.inria.bordeaux.rv;
 
 import com.googlecode.javacpp.BytePointer;
 import com.googlecode.javacv.FrameGrabber.ImageMode;
 import com.googlecode.javacv.*;
 import com.googlecode.javacv.cpp.ARToolKitPlus;
-import com.googlecode.javacv.cpp.ARToolKitPlus.ARMultiMarkerInfoT;
 import com.googlecode.javacv.cpp.ARToolKitPlus.ArtLogFunction;
 import com.googlecode.javacv.cpp.ARToolKitPlus.MultiTracker;
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
@@ -75,41 +74,14 @@ public class ARTagDetector {
 
 
             // TODO: load camera id ... or camera name ...
-//            if (useConfig) {
-//                loadSettings(new File(videoFile));
-//                CameraDevice.Settings[] cs = cameraSettings.toArray();
-//                CameraDevice[] cameraDevices = new CameraDevice[cs.length];
-////                        cameraDevices = Arrays.copyOf(cameraDevices, cs.length);
-//
-//                FrameGrabber[] frameGrabbers = new FrameGrabber[cs.length];
-//                for (int i = 0; i < cs.length; i++) {
-//                    if (cameraDevices[i] == null) {
-//                        cameraDevices[i] = new CameraDevice(cs[i]);
-//                    } else {
-//                        cameraDevices[i].setSettings(cs[i]);
-//                    }
-//                }
-//
-//                for (int i = 0; i < cameraDevices.length; i++) {
-//                    frameGrabbers[i] = cameraDevices[i].createFrameGrabber();
-//                }
-//
-//                grabber = frameGrabbers[0];
-//                w = grabber.getImageWidth();
-//                h = grabber.getImageHeight();
-//                System.out.println("Camera with width and height : "
-//                        + grabber.getImageWidth() + "x" + grabber.getImageHeight());
-//            } else {
+            if (device == -1) {
+                grabber = new OpenCVFrameGrabber(videoFile);
+            } else {
+                if (videoFile == null) {
+                    grabber = new OpenCVFrameGrabber(device);
 
-                if (device == -1) {
-                    grabber = new OpenCVFrameGrabber(videoFile);
-                } else {
-                    if (videoFile == null) {
-                        grabber = new OpenCVFrameGrabber(device);
-
-                    }
                 }
-//            }
+            }
 
             if (!useConfig) {
                 grabber.setImageWidth(w);
@@ -177,31 +149,6 @@ public class ARTagDetector {
             System.out.println(e);
         }
     }
-    // From ProCamCalib
-//    CameraSettings cameraSettings;
-//    File calibrationFile;
-//
-//    private void loadSettings(File file) throws IOException, IntrospectionException, PropertyVetoException {
-//        if (file == null) {
-//            cameraSettings = null;
-//        } else {
-//            XMLDecoder decoder = new XMLDecoder(new BufferedInputStream(new FileInputStream(file)));
-//
-//            cameraSettings = (CameraSettings) decoder.readObject();
-//            ProjectorSettings projectorSettings = (ProjectorSettings) decoder.readObject();
-//            Marker.ArraySettings markerSettings = (Marker.ArraySettings) decoder.readObject();
-//            MarkerDetector.Settings markerDetectorSettings = (MarkerDetector.Settings) decoder.readObject();
-//            CalibrationWorker.GeometricSettings geometricCalibratorSettings = (CalibrationWorker.GeometricSettings) decoder.readObject();
-//            CalibrationWorker.ColorSettings colorCalibratorSettings = (CalibrationWorker.ColorSettings) decoder.readObject();
-//
-//            try {
-//                String s = (String) decoder.readObject();
-//                calibrationFile = s == null ? null : new File(s);
-//            } catch (java.lang.ArrayIndexOutOfBoundsException ex) {
-//            }
-//            decoder.close();
-//        }
-//    }
 
     public void grab() {
         grab(false, isCopy);
@@ -213,45 +160,43 @@ public class ARTagDetector {
     public int nbImagesCopied = 0;
 
     public void grab(boolean undistort, boolean copy) {
-
-        this.lastUndistorted = undistort;
-//            grabber.trigger();
-
         try {
+
+            this.lastUndistorted = undistort;
+//            grabber.trigger();
             iimg = grabber.grab();
+
+            if (undistort) {
+                if (img2 == null) {
+                    img2 = iimg.clone();
+                }
+                cam.undistort(iimg, img2);
+            }
+
+            // Image drawing
+            if (copy) {
+                ByteBuffer buff1 = iimg.getByteBuffer();
+                pimg.loadPixels();
+                for (int i = 0; i
+                        < iimg.width() * iimg.height(); i++) {
+                    int offset = i * 3;
+                    pimg.pixels[i] = (buff1.get(offset + 2) & 0xFF) << 16
+                            | (buff1.get(offset + 1) & 0xFF) << 8
+                            | (buff1.get(offset) & 0xFF);
+                }
+
+                pimg.updatePixels();
+
+                // TODO: HACK
+                if (nbImagesCopied++ == 60) {
+                    System.gc();
+                    nbImagesCopied = 0;
+                }
+
+            }
         } catch (Exception e) {
-            System.out.println("Exception in Grabbing the frame " + e);
-            return;
+            System.out.println("Exception in findMarkers " + e);
         }
-        if (undistort) {
-            if (img2 == null) {
-                img2 = iimg.clone();
-            }
-            cam.undistort(iimg, img2);
-        }
-
-        // Image drawing
-        if (copy) {
-            ByteBuffer buff1 = iimg.getByteBuffer();
-            pimg.loadPixels();
-            for (int i = 0; i
-                    < iimg.width() * iimg.height(); i++) {
-                int offset = i * 3;
-                pimg.pixels[i] = (buff1.get(offset + 2) & 0xFF) << 16
-                        | (buff1.get(offset + 1) & 0xFF) << 8
-                        | (buff1.get(offset) & 0xFF);
-            }
-
-            pimg.updatePixels();
-
-            // TODO: HACK
-            if (nbImagesCopied++ == 60) {
-                System.gc();
-                nbImagesCopied = 0;
-            }
-
-        }
-
     }
 
     public float[] findMarkers(MarkerBoard sheet) {

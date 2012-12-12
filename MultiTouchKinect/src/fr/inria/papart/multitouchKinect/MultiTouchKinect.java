@@ -7,6 +7,7 @@ package fr.inria.papart.multitouchKinect;
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
 import fr.inria.papart.kinect.*;
 import java.io.FileNotFoundException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import processing.core.PApplet;
@@ -86,6 +87,25 @@ public class MultiTouchKinect {
     public void updateKinect3D(IplImage depthImage, int skip) {
         currentPrecision = skip;
         goodPointOffsets = kinect.updateMT3D(depthImage, kinectCalibration, projPoints, skip);
+    }
+
+    public void findColor(IplImage depthImage, IplImage colorImage, ArrayList<TouchPoint> touchPointList, int skip) {
+
+        if (touchPointList.isEmpty()) {
+            return;
+        }
+
+        ByteBuffer cBuff = colorImage.getByteBuffer();
+
+        for (TouchPoint tp : touchPointList) {
+            int offset = 3* KinectCst.WorldToColor(tp.vKinect);
+
+            tp.color = (255 & 0xFF) << 24
+                    | (cBuff.get(offset + 2)& 0xFF) << 16
+                    | (cBuff.get(offset + 1) & 0xFF) << 8
+                    | (cBuff.get(offset) & 0xFF);
+        }
+
     }
 
     public Vec3D[] getKinectPoints() {

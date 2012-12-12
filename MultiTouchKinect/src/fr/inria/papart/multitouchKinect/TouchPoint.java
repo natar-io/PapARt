@@ -17,6 +17,7 @@ public class TouchPoint {
     public Vec3D v;
     public Vec3D oldV;
     public Vec3D vKinect;
+    public int color;
     float distanceMin;
     public int confidence;
     public boolean is3D;
@@ -31,7 +32,8 @@ public class TouchPoint {
 
     
     public static float filterFreq = 30f;
-    public static float filterCut = 1.0f;
+    public static float filterCut = 0.2f;
+//    public static float filterCut = 1.0f;
     public static float filterBeta = 8.000f;
     
     public TouchPoint() {
@@ -70,6 +72,10 @@ public class TouchPoint {
         return (currentTime - updateTime) > duration;
     }
 
+    public int getColor(){
+        return this.color;
+    }
+    
     // TODO: speed etc..
     public boolean updateWith(TouchPoint tp, int currentTime) {
 

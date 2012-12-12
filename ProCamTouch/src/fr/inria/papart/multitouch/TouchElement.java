@@ -4,6 +4,7 @@
  */
 package fr.inria.papart.multitouch;
 
+import fr.inria.papart.multitouchKinect.TouchPoint;
 import java.util.ArrayList;
 import processing.core.PVector;
 
@@ -18,4 +19,6 @@ public class TouchElement {
     public ArrayList<PVector> speed2D;
     public ArrayList<PVector> speed3D;
 
+    public ArrayList<TouchPoint> points2D;
+    public ArrayList<TouchPoint> points3D;
 }

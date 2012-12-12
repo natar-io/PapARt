@@ -85,6 +85,11 @@ public class Kinect {
         return this.id;
     }
 
+    public byte[] getColorBuffer(){
+        return this.colorRaw;
+    }
+    
+    
     public PImage updateP(IplImage depth, IplImage color) {
 
         ByteBuffer depthBuff = depth.getByteBuffer();
@@ -112,7 +117,7 @@ public class Kinect {
 
                 if (good) {
                     kinectPoints[offset] = KinectCst.depthToWorld(x, y, d);
-                    colorPoints[offset] = KinectCst.WorldToColor(x, y, kinectPoints[offset]);
+                    colorPoints[offset] = KinectCst.WorldToColor(kinectPoints[offset]);
 
                     int colorOffset = colorPoints[offset] * 3;
                     int c = (colorRaw[colorOffset + 2] & 0xFF) << 16
@@ -161,7 +166,7 @@ public class Kinect {
 
                     Vec3D p = KinectCst.depthToWorld(x, y, d);
                     kinectPoints[offset] = p;
-                    colorPoints[offset] = KinectCst.WorldToColor(x, y, kinectPoints[offset]);
+                    colorPoints[offset] = KinectCst.WorldToColor(kinectPoints[offset]);
 
                     if (calib.plane().hasGoodOrientationAndDistance(p)) {
 
@@ -218,7 +223,7 @@ public class Kinect {
                 if (isGoodDepth(d)) {
                     validPoints[offset] = true;
                     kinectPoints[offset] = KinectCst.depthToWorld(x, y, d);
-                    colorPoints[offset] = KinectCst.WorldToColor(x, y, kinectPoints[offset]);
+                    colorPoints[offset] = KinectCst.WorldToColor(kinectPoints[offset]);
 
                     int colorOffset = colorPoints[offset] * 3;
                     validPointsRaw[outputOffset + 2] = colorRaw[colorOffset + 2];
@@ -262,7 +267,7 @@ public class Kinect {
                 if (isGoodDepth(d)) {
 
                     Vec3D p = KinectCst.depthToWorld(x, y, d);
-                    colorPoints[offset] = KinectCst.WorldToColor(x, y, p);
+                    colorPoints[offset] = KinectCst.WorldToColor(p);
 
                     if (calib.plane().hasGoodOrientationAndDistance(p)) {
 
@@ -325,7 +330,7 @@ public class Kinect {
 
                 if (isGoodDepth(d)) {
                     Vec3D p = KinectCst.depthToWorld(x, y, d);
-                    colorPoints[offset] = KinectCst.WorldToColor(x, y, p);
+                    colorPoints[offset] = KinectCst.WorldToColor(p);
 
                     if (calib.plane().hasGoodOrientationAndDistance(p)) {
 

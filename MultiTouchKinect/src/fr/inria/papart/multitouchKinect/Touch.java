@@ -25,7 +25,7 @@ import toxi.geom.Vec3D;
 public class Touch {
 
     public static float maxDistance = 45f;    // in mm
-        
+
     public static ArrayList<Integer> findNeighboursRec(int currentPoint, int halfNeigh,
             ArrayList<Integer> validPoints,
             Vec3D points[], Vec3D[] projPoints,
@@ -53,7 +53,7 @@ public class Touch {
                 // Avoid getting ouside the limits
                 if (!(readPoints[offset] // already parsed point 
                         || !isValidPoints[offset]
-                        || !isInside(projPoints[offset], 0.f, 1.f))){
+                        || !isInside(projPoints[offset], 0.f, 1.f))) {
 //                        || !isInside(projPoints[offset], 0.f, 1.f)
 //                        || points[offset].distanceTo(points[currentPoint]) > maxDistance)) {
 
@@ -62,7 +62,7 @@ public class Touch {
                     toVisit.remove(offset);
                     // we add it to the neighbour list
                     ret.add((Integer) offset);
-                    
+
                     Kinect.connectedComponent[offset] = Kinect.currentCompo;
 
 //                    // if is is on a border ??
@@ -88,7 +88,6 @@ public class Touch {
 
         return ret;
     }
-    
 
     public static ArrayList<TouchPoint> findMultiTouch(ArrayList<Integer> validPoints,
             Vec3D points[], Vec3D[] projPoints, boolean[] isValidPoints, boolean[] readPoints,
@@ -98,11 +97,11 @@ public class Touch {
             return null;
         }
 
-        
+
         // Debug purposes
         Arrays.fill(Kinect.connectedComponent, (byte) 0);
         Kinect.currentCompo = 1;
-        
+
         int searchDepth = 1 * skip; // on each direction
 
         Arrays.fill(readPoints, false);
@@ -126,10 +125,11 @@ public class Touch {
 
         // TODO: Magic numbers ...
         int minSize = 5;
-        
-        if(is3D)
+
+        if (is3D) {
             minSize = 80;
-        
+        }
+
         float goodPointsDist = 0.03f;
 
         float closeDistance = calib.plane().getHeight() / 5f;   // valeur indiquée dans calib * 0.05
@@ -148,14 +148,31 @@ public class Touch {
 
             Vec3D mean = new Vec3D(0, 0, 0);
 
-            // select only the closest 
-            for (int k = 0; k < minSize; k++) {
-                mean.addSelf(points[vint.get(k)]);
+
+
+            if (is3D) {
+
+                // select only the closest 
+                for (int k = 0; k < minSize; k++) {
+                    mean.addSelf(points[vint.get(k)]);
+                }
+                mean.scaleSelf(1.0f / minSize);
+
+
+            } else {
+
+                // REAL MEAN
+                for (int offset : vint) {
+                    mean.addSelf(points[offset]);
+                }
+                mean.scaleSelf(1.0f / vint.size());
+//                for (int k = 0; k < vint.size() / 2; k++) {
+//                    mean.addSelf(points[vint.get(k)]);
+//                }
             }
 
             TouchPoint tp = new TouchPoint();
 
-            mean.scaleSelf(1.0f / minSize);
 
             tp.is3D = is3D;
             tp.confidence = vint.size();
