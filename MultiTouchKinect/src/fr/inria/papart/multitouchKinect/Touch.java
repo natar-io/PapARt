@@ -4,7 +4,12 @@
  */
 package fr.inria.papart.multitouchKinect;
 
+import fr.inria.papart.kinect.Kinect;
+import fr.inria.papart.kinect.KinectCst;
+import fr.inria.papart.kinect.KinectScreenCalibration;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -19,129 +24,117 @@ import toxi.geom.Vec3D;
  */
 public class Touch {
 
-    public static ArrayList<Integer> findNeighbours(int currentPoint, int halfNeigh,
+    public static float maxDistance = 45f;    // in mm
+
+    public static ArrayList<Integer> findNeighboursRec(int currentPoint, int halfNeigh,
             ArrayList<Integer> validPoints,
             Vec3D points[], Vec3D[] projPoints,
-            int[] depth, boolean[] isValidPoints,
-            boolean[] readPoints, int recLevel,
-            Set<Integer> toVisit, int skip) {
+            boolean[] isValidPoints,
+            boolean[] readPoints, Set<Integer> toVisit,
+            int skip) {
 
         // TODO: optimisations here ?
-
         int x = currentPoint % KinectCst.w;
         int y = currentPoint / KinectCst.w;
 
-        if (toVisit.contains(currentPoint)) {
-            toVisit.remove(currentPoint);
-        }
-
         ArrayList<Integer> ret = new ArrayList<Integer>();
+        ArrayList<Integer> visitNext = new ArrayList<Integer>();
 
-        int max = KinectCst.w * KinectCst.h;
+        int minX = PApplet.constrain(x - halfNeigh, 0, KinectCst.w - 1);
+        int maxX = PApplet.constrain(x + halfNeigh, 0, KinectCst.w - 1);
+        int minY = PApplet.constrain(y - halfNeigh, 0, KinectCst.h - 1);
+        int maxY = PApplet.constrain(y + halfNeigh, 0, KinectCst.h - 1);
 
-        for (int j = -halfNeigh; j < halfNeigh + skip; j += skip) {
-            for (int i = -halfNeigh; i < halfNeigh + skip; i += skip) {
+        for (int j = minY; j <= maxY; j += skip) {
+            for (int i = minX; i <= maxX; i += skip) {
 
-                int offset = (x + i) + (y + j) * KinectCst.w;
+                int offset = j * KinectCst.w + i;
 
                 // Avoid getting ouside the limits
-                if (!(offset >= max
-                        || (x + i) != PApplet.constrain(x + i, 0, KinectCst.w) // to big or small in X
-                        || (y + j) != PApplet.constrain(y + j, 0, KinectCst.h) // to big or small in Y
-                        || readPoints[offset] // already parsed point
+                if (!(readPoints[offset] // already parsed point 
                         || !isValidPoints[offset]
-                        || projPoints[offset] == null // TODO: useless ?
-                        || !Util.isInside(projPoints[offset], 0.f, 1.f)
-                        || points[currentPoint].distanceTo(points[offset]) > 0.02)) {
+                        || !isInside(projPoints[offset], 0.f, 1.f))) {
+//                        || !isInside(projPoints[offset], 0.f, 1.f)
+//                        || points[offset].distanceTo(points[currentPoint]) > maxDistance)) {
 
                     readPoints[offset] = true;
 
-                    // MyApplet.we add it to the neighbour list
+                    toVisit.remove(offset);
+                    // we add it to the neighbour list
                     ret.add((Integer) offset);
 
-                    // if is is on a border
-                    if (PApplet.abs(i) == halfNeigh - skip
-                            || PApplet.abs(j) == halfNeigh - skip) {
+                    Kinect.connectedComponent[offset] = Kinect.currentCompo;
 
-                        // add to the list to examine
-                        toVisit.add(offset);
-                        readPoints[offset] = false;
-
+//                    // if is is on a border ??
+                    if (i == minX || i == maxX || j == minY || j == maxY) {
+                        visitNext.add(offset);
                     } // if it is a border
+
+
                 } // if is ValidPoint
 
             } // for j
         } // for i
 
+
+        for (int offset : visitNext) {
+            ret.addAll(findNeighboursRec(offset,
+                    halfNeigh,
+                    validPoints,
+                    points, projPoints,
+                    isValidPoints,
+                    readPoints, toVisit, skip));
+        }
+
         return ret;
     }
 
-    public static ArrayList<ArrayList<Integer>> allNeighbourhood(ArrayList<Integer> validPoints,
-            Vec3D points[], Vec3D[] projPoints,
-            int[] depth, boolean[] isValidPoints, int skip) {
+    public static ArrayList<TouchPoint> findMultiTouch(ArrayList<Integer> validPoints,
+            Vec3D points[], Vec3D[] projPoints, boolean[] isValidPoints, boolean[] readPoints,
+            KinectScreenCalibration calib, boolean is3D, int skip) {
 
         if (validPoints == null || validPoints.isEmpty()) {
             return null;
         }
 
-        int searchDepth = 5 * skip; // on each direction
-        int searchDepth2 = 5 * skip; // on each direction
 
-        ////  Each detected Point is going to be parsed.
-        boolean readPoints[] = new boolean[KinectCst.w * KinectCst.h];
+        // Debug purposes
+        Arrays.fill(Kinect.connectedComponent, (byte) 0);
+        Kinect.currentCompo = 1;
+
+        int searchDepth = 1 * skip; // on each direction
+
+        Arrays.fill(readPoints, false);
         Set<Integer> toVisit = new HashSet<Integer>();
 
-//  currentColor = 0;
         ArrayList<ArrayList<Integer>> allNeighbourhood = new ArrayList<ArrayList<Integer>>();
 
-        // all points are "valid"  i.e. detected in the right zone
+        // New method, recursive way. 
+        toVisit.addAll(validPoints);
 
-        for (Integer v : validPoints) {
-            if (!readPoints[v]) {
-
-                ArrayList<Integer> n1 = findNeighbours(v, searchDepth, validPoints,
-                        points, projPoints, depth, isValidPoints, readPoints, 0, toVisit, skip);
-
-                while (toVisit.size() > 0) {
-                    int visiting = toVisit.iterator().next();
-                    n1.addAll(findNeighbours(visiting, searchDepth2, validPoints,
-                            points, projPoints, depth, isValidPoints, readPoints, 3, toVisit, skip));
-                }
-
-                if (n1.isEmpty()) {
-                    continue;
-                }
-
-                allNeighbourhood.add(n1);
-            }
+        while (toVisit.size() > 0) {
+            int p = toVisit.iterator().next();
+            allNeighbourhood.add(findNeighboursRec(p, searchDepth, validPoints,
+                    points, projPoints, isValidPoints, readPoints, toVisit, skip));
+            Kinect.currentCompo++;
         }
-        return allNeighbourhood;
-    }
-
-    public static ArrayList<TouchPoint> findMultiTouch(ArrayList<Integer> validPoints,
-            Vec3D points[], Vec3D[] projPoints,
-            int[] depth, boolean[] isValidPoints,
-            PlaneSelection planeSelection,
-            Matrix4x4 transform, int skip) {
-
-        if (validPoints == null || validPoints.isEmpty()) {
-            return null;
-        }
-
-        ArrayList<ArrayList<Integer>> allNeighbourhood = allNeighbourhood(validPoints,
-                points, projPoints,
-                depth, isValidPoints, skip);
 
         ArrayList<TouchPoint> allTouchPoints = new ArrayList<TouchPoint>();
 
 //        int minSize = 50 / (skip * skip); // in pixels
 
         // TODO: Magic numbers ...
-        int minSize = 10;
-        float closeDistance = planeSelection.planeHeight / 5f;   // valeur indiquée dans calib * 0.05
+        int minSize = 5;
 
+        if (is3D) {
+            minSize = 80;
+        }
 
-        ClosestComparatorHeight cch = new ClosestComparatorHeight(points,planeSelection);
+        float goodPointsDist = 0.03f;
+
+        float closeDistance = calib.plane().getHeight() / 5f;   // valeur indiquée dans calib * 0.05
+
+        ClosestComparatorHeight cch = new ClosestComparatorHeight(points, calib);
 
         // remove too small elements
         for (ArrayList<Integer> vint : allNeighbourhood) {
@@ -153,39 +146,51 @@ public class Touch {
             // sort all points
             Collections.sort(vint, cch);
 
-
-            TouchPoint tp = new TouchPoint();
-            tp.is3D = false;
-            tp.confidence = vint.size();
-
             Vec3D mean = new Vec3D(0, 0, 0);
-            Vec3D closeMean = new Vec3D(0, 0, 0);
-            int nbClose = 0;
 
-            for(int k=0; k < minSize; k++){
-                int offset = vint.get(k);
-                mean.addSelf(points[offset]);
 
+
+            if (is3D) {
+
+                // select only the closest 
+                for (int k = 0; k < minSize; k++) {
+                    mean.addSelf(points[vint.get(k)]);
+                }
+                mean.scaleSelf(1.0f / minSize);
+
+
+            } else {
+
+                // REAL MEAN
+                for (int offset : vint) {
+                    mean.addSelf(points[offset]);
+                }
+                mean.scaleSelf(1.0f / vint.size());
+//                for (int k = 0; k < vint.size() / 2; k++) {
+//                    mean.addSelf(points[vint.get(k)]);
+//                }
             }
 
-            mean.scaleSelf(1.0f / minSize);
+            TouchPoint tp = new TouchPoint();
+
+
+            tp.is3D = is3D;
+            tp.confidence = vint.size();
+
             tp.v = mean;
             tp.vKinect = tp.v.copy();
-
-            tp.isCloseToPlane = planeSelection.distanceTo(mean) < closeDistance;
-
-//            System.out.println("size "+ vint.size() + " distance : " + planeSelection.distanceTo(mean) + " Confidence " + tp.confidence);
-            tp.vKinect = tp.v.copy();
-
-            tp.v = transform.applyTo(planeSelection.plane.getProjectedPoint(tp.v));
-            tp.v.x /= tp.v.z;
-            tp.v.y /= tp.v.z;
-            tp.v.z = planeSelection.distanceTo(mean);
+            tp.isCloseToPlane = calib.plane().distanceTo(mean) < closeDistance;
+            tp.v = calib.project(tp.v);
+            tp.v.z = calib.plane().distanceTo(mean);
 
             allTouchPoints.add(tp);
-            //tp.draw();
         }
 
         return allTouchPoints;
+    }
+    public static float sideError = 0.2f;
+
+    public static boolean isInside(Vec3D v, float min, float max) {
+        return v.x > min - sideError && v.x < max + sideError && v.y < max + sideError && v.y > min - sideError;
     }
 }

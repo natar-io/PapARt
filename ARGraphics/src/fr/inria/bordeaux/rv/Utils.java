@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package fr.inria.papart;
+package fr.inria.bordeaux.rv;
 
 import com.googlecode.javacv.cpp.opencv_imgproc.*;
 

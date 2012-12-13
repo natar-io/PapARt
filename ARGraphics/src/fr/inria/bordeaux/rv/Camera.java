@@ -1,17 +1,16 @@
+package fr.inria.bordeaux.rv;
+
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package fr.inria.papart;
+
 
 /**
  *
  * @author jeremylaviole
  */
 import com.googlecode.javacv.CameraDevice;
-import com.googlecode.javacv.cpp.opencv_core.IplImage;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 import processing.core.PApplet;
 import processing.core.PImage;
@@ -24,7 +23,6 @@ public class Camera {
     // Camera parameters
     protected PMatrix3D camIntrinsicsP3D;
     public PApplet parent;
-    ArrayList<TrackedView> trackedViews;
     MarkerBoard[] sheets;
     public PVector resolution;
     ARTThread thread = null;
@@ -32,7 +30,7 @@ public class Camera {
     static public void convertARParams(PApplet parent, String calibrationYAML,
             String calibrationData, int width, int height) {
         try {
-            fr.inria.papart.Utils.convertARParam(parent, calibrationYAML, calibrationData, width, height);
+            fr.inria.bordeaux.rv.Utils.convertARParam(parent, calibrationYAML, calibrationData, width, height);
         } catch (Exception e) {
             PApplet.println("Conversion error. " + e);
         }
@@ -81,7 +79,6 @@ public class Camera {
                 sheets);
 
         this.sheets = sheets;
-        this.trackedViews = new ArrayList<TrackedView>();
 
         // Load the camera parameters. 
         try {
@@ -150,7 +147,7 @@ public class Camera {
     }
 
     public float[] getPosPointer(MarkerBoard board) {
-         return board.getTransfo();
+        return board.getTransfo();
     }
 
     /**
@@ -181,135 +178,7 @@ public class Camera {
         }
     }
 
-    /**
-     * Add a tracked view to the camera. This camera must be tracking the board
-     * already. Returns true if the camera is already tracking.
-     *
-     * @param view
-     * @return
-     */
-    public boolean addTrackedView(TrackedView view) {
-        return trackedViews.add(view);
-    }
 
-    /**
-     * Get an image from the view.
-     *
-     * @param trackedView
-     * @return
-     */
-    public PImage getView(TrackedView trackedView) {
-        return getView(trackedView, true);
-    }
-    
-    public IplImage getViewIpl(TrackedView trackedView){
-        
-        if (trackedView == null) {
-            System.err.println("Error: paper sheet not registered as tracked view.");
-            return null;
-        }
-
-//        grab(undistort);
-        if (!art.isReady(true)) {
-            return null;
-        }
-        float[] pos = art.findMarkers(trackedView.getBoard());
-        trackedView.setPos(pos);
-        trackedView.computeCorners(this);
-       return trackedView.getImageIpl(art.getImageIpl());
-    }
-
-    /**
-     * Get an image from the view.
-     *
-     * @param trackedView
-     * @return
-     */
-    public PImage getView(TrackedView trackedView, boolean undistort) {
-          
-           if (trackedView == null) {
-            System.err.println("Error: paper sheet not registered as tracked view.");
-            return null;
-        }
-
-//        grab(undistort);
-        if (!art.isReady(undistort)) {
-            return null;
-        }
-        float[] pos = art.findMarkers(trackedView.getBoard());
-        trackedView.setPos(pos);
-        trackedView.computeCorners(this);
-        return trackedView.getImage(art.getImageIpl());
-    }
-
-    /**
-     * This function is typically to be used with high resolution camera. It
-     * stops the video stream, takes a picture, takes the zone of interests and
-     * returns it as an image. It restarts the video stream before exiting.
-     *
-     * @param sheet
-     * @return image
-     */
-    public PImage stopGetViewStart(TrackedView trackedView) {
-        if (thread == null) {
-            System.err.println("Camera : Error: stopGetViewStart is to use only when thread is started");
-            return null;
-        }
-        boolean wasAutoUpdate = thread.isCompute();
-        stopThread();
-        this.grab();
-
-        if (trackedView == null) {
-            System.err.println("Error: paper sheet not registered as tracked view.");
-            return null;
-        }
-        float[] pos = art.findMarkers(trackedView.getBoard());
-        trackedView.setPos(pos);
-        trackedView.computeCorners(this);
-        PImage out = trackedView.getImage(art.getImageIpl());
-
-        setThread();
-        thread.setCompute(wasAutoUpdate);
-
-        return out;
-    }
-
-    /**
-     * This function is typically to be used with high resolution camera. It
-     * stops the video stream, takes a picture, takess the zone of interests and
-     * returns it as an array of images. It restarts the video stream before
-     * exiting.
-     *
-     * @param sheet
-     * @return image
-     */
-    public PImage[] stopGetViewStart(TrackedView[] trackedViews) {
-        if (thread == null) {
-            System.err.println("Camera : Error: stopGetViewStart is to use only when thread is started");
-            return null;
-        }
-        boolean wasAutoUpdate = thread.isCompute();
-        thread.stopThread();
-        this.grab();
-
-        PImage[] out = new PImage[sheets.length];
-        int k = 0;
-
-        for (TrackedView trackedView : trackedViews) {
-            if (trackedView == null) {
-                System.err.println("Error: paper sheet not registered as tracked view.");
-                return null;
-            }
-            float[] pos = art.findMarkers(trackedView.getBoard());
-            trackedView.setPos(pos);
-            trackedView.computeCorners(this);
-            out[k++] = trackedView.getImage(art.getImageIpl());
-        }
-        setThread();
-        thread.setCompute(wasAutoUpdate);
-
-        return out;
-    }
 
 //    public PImage getPImage(){
 //        // TODO: verif non thread etc...

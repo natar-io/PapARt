@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package fr.inria.papart;
+package fr.inria.bordeaux.rv;
 
 import com.googlecode.javacv.cpp.ARToolKitPlus;
 import com.googlecode.javacv.cpp.ARToolKitPlus.MultiTracker;
@@ -40,7 +40,7 @@ public class MarkerBoard {
 
     public void updatePosition(IplImage img) {
         tracker.calc(img.imageData());
-
+        
         if (tracker.getNumDetectedMarkers() <= 0) {
             return;
         }
@@ -50,16 +50,17 @@ public class MarkerBoard {
             transfo[i] = (float) multiMarkerConfig.trans().get(i);
         }
     }
-
-    public float[] getTransfo() {
-        return this.transfo;
-    }
-
+    
+    
     public PMatrix3D getTransfoMat() {
         return new PMatrix3D(transfo[0], transfo[1], transfo[2], transfo[3],
                 transfo[4], transfo[5], transfo[6], transfo[7],
                 transfo[8], transfo[9], transfo[10], transfo[11],
                 0, 0, 0, 1);
+    }
+
+    public float[] getTransfo() {
+        return this.transfo;
     }
 
     public String getFileName() {

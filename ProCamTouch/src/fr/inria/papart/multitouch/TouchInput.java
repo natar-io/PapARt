@@ -1,14 +1,16 @@
 package fr.inria.papart.multitouch;
 
-import fr.inria.papart.multitouchKinect.MultiTouchKinect;
-import fr.inria.papart.multitouchKinect.TouchPoint;
+import com.googlecode.javacv.OpenKinectFrameGrabber;
+import com.googlecode.javacv.cpp.opencv_core.IplImage;
 import fr.inria.papart.Projector;
 import fr.inria.papart.Screen;
+import fr.inria.papart.kinect.Kinect;
+import fr.inria.papart.multitouchKinect.MultiTouchKinect;
+import fr.inria.papart.multitouchKinect.TouchPoint;
 import java.util.ArrayList;
 import processing.core.PApplet;
 import processing.core.PVector;
-import toxi.geom.ReadonlyVec3D;
-import toxi.geom.Vec3D;
+import sun.awt.Mutex;
 
 /**
  * Touch input, using a Kinect device for now.
@@ -17,40 +19,112 @@ import toxi.geom.Vec3D;
  */
 public class TouchInput {
 
-    private boolean isTouch2DActive = false;
-    private boolean isTouch3DActive = false;
     private ArrayList<TouchPoint> touchPoints2D, touchPoints3D;
     private int touch2DPrecision, touch3DPrecision;
     private MultiTouchKinect mtk;
-    private float touchHeight;
+    private Kinect kinect;
+    private GrabberThread grabberThread = null;
+    private Mutex mutex;
 
-    public TouchInput(PApplet applet, String calibrationFile) {
-        this(applet, calibrationFile, 1, 8);
-        // TODO: use XML calibration file.
+    public TouchInput(PApplet applet, String calibrationFile, Kinect kinect) {
+        this(applet, calibrationFile, kinect, null, 1, 4);
     }
 
-    public TouchInput(PApplet applet, String calibrationFile, int precision2D, int precision3D) {
-        mtk = new MultiTouchKinect(applet, calibrationFile);
+    public TouchInput(PApplet applet, String calibrationFile, Kinect kinect, int precision2D, int precision3D) {
+        this(applet, calibrationFile, kinect, null, precision2D, precision3D);
+    }
+
+    public TouchInput(PApplet applet, String calibrationFile, Kinect kinect, OpenKinectFrameGrabber grabber, int precision2D, int precision3D) {
+        this(applet, calibrationFile, kinect, grabber, false, precision2D, precision3D);
+    }
+
+    public TouchInput(PApplet applet, String calibrationFile, Kinect kinect, OpenKinectFrameGrabber grabber, boolean color, int precision2D, int precision3D) {
+        mtk = new MultiTouchKinect(applet, kinect, calibrationFile);
         this.touch2DPrecision = precision2D;
         this.touch3DPrecision = precision3D;
         touchPoints2D = mtk.getTouchPoint2D();
         touchPoints3D = mtk.getTouchPoint3D();
+
+        mutex = new Mutex();
+
+        if (grabber != null) {
+            grabberThread = new GrabberThread(this, grabber, color);
+            grabberThread.start();
+        }
     }
 
-    public void startTouch(int[] depth, float touchHeight) {
-        this.touchHeight = touchHeight;
-        mtk.updateKinect(depth);
+    class GrabberThread extends Thread {
 
-        // This updates the values of touchPoints2D and touchPoints3D
+        private OpenKinectFrameGrabber grabber;
+        private TouchInput touchInput;
+        private boolean isRunning = true;
+        private boolean useColor;
+
+        public GrabberThread(TouchInput ti, OpenKinectFrameGrabber grabber, boolean useColor) {
+            this.grabber = grabber;
+            this.touchInput = ti;
+            this.useColor = useColor;
+        }
+
+        @Override
+        public void run() {
+
+            if (useColor) {
+
+                while (isRunning) {
+                    try {
+                        IplImage depthImage = grabber.grabDepth();
+                        IplImage colorImage = grabber.grabVideo();
+                        mutex.lock();
+                        touchInput.startTouch(depthImage, colorImage);
+                        touchInput.endTouch();
+                        mutex.unlock();
+                    } catch (Exception e) {
+                    }
+                }
+
+            } else {
+
+                while (isRunning) {
+                    try {
+                        IplImage depthImage = grabber.grabDepth();
+                        mutex.lock();
+                        touchInput.startTouch(depthImage);
+                        touchInput.endTouch();
+                        mutex.unlock();
+                    } catch (Exception e) {
+                    }
+                }
+            }
+
+        }
+
+        public void stopThread() {
+            this.isRunning = false;
+        }
+    }
+
+    public void startTouch(IplImage depthImage) {
+
+        mtk.updateKinect(depthImage, touch2DPrecision);
         mtk.find2DTouch(touch2DPrecision);
-        mtk.find3DTouch(touch3DPrecision, touchHeight);
+
+        mtk.updateKinect3D(depthImage, touch3DPrecision);
+        mtk.find3DTouch(touch3DPrecision);
+    }
+
+    // TODO 3D ? : at least 2D for now...
+    public void startTouch(IplImage depthImage, IplImage colorImage) {
+
+        mtk.updateKinect(depthImage, touch2DPrecision);
+        mtk.find2DTouch(touch2DPrecision);
+        mtk.findColor(depthImage, colorImage, touchPoints2D, touch2DPrecision);
+
+        mtk.updateKinect3D(depthImage, touch3DPrecision);
+        mtk.find3DTouch(touch3DPrecision);
     }
 
     public void endTouch() {
-        //     try{
-        // kinectMutex.acquire();
-        //     }catch(Exception e){}
-
         mtk.touch2DFound();
         mtk.touch3DFound();
     }
@@ -68,14 +142,13 @@ public class TouchInput {
     }
 
     public TouchElement projectTouchToScreen(Screen screen, Projector projector, boolean is2D, boolean is3D) {
-        return projectTouchToScreen(screen, projector, is2D, is3D, false, false);
+        return projectTouchToScreen(screen, projector, is2D, is3D, true, true);
     }
 
     public TouchElement projectTouchToScreen(Screen screen, Projector projector,
             boolean is2D, boolean is3D,
             boolean isSpeed2D, boolean isSpeed3D) {
 
-        ArrayList<PVector> position2D = null, position3D = null, speed2D = null, speed3D = null;
 
         if (isSpeed2D) {
             is2D = true;
@@ -84,25 +157,31 @@ public class TouchInput {
             is3D = true;
         }
 
-        if (is2D) {
-            position2D = new ArrayList<PVector>();
-        }
-        if (is3D) {
-            position3D = new ArrayList<PVector>();
-        }
-        if (isSpeed2D) {
-            speed2D = new ArrayList<PVector>();
-        }
-        if (isSpeed3D) {
-            speed3D = new ArrayList<PVector>();
-        }
+        ArrayList<PVector> position2D = new ArrayList<PVector>();
+        ArrayList<PVector> position3D = new ArrayList<PVector>();
+        ArrayList<PVector> speed2D = new ArrayList<PVector>();
+        ArrayList<PVector> speed3D = new ArrayList<PVector>();
 
-        // TODO: version without all these allocations...
+        ArrayList<TouchPoint> points2D = new ArrayList<TouchPoint>();
+        ArrayList<TouchPoint> points3D = new ArrayList<TouchPoint>();
+
+        // OLD API
         TouchElement elem = new TouchElement();
         elem.position2D = position2D;
         elem.position3D = position3D;
+
         elem.speed2D = speed2D;
         elem.speed3D = speed3D;
+
+        // New API
+        elem.points2D = points2D;
+        elem.points3D = points3D;
+
+        mutex.lock();
+
+
+
+
 
         if (is2D && !touchPoints2D.isEmpty()) {
             for (TouchPoint tp : touchPoints2D) {
@@ -115,6 +194,7 @@ public class TouchInput {
                     PVector res, res2;
                     res = projector.projectPointer(screen, tp.v.x, tp.v.y);
 
+
                     if (isSpeed2D) {
                         res2 = (tp.oldV != null) ? projector.projectPointer(screen, tp.oldV.x, tp.oldV.y) : null;
                     } else {
@@ -126,8 +206,7 @@ public class TouchInput {
                         // inside the paper sheet 	      
                         if (res.x >= 0 && res.x <= 1 && res.y >= 0 && res.y <= 1) {
                             position2D.add(new PVector(res.x, res.y));
-//                            position2D.add(new PVector(res.x * screen.getSize().x * screen.getScale(),
-//                                        res.y* screen.getSize().y * screen.getScale()));
+                            points2D.add(tp);
                         }
 
                         if (res2 != null) {
@@ -154,12 +233,14 @@ public class TouchInput {
                     PVector res, res2;
                     res = projector.projectPointer(screen, tp.v.x, tp.v.y);
 //                    res = projector.projectPointer(screen, tp);
-                    
+
+
                     if (isSpeed3D && tp.oldV != null) {
                         res2 = projector.projectPointer(screen, tp.oldV.x, tp.oldV.y);
-                        
-                        if(res2 != null)
+
+                        if (res2 != null) {
                             res2.z = tp.oldV.z;
+                        }
 //                        res2 = (tp.oldV != null) ? projector.projectPointer(screen, tp) : null;
                     } else {
                         res2 = null;
@@ -167,10 +248,11 @@ public class TouchInput {
 
                     if (res != null) {
 
-                         res.z = tp.v.z;
+                        res.z = tp.v.z;
                         // inside the paper sheet 	      
                         if (res.x >= 0 && res.x <= 1 && res.y >= 0 && res.y <= 1) {
                             position3D.add(new PVector(res.x, res.y, tp.v.z));
+                            points3D.add(tp);
                         }
 
                         if (res2 != null) {
@@ -187,6 +269,104 @@ public class TouchInput {
             }
         }
 
+        mutex.unlock();
+
+        return elem;
+    }
+
+    public TouchElement projectAllTouchToScreen(Screen screen, Projector projector,
+            boolean is2D, boolean is3D,
+            boolean isSpeed2D, boolean isSpeed3D) {
+
+
+        if (isSpeed2D) {
+            is2D = true;
+        }
+        if (isSpeed3D) {
+            is3D = true;
+        }
+
+        ArrayList<PVector> position2D = new ArrayList<PVector>();
+        ArrayList<PVector> position3D = new ArrayList<PVector>();
+        ArrayList<PVector> speed2D = new ArrayList<PVector>();
+        ArrayList<PVector> speed3D = new ArrayList<PVector>();
+
+        ArrayList<TouchPoint> points2D = new ArrayList<TouchPoint>();
+        ArrayList<TouchPoint> points3D = new ArrayList<TouchPoint>();
+
+        // OLD API
+        TouchElement elem = new TouchElement();
+        elem.position2D = position2D;
+        elem.position3D = position3D;
+
+        elem.speed2D = speed2D;
+        elem.speed3D = speed3D;
+
+        // New API
+        elem.points2D = points2D;
+        elem.points3D = points3D;
+
+        mutex.lock();
+
+        if (is2D && !touchPoints2D.isEmpty()) {
+            for (TouchPoint tp : touchPoints2D) {
+                PVector proj, projSpeed;
+                proj = projector.projectPointer(screen, tp.v.x, tp.v.y);
+
+
+                if (isSpeed2D) {
+                    projSpeed = (tp.oldV != null) ? projector.projectPointer(screen, tp.oldV.x, tp.oldV.y) : null;
+                } else {
+                    projSpeed = null;
+                }
+
+                if (proj != null) {
+                    position2D.add(new PVector(proj.x, proj.y));
+                    points2D.add(tp);
+
+                    if (projSpeed != null) {
+                        // inside the paper sheet 	      
+                        if (projSpeed.x >= 0 && projSpeed.x <= 1 && projSpeed.y >= 0 && projSpeed.y <= 1) {
+                            speed2D.add(new PVector(proj.x - projSpeed.x,
+                                    proj.y - projSpeed.y));
+                        }
+                    }
+                }
+
+            }
+        }
+
+        if (is3D && !touchPoints3D.isEmpty()) {
+            for (TouchPoint tp : touchPoints3D) {
+
+                PVector proj, projSpeed;
+                proj = projector.projectPointer(screen, tp.v.x, tp.v.y);
+                points3D.add(tp);
+                if (isSpeed3D && tp.oldV != null) {
+                    projSpeed = projector.projectPointer(screen, tp.oldV.x, tp.oldV.y);
+                    if (projSpeed != null) {
+                        projSpeed.z = tp.oldV.z;
+                    }
+                } else {
+                    projSpeed = null;
+                }
+
+                if (proj != null) {
+
+                    proj.z = tp.v.z;
+                    position3D.add(new PVector(proj.x, proj.y, tp.v.z));
+
+                    if (projSpeed != null) {
+                        speed3D.add(new PVector(proj.x - projSpeed.x,
+                                proj.y - projSpeed.y,
+                                (tp.v.z - tp.oldV.z)));
+                    }
+                }
+
+            }
+        }
+
+        mutex.unlock();
 
         return elem;
     }

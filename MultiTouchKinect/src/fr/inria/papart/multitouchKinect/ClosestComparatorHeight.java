@@ -5,6 +5,7 @@
 
 package fr.inria.papart.multitouchKinect;
 
+import fr.inria.papart.kinect.KinectScreenCalibration;
 import java.util.Comparator;
 import toxi.geom.Vec3D;
 
@@ -16,18 +17,18 @@ import toxi.geom.Vec3D;
 public class ClosestComparatorHeight implements Comparator{
 
   public Vec3D[] points;
-  PlaneSelection planeSelection;
+  KinectScreenCalibration calibration;
   
   public ClosestComparatorHeight(Vec3D points[],
-          PlaneSelection planeSelection){
+          KinectScreenCalibration calib){
     this.points = points;
-    this.planeSelection = planeSelection;
+    this.calibration = calib;
   }
 
   public int compare(Object tp1, Object tp2){
 
-    float d1 = planeSelection.distanceTo(points[(Integer)tp1]);
-    float d2 = planeSelection.distanceTo(points[(Integer)tp2]);
+    float d1 = calibration.plane().distanceTo(points[(Integer)tp1]);
+    float d2 = calibration.plane().distanceTo(points[(Integer)tp2]);
     if(d1 > d2)
       return 1;
     return -1;

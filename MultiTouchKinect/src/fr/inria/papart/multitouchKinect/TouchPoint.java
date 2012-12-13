@@ -17,6 +17,7 @@ public class TouchPoint {
     public Vec3D v;
     public Vec3D oldV;
     public Vec3D vKinect;
+    public int color;
     float distanceMin;
     public int confidence;
     public boolean is3D;
@@ -31,7 +32,8 @@ public class TouchPoint {
 
     
     public static float filterFreq = 30f;
-    public static float filterCut = 1.0f;
+    public static float filterCut = 0.2f;
+//    public static float filterCut = 1.0f;
     public static float filterBeta = 8.000f;
     
     public TouchPoint() {
@@ -70,6 +72,10 @@ public class TouchPoint {
         return (currentTime - updateTime) > duration;
     }
 
+    public int getColor(){
+        return this.color;
+    }
+    
     // TODO: speed etc..
     public boolean updateWith(TouchPoint tp, int currentTime) {
 
@@ -87,25 +93,12 @@ public class TouchPoint {
         this.updateTime = currentTime;
         tp.toDelete = true;
 
-        // Implementation 1 --  Half smooth with the previous
-//    v.addSelf(tp.v);
-//    v.scaleSelf(0.5f);
-//    isCloseToPlane = tp.isCloseToPlane;
-
-
-//        try {
-//            v.x = (float) filters[0].filter(v.x);
-//            v.y = (float) filters[1].filter(v.y);
-//            v.z = (float) filters[2].filter(v.z);
-//        } catch (Exception e) {
-//            System.out.println("OneEuro init Exception. Pay now.");
-//        }
-
-        // Implementation 2 --  Replace the ArrayList
-        oldV = v;
+//        System.out.println("Update " + this.id + " with " + tp.id +" distance was " + this.v.distanceTo(tp.v)  );
+        
+        oldV = v.copy();
         v = tp.v;
 
-        vKinect = tp.v;
+        vKinect = tp.vKinect;
         confidence = tp.confidence;
         isCloseToPlane = tp.isCloseToPlane;
 
