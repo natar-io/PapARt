@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package fr.inria.papart;
+package fr.inria.papart.procam;
 
 /**
  *
@@ -32,7 +32,7 @@ public class Camera {
     static public void convertARParams(PApplet parent, String calibrationYAML,
             String calibrationData, int width, int height) {
         try {
-            fr.inria.papart.Utils.convertARParam(parent, calibrationYAML, calibrationData, width, height);
+            fr.inria.papart.procam.Utils.convertARParam(parent, calibrationYAML, calibrationData, width, height);
         } catch (Exception e) {
             PApplet.println("Conversion error. " + e);
         }

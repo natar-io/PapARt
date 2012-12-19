@@ -1,4 +1,13 @@
-package fr.inria.papart;
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package fr.inria.papart.multitouchKinect;
+
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
 
 /**
  *
@@ -74,25 +83,25 @@ public class OneEuroFilter {
         return 1.0 / (1.0 + tau / te);
     }
 
-    void setFrequency(double f) throws Exception {
+    public void setFrequency(double f) throws Exception {
         if (f <= 0) {
             throw new Exception("freq should be >0");
         }
         freq = f;
     }
 
-    void setMinCutoff(double mc) throws Exception {
+    public void setMinCutoff(double mc) throws Exception {
         if (mc <= 0) {
             throw new Exception("mincutoff should be >0");
         }
         mincutoff = mc;
     }
 
-    void setBeta(double b) {
+    public void setBeta(double b) {
         beta_ = b;
     }
 
-    void setDerivateCutoff(double dc) throws Exception {
+    public void setDerivateCutoff(double dc) throws Exception {
         if (dc <= 0) {
             throw new Exception("dcutoff should be >0");
         }
@@ -126,11 +135,11 @@ public class OneEuroFilter {
         lasttime = UndefinedTime;
     }
 
-    double filter(double value) throws Exception {
+    public double filter(double value) throws Exception {
         return filter(value, UndefinedTime);
     }
 
-    double filter(double value, double timestamp) throws Exception {
+    public double filter(double value, double timestamp) throws Exception {
         // update the sampling frequency based on timestamps
         if (lasttime != UndefinedTime && timestamp != UndefinedTime) {
             freq = 1.0 / (timestamp - lasttime);

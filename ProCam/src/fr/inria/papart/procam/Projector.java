@@ -1,4 +1,4 @@
-package fr.inria.papart;
+package fr.inria.papart.procam;
 
 import com.googlecode.javacv.ProjectiveDevice;
 import com.googlecode.javacv.ProjectorDevice;

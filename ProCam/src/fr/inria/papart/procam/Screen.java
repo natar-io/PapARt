@@ -1,4 +1,4 @@
-package fr.inria.papart;
+package fr.inria.papart.procam;
 
 import codeanticode.glgraphics.GLGraphicsOffScreen;
 import codeanticode.glgraphics.GLTexture;

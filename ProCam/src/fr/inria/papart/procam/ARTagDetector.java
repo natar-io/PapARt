@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package fr.inria.papart;
+package fr.inria.papart.procam;
 
 import com.googlecode.javacpp.BytePointer;
 import com.googlecode.javacv.FrameGrabber.ImageMode;
