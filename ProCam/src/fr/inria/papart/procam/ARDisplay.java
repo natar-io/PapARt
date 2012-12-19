@@ -39,6 +39,7 @@ public class ARDisplay {
     protected PMatrix3D invProjModelView;
     protected float znear;
     protected float zfar;
+    protected ProjectiveDeviceP pdp;
 
     public ARDisplay(PApplet parent, String calibrationYAML,
             int width, int height, float near, float far, int AA) {
@@ -66,31 +67,17 @@ public class ARDisplay {
     protected void loadInternalParams(String calibrationYAML) {
         // Load the camera parameters.
         try {
-
-            ProjectiveDevice[] p = ProjectiveDevice.read(calibrationYAML);
-            if (p.length > 0) {
-                proj = p[0];
-            }
-
-            double[] projMat = proj.cameraMatrix.get();
-            double[] projR = proj.R.get();
-            double[] projT = proj.T.get();
-            projIntrinsicsP3D = new PMatrix3D((float) projMat[0], (float) projMat[1], (float) projMat[2], 0,
-                    (float) projMat[3], (float) projMat[4], (float) projMat[5], 0,
-                    (float) projMat[6], (float) projMat[7], (float) projMat[8], 0,
-                    0, 0, 0, 1);
-            projExtrinsicsP3D = new PMatrix3D((float) projR[0], (float) projR[1], (float) projR[2], (float) projT[0],
-                    (float) projR[3], (float) projR[4], (float) projR[5], (float) projT[1],
-                    (float) projR[6], (float) projR[7], (float) projR[8], (float) projT[2],
-                    0, 0, 0, 1);
-
+            pdp = ProjectiveDeviceP.loadProjectiveDevice(calibrationYAML, 0);
+            
+            projExtrinsicsP3D = pdp.getExtrinsics();
+            projIntrinsicsP3D = pdp.getIntrinsics();
             projExtrinsicsP3DInv = projExtrinsicsP3D.get();
             projExtrinsicsP3DInv.invert();
+            
+            proj = pdp.getDevice();
 
         } catch (Exception e) {
-            // TODO: Exception creation !!
-            System.out.println("Error !!!!!");
-            System.err.println("Error reading the calibration file : " + calibrationYAML + " \n" + e);
+            System.out.println("Error !!"  + e);
         }
     }
 

@@ -24,10 +24,11 @@ public class Camera {
     // Camera parameters
     protected PMatrix3D camIntrinsicsP3D;
     public PApplet parent;
-    ArrayList<TrackedView> trackedViews;
-    MarkerBoard[] sheets;
+    private ArrayList<TrackedView> trackedViews;
+    private MarkerBoard[] sheets;
     public PVector resolution;
-    ARTThread thread = null;
+    private ARTThread thread = null;
+    protected ProjectiveDeviceP pdp;
 
     static public void convertARParams(PApplet parent, String calibrationYAML,
             String calibrationData, int width, int height) {
@@ -65,17 +66,17 @@ public class Camera {
     }
 
     public Camera(PApplet parent, String settingsFile, String calibrationYAML, String calibrationData,
-            MarkerBoard[] sheets){
-         this(parent, -1, settingsFile, -1, -1, calibrationYAML, calibrationData, sheets);
+            MarkerBoard[] sheets) {
+        this(parent, -1, settingsFile, -1, -1, calibrationYAML, calibrationData, sheets);
     }
-    
+
     public Camera(PApplet parent, int camNo, String videoFile,
             int width, int height,
-            String calibrationYAML, String calibrationData, 
+            String calibrationYAML, String calibrationData,
             MarkerBoard[] sheets) {
 
         this.resolution = new PVector(width, height);
-        
+
         art = new ARTagDetector(camNo, videoFile, width, height, 60, calibrationYAML,
                 calibrationData,
                 sheets);
@@ -85,19 +86,8 @@ public class Camera {
 
         // Load the camera parameters. 
         try {
-            CameraDevice[] camDev = CameraDevice.read(calibrationYAML);
-
-            if (camDev.length <= 0) {
-                throw new Exception("No camera device in the calibration file: " + calibrationYAML);
-            }
-            CameraDevice cameraDevice = camDev[0];
-
-            double[] camMat = cameraDevice.cameraMatrix.get();
-            camIntrinsicsP3D = new PMatrix3D((float) camMat[0], (float) camMat[1], (float) camMat[2], 0,
-                    (float) camMat[3], (float) camMat[4], (float) camMat[5], 0,
-                    (float) camMat[6], (float) camMat[7], (float) camMat[8], 0,
-                    0, 0, 0, 1);
-
+            pdp = ProjectiveDeviceP.loadCameraDevice(calibrationYAML, 0);
+            camIntrinsicsP3D = pdp.getIntrinsics();
         } catch (Exception e) {
             parent.die("Error reading the calibration file : " + calibrationYAML + " \n" + e);
         }
@@ -134,8 +124,6 @@ public class Camera {
         art.setCopyToPimage(isCopy);
     }
 
-    
-    
     /**
      * If the video is threaded, this sets if the tracking is on or not.
      *
@@ -150,7 +138,7 @@ public class Camera {
     }
 
     public float[] getPosPointer(MarkerBoard board) {
-         return board.getTransfo();
+        return board.getTransfo();
     }
 
     /**
@@ -201,9 +189,9 @@ public class Camera {
     public PImage getView(TrackedView trackedView) {
         return getView(trackedView, true);
     }
-    
-    public IplImage getViewIpl(TrackedView trackedView){
-        
+
+    public IplImage getViewIpl(TrackedView trackedView) {
+
         if (trackedView == null) {
             System.err.println("Error: paper sheet not registered as tracked view.");
             return null;
@@ -216,7 +204,7 @@ public class Camera {
         float[] pos = art.findMarkers(trackedView.getBoard());
         trackedView.setPos(pos);
         trackedView.computeCorners(this);
-       return trackedView.getImageIpl(art.getImageIpl());
+        return trackedView.getImageIpl(art.getImageIpl());
     }
 
     /**
@@ -226,8 +214,8 @@ public class Camera {
      * @return
      */
     public PImage getView(TrackedView trackedView, boolean undistort) {
-          
-           if (trackedView == null) {
+
+        if (trackedView == null) {
             System.err.println("Error: paper sheet not registered as tracked view.");
             return null;
         }
@@ -318,11 +306,10 @@ public class Camera {
 //        return art.getImage();
 //    }
 //    
-
-    public PImage getPImage(){
+    public PImage getPImage() {
         return art.getImage();
     }
-    
+
 //    public PImage getLastPaperView(MarkerBoard sheet) {
 //        return trackedViews.get(sheet).img;
 //    }

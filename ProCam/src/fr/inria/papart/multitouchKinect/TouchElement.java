@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package fr.inria.papart.multitouch;
+package fr.inria.papart.multitouchKinect;
 
 import fr.inria.papart.multitouchKinect.TouchPoint;
 import java.util.ArrayList;

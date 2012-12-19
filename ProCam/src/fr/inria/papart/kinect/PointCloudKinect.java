@@ -7,8 +7,11 @@ package fr.inria.papart.kinect;
 
 import codeanticode.glgraphics.GLModel;
 import java.util.ArrayList;
+import javax.media.opengl.GL;
 import processing.core.PApplet;
 import processing.core.PImage;
+import processing.core.PMatrix3D;
+import processing.core.PVector;
 import processing.opengl.PGraphicsOpenGL;
 import toxi.geom.Vec3D;
 import toxi.geom.mesh.OBJWriter;
@@ -28,11 +31,20 @@ public class PointCloudKinect {
         this.kinect = kinect;
         this.parent = parent;
 
-        // TODO: try pointSprites ?
-        model = new GLModel(parent, KinectCst.size, GLModel.POINT_SPRITES, GLModel.STREAM);
+        // TODO: try pointSprites ? -- not working on MacBook
+        model = new GLModel(parent, KinectCst.size, GLModel.POINTS, GLModel.STREAM);
+        
+//        model = new GLModel(parent, KinectCst.size, GLModel.POINT_SPRITES, GLModel.STREAM);
+//        model.setSpriteSize(80, 400);
+        
         model.initColors();
     }
 
+    
+    public GLModel getModel(){
+        return this.model;
+    }
+    
     public void updateColorsProcessing() {
 
         boolean[] valid = kinect.getValidPoints();
@@ -46,6 +58,46 @@ public class PointCloudKinect {
             if (valid[i]) {
                 Vec3D p = points[i];
                 model.updateVertex(nbToDraw++, p.x, p.y, -p.z);
+            }
+        }
+        model.endUpdateVertices();
+
+        if (colors != null) {
+            colors.loadPixels();
+            model.beginUpdateColors();
+            int k = 0;
+            for (int i = 0; i < KinectCst.size; i++) {
+                if (valid[i]) {
+                    int c = colors.pixels[i];
+
+                    model.updateColor(k++,
+                            (c >> 16) & 0xFF,
+                            (c >> 8) & 0xFF,
+                            c & 0xFF);
+                }
+            }
+            model.endUpdateColors();
+        }
+    }
+    
+    
+    public void updateColorsProcessing(PMatrix3D transfo) {
+
+        boolean[] valid = kinect.getValidPoints();
+        Vec3D[] points = kinect.getDepthPoints();
+        PImage colors = kinect.getDepthColor();
+
+        model.beginUpdateVertices();
+        nbToDraw = 0;
+        for (int i = 0; i < KinectCst.size; i++) {
+
+            if (valid[i]) {
+                Vec3D p = points[i];
+                PVector p2 = new PVector(p.x, p.y, p.z);
+                transfo.mult(p2, p2);
+                
+//                model.updateVertex(nbToDraw++, p.x, p.y, -p.z);
+                model.updateVertex(nbToDraw++, p2.x, p2.y, -p2.z);
             }
         }
         model.endUpdateVertices();

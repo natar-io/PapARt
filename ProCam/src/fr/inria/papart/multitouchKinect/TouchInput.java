@@ -1,4 +1,4 @@
-package fr.inria.papart.multitouch;
+package fr.inria.papart.multitouchKinect;
 
 import com.googlecode.javacv.OpenKinectFrameGrabber;
 import com.googlecode.javacv.cpp.opencv_core.IplImage;

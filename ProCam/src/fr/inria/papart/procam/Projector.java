@@ -11,7 +11,6 @@ import toxi.geom.Vec3D;
 
 public class Projector extends ARDisplay {
 
-
     /**
      * Projector allows the use of a projector for Spatial Augmented reality
      * setup. This class creates an OpenGL context which allows 3D projection.
@@ -34,39 +33,26 @@ public class Projector extends ARDisplay {
 
         super(parent, calibrationYAML, width, height, near, far, AA);
     }
-    
+
     @Override
     protected void loadInternalParams(String calibrationYAML) {
         // Load the camera parameters.
+
         try {
+            pdp = ProjectiveDeviceP.loadProjectorDevice(calibrationYAML, 0);
 
-            ProjectorDevice[] p = ProjectorDevice.read(calibrationYAML);
-            if (p.length > 0) {
-                proj = p[0];
-            }
-
-            double[] projMat = proj.cameraMatrix.get();
-            double[] projR = proj.R.get();
-            double[] projT = proj.T.get();
-            projIntrinsicsP3D = new PMatrix3D((float) projMat[0], (float) projMat[1], (float) projMat[2], 0,
-                    (float) projMat[3], (float) projMat[4], (float) projMat[5], 0,
-                    (float) projMat[6], (float) projMat[7], (float) projMat[8], 0,
-                    0, 0, 0, 1);
-            projExtrinsicsP3D = new PMatrix3D((float) projR[0], (float) projR[1], (float) projR[2], (float) projT[0],
-                    (float) projR[3], (float) projR[4], (float) projR[5], (float) projT[1],
-                    (float) projR[6], (float) projR[7], (float) projR[8], (float) projT[2],
-                    0, 0, 0, 1);
-
+            projExtrinsicsP3D = pdp.getExtrinsics();
+            projIntrinsicsP3D = pdp.getIntrinsics();
             projExtrinsicsP3DInv = projExtrinsicsP3D.get();
             projExtrinsicsP3DInv.invert();
 
-        } catch (Exception e) {
-            // TODO: Exception creation !!
-            System.out.println("Error !!!!!");
-            System.err.println("Error reading the calibration file : " + calibrationYAML + " \n" + e);
-        }
-    }
+            proj = pdp.getDevice();
 
+        } catch (Exception e) {
+            System.out.println("Error !!" + e);
+        }
+
+    }
 
     public void drawScreens() {
 
