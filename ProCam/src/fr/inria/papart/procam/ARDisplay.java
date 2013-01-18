@@ -68,16 +68,17 @@ public class ARDisplay {
         // Load the camera parameters.
         try {
             pdp = ProjectiveDeviceP.loadProjectiveDevice(calibrationYAML, 0);
-            
+//            pdp = ProjectiveDeviceP.loadCameraDevice(calibrationYAML, 0);
+
             projExtrinsicsP3D = pdp.getExtrinsics();
             projIntrinsicsP3D = pdp.getIntrinsics();
             projExtrinsicsP3DInv = projExtrinsicsP3D.get();
             projExtrinsicsP3DInv.invert();
-            
+
             proj = pdp.getDevice();
 
         } catch (Exception e) {
-            System.out.println("Error !!"  + e);
+            System.out.println("ARDisplay, Error !!" + e);
         }
     }
 

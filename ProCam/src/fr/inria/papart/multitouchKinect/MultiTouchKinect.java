@@ -89,7 +89,8 @@ public class MultiTouchKinect {
         goodPointOffsets = kinect.updateMT3D(depthImage, kinectCalibration, projPoints, skip);
     }
 
-    public void findColor(IplImage depthImage, IplImage colorImage, ArrayList<TouchPoint> touchPointList, int skip) {
+    public void findColor(IplImage depthImage, IplImage colorImage, Kinect kinect,
+            ArrayList<TouchPoint> touchPointList, int skip) {
 
         if (touchPointList.isEmpty()) {
             return;
@@ -98,10 +99,10 @@ public class MultiTouchKinect {
         ByteBuffer cBuff = colorImage.getByteBuffer();
 
         for (TouchPoint tp : touchPointList) {
-            int offset = 3* KinectCst.WorldToColor(tp.vKinect);
+            int offset = 3 * kinect.findColorOffset(tp.vKinect);
 
             tp.color = (255 & 0xFF) << 24
-                    | (cBuff.get(offset + 2)& 0xFF) << 16
+                    | (cBuff.get(offset + 2) & 0xFF) << 16
                     | (cBuff.get(offset + 1) & 0xFF) << 8
                     | (cBuff.get(offset) & 0xFF);
         }

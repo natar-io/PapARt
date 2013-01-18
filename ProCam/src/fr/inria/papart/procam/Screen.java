@@ -153,7 +153,7 @@ public class Screen {
 
         if (isOnly) {
             graphics.beginDraw();
-            graphics.clear(0);
+            graphics.clear(0, 0);
         }
 
         PVector paperCameraPos = new PVector();

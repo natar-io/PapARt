@@ -1,10 +1,13 @@
 package fr.inria.papart.multitouch;
 
+import com.googlecode.javacv.OpenKinectFrameGrabber;
 import fr.inria.papart.Projector;
 import fr.inria.papart.Screen;
+import fr.inria.papart.kinect.Kinect;
 import java.util.ArrayList;
 import processing.core.PApplet;
 import processing.core.PVector;
+import sun.awt.Mutex;
 import toxi.geom.Vec3D;
 
 /**
@@ -31,6 +34,10 @@ public class TouchInput {
         this.parent = applet;
         this.touch2DPrecision = precision2D;
         this.touch3DPrecision = precision3D;
+    }
+
+    
+    public TouchInput(PApplet applet, String calibrationFile, Kinect kinect, OpenKinectFrameGrabber grabber, boolean color, int precision2D, int precision3D) {
     }
 
     public void startTouch(int[] depth, float touchHeight) {

@@ -7,6 +7,7 @@ package fr.inria.papart.kinect;
 import com.googlecode.javacv.cpp.opencv_core;
 import com.googlecode.javacv.cpp.opencv_core.CvSize;
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
+import fr.inria.papart.procam.ProjectiveDeviceP;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
@@ -35,17 +36,25 @@ public class Kinect {
     private byte[] validPointsRaw;
     private IplImage validPointsIpl;
     private int id;
+    private int currentSkip = 1;
+    private ProjectiveDeviceP kinectCalibIR, kinectCalibRGB;
     static float[] depthLookUp = null;
-
-        // Debug purposes
-    public static byte[] connectedComponent = new byte[KinectCst.size];
+    // Debug purposes
+    public static byte[] connectedComponent;
     public static byte currentCompo = 1;
-    
-    
+
 //  Kinect with the standard calibration
-    public Kinect(PApplet parent, int id) {
-        this.parent = parent;
-        KinectCst.init(parent);
+    public Kinect(PApplet parent, String calib, int id) {
+        Kinect.parent = parent;
+
+        try {
+            kinectCalibRGB = ProjectiveDeviceP.loadCameraDevice(calib, 0);
+            kinectCalibIR = ProjectiveDeviceP.loadCameraDevice(calib, 1);
+        } catch (Exception e) {
+            System.err.println("Error loading Kinect Calibration: " + e);
+            System.exit(0);
+        }
+
         init(id);
     }
 
@@ -54,24 +63,39 @@ public class Kinect {
 //    public Kinect(PApplet parent, int id, String calibrationFile) {
 //        init(id);
 //    }
+    public int getCurrentSkip() {
+        return currentSkip;
+    }
+
+    public int findColorOffset(Vec3D v) {
+        PVector vt = new PVector(v.x, v.y, v.z);
+//        PVector vt2 = new PVector();
+//        kinectCalibRGB.getExtrinsics().mult(vt, vt2);
+        
+        return kinectCalibRGB.worldToPixel(new Vec3D(vt.x, vt.y, vt.z));
+//        return kinectCalibRGB.worldToPixel(new Vec3D(vt2.x, vt2.y, vt2.z));
+    }
+
     private void init(int id) {
         this.id = id;
 
 
-        // TODO: create them at first use !!
-        kinectPoints = new Vec3D[KinectCst.size];
-        validPoints = new boolean[KinectCst.size];
+        connectedComponent = new byte[kinectCalibIR.getSize()];
 
-        colorRaw = new byte[KinectCst.size * 3];
-        depthRaw = new byte[KinectCst.size * 2];
+        // TODO: create them at first use !!
+        kinectPoints = new Vec3D[kinectCalibIR.getSize()];
+        validPoints = new boolean[kinectCalibIR.getSize()];
+
+        colorRaw = new byte[kinectCalibIR.getSize() * 3];
+        depthRaw = new byte[kinectCalibIR.getSize() * 2];
 
         // For Processing output
-        colorPoints = new int[KinectCst.size];
-        validPointsPImage = parent.createImage(KinectCst.w, KinectCst.h, PConstants.RGB);
+        colorPoints = new int[kinectCalibIR.getSize()];
+        validPointsPImage = parent.createImage(kinectCalibIR.getWidth(), kinectCalibIR.getHeight(), PConstants.RGB);
 
         // For OpenCV Image output
-        validPointsIpl = IplImage.create(new CvSize(KinectCst.w, KinectCst.h), opencv_core.IPL_DEPTH_8U, 3);
-        validPointsRaw = new byte[KinectCst.w * KinectCst.h * 3];
+        validPointsIpl = IplImage.create(new CvSize(kinectCalibIR.getWidth(), kinectCalibIR.getHeight()), opencv_core.IPL_DEPTH_8U, 3);
+        validPointsRaw = new byte[kinectCalibIR.getWidth() * kinectCalibIR.getHeight() * 3];
 
         if (depthLookUp == null) {
             depthLookUp = new float[2048];
@@ -85,12 +109,49 @@ public class Kinect {
         return this.id;
     }
 
-    public byte[] getColorBuffer(){
+    public byte[] getColorBuffer() {
         return this.colorRaw;
     }
     
+    public void undistortRGB(IplImage rgb, IplImage out){
+        kinectCalibRGB.getDevice().undistort(rgb, out);
+    }
     
+    public void undistortIR(IplImage ir, IplImage out){
+        kinectCalibIR.getDevice().undistort(ir, out);
+    }
+
+    public void update(IplImage depth, int skip) {
+        this.currentSkip = skip;
+        ByteBuffer depthBuff = depth.getByteBuffer();
+        depthBuff.get(depthRaw);
+
+        for (int y = 0; y < kinectCalibIR.getHeight(); y += skip) {
+            for (int x = 0; x < kinectCalibIR.getWidth(); x += skip) {
+
+                int offset = y * kinectCalibIR.getWidth() + x;
+
+                float d = (depthRaw[offset * 2] & 0xFF) << 8
+                        | (depthRaw[offset * 2 + 1] & 0xFF);
+                d = 1000 * depthLookUp[(int) d];
+
+                boolean good = isGoodDepth(d);
+                validPoints[offset] = good;
+
+//                if (good) {
+                kinectPoints[offset] = kinectCalibIR.pixelToWorld(x, y, d);
+//                }
+            }
+        }
+    }
+
     public PImage updateP(IplImage depth, IplImage color) {
+        return updateP(depth, color, 1);
+    }
+
+    public PImage updateP(IplImage depth, IplImage color, int skip) {
+
+        this.currentSkip = skip;
 
         ByteBuffer depthBuff = depth.getByteBuffer();
         ByteBuffer colorBuff = color.getByteBuffer();
@@ -100,24 +161,24 @@ public class Kinect {
 
         validPointsPImage.loadPixels();
 
-        int off = 0;
-        for (int y = 0; y < KinectCst.h; y++) {
-            for (int x = 0; x < KinectCst.w; x++) {
+        for (int y = 0; y < kinectCalibIR.getHeight(); y += skip) {
+            for (int x = 0; x < kinectCalibIR.getWidth(); x += skip) {
 
-                int offset = off++;
+                int offset = y * kinectCalibIR.getWidth() + x;
 
                 float d = (depthRaw[offset * 2] & 0xFF) << 8
                         | (depthRaw[offset * 2 + 1] & 0xFF);
-                d = 1000 * depthLookUp[(int) d];
+//                d = 1000 * depthLookUp[(int) d];
 
+                d = 1000 * rawDepthToMeters((int)d);
+                
                 boolean good = isGoodDepth(d);
                 validPoints[offset] = good;
 
                 validPointsPImage.pixels[offset] = parent.color(0, 0, 255);
-
                 if (good) {
-                    kinectPoints[offset] = KinectCst.depthToWorld(x, y, d);
-                    colorPoints[offset] = KinectCst.WorldToColor(kinectPoints[offset]);
+                    kinectPoints[offset] = kinectCalibIR.pixelToWorld(x, y, d);
+                    colorPoints[offset] = this.findColorOffset(kinectPoints[offset]);
 
                     int colorOffset = colorPoints[offset] * 3;
                     int c = (colorRaw[colorOffset + 2] & 0xFF) << 16
@@ -141,6 +202,8 @@ public class Kinect {
 
     public PImage updateP(IplImage depth, IplImage color, int skip, KinectScreenCalibration calib) {
 
+        this.currentSkip = skip;
+
         ByteBuffer depthBuff = depth.getByteBuffer();
         ByteBuffer colorBuff = color.getByteBuffer();
 
@@ -150,10 +213,10 @@ public class Kinect {
         validPointsPImage.loadPixels();
 
         int off = 0;
-        for (int y = 0; y < KinectCst.h; y += skip) {
-            for (int x = 0; x < KinectCst.w; x += skip) {
+        for (int y = 0; y < kinectCalibIR.getHeight(); y += skip) {
+            for (int x = 0; x < kinectCalibIR.getWidth(); x += skip) {
 
-                int offset =  y * KinectCst.w + x;
+                int offset = y * kinectCalibIR.getWidth() + x;
 
                 float d = (depthRaw[offset * 2] & 0xFF) << 8
                         | (depthRaw[offset * 2 + 1] & 0xFF);
@@ -164,9 +227,9 @@ public class Kinect {
 
                 if (isGoodDepth(d)) {
 
-                    Vec3D p = KinectCst.depthToWorld(x, y, d);
+                    Vec3D p = kinectCalibIR.pixelToWorld(x, y, d);
                     kinectPoints[offset] = p;
-                    colorPoints[offset] = KinectCst.WorldToColor(kinectPoints[offset]);
+                    colorPoints[offset] = this.findColorOffset(p);
 
                     if (calib.plane().hasGoodOrientationAndDistance(p)) {
 
@@ -193,6 +256,12 @@ public class Kinect {
     }
 
     public IplImage updateIpl(IplImage depth, IplImage color) {
+        return updateIpl(depth, color, 1);
+    }
+
+    public IplImage updateIpl(IplImage depth, IplImage color, int skip) {
+
+        this.currentSkip = skip;
 
         ByteBuffer depthBuff = depth.getByteBuffer();
         ByteBuffer colorBuff = color.getByteBuffer();
@@ -203,11 +272,10 @@ public class Kinect {
         outputBuff.get(validPointsRaw);
         colorBuff.get(colorRaw);
 
-        int off = 0;
-        for (int y = 0; y < KinectCst.h; y++) {
-            for (int x = 0; x < KinectCst.w; x++) {
+        for (int y = 0; y < kinectCalibIR.getHeight(); y += skip) {
+            for (int x = 0; x < kinectCalibIR.getWidth(); x += skip) {
 
-                int offset = off++;
+                int offset = y * kinectCalibIR.getWidth() + x;
                 int outputOffset = offset * 3;
 
 
@@ -222,16 +290,16 @@ public class Kinect {
 
                 if (isGoodDepth(d)) {
                     validPoints[offset] = true;
-                    kinectPoints[offset] = KinectCst.depthToWorld(x, y, d);
-                    colorPoints[offset] = KinectCst.WorldToColor(kinectPoints[offset]);
+
+                    Vec3D p = kinectCalibIR.pixelToWorld(x, y, d);
+                    kinectPoints[offset] = p;
+                    colorPoints[offset] = this.findColorOffset(p);
 
                     int colorOffset = colorPoints[offset] * 3;
                     validPointsRaw[outputOffset + 2] = colorRaw[colorOffset + 2];
                     validPointsRaw[outputOffset + 1] = colorRaw[colorOffset + 1];
                     validPointsRaw[outputOffset + 0] = colorRaw[colorOffset + 0];
                 }
-
-
 
             }
         }
@@ -244,6 +312,8 @@ public class Kinect {
 
     public PImage updateProj(IplImage depth, IplImage color, KinectScreenCalibration calib, Vec3D[] projectedPoints, int skip) {
 
+        this.currentSkip = skip;
+
         ByteBuffer depthBuff = depth.getByteBuffer();
         ByteBuffer colorBuff = color.getByteBuffer();
 
@@ -252,10 +322,10 @@ public class Kinect {
 
         validPointsPImage.loadPixels();
 
-        for (int y = 0; y < KinectCst.h; y += skip) {
-            for (int x = 0; x < KinectCst.w; x += skip) {
+        for (int y = 0; y < kinectCalibIR.getHeight(); y += skip) {
+            for (int x = 0; x < kinectCalibIR.getWidth(); x += skip) {
 
-                int offset = y * KinectCst.w + x;
+                int offset = y * kinectCalibIR.getWidth() + x;
 
                 float d = (depthRaw[offset * 2] & 0xFF) << 8
                         | (depthRaw[offset * 2 + 1] & 0xFF);
@@ -266,8 +336,9 @@ public class Kinect {
 
                 if (isGoodDepth(d)) {
 
-                    Vec3D p = KinectCst.depthToWorld(x, y, d);
-                    colorPoints[offset] = KinectCst.WorldToColor(p);
+                    Vec3D p = kinectCalibIR.pixelToWorld(x, y, d);
+                    kinectPoints[offset] = p;
+                    colorPoints[offset] = this.findColorOffset(p);
 
                     if (calib.plane().hasGoodOrientationAndDistance(p)) {
 
@@ -304,6 +375,8 @@ public class Kinect {
 
     public ArrayList<Integer> updateMT(IplImage depth, IplImage color, KinectScreenCalibration calib, Vec3D[] projectedPoints, int skip) {
 
+        this.currentSkip = skip;
+
         ArrayList<Integer> points = new ArrayList<Integer>();
 
         ByteBuffer outputBuff = validPointsIpl.getByteBuffer();
@@ -314,10 +387,10 @@ public class Kinect {
         outputBuff.get(validPointsRaw);
         colorBuff.get(colorRaw);
 
-        for (int y = 0; y < KinectCst.h; y += skip) {
-            for (int x = 0; x < KinectCst.w; x += skip) {
+        for (int y = 0; y < kinectCalibIR.getHeight(); y += skip) {
+            for (int x = 0; x < kinectCalibIR.getWidth(); x += skip) {
 
-                int offset = y * KinectCst.w + x;
+                int offset = y * kinectCalibIR.getWidth() + x;
 
                 int colorOutputOffset = offset * 3;
 
@@ -329,8 +402,10 @@ public class Kinect {
                 validPoints[offset] = false;
 
                 if (isGoodDepth(d)) {
-                    Vec3D p = KinectCst.depthToWorld(x, y, d);
-                    colorPoints[offset] = KinectCst.WorldToColor(p);
+                    Vec3D p = kinectCalibIR.pixelToWorld(x, y, d);
+                    kinectPoints[offset] = p;
+                    colorPoints[offset] = this.findColorOffset(p);
+
 
                     if (calib.plane().hasGoodOrientationAndDistance(p)) {
 
@@ -361,6 +436,7 @@ public class Kinect {
 
     public ArrayList<Integer> updateMT(IplImage depth, KinectScreenCalibration calib, Vec3D[] projectedPoints, int skip) {
 
+        this.currentSkip = skip;
         ArrayList<Integer> points = new ArrayList<Integer>();
 
         ByteBuffer outputBuff = validPointsIpl.getByteBuffer();
@@ -369,10 +445,10 @@ public class Kinect {
         depthBuff.get(depthRaw);
         outputBuff.get(validPointsRaw);
 
-        for (int y = 0; y < KinectCst.h; y += skip) {
-            for (int x = 0; x < KinectCst.w; x += skip) {
+        for (int y = 0; y < kinectCalibIR.getHeight(); y += skip) {
+            for (int x = 0; x < kinectCalibIR.getWidth(); x += skip) {
 
-                int offset = y * KinectCst.w + x;
+                int offset = y * kinectCalibIR.getWidth() + x;
 
                 float d = (depthRaw[offset * 2] & 0xFF) << 8
                         | (depthRaw[offset * 2 + 1] & 0xFF);
@@ -382,7 +458,7 @@ public class Kinect {
 
                 if (isGoodDepth(d)) {
 
-                    Vec3D p = KinectCst.depthToWorld(x, y, d);
+                    Vec3D p = kinectCalibIR.pixelToWorld(x, y, d);
 
                     if (calib.plane().hasGoodOrientationAndDistance(p)) {
 
@@ -406,6 +482,7 @@ public class Kinect {
 
     public ArrayList<Integer> updateMT3D(IplImage depth, KinectScreenCalibration calib, Vec3D[] projectedPoints, int skip) {
 
+        this.currentSkip = skip;
         ArrayList<Integer> points = new ArrayList<Integer>();
 
         ByteBuffer outputBuff = validPointsIpl.getByteBuffer();
@@ -414,10 +491,10 @@ public class Kinect {
         depthBuff.get(depthRaw);
         outputBuff.get(validPointsRaw);
 
-        for (int y = 0; y < KinectCst.h; y += skip) {
-            for (int x = 0; x < KinectCst.w; x += skip) {
+        for (int y = 0; y < kinectCalibIR.getHeight(); y += skip) {
+            for (int x = 0; x < kinectCalibIR.getWidth(); x += skip) {
 
-                int offset = y * KinectCst.w + x;
+                int offset = y * kinectCalibIR.getWidth() + x;
 
                 float d = (depthRaw[offset * 2] & 0xFF) << 8
                         | (depthRaw[offset * 2 + 1] & 0xFF);
@@ -427,7 +504,7 @@ public class Kinect {
 
                 if (isGoodDepth(d)) {
 
-                    Vec3D p = KinectCst.depthToWorld(x, y, d);
+                    Vec3D p = kinectCalibIR.pixelToWorld(x, y, d);
 
                     if (calib.plane().hasGoodOrientation(p)) {
 

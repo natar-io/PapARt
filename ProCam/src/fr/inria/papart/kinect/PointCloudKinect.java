@@ -7,6 +7,7 @@ package fr.inria.papart.kinect;
 
 import codeanticode.glgraphics.GLModel;
 import java.util.ArrayList;
+import java.util.Arrays;
 import javax.media.opengl.GL;
 import processing.core.PApplet;
 import processing.core.PImage;
@@ -26,6 +27,14 @@ public class PointCloudKinect {
     private Kinect kinect;
     private PApplet parent;
     private int nbToDraw = 0;
+    private GLModel lastModel = model;
+    private GLModel triangleModel = null;
+    private int[] indicesMap;
+    private int[] indices;
+    private boolean[] valid;
+    private Vec3D[] points;
+    private PImage colors;
+    private int skip;
 
     public PointCloudKinect(PApplet parent, Kinect kinect) {
         this.kinect = kinect;
@@ -33,24 +42,23 @@ public class PointCloudKinect {
 
         // TODO: try pointSprites ? -- not working on MacBook
         model = new GLModel(parent, KinectCst.size, GLModel.POINTS, GLModel.STREAM);
-        
+
 //        model = new GLModel(parent, KinectCst.size, GLModel.POINT_SPRITES, GLModel.STREAM);
 //        model.setSpriteSize(80, 400);
-        
+
         model.initColors();
     }
 
-    
-    public GLModel getModel(){
+    public GLModel getModel() {
         return this.model;
     }
-    
+
     public void updateColorsProcessing() {
 
         boolean[] valid = kinect.getValidPoints();
         Vec3D[] points = kinect.getDepthPoints();
         PImage colors = kinect.getDepthColor();
-
+        lastModel = model;
         model.beginUpdateVertices();
         nbToDraw = 0;
         for (int i = 0; i < KinectCst.size; i++) {
@@ -79,13 +87,14 @@ public class PointCloudKinect {
             model.endUpdateColors();
         }
     }
-    
-    
+
     public void updateColorsProcessing(PMatrix3D transfo) {
 
         boolean[] valid = kinect.getValidPoints();
         Vec3D[] points = kinect.getDepthPoints();
         PImage colors = kinect.getDepthColor();
+
+        lastModel = model;
 
         model.beginUpdateVertices();
         nbToDraw = 0;
@@ -95,7 +104,7 @@ public class PointCloudKinect {
                 Vec3D p = points[i];
                 PVector p2 = new PVector(p.x, p.y, p.z);
                 transfo.mult(p2, p2);
-                
+
 //                model.updateVertex(nbToDraw++, p.x, p.y, -p.z);
                 model.updateVertex(nbToDraw++, p2.x, p2.y, -p2.z);
             }
@@ -120,12 +129,136 @@ public class PointCloudKinect {
         }
     }
 
+    private void initTriangleModel() {
+        triangleModel = new GLModel(parent, KinectCst.size, GLModel.TRIANGLES, GLModel.STREAM);
+        triangleModel.initIndices(KinectCst.size * 6, GLModel.STREAM);
+        triangleModel.initColors();
+        indicesMap = new int[KinectCst.size];
+        indices = new int[KinectCst.size * 6];
+    }
+
+    public void updateTrianglesColorsProcessing() {
+
+        if (triangleModel == null) {
+            initTriangleModel();
+        } else {
+//            Arrays.fill(indicesMap, 0);
+//            Arrays.fill(indices, 0);
+        }
+
+        lastModel = triangleModel;
+
+        valid = kinect.getValidPoints();
+        points = kinect.getDepthPoints();
+        colors = kinect.getDepthColor();
+
+        triangleModel.beginUpdateVertices();
+        nbToDraw = 0;
+
+        skip = kinect.getCurrentSkip();
+
+        ///////////////  Vertices
+
+        nbToDraw = 0;
+        for (int i = 0; i < KinectCst.size; i++) {
+
+            if (valid[i]) {
+                Vec3D p = points[i];
+//                PVector p2 = new PVector(p.x, p.y, p.z);
+//                transfo.mult(p2, p2);
+
+                indicesMap[i] = nbToDraw;
+                triangleModel.updateVertex(nbToDraw++, p.x, p.y, -p.z);
+
+//                triangleModel.updateVertex(nbToDraw++, p2.x, p2.y, -p2.z);
+
+            }
+        }
+        triangleModel.endUpdateVertices();
+
+
+        ///////////////  Indices 
+        int currentIndex = 0;
+
+        for (int y = skip; y < KinectCst.h; y += skip) {
+            for (int x = skip; x < KinectCst.w; x += skip) {
+
+                int offset = y * KinectCst.w + x;
+
+                if (valid[offset]) {
+                    currentIndex = checkAndCreateTriangle(x, y, currentIndex);
+                }
+            }
+        }
+
+//        triangleModel.beginUpdateIndices();
+        triangleModel.updateIndices(indices, currentIndex);
+//        triangleModel.endUpdateIndices();
+
+        nbToDraw = currentIndex;
+
+
+        ///////////////  Colors 
+        if (colors != null) {
+            colors.loadPixels();
+            triangleModel.beginUpdateColors();
+            int k = 0;
+            for (int i = 0; i < KinectCst.size; i++) {
+                if (valid[i]) {
+                    int c = colors.pixels[i];
+
+                    triangleModel.updateColor(k++,
+                            (c >> 16) & 0xFF,
+                            (c >> 8) & 0xFF,
+                            c & 0xFF);
+                }
+            }
+            triangleModel.endUpdateColors();
+        }
+    }
+
+    private int checkAndCreateTriangle(int x, int y, int currentIndex) {
+
+        // Triangles indices this way. A is current
+        // D B 
+        // C A
+
+        final float maxDist = 10.0f;
+
+        int offsetB = ((y - skip) * KinectCst.w) + x;
+        int offsetA = (y * KinectCst.w) + x;
+        int offsetC = offsetA - skip;
+        int offsetD = offsetB - skip;
+
+        if (valid[offsetA]
+                && valid[offsetB]
+                && valid[offsetC]
+                && valid[offsetD]) {
+
+            if (points[offsetA].distanceTo(points[offsetB]) < maxDist &&
+                points[offsetA].distanceTo(points[offsetC]) < maxDist &&    
+                points[offsetA].distanceTo(points[offsetD]) < maxDist) {
+
+
+                indices[currentIndex++] = indicesMap[offsetD];
+                indices[currentIndex++] = indicesMap[offsetC];
+                indices[currentIndex++] = indicesMap[offsetA];
+                indices[currentIndex++] = indicesMap[offsetD];
+                indices[currentIndex++] = indicesMap[offsetA];
+                indices[currentIndex++] = indicesMap[offsetB];
+            }
+//            model.updateIndices(indicesMap);
+        }
+
+        return currentIndex;
+    }
+
     public void update() {
 
         boolean[] valid = kinect.getValidPoints();
         Vec3D[] points = kinect.getDepthPoints();
         PImage colors = kinect.getDepthColor();
-
+        lastModel = model;
         model.beginUpdateVertices();
         nbToDraw = 0;
         for (int i = 0; i < KinectCst.size; i++) {
@@ -169,7 +302,7 @@ public class PointCloudKinect {
         boolean[] valid = kinect.getValidPoints();
         Vec3D[] points = kinect.getDepthPoints();
         PImage colors = kinect.getDepthColor();
-
+        lastModel = model;
         model.beginUpdateVertices();
         nbToDraw = 0;
         for (int i = 0; i < KinectCst.size; i++) {
@@ -201,7 +334,7 @@ public class PointCloudKinect {
 
         boolean[] valid = kinect.getValidPoints();
         Vec3D[] points = kinect.getDepthPoints();
-
+        lastModel = model;
         model.beginUpdateVertices();
         nbToDraw = 0;
         for (int i = 0; i < KinectCst.size; i++) {
@@ -237,7 +370,7 @@ public class PointCloudKinect {
                         case 5:
                             c = parent.color(0, 100, 200);
                             break;
-                        default : 
+                        default:
                     }
                 }
 
@@ -253,13 +386,14 @@ public class PointCloudKinect {
 
     public void drawSelf(PGraphicsOpenGL graphics) {
 //        System.out.println("Trying to draw " + nbToDraw);
-        model.render(0, nbToDraw);
+//        lastModel.render(0, nbToDraw);
+        lastModel.render();
     }
-    
-    public void exportToObj(String fileName){
+
+    public void exportToObj(String fileName) {
         OBJWriter writer = new OBJWriter();
         writer.beginSave(fileName);
-        
+
         boolean[] valid = kinect.getValidPoints();
         Vec3D[] points = kinect.getDepthPoints();
 //        PImage colors = kinect.getDepthColor();
@@ -287,20 +421,18 @@ public class PointCloudKinect {
 //            }
 //            model.endUpdateColors();
 //        }
-        
+
         writer.endSave();
     }
-    
-    
-    private OBJWriter writer = null; 
-     
-    public void startExportObj(String fileName){
+    private OBJWriter writer = null;
+
+    public void startExportObj(String fileName) {
         writer = new OBJWriter();
         writer.beginSave(fileName);
     }
-    
+
     public void exportObj() {
-        assert(writer != null);
+        assert (writer != null);
         boolean[] valid = kinect.getValidPoints();
         Vec3D[] points = kinect.getDepthPoints();
         for (int i = 0; i < KinectCst.size; i++) {
@@ -310,9 +442,8 @@ public class PointCloudKinect {
             }
         }
     }
-    
-    
-    public void endExportObj(){
+
+    public void endExportObj() {
         writer.endSave();
     }
 

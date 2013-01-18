@@ -118,7 +118,7 @@ public class TouchInput {
 
         mtk.updateKinect(depthImage, touch2DPrecision);
         mtk.find2DTouch(touch2DPrecision);
-        mtk.findColor(depthImage, colorImage, touchPoints2D, touch2DPrecision);
+        mtk.findColor(depthImage, colorImage, kinect, touchPoints2D, touch2DPrecision);
 
         mtk.updateKinect3D(depthImage, touch3DPrecision);
         mtk.find3DTouch(touch3DPrecision);

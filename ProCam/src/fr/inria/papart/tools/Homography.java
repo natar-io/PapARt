@@ -53,7 +53,7 @@ public class Homography {
 
     private void init(PApplet parent) {
         pa = parent;
-        pa.println("Initilizing the homography");
+//        pa.println("Initilizing the homography");
         currentPoint = 0;
         isValid = false;
         srcPoints = cvCreateMat(srcDim, nbPoints, CV_32FC1);
@@ -206,7 +206,7 @@ public class Homography {
 
         }
         pa.saveStrings(filename, lines);
-        pa.println("Homography successfully saved");
+//        pa.println("Homography successfully saved");
 
     }
 
@@ -224,7 +224,7 @@ public class Homography {
                 Float.parseFloat(lines[4]), Float.parseFloat(lines[5]), Float.parseFloat(lines[7]));
 
 
-        System.out.println("Homography successfully loaded");
+//        System.out.println("Homography successfully loaded");
         isValid = true;
     }
 }

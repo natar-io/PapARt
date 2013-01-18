@@ -46,6 +46,10 @@ public class TouchPoint {
 
         return true;
     }
+    
+    public int getColor(){
+        return 0;
+    }
 
     public Vec3D getPosition() {
         return v;

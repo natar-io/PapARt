@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package fr.inria.papart.multitouch;
+package fr.inria.papart.kinect;
 
 import processing.core.PApplet;
 
@@ -13,7 +13,7 @@ import processing.core.PApplet;
 public class Kinect {
  
     
-    public Kinect(PApplet app){
+    public Kinect(PApplet app, int id){
         
     }
     

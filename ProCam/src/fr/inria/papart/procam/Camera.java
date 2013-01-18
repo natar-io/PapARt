@@ -9,6 +9,7 @@ package fr.inria.papart.procam;
  * @author jeremylaviole
  */
 import com.googlecode.javacv.CameraDevice;
+import com.googlecode.javacv.FrameGrabber;
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,9 +27,9 @@ public class Camera {
     public PApplet parent;
     private ArrayList<TrackedView> trackedViews;
     private MarkerBoard[] sheets;
-    public PVector resolution;
     private ARTThread thread = null;
     protected ProjectiveDeviceP pdp;
+    private FrameGrabber grabber;
 
     static public void convertARParams(PApplet parent, String calibrationYAML,
             String calibrationData, int width, int height) {
@@ -75,9 +76,30 @@ public class Camera {
             String calibrationYAML, String calibrationData,
             MarkerBoard[] sheets) {
 
-        this.resolution = new PVector(width, height);
-
         art = new ARTagDetector(camNo, videoFile, width, height, 60, calibrationYAML,
+                calibrationData,
+                sheets);
+
+        this.grabber = art.getGrabber();
+        this.sheets = sheets;
+        this.trackedViews = new ArrayList<TrackedView>();
+
+        // Load the camera parameters. 
+        try {
+            pdp = ProjectiveDeviceP.loadCameraDevice(calibrationYAML, 0);
+            camIntrinsicsP3D = pdp.getIntrinsics();
+        } catch (Exception e) {
+            parent.die("Error reading the calibration file : " + calibrationYAML + " \n" + e);
+        }
+    }
+
+    public Camera(FrameGrabber grabber,
+            String calibrationYAML, String calibrationData,
+            MarkerBoard[] sheets) {
+
+        this.grabber = grabber;
+
+        art = new ARTagDetector(grabber, calibrationYAML,
                 calibrationData,
                 sheets);
 
