@@ -26,6 +26,10 @@ import processing.core.PApplet;
 import processing.core.PImage;
 import processing.core.PVector;
 
+import static com.googlecode.javacv.cpp.opencv_imgproc.*;
+import static com.googlecode.javacv.cpp.opencv_core.*;
+import com.googlecode.javacv.cpp.opencv_core.*;
+
 /**
  *
  * @author jeremy
@@ -37,22 +41,29 @@ public class ARTagDetector {
     private PImage pimg;
     private CameraDevice cam;
     private IplImage img2 = null;
+    private IplImage bayerImg = null;
     private boolean lastUndistorted;
     private boolean isCopy = false;
     private HashMap<MarkerBoard, PVector> lastPosMap;
 //    static private boolean useSafeMode = false;
+    private boolean hasBayer;
 
     public ARTagDetector(int device, int w, int h, int framerate, String yamlCameraProj, String cameraFile, MarkerBoard[] paperSheets) {
-        this(device, null, w, h, framerate, yamlCameraProj, cameraFile, paperSheets);
+        this(device, null, w, h, framerate, yamlCameraProj, cameraFile, paperSheets, false);
+    }
+
+    public ARTagDetector(int device, int w, int h, int framerate, String yamlCameraProj, String cameraFile, MarkerBoard[] paperSheets, boolean hasBayer) {
+        this(device, null, w, h, framerate, yamlCameraProj, cameraFile, paperSheets, hasBayer);
     }
 
     public ARTagDetector(String fileName, int w, int h, int framerate, String yamlCameraProj, String cameraFile, MarkerBoard[] paperSheets) {
-        this(-1, fileName, w, h, framerate, yamlCameraProj, cameraFile, paperSheets);
+        this(-1, fileName, w, h, framerate, yamlCameraProj, cameraFile, paperSheets, false);
     }
 
     // TODO: ARTagDetector avec CameraDevice en parametre...
     // TODO: Gestion du Grabber dans la classe Camera...
-    protected ARTagDetector(int device, String videoFile, int w, int h, int framerate, String yamlCameraProj, String cameraFile, MarkerBoard[] paperSheets) {
+    protected ARTagDetector(int device, String videoFile, int w, int h, int framerate, String yamlCameraProj,
+            String cameraFile, MarkerBoard[] paperSheets, boolean hasBayer) {
 
         // check the files
         File f1 = new File(cameraFile);
@@ -61,6 +72,15 @@ public class ARTagDetector {
             String name = p.getFileName();
             File f2 = new File(name);
             assert (f2.exists());
+        }
+
+        this.hasBayer = hasBayer;
+
+        if (hasBayer) {
+            CvSize outSize = new CvSize();
+            outSize.width(w);
+            outSize.height(h);
+            bayerImg = cvCreateImage(outSize, 8, 3);
         }
 
         // Init the camera parameters
@@ -165,6 +185,18 @@ public class ARTagDetector {
             this.lastUndistorted = undistort;
 //            grabber.trigger();
             iimg = grabber.grab();
+
+            if (hasBayer) {
+//
+//                if (bayerImg == null) {
+//                    bayerImg = iimg.clone();
+//                }
+
+                cvCvtColor(iimg, bayerImg, CV_BayerBG2BGR);
+                iimg = bayerImg;
+                // Deal with undistort ? 
+
+            }
 
             if (undistort) {
                 if (img2 == null) {

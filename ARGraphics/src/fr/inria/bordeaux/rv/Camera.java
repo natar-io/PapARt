@@ -53,31 +53,38 @@ public class Camera {
             int width, int height,
             String calibrationYAML, String calibrationData,
             MarkerBoard[] sheets) {
-        this(parent, camNo, null, width, height, calibrationYAML, calibrationData, sheets);
+        this(parent, camNo, null, width, height, calibrationYAML, calibrationData, sheets,false);
+    }
+    
+    public Camera(PApplet parent, int camNo,
+            int width, int height,
+            String calibrationYAML, String calibrationData,
+            MarkerBoard[] sheets, boolean hasBayer) {
+        this(parent, camNo, null, width, height, calibrationYAML, calibrationData, sheets, hasBayer);
     }
 
     public Camera(PApplet parent, String fileName,
             int width, int height,
             String calibrationYAML, String calibrationData,
             MarkerBoard[] sheets) {
-        this(parent, -1, fileName, width, height, calibrationYAML, calibrationData, sheets);
+        this(parent, -1, fileName, width, height, calibrationYAML, calibrationData, sheets, false);
     }
 
     public Camera(PApplet parent, String settingsFile, String calibrationYAML, String calibrationData,
             MarkerBoard[] sheets){
-         this(parent, -1, settingsFile, -1, -1, calibrationYAML, calibrationData, sheets);
+         this(parent, -1, settingsFile, -1, -1, calibrationYAML, calibrationData, sheets, false);
     }
     
     public Camera(PApplet parent, int camNo, String videoFile,
             int width, int height,
             String calibrationYAML, String calibrationData, 
-            MarkerBoard[] sheets) {
+            MarkerBoard[] sheets, boolean hasBayer) {
 
         this.resolution = new PVector(width, height);
         
         art = new ARTagDetector(camNo, videoFile, width, height, 60, calibrationYAML,
                 calibrationData,
-                sheets);
+                sheets, hasBayer);
 
         this.sheets = sheets;
 
@@ -100,6 +107,9 @@ public class Camera {
             parent.die("Error reading the calibration file : " + calibrationYAML + " \n" + e);
         }
     }
+    
+    
+  
 
     /**
      * It makes the camera update continuously.
