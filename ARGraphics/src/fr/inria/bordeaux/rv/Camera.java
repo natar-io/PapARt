@@ -11,6 +11,7 @@ package fr.inria.bordeaux.rv;
  * @author jeremylaviole
  */
 import com.googlecode.javacv.CameraDevice;
+import com.googlecode.javacv.cpp.opencv_core;
 
 import processing.core.PApplet;
 import processing.core.PImage;
@@ -195,6 +196,63 @@ public class Camera {
 //    public PImage getLastPaperView(MarkerBoard sheet) {
 //        return trackedViews.get(sheet).img;
 //    }
+    
+    
+    
+     /**
+     * Get an image from the view.
+     *
+     * @param trackedView
+     * @return
+     */
+    public PImage getView(TrackedView trackedView) {
+        return getView(trackedView, true);
+    }
+
+    public opencv_core.IplImage getViewIpl(TrackedView trackedView) {
+
+        if (trackedView == null) {
+            System.err.println("Error: paper sheet not registered as tracked view.");
+            return null;
+        }
+
+//        grab(undistort);
+        if (!art.isReady(true)) {
+            return null;
+        }
+        float[] pos = art.findMarkers(trackedView.getBoard());
+        trackedView.setPos(pos);
+        trackedView.computeCorners(this);
+        return trackedView.getImageIpl(art.getImageIpl());
+    }
+
+    /**
+     * Get an image from the view.
+     *
+     * @param trackedView
+     * @return
+     */
+    public PImage getView(TrackedView trackedView, boolean undistort) {
+
+        if (trackedView == null) {
+            System.err.println("Error: paper sheet not registered as tracked view.");
+            return null;
+        }
+
+//        grab(undistort);
+        if (!art.isReady(undistort)) {
+            return null;
+        }
+        
+        float[] pos = art.findMarkers(trackedView.getBoard());
+        trackedView.setPos(pos);
+        trackedView.computeCorners(this);
+        return trackedView.getImage(art.getImageIpl());
+    }
+    
+    
+    
+    
     public void close() {
         art.close();
     }
