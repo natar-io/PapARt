@@ -31,6 +31,11 @@ public class ProjectiveDeviceP {
     public ProjectiveDeviceP() {
     }
 
+    public ProjectiveDeviceP(int width, int height) {
+        this.w = width;
+        this.h = height;
+    }
+    
     public PMatrix3D getIntrinsics() {
         return this.intrinsics;
     }

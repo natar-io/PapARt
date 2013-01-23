@@ -8,9 +8,9 @@ import fr.inria.papart.kinect.Kinect;
 import fr.inria.papart.multitouchKinect.MultiTouchKinect;
 import fr.inria.papart.multitouchKinect.TouchPoint;
 import java.util.ArrayList;
+import java.util.concurrent.Semaphore;
 import processing.core.PApplet;
 import processing.core.PVector;
-import sun.awt.Mutex;
 
 /**
  * Touch input, using a Kinect device for now.
@@ -24,7 +24,8 @@ public class TouchInput {
     private MultiTouchKinect mtk;
     private Kinect kinect;
     private GrabberThread grabberThread = null;
-    private Mutex mutex;
+    private static final int MAX_AVAILABLE = 1;
+    private final Semaphore sem = new Semaphore(MAX_AVAILABLE, true);
 
     public TouchInput(PApplet applet, String calibrationFile, Kinect kinect) {
         this(applet, calibrationFile, kinect, null, 1, 4);
@@ -44,8 +45,6 @@ public class TouchInput {
         this.touch3DPrecision = precision3D;
         touchPoints2D = mtk.getTouchPoint2D();
         touchPoints3D = mtk.getTouchPoint3D();
-
-        mutex = new Mutex();
 
         if (grabber != null) {
             grabberThread = new GrabberThread(this, grabber, color);
@@ -75,11 +74,16 @@ public class TouchInput {
                     try {
                         IplImage depthImage = grabber.grabDepth();
                         IplImage colorImage = grabber.grabVideo();
-                        mutex.lock();
+
+                        sem.acquire();
                         touchInput.startTouch(depthImage, colorImage);
                         touchInput.endTouch();
-                        mutex.unlock();
+
                     } catch (Exception e) {
+                        System.err.println("ERROR in grabber " + e);
+                        e.printStackTrace();
+                    } finally {
+                        sem.release();
                     }
                 }
 
@@ -88,11 +92,13 @@ public class TouchInput {
                 while (isRunning) {
                     try {
                         IplImage depthImage = grabber.grabDepth();
-                        mutex.lock();
+                        sem.acquire();
                         touchInput.startTouch(depthImage);
                         touchInput.endTouch();
-                        mutex.unlock();
+                        sem.release();
                     } catch (Exception e) {
+                        System.err.println("ERROR in grabber " + e);
+
                     }
                 }
             }
@@ -118,7 +124,9 @@ public class TouchInput {
 
         mtk.updateKinect(depthImage, touch2DPrecision);
         mtk.find2DTouch(touch2DPrecision);
-        mtk.findColor(depthImage, colorImage, kinect, touchPoints2D, touch2DPrecision);
+        
+        // BROKEN 
+//        mtk.findColor(depthImage, colorImage, kinect, touchPoints2D, touch2DPrecision);
 
         mtk.updateKinect3D(depthImage, touch3DPrecision);
         mtk.find3DTouch(touch3DPrecision);
@@ -177,11 +185,12 @@ public class TouchInput {
         elem.points2D = points2D;
         elem.points3D = points3D;
 
-        mutex.lock();
 
-
-
-
+        try {
+            sem.acquire();
+        } catch (InterruptedException ie) {
+            System.err.println("Semaphore Exception: " + ie);
+        }
 
         if (is2D && !touchPoints2D.isEmpty()) {
             for (TouchPoint tp : touchPoints2D) {
@@ -269,7 +278,7 @@ public class TouchInput {
             }
         }
 
-        mutex.unlock();
+        sem.release();
 
         return elem;
     }
@@ -306,7 +315,11 @@ public class TouchInput {
         elem.points2D = points2D;
         elem.points3D = points3D;
 
-        mutex.lock();
+        try {
+            sem.acquire();
+        } catch (InterruptedException ie) {
+            System.err.println("Semaphore Exception: " + ie);
+        }
 
         if (is2D && !touchPoints2D.isEmpty()) {
             for (TouchPoint tp : touchPoints2D) {
@@ -366,8 +379,7 @@ public class TouchInput {
             }
         }
 
-        mutex.unlock();
-
+        sem.release();
         return elem;
     }
 }

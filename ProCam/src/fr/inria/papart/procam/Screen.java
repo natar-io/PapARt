@@ -294,8 +294,6 @@ public class Screen {
     public void updatePos() {
 
 
-
-
         if (pos == null) {
             pos = new PMatrix3D(pos3D[0], pos3D[1], pos3D[2], pos3D[3],
                     pos3D[4], pos3D[5], pos3D[6], pos3D[7],

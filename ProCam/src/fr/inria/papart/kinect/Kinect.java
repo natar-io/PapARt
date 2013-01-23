@@ -23,6 +23,8 @@ import toxi.geom.Vec3D;
  *
  * @author jeremy
  */
+// TODO: 
+//  Change every Update Function, to use the Hardware calibration. 
 public class Kinect {
 
     public static PApplet parent;
@@ -44,6 +46,7 @@ public class Kinect {
     public static byte currentCompo = 1;
 
 //  Kinect with the standard calibration
+    // DEPRECATED  (already...)
     public Kinect(PApplet parent, String calib, int id) {
         Kinect.parent = parent;
 
@@ -58,6 +61,7 @@ public class Kinect {
         init(id);
     }
 
+
     // Kinect with advanced calibration 
     // Not ready yet
 //    public Kinect(PApplet parent, int id, String calibrationFile) {
@@ -67,18 +71,20 @@ public class Kinect {
         return currentSkip;
     }
 
+    // Deprecated
     public int findColorOffset(Vec3D v) {
         PVector vt = new PVector(v.x, v.y, v.z);
 //        PVector vt2 = new PVector();
 //        kinectCalibRGB.getExtrinsics().mult(vt, vt2);
-        
+
         return kinectCalibRGB.worldToPixel(new Vec3D(vt.x, vt.y, vt.z));
 //        return kinectCalibRGB.worldToPixel(new Vec3D(vt2.x, vt2.y, vt2.z));
     }
 
+    // TODO: change registration here... 
+    // TODO: Change init to smaller inits, called by Update functions.
     private void init(int id) {
         this.id = id;
-
 
         connectedComponent = new byte[kinectCalibIR.getSize()];
 
@@ -112,12 +118,14 @@ public class Kinect {
     public byte[] getColorBuffer() {
         return this.colorRaw;
     }
-    
-    public void undistortRGB(IplImage rgb, IplImage out){
+
+    // Deprecated
+    public void undistortRGB(IplImage rgb, IplImage out) {
         kinectCalibRGB.getDevice().undistort(rgb, out);
     }
-    
-    public void undistortIR(IplImage ir, IplImage out){
+
+    // Deprecated
+    public void undistortIR(IplImage ir, IplImage out) {
         kinectCalibIR.getDevice().undistort(ir, out);
     }
 
@@ -168,19 +176,14 @@ public class Kinect {
 
                 float d = (depthRaw[offset * 2] & 0xFF) << 8
                         | (depthRaw[offset * 2 + 1] & 0xFF);
-//                d = 1000 * depthLookUp[(int) d];
 
-                d = 1000 * rawDepthToMeters((int)d);
-                
                 boolean good = isGoodDepth(d);
                 validPoints[offset] = good;
 
                 validPointsPImage.pixels[offset] = parent.color(0, 0, 255);
                 if (good) {
                     kinectPoints[offset] = kinectCalibIR.pixelToWorld(x, y, d);
-                    colorPoints[offset] = this.findColorOffset(kinectPoints[offset]);
-
-                    int colorOffset = colorPoints[offset] * 3;
+                    int colorOffset = offset * 3;
                     int c = (colorRaw[colorOffset + 2] & 0xFF) << 16
                             | (colorRaw[colorOffset + 1] & 0xFF) << 8
                             | (colorRaw[colorOffset + 0] & 0xFF);
@@ -192,7 +195,6 @@ public class Kinect {
         }
 
         validPointsPImage.updatePixels();
-
         return validPointsPImage;
     }
 
@@ -212,7 +214,6 @@ public class Kinect {
 
         validPointsPImage.loadPixels();
 
-        int off = 0;
         for (int y = 0; y < kinectCalibIR.getHeight(); y += skip) {
             for (int x = 0; x < kinectCalibIR.getWidth(); x += skip) {
 
@@ -220,7 +221,8 @@ public class Kinect {
 
                 float d = (depthRaw[offset * 2] & 0xFF) << 8
                         | (depthRaw[offset * 2 + 1] & 0xFF);
-                d = 1000 * depthLookUp[(int) d];
+                
+//                d = 1000 * depthLookUp[(int) d];
 
                 validPoints[offset] = false;
                 validPointsPImage.pixels[offset] = parent.color(0, 0, 255);
@@ -229,19 +231,18 @@ public class Kinect {
 
                     Vec3D p = kinectCalibIR.pixelToWorld(x, y, d);
                     kinectPoints[offset] = p;
-                    colorPoints[offset] = this.findColorOffset(p);
+//                    colorPoints[offset] = this.findColorOffset(p);
 
                     if (calib.plane().hasGoodOrientationAndDistance(p)) {
 
                         if (isInside(calib.project(p), 0.f, 1.f, 0.1f)) {
 
-                            int colorOffset = colorPoints[offset] * 3;
+                            int colorOffset = offset * 3;
                             int c = (colorRaw[colorOffset + 2] & 0xFF) << 16
                                     | (colorRaw[colorOffset + 1] & 0xFF) << 8
                                     | (colorRaw[colorOffset + 0] & 0xFF);
 
                             validPointsPImage.pixels[offset] = c;
-
                             validPoints[offset] = true;
                         }
                     }
@@ -281,7 +282,7 @@ public class Kinect {
 
                 float d = (depthRaw[offset * 2] & 0xFF) << 8
                         | (depthRaw[offset * 2 + 1] & 0xFF);
-                d = 1000 * depthLookUp[(int) d];
+//                d = 1000 * depthLookUp[(int) d];
 
                 validPoints[offset] = false;
                 validPointsRaw[outputOffset + 2] = 0;
@@ -293,9 +294,10 @@ public class Kinect {
 
                     Vec3D p = kinectCalibIR.pixelToWorld(x, y, d);
                     kinectPoints[offset] = p;
-                    colorPoints[offset] = this.findColorOffset(p);
+//                    colorPoints[offset] = this.findColorOffset(p);
 
-                    int colorOffset = colorPoints[offset] * 3;
+//                    int colorOffset = colorPoints[offset] * 3;
+                    int colorOffset = offset * 3;
                     validPointsRaw[outputOffset + 2] = colorRaw[colorOffset + 2];
                     validPointsRaw[outputOffset + 1] = colorRaw[colorOffset + 1];
                     validPointsRaw[outputOffset + 0] = colorRaw[colorOffset + 0];
@@ -329,7 +331,7 @@ public class Kinect {
 
                 float d = (depthRaw[offset * 2] & 0xFF) << 8
                         | (depthRaw[offset * 2 + 1] & 0xFF);
-                d = 1000 * depthLookUp[(int) d];
+//                d = 1000 * depthLookUp[(int) d];
 
                 validPointsPImage.pixels[offset] = parent.color(0, 0, 255);
                 validPoints[offset] = false;
@@ -338,7 +340,7 @@ public class Kinect {
 
                     Vec3D p = kinectCalibIR.pixelToWorld(x, y, d);
                     kinectPoints[offset] = p;
-                    colorPoints[offset] = this.findColorOffset(p);
+//                    colorPoints[offset] = this.findColorOffset(p);
 
                     if (calib.plane().hasGoodOrientationAndDistance(p)) {
 
@@ -351,7 +353,8 @@ public class Kinect {
                             // Projection
                             projectedPoints[offset] = project;
 
-                            int colorOffset = colorPoints[offset] * 3;
+//                            int colorOffset = colorPoints[offset] * 3;
+                            int colorOffset = offset * 3;
 
                             int c = (colorRaw[colorOffset + 2] & 0xFF) << 16
                                     | (colorRaw[colorOffset + 1] & 0xFF) << 8
@@ -396,15 +399,14 @@ public class Kinect {
 
                 float d = (depthRaw[offset * 2] & 0xFF) << 8
                         | (depthRaw[offset * 2 + 1] & 0xFF);
-                d = 1000 * depthLookUp[(int) d];
-
+//                d = 1000 * depthLookUp[(int) d];
 
                 validPoints[offset] = false;
 
                 if (isGoodDepth(d)) {
                     Vec3D p = kinectCalibIR.pixelToWorld(x, y, d);
                     kinectPoints[offset] = p;
-                    colorPoints[offset] = this.findColorOffset(p);
+//                    colorPoints[offset] = this.findColorOffset(p);
 
 
                     if (calib.plane().hasGoodOrientationAndDistance(p)) {
@@ -419,7 +421,8 @@ public class Kinect {
                             // Projection
                             projectedPoints[offset] = project;
 
-                            int colorOffset = colorPoints[offset] * 3;
+//                            int colorOffset = colorPoints[offset] * 3;
+                            int colorOffset = offset * 3;
 
                             validPointsRaw[colorOutputOffset + 2] = colorRaw[colorOffset + 2];
                             validPointsRaw[colorOutputOffset + 1] = colorRaw[colorOffset + 1];
@@ -452,7 +455,7 @@ public class Kinect {
 
                 float d = (depthRaw[offset * 2] & 0xFF) << 8
                         | (depthRaw[offset * 2 + 1] & 0xFF);
-                d = 1000 * depthLookUp[(int) d];
+//                d = 1000 * depthLookUp[(int) d];
 
                 validPoints[offset] = false;
 
@@ -498,7 +501,7 @@ public class Kinect {
 
                 float d = (depthRaw[offset * 2] & 0xFF) << 8
                         | (depthRaw[offset * 2 + 1] & 0xFF);
-                d = 1000 * depthLookUp[(int) d];
+//                d = 1000 * depthLookUp[(int) d];
 
                 validPoints[offset] = false;
 
