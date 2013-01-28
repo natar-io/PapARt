@@ -95,12 +95,6 @@ public class ProjectiveDeviceP {
                 (float) camMat[6], (float) camMat[7], (float) camMat[8], 0,
                 0, 0, 0, 1);
 
-        double[] projR = dev.R.get();
-        double[] projT = dev.T.get();
-        p.extrinsics = new PMatrix3D((float) projR[0], (float) projR[1], (float) projR[2], (float) projT[0],
-                (float) projR[3], (float) projR[4], (float) projR[5], (float) projT[1],
-                (float) projR[6], (float) projR[7], (float) projR[8], (float) projT[2],
-                0, 0, 0, 1);
 
         p.w = dev.imageWidth;
         p.h = dev.imageHeight;
@@ -110,6 +104,20 @@ public class ProjectiveDeviceP {
         p.ify = 1f / p.intrinsics.m11;
         p.cx = p.intrinsics.m02;
         p.cy = p.intrinsics.m12;
+
+        try {
+
+            double[] projR = dev.R.get();
+            double[] projT = dev.T.get();
+            p.extrinsics = new PMatrix3D((float) projR[0], (float) projR[1], (float) projR[2], (float) projT[0],
+                    (float) projR[3], (float) projR[4], (float) projR[5], (float) projT[1],
+                    (float) projR[6], (float) projR[7], (float) projR[8], (float) projT[2],
+                    0, 0, 0, 1);
+        } catch (NullPointerException npe) {
+            System.out.println("Loading Parameters, without extrinsics");
+        }
+
+
     }
 
     public static ProjectiveDeviceP loadCameraDevice(String filename, int id) throws Exception {
@@ -119,7 +127,7 @@ public class ProjectiveDeviceP {
 
             CameraDevice[] camDev = CameraDevice.read(filename);
             System.out.println("Loading camera device OK.");
-            
+
             if (camDev.length <= id) {
                 throw new Exception("No camera device with the id " + id + " in the calibration file: " + filename);
             }
