@@ -86,6 +86,7 @@ public class PointCloudKinect {
             }
             model.endUpdateColors();
         }
+        
     }
 
     public void updateColorsProcessing(PMatrix3D transfo) {
@@ -386,8 +387,8 @@ public class PointCloudKinect {
 
     public void drawSelf(PGraphicsOpenGL graphics) {
 //        System.out.println("Trying to draw " + nbToDraw);
-//        lastModel.render(0, nbToDraw);
-        lastModel.render();
+        lastModel.render(0, nbToDraw);
+//        lastModel.render();
     }
 
     public void exportToObj(String fileName) {
