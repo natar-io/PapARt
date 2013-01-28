@@ -50,17 +50,26 @@ public class Kinect {
     public Kinect(PApplet parent, String calib, int id) {
         Kinect.parent = parent;
 
+
+        boolean useRGB = false;
         try {
             kinectCalibRGB = ProjectiveDeviceP.loadCameraDevice(calib, 0);
             kinectCalibIR = ProjectiveDeviceP.loadCameraDevice(calib, 1);
+            useRGB = true;
         } catch (Exception e) {
-            System.err.println("Error loading Kinect Calibration: " + e);
-            System.exit(0);
+            System.out.println("Use IR kinect calibration only.");
+        }
+
+        try {
+            kinectCalibIR = ProjectiveDeviceP.loadCameraDevice(calib, 0);
+            useRGB = false;
+        } catch (Exception e) {
+            System.err.println("Error loading IR Kinect Calibration: " + e);
+            e.printStackTrace();
         }
 
         init(id);
     }
-
 
     // Kinect with advanced calibration 
     // Not ready yet
@@ -221,7 +230,7 @@ public class Kinect {
 
                 float d = (depthRaw[offset * 2] & 0xFF) << 8
                         | (depthRaw[offset * 2 + 1] & 0xFF);
-                
+
 //                d = 1000 * depthLookUp[(int) d];
 
                 validPoints[offset] = false;
