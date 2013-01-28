@@ -35,7 +35,7 @@ public class ProjectiveDeviceP {
         this.w = width;
         this.h = height;
     }
-    
+
     public PMatrix3D getIntrinsics() {
         return this.intrinsics;
     }
@@ -47,18 +47,19 @@ public class ProjectiveDeviceP {
     public ProjectiveDevice getDevice() {
         return this.device;
     }
-    
-    public int getWidth(){
+
+    public int getWidth() {
         return this.w;
     }
-    public int getHeight(){
+
+    public int getHeight() {
         return this.h;
     }
 
-    public int getSize(){
+    public int getSize() {
         return this.w * this.h;
     }
-    
+
     public void loadParameters() {
     }
 
@@ -105,8 +106,8 @@ public class ProjectiveDeviceP {
         p.h = dev.imageHeight;
         p.fx = p.intrinsics.m00;
         p.fy = p.intrinsics.m11;
-        p.ifx = 1f/ p.intrinsics.m00;
-        p.ify = 1f/ p.intrinsics.m11;
+        p.ifx = 1f / p.intrinsics.m00;
+        p.ify = 1f / p.intrinsics.m11;
         p.cx = p.intrinsics.m02;
         p.cy = p.intrinsics.m12;
     }
@@ -114,8 +115,11 @@ public class ProjectiveDeviceP {
     public static ProjectiveDeviceP loadCameraDevice(String filename, int id) throws Exception {
         ProjectiveDeviceP p = new ProjectiveDeviceP();
         try {
-            CameraDevice[] camDev = CameraDevice.read(filename);
+            System.out.println("Loading camera device file :" + filename);
 
+            CameraDevice[] camDev = CameraDevice.read(filename);
+            System.out.println("Loading camera device OK.");
+            
             if (camDev.length <= id) {
                 throw new Exception("No camera device with the id " + id + " in the calibration file: " + filename);
             }
