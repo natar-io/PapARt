@@ -95,6 +95,20 @@ public class Utils {
 //       It is better to use : GetPerspectiveTransform
         return homography;
     }
+    
+    // TODO: finish this, find another source...
+//    http://planning.cs.uiuc.edu/node103.html
+    static public PVector getRotations(PMatrix3D mat){
+        
+        PVector r = new PVector();
+        
+        r.z = PApplet.atan(mat.m10 / mat.m00);
+        r.y = PApplet.atan(-mat.m21 / PApplet.sqrt(  mat.m21 * mat.m21 + mat.m22 * mat.m22));
+        r.x = PApplet.atan(-mat.m21 / PApplet.sqrt(  mat.m21 * mat.m21 + mat.m22 * mat.m22));
+        
+        return null;
+    }
+    
 
     static public void remapImage(PVector[] in, PVector[] out, IplImage imgIn, IplImage imgTmp, PImage Pout) {
 

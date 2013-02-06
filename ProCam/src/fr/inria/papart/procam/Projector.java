@@ -1,5 +1,6 @@
 package fr.inria.papart.procam;
 
+import codeanticode.glgraphics.GLGraphicsOffScreen;
 import com.googlecode.javacv.ProjectiveDevice;
 import com.googlecode.javacv.ProjectorDevice;
 import processing.core.PApplet;
@@ -87,6 +88,96 @@ public class Projector extends ARDisplay {
             this.graphics.image(screen.getTexture(), 0, 0, screen.getSize().x, screen.getSize().y);
             this.graphics.popMatrix();
         }
+
+        // Put the projection matrix back to normal
+        unLoadProjection();
+        this.graphics.endDraw();
+    }
+    
+    
+    public void drawScreensOver() {
+
+        ////////  3D PROJECTION  //////////////
+        this.graphics.beginDraw();
+
+        // load the projector parameters into OpenGL
+        loadProjection();
+
+        // make the modelview matrix as the default matrix
+        this.graphics.resetMatrix();
+
+        // Setting the projector as a projector (inverse camera)
+        this.graphics.scale(1, 1, -1);
+
+        // Place the projector to his projection respective to the origin (camera here)
+        this.graphics.modelview.apply(getExtrinsics());
+
+        for (Screen screen : screens) {
+            if (!screen.isDrawing()) {
+                continue;
+            }
+            this.graphics.pushMatrix();
+
+            // Goto to the screen position
+            this.graphics.modelview.apply(screen.getPos());
+
+            // Draw the screen image
+            this.graphics.image(screen.getTexture(), 0, 0, screen.getSize().x, screen.getSize().y);
+            this.graphics.popMatrix();
+        }
+
+        // Put the projection matrix back to normal
+        unLoadProjection();
+        this.graphics.endDraw();
+    }
+
+    public GLGraphicsOffScreen beginDrawOnScreen(Screen screen) {
+
+        ////////  3D PROJECTION  //////////////
+        this.graphics.beginDraw();
+
+        // load the projector parameters into OpenGL
+        loadProjection();
+
+        // make the modelview matrix as the default matrix
+        this.graphics.resetMatrix();
+
+        // Setting the projector as a projector (inverse camera)
+        this.graphics.scale(1, 1, -1);
+
+        // Place the projector to his projection respective to the origin (camera here)
+        this.graphics.modelview.apply(getExtrinsics());
+
+        // Goto to the screen position
+        this.graphics.modelview.apply(screen.getPos());
+
+        return this.graphics;
+    }
+    
+    public GLGraphicsOffScreen beginDrawOnBoard(MarkerBoard board) {
+
+        ////////  3D PROJECTION  //////////////
+        this.graphics.beginDraw();
+
+        // load the projector parameters into OpenGL
+        loadProjection();
+
+        // make the modelview matrix as the default matrix
+        this.graphics.resetMatrix();
+
+        // Setting the projector as a projector (inverse camera)
+        this.graphics.scale(1, 1, -1);
+
+        // Place the projector to his projection respective to the origin (camera here)
+        this.graphics.modelview.apply(getExtrinsics());
+
+        // Goto to the screen position
+        this.graphics.modelview.apply(board.getTransfoMat());
+
+        return this.graphics;
+    }
+
+    public void endDrawOnScreen() {
 
         // Put the projection matrix back to normal
         unLoadProjection();

@@ -163,6 +163,10 @@ public class Camera {
         return board.getTransfo();
     }
 
+    public float[] getBoardPos(MarkerBoard board) {
+        return board.getTransfo();
+    }
+
     /**
      * Gets the 2D location in the image of a 3D point. TODO: undistort ?
      *
