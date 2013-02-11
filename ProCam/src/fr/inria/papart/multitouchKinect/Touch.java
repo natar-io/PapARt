@@ -102,7 +102,8 @@ public class Touch {
         Arrays.fill(Kinect.connectedComponent, (byte) 0);
         Kinect.currentCompo = 1;
 
-        int searchDepth = 1 * skip; // on each direction
+//        int searchDepth = 1 * skip; // on each direction
+        int searchDepth = 4 * skip; // on each direction
 
         Arrays.fill(readPoints, false);
         Set<Integer> toVisit = new HashSet<Integer>();
