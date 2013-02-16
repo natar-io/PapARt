@@ -8,13 +8,18 @@ package fr.inria.papart.procam;
  *
  * @author jeremylaviole
  */
+import codeanticode.glgraphics.GLTexture;
+import codeanticode.gsvideo.GSCapture;
 import com.googlecode.javacv.CameraDevice;
 import com.googlecode.javacv.FrameGrabber;
 import com.googlecode.javacv.OpenCVFrameGrabber;
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
+import fr.inria.papart.tools.GSIplImage;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
+import javax.media.opengl.GL;
 
 import processing.core.PApplet;
 import processing.core.PImage;
@@ -26,13 +31,26 @@ public class Camera {
     public ARTagDetector art;
     // Camera parameters
     protected PMatrix3D camIntrinsicsP3D;
-    public PApplet parent;
+    protected PApplet parent;
     private ArrayList<TrackedView> trackedViews;
     private MarkerBoard[] sheets;
     private ARTThread thread = null;
     protected ProjectiveDeviceP pdp;
+    // GStreamer  Video input
+    protected GSCapture gsCapture;
+    protected GSIplImage converter;
+    // OpenCV  video input 
     private FrameGrabber grabber;
-    private boolean useTracking = true;
+    // Texture for video visualization (OpenCV generally)
+    protected IplImage iimg = null, copyUndist;
+    protected GLTexture tex = null;
+    public final static int OPENCV_VIDEO = 1;
+    public final static int GSTREAMER_VIDEO = 2;
+    public static int videoInput = OPENCV_VIDEO;
+    protected int width, height;
+    protected int videoInputType;
+    protected int frameRate;
+    protected boolean autoUpdate = false;
 
     static public void convertARParams(PApplet parent, String calibrationYAML,
             String calibrationData, int width, int height) {
@@ -43,103 +61,98 @@ public class Camera {
         }
     }
 
-    /**
-     * This object helds, a camera object. From a video stream, it extracts
-     * sub-images, and detect marker boards using ARToolKitPlus.
-     *
-     * @param parent
-     * @param camNo
-     * @param width
-     * @param height
-     * @param calibrationYAML
-     * @param calibrationData
-     * @param sheets
-     */
-    public Camera(PApplet parent, int camNo,
-            int width, int height,
-            String calibrationYAML, String calibrationData,
-            MarkerBoard[] sheets) {
-        this(parent, camNo, null, width, height, calibrationYAML, calibrationData, sheets);
-    }
-
-    public Camera(PApplet parent, String fileName,
-            int width, int height,
-            String calibrationYAML, String calibrationData,
-            MarkerBoard[] sheets) {
-        this(parent, -1, fileName, width, height, calibrationYAML, calibrationData, sheets);
-    }
-
-    public Camera(PApplet parent, String settingsFile, String calibrationYAML, String calibrationData,
-            MarkerBoard[] sheets) {
-        this(parent, -1, settingsFile, -1, -1, calibrationYAML, calibrationData, sheets);
-    }
-
-    public Camera(PApplet parent, int camNo, String videoFile,
-            int width, int height,
-            String calibrationYAML, String calibrationData,
-            MarkerBoard[] sheets) {
-
-        art = new ARTagDetector(camNo, videoFile, width, height, 60, calibrationYAML,
-                calibrationData,
-                sheets);
-
-        this.grabber = art.getGrabber();
-        this.sheets = sheets;
-        this.trackedViews = new ArrayList<TrackedView>();
-
-        // Load the camera parameters. 
-        try {
-            pdp = ProjectiveDeviceP.loadCameraDevice(calibrationYAML, 0);
-            camIntrinsicsP3D = pdp.getIntrinsics();
-        } catch (Exception e) {
-            parent.die("Error reading the calibration file : " + calibrationYAML + " \n" + e);
-        }
-    }
-
-    public Camera(FrameGrabber grabber,
-            String calibrationYAML, String calibrationData,
-            MarkerBoard[] sheets) {
-
-        this.grabber = grabber;
-
-        art = new ARTagDetector(grabber, calibrationYAML,
-                calibrationData,
-                sheets);
-
-        this.sheets = sheets;
-        this.trackedViews = new ArrayList<TrackedView>();
-
-        // Load the camera parameters. 
-        try {
-            pdp = ProjectiveDeviceP.loadCameraDevice(calibrationYAML, 0);
-            camIntrinsicsP3D = pdp.getIntrinsics();
-        } catch (Exception e) {
-            parent.die("Error reading the calibration file : " + calibrationYAML + " \n" + e);
-        }
-    }
-
-    public Camera(PApplet parent, int camNo,
+    public Camera(PApplet parent, String camDevice,
             int width, int height) {
+        this(parent, camDevice, width, height, 30, null, videoInput);
+    }
 
+    public Camera(PApplet parent, String camDevice,
+            int width, int height, int videoInput) {
+        this(parent, camDevice, width, height, 30, null, videoInput);
+    }
 
-        OpenCVFrameGrabber grabberCV = new OpenCVFrameGrabber(camNo);
+    public Camera(PApplet parent, String camDevice,
+            int width, int height, String calibrationYAML) {
+        this(parent, camDevice, width, height, 30, calibrationYAML, videoInput);
+    }
 
-        grabberCV.setImageWidth(width);
-        grabberCV.setImageHeight(height);
-        grabberCV.setImageMode(FrameGrabber.ImageMode.COLOR);
-        
-        useTracking = false;
-        
-        try {
-            grabberCV.start();
-        } catch (Exception e) {
-            System.err.println("Could not start frameGrabber... " + e );
+    public Camera(PApplet parent, String camDevice,
+            int width, int height, String calibrationYAML, int videoInputType) {
+        this(parent, camDevice, width, height, 30, calibrationYAML, videoInputType);
+    }
+
+    public Camera(PApplet parent, String camDevice,
+            int width, int height, int frameRate, String calibrationYAML, int videoInputType) {
+
+        this.parent = parent;
+        this.width = width;
+        this.height = height;
+        this.frameRate = frameRate;
+        this.videoInputType = videoInputType;
+
+        if (videoInputType == OPENCV_VIDEO) {
+            OpenCVFrameGrabber grabberCV = new OpenCVFrameGrabber(Integer.parseInt(camDevice));
+
+            grabberCV.setImageWidth(width);
+            grabberCV.setImageHeight(height);
+            grabberCV.setImageMode(FrameGrabber.ImageMode.COLOR);
+
+            try {
+                grabberCV.start();
+            } catch (Exception e) {
+                System.err.println("Could not start frameGrabber... " + e);
+            }
+
+            this.grabber = grabberCV;
         }
 
-        this.grabber = grabberCV;
+        if (videoInputType == GSTREAMER_VIDEO) {
+
+            gsCapture = new GSCapture(parent, width, height, camDevice);
+            converter = new GSIplImage(width, height);
+            gsCapture.setPixelDest(converter, false);
+
+            gsCapture.setEventHandlerObject(this);
+            gsCapture.start();
+        }
+
+
+        if (calibrationYAML != null) {
+
+            // Load the camera parameters. 
+            try {
+                pdp = ProjectiveDeviceP.loadCameraDevice(calibrationYAML, 0);
+                camIntrinsicsP3D = pdp.getIntrinsics();
+            } catch (Exception e) {
+                parent.die("Error reading the calibration file : " + calibrationYAML + " \n" + e);
+            }
+        }
 
     }
 
+    public boolean useGStreamer() {
+        return this.videoInputType == GSTREAMER_VIDEO;
+    }
+
+    public boolean useOpenCV() {
+        return this.videoInputType == OPENCV_VIDEO;
+    }
+
+    public int getFrameRate() {
+        return this.frameRate;
+    }
+
+    public void captureEvent(GSCapture cam) {
+        cam.read();
+    }
+
+    public void initMarkerDetection(String calibrationARToolkit, MarkerBoard[] paperSheets) {
+        art = new ARTagDetector(calibrationARToolkit, width, height, paperSheets, videoInputType);
+        this.sheets = paperSheets;
+        this.trackedViews = new ArrayList<TrackedView>();
+    }
+
+    // For GStreamer ! 
     /**
      * It makes the camera update continuously.
      */
@@ -151,8 +164,9 @@ public class Camera {
      * It makes the camera update continuously.
      */
     public void setThread(boolean undistort) {
+
         if (thread == null) {
-            thread = new ARTThread(art, sheets, undistort);
+            thread = new ARTThread(this, sheets, undistort);
             thread.start();
         } else {
             System.err.println("Camera: Error Thread already launched");
@@ -163,12 +177,10 @@ public class Camera {
      * Stops the update thread.
      */
     public void stopThread() {
-        thread.stopThread();
-        thread = null;
-    }
-
-    public void setCopyToPImage(boolean isCopy) {
-        art.setCopyToPimage(isCopy);
+        if (thread != null) {
+            thread.stopThread();
+            thread = null;
+        }
     }
 
     /**
@@ -177,19 +189,14 @@ public class Camera {
      * @param auto automatic Tag detection: ON if true.
      */
     public void setAutoUpdate(boolean auto) {
+        this.autoUpdate = auto;
+
         if (thread != null) {
             thread.setCompute(auto);
         } else {
             System.err.println("Camera: Error AutoCompute only if threaded.");
         }
-    }
 
-    public float[] getPosPointer(MarkerBoard board) {
-        return board.getTransfo();
-    }
-
-    public float[] getBoardPos(MarkerBoard board) {
-        return board.getTransfo();
     }
 
     /**
@@ -205,6 +212,10 @@ public class Camera {
         return new PVector(tmp.x / tmp.z, tmp.y / tmp.z);
     }
 
+    public boolean useThread() {
+        return thread != null;
+    }
+
     /**
      * Asks the camera to grab an image. Not to use with the threaded option.
      */
@@ -212,12 +223,59 @@ public class Camera {
         grab(true);
     }
 
-    public void grab(boolean undistort) {
-        if (thread == null) {
-            art.grab(undistort);
+    public IplImage grab(boolean undistort) {
+
+        IplImage img = null;
+
+        if (videoInputType == OPENCV_VIDEO) {
+
+            try {
+                img = grabber.grab();
+
+            } catch (Exception e) {
+                System.err.println("Camera: Grab() Error ! " + e);
+                e.printStackTrace();
+            }
+
         } else {
-            System.err.println("Camera: Please use Grab() only while not threaded.");
+            if (videoInputType == GSTREAMER_VIDEO) {
+
+                if (converter.putPixelsToImage()) {
+                    ;
+                } else {
+
+                    // System.err.println("Camera: GStreamer no Frame ?!");
+                    try {
+                        TimeUnit.MILLISECONDS.sleep((long) (1f / frameRate));
+                    } catch (Exception e) {
+                    }
+
+                }
+                img = converter.getImage();
+
+            } else {
+                // Crash !
+                System.err.println("You must specify a valid video input.");
+                assert (true);
+//                return null;
+            }
         }
+
+
+        if (img != null) {
+            if (undistort) {
+                if (copyUndist == null) {
+                    copyUndist = img.clone();
+                }
+                pdp.getDevice().undistort(img, copyUndist);
+                iimg = copyUndist;
+            } else {
+                iimg = img;
+            }
+        }
+
+        return iimg;
+
     }
 
     /**
@@ -231,142 +289,29 @@ public class Camera {
         return trackedViews.add(view);
     }
 
-    /**
-     * Get an image from the view.
-     *
-     * @param trackedView
-     * @return
-     */
-    public PImage getView(TrackedView trackedView) {
-        return getView(trackedView, true);
+    public IplImage getView(TrackedView trackedView) {
+        return getViewIpl(trackedView);
     }
 
     public IplImage getViewIpl(TrackedView trackedView) {
 
-        if (trackedView == null) {
-            System.err.println("Error: paper sheet not registered as tracked view.");
+        if (iimg == null) {
             return null;
         }
 
-//        grab(undistort);
-        if (!art.isReady(true)) {
-            return null;
-        }
-        float[] pos = art.findMarkers(trackedView.getBoard());
-        trackedView.setPos(pos);
         trackedView.computeCorners(this);
-        return trackedView.getImageIpl(art.getImageIpl());
+        return trackedView.getImageIpl(iimg);
     }
 
-    /**
-     * Get an image from the view.
-     *
-     * @param trackedView
-     * @return
-     */
-    public PImage getView(TrackedView trackedView, boolean undistort) {
-
-        if (trackedView == null) {
-            System.err.println("Error: paper sheet not registered as tracked view.");
-            return null;
-        }
-
-//        grab(undistort);
-        if (!art.isReady(undistort)) {
-            return null;
-        }
-
-//        float[] pos = art.findMarkers(trackedView.getBoard());
-//        trackedView.setPos(pos);
-        trackedView.computeCorners(this);
-        
-        return trackedView.getImage(art.getImageIpl());
-    }
-
-    /**
-     * This function is typically to be used with high resolution camera. It
-     * stops the video stream, takes a picture, takes the zone of interests and
-     * returns it as an image. It restarts the video stream before exiting.
-     *
-     * @param sheet
-     * @return image
-     */
-    public PImage stopGetViewStart(TrackedView trackedView) {
-        if (thread == null) {
-            System.err.println("Camera : Error: stopGetViewStart is to use only when thread is started");
-            return null;
-        }
-        boolean wasAutoUpdate = thread.isCompute();
-        stopThread();
-        this.grab();
-
-        if (trackedView == null) {
-            System.err.println("Error: paper sheet not registered as tracked view.");
-            return null;
-        }
-        float[] pos = art.findMarkers(trackedView.getBoard());
-        trackedView.setPos(pos);
-        trackedView.computeCorners(this);
-        PImage out = trackedView.getImage(art.getImageIpl());
-
-        setThread();
-        thread.setCompute(wasAutoUpdate);
-
-        return out;
-    }
-
-    /**
-     * This function is typically to be used with high resolution camera. It
-     * stops the video stream, takes a picture, takess the zone of interests and
-     * returns it as an array of images. It restarts the video stream before
-     * exiting.
-     *
-     * @param sheet
-     * @return image
-     */
-    public PImage[] stopGetViewStart(TrackedView[] trackedViews) {
-        if (thread == null) {
-            System.err.println("Camera : Error: stopGetViewStart is to use only when thread is started");
-            return null;
-        }
-        boolean wasAutoUpdate = thread.isCompute();
-        thread.stopThread();
-        this.grab();
-
-        PImage[] out = new PImage[sheets.length];
-        int k = 0;
-
-        for (TrackedView trackedView : trackedViews) {
-            if (trackedView == null) {
-                System.err.println("Error: paper sheet not registered as tracked view.");
-                return null;
-            }
-            float[] pos = art.findMarkers(trackedView.getBoard());
-            trackedView.setPos(pos);
-            trackedView.computeCorners(this);
-            out[k++] = trackedView.getImage(art.getImageIpl());
-        }
-        setThread();
-        thread.setCompute(wasAutoUpdate);
-
-        return out;
-    }
-
-//    public PImage getPImage(){
-//        // TODO: verif non thread etc...
-//        art.grab(true, true);
-////        art.grab(false, true);
-//        return art.getImage();
-//    }
-//    
+    
     public void grabTo(PImage pimg) {
         try {
-            IplImage iimg = grabber.grab();
+            IplImage img = grabber.grab();
 
-            ByteBuffer buff1 = iimg.getByteBuffer();
+            ByteBuffer buff1 = img.getByteBuffer();
             pimg.loadPixels();
             for (int i = 0; i
-                    < iimg.width() * iimg.height(); i++) {
+                    < img.width() * img.height(); i++) {
                 int offset = i * 3;
                 pimg.pixels[i] = (buff1.get(offset + 2) & 0xFF) << 16
                         | (buff1.get(offset + 1) & 0xFF) << 8
@@ -378,21 +323,38 @@ public class Camera {
             System.err.println("Error while grabbing frame " + e);
             e.printStackTrace();
         }
-
     }
 
     public PImage getPImage() {
-        return art.getImage();
+        if (tex == null) {
+            tex = new GLTexture(parent, width, height);
+        }
+
+
+        if (iimg != null) {
+            if (videoInputType == OPENCV_VIDEO) {
+                tex.putBuffer(GL.GL_BGR, GL.GL_UNSIGNED_BYTE, iimg.getIntBuffer());
+            } else {
+                if (videoInputType == GSTREAMER_VIDEO) {
+                    tex.putBuffer(GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, iimg.getIntBuffer());
+                }
+            }
+        }
+
+        return tex;
     }
 
     public IplImage getIplImage() {
-        return art.getImageIpl();
+        return iimg;
     }
 
-//    public PImage getLastPaperView(MarkerBoard sheet) {
-//        return trackedViews.get(sheet).img;
-//    }
     public void close() {
-        art.close();
+        if (grabber != null) {
+            try {
+                this.stopThread();
+                grabber.stop();
+            } catch (Exception e) {
+            }
+        }
     }
 }

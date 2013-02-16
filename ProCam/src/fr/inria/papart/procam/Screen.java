@@ -247,7 +247,7 @@ public class Screen {
     }
 
     public boolean setAutoUpdatePos(Camera camera, MarkerBoard board) {
-        pos3D = camera.getPosPointer(board);
+        pos3D = board.getTransfo();
         return pos3D != null;
     }
 
@@ -346,9 +346,9 @@ public class Screen {
     }
 
     // Available only if pos3D is being updated elsewhere...
-    public void updatePos(Camera camera, MarkerBoard board) {
+    public void updatePos(MarkerBoard board) {
 
-        pos3D = camera.getPosPointer(board);
+        pos3D = board.getTransfo();
 
         pos = new PMatrix3D(pos3D[0], pos3D[1], pos3D[2], pos3D[3],
                 pos3D[4], pos3D[5], pos3D[6], pos3D[7],

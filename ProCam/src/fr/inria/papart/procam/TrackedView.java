@@ -57,12 +57,11 @@ public class TrackedView {
         //	println("Pos found ? : " );
         //	pos.print();
     }
-    
-    
+
     protected void computeCorners(Camera cam) {
-        
+
         // TODO: test if .get() is necessary ? 
-        pos = board.getTransfoMat();
+        pos = board.getTransfoMat().get();
 
         cornerPos[0].x = pos.m03;
         cornerPos[0].y = pos.m13;

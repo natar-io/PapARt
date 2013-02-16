@@ -4,6 +4,7 @@
  */
 package fr.inria.papart.procam;
 
+import codeanticode.glgraphics.GLTexture;
 import com.googlecode.javacv.cpp.opencv_imgproc.*;
 
 import com.googlecode.javacv.CameraDevice;
@@ -18,6 +19,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
+import javax.media.opengl.GL;
 import processing.core.*;
 
 /**
@@ -47,7 +49,7 @@ public class Utils {
         outSize.height(Pout.height);
         IplImage imgOut = cvCreateImage(outSize, // size
                 imgIn.depth(), // depth
-                3);
+                imgIn.nChannels());
         return imgOut;
     }
 
@@ -95,20 +97,44 @@ public class Utils {
 //       It is better to use : GetPerspectiveTransform
         return homography;
     }
-    
+
     // TODO: finish this, find another source...
 //    http://planning.cs.uiuc.edu/node103.html
-    static public PVector getRotations(PMatrix3D mat){
-        
+    static public PVector getRotations(PMatrix3D mat) {
+
         PVector r = new PVector();
-        
+
         r.z = PApplet.atan(mat.m10 / mat.m00);
-        r.y = PApplet.atan(-mat.m21 / PApplet.sqrt(  mat.m21 * mat.m21 + mat.m22 * mat.m22));
-        r.x = PApplet.atan(-mat.m21 / PApplet.sqrt(  mat.m21 * mat.m21 + mat.m22 * mat.m22));
-        
+        r.y = PApplet.atan(-mat.m21 / PApplet.sqrt(mat.m21 * mat.m21 + mat.m22 * mat.m22));
+        r.x = PApplet.atan(-mat.m21 / PApplet.sqrt(mat.m21 * mat.m21 + mat.m22 * mat.m22));
+
         return null;
     }
+
     
+    // TO USE INSIDE THE DRAW FUNCTION
+    static public GLTexture createTextureFrom(PApplet parent, IplImage img) {
+        GLTexture tex = null;
+
+        // We suppose...  Depth = 3 : BGR and Depth = 4 :  RGBA  (even though it is written ARGB for Processing...)
+        if (img.nChannels() == 3) {
+            tex = new GLTexture(parent, img.width(), img.height(), PApplet.RGB);
+        }
+        if (img.nChannels() == 4) {
+            tex = new GLTexture(parent, img.width(), img.height(), PApplet.ARGB);
+        }
+
+        return tex;
+    }
+
+    static public void updateTexture(IplImage img, GLTexture tex) {
+        if (img.nChannels() == 3) {
+            tex.putBuffer(GL.GL_BGR, GL.GL_UNSIGNED_BYTE, img.getIntBuffer());
+        }
+        if (img.nChannels() == 4) {
+            tex.putBuffer(GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, img.getIntBuffer());
+        }
+    }
 
     static public void remapImage(PVector[] in, PVector[] out, IplImage imgIn, IplImage imgTmp, PImage Pout) {
 
@@ -369,9 +395,6 @@ public class Utils {
         }
         ret.updatePixels();
     }
-    
-    
-    
     //                                   int int  12 double  4 double
     static final int SIZE_OF_PARAM_SET = 4 + 4 + (3 * 4 * 8) + (4 * 8);
 
