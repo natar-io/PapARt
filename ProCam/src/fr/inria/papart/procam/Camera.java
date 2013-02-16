@@ -10,7 +10,9 @@ package fr.inria.papart.procam;
  */
 import com.googlecode.javacv.CameraDevice;
 import com.googlecode.javacv.FrameGrabber;
+import com.googlecode.javacv.OpenCVFrameGrabber;
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -30,6 +32,7 @@ public class Camera {
     private ARTThread thread = null;
     protected ProjectiveDeviceP pdp;
     private FrameGrabber grabber;
+    private boolean useTracking = true;
 
     static public void convertARParams(PApplet parent, String calibrationYAML,
             String calibrationData, int width, int height) {
@@ -113,6 +116,28 @@ public class Camera {
         } catch (Exception e) {
             parent.die("Error reading the calibration file : " + calibrationYAML + " \n" + e);
         }
+    }
+
+    public Camera(PApplet parent, int camNo,
+            int width, int height) {
+
+
+        OpenCVFrameGrabber grabberCV = new OpenCVFrameGrabber(camNo);
+
+        grabberCV.setImageWidth(width);
+        grabberCV.setImageHeight(height);
+        grabberCV.setImageMode(FrameGrabber.ImageMode.COLOR);
+        
+        useTracking = false;
+        
+        try {
+            grabberCV.start();
+        } catch (Exception e) {
+            System.err.println("Could not start frameGrabber... " + e );
+        }
+
+        this.grabber = grabberCV;
+
     }
 
     /**
@@ -250,9 +275,11 @@ public class Camera {
         if (!art.isReady(undistort)) {
             return null;
         }
-        float[] pos = art.findMarkers(trackedView.getBoard());
-        trackedView.setPos(pos);
+
+//        float[] pos = art.findMarkers(trackedView.getBoard());
+//        trackedView.setPos(pos);
         trackedView.computeCorners(this);
+        
         return trackedView.getImage(art.getImageIpl());
     }
 
@@ -332,8 +359,34 @@ public class Camera {
 //        return art.getImage();
 //    }
 //    
+    public void grabTo(PImage pimg) {
+        try {
+            IplImage iimg = grabber.grab();
+
+            ByteBuffer buff1 = iimg.getByteBuffer();
+            pimg.loadPixels();
+            for (int i = 0; i
+                    < iimg.width() * iimg.height(); i++) {
+                int offset = i * 3;
+                pimg.pixels[i] = (buff1.get(offset + 2) & 0xFF) << 16
+                        | (buff1.get(offset + 1) & 0xFF) << 8
+                        | (buff1.get(offset) & 0xFF);
+            }
+
+            pimg.updatePixels();
+        } catch (Exception e) {
+            System.err.println("Error while grabbing frame " + e);
+            e.printStackTrace();
+        }
+
+    }
+
     public PImage getPImage() {
         return art.getImage();
+    }
+
+    public IplImage getIplImage() {
+        return art.getImageIpl();
     }
 
 //    public PImage getLastPaperView(MarkerBoard sheet) {

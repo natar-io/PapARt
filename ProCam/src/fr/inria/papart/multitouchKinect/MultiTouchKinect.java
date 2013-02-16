@@ -89,6 +89,11 @@ public class MultiTouchKinect {
         goodPointOffsets = kinect.updateMT3D(depthImage, kinectCalibration, projPoints, skip);
     }
 
+    public void updateKinectOptimizedMT(IplImage depthImage, int skip) {
+        currentPrecision = skip;
+        goodPointOffsets = kinect.updateOptimized3D(depthImage, kinectCalibration, projPoints, skip);
+    }
+
     public void findColor(IplImage depthImage, IplImage colorImage, Kinect kinect,
             ArrayList<TouchPoint> touchPointList, int skip) {
 

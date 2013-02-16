@@ -153,7 +153,7 @@ public class Projector extends ARDisplay {
 
         return this.graphics;
     }
-    
+        
     public GLGraphicsOffScreen beginDrawOnBoard(MarkerBoard board) {
 
         ////////  3D PROJECTION  //////////////
@@ -253,6 +253,7 @@ public class Projector extends ARDisplay {
                 res.y() / res.z(), 1);
         return out;
     }
+    
 
 //    public PVector projectPointer(Screen screen, TouchPoint tp) {
 //        PVector out = projectPointer(screen, tp.v.x, tp.v.y);

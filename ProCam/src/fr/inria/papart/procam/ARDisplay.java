@@ -60,20 +60,26 @@ public class ARDisplay {
         screens = new ArrayList<Screen>();
         loadInternalParams(calibrationYAML);
         initProjection();
-        computeInv();
+
+        if (projExtrinsicsP3D != null) {
+            computeInv();
+        }
+        
         initDistortMap();
     }
 
     protected void loadInternalParams(String calibrationYAML) {
         // Load the camera parameters.
         try {
-            pdp = ProjectiveDeviceP.loadProjectiveDevice(calibrationYAML, 0);
-//            pdp = ProjectiveDeviceP.loadCameraDevice(calibrationYAML, 0);
+//            pdp = ProjectiveDeviceP.loadProjectiveDevice(calibrationYAML, 0);
+            pdp = ProjectiveDeviceP.loadCameraDevice(calibrationYAML, 0);
 
-            projExtrinsicsP3D = pdp.getExtrinsics();
             projIntrinsicsP3D = pdp.getIntrinsics();
-            projExtrinsicsP3DInv = projExtrinsicsP3D.get();
-            projExtrinsicsP3DInv.invert();
+            projExtrinsicsP3D = pdp.getExtrinsics();
+            if (projExtrinsicsP3D != null) {
+                projExtrinsicsP3DInv = projExtrinsicsP3D.get();
+                projExtrinsicsP3DInv.invert();
+            }
 
             proj = pdp.getDevice();
 

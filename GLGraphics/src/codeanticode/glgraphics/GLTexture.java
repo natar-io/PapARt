@@ -1069,7 +1069,7 @@ public class GLTexture extends PImage implements PConstants, GLConstants {
     putBuffer(glFormat, glType, IntBuffer.wrap(convArray));
   }
   
-  protected void putBuffer(int glFormat, int glType, IntBuffer buffer) {
+  public void putBuffer(int glFormat, int glType, IntBuffer buffer) {
     gl.glBindTexture(texTarget, tex);
 
     if (texTarget == GL.GL_TEXTURE_1D) {

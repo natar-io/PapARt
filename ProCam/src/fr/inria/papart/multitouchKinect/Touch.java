@@ -24,7 +24,7 @@ import toxi.geom.Vec3D;
  */
 public class Touch {
 
-    public static float maxDistance = 45f;    // in mm
+    public static float maxDistance = 8f;    // in mm
 
     public static ArrayList<Integer> findNeighboursRec(int currentPoint, int halfNeigh,
             ArrayList<Integer> validPoints,
@@ -53,9 +53,9 @@ public class Touch {
                 // Avoid getting ouside the limits
                 if (!(readPoints[offset] // already parsed point 
                         || !isValidPoints[offset]
-                        || !isInside(projPoints[offset], 0.f, 1.f))) {
-//                        || !isInside(projPoints[offset], 0.f, 1.f)
-//                        || points[offset].distanceTo(points[currentPoint]) > maxDistance)) {
+//                        || !isInside(projPoints[offset], 0.f, 1.f))) {
+                        || !isInside(projPoints[offset], 0.f, 1.f)
+                        || points[offset].distanceTo(points[currentPoint]) > maxDistance)) {
 
                     readPoints[offset] = true;
 
@@ -66,9 +66,9 @@ public class Touch {
                     Kinect.connectedComponent[offset] = Kinect.currentCompo;
 
 //                    // if is is on a border ??
-                    if (i == minX || i == maxX || j == minY || j == maxY) {
+//                    if (i == minX || i == maxX || j == minY || j == maxY) {
                         visitNext.add(offset);
-                    } // if it is a border
+//                    } // if it is a border
 
 
                 } // if is ValidPoint
@@ -103,7 +103,7 @@ public class Touch {
         Kinect.currentCompo = 1;
 
 //        int searchDepth = 1 * skip; // on each direction
-        int searchDepth = 4 * skip; // on each direction
+        int searchDepth = 10 * skip; // on each direction
 
         Arrays.fill(readPoints, false);
         Set<Integer> toVisit = new HashSet<Integer>();
@@ -128,7 +128,7 @@ public class Touch {
         int minSize = 5;
 
         if (is3D) {
-            minSize = 80;
+            minSize = 40;
         }
 
         float goodPointsDist = 0.03f;

@@ -36,6 +36,11 @@ public class TrackedView {
             cornerPos[i] = new PVector();
         }
 
+//        outScreenP[0] = new PVector(outWidth, outHeight);
+//        outScreenP[1] = new PVector(0, outHeight);
+//        outScreenP[2] = new PVector(0, 0);
+//        outScreenP[3] = new PVector(outWidth, outHeight);
+//
         outScreenP[0] = new PVector(0, 0);
         outScreenP[1] = new PVector(outWidth, 0);
         outScreenP[2] = new PVector(outWidth, outHeight);
@@ -52,13 +57,16 @@ public class TrackedView {
         //	println("Pos found ? : " );
         //	pos.print();
     }
-
+    
+    
     protected void computeCorners(Camera cam) {
-        PMatrix3D newPos = pos.get();
+        
+        // TODO: test if .get() is necessary ? 
+        pos = board.getTransfoMat();
 
-        cornerPos[0].x = newPos.m03;
-        cornerPos[0].y = newPos.m13;
-        cornerPos[0].z = newPos.m23;
+        cornerPos[0].x = pos.m03;
+        cornerPos[0].y = pos.m13;
+        cornerPos[0].z = pos.m23;
 
         PMatrix3D tmp = new PMatrix3D();
         tmp.apply(pos);
@@ -136,4 +144,5 @@ public class TrackedView {
             screenP[i] = itw.getCamViewPoint(cornerPos[i]);
         }
     }
+
 }

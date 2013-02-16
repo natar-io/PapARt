@@ -19,6 +19,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.HashMap;
@@ -88,14 +89,13 @@ public class ARTagDetector {
             pimg = new PImage(w, h, PApplet.RGB);
 
             initTracker(cameraFile, paperSheets);
-            
+
             grabber.start();
         } catch (Exception e) {
             System.out.println(e);
         }
     }
-    
-    
+
     protected ARTagDetector(FrameGrabber grabber, String yamlCameraProj, String cameraFile, MarkerBoard[] paperSheets) {
 
         // Init the camera parameters
@@ -106,47 +106,46 @@ public class ARTagDetector {
             System.out.println(e);
         }
     }
-    
-    
+
     // The frame Grabber is already set
-     private void initTracker(String cameraFile, MarkerBoard[] paperSheets) throws Exception{
+    private void initTracker(String cameraFile, MarkerBoard[] paperSheets) throws Exception {
 
-            ArtLogFunction f = new ArtLogFunction() {
-                @Override
-                public void call(String nStr) {
-                    Logger.getLogger(MarkerDetector.class.getName()).warning(nStr);
-                }
-            };
-            ARToolKitPlus.Logger log = new ARToolKitPlus.Logger(null);
-
-            for (MarkerBoard sheet : paperSheets) {
-
-                MultiTracker tracker = new MultiTracker(grabber.getImageWidth(), grabber.getImageHeight());
-
-                //            int pixfmt = ARToolKitPlus.PIXEL_FORMAT_LUM;
-                int pixfmt = ARToolKitPlus.PIXEL_FORMAT_BGR;
-
-                tracker.setPixelFormat(pixfmt);
-                tracker.setBorderWidth(0.125f);
-                tracker.activateAutoThreshold(true);
-                tracker.setUndistortionMode(ARToolKitPlus.UNDIST_NONE);
-                tracker.setPoseEstimator(ARToolKitPlus.POSE_ESTIMATOR_RPP);
-                tracker.setMarkerMode(ARToolKitPlus.MARKER_ID_BCH);
-                tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_FULL_RES);
-                tracker.setUseDetectLite(false);
-
-                if (!tracker.init(cameraFile, sheet.getFileName(), 1.0f, 1000.f, log)) {
-                    throw new Exception("Init ARTOOLKIT Error" + sheet.getFileName() + " " + sheet.getName());
-                }
-
-                float[] transfo = new float[16];
-                for (int i = 0; i < 3; i++) {
-                    transfo[12 + i] = 0;
-                }
-                transfo[15] = 0;
-                sheet.setTracker(tracker, transfo);
+        ArtLogFunction f = new ArtLogFunction() {
+            @Override
+            public void call(String nStr) {
+                Logger.getLogger(MarkerDetector.class.getName()).warning(nStr);
             }
-     }
+        };
+        ARToolKitPlus.Logger log = new ARToolKitPlus.Logger(null);
+
+        for (MarkerBoard sheet : paperSheets) {
+
+            MultiTracker tracker = new MultiTracker(grabber.getImageWidth(), grabber.getImageHeight());
+
+            //            int pixfmt = ARToolKitPlus.PIXEL_FORMAT_LUM;
+            int pixfmt = ARToolKitPlus.PIXEL_FORMAT_BGR;
+
+            tracker.setPixelFormat(pixfmt);
+            tracker.setBorderWidth(0.125f);
+            tracker.activateAutoThreshold(true);
+            tracker.setUndistortionMode(ARToolKitPlus.UNDIST_NONE);
+            tracker.setPoseEstimator(ARToolKitPlus.POSE_ESTIMATOR_RPP);
+            tracker.setMarkerMode(ARToolKitPlus.MARKER_ID_BCH);
+            tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_FULL_RES);
+            tracker.setUseDetectLite(false);
+
+            if (!tracker.init(cameraFile, sheet.getFileName(), 1.0f, 1000.f, log)) {
+                throw new Exception("Init ARTOOLKIT Error" + sheet.getFileName() + " " + sheet.getName());
+            }
+
+            float[] transfo = new float[16];
+            for (int i = 0; i < 3; i++) {
+                transfo[12 + i] = 0;
+            }
+            transfo[15] = 0;
+            sheet.setTracker(tracker, transfo);
+        }
+    }
 
     public void grab() {
         grab(false, isCopy);
@@ -174,32 +173,65 @@ public class ARTagDetector {
         }
 
         // Image drawing
+//        if (copy) {
+//            
+//            ByteBuffer buff1 = iimg.getByteBuffer();
+//            pimg.loadPixels();
+//            for (int i = 0; i
+//                    < iimg.width() * iimg.height(); i++) {
+//                int offset = i * 3;
+//                pimg.pixels[i] = (buff1.get(offset + 2) & 0xFF) << 16
+//                        | (buff1.get(offset + 1) & 0xFF) << 8
+//                        | (buff1.get(offset) & 0xFF);
+//            }
+//
+//            pimg.updatePixels();
+//
+//            // TODO: HACK
+//            if (nbImagesCopied++ == 60) {
+//                System.gc();
+//                nbImagesCopied = 0;
+//            }
+//        }
+
+
+
+        // New Method  !! 
+
         if (copy) {
-            ByteBuffer buff1 = iimg.getByteBuffer();
-            pimg.loadPixels();
-            for (int i = 0; i
-                    < iimg.width() * iimg.height(); i++) {
-                int offset = i * 3;
-                pimg.pixels[i] = (buff1.get(offset + 2) & 0xFF) << 16
-                        | (buff1.get(offset + 1) & 0xFF) << 8
-                        | (buff1.get(offset) & 0xFF);
-            }
 
-            pimg.updatePixels();
+//            iimg.getByteBuffer();
+            
+//            IntBuffer rgbBuffer = img2.getByteBuffer().asIntBuffer();
+//            rgbBuffer.rewind();
+//
+//            pimg.loadPixels();
+//
+//            IntBuffer pixelBuff = IntBuffer.wrap(pimg.pixels);
+//            
+//            pimg.pixels = rgbBuffer.array();
+//            
+////            pixelBuff.rewind();
+////            pixelBuff.put(rgbBuffer);
+//
+//            pimg.updatePixels();
 
-            // TODO: HACK
-            if (nbImagesCopied++ == 60) {
-                System.gc();
-                nbImagesCopied = 0;
-            }
+//             pimg.pixels = rgbBuffer;
+//            pimg.updatePixels();
+//            try {
+//                copyBufferMethod.invoke(copyHandler, new Object[]{natBuffer, rgbBuffer, bufWidth, bufHeight});
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
 
         }
+
     }
 
     public float[] findMarkers(MarkerBoard sheet) {
         return findMarkers(sheet, lastUndistorted ? img2 : iimg);
     }
-    
+
     public float[] findMarkers(MarkerBoard sheet, IplImage img) {
         sheet.updatePosition(img);
         return sheet.getTransfo();
