@@ -34,7 +34,7 @@ import processing.core.PVector;
  */
 public class ARTagDetector {
 
-    protected ARTagDetector(String cameraFile, int w, int h, MarkerBoard[] paperSheets, int type) {
+    protected ARTagDetector(Camera camera, String cameraFile, int w, int h, MarkerBoard[] paperSheets, int type) {
 
         ArtLogFunction f = new ArtLogFunction() {
             @Override
@@ -66,7 +66,9 @@ public class ARTagDetector {
             tracker.setPoseEstimator(ARToolKitPlus.POSE_ESTIMATOR_RPP);
             tracker.setMarkerMode(ARToolKitPlus.MARKER_ID_BCH);
             tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_FULL_RES);
+//            tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_HALF_RES);
             tracker.setUseDetectLite(false);
+//            tracker.setUseDetectLite(true);
 
             if (!tracker.init(cameraFile, sheet.getFileName(), 1.0f, 1000.f, log)) {
                 System.err.println("Init ARTOOLKIT Error" + sheet.getFileName() + " " + sheet.getName());
@@ -77,13 +79,13 @@ public class ARTagDetector {
                 transfo[12 + i] = 0;
             }
             transfo[15] = 0;
-            sheet.setTracker(tracker, transfo);
+            sheet.addTracker(camera, tracker, transfo);
         }
 
     }
 
-    public float[] findMarkers(MarkerBoard sheet, IplImage img) {
-        sheet.updatePosition(img);
-        return sheet.getTransfo();
-    }
+//    public float[] findMarkers(MarkerBoard sheet, IplImage img) {
+//        sheet.updatePosition(img);
+//        return sheet.getTransfo();
+//    }
 }

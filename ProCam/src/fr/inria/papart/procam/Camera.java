@@ -10,6 +10,7 @@ package fr.inria.papart.procam;
  */
 import codeanticode.glgraphics.GLTexture;
 import codeanticode.gsvideo.GSCapture;
+import codeanticode.gsvideo.GSPipeline;
 import com.googlecode.javacv.CameraDevice;
 import com.googlecode.javacv.FrameGrabber;
 import com.googlecode.javacv.OpenCVFrameGrabber;
@@ -18,7 +19,10 @@ import fr.inria.papart.tools.GSIplImage;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.media.opengl.GL;
 
 import processing.core.PApplet;
@@ -28,7 +32,7 @@ import processing.core.PVector;
 
 public class Camera {
 
-    public ARTagDetector art;
+    protected ARTagDetector art;
     // Camera parameters
     protected PMatrix3D camIntrinsicsP3D;
     protected PApplet parent;
@@ -39,6 +43,7 @@ public class Camera {
     // GStreamer  Video input
     protected GSCapture gsCapture;
     protected GSIplImage converter;
+    protected GSPipeline pipeline;
     // OpenCV  video input 
     private FrameGrabber grabber;
     // Texture for video visualization (OpenCV generally)
@@ -46,11 +51,13 @@ public class Camera {
     protected GLTexture tex = null;
     public final static int OPENCV_VIDEO = 1;
     public final static int GSTREAMER_VIDEO = 2;
+    public final static int GSTREAMER_PIPELINE = 3;
     public static int videoInput = OPENCV_VIDEO;
     protected int width, height;
     protected int videoInputType;
     protected int frameRate;
     protected boolean autoUpdate = false;
+    protected boolean gotPicture = false;
 
     static public void convertARParams(PApplet parent, String calibrationYAML,
             String calibrationData, int width, int height) {
@@ -111,9 +118,17 @@ public class Camera {
             gsCapture = new GSCapture(parent, width, height, camDevice);
             converter = new GSIplImage(width, height);
             gsCapture.setPixelDest(converter, false);
-
             gsCapture.setEventHandlerObject(this);
             gsCapture.start();
+        }
+
+        if (videoInputType == GSTREAMER_PIPELINE) {
+
+            pipeline = new GSPipeline(parent, camDevice);
+            converter = new GSIplImage(width, height);
+            pipeline.setPixelDest(converter, true);
+            pipeline.setEventHandlerObject(this);
+            pipeline.play();
         }
 
 
@@ -144,15 +159,152 @@ public class Camera {
 
     public void captureEvent(GSCapture cam) {
         cam.read();
+        this.gotPicture = true;
+    }
+
+    public void pipelineEvent(GSPipeline pipeline) {
+        pipeline.read();
     }
 
     public void initMarkerDetection(String calibrationARToolkit, MarkerBoard[] paperSheets) {
-        art = new ARTagDetector(calibrationARToolkit, width, height, paperSheets, videoInputType);
+        art = new ARTagDetector(this, calibrationARToolkit, width, height, paperSheets, videoInputType);
         this.sheets = paperSheets;
         this.trackedViews = new ArrayList<TrackedView>();
     }
+    protected boolean photoCapture;
 
-    // For GStreamer ! 
+    public void setPhotoCapture() {
+
+        this.photoCapture = true;
+        if (useGStreamer()) {
+            gsCapture.stop();
+        }
+        if (useOpenCV()) {
+            try {
+                grabber.stop();
+            } catch (Exception e) {
+                System.out.println("Error " + e);
+            }
+        }
+
+    }
+    protected boolean isTakingPhoto = false;
+    protected boolean hasNewPhoto = false;
+
+    public void takePhoto(boolean undistort) {
+        takePhoto(null, undistort);
+    }
+
+    public void takePhoto(PImage img, boolean undistort) {
+        System.out.println("Is Takiing ? " + this.isTakingPhoto);
+        if (!this.isTakingPhoto) {
+            this.hasNewPhoto = false;
+            this.isTakingPhoto = true;
+            System.out.println("Is Takiing ? " + this.isTakingPhoto);
+            PhotoTaker pt = new PhotoTaker(this, img, undistort);
+            pt.start();
+            System.out.println("Photo started...");
+        } else {
+            System.out.println("Wait for the previous photo.");
+        }
+    }
+
+    public boolean isTakingPhoto() {
+        return this.isTakingPhoto;
+    }
+
+    public boolean hasNewPhoto() {
+        return this.hasNewPhoto;
+    }
+
+    
+    /////////////// TODO: MOVE TO A CLASS ??? /////////
+    
+    class PhotoTaker extends Thread {
+
+        private PImage img;
+        private boolean undist;
+        private Camera cam;
+
+        PhotoTaker(Camera cam, PImage img, boolean undistort) {
+            this.img = img;
+            this.undist = undistort;
+            this.cam = cam;
+        }
+
+        // TODO: Magic numbers... 
+        @Override
+        public void run() {
+
+            System.out.println("Grabbing frames");
+            if (cam.useGStreamer()) {
+
+                gsCapture.start();
+                while (!gotPicture) {
+                    try {
+                        Thread.sleep(20);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(Camera.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+
+                // Drop 10 frames
+                for (int i = 0; i < 10; i++) {
+                    if (img != null) {
+                        grabTo(img, false);
+                    }
+
+                    while (!gotPicture) {
+
+                        try {
+                            Thread.sleep(20);
+                        } catch (InterruptedException ex) {
+                            Logger.getLogger(Camera.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+
+                    }
+                    grab(false);
+
+                    // NO IDEA WHY THIS IS NOT WORKING
+                }
+
+                if (img != null) {
+                    grabTo(img, undist);
+                }
+                gsCapture.stop();
+            }
+
+
+            if (cam.useOpenCV()) {
+                try {
+                    grabber.start();
+                } catch (Exception e) {
+                    System.err.println("Could not start frameGrabber... " + e);
+                }
+                // Drop 10 frames
+                for (int i = 0; i < 30; i++) {
+//                    grabTo(img, undist);
+                    grab(false);
+                    System.out.println("Grabbed " + i);
+                }
+
+                if (img != null) {
+                    grabTo(img, undist);
+                }
+
+                try {
+                    grabber.stop();
+                } catch (Exception e) {
+                    System.err.println("Could not stop frameGrabber... " + e);
+                }
+            }
+
+            System.out.println("Photo OK ");
+            cam.isTakingPhoto = false;
+            cam.hasNewPhoto = true;
+        }
+    }
+
     /**
      * It makes the camera update continuously.
      */
@@ -236,29 +388,41 @@ public class Camera {
                 System.err.println("Camera: Grab() Error ! " + e);
                 e.printStackTrace();
             }
+        }
 
-        } else {
-            if (videoInputType == GSTREAMER_VIDEO) {
-
-                if (converter.putPixelsToImage()) {
-                    ;
-                } else {
-
-                    // System.err.println("Camera: GStreamer no Frame ?!");
-                    try {
-                        TimeUnit.MILLISECONDS.sleep((long) (1f / frameRate));
-                    } catch (Exception e) {
-                    }
-
-                }
-                img = converter.getImage();
-
+        if (videoInputType == GSTREAMER_VIDEO) {
+            if (converter.putPixelsToImage()) {
+                ;
             } else {
-                // Crash !
-                System.err.println("You must specify a valid video input.");
-                assert (true);
-//                return null;
+
+                // System.err.println("Camera: GStreamer no Frame ?!");
+                try {
+                    TimeUnit.MILLISECONDS.sleep((long) (1f / frameRate));
+                } catch (Exception e) {
+                }
+
+                return null;
             }
+            img = converter.getImage();
+        }
+
+
+        if (videoInputType == GSTREAMER_PIPELINE) {
+
+            // TODO: check got Picture.
+            if (converter.putPixelsToImage()) {
+                ;
+            } else {
+
+                // System.err.println("Camera: GStreamer no Frame ?!");
+                try {
+                    TimeUnit.MILLISECONDS.sleep((long) (1f / frameRate));
+                } catch (Exception e) {
+                }
+
+                return null;
+            }
+            img = converter.getImage();
         }
 
 
@@ -272,6 +436,8 @@ public class Camera {
             } else {
                 iimg = img;
             }
+
+            this.gotPicture = true;
         }
 
         return iimg;
@@ -293,44 +459,52 @@ public class Camera {
         return getViewIpl(trackedView);
     }
 
+    public PImage getPView(TrackedView trackedView) {
+        if (iimg == null) {
+            return null;
+        }
+
+        trackedView.computeCorners(this);
+        return trackedView.getImage(iimg);
+    }
+
     public IplImage getViewIpl(TrackedView trackedView) {
 
         if (iimg == null) {
             return null;
         }
 
-        trackedView.computeCorners(this);
+        trackedView.computeCorners();
         return trackedView.getImageIpl(iimg);
     }
 
-    
-    public void grabTo(PImage pimg) {
+    public void grabTo(PImage pimg, boolean undist) {
         try {
-            IplImage img = grabber.grab();
 
-            ByteBuffer buff1 = img.getByteBuffer();
-            pimg.loadPixels();
-            for (int i = 0; i
-                    < img.width() * img.height(); i++) {
-                int offset = i * 3;
-                pimg.pixels[i] = (buff1.get(offset + 2) & 0xFF) << 16
-                        | (buff1.get(offset + 1) & 0xFF) << 8
-                        | (buff1.get(offset) & 0xFF);
+            IplImage img = this.grab(undist);
+
+            if (img != null) {
+                Utils.IplImageToPImage(img, false, pimg);
             }
 
-            pimg.updatePixels();
         } catch (Exception e) {
             System.err.println("Error while grabbing frame " + e);
             e.printStackTrace();
         }
     }
 
+    protected void imageRetreived() {
+        this.hasNewPhoto = false;
+    }
+
     public PImage getPImage() {
+        imageRetreived();
         if (tex == null) {
             tex = new GLTexture(parent, width, height);
         }
 
-
+//        System.out.println("iimg " + iimg);
+        
         if (iimg != null) {
             if (videoInputType == OPENCV_VIDEO) {
                 tex.putBuffer(GL.GL_BGR, GL.GL_UNSIGNED_BYTE, iimg.getIntBuffer());
@@ -345,6 +519,7 @@ public class Camera {
     }
 
     public IplImage getIplImage() {
+        imageRetreived();
         return iimg;
     }
 

@@ -112,29 +112,38 @@ public class TouchInput {
 
     public void startTouch(IplImage depthImage) {
 
-        mtk.updateKinect(depthImage, touch2DPrecision);
-        mtk.find2DTouch(touch2DPrecision);
+        if (touch2DPrecision > 0) {
+            mtk.updateKinect(depthImage, touch2DPrecision);
+            mtk.find2DTouch(touch2DPrecision);
+        }
 
-        mtk.updateKinect3D(depthImage, touch3DPrecision);
-        mtk.find3DTouch(touch3DPrecision);
+        if (touch3DPrecision > 0) {
+            mtk.updateKinect3D(depthImage, touch3DPrecision);
+            mtk.find3DTouch(touch3DPrecision);
+        }
     }
 
     // TODO 3D ? : at least 2D for now...
     public void startTouch(IplImage depthImage, IplImage colorImage) {
-
-        mtk.updateKinect(depthImage, touch2DPrecision);
-        mtk.find2DTouch(touch2DPrecision);
-        
+        if (touch2DPrecision > 0) {
+            mtk.updateKinect(depthImage, touch2DPrecision);
+            mtk.find2DTouch(touch2DPrecision);
+        }
         // BROKEN 
 //        mtk.findColor(depthImage, colorImage, kinect, touchPoints2D, touch2DPrecision);
-
-        mtk.updateKinect3D(depthImage, touch3DPrecision);
-        mtk.find3DTouch(touch3DPrecision);
+        if (touch3DPrecision > 0) {
+            mtk.updateKinect3D(depthImage, touch3DPrecision);
+            mtk.find3DTouch(touch3DPrecision);
+        }
     }
 
     public void endTouch() {
-        mtk.touch2DFound();
-        mtk.touch3DFound();
+        if (touch2DPrecision > 0) {
+            mtk.touch2DFound();
+        }
+        if (touch3DPrecision > 0) {
+            mtk.touch3DFound();
+        }
     }
 
     public ArrayList<TouchPoint> getTouchPoints2D() {
@@ -150,7 +159,7 @@ public class TouchInput {
     }
 
     public TouchElement projectTouchToScreen(Screen screen, Projector projector, boolean is2D, boolean is3D) {
-        return projectTouchToScreen(screen, projector, is2D, is3D, true, true);
+        return projectTouchToScreen(screen, projector, is2D, is3D, is2D, is3D);
     }
 
     public TouchElement projectTouchToScreen(Screen screen, Projector projector,

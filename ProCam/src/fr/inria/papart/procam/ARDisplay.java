@@ -64,7 +64,7 @@ public class ARDisplay {
         if (projExtrinsicsP3D != null) {
             computeInv();
         }
-        
+
         initDistortMap();
     }
 
@@ -106,8 +106,8 @@ public class ARDisplay {
 
         this.graphics.beginDraw();
 
-        // TODO: magic numbers !!!
         this.graphics.frustum(0, 0, 0, 0, znear, zfar);
+
         this.graphics.projection.m00 = p00;
         this.graphics.projection.m11 = p11;
         this.graphics.projection.m02 = p02;

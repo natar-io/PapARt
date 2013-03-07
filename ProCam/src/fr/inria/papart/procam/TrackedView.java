@@ -24,9 +24,17 @@ public class TrackedView {
     private MarkerBoard board;
     private PVector[] screenP = new PVector[4];
     private PVector[] outScreenP = new PVector[4];
-
+    private Camera camera;
+    
     public TrackedView(MarkerBoard board, int outWidth, int outHeight) {
+        this(board, null, outWidth, outHeight);
+    }
+    
+    public TrackedView(MarkerBoard board, Camera cam, int outWidth, int outHeight) {
         this.board = board;
+        this.camera = cam;
+        
+        // TODO: check if this img can be removed
         img = new PImage(outWidth, outHeight, PApplet.RGB);
         cornerPos = new PVector[4];
         screenP = new PVector[4];
@@ -59,9 +67,21 @@ public class TrackedView {
     }
 
     protected void computeCorners(Camera cam) {
+        Camera tmp = this.camera;
+        this.camera = cam;
+        computeCorners();
+        this.camera = tmp;
+    }
+    
+    protected void computeCorners() {
 
+        if(camera == null){
+            System.err.println("TrackedView : Error, you must set a camera, or use computeCorners(ImageWithTags itw.");
+            return;
+        }
+        
         // TODO: test if .get() is necessary ? 
-        pos = board.getTransfoMat().get();
+        pos = board.getTransfoMat(camera).get();
 
         cornerPos[0].x = pos.m03;
         cornerPos[0].y = pos.m13;
@@ -86,7 +106,7 @@ public class TrackedView {
         cornerPos[3].z = tmp.m23;
 
         for (int i = 0; i < 4; i++) {
-            screenP[i] = cam.getCamViewPoint(cornerPos[i]);
+            screenP[i] = camera.getCamViewPoint(cornerPos[i]);
         }
     }
 

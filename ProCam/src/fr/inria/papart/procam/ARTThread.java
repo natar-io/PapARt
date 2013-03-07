@@ -50,7 +50,7 @@ class ARTThread extends Thread {
 
     public void compute(IplImage img) {
         for (MarkerBoard sheet : sheets) {
-            sheet.updatePosition(img);
+            sheet.updatePosition(camera, img);
         }
     }
 

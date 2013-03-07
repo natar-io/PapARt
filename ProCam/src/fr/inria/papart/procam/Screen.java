@@ -37,7 +37,7 @@ public class Screen {
     private PVector[] paperPosCorners3D = new PVector[nbPaperPosRender];
     protected Homography homography;
     protected Matrix4x4 transformationProjPaper;
-    private float halfEyeDist = 20; // 2cm
+    private float halfEyeDist = 10; // 2cm
     private boolean isDrawing = true;
     private OneEuroFilter[] filters = null;
 
@@ -144,11 +144,18 @@ public class Screen {
     // TODO: optionnal args.
 
     public GLGraphicsOffScreen initDraw(PVector userPos, float nearPlane, float farPlane, boolean isAnaglyph, boolean isLeft, boolean isOnly, GLGraphicsOffScreen graphics) {
+
         if (initPos == null) {
-            System.out.println("InitPos ");
-            pos.print();
-            initPos = posPaperP.get();
+
+            // Not used...
+            initPos = new PVector();
+
             initPosM = pos.get();
+
+            initPosM.m03 = 0;
+            initPosM.m13 = 0;
+            initPosM.m23 = 0;
+//            initPosM.invert();
         }
 
         if (isOnly) {
@@ -157,26 +164,33 @@ public class Screen {
         }
 
         PVector paperCameraPos = new PVector();
-
+        PMatrix3D tr = initPosM.get();
         PVector virtualPos = userPos.get();
+
+
+
         if (isAnaglyph) {
             virtualPos.add(isLeft ? -halfEyeDist : halfEyeDist, 0, 0);
         }
-        virtualPos.mult(-scale);
-        // userPos * scale - posPaper - initPos 
-        virtualPos.add(posPaperP);
-        virtualPos.sub(initPos);
 
-        // virtualPos.z = -virtualPos.z;
+
+        /////////// GOOOD ONE ////////////////////
+         virtualPos.mult(-1);
         
         // Get the current paperSheet position
         PMatrix3D rotationPaper = pos.get();
         rotationPaper.invert();
+        
         rotationPaper.m03 = 0;
         rotationPaper.m13 = 0;
         rotationPaper.m23 = 0;   // inverse of the Transformation (without position)
 
         rotationPaper.mult(virtualPos, paperCameraPos);
+        /////////// GOOOD ONE ////////////////////
+
+        
+        paperCameraPos.x -= this.size.x / 2;
+        paperCameraPos.y -= this.size.y / 2;
 
         // http://www.gamedev.net/topic/597564-view-and-projection-matrices-for-vr-window-using-head-tracking/
 
@@ -190,17 +204,23 @@ public class Screen {
 //        float right = nearFactor * (scale * size.x / 2f - tmp2.x);
 //        float top = nearFactor * (scale * size.y / 2f - tmp2.y);
 //        float bottom = nearFactor * (-scale * size.y / 2f - tmp2.y);
-        
+
         graphics.camera(paperCameraPos.x, paperCameraPos.y, paperCameraPos.z,
                 paperCameraPos.x, paperCameraPos.y, 0,
                 0, 1, 0);
 
         float nearFactor = nearPlane / paperCameraPos.z;
 
-        float left = nearFactor * (-scale * size.x / 2f - paperCameraPos.x);
-        float right = nearFactor * (scale * size.x / 2f - paperCameraPos.x);
-        float top = nearFactor * (scale * size.y / 2f - paperCameraPos.y);
-        float bottom = nearFactor * (-scale * size.y / 2f - paperCameraPos.y);
+        float left = nearFactor * (-size.x / 2f - paperCameraPos.x);
+        float right = nearFactor * (size.x / 2f - paperCameraPos.x);
+        float top = nearFactor * (size.y / 2f - paperCameraPos.y);
+        float bottom = nearFactor * (-size.y / 2f - paperCameraPos.y);
+//        
+
+//        float left = nearFactor * (-scale * size.x / 2f - paperCameraPos.x);
+//        float right = nearFactor * (scale * size.x / 2f - paperCameraPos.x);
+//        float top = nearFactor * (scale * size.y / 2f - paperCameraPos.y);
+//        float bottom = nearFactor * (-scale * size.y / 2f - paperCameraPos.y);
 
         graphics.frustum(left, right, bottom, top, nearPlane, farPlane);
 
@@ -247,7 +267,7 @@ public class Screen {
     }
 
     public boolean setAutoUpdatePos(Camera camera, MarkerBoard board) {
-        pos3D = board.getTransfo();
+        pos3D = board.getTransfo(camera);
         return pos3D != null;
     }
 
@@ -346,9 +366,9 @@ public class Screen {
     }
 
     // Available only if pos3D is being updated elsewhere...
-    public void updatePos(MarkerBoard board) {
+    public void updatePos(Camera camera, MarkerBoard board) {
 
-        pos3D = board.getTransfo();
+        pos3D = board.getTransfo(camera);
 
         pos = new PMatrix3D(pos3D[0], pos3D[1], pos3D[2], pos3D[3],
                 pos3D[4], pos3D[5], pos3D[6], pos3D[7],
