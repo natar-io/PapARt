@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import processing.core.PApplet;
+import processing.core.PVector;
 import toxi.geom.Matrix4x4;
 import toxi.geom.Vec3D;
 
@@ -192,6 +193,10 @@ public class Touch {
     public static float sideError = 0.2f;
 
     public static boolean isInside(Vec3D v, float min, float max) {
+        return v.x > min - sideError && v.x < max + sideError && v.y < max + sideError && v.y > min - sideError;
+    }
+    
+    public static boolean isInside(PVector v, float min, float max) {
         return v.x > min - sideError && v.x < max + sideError && v.y < max + sideError && v.y > min - sideError;
     }
 }

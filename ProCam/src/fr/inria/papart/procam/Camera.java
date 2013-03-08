@@ -166,8 +166,8 @@ public class Camera {
         pipeline.read();
     }
 
-    public void initMarkerDetection(String calibrationARToolkit, MarkerBoard[] paperSheets) {
-        art = new ARTagDetector(this, calibrationARToolkit, width, height, paperSheets, videoInputType);
+    public void initMarkerDetection(PApplet applet, String calibrationARToolkit, MarkerBoard[] paperSheets) {
+        art = new ARTagDetector(applet, this, calibrationARToolkit, width, height, paperSheets, videoInputType);
         this.sheets = paperSheets;
         this.trackedViews = new ArrayList<TrackedView>();
     }

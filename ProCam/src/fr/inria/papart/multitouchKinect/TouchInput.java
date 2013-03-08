@@ -206,8 +206,7 @@ public class TouchInput {
 
                 // TODO: change this to get outside points ? 
                 // Inside the window
-                if (tp.v.x >= 0 && tp.v.x < 1
-                        && tp.v.y >= 0 && tp.v.y < 1) {
+                if (Touch.isInside(tp.v, 0, 1)) {
 
                     PVector res, res2;
                     res = projector.projectPointer(screen, tp.v.x, tp.v.y);
@@ -222,14 +221,14 @@ public class TouchInput {
                     if (res != null) {
 
                         // inside the paper sheet 	      
-                        if (res.x >= 0 && res.x <= 1 && res.y >= 0 && res.y <= 1) {
+                        if (Touch.isInside(res, 0, 1)) {
                             position2D.add(new PVector(res.x, res.y));
                             points2D.add(tp);
                         }
 
                         if (res2 != null) {
                             // inside the paper sheet 	      
-                            if (res2.x >= 0 && res2.x <= 1 && res2.y >= 0 && res2.y <= 1) {
+                            if (Touch.isInside(res2, 0, 1)) {
                                 speed2D.add(new PVector(res.x - res2.x,
                                         res.y - res2.y));
                             }
@@ -245,8 +244,7 @@ public class TouchInput {
 
                 // TODO: inside necessary ??
                 // Inside the window
-                if (tp.v.x >= 0 && tp.v.x < 1
-                        && tp.v.y >= 0 && tp.v.y < 1) {
+                if (Touch.isInside(tp.v, 0, 1)) {
 
                     PVector res, res2;
                     res = projector.projectPointer(screen, tp.v.x, tp.v.y);
@@ -268,7 +266,8 @@ public class TouchInput {
 
                         res.z = tp.v.z;
                         // inside the paper sheet 	      
-                        if (res.x >= 0 && res.x <= 1 && res.y >= 0 && res.y <= 1) {
+                        if (Touch.isInside(res, 0f, 1f)) {
+
                             position3D.add(new PVector(res.x, res.y, tp.v.z));
                             points3D.add(tp);
                         }

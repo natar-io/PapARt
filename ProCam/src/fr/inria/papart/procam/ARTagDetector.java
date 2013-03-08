@@ -34,7 +34,7 @@ import processing.core.PVector;
  */
 public class ARTagDetector {
 
-    protected ARTagDetector(Camera camera, String cameraFile, int w, int h, MarkerBoard[] paperSheets, int type) {
+    protected ARTagDetector(PApplet applet, Camera camera, String cameraFile, int w, int h, MarkerBoard[] paperSheets, int type) {
 
         ArtLogFunction f = new ArtLogFunction() {
             @Override
@@ -79,7 +79,7 @@ public class ARTagDetector {
                 transfo[12 + i] = 0;
             }
             transfo[15] = 0;
-            sheet.addTracker(camera, tracker, transfo);
+            sheet.addTracker(applet, camera, tracker, transfo);
         }
 
     }
