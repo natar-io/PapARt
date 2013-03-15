@@ -31,9 +31,13 @@ public class MarkerBoard {
     protected ArrayList<ARToolKitPlus.MultiTracker> trackers;
     protected ArrayList<OneEuroFilter[]> filters;
     protected ArrayList<PVector> lastPos;
-    protected ArrayList<Integer> lastPosUpdate;
+    protected ArrayList<Integer> nextTimeEvent;
+    protected ArrayList<Integer> updateStatus;
     private PApplet applet;
     private static final int updateTime = 1000; // 1 sec
+    static public final int NORMAL = 1;
+    static public final int BLOCK_UPDATE = 2;
+    static public final int FORCE_UPDATE = 3;
 
     public MarkerBoard(String fileName, String name, int width, int height) {
         this.fileName = fileName;
@@ -48,7 +52,8 @@ public class MarkerBoard {
         drawingMode = new ArrayList<Boolean>();
         minDistanceDrawingMode = new ArrayList<Float>();
         lastPos = new ArrayList<PVector>();
-        lastPosUpdate = new ArrayList<Integer>();
+        nextTimeEvent = new ArrayList<Integer>();
+        updateStatus = new ArrayList<Integer>();
 
     }
 
@@ -68,7 +73,8 @@ public class MarkerBoard {
         this.drawingMode.add(false);
         this.lastPos.add(new PVector());
         this.minDistanceDrawingMode.add(2f);
-        this.lastPosUpdate.add(0);
+        this.nextTimeEvent.add(0);
+        this.updateStatus.add(NORMAL);
 
         OneEuroFilter[] filter = null;
         this.filters.add(filter);
@@ -113,23 +119,53 @@ public class MarkerBoard {
 //    public MultiTracker getTracker() {
 //        return this.tracker;
 //    }
-    public synchronized void updatePosition(Camera camera, IplImage img) {
+    public void forceUpdate(Camera camera, int time) {
+        int id = getId(camera);
+        nextTimeEvent.set(id, applet.millis() + time);
+        updateStatus.set(id, FORCE_UPDATE);
+    }
 
+    public void blockUpdate(Camera camera, int time) {
+        int id = getId(camera);
+        nextTimeEvent.set(id, applet.millis() + time);
+        updateStatus.set(id, BLOCK_UPDATE);
+    }
+
+    public synchronized void updatePosition(Camera camera, IplImage img) {
 
         int id = cameras.indexOf(camera);
 
         ARToolKitPlus.MultiTracker tracker = trackers.get(id);
-        float transfo[] = transfos.get(id);
-        OneEuroFilter filter[] = filters.get(id);
 
+        int currentTime = applet.millis();
+        int endTime = nextTimeEvent.get(id);
+        int mode = updateStatus.get(id);
 
+        // If the update is still blocked
+        if (mode == BLOCK_UPDATE && currentTime < endTime) {
+            return;
+        }
+
+        // Find the markers
         tracker.calc(img.imageData());
 
         if (tracker.getNumDetectedMarkers() <= 0) {
             return;
         }
 
+
         ARToolKitPlus.ARMultiMarkerInfoT multiMarkerConfig = tracker.getMultiMarkerConfig();
+
+        // if the update is forced 
+        if (mode == FORCE_UPDATE && currentTime < endTime) {
+            update(multiMarkerConfig, id);
+            return;
+        }
+
+        // the force and block updates are finished, revert back to normal
+        if (mode == FORCE_UPDATE || mode == BLOCK_UPDATE && currentTime > endTime) {
+            updateStatus.set(id, NORMAL);
+        }
 
         PVector currentPos = new PVector((float) multiMarkerConfig.trans().get(3),
                 (float) multiMarkerConfig.trans().get(7),
@@ -140,24 +176,16 @@ public class MarkerBoard {
 
         float distance = currentPos.dist(lastPos.get(id));
 
+        // if it is a drawing mode
         if (drawingMode.get(id)) {
 
-            /////////////////////// current time    -  last update         >  update Timeout 
-            boolean needUpdate = applet.millis() - lastPosUpdate.get(id) < MarkerBoard.updateTime;
-
-            // Update for a short time period to get the correct position... 
-            if (needUpdate) {
-
+            if (distance > this.minDistanceDrawingMode.get(id)) {
                 update(multiMarkerConfig, id);
 
-            } else {
-
-                if (distance > this.minDistanceDrawingMode.get(id)) {
-                    update(multiMarkerConfig, id);
-                    lastPosUpdate.set(id, applet.millis());
-                    lastPos.set(id, currentPos);
-                }
-                
+                lastPos.set(id, currentPos);
+                updateStatus.set(id, FORCE_UPDATE);
+                nextTimeEvent.set(id, applet.millis() + MarkerBoard.updateTime);
+//                    System.out.println("Next Update for x seconds");
             }
 
         } else {
