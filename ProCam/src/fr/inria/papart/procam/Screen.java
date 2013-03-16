@@ -37,9 +37,8 @@ public class Screen {
     private PVector[] paperPosCorners3D = new PVector[nbPaperPosRender];
     protected Homography homography;
     protected Matrix4x4 transformationProjPaper;
-    private float halfEyeDist = 20; // 2cm
+    private float halfEyeDist = 10; // 2cm
     private boolean isDrawing = true;
-    private OneEuroFilter[] filters = null;
 
     public Screen(PApplet parent, PVector size, float scale) {
         this(parent, size, scale, false, 1);
@@ -55,29 +54,6 @@ public class Screen {
         posPaperP = new PVector();
         initHomography();
 //        initImageGetter();
-    }
-
-    public void setFiltering(double freq, double minCutOff) {
-        if (filters == null) {
-            initFilters(freq);
-        }
-        try {
-            for (int i = 0; i < 12; i++) {
-                filters[i].setFrequency(freq);
-                filters[i].setMinCutoff(minCutOff);
-            }
-        } catch (Exception e) {
-        }
-
-    }
-
-    private void initFilters(double freq) {
-        try {
-            for (int i = 0; i < 12; i++) {
-                filters[i] = new OneEuroFilter(freq);
-            }
-        } catch (Exception e) {
-        }
     }
 
     ////////////////// 3D SPACE TO PAPER HOMOGRAPHY ///////////////
@@ -144,11 +120,18 @@ public class Screen {
     // TODO: optionnal args.
 
     public GLGraphicsOffScreen initDraw(PVector userPos, float nearPlane, float farPlane, boolean isAnaglyph, boolean isLeft, boolean isOnly, GLGraphicsOffScreen graphics) {
+
         if (initPos == null) {
-            System.out.println("InitPos ");
-            pos.print();
-            initPos = posPaperP.get();
+
+            // Not used...
+            initPos = new PVector();
+
             initPosM = pos.get();
+
+            initPosM.m03 = 0;
+            initPosM.m13 = 0;
+            initPosM.m23 = 0;
+//            initPosM.invert();
         }
 
         if (isOnly) {
@@ -157,30 +140,33 @@ public class Screen {
         }
 
         PVector paperCameraPos = new PVector();
-
+        PMatrix3D tr = initPosM.get();
         PVector virtualPos = userPos.get();
+
+
+
         if (isAnaglyph) {
             virtualPos.add(isLeft ? -halfEyeDist : halfEyeDist, 0, 0);
         }
-        
+
+
+        /////////// GOOOD ONE ////////////////////
         virtualPos.mult(-1);
-//        virtualPos.mult(-scale);
-        
-        // userPos * scale - posPaper - initPos 
 
-//        virtualPos.add(posPaperP);
-//        virtualPos.sub(initPos);
-
-        // virtualPos.z = -virtualPos.z;
-        
         // Get the current paperSheet position
         PMatrix3D rotationPaper = pos.get();
         rotationPaper.invert();
+
         rotationPaper.m03 = 0;
         rotationPaper.m13 = 0;
         rotationPaper.m23 = 0;   // inverse of the Transformation (without position)
 
         rotationPaper.mult(virtualPos, paperCameraPos);
+        /////////// GOOOD ONE ////////////////////
+
+
+        paperCameraPos.x -= this.size.x / 2;
+        paperCameraPos.y -= this.size.y / 2;
 
         // http://www.gamedev.net/topic/597564-view-and-projection-matrices-for-vr-window-using-head-tracking/
 
@@ -194,17 +180,23 @@ public class Screen {
 //        float right = nearFactor * (scale * size.x / 2f - tmp2.x);
 //        float top = nearFactor * (scale * size.y / 2f - tmp2.y);
 //        float bottom = nearFactor * (-scale * size.y / 2f - tmp2.y);
-        
+
         graphics.camera(paperCameraPos.x, paperCameraPos.y, paperCameraPos.z,
                 paperCameraPos.x, paperCameraPos.y, 0,
                 0, 1, 0);
 
         float nearFactor = nearPlane / paperCameraPos.z;
 
-        float left = nearFactor * (-scale * size.x / 2f - paperCameraPos.x);
-        float right = nearFactor * (scale * size.x / 2f - paperCameraPos.x);
-        float top = nearFactor * (scale * size.y / 2f - paperCameraPos.y);
-        float bottom = nearFactor * (-scale * size.y / 2f - paperCameraPos.y);
+        float left = nearFactor * (-size.x / 2f - paperCameraPos.x);
+        float right = nearFactor * (size.x / 2f - paperCameraPos.x);
+        float top = nearFactor * (size.y / 2f - paperCameraPos.y);
+        float bottom = nearFactor * (-size.y / 2f - paperCameraPos.y);
+//        
+
+//        float left = nearFactor * (-scale * size.x / 2f - paperCameraPos.x);
+//        float right = nearFactor * (scale * size.x / 2f - paperCameraPos.x);
+//        float top = nearFactor * (scale * size.y / 2f - paperCameraPos.y);
+//        float bottom = nearFactor * (-scale * size.y / 2f - paperCameraPos.y);
 
         graphics.frustum(left, right, bottom, top, nearPlane, farPlane);
 
@@ -297,38 +289,19 @@ public class Screen {
     // Available only if pos3D is being updated elsewhere...
     public void updatePos() {
 
-
         if (pos == null) {
             pos = new PMatrix3D(pos3D[0], pos3D[1], pos3D[2], pos3D[3],
                     pos3D[4], pos3D[5], pos3D[6], pos3D[7],
                     pos3D[8], pos3D[9], pos3D[10], pos3D[11],
                     0, 0, 0, 1);
-        } else {
 
-            if (filters != null) {
-                try {
-                    pos.m00 = (float) filters[0].filter(pos3D[0]);
-                    pos.m01 = (float) filters[1].filter(pos3D[1]);
-                    pos.m02 = (float) filters[2].filter(pos3D[2]);
-                    pos.m03 = (float) filters[3].filter(pos3D[3]);
-                    pos.m10 = (float) filters[4].filter(pos3D[4]);
-                    pos.m11 = (float) filters[5].filter(pos3D[5]);
-                    pos.m12 = (float) filters[6].filter(pos3D[6]);
-                    pos.m13 = (float) filters[7].filter(pos3D[7]);
-                    pos.m20 = (float) filters[8].filter(pos3D[8]);
-                    pos.m12 = (float) filters[9].filter(pos3D[9]);
-                    pos.m22 = (float) filters[10].filter(pos3D[10]);
-                    pos.m23 = (float) filters[11].filter(pos3D[11]);
-                } catch (Exception e) {
-                }
-            } else {
-                pos.set(pos3D[0], pos3D[1], pos3D[2], pos3D[3],
-                        pos3D[4], pos3D[5], pos3D[6], pos3D[7],
-                        pos3D[8], pos3D[9], pos3D[10], pos3D[11],
-                        0, 0, 0, 1);
 
-            }
         }
+
+        pos.set(pos3D[0], pos3D[1], pos3D[2], pos3D[3],
+                pos3D[4], pos3D[5], pos3D[6], pos3D[7],
+                pos3D[8], pos3D[9], pos3D[10], pos3D[11],
+                0, 0, 0, 1);
 
 
 //        pos = new PMatrix3D(pos3D[0], pos3D[1], pos3D[2], pos3D[3],

@@ -166,8 +166,8 @@ public class Camera {
         pipeline.read();
     }
 
-    public void initMarkerDetection(String calibrationARToolkit, MarkerBoard[] paperSheets) {
-        art = new ARTagDetector(this, calibrationARToolkit, width, height, paperSheets, videoInputType);
+    public void initMarkerDetection(PApplet applet, String calibrationARToolkit, MarkerBoard[] paperSheets) {
+        art = new ARTagDetector(applet, this, calibrationARToolkit, width, height, paperSheets, videoInputType);
         this.sheets = paperSheets;
         this.trackedViews = new ArrayList<TrackedView>();
     }
@@ -503,7 +503,8 @@ public class Camera {
             tex = new GLTexture(parent, width, height);
         }
 
-        System.out.println("iimg " + iimg);
+//        System.out.println("iimg " + iimg);
+        
         if (iimg != null) {
             if (videoInputType == OPENCV_VIDEO) {
                 tex.putBuffer(GL.GL_BGR, GL.GL_UNSIGNED_BYTE, iimg.getIntBuffer());
