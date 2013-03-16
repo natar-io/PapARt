@@ -112,6 +112,7 @@ public class Projector extends ARDisplay {
         // Place the projector to his projection respective to the origin (camera here)
         this.graphics.modelview.apply(getExtrinsics());
 
+        this.graphics.imageMode(PApplet.CORNER);
         for (Screen screen : screens) {
             if (!screen.isDrawing()) {
                 continue;
@@ -154,7 +155,7 @@ public class Projector extends ARDisplay {
         return this.graphics;
     }
         
-    public GLGraphicsOffScreen beginDrawOnBoard(MarkerBoard board) {
+    public GLGraphicsOffScreen beginDrawOnBoard(Camera camera, MarkerBoard board) {
 
         ////////  3D PROJECTION  //////////////
         this.graphics.beginDraw();
@@ -172,7 +173,7 @@ public class Projector extends ARDisplay {
         this.graphics.modelview.apply(getExtrinsics());
 
         // Goto to the screen position
-        this.graphics.modelview.apply(board.getTransfoMat());
+        this.graphics.modelview.apply(board.getTransfoMat(camera));
 
         return this.graphics;
     }

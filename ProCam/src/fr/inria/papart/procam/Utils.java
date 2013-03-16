@@ -111,7 +111,6 @@ public class Utils {
         return null;
     }
 
-    
     // TO USE INSIDE THE DRAW FUNCTION
     static public GLTexture createTextureFrom(PApplet parent, IplImage img) {
         GLTexture tex = null;
@@ -207,6 +206,9 @@ public class Utils {
     static public void IplImageToPImage(IplImage img, PApplet applet, boolean RGB, PImage ret) {
         IplImageToPImage(img, RGB, ret);
     }
+    static public void IplImageToPImage(IplImage img, PImage ret) {
+        IplImageToPImage(img, true, ret);
+    }
     static int conversionCount = 0;
 
     static public void IplImageToPImage(IplImage img, boolean RGB, PImage ret) {
@@ -249,28 +251,47 @@ public class Utils {
                 }
 
             }
-        } else {
-            if (img.nChannels() == 1) {
+        }
 
-                // TODO: no more allocations. 
-                ByteBuffer buff = img.getByteBuffer();
-                byte[] arr = new byte[img.width() * img.height()];
-                buff.get(arr);
+        if (img.nChannels() == 4) {
 
-                for (int i = 0; i < img.width() * img.height(); i++) {
+            ByteBuffer buff = img.getByteBuffer();
+            //  PImage ret = new PImage(img.width(), img.height(), PApplet.RGB);
+            ret.loadPixels();
+            for (int i = 0; i < img.width() * img.height(); i++) {
+                int offset = i * 4;
+//            ret.pixels[i] = applet.color(buff.get(offset + 0) & 0xff, buff.get(offset + 1) & 0xFF, buff.get(offset + 2) & 0xff);
 
-                    int d = (arr[i] & 0xFF);
+                ret.pixels[i] = (0xFF) << 24
+                        | (buff.get(offset) & 0xFF) << 16
+                        | (buff.get(offset + 1) & 0xFF) << 8
+                        | (buff.get(offset + 2) & 0xFF);
 
-                    ret.pixels[i] = d;
+            }
+        }
+
+
+        if (img.nChannels() == 1) {
+
+            // TODO: no more allocations. 
+            ByteBuffer buff = img.getByteBuffer();
+            byte[] arr = new byte[img.width() * img.height()];
+            buff.get(arr);
+
+            for (int i = 0; i < img.width() * img.height(); i++) {
+
+                int d = (arr[i] & 0xFF);
+
+                ret.pixels[i] = d;
 //                    ret.pixels[i] =
 //                            (buff.get(i) & 0xFF) << 16
 //                            | (buff.get(i) & 0xFF) << 8
 //                            | (buff.get(i) & 0xFF);
-                }
+            }
 
 
-                ////////////// Kinect Depth //////////////
-                //                // TODO: no more allocations. 
+            ////////////// Kinect Depth //////////////
+            //                // TODO: no more allocations. 
 //                ByteBuffer buff = img.getByteBuffer();
 //                byte[] arr = new byte[2 * img.width() * img.height()];
 //                buff.get(arr);
@@ -287,8 +308,8 @@ public class Utils {
 ////                            | (buff.get(i) & 0xFF);
 //                }
 
-            }
         }
+
 
 
 

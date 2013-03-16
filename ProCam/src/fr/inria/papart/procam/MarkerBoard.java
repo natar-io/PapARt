@@ -7,6 +7,9 @@ package fr.inria.papart.procam;
 import com.googlecode.javacv.cpp.ARToolKitPlus;
 import com.googlecode.javacv.cpp.ARToolKitPlus.MultiTracker;
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
+import java.util.ArrayList;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import processing.core.PMatrix3D;
 
 /**
@@ -18,27 +21,44 @@ public class MarkerBoard {
     private String fileName, name;
     protected int width;
     protected int height;
-    protected float[] transfo;
-    ARToolKitPlus.MultiTracker tracker;
-
+    protected ArrayList<Camera> cameras;
+    protected ArrayList<float[]> transfos;
+    protected ArrayList<ARToolKitPlus.MultiTracker> trackers;
+    
     public MarkerBoard(String fileName, String name, int width, int height) {
         this.fileName = fileName;
         this.width = width;
         this.height = height;
         this.name = name;
 
+        cameras = new ArrayList<Camera>();
+        transfos = new ArrayList<float[]>();
+        trackers = new ArrayList<ARToolKitPlus.MultiTracker>();
     }
 
-    public void setTracker(MultiTracker tracker, float[] transfo) {
-        this.tracker = tracker;
-        this.transfo = transfo;
+    // Legacy ?!
+//    public void setTracker(MultiTracker tracker, float[] transfo) {
+//        addTracker(tracker, transfo);
+//    }
+//    
+    public void addTracker(Camera camera, MultiTracker tracker, float[] transfo) {
+        this.trackers.add(tracker);
+        this.transfos.add(transfo);
+        cameras.add(camera);
     }
 
-    public MultiTracker getTracker() {
-        return this.tracker;
-    }
+//    public MultiTracker getTracker() {
+//        return this.tracker;
+//    }
+    public synchronized void updatePosition(Camera camera, IplImage img) {
 
-    public void updatePosition(IplImage img) {
+
+        int id = cameras.indexOf(camera);
+
+        ARToolKitPlus.MultiTracker tracker = trackers.get(id);
+        float transfo[] = transfos.get(id);
+
+        
         tracker.calc(img.imageData());
 
         if (tracker.getNumDetectedMarkers() <= 0) {
@@ -51,14 +71,15 @@ public class MarkerBoard {
         }
     }
 
-    public float[] getTransfo() {
-        return this.transfo;
+    public float[] getTransfo(Camera camera) {
+        return this.transfos.get(cameras.indexOf(camera));
     }
 
-    public PMatrix3D getTransfoMat() {
-        return new PMatrix3D(transfo[0], transfo[1], transfo[2], transfo[3],
-                transfo[4], transfo[5], transfo[6], transfo[7],
-                transfo[8], transfo[9], transfo[10], transfo[11],
+    public PMatrix3D getTransfoMat(Camera camera) {
+        float[] t = getTransfo(camera);
+        return new PMatrix3D(t[0], t[1], t[2], t[3],
+                t[4], t[5], t[6], t[7],
+                t[8], t[9], t[10], t[11],
                 0, 0, 0, 1);
     }
 
