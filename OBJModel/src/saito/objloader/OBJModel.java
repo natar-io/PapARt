@@ -7,6 +7,7 @@ package saito.objloader;
  */
 //import codeanticode.glgraphics.GLModel;
 //import codeanticode.glgraphics.GLTexture;
+import codeanticode.glgraphics.GLModel;
 import processing.core.*;
 import processing.opengl.*;
 
@@ -59,6 +60,8 @@ public class OBJModel {
     public Debug debug;
     private String originalTexture;
     private GL gl;
+    private boolean useGLModel;
+    private GLModel glModel;
 
     /**
      * Class Constructor to setup an empty obj model
@@ -125,9 +128,13 @@ public class OBJModel {
         materials = new Hashtable<String, Material>();
 
         debug = new Debug(parent);
-        //debug.enabled = true;
+        debug.enabled = true;
     }
 
+    public GLModel getModel(){
+        return this.glModel;
+    }
+    
     /**
      * Called after loading the obj model. <br>
      * </br> This will setup the Vertex buffer objects ready for the drawOPENGL
@@ -167,16 +174,22 @@ public class OBJModel {
                 PVector[] tVs = textureVertices.toArray(new PVector[textureVertices.size()]);
                 PVector[] nVs = normalVertices.toArray(new PVector[normalVertices.size()]);
 
+                debug.println("Setup GL 1");
                 tmpModelSegment.setupGL(gl, debug, vs, tVs, nVs);
 
                 mtl = materials.get(tmpModelSegment.materialName);
+
+                debug.println("Setup GL 2");
                 mtl.setupGL(gl, debug);
+
+                debug.println("segment loaded");
+            } else {
+                debug.println("Empty segment !");
             }
         }
 
         debug.println("leaving setup function");
     }
-
 
     public OBJModelLite setupGLCreateLite() {
         if (!(parent.g instanceof PGraphicsOpenGL)) {
@@ -213,7 +226,7 @@ public class OBJModel {
 
                 mtl = materials.get(tmpModelSegment.materialName);
                 mtl.setupGL(gl, debug);
-                
+
             }
         }
 
@@ -396,7 +409,6 @@ public class OBJModel {
         parent.g.fill = fill;
         parent.g.stroke = stroke;
     }
-
 
     public void drawGL(GL gl, int textureLoc) {
 
@@ -779,6 +791,94 @@ public class OBJModel {
         if (debug.enabled) {
             this.printModelInfo();
         }
+    }
+
+    public GLModel createGLModel() {
+
+        GLModel glmodel;
+        OBJModel model = this;
+
+        glmodel = new GLModel(parent, model.getFaceCount() * 3, GLModel.TRIANGLES, GLModel.DYNAMIC);
+
+        //********************UPDATE VERTICES'S  
+        //************************************************
+        glmodel.beginUpdateVertices();
+        int i = 0;
+        for (int f = 0; f < model.getFaceCount(); f++) {
+            PVector[] fverts = model.getFaceVertices(f);
+            for (int v = 0; v < fverts.length; v++) {
+                glmodel.updateVertex(i++, fverts[v].x, fverts[v].y, fverts[v].z);
+            }
+        }
+        glmodel.endUpdateVertices();
+
+
+
+        // Enabling colors.
+        glmodel.initColors();
+        glmodel.beginUpdateColors();
+        for (int c = 0; c < model.getFaceCount() * 3; c++) {
+            glmodel.updateColor(c, 255, 255, 225, 255);
+        }
+        glmodel.endUpdateColors();
+
+        //********************UPDATE NORMALS
+        //************************************************
+
+        glmodel.initNormals();
+        glmodel.beginUpdateNormals();
+        int index = 0;
+        for (int s = 0; s < model.getSegmentCount(); s++) {
+            Segment segment = model.getSegment(s);
+            saito.objloader.Face[] faces = segment.getFaces();
+
+            for (int nn = 0; nn < faces.length; nn++) {
+                PVector[] vs = faces[nn].getVertices();
+                PVector[] ns = faces[nn].getNormals();
+
+
+                for (int k = 0; k < vs.length; k++) {
+                    glmodel.updateNormal(index++, ns[k].x, ns[k].y, ns[k].z);
+                }
+            }
+
+        }
+        glmodel.endUpdateNormals();
+
+
+        //********************UPDATE UV'S  
+        //************************************************
+
+
+        // TODO: check the textures... 
+
+        // Enabling the use of texturing
+//        glmodel.initTextures(1);
+//        omatekstuuri = new GLTexture(this, "3dmodeltexture.png");
+//        glmodel.setTexture(0, omatekstuuri);
+//
+//        glmodel.beginUpdateTexCoords(0);
+//        index = 0;
+//        
+
+//        for (int s = 0; s < model.getSegmentCount(); s++) {
+//            Segment segment = model.getSegment(s);
+//            Face[] faces = segment.getFaces();
+//
+//
+//            for (int u = 0; u < faces.length; u++) {
+//                PVector[] vs = faces[u].getVertices();
+//                PVector[] ns = faces[u].getUvs();
+//
+//                for (int k = 0; k < vs.length; k++) {
+//                    glmodel.updateTexCoord(index++, ns[k].x, ns[k].y);
+//                }
+//            }
+//        }
+//        glmodel.endUpdateTexCoords();
+
+            return glmodel;
+
     }
 
     /**
@@ -1232,6 +1332,8 @@ public class OBJModel {
                             }
 
                             currentMtl.map_Kd = parent.loadImage(texname);
+
+                            debug.println("Texture object " + currentMtl.map_Kd);
 //                            currentMtl.map_Kd_GL = new GLTexture(parent, texname);
 
                             originalTexture = texname;

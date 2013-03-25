@@ -112,7 +112,7 @@ public class Segment {
 
 		float[] f = new float[vertind.length * stride];
 
-		debug.println("there are this many floats = " + f.length);
+		debug.println("Segment: there are this many floats = " + f.length);
 
 		for (int i = 0; i < f.length / stride; i++) {
 			PVector points = p[vertind[i]];
@@ -125,7 +125,10 @@ public class Segment {
 			// top left 0,0,0
 			f[i * stride + 2] = points.z;
 			f[i * stride + 3] = textureUV.x;
-			f[i * stride + 4] = 1.0f - textureUV.y; // flipped to account for
+//			f[i * stride + 4] = 1.0f - textureUV.y; // flipped to account for
+                        // TODO: check all this....
+                        
+			f[i * stride + 4] = textureUV.y; // flipped to account for
 
 			// top left
 			f[i * stride + 5] = normals.x;

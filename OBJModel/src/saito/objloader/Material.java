@@ -8,6 +8,7 @@ package saito.objloader;
  * 
  *  
  */
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
@@ -31,6 +32,7 @@ public class Material {
     public float[] Ks;
     public float d;
     public String mtlName;
+    private boolean isLoaded = false;
 
     /**
      * Constructs a default Material object.
@@ -65,7 +67,7 @@ public class Material {
      */
     public void setupGL(GL gl, Debug debug) {
         // make magic here that turns a PImage into an OPENGL texture
-        if (map_Kd != null) {
+        if (map_Kd != null && !isLoaded) {
             map_Kd.loadPixels();
 
             IntBuffer glPixels = setupIntBuffer(map_Kd.pixels);
@@ -76,7 +78,11 @@ public class Material {
             gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST);
             gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_REPEAT);
             gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_REPEAT);
+
             gl.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA, map_Kd.width, map_Kd.height, 0, GL.GL_BGRA, GL.GL_UNSIGNED_BYTE, glPixels);
+
+            isLoaded = true;
+//            System.gc();
         }
     }
 
@@ -112,7 +118,6 @@ public class Material {
         IntBuffer fb = ByteBuffer.allocateDirect(4 * i.length).order(ByteOrder.nativeOrder()).asIntBuffer();
         fb.put(i);
         fb.rewind();
-
         return fb;
     }
     protected int[] tex = {0};
