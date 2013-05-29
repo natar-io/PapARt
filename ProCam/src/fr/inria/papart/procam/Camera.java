@@ -455,6 +455,7 @@ public class Camera {
         return trackedViews.add(view);
     }
 
+    
     public IplImage getView(TrackedView trackedView) {
         return getViewIpl(trackedView);
     }
@@ -469,7 +470,6 @@ public class Camera {
     }
 
     public IplImage getViewIpl(TrackedView trackedView) {
-
         if (iimg == null) {
             return null;
         }

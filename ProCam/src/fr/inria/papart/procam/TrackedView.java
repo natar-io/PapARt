@@ -25,15 +25,17 @@ public class TrackedView {
     private PVector[] screenP = new PVector[4];
     private PVector[] outScreenP = new PVector[4];
     private Camera camera;
-    
+    private PVector botLeft, sizeCapture;
+
     public TrackedView(MarkerBoard board, int outWidth, int outHeight) {
         this(board, null, outWidth, outHeight);
     }
-    
+
+    // Public constructor for capturing the whole markerboard 
     public TrackedView(MarkerBoard board, Camera cam, int outWidth, int outHeight) {
         this.board = board;
         this.camera = cam;
-        
+
         // TODO: check if this img can be removed
         img = new PImage(outWidth, outHeight, PApplet.RGB);
         cornerPos = new PVector[4];
@@ -48,12 +50,62 @@ public class TrackedView {
 //        outScreenP[1] = new PVector(0, outHeight);
 //        outScreenP[2] = new PVector(0, 0);
 //        outScreenP[3] = new PVector(outWidth, outHeight);
-//
         outScreenP[0] = new PVector(0, 0);
         outScreenP[1] = new PVector(outWidth, 0);
         outScreenP[2] = new PVector(outWidth, outHeight);
         outScreenP[3] = new PVector(0, outHeight);
 
+        this.botLeft = new PVector(0, 0);
+        this.sizeCapture = new PVector(this.board.width, this.board.height);
+    }
+
+    // Public constructor for capturing part of a markerboard (or oustide it)
+    public TrackedView(MarkerBoard board, Camera cam, PVector botLeft, PVector sizeCapture, int outWidth, int outHeight) {
+        this.board = board;
+        this.camera = cam;
+
+        // TODO: check if this img can be removed
+        img = new PImage(outWidth, outHeight, PApplet.RGB);
+
+        screenP = new PVector[4];
+        cornerPos = new PVector[4];
+        outScreenP = new PVector[4];
+
+        // 3D positions of the borders
+        for (int i = 0; i < 4; i++) {
+            cornerPos[i] = new PVector();
+        }
+
+        // Borders to remap to the final image 
+//        outScreenP[0] = new PVector(0, 0);
+//        outScreenP[1] = new PVector(outWidth, 0);
+//        outScreenP[2] = new PVector(outWidth, outHeight);
+//        outScreenP[3] = new PVector(0, outHeight);
+
+        outScreenP[0] = new PVector(0, outHeight);
+        outScreenP[1] = new PVector(outWidth, outHeight);
+        outScreenP[2] = new PVector(outWidth, 0);
+        outScreenP[3] = new PVector(0, 0);
+
+        this.botLeft = botLeft.get();
+        this.sizeCapture = sizeCapture.get();
+    }
+    
+    public PVector getResolution(){
+        return new PVector(img.width, img.height);
+    }
+    
+    public PVector getPosition(){
+        return botLeft.get();
+    }
+
+    public PVector getSize(){
+        return sizeCapture.get();
+    }
+
+    public void setObservedLocation(PVector botLeft, PVector sizeCapture) {
+        this.botLeft = botLeft.get();
+        this.sizeCapture = sizeCapture.get();
     }
 
     protected void setPos(float[] pos3D) {
@@ -72,35 +124,47 @@ public class TrackedView {
         computeCorners();
         this.camera = tmp;
     }
-    
+
     protected void computeCorners() {
 
-        if(camera == null){
+        if (camera == null) {
             System.err.println("TrackedView : Error, you must set a camera, or use computeCorners(ImageWithTags itw.");
             return;
         }
-        
+//                // Borders to remap to the final image 
+//        outScreenP[0] = new PVector(0, 0);
+//        outScreenP[1] = new PVector(outWidth, 0);
+//        outScreenP[2] = new PVector(outWidth, outHeight);
+//        outScreenP[3] = new PVector(0, outHeight);
+
+
         // TODO: test if .get() is necessary ? 
         pos = board.getTransfoMat(camera).get();
 
-        cornerPos[0].x = pos.m03;
-        cornerPos[0].y = pos.m13;
-        cornerPos[0].z = pos.m23;
-
         PMatrix3D tmp = new PMatrix3D();
+
         tmp.apply(pos);
 
-        tmp.translate(board.width, 0, 0);
+        // bottom left
+        tmp.translate(botLeft.x, botLeft.y);
+        cornerPos[0].x = tmp.m03;
+        cornerPos[0].y = tmp.m13;
+        cornerPos[0].z = tmp.m23;
+
+        // bottom right
+        tmp.translate(sizeCapture.x, 0);
         cornerPos[1].x = tmp.m03;
         cornerPos[1].y = tmp.m13;
         cornerPos[1].z = tmp.m23;
 
-        tmp.translate(0, board.height, 0);
+        // top right
+        tmp.translate(0, sizeCapture.y, 0);
         cornerPos[2].x = tmp.m03;
         cornerPos[2].y = tmp.m13;
         cornerPos[2].z = tmp.m23;
 
-        tmp.translate(-board.width, 0, 0);
+        // top left
+        tmp.translate(-sizeCapture.x, 0, 0);
         cornerPos[3].x = tmp.m03;
         cornerPos[3].y = tmp.m13;
         cornerPos[3].z = tmp.m23;
@@ -109,6 +173,42 @@ public class TrackedView {
             screenP[i] = camera.getCamViewPoint(cornerPos[i]);
         }
     }
+//    protected void computeCorners() {
+//
+//        if (camera == null) {
+//            System.err.println("TrackedView : Error, you must set a camera, or use computeCorners(ImageWithTags itw.");
+//            return;
+//        }
+//
+//        // TODO: test if .get() is necessary ? 
+//        pos = board.getTransfoMat(camera).get();
+//
+//        cornerPos[0].x = pos.m03;
+//        cornerPos[0].y = pos.m13;
+//        cornerPos[0].z = pos.m23;
+//
+//        PMatrix3D tmp = new PMatrix3D();
+//        tmp.apply(pos);
+//
+//        tmp.translate(board.width, 0, 0);
+//        cornerPos[1].x = tmp.m03;
+//        cornerPos[1].y = tmp.m13;
+//        cornerPos[1].z = tmp.m23;
+//
+//        tmp.translate(0, board.height, 0);
+//        cornerPos[2].x = tmp.m03;
+//        cornerPos[2].y = tmp.m13;
+//        cornerPos[2].z = tmp.m23;
+//
+//        tmp.translate(-board.width, 0, 0);
+//        cornerPos[3].x = tmp.m03;
+//        cornerPos[3].y = tmp.m13;
+//        cornerPos[3].z = tmp.m23;
+//
+//        for (int i = 0; i < 4; i++) {
+//            screenP[i] = camera.getCamViewPoint(cornerPos[i]);
+//        }
+//    }
 
     protected IplImage getImageIpl(IplImage iplImg) {
         if (tmpImg == null) {
@@ -163,5 +263,4 @@ public class TrackedView {
             screenP[i] = itw.getCamViewPoint(cornerPos[i]);
         }
     }
-
 }

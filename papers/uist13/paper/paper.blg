@@ -1,0 +1,55 @@
+This is BibTeX, Version 0.99d (TeX Live 2012/Debian)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: paper.aux
+The style file: acm-sigchi.bst
+Database file #1: biblio.bib
+Warning--entry type for "processing" isn't style-file defined
+--line 503 of file biblio.bib
+Warning--string name "april" is undefined
+--line 505 of file biblio.bib
+Warning--to sort, need author or key in processing
+Warning--can't use both volume and number fields in haeberli1990paint
+Warning--empty journal in leeshadowdraw
+Warning--empty year in dessiner-ronin
+You've used 22 entries,
+            2243 wiz_defined-function locations,
+            652 strings with 7423 characters,
+and the built_in function-call counts, 7741 in all, are:
+= -- 765
+> -- 303
+< -- 0
++ -- 128
+- -- 104
+* -- 493
+:= -- 1183
+add.period$ -- 65
+call.type$ -- 22
+change.case$ -- 114
+chr.to.int$ -- 0
+cite$ -- 26
+duplicate$ -- 352
+empty$ -- 676
+format.name$ -- 104
+if$ -- 1707
+int.to.chr$ -- 0
+int.to.str$ -- 22
+missing$ -- 25
+newline$ -- 112
+num.names$ -- 42
+pop$ -- 163
+preamble$ -- 1
+purify$ -- 96
+quote$ -- 0
+skip$ -- 253
+stack$ -- 0
+substring$ -- 470
+swap$ -- 98
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 80
+warning$ -- 4
+while$ -- 80
+width$ -- 24
+write$ -- 229
+(There were 6 warnings)

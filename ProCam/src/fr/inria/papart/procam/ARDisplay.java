@@ -123,7 +123,7 @@ public class ARDisplay {
         this.graphics.endDraw();
     }
 
-    private void computeInv() {
+    protected void computeInv() {
         invProjModelView = getProjectionInit().get();
         invProjModelView.scale(1, 1, -1);
         // Set to the origin, as the plane was computed from the origin
