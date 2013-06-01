@@ -1,26 +1,15 @@
 \BOOKMARK [1][-]{section*.5}{Introduction}{}% 1
-\BOOKMARK [1][-]{section*.6}{Previous and Related Work}{}% 2
-\BOOKMARK [2][-]{section*.7}{Projection for physical creation}{section*.6}% 3
-\BOOKMARK [2][-]{section*.8}{Digital world integration}{section*.6}% 4
-\BOOKMARK [2][-]{section*.9}{Non Photorealistic Rendering}{section*.6}% 5
-\BOOKMARK [1][-]{section*.10}{Projection Mapping System Design}{}% 6
-\BOOKMARK [2][-]{section*.11}{Design objectives}{section*.10}% 7
-\BOOKMARK [2][-]{section*.12}{Additional tools}{section*.10}% 8
-\BOOKMARK [1][-]{section*.13}{Implementation details}{}% 9
-\BOOKMARK [1][-]{section*.14}{Digital Construction Lines }{}% 10
-\BOOKMARK [2][-]{section*.15}{General purpose construction lines}{section*.14}% 11
-\BOOKMARK [2][-]{section*.16}{Perspective construction lines}{section*.14}% 12
-\BOOKMARK [1][-]{section*.17}{Details from image analysis}{}% 13
-\BOOKMARK [1][-]{section*.18}{Shading from image synthesis}{}% 14
-\BOOKMARK [1][-]{section*.19}{User evaluation}{}% 15
-\BOOKMARK [2][-]{section*.20}{Application}{section*.19}% 16
-\BOOKMARK [2][-]{section*.21}{Task}{section*.19}% 17
-\BOOKMARK [2][-]{section*.22}{Participants}{section*.19}% 18
-\BOOKMARK [2][-]{section*.23}{Apparatus}{section*.19}% 19
-\BOOKMARK [1][-]{section*.24}{Results}{}% 20
-\BOOKMARK [2][-]{section*.25}{Drawing experience}{section*.24}% 21
-\BOOKMARK [2][-]{section*.26}{Observations on the projection}{section*.24}% 22
-\BOOKMARK [2][-]{section*.27}{Drawing results}{section*.24}% 23
-\BOOKMARK [1][-]{section*.28}{Future work}{}% 24
-\BOOKMARK [1][-]{section*.29}{Conclusion}{}% 25
-\BOOKMARK [1][-]{section*.30}{REFERENCES }{}% 26
+\BOOKMARK [1][-]{section*.6}{Pevious work}{}% 2
+\BOOKMARK [1][-]{section*.7}{Technical setup}{}% 3
+\BOOKMARK [1][-]{section*.8}{Digital tools for traditional drawing}{}% 4
+\BOOKMARK [2][-]{section*.9}{Interacting with a projected image}{section*.8}% 5
+\BOOKMARK [2][-]{section*.10}{Compositing the image}{section*.8}% 6
+\BOOKMARK [2][-]{section*.11}{Guiding the composition}{section*.8}% 7
+\BOOKMARK [2][-]{section*.12}{Filtering the displayed content}{section*.8}% 8
+\BOOKMARK [1][-]{section*.13}{Mixing physical and digital drawing}{}% 9
+\BOOKMARK [2][-]{section*.14}{Embedding digital content in the drawing}{section*.13}% 10
+\BOOKMARK [2][-]{section*.15}{Interacting with the drawing}{section*.13}% 11
+\BOOKMARK [2][-]{section*.16}{Creating animated drawings}{section*.13}% 12
+\BOOKMARK [1][-]{section*.17}{User feedback and discussion}{}% 13
+\BOOKMARK [1][-]{section*.18}{Conclusion}{}% 14
+\BOOKMARK [1][-]{section*.19}{REFERENCES }{}% 15

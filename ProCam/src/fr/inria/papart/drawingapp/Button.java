@@ -5,6 +5,8 @@
 package fr.inria.papart.drawingapp;
 
 import fr.inria.papart.multitouchKinect.TouchPoint;
+import java.util.ArrayList;
+import java.util.List;
 import processing.core.PApplet;
 import processing.core.PFont;
 import processing.core.PGraphics3D;
@@ -12,23 +14,44 @@ import processing.core.PImage;
 
 public class Button extends InteractiveZone {
 
-    static final int BUTTON_ERROR = 10;
+    static final int BUTTON_ERROR = 5;
     static final int BUTTON_WIDTH = 40;
     static final int BUTTON_HEIGHT = 20;
-    static final int BUTTON_COOLDOWN = 200; // ms
+    static final int BUTTON_COOLDOWN = 100; // ms
     static final int UNSELECTED = 180;
     protected static PFont buttonFont;
     protected PImage img = null;
     protected String name = null;
+    private List<ButtonListener> listeners = new ArrayList<ButtonListener>();
 
-    public Button(String image, int x, int y, int width, int height) {
+    public Button(PImage image, int x, int y, int width, int height) {
         super(x, y, width, height);
-        name = image;
-        this.img = DrawUtils.applet.loadImage(image);
+//        name = image;
+        name = "Button";
+        this.img = image;
     }
 
-    public Button(String image, int x, int y) {
-        this(image, x, y, BUTTON_WIDTH, BUTTON_HEIGHT);
+    public Button(PImage img, int x, int y) {
+        this(img, x, y, BUTTON_WIDTH, BUTTON_HEIGHT);
+    }
+    
+    protected Button(PImage image, String name, int x, int y, int width, int height) {
+        super(x, y, width, height);
+        this.name = name;
+        this.img = image;
+    }
+    
+    // Text only buttons 
+    public Button(String name, int x, int y, int width, int height) {
+        this(null, name, x, y, width, height);
+    }
+
+    public Button(String name, int x, int y) {
+        this(null, name, x, y, BUTTON_WIDTH, BUTTON_HEIGHT);
+    }
+
+    public void addListener(ButtonListener bl) {
+        listeners.add(bl);
     }
 
     @Override
@@ -37,12 +60,12 @@ public class Button extends InteractiveZone {
             isSelected = false;
             return false;
         }
-        if (x == PApplet.constrain(x, 
-                    position.x - (this.width / 2) - BUTTON_ERROR,
-                    position.x + (this.width / 2) + BUTTON_ERROR)
+        if (x == PApplet.constrain(x,
+                position.x - (this.width / 2) - BUTTON_ERROR,
+                position.x + (this.width / 2) + BUTTON_ERROR)
                 && y == PApplet.constrain(y,
-                    position.y - (this.height / 2) - BUTTON_ERROR,
-                    position.y + (this.height / 2) + BUTTON_ERROR)) {
+                position.y - (this.height / 2) - BUTTON_ERROR,
+                position.y + (this.height / 2) + BUTTON_ERROR)) {
 
 //            System.out.println(" x " + x + " min " + (position.x - (this.width / 2) - BUTTON_ERROR));
 //            System.out.println(" x " + x + " max " + (position.x + (this.width / 2) + BUTTON_ERROR));
@@ -51,12 +74,25 @@ public class Button extends InteractiveZone {
                 isActive = !isActive;
                 currentTP = tp;
                 isCooldownDone = false;
+
+                if (isActive) {
+                    for (ButtonListener bl : listeners) {
+                        bl.ButtonPressed();
+                    }
+                } else {
+                    for (ButtonListener bl : listeners) {
+                        bl.ButtonReleased();
+                    }
+                }
             }
+
             isSelected = true;
             lastPressedTime = DrawUtils.applet.millis();
             return true;
         }
+
         isSelected = false;
+
         return false;
     }
 

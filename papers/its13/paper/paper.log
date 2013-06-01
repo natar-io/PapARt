@@ -1,9 +1,9 @@
-This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012/Debian) (format=pdflatex 2013.3.11)  6 APR 2013 01:52
+This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012/Debian) (format=pdflatex 2013.5.16)  30 MAY 2013 15:17
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
-**\nonstopmode \input{"/home/jiii/paper/paper.tex"}
-(/home/jiii/paper/paper.tex (/home/jiii/paper/sigchi.cls
+**\nonstopmode \input{paper.tex}
+(./paper.tex (./sigchi.cls
 (/usr/share/texlive/texmf-dist/tex/latex/graphics/epsfig.sty
 Package: epsfig 1999/02/16 v1.7a (e)psfig emulation (SPQR)
 
@@ -378,7 +378,7 @@ Package hyperref Info: Option `bookmarksnumbered' set `true' on input line 57.
 Package hyperref Info: Option `colorlinks' set `true' on input line 57.
 Package hyperref Info: Option `breaklinks' set `true' on input line 57.
 
-(/home/jiii/paper/paper.aux)
+(./paper.aux)
 \openout1 = `paper.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 63.
@@ -395,8 +395,7 @@ LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 63.
 LaTeX Font Info:    ... okay on input line 63.
 LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 63.
 LaTeX Font Info:    Try loading font information for TS1+cmr on input line 63.
-
-(/usr/share/texlive/texmf-dist/tex/latex/base/ts1cmr.fd
+ (/usr/share/texlive/texmf-dist/tex/latex/base/ts1cmr.fd
 File: ts1cmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    ... okay on input line 63.
@@ -459,168 +458,65 @@ LaTeX Info: Redefining \ref on input line 63.
 LaTeX Info: Redefining \pageref on input line 63.
 LaTeX Info: Redefining \nameref on input line 63.
 
-(/home/jiii/paper/paper.out) (/home/jiii/paper/paper.out)
+(./paper.out) (./paper.out)
 \@outlinefile=\write3
 \openout3 = `paper.out'.
 
-LaTeX Font Info:    Try loading font information for U+msa on input line 102.
+LaTeX Font Info:    Try loading font information for U+msa on input line 101.
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2009/06/22 v3.00 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 102.
+LaTeX Font Info:    Try loading font information for U+msb on input line 101.
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2009/06/22 v3.00 AMS symbols B
 )
-LaTeX Font Info:    Try loading font information for U+lasy on input line 102.
+LaTeX Font Info:    Try loading font information for U+lasy on input line 101.
 
 (/usr/share/texlive/texmf-dist/tex/latex/base/ulasy.fd
 File: ulasy.fd 1998/08/17 v2.2e LaTeX symbol font definitions
-)
-Overfull \hbox (5.79999pt too wide) in paragraph at lines 102--102
- [] 
- []
-
-<teaser.pdf, id=108, 5263.76009pt x 1564.9015pt>
-File: teaser.pdf Graphic file (type pdf)
- <use teaser.pdf>
-Package pdftex.def Info: teaser.pdf used on input line 105.
-(pdftex.def)             Requested size: 526.32654pt x 156.49014pt.
-
-Overfull \hbox (282.34416pt too wide) in paragraph at lines 105--106
-[][] 
- []
-
-<void.pdf, id=109, 597.50786pt x 321.2pt>
-File: void.pdf Graphic file (type pdf)
- <use void.pdf>
-Package pdftex.def Info: void.pdf used on input line 135.
-(pdftex.def)             Requested size: 291.11296pt x 156.49014pt.
-
-Overfull \hbox (47.13058pt too wide) in paragraph at lines 135--136
-[][] 
- []
-
-
-Underfull \vbox (badness 1442) has occurred while \output is active []
-
- [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}
-
-
-Non-PDF special ignored!
-
- </home/jiii/paper/teaser.pdf> </home/jiii/paper/void.pdf
-
-pdfTeX warning: pdflatex (file /home/jiii/paper/void.pdf): PDF inclusion: multi
-ple pdfs with page group included in a single page
->]
-Underfull \vbox (badness 4229) has occurred while \output is active []
-
- [2]
-<systempro.pdf, id=176, 803.0pt x 563.97137pt>
-File: systempro.pdf Graphic file (type pdf)
- <use systempro.pdf>
-Package pdftex.def Info: systempro.pdf used on input line 351.
-(pdftex.def)             Requested size: 241.84842pt x 169.85533pt.
-LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <8> not available
-(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 352.
-LaTeX Font Info:    Try loading font information for TS1+ptm on input line 402.
-
+) (./paper.bbl
+LaTeX Font Info:    Try loading font information for TS1+ptm on input line 21.
 
 (/usr/share/texlive/texmf-dist/tex/latex/psnfss/ts1ptm.fd
 File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
 )
-<constructionline.pdf, id=187, 705.90349pt x 223.35266pt>
-File: constructionline.pdf Graphic file (type pdf)
 
-<use constructionline.pdf>
-Package pdftex.def Info: constructionline.pdf used on input line 508.
-(pdftex.def)             Requested size: 241.84842pt x 76.52167pt.
- [3 </home/jiii/paper/systempro.pdf> </home/jiii/paper/constructionline.pdf
+Package balance Warning: You have called \balance in second column
+(balance)                Columns might not be balanced.
 
-pdfTeX warning: pdflatex (file /home/jiii/paper/constructionline.pdf): PDF incl
-usion: multiple pdfs with page group included in a single page
->] <6maisons.pdf, id=230, 803.0pt x 475.4403pt>
-File: 6maisons.pdf Graphic file (type pdf)
- <use 6maisons.pdf>
-Package pdftex.def Info: 6maisons.pdf used on input line 669.
-(pdftex.def)             Requested size: 241.84842pt x 143.19179pt.
-
-Underfull \vbox (badness 2726) has occurred while \output is active []
+[1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}
 
 
-<touch1.pdf, id=234, 6243.7264pt x 1090.67424pt>
-File: touch1.pdf Graphic file (type pdf)
- <use touch1.pdf>
-Package pdftex.def Info: touch1.pdf used on input line 785.
-(pdftex.def)             Requested size: 512.1496pt x 89.4525pt.
+Non-PDF special ignored!
 
-<4lapins.pdf, id=237, 794.82695pt x 724.8897pt>
-File: 4lapins.pdf Graphic file (type pdf)
- <use 4lapins.pdf>
-Package pdftex.def Info: 4lapins.pdf used on input line 862.
-(pdftex.def)             Requested size: 213.39566pt x 194.61674pt.
- [4 </home/jiii/paper/6maisons.pdf> </home/jiii/paper/4lapins.pdf
-
-pdfTeX warning: pdflatex (file /home/jiii/paper/4lapins.pdf): PDF inclusion: mu
-ltiple pdfs with page group included in a single page
->]
-Underfull \vbox (badness 2744) has occurred while \output is active []
+])
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 213.
+ [2]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 213.
+ (./paper.aux)
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 213.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 213.
 
 
-<amusant.pdf, id=286, 627.02095pt x 367.45255pt>
-File: amusant.pdf Graphic file (type pdf)
- <use amusant.pdf>
-Package pdftex.def Info: amusant.pdf used on input line 1015.
-(pdftex.def)             Requested size: 270.30118pt x 158.4052pt.
+Package rerunfilecheck Warning: File `paper.out' has changed.
+(rerunfilecheck)                Rerun to get outlines right
+(rerunfilecheck)                or use package `bookmark'.
 
-Overfull \hbox (13.99246pt too wide) in paragraph at lines 1014--1017
-[]  [] 
- []
-
-[5 </home/jiii/paper/touch1.pdf>]
-<4dessins.pdf, id=324, 4836.70563pt x 759.15106pt>
-File: 4dessins.pdf Graphic file (type pdf)
- <use 4dessins.pdf>
-Package pdftex.def Info: 4dessins.pdf used on input line 1024.
-(pdftex.def)             Requested size: 512.1496pt x 80.37927pt.
-
-<interfaceUse.pdf, id=326, 621.24785pt x 353.4167pt>
-File: interfaceUse.pdf Graphic file (type pdf)
- <use interfaceUse.pdf>
-Package pdftex.def Info: interfaceUse.pdf used on input line 1059.
-(pdftex.def)             Requested size: 270.30118pt x 153.77277pt.
-
-Overfull \hbox (13.99246pt too wide) in paragraph at lines 1058--1060
-[]  [] 
- []
-
-[6 </home/jiii/paper/amusant.pdf> </home/jiii/paper/interfaceUse.pdf
-
-pdfTeX warning: pdflatex (file /home/jiii/paper/interfaceUse.pdf): PDF inclusio
-n: multiple pdfs with page group included in a single page
->] (/home/jiii/paper/paper.bbl)
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1278.
- [7 </home/jiii/paper/4dessins.pdf>]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 1278.
-
-(/home/jiii/paper/paper.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1278.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1278.
-
-Package rerunfilecheck Info: File `paper.out' has not changed.
-(rerunfilecheck)             Checksum: 9AE791DFBA90C9EC351CFA34EC31BFD3;1633.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 1278.
+Package rerunfilecheck Info: Checksums for `paper.out':
+(rerunfilecheck)             Before: 9AE791DFBA90C9EC351CFA34EC31BFD3;1633
+(rerunfilecheck)             After:  1DFC69ABBCF59DF477751A86D8031B20;992.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 213.
  ) 
 Here is how much of TeX's memory you used:
- 6688 strings out of 495030
- 95990 string characters out of 3180761
- 194760 words of memory out of 3000000
- 9700 multiletter control sequences out of 15000+200000
- 26280 words of font info for 54 fonts, out of 3000000 for 9000
+ 6613 strings out of 495059
+ 94717 string characters out of 3182030
+ 181149 words of memory out of 3000000
+ 9644 multiletter control sequences out of 15000+200000
+ 23204 words of font info for 50 fonts, out of 3000000 for 9000
  14 hyphenation exceptions out of 8191
- 42i,10n,30p,351b,343s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 42i,10n,30p,327b,416s stack positions out of 5000i,500n,10000p,200000b,50000s
 pdfTeX warning (dest): name{section*.30} has been referenced but does not exi
 st, replaced by a fixed one
 
@@ -630,7 +526,28 @@ pdfTeX warning (dest): name{section*.29} has been referenced but does not exist
 pdfTeX warning (dest): name{section*.28} has been referenced but does not exist
 , replaced by a fixed one
 
+pdfTeX warning (dest): name{section*.27} has been referenced but does not exist
+, replaced by a fixed one
+
+pdfTeX warning (dest): name{section*.26} has been referenced but does not exist
+, replaced by a fixed one
+
+pdfTeX warning (dest): name{section*.25} has been referenced but does not exist
+, replaced by a fixed one
+
 pdfTeX warning (dest): name{section*.24} has been referenced but does not exist
+, replaced by a fixed one
+
+pdfTeX warning (dest): name{section*.23} has been referenced but does not exist
+, replaced by a fixed one
+
+pdfTeX warning (dest): name{section*.22} has been referenced but does not exist
+, replaced by a fixed one
+
+pdfTeX warning (dest): name{section*.21} has been referenced but does not exist
+, replaced by a fixed one
+
+pdfTeX warning (dest): name{section*.20} has been referenced but does not exist
 , replaced by a fixed one
 
 pdfTeX warning (dest): name{section*.19} has been referenced but does not exist
@@ -642,14 +559,14 @@ pdfTeX warning (dest): name{section*.18} has been referenced but does not exist
 pdfTeX warning (dest): name{section*.17} has been referenced but does not exist
 , replaced by a fixed one
 
-pdfTeX warning (dest): name{section*.14} has been referenced but does not exist
-, replaced by a fixed one
-
 pdfTeX warning (dest): name{section*.13} has been referenced but does not exist
 , replaced by a fixed one
 
-pdfTeX warning (dest): name{section*.10} has been referenced but does not exist
-, replaced by a fixed one
+pdfTeX warning (dest): name{section*.8} has been referenced but does not exist,
+ replaced by a fixed one
+
+pdfTeX warning (dest): name{section*.7} has been referenced but does not exist,
+ replaced by a fixed one
 
 pdfTeX warning (dest): name{section*.6} has been referenced but does not exist,
  replaced by a fixed one
@@ -658,16 +575,14 @@ pdfTeX warning (dest): name{section*.5} has been referenced but does not exist,
  replaced by a fixed one
 
 {/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/share/texlive/
-texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-
-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fo
-nts/type1/public/amsfonts/cm/cmr7.pfb></usr/share/texlive/texmf-dist/fonts/type
-1/urw/helvetic/uhvb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/
-utmb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></us
-r/share/texlive/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on paper.pdf (7 pages, 44837979 bytes).
+texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-
+dist/fonts/type1/urw/helvetic/uhvb8a.pfb></usr/share/texlive/texmf-dist/fonts/t
+ype1/urw/times/utmb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/
+utmr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
+Output written on paper.pdf (2 pages, 70918 bytes).
 PDF statistics:
- 432 PDF objects out of 1000 (max. 8388607)
- 348 compressed objects within 4 object streams
- 80 named destinations out of 1000 (max. 500000)
- 259 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 191 PDF objects out of 1000 (max. 8388607)
+ 180 compressed objects within 2 object streams
+ 63 named destinations out of 1000 (max. 500000)
+ 209 words of extra memory for PDF output out of 10000 (max. 10000000)
 

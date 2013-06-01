@@ -7,6 +7,7 @@ package fr.inria.papart.drawingapp;
 import fr.inria.papart.multitouchKinect.TouchPoint;
 import processing.core.PApplet;
 import processing.core.PGraphics3D;
+import processing.core.PImage;
 import processing.core.PVector;
 
 /**
@@ -21,13 +22,23 @@ public class ButtonWidget extends Button {
     protected static final float PRECISE_SPEED = 0.15f;
     private static ButtonWidget currentSelected = null;
 
-    public ButtonWidget(String image, PVector abs, int x, int y, int width, int height) {
+    public ButtonWidget(PImage image, PVector abs, int x, int y, int width, int height) {
         super(image, x, y, width, height);
         absPos = abs;
     }
 
-    public ButtonWidget(String image, PVector abs, int x, int y) {
+    public ButtonWidget(PImage image, PVector abs, int x, int y) {
         super(image, x, y);
+        absPos = abs;
+    }
+    
+    public ButtonWidget(String name, PVector abs, int x, int y, int width, int height) {
+        super(name, x, y, width, height);
+        absPos = abs;
+    }
+
+    public ButtonWidget(String name, PVector abs, int x, int y) {
+        super(name, x, y);
         absPos = abs;
     }
 

@@ -217,9 +217,7 @@ public class Camera {
         return this.hasNewPhoto;
     }
 
-    
     /////////////// TODO: MOVE TO A CLASS ??? /////////
-    
     class PhotoTaker extends Thread {
 
         private PImage img;
@@ -455,7 +453,6 @@ public class Camera {
         return trackedViews.add(view);
     }
 
-    
     public IplImage getView(TrackedView trackedView) {
         return getViewIpl(trackedView);
     }
@@ -504,7 +501,7 @@ public class Camera {
         }
 
 //        System.out.println("iimg " + iimg);
-        
+
         if (iimg != null) {
             if (videoInputType == OPENCV_VIDEO) {
                 tex.putBuffer(GL.GL_BGR, GL.GL_UNSIGNED_BYTE, iimg.getIntBuffer());
