@@ -25,14 +25,7 @@ public class Layer {
     private ArrayList<FilterLayer> filters;
     private ArrayList<Layer> subLayers;
     private GLGraphicsOffScreen frameBuffer;
-
-    public Layer(PApplet parent, GLGraphicsOffScreen screen) {
-        this(parent, screen.getTexture());
-    }
-
-    public Layer(PApplet parent, GLTexture tex) {
-        this(parent, (PImage) tex);
-    }
+    private PVector drawSize = null;
 
     public Layer(PApplet parent, PImage image) {
         this(parent, image.width, image.height);
@@ -75,6 +68,10 @@ public class Layer {
         this.position = p.get();
     }
 
+    public void setDrawSize(PVector s) {
+        this.drawSize = s.get();
+    }
+
     public void setRotation(float r) {
         this.rotation = r;
     }
@@ -100,8 +97,14 @@ public class Layer {
 
         g.translate(position.x, position.y);
         g.rotate(rotation);
+        
+        g.imageMode(PApplet.CENTER);
 
-        g.image(frameBuffer.getTexture(), width, height);
+        if (this.drawSize == null) {
+            g.image(frameBuffer.getTexture(), width / 2, height / 2, width, height);
+        } else {
+            g.image(frameBuffer.getTexture(), drawSize.x / 2, drawSize.y / 2, drawSize.x, drawSize.y);
+        }
 
         for (Layer l : subLayers) {
             l.drawSelf(g);
