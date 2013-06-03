@@ -3,6 +3,7 @@ package fr.inria.papart.procam;
 import codeanticode.glgraphics.GLGraphicsOffScreen;
 import com.googlecode.javacv.ProjectiveDevice;
 import com.googlecode.javacv.ProjectorDevice;
+import fr.inria.papart.multitouchKinect.TouchPoint;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
@@ -93,8 +94,7 @@ public class Projector extends ARDisplay {
         unLoadProjection();
         this.graphics.endDraw();
     }
-    
-    
+
     public void drawScreensOver() {
 
         ////////  3D PROJECTION  //////////////
@@ -154,7 +154,7 @@ public class Projector extends ARDisplay {
 
         return this.graphics;
     }
-        
+
     public GLGraphicsOffScreen beginDrawOnBoard(Camera camera, MarkerBoard board) {
 
         ////////  3D PROJECTION  //////////////
@@ -205,7 +205,7 @@ public class Projector extends ARDisplay {
 
         return out;
     }
-
+    
     // TODO: more doc...
     /**
      * Projects the position of a pointer in normalized screen space. If you
@@ -219,16 +219,18 @@ public class Projector extends ARDisplay {
 
 //        float x = px * 2 - 1;
 //        float y = py * 2 - 1;
-        double[] undist = proj.undistort(px * getWidth(), py * getHeight());
 
+        double[] undist = proj.undistort(px * getWidth(), py * getHeight());
+        
+        // go from screen coordinates to normalized coordinates  (-1, 1) 
         float x = (float) undist[0] / getWidth() * 2 - 1;
         float y = (float) undist[1] / getHeight() * 2 - 1;
 
         // Not the cleaniest method...
-        PMatrix3D invProjModelView = createProjection(screen.getZMinMax());
-        invProjModelView.scale(1, 1, -1);
-        invProjModelView.apply(getExtrinsics());
-        invProjModelView.invert();
+        PMatrix3D invProjModelView1 = createProjection(screen.getZMinMax());
+        invProjModelView1.scale(1, 1, -1);
+        invProjModelView1.apply(getExtrinsics());
+        invProjModelView1.invert();
 
         PVector p1 = new PVector(x, y, -1f);
         PVector p2 = new PVector(x, y, 1f);
@@ -236,8 +238,8 @@ public class Projector extends ARDisplay {
         PVector out2 = new PVector();
 
         // view of the point from the projector.
-        Utils.mult(invProjModelView, p1, out1);
-        Utils.mult(invProjModelView, p2, out2);
+        Utils.mult(invProjModelView1, p1, out1);
+        Utils.mult(invProjModelView1, p2, out2);
 
         Ray3D ray = new Ray3D(new Vec3D(out1.x, out1.y, out1.z),
                 new Vec3D(out2.x, out2.y, out2.z));
@@ -254,13 +256,17 @@ public class Projector extends ARDisplay {
                 res.y() / res.z(), 1);
         return out;
     }
-    
 
 //    public PVector projectPointer(Screen screen, TouchPoint tp) {
-//        PVector out = projectPointer(screen, tp.v.x, tp.v.y);
-//        out.z = screen.plane.getDistanceToPoint(tp.vKinect);
+//        Vec3D res = screen.transformationProjPaper.applyTo(tp.vKinect);
+//        System.out.println("Touch Point " + tp.v + " " + tp.vKinect);
+//        System.out.println("res " + res);
+//        PVector out = new PVector(res.x() / res.z(),
+//                res.y() / res.z(), 1);
+//        System.out.println("Out " + out);
 //        return out;
 //    }
+
     public void addScreen(Screen s) {
         screens.add(s);
     }

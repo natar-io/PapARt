@@ -210,8 +210,8 @@ public class TouchInput {
 
                     PVector res, res2;
                     res = projector.projectPointer(screen, tp.v.x, tp.v.y);
-
-
+//                    res = projector.projectPointer(screen, tp);
+                    
                     if (isSpeed2D) {
                         res2 = (tp.oldV != null) ? projector.projectPointer(screen, tp.oldV.x, tp.oldV.y) : null;
                     } else {

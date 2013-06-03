@@ -4,6 +4,7 @@
  */
 package fr.inria.papart.drawingapp;
 
+import codeanticode.glgraphics.GLGraphicsOffScreen;
 import processing.core.PApplet;
 import processing.core.PFont;
 import processing.core.PGraphics3D;
@@ -30,6 +31,15 @@ public class DrawUtils {
     }
     
     static public void drawImageGL(PGraphicsOpenGL pg3d, PImage img, int x, int y, int w, int h) {
+        pg3d.pushMatrix();
+        pg3d.translate(x, y);
+        pg3d.scale(-1, 1, 1);
+        pg3d.rotate(PApplet.PI);
+        pg3d.image(img, 0, 0, w, h);
+        pg3d.popMatrix();
+    }
+    
+    static public void drawImage(GLGraphicsOffScreen pg3d, PImage img, int x, int y, int w, int h) {
         pg3d.pushMatrix();
         pg3d.translate(x, y);
         pg3d.scale(-1, 1, 1);
