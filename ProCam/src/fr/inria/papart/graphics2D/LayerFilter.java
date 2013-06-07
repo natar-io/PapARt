@@ -12,15 +12,10 @@ import codeanticode.glgraphics.GLTextureFilter;
  *
  * @author jiii
  */
-public class Filter {
+public abstract class LayerFilter {
 
-    GLTextureFilter textureFilter;
-    GLTextureFilter textureFilterZone;
-
-    public void Filter(GLTextureFilter tf, GLTextureFilter tfZone) {
-        this.textureFilter = tf;
-        this.textureFilterZone = tfZone;
-    }
+    public GLTextureFilter textureFilter;
+    public GLTextureFilter textureFilterZone;
 
     public void applyFilter(GLTexture source, GLTexture destination) {
         // Full image filter
@@ -28,12 +23,8 @@ public class Filter {
     }
 
     public void applyZoneFilter(GLTexture source, GLTexture zone, GLTexture destination) {
-
-        // Full image filter
-        GLTexture[] src = new GLTexture[2];
-        src[0] = source;
-        src[1] = zone;
+        GLTexture[] src = {source, zone};
         textureFilter.apply(src, destination);
-
     }
+    
 }
