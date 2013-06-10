@@ -17,6 +17,7 @@ public class AlphaLF extends LayerFilter {
     public AlphaLF(PApplet parent, String path) {
         this.textureFilter = new GLTextureFilter(parent, path + "alpha.xml");
         this.textureFilterZone = new GLTextureFilter(parent, path + "alphaZone.xml");
+        this.name = "alpha";
     }
 
     @Override

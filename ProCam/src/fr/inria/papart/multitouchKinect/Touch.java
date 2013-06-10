@@ -25,7 +25,7 @@ import toxi.geom.Vec3D;
  */
 public class Touch {
 
-    public static float maxDistance = 8f;    // in mm
+    public static float maxDistance = 12f;    // in mm
 
     public static ArrayList<Integer> findNeighboursRec(int currentPoint, int halfNeigh,
             ArrayList<Integer> validPoints,
@@ -129,7 +129,7 @@ public class Touch {
         int minSize = 5;
 
         if (is3D) {
-            minSize = 40;
+            minSize = 60;
         }
 
         float goodPointsDist = 0.03f;
@@ -190,6 +190,7 @@ public class Touch {
 
         return allTouchPoints;
     }
+    
     public static float sideError = 0.2f;
 
     public static boolean isInside(Vec3D v, float min, float max) {

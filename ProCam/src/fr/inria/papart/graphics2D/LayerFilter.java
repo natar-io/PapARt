@@ -16,7 +16,8 @@ public abstract class LayerFilter {
 
     public GLTextureFilter textureFilter;
     public GLTextureFilter textureFilterZone;
-
+    public String name;
+    
     public void applyFilter(GLTexture source, GLTexture destination) {
         // Full image filter
         textureFilter.apply(source, destination);

@@ -17,6 +17,7 @@ public class BlurLF extends LayerFilter {
     public BlurLF(PApplet parent, String path) {
         this.textureFilter = new GLTextureFilter(parent, path + "blur.xml");
         this.textureFilterZone = new GLTextureFilter(parent, path + "blurZone.xml");
+        this.name = "blur";
     }
 
     @Override

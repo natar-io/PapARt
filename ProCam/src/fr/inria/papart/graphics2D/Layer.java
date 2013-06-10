@@ -21,7 +21,7 @@ import processing.core.PVector;
 public class Layer {
 
     private PApplet parent;
-    private int width, height;
+    protected int width, height;
     private ArrayList<FilterLayerArea> filters;
     private ArrayList<Layer> subLayers;
     private GLGraphicsOffScreen frameBuffer;
@@ -44,6 +44,8 @@ public class Layer {
         this.height = height;
         this.position = position.get();
         this.drawSize = drawSize.get();
+
+        System.out.println("New Laye " + width + "  " + height + " " + drawSize);
 
 //        this.transformation.translate(position.x, position.y);
 
@@ -196,9 +198,10 @@ public class Layer {
         return this.transformation;
     }
 
-    public void addFilter(PApplet parent, LayerFilter f) {
+    public FilterLayerArea addFilter(PApplet parent, LayerFilter f) {
         FilterLayerArea fl = new FilterLayerArea(parent, this, f);
         filters.add(fl);
+        return fl;
     }
 
     public void removeFilter(PApplet parent, LayerFilter lf) {
@@ -213,6 +216,10 @@ public class Layer {
         if (toRemove != null) {
             filters.remove(toRemove);
         }
+    }
+
+    public void removeFilter(PApplet parent, FilterLayerArea lf) {
+        filters.remove(lf);
     }
 
     public void removeAllFilters() {
@@ -240,19 +247,27 @@ public class Layer {
     }
 
     public void drawSelf(GLGraphicsOffScreen g) {
+        drawSelf(g, new ArrayList<FilterLayerArea>());
+    }
+
+    public void drawSelf(GLGraphicsOffScreen g, ArrayList<FilterLayerArea> parentFilters) {
+
+        ArrayList<FilterLayerArea> currentFilters = new ArrayList<FilterLayerArea>();
+        currentFilters.addAll(parentFilters);
+        currentFilters.addAll(this.filters);
 
         g.pushMatrix();
-
         g.translate(position.x, position.y);
         g.rotate(rotation);
         g.scale(scale);
 
         PImage toDraw;
-        if (!filters.isEmpty()) {
+        if (!currentFilters.isEmpty()) {
+
             GLTexture currentTex, output = null;
 
             currentTex = frameBuffer.getTexture();
-            for (FilterLayerArea f : filters) {
+            for (FilterLayerArea f : currentFilters) {
                 output = f.applyFilter(currentTex);
                 currentTex = output;
             }
@@ -270,6 +285,11 @@ public class Layer {
 
         g.imageMode(PApplet.CENTER);
         g.image(toDraw, 0, 0, drawSize.x, drawSize.y);
+
+
+        for (Layer l : subLayers) {
+            l.drawSelf(g, currentFilters);
+        }
 
         if (this.drawBorders) {
             int elapsed = parent.millis() - this.drawBordersTime;
@@ -297,16 +317,19 @@ public class Layer {
             }
         }
 
-
-        for (Layer l : subLayers) {
-            l.drawSelf(g);
-        }
-
-
         g.popMatrix();
     }
 
     public void drawSelfPreview(GLGraphicsOffScreen g, int sx, int sy) {
+        this.drawSelfPreview(g, new ArrayList<FilterLayerArea>(), sx, sy);
+    }
+
+    public void drawSelfPreview(GLGraphicsOffScreen g, ArrayList<FilterLayerArea> parentFilters, int sx, int sy) {
+
+        ArrayList<FilterLayerArea> currentFilters = new ArrayList<FilterLayerArea>();
+        currentFilters.addAll(parentFilters);
+        currentFilters.addAll(this.filters);
+
 
         g.pushMatrix();
 
@@ -315,7 +338,7 @@ public class Layer {
             GLTexture currentTex, output = null;
 
             currentTex = frameBuffer.getTexture();
-            for (FilterLayerArea f : filters) {
+            for (FilterLayerArea f : currentFilters) {
                 output = f.applyFilter(currentTex);
                 currentTex = output;
             }
@@ -334,43 +357,10 @@ public class Layer {
         g.imageMode(PApplet.CENTER);
         g.image(toDraw, 0, 0, sx, sy);
 
-        for (Layer l : subLayers) {
-            l.drawSelf(g);
-        }
+//        for (Layer l : subLayers) {
+//            l.drawSelf(g, currentFilters);
+//        }
 
         g.popMatrix();
-    }
-
-    class FilterLayerArea {
-
-        protected LayerFilter filter;
-        protected Layer layer;
-        protected GLGraphicsOffScreen partial = null;
-        protected GLTexture output;
-
-        public FilterLayerArea(PApplet parent, Layer l, LayerFilter f) {
-            this.filter = f;
-            this.layer = l;
-            output = new GLTexture(parent, l.width, l.height);
-        }
-
-        public GLGraphicsOffScreen getPartialFilter() {
-            if (partial == null) {
-                partial = new GLGraphicsOffScreen(parent, width, height);
-            }
-            return partial;
-        }
-
-        public GLTexture applyFilter(GLTexture currentTex) {
-            if (partial == null) {
-//                System.out.println("Apply global");
-
-                filter.applyFilter(currentTex, output);
-            } else {
-                filter.applyZoneFilter(currentTex, partial.getTexture(), output);
-            }
-
-            return output;
-        }
     }
 }

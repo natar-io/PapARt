@@ -14,16 +14,18 @@ import processing.core.PImage;
 
 public class Button extends InteractiveZone {
 
-    static final int BUTTON_ERROR = 5;
+    static final int BUTTON_ERROR = 2;
     static final int BUTTON_WIDTH = 40;
     static final int BUTTON_HEIGHT = 20;
     static final int BUTTON_COOLDOWN = 100; // ms
-    static final int UNSELECTED = 180;
+    static final int UNSELECTED = 250;
     protected static PFont buttonFont;
+    protected static int buttonFontSize;
     protected PImage img = null;
     protected String name = null;
     private List<ButtonListener> listeners = new ArrayList<ButtonListener>();
-
+    public Object attachedObject;
+    
     public Button(PImage image, int x, int y, int width, int height) {
         super(x, y, width, height);
 //        name = image;
@@ -35,7 +37,7 @@ public class Button extends InteractiveZone {
         this(img, x, y, BUTTON_WIDTH, BUTTON_HEIGHT);
     }
     
-    protected Button(PImage image, String name, int x, int y, int width, int height) {
+    public Button(PImage image, String name, int x, int y, int width, int height) {
         super(x, y, width, height);
         this.name = name;
         this.img = image;
@@ -110,6 +112,9 @@ public class Button extends InteractiveZone {
         // if(currentTP != null)
         //     pgraphics3d.tint(0, 153, 204, 126); 
 
+        
+        pgraphics3d.imageMode(PApplet.CENTER);
+        
         if (img != null) {
 
             if (isActive) {
@@ -127,11 +132,11 @@ public class Button extends InteractiveZone {
                 pgraphics3d.fill(DrawUtils.applet.color(UNSELECTED));
             }
 
-            DrawUtils.drawText(pgraphics3d, name, buttonFont,
-                    (int) position.x, (int) position.y); //, (int) width, (int) height);
+            DrawUtils.drawText(pgraphics3d, name, buttonFont, buttonFontSize,
+                    (int) position.x, (int) position.y, (int) width, (int) height);
+//            DrawUtils.drawText(pgraphics3d, name, buttonFont,
+//                    (int) position.x, (int) position.y); //, (int) width, (int) height);
         }
-
-
 
     }
 
@@ -152,7 +157,15 @@ public class Button extends InteractiveZone {
         return img;
     }
 
+    public String getName(){
+        return this.name;
+    }
+    
     static public void setFont(PFont font) {
         buttonFont = font;
+    }
+
+    static public void setFontSize(int size) {
+        buttonFontSize = size;
     }
 }

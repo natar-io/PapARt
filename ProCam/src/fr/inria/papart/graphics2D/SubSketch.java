@@ -22,9 +22,11 @@ public abstract class SubSketch {
     public GLGraphicsOffScreen g;
     public int mouseX, mouseY, pmouseX, pmouseY;
 
+    public SubSketch(){}
+    
     abstract public void setup(PApplet parent);
 
-    protected void init(PApplet parent) {
+    protected void initSketch(PApplet parent) {
 
         // creation of a the object for manipulation
         this.layer = new Layer(parent,
