@@ -69,7 +69,7 @@ public class InteractiveZone implements Drawable {
             pgraphics3d.fill(DrawUtils.applet.green(255));
         }
 
-        pgraphics3d.rectMode(PApplet.CORNER);
+        pgraphics3d.rectMode(PApplet.CENTER);
         pgraphics3d.rect(position.x, position.y, width, height);
     }
 

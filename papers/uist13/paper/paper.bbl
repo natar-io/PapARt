@@ -1,0 +1,128 @@
+\begin{thebibliography}{10}
+
+\bibitem{processing}
+Processing.
+\newblock http://processing.org/about/, 2013.
+
+\bibitem{audet2010direct}
+Audet, S., Okutomi, M., and Tanaka, M.
+\newblock Direct image alignment of projector-camera systems with planar
+  surfaces.
+\newblock In {\em Conference on Computer Vision and Pattern Recognition, CVPR
+  2010, San Francisco}, IEEE (2010), 303--310.
+
+\bibitem{opencv_library}
+Bradski, G.
+\newblock {The OpenCV Library}.
+\newblock {\em Dr. Dobb's Journal of Software Tools\/} (2000).
+
+\bibitem{casiez20121}
+Casiez, G., Roussel, N., and Vogel, D.
+\newblock 1\texteuro ~filter: a simple speed-based low-pass filter for noisy
+  input in interactive systems.
+\newblock In {\em Proceedings of the 2012 ACM annual conference on Human
+  Factors in Computing Systems}, ACM (2012), 2527--2530.
+
+\bibitem{cole2008people}
+Cole, F., Golovinskiy, A., Limpaecher, A., Barros, H., Finkelstein, A.,
+  Funkhouser, T., and Rusinkiewicz, S.
+\newblock Where do people draw lines?
+\newblock In {\em ACM SIGGRAPH 2008 papers}, ACM (2008), 1--11.
+
+\bibitem{flagg2006projector}
+Flagg, M., and Rehg, J.
+\newblock Projector-guided painting.
+\newblock In {\em Proceedings of the 19th annual ACM symposium on User
+  interface software and technology}, ACM (2006), 235--244.
+
+\bibitem{gernsheim1969history}
+Gernsheim, H., and Gernsheim, A.
+\newblock {\em The History of Photography: From the Camera Obscura to the
+  Beginning of the Modern Era}.
+\newblock Thames \& Hudson, 1969.
+
+\bibitem{gooch2001non}
+Gooch, B., and Gooch, A.
+\newblock {\em Non-photorealistic rendering}, vol.~201.
+\newblock AK Peters Wellesley, 2001.
+
+\bibitem{grabli2010programmable}
+Grabli, S., Turquin, E., Durand, F., and Sillion, F.
+\newblock Programmable rendering of line drawing from 3d scenes.
+\newblock {\em ACM Transactions on Graphics (TOG) 29}, 2 (2010), 18.
+
+\bibitem{haeberli1990paint}
+Haeberli, P.
+\newblock Paint by numbers: Abstract image representations.
+\newblock In {\em ACM SIGGRAPH Computer Graphics}, vol.~24, ACM (1990),
+  207--214.
+
+\bibitem{harrison2011omnitouch}
+Harrison, C., Benko, H., and Wilson, A.
+\newblock Omnitouch: wearable multitouch interaction everywhere.
+\newblock In {\em Proceedings of the 24th annual ACM symposium on User
+  interface software and technology}, ACM (2011), 441--450.
+
+\bibitem{laviole:2012}
+Laviole, J., and Hachet, M.
+\newblock {PapARt: interactive 3D graphics and multi-touch augmented paper for
+  artistic creation.}
+\newblock {\em {IEEE Symposium on 3D User Interfaces 2012}\/} (Mar. 2012).
+
+\bibitem{leeshadowdraw}
+Lee, Y., Zitnick, C., and Cohen, M.
+\newblock Shadowdraw: Real-time user guidance for freehand drawing.
+\newblock 1--1.
+
+\bibitem{raskar2001shader}
+Raskar, R., Welch, G., Low, K., and Bandyopadhyay, D.
+\newblock Shader lamps: Animating real objects with image-based illumination.
+\newblock In {\em Rendering Techniques 2001: Eurographics Workshop, United
+  Kingdom, June 25-27, 2001}, Springer Verlag Wien (2001), 89.
+
+\bibitem{rekimoto1999augmented}
+Rekimoto, J., and Saitoh, M.
+\newblock Augmented surfaces: a spatially continuous work space for hybrid
+  computing environments.
+\newblock In {\em Proceedings of the SIGCHI conference on Human factors in
+  computing systems: the CHI is the limit}, ACM (1999), 378--385.
+
+\bibitem{dessiner-ronin}
+Ronin, G.
+\newblock {\em Dessiner - pas a pas (French Edition)}.
+\newblock Larousse.
+
+\bibitem{sellen2003myth}
+Sellen, A., and Harper, R.
+\newblock {\em The myth of the paperless office}.
+\newblock The MIT Press, 2003.
+
+\bibitem{ullmer2000emerging}
+Ullmer, B., and Ishii, H.
+\newblock Emerging frameworks for tangible user interfaces.
+\newblock {\em IBM systems journal 39}, 3.4 (2000), 915--931.
+
+\bibitem{VBGS08}
+Vergne, R., Barla, P., Granier, X., and Schlick, C.
+\newblock Apparent relief: a shape descriptor for stylized shading.
+\newblock In {\em NPAR '08: Proceedings of the 6th international symposium on
+  Non-photorealistic animation and rendering}, ACM (2008), 23--29.
+
+\bibitem{wagner2007artoolkitplus}
+Wagner, D., and Schmalstieg, D.
+\newblock Artoolkitplus for pose tracking on mobile devices.
+\newblock In {\em Computer Vision Winter Workshop}, Citeseer (2007), 6--8.
+
+\bibitem{wellner1993interacting}
+Wellner, P.
+\newblock Interacting with paper on the digitaldesk.
+\newblock {\em Communications of the ACM 36}, 7 (1993), 87--96.
+
+\bibitem{wilson2007depth}
+Wilson, A.
+\newblock Depth-sensing video cameras for 3d tangible tabletop interaction.
+\newblock In {\em Horizontal Interactive Human-Computer Systems, 2007.
+  TABLETOP'07. Second Annual IEEE International Workshop on}, IEEE (2007),
+  201--204.
+
+\end{thebibliography}
