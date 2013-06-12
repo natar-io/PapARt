@@ -25,6 +25,7 @@ public class Button extends InteractiveZone {
     protected String name = null;
     private List<ButtonListener> listeners = new ArrayList<ButtonListener>();
     public Object attachedObject;
+    private int currentButtonFontSize= -1;
     
     public Button(PImage image, int x, int y, int width, int height) {
         super(x, y, width, height);
@@ -132,7 +133,9 @@ public class Button extends InteractiveZone {
                 pgraphics3d.fill(DrawUtils.applet.color(UNSELECTED));
             }
 
-            DrawUtils.drawText(pgraphics3d, name, buttonFont, buttonFontSize,
+            int ftSize = this.currentButtonFontSize > 0 ? this.currentButtonFontSize : buttonFontSize;
+            
+            DrawUtils.drawText(pgraphics3d, name, buttonFont, ftSize,
                     (int) position.x, (int) position.y, (int) width, (int) height);
 //            DrawUtils.drawText(pgraphics3d, name, buttonFont,
 //                    (int) position.x, (int) position.y); //, (int) width, (int) height);
@@ -159,6 +162,10 @@ public class Button extends InteractiveZone {
 
     public String getName(){
         return this.name;
+    }
+    
+    public void setButtonFontSize(int size) {
+        this.currentButtonFontSize = size;
     }
     
     static public void setFont(PFont font) {

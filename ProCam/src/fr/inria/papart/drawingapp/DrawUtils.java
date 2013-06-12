@@ -77,6 +77,7 @@ public class DrawUtils {
         pg3d.rotate(PApplet.PI);
 //        pg3d.textMode(PApplet.MODEL);
         pg3d.rectMode(PApplet.CENTER);
+        
         pg3d.textFont(font, fontSize);
         pg3d.text(text, 0, 0, w, h);
         
