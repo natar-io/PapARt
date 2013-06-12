@@ -1,43 +1,39 @@
 This is BibTeX, Version 0.99d (TeX Live 2012/Debian)
 Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
 The top-level auxiliary file: paper.aux
-I couldn't open style file acm-sigchi.bst
----line 17 of file paper.aux
- : \bibstyle{acm-sigchi
- :                     }
-I'm skipping whatever remains of this command
+The style file: acm-sigchi.bst
 I found no \citation commands---while reading file paper.aux
-I found no style file---while reading file paper.aux
+Database file #1: biblio.bib
 You've used 0 entries,
-            0 wiz_defined-function locations,
-            85 strings with 500 characters,
-and the built_in function-call counts, 0 in all, are:
+            2243 wiz_defined-function locations,
+            524 strings with 3879 characters,
+and the built_in function-call counts, 18 in all, are:
 = -- 0
 > -- 0
 < -- 0
 + -- 0
 - -- 0
-* -- 0
-:= -- 0
+* -- 2
+:= -- 7
 add.period$ -- 0
 call.type$ -- 0
 change.case$ -- 0
 chr.to.int$ -- 0
 cite$ -- 0
 duplicate$ -- 0
-empty$ -- 0
+empty$ -- 1
 format.name$ -- 0
-if$ -- 0
+if$ -- 1
 int.to.chr$ -- 0
 int.to.str$ -- 0
 missing$ -- 0
-newline$ -- 0
+newline$ -- 3
 num.names$ -- 0
 pop$ -- 0
-preamble$ -- 0
+preamble$ -- 1
 purify$ -- 0
 quote$ -- 0
-skip$ -- 0
+skip$ -- 1
 stack$ -- 0
 substring$ -- 0
 swap$ -- 0
@@ -48,5 +44,5 @@ type$ -- 0
 warning$ -- 0
 while$ -- 0
 width$ -- 0
-write$ -- 0
-(There were 3 error messages)
+write$ -- 2
+(There was 1 error message)
