@@ -14,11 +14,19 @@ import processing.core.PImage;
 
 public class Button extends InteractiveZone {
 
+<<<<<<< HEAD
+    static final int BUTTON_ERROR = 5;
+    static final int BUTTON_WIDTH = 40;
+    static final int BUTTON_HEIGHT = 20;
+    static final int BUTTON_COOLDOWN = 100; // ms
+    static final int UNSELECTED = 180;
+=======
     static final int BUTTON_ERROR = 2;
     static final int BUTTON_WIDTH = 40;
     static final int BUTTON_HEIGHT = 20;
     static final int BUTTON_COOLDOWN = 100; // ms
     static final int UNSELECTED = 250;
+>>>>>>> 55c44c04060b63a864f69d1bcce45783636492f4
     protected static PFont buttonFont;
     protected static int buttonFontSize;
     protected PImage img = null;
@@ -26,6 +34,31 @@ public class Button extends InteractiveZone {
     protected String name = null;
     protected String nameSel = null;
     private List<ButtonListener> listeners = new ArrayList<ButtonListener>();
+<<<<<<< HEAD
+
+    public Button(PImage image, int x, int y, int width, int height) {
+        super(x, y, width, height);
+//        name = image;
+        name = "Button";
+        this.img = image;
+    }
+
+    public Button(PImage img, int x, int y) {
+        this(img, x, y, BUTTON_WIDTH, BUTTON_HEIGHT);
+    }
+    
+    protected Button(PImage image, String name, int x, int y, int width, int height) {
+        super(x, y, width, height);
+        this.name = name;
+        this.img = image;
+    }
+    
+    // Text only buttons 
+    public Button(String name, int x, int y, int width, int height) {
+        this(null, name, x, y, width, height);
+    }
+
+=======
     public Object attachedObject;
     private int currentButtonFontSize = -1;
 
@@ -65,6 +98,7 @@ public class Button extends InteractiveZone {
         this(null, name, x, y, width, height);
     }
 
+>>>>>>> 55c44c04060b63a864f69d1bcce45783636492f4
     public Button(String name, int x, int y) {
         this(null, name, x, y, BUTTON_WIDTH, BUTTON_HEIGHT);
     }
