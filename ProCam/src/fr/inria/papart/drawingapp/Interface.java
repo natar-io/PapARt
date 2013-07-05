@@ -21,7 +21,7 @@ import processing.core.PGraphics3D;
 import processing.core.PVector;
 
 /**
- *
+ *  DEPRECATED
  * @author jeremy
  */
 public class Interface {

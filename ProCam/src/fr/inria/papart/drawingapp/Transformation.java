@@ -7,7 +7,7 @@ package fr.inria.papart.drawingapp;
 import processing.core.PVector;
 
 /**
- *
+ *  DEPRECATED
  * @author jeremylaviole
  */
 public class Transformation {

@@ -5,7 +5,7 @@
 package fr.inria.papart.drawingapp;
 
 /**
- *
+ * DEPRECATED
  * @author jeremy
  */
 public enum DrawMode {

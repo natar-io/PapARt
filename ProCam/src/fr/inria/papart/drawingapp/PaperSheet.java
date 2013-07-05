@@ -6,9 +6,11 @@ package fr.inria.papart.drawingapp;
 
 
 /**
- *
+ * DEPRACTED
  * @author jeremy
  */
+
+/////////////// DEPRECATED
 public class PaperSheet {
 
     public int width;
