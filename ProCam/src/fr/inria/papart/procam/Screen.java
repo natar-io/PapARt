@@ -37,7 +37,7 @@ public class Screen {
     private PVector[] paperPosCorners3D = new PVector[nbPaperPosRender];
     protected Homography homography;
     protected Matrix4x4 transformationProjPaper;
-    private float halfEyeDist = 10; // 2cm
+    public float halfEyeDist = 10; // 2cm
     private boolean isDrawing = true;
 
     public Screen(PApplet parent, PVector size, float scale) {
@@ -165,9 +165,16 @@ public class Screen {
         /////////// GOOOD ONE ////////////////////
 
 
-        paperCameraPos.x -= this.size.x / 2;
-        paperCameraPos.y -= this.size.y / 2;
+//        paperCameraPos.x -= this.size.x / 2;
+//        paperCameraPos.y -= this.size.y / 2;
 
+//        if (initPos == null) {
+//            initPos = paperCameraPos.get();
+//        } else {
+//            paperCameraPos = initPos;
+//        }
+        
+        
         // http://www.gamedev.net/topic/597564-view-and-projection-matrices-for-vr-window-using-head-tracking/
 
 //        graphics.camera(tmp2.x, tmp2.y, tmp2.z,

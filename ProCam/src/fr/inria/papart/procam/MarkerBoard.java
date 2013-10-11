@@ -5,14 +5,9 @@
 package fr.inria.papart.procam;
 
 import com.googlecode.javacv.cpp.ARToolKitPlus;
-import com.googlecode.javacv.cpp.ARToolKitPlus.MultiTracker;
+import com.googlecode.javacv.cpp.ARToolKitPlus.TrackerMultiMarker;
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
 import java.util.ArrayList;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.Arrays;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
@@ -30,7 +25,7 @@ public class MarkerBoard {
     protected ArrayList<Boolean> drawingMode;
     protected ArrayList<Float> minDistanceDrawingMode;
     protected ArrayList<float[]> transfos;
-    protected ArrayList<ARToolKitPlus.MultiTracker> trackers;
+    protected ArrayList<ARToolKitPlus.TrackerMultiMarker> trackers;
     protected ArrayList<OneEuroFilter[]> filters;
     protected ArrayList<PVector> lastPos;
     protected ArrayList<Integer> nextTimeEvent;
@@ -49,7 +44,7 @@ public class MarkerBoard {
 
         cameras = new ArrayList<Camera>();
         transfos = new ArrayList<float[]>();
-        trackers = new ArrayList<ARToolKitPlus.MultiTracker>();
+        trackers = new ArrayList<ARToolKitPlus.TrackerMultiMarker>();
         filters = new ArrayList<OneEuroFilter[]>();
         drawingMode = new ArrayList<Boolean>();
         minDistanceDrawingMode = new ArrayList<Float>();
@@ -64,7 +59,8 @@ public class MarkerBoard {
 //    public void addTracker(Camera camera, MultiTracker tracker, float[] transfo) {
 //        addTracker(camera, tracker, transfo, true);
 //    }
-    public void addTracker(PApplet applet, Camera camera, MultiTracker tracker, float[] transfo) {
+//    public void addTracker(PApplet applet, Camera camera, MultiTracker tracker, float[] transfo) {
+    public void addTracker(PApplet applet, Camera camera, ARToolKitPlus.TrackerMultiMarker tracker, float[] transfo) {
 
         this.applet = applet;
 
@@ -133,11 +129,25 @@ public class MarkerBoard {
         updateStatus.set(id, BLOCK_UPDATE);
     }
 
+    public boolean isMoving(Camera camera){
+        int id = getId(camera);
+//        nextTimeEvent.set(id, applet.millis() + time);
+        int mode = updateStatus.get(id);
+        
+        if(mode == BLOCK_UPDATE)
+            return false;
+        if(mode == FORCE_UPDATE || mode == NORMAL)
+            return true;
+
+        return true;
+    }
+    
+    
     public synchronized void updatePosition(Camera camera, IplImage img) {
 
         int id = cameras.indexOf(camera);
 
-        ARToolKitPlus.MultiTracker tracker = trackers.get(id);
+        TrackerMultiMarker tracker = trackers.get(id);
 
         int currentTime = applet.millis();
         int endTime = nextTimeEvent.get(id);
@@ -154,8 +164,8 @@ public class MarkerBoard {
         if (tracker.getNumDetectedMarkers() <= 0) {
             return;
         }
-
-
+        
+//System.out.println("Markers found: " + tracker.getNumDetectedMarkers());
         ARToolKitPlus.ARMultiMarkerInfoT multiMarkerConfig = tracker.getMultiMarkerConfig();
 
         // if the update is forced 
@@ -217,6 +227,15 @@ public class MarkerBoard {
                 System.out.println("Filtering error " + e);
             }
         }
+//
+//        // If z negation hack required...
+//         PMatrix3D tmp = new PMatrix3D(transfo[0], transfo[1], transfo[2], transfo[3],
+//                transfo[4], transfo[5], transfo[6], transfo[7],
+//                transfo[8], transfo[9], transfo[10], transfo[11],
+//                0, 0, 0, 1);
+////         tmp.print();
+//        tmp.scale(1, 1, -1);
+//        transfo[11] = -transfo[11];
     }
 
     public float[] getTransfo(Camera camera) {

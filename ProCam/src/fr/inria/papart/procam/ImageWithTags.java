@@ -79,9 +79,8 @@ public class ImageWithTags {
         tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_FULL_RES);
         tracker.setUseDetectLite(false);
 
-        ARToolKitPlus.Logger log = new ARToolKitPlus.Logger(null);
 
-        if (!tracker.init(artConfig, board.getFileName(), 1.0f, 1000.f, log)) {
+        if (!tracker.init(artConfig, board.getFileName(), 1.0f, 1000.f)) {
             System.out.println("ERROR at ARToolkIT");
             // throw new Exception("Init ARTOOLKIT Error" + board.getFileName() + " " + board.getName());
         }

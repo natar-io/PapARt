@@ -15,6 +15,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.opencv_calib3d.*;
 import java.awt.image.BufferedImage;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
@@ -206,6 +207,7 @@ public class Utils {
     static public void IplImageToPImage(IplImage img, PApplet applet, boolean RGB, PImage ret) {
         IplImageToPImage(img, RGB, ret);
     }
+
     static public void IplImageToPImage(IplImage img, PImage ret) {
         IplImageToPImage(img, true, ret);
     }
@@ -457,6 +459,64 @@ public class Utils {
         os.write(buf);
         os.flush();
         os.close();
+
+        pa.println("Conversion done !");
+        return;
+    }
+
+    static public void convertARParam2(PApplet pa, String inputYAML, String outputDAT, int w, int h) throws Exception {
+
+        CameraDevice cam = null;
+
+        CameraDevice[] c = CameraDevice.read(inputYAML);
+        if (c.length > 0) {
+            cam = c[0];
+        }
+
+        double[] proj = cam.cameraMatrix.get();
+        double[] distort = cam.distortionCoeffs.get();
+
+        OutputStream os = pa.createOutput(outputDAT);
+
+        PrintWriter pw = pa.createWriter(outputDAT);
+
+        StringBuffer sb = new StringBuffer();
+
+
+//        byte[] buf = new byte[SIZE_OF_PARAM_SET];
+//        ByteBuffer bb = ByteBuffer.wrap(buf);
+//        bb.order(ByteOrder.BIG_ENDIAN);
+
+//        bb.putInt(w);
+//        bb.putInt(h);
+
+        // From ARToolkitPlus...
+//http://www.vision.caltech.edu/bouguetj/calib_doc/htmls/parameters.html
+        sb.append("ARToolKitPlus_CamCal_Rev02\n");
+        sb.append(w + " " + h + " ");
+
+        // cx cy  fx fy  
+        sb.append(proj[2] + " " + proj[5] + " " + proj[0] + " " + proj[4] + " ");
+
+        // alpha_c ?  
+//        sb.append("0 ");
+
+        // kc(1 - x)  -> 6 values
+        for (int i = 0; i < distort.length; i++) {
+            sb.append(distort[i] + " ");
+        }
+        for (int i = distort.length; i < 6; i++) {
+            sb.append("0 ");
+        }
+
+        // undist iterations
+        sb.append("10\n");
+
+//        System.out.print(sb);
+
+        pw.print(sb);
+        pw.flush();
+        pw.close();
 
         pa.println("Conversion done !");
         return;

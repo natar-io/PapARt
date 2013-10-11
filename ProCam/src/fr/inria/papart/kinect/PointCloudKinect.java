@@ -89,47 +89,7 @@ public class PointCloudKinect {
         
     }
 
-    public void updateColorsProcessing(PMatrix3D transfo) {
-
-        boolean[] valid = kinect.getValidPoints();
-        Vec3D[] points = kinect.getDepthPoints();
-        PImage colors = kinect.getDepthColor();
-
-        lastModel = model;
-
-        model.beginUpdateVertices();
-        nbToDraw = 0;
-        for (int i = 0; i < KinectCst.size; i++) {
-
-            if (valid[i]) {
-                Vec3D p = points[i];
-                PVector p2 = new PVector(p.x, p.y, p.z);
-                transfo.mult(p2, p2);
-
-//                model.updateVertex(nbToDraw++, p.x, p.y, -p.z);
-                model.updateVertex(nbToDraw++, p2.x, p2.y, -p2.z);
-            }
-        }
-        model.endUpdateVertices();
-
-        if (colors != null) {
-            colors.loadPixels();
-            model.beginUpdateColors();
-            int k = 0;
-            for (int i = 0; i < KinectCst.size; i++) {
-                if (valid[i]) {
-                    int c = colors.pixels[i];
-
-                    model.updateColor(k++,
-                            (c >> 16) & 0xFF,
-                            (c >> 8) & 0xFF,
-                            c & 0xFF);
-                }
-            }
-            model.endUpdateColors();
-        }
-    }
-
+   
     private void initTriangleModel() {
         triangleModel = new GLModel(parent, KinectCst.size, GLModel.TRIANGLES, GLModel.STREAM);
         triangleModel.initIndices(KinectCst.size * 6, GLModel.STREAM);
@@ -212,6 +172,8 @@ public class PointCloudKinect {
                             (c >> 16) & 0xFF,
                             (c >> 8) & 0xFF,
                             c & 0xFF);
+                    
+//                    triangleModel.updateColor(k++, 0, 255, 0);
                 }
             }
             triangleModel.endUpdateColors();

@@ -6,8 +6,8 @@ package fr.inria.papart.procam;
 
 import com.googlecode.javacv.*;
 import com.googlecode.javacv.cpp.ARToolKitPlus;
-import com.googlecode.javacv.cpp.ARToolKitPlus.ArtLogFunction;
 import com.googlecode.javacv.cpp.ARToolKitPlus.MultiTracker;
+import com.googlecode.javacv.cpp.ARToolKitPlus.TrackerMultiMarker;
 import java.util.logging.Logger;
 import processing.core.PApplet;
 
@@ -19,17 +19,22 @@ public class ARTagDetector {
 
     protected ARTagDetector(PApplet applet, Camera camera, String cameraFile, int w, int h, MarkerBoard[] paperSheets, int type) {
 
-        ArtLogFunction f = new ArtLogFunction() {
-            @Override
-            public void call(String nStr) {
-                Logger.getLogger(MarkerDetector.class.getName()).warning(nStr);
-            }
-        };
-        ARToolKitPlus.Logger log = new ARToolKitPlus.Logger(null);
 
         for (MarkerBoard sheet : paperSheets) {
 
-            MultiTracker tracker = new MultiTracker(w, h);
+            
+    // create a tracker that does:
+    //  - 6x6 sized marker images (required for binary markers)
+    //  - samples at a maximum of 6x6 
+    //  - works with luminance (gray) images
+    //  - can load a maximum of 0 non-binary pattern
+    //  - can detect a maximum of 8 patterns in one image
+            
+            
+            TrackerMultiMarker tracker = new ARToolKitPlus.TrackerMultiMarker(w, h, 10, 6, 6, 6, 0);
+            
+            // ARToolKit 2.1.1 - version
+            // MultiTracker tracker = new MultiTracker(w, h);
 
             //            int pixfmt = ARToolKitPlus.PIXEL_FORMAT_LUM;
 
@@ -53,8 +58,9 @@ public class ARTagDetector {
             tracker.setUseDetectLite(false);
 //            tracker.setUseDetectLite(true);
 
-            if (!tracker.init(cameraFile, sheet.getFileName(), 1.0f, 1000.f, log)) {
-                System.err.println("Init ARTOOLKIT Error" + sheet.getFileName() + " " + sheet.getName());
+            
+            if (!tracker.init(cameraFile, sheet.getFileName(), 1.0f, 1000.f)) {
+                System.err.println("Init ARTOOLKIT Error " +  cameraFile  + " "+ sheet.getFileName() + " " + sheet.getName());
             }
 
             float[] transfo = new float[16];

@@ -45,6 +45,7 @@ public class TouchInput {
         this.touch3DPrecision = precision3D;
         touchPoints2D = mtk.getTouchPoint2D();
         touchPoints3D = mtk.getTouchPoint3D();
+        this.kinect = kinect;
 
         if (grabber != null) {
             grabberThread = new GrabberThread(this, grabber, color);
@@ -130,7 +131,8 @@ public class TouchInput {
             mtk.find2DTouch(touch2DPrecision);
         }
         // BROKEN 
-//        mtk.findColor(depthImage, colorImage, kinect, touchPoints2D, touch2DPrecision);
+        mtk.findColor(depthImage, colorImage, kinect, touchPoints2D, touch2DPrecision);
+       
         if (touch3DPrecision > 0) {
             mtk.updateKinect3D(depthImage, touch3DPrecision);
             mtk.find3DTouch(touch3DPrecision);
@@ -162,6 +164,7 @@ public class TouchInput {
         return projectTouchToScreen(screen, projector, is2D, is3D, is2D, is3D);
     }
 
+    // Difference is Inside condition !
     public TouchElement projectTouchToScreen(Screen screen, Projector projector,
             boolean is2D, boolean is3D,
             boolean isSpeed2D, boolean isSpeed3D) {

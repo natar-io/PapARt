@@ -103,6 +103,8 @@ public class MultiTouchKinect {
 
         ByteBuffer cBuff = colorImage.getByteBuffer();
 
+//        System.out.println("Searching for point color");
+        
         for (TouchPoint tp : touchPointList) {
             int offset = 3 * kinect.findColorOffset(tp.vKinect);
 

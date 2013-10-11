@@ -102,7 +102,7 @@ public class TouchPoint {
         confidence = tp.confidence;
         isCloseToPlane = tp.isCloseToPlane;
 
-        filter();
+         filter();
         return true;
 
     }

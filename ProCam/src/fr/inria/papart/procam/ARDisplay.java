@@ -99,10 +99,10 @@ public class ARDisplay {
         // Working params
         p00 = 2 * projIntrinsicsP3D.m00 / frameWidth;
         p11 = 2 * projIntrinsicsP3D.m11 / frameHeight;
-        p02 = -((projIntrinsicsP3D.m02 / frameWidth) * 2 - 1);
-//        p02 = -(2 * projIntrinsicsP3D.m02 / frameWidth  - 1);
-//        p12 = -(2 * projIntrinsicsP3D.m12 / frameHeight - 1);
-        p12 = -((projIntrinsicsP3D.m12 / frameHeight) * 2 - 1);
+
+        // Inverted because a camera is pointing towards a negative z...
+        p02 = -(projIntrinsicsP3D.m02 / frameWidth * 2 - 1);
+        p12 = -(projIntrinsicsP3D.m12 / frameHeight * 2 - 1);
 
         this.graphics.beginDraw();
 
@@ -210,7 +210,7 @@ public class ARDisplay {
         // make the modelview matrix as the default matrix
         this.graphics.resetMatrix();
 
-        // Setting the projector as a projector (inverse camera)
+        // Setting the projector negative because ARToolkit provides neg Z values
         this.graphics.scale(1, 1, -1);
 
         return this.graphics;

@@ -170,7 +170,7 @@ public class Projector extends ARDisplay {
         this.graphics.scale(1, 1, -1);
 
         // Place the projector to his projection respective to the origin (camera here)
-        this.graphics.modelview.apply(getExtrinsics());
+         this.graphics.modelview.apply(getExtrinsics());
 
         // Goto to the screen position
         this.graphics.modelview.apply(board.getTransfoMat(camera));
@@ -205,7 +205,7 @@ public class Projector extends ARDisplay {
 
         return out;
     }
-    
+
     // TODO: more doc...
     /**
      * Projects the position of a pointer in normalized screen space. If you
@@ -221,7 +221,7 @@ public class Projector extends ARDisplay {
 //        float y = py * 2 - 1;
 
         double[] undist = proj.undistort(px * getWidth(), py * getHeight());
-        
+
         // go from screen coordinates to normalized coordinates  (-1, 1) 
         float x = (float) undist[0] / getWidth() * 2 - 1;
         float y = (float) undist[1] / getHeight() * 2 - 1;
@@ -266,7 +266,6 @@ public class Projector extends ARDisplay {
 //        System.out.println("Out " + out);
 //        return out;
 //    }
-
     public void addScreen(Screen s) {
         screens.add(s);
     }

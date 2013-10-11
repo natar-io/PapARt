@@ -62,7 +62,10 @@ public class Camera {
     static public void convertARParams(PApplet parent, String calibrationYAML,
             String calibrationData, int width, int height) {
         try {
-            fr.inria.papart.procam.Utils.convertARParam(parent, calibrationYAML, calibrationData, width, height);
+            // ARToolkit Plus 2.1.1
+//            fr.inria.papart.procam.Utils.convertARParam(parent, calibrationYAML, calibrationData, width, height);
+          // ARToolkit Plus 2.3.0
+            fr.inria.papart.procam.Utils.convertARParam2(parent, calibrationYAML, calibrationData, width, height);
         } catch (Exception e) {
             PApplet.println("Conversion error. " + e);
         }
