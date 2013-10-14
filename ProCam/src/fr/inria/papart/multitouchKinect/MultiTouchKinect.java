@@ -40,15 +40,15 @@ public class MultiTouchKinect {
     public MultiTouchKinect(PApplet applet, Kinect kinect, String configurationFile) {
 
         this.kinect = kinect;
-        KinectCst.init(applet);
+        Kinect.initApplet(applet);
         this.applet = applet;
 
         validPoints = kinect.getValidPoints();
         kinectPoints = kinect.getDepthPoints();
 
         // Not sure if used in the next versions... 
-        projPoints = new Vec3D[KinectCst.size];
-        readPoints = new boolean[KinectCst.size];
+        projPoints = new Vec3D[Kinect.KINECT_SIZE];
+        readPoints = new boolean[Kinect.KINECT_SIZE];
 
 //        this.pointCloud = new PointCloudKinect(applet, kinect);
 
@@ -104,7 +104,7 @@ public class MultiTouchKinect {
         ByteBuffer cBuff = colorImage.getByteBuffer();
 
 //        System.out.println("Searching for point color");
-        
+
         for (TouchPoint tp : touchPointList) {
             int offset = 3 * kinect.findColorOffset(tp.vKinect);
 
@@ -129,14 +129,14 @@ public class MultiTouchKinect {
     public ArrayList<TouchPoint> find2DTouchRaw(int skip) {
         assert (skip > 0);
 
-        return Touch.findMultiTouch(goodPointOffsets, kinectPoints, projPoints,
+        return TouchDetection.findMultiTouch(goodPointOffsets, kinectPoints, projPoints,
                 validPoints, readPoints, kinectCalibration, false, skip);
     }
 
     public ArrayList<TouchPoint> find3DTouchRaw(int skip) {
         assert (skip > 0);
 
-        return Touch.findMultiTouch(goodPointOffsets, kinectPoints, projPoints,
+        return TouchDetection.findMultiTouch(goodPointOffsets, kinectPoints, projPoints,
                 validPoints, readPoints, kinectCalibration, true, skip);
     }
 
@@ -144,7 +144,7 @@ public class MultiTouchKinect {
 
         assert (skip > 0);
 
-        ArrayList<TouchPoint> touchPoints = Touch.findMultiTouch(goodPointOffsets, kinectPoints, projPoints,
+        ArrayList<TouchPoint> touchPoints = TouchDetection.findMultiTouch(goodPointOffsets, kinectPoints, projPoints,
                 validPoints, readPoints, kinectCalibration, is3D, skip);
 
         if (touchPoints == null) {
@@ -218,12 +218,12 @@ public class MultiTouchKinect {
         return findTouch(touchPoint2D, false, skip);
     }
 
-    public void touch2DFound() {
-        touchFound(touchPoint2D);
-    }
-
     public ArrayList<TouchPoint> find3DTouch(int skip) {
         return findTouch(touchPoint3D, true, skip);
+    }
+
+    public void touch2DFound() {
+        touchFound(touchPoint2D);
     }
 
     public void touch3DFound() {

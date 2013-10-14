@@ -61,10 +61,6 @@ public class ARDisplay {
         loadInternalParams(calibrationYAML);
         initProjection();
 
-        if (projExtrinsicsP3D != null) {
-            computeInv();
-        }
-
         initDistortMap();
     }
 
@@ -121,16 +117,6 @@ public class ARDisplay {
 
         this.graphics.projection.set(oldProj);
         this.graphics.endDraw();
-    }
-
-    protected void computeInv() {
-        invProjModelView = getProjectionInit().get();
-        invProjModelView.scale(1, 1, -1);
-        // Set to the origin, as the plane was computed from the origin
-        invProjModelView.apply(getExtrinsics());
-
-        // invert for the inverse projection
-        invProjModelView.invert();
     }
 
     /**
@@ -202,7 +188,7 @@ public class ARDisplay {
         this.graphics.beginDraw();
 
         // clear the screen
-        this.graphics.clear(0, 0);
+        // this.graphics.clear(0, 0);
 
         // load the projector parameters into OpenGL
         loadProjection();

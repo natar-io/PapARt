@@ -5,7 +5,6 @@
 package fr.inria.papart.multitouchKinect;
 
 import fr.inria.papart.kinect.Kinect;
-import fr.inria.papart.kinect.KinectCst;
 import fr.inria.papart.kinect.KinectScreenCalibration;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -23,7 +22,7 @@ import toxi.geom.Vec3D;
  *
  * @author jeremy
  */
-public class Touch {
+public class TouchDetection {
 
     public static float maxDistance = 12f;    // in mm
 
@@ -35,21 +34,21 @@ public class Touch {
             int skip) {
 
         // TODO: optimisations here ?
-        int x = currentPoint % KinectCst.w;
-        int y = currentPoint / KinectCst.w;
+        int x = currentPoint % Kinect.KINECT_WIDTH;
+        int y = currentPoint / Kinect.KINECT_WIDTH;
 
         ArrayList<Integer> ret = new ArrayList<Integer>();
         ArrayList<Integer> visitNext = new ArrayList<Integer>();
 
-        int minX = PApplet.constrain(x - halfNeigh, 0, KinectCst.w - 1);
-        int maxX = PApplet.constrain(x + halfNeigh, 0, KinectCst.w - 1);
-        int minY = PApplet.constrain(y - halfNeigh, 0, KinectCst.h - 1);
-        int maxY = PApplet.constrain(y + halfNeigh, 0, KinectCst.h - 1);
+        int minX = PApplet.constrain(x - halfNeigh, 0, Kinect.KINECT_WIDTH - 1);
+        int maxX = PApplet.constrain(x + halfNeigh, 0, Kinect.KINECT_WIDTH - 1);
+        int minY = PApplet.constrain(y - halfNeigh, 0, Kinect.KINECT_HEIGHT - 1);
+        int maxY = PApplet.constrain(y + halfNeigh, 0, Kinect.KINECT_HEIGHT - 1);
 
         for (int j = minY; j <= maxY; j += skip) {
             for (int i = minX; i <= maxX; i += skip) {
 
-                int offset = j * KinectCst.w + i;
+                int offset = j * Kinect.KINECT_WIDTH + i;
 
                 // Avoid getting ouside the limits
                 if (!(readPoints[offset] // already parsed point 
@@ -134,7 +133,7 @@ public class Touch {
 
         float goodPointsDist = 0.03f;
 
-        float closeDistance = calib.plane().getHeight() / 5f;   // valeur indiquée dans calib * 0.05
+        float closeDistance = calib.plane().getHeight();   // valeur indiquée dans calib * 0.05
 
         ClosestComparatorHeight cch = new ClosestComparatorHeight(points, calib);
 
@@ -150,17 +149,12 @@ public class Touch {
 
             Vec3D mean = new Vec3D(0, 0, 0);
 
-
-
             if (is3D) {
-
                 // select only the closest 
                 for (int k = 0; k < minSize; k++) {
                     mean.addSelf(points[vint.get(k)]);
                 }
                 mean.scaleSelf(1.0f / minSize);
-
-
             } else {
 
                 // REAL MEAN
@@ -174,7 +168,6 @@ public class Touch {
             }
 
             TouchPoint tp = new TouchPoint();
-
 
             tp.is3D = is3D;
             tp.confidence = vint.size();

@@ -129,20 +129,21 @@ public class MarkerBoard {
         updateStatus.set(id, BLOCK_UPDATE);
     }
 
-    public boolean isMoving(Camera camera){
+    public boolean isMoving(Camera camera) {
         int id = getId(camera);
 //        nextTimeEvent.set(id, applet.millis() + time);
         int mode = updateStatus.get(id);
-        
-        if(mode == BLOCK_UPDATE)
+
+        if (mode == BLOCK_UPDATE) {
             return false;
-        if(mode == FORCE_UPDATE || mode == NORMAL)
+        }
+        if (mode == FORCE_UPDATE || mode == NORMAL) {
             return true;
+        }
 
         return true;
     }
-    
-    
+
     public synchronized void updatePosition(Camera camera, IplImage img) {
 
         int id = cameras.indexOf(camera);
@@ -164,7 +165,7 @@ public class MarkerBoard {
         if (tracker.getNumDetectedMarkers() <= 0) {
             return;
         }
-        
+
 //System.out.println("Markers found: " + tracker.getNumDetectedMarkers());
         ARToolKitPlus.ARMultiMarkerInfoT multiMarkerConfig = tracker.getMultiMarkerConfig();
 

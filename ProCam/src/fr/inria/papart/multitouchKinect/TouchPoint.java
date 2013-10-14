@@ -18,7 +18,6 @@ public class TouchPoint {
     public Vec3D oldV;
     public Vec3D vKinect;
     public int color;
-    float distanceMin;
     public int confidence;
     public boolean is3D;
     public boolean isCloseToPlane;
@@ -26,11 +25,11 @@ public class TouchPoint {
     public boolean isUpdated = false;
     protected int id;
     public int idPressed;
-    private static int globalID = 0;
     protected int updateTime = 0;
     private OneEuroFilter[] filters;
 
     
+    private static int globalID = 0;
     public static float filterFreq = 30f;
     public static float filterCut = 0.2f;
 //    public static float filterCut = 1.0f;
@@ -49,15 +48,6 @@ public class TouchPoint {
         }
     }
 
-//    public void init() {
-//        try {
-//            v.x = (float) filters[0].filter(v.x);
-//            v.y = (float) filters[1].filter(v.y);
-//            v.z = (float) filters[2].filter(v.z);
-//        } catch (Exception e) {
-//            System.out.println("OneEuro init Exception. Pay now.");
-//        }
-//    }
     public void filter() {
         try {
             v.x = (float) filters[0].filter(v.x);
@@ -119,18 +109,7 @@ public class TouchPoint {
         return isUpdated;
     }
 
-//  void draw(){
-//    pushStyle();
-//    noStroke();
-//
-//    //    if(isCloseToPlane)
-//      fill(50, 255, 50);
-//    // else
-//    //   fill(255, 50, 50);
-//
-//      //    gfx.sphere(new Sphere(v, 0.01), 8, true);
-//    popStyle();
-//  }
+    @Override
     public String toString() {
         return "Touch Point : \n Vec3D " + v + "\n" + "Close to Plane : " + isCloseToPlane + " \n";
     }

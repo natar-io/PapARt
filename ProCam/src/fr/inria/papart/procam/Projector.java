@@ -56,124 +56,41 @@ public class Projector extends ARDisplay {
 
     }
 
-    public void drawScreens() {
-
-        ////////  3D PROJECTION  //////////////
-        this.graphics.beginDraw();
-
-        // clear the screen
-        this.graphics.clear(0);
-
-        // load the projector parameters into OpenGL
-        loadProjection();
-
-        // make the modelview matrix as the default matrix
-        this.graphics.resetMatrix();
-
-        // Setting the projector as a projector (inverse camera)
-        this.graphics.scale(1, 1, -1);
-
-        // Place the projector to his projection respective to the origin (camera here)
-        this.graphics.modelview.apply(getExtrinsics());
-
-        for (Screen screen : screens) {
-            if (!screen.isDrawing()) {
-                continue;
-            }
-            this.graphics.pushMatrix();
-
-            // Goto to the screen position
-            this.graphics.modelview.apply(screen.getPos());
-
-            // Draw the screen image
-            this.graphics.image(screen.getTexture(), 0, 0, screen.getSize().x, screen.getSize().y);
-            this.graphics.popMatrix();
-        }
-
-        // Put the projection matrix back to normal
-        unLoadProjection();
-        this.graphics.endDraw();
-    }
-
-    public void drawScreensOver() {
-
-        ////////  3D PROJECTION  //////////////
-        this.graphics.beginDraw();
-
-        // load the projector parameters into OpenGL
-        loadProjection();
-
-        // make the modelview matrix as the default matrix
-        this.graphics.resetMatrix();
-
-        // Setting the projector as a projector (inverse camera)
-        this.graphics.scale(1, 1, -1);
-
-        // Place the projector to his projection respective to the origin (camera here)
-        this.graphics.modelview.apply(getExtrinsics());
-
-        this.graphics.imageMode(PApplet.CORNER);
-        for (Screen screen : screens) {
-            if (!screen.isDrawing()) {
-                continue;
-            }
-            this.graphics.pushMatrix();
-
-            // Goto to the screen position
-            this.graphics.modelview.apply(screen.getPos());
-
-            // Draw the screen image
-            this.graphics.image(screen.getTexture(), 0, 0, screen.getSize().x, screen.getSize().y);
-            this.graphics.popMatrix();
-        }
-
-        // Put the projection matrix back to normal
-        unLoadProjection();
-        this.graphics.endDraw();
-    }
-
     public GLGraphicsOffScreen beginDrawOnScreen(Screen screen) {
 
-        ////////  3D PROJECTION  //////////////
-        this.graphics.beginDraw();
+        this.beginDraw();
 
-        // load the projector parameters into OpenGL
-        loadProjection();
+        ///////// New version /////////////
+        // Get the markerboard viewed by the camera
+        PMatrix3D camBoard = screen.getPos();
+        camBoard.preApply(getExtrinsics());
+        this.graphics.modelview.apply(camBoard);
 
-        // make the modelview matrix as the default matrix
-        this.graphics.resetMatrix();
-
-        // Setting the projector as a projector (inverse camera)
-        this.graphics.scale(1, 1, -1);
-
-        // Place the projector to his projection respective to the origin (camera here)
-        this.graphics.modelview.apply(getExtrinsics());
-
-        // Goto to the screen position
-        this.graphics.modelview.apply(screen.getPos());
+//        // Place the projector to his projection respective to the origin (camera here)
+//        this.graphics.modelview.apply(getExtrinsics());
+//
+//        // Goto to the screen position
+//        this.graphics.modelview.apply(screen.getPos());
 
         return this.graphics;
     }
 
     public GLGraphicsOffScreen beginDrawOnBoard(Camera camera, MarkerBoard board) {
 
-        ////////  3D PROJECTION  //////////////
-        this.graphics.beginDraw();
+        this.beginDraw();
 
-        // load the projector parameters into OpenGL
-        loadProjection();
+        ///////// New version /////////////
+        // Get the markerboard viewed by the camera
+        PMatrix3D camBoard = board.getTransfoMat(camera);
+        camBoard.preApply(getExtrinsics());
+        this.graphics.modelview.apply(camBoard);
 
-        // make the modelview matrix as the default matrix
-        this.graphics.resetMatrix();
-
-        // Setting the projector as a projector (inverse camera)
-        this.graphics.scale(1, 1, -1);
-
-        // Place the projector to his projection respective to the origin (camera here)
-         this.graphics.modelview.apply(getExtrinsics());
-
-        // Goto to the screen position
-        this.graphics.modelview.apply(board.getTransfoMat(camera));
+        ////////// old Version  //////////////
+//        // Place the projector to his projection respective to the origin (camera here)
+//         this.graphics.modelview.apply(getExtrinsics());
+//
+//        // Goto to the screen position
+//        this.graphics.modelview.apply(board.getTransfoMat(camera));
 
         return this.graphics;
     }
@@ -185,25 +102,38 @@ public class Projector extends ARDisplay {
         this.graphics.endDraw();
     }
 
-    private PMatrix3D createProjection(PVector nearFar) {
+    public void drawScreens() {
+        this.beginDraw();
+        this.graphics.clear(0);
+        drawScreensProjection();
+        this.endDraw();
+    }
 
-        PMatrix3D init = this.graphics.projection.get();
-        this.graphics.beginDraw();
+    public void drawScreensOver() {
 
-        // TODO: magic numbers !!!
-        this.graphics.frustum(0, 0, 0, 0, nearFar.x, nearFar.y);
+        this.beginDraw();
+        drawScreensProjection();
+        this.endDraw();
+    }
 
-        this.graphics.projection.m00 = projectionInit.m00;
-        this.graphics.projection.m11 = projectionInit.m11;
-        this.graphics.projection.m02 = projectionInit.m02;
-        this.graphics.projection.m12 = projectionInit.m12;
+    private void drawScreensProjection() {
 
-        PMatrix3D out = this.graphics.projection.get();
+        // Place the projector to his projection respective to the origin (camera here)
+        this.graphics.modelview.apply(getExtrinsics());
 
-        this.graphics.endDraw();
-        this.graphics.projection.set(init);
+        for (Screen screen : screens) {
+            if (!screen.isDrawing()) {
+                continue;
+            }
+            this.graphics.pushMatrix();
 
-        return out;
+            // Goto to the screen position
+            this.graphics.modelview.apply(screen.getPos());
+
+            // Draw the screen image
+            this.graphics.image(screen.getTexture(), 0, 0, screen.getSize().x, screen.getSize().y);
+            this.graphics.popMatrix();
+        }
     }
 
     // TODO: more doc...
@@ -257,15 +187,26 @@ public class Projector extends ARDisplay {
         return out;
     }
 
-//    public PVector projectPointer(Screen screen, TouchPoint tp) {
-//        Vec3D res = screen.transformationProjPaper.applyTo(tp.vKinect);
-//        System.out.println("Touch Point " + tp.v + " " + tp.vKinect);
-//        System.out.println("res " + res);
-//        PVector out = new PVector(res.x() / res.z(),
-//                res.y() / res.z(), 1);
-//        System.out.println("Out " + out);
-//        return out;
-//    }
+    private PMatrix3D createProjection(PVector nearFar) {
+
+        PMatrix3D init = this.graphics.projection.get();
+        this.graphics.beginDraw();
+
+        this.graphics.frustum(0, 0, 0, 0, nearFar.x, nearFar.y);
+
+        this.graphics.projection.m00 = projectionInit.m00;
+        this.graphics.projection.m11 = projectionInit.m11;
+        this.graphics.projection.m02 = projectionInit.m02;
+        this.graphics.projection.m12 = projectionInit.m12;
+
+        PMatrix3D out = this.graphics.projection.get();
+
+        this.graphics.endDraw();
+        this.graphics.projection.set(init);
+
+        return out;
+    }
+
     public void addScreen(Screen s) {
         screens.add(s);
     }

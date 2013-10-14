@@ -150,11 +150,10 @@ public class Homography {
         }
         pa.saveStrings(filename, lines);
         pa.println("Homography successfully saved");
-
     }
 
     private void load(String filename) throws FileNotFoundException {
-        String[] lines = KinectCst.get().loadStrings(filename);
+        String[] lines = Kinect.getApplet().loadStrings(filename);
         if (lines == null) {
             throw new FileNotFoundException(filename);
         }

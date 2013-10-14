@@ -56,7 +56,7 @@ public class PlaneThreshold {
 //        planeHeight = Float.parseFloat(height.getContent());
 //
 //        plane = new Plane(pos, norm);
-//        KinectCst.pa.println("Plane successfully loaded");
+//        Kinect.pa.println("Plane successfully loaded");
 //        setValid(true);
 //    }
     private void init() {
@@ -67,7 +67,7 @@ public class PlaneThreshold {
     
     public void addPoint(Vec3D point) {
         if (currentPoint == 3) {
-            KinectCst.pa.println("Enough points are selected, calculate the plane");
+            Kinect.CURRENTPAPPLET.println("Enough points are selected, calculate the plane");
             return;
         }
         points[currentPoint++] = point;
@@ -154,8 +154,8 @@ public class PlaneThreshold {
         lines[4] = "" + plane.normal.y;
         lines[5] = "" + plane.normal.z;
         lines[6] = "" + planeHeight;
-        KinectCst.pa.saveStrings(filename, lines);
-        KinectCst.pa.println("Plane successfully saved");
+        Kinect.CURRENTPAPPLET.saveStrings(filename, lines);
+        Kinect.CURRENTPAPPLET.println("Plane successfully saved");
     }
     
     @Override
@@ -164,13 +164,13 @@ public class PlaneThreshold {
     }
 
     public void loadPlane(String fileName) {
-        String[] lines = KinectCst.pa.loadStrings(fileName);
+        String[] lines = Kinect.CURRENTPAPPLET.loadStrings(fileName);
         Vec3D pos = new Vec3D(Float.parseFloat(lines[0]), Float.parseFloat(lines[1]), Float.parseFloat(lines[2]));
         Vec3D norm = new Vec3D(Float.parseFloat(lines[3]), Float.parseFloat(lines[4]), Float.parseFloat(lines[5]));
         planeHeight = Float.parseFloat(lines[6]);
 
         plane = new Plane(pos, norm);
-        KinectCst.pa.println("Plane " + fileName + " successfully loaded");
+        Kinect.CURRENTPAPPLET.println("Plane " + fileName + " successfully loaded");
     }
     static int nbPlanes = 0;
 

@@ -12,6 +12,11 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PImage;
@@ -29,10 +34,11 @@ import toxi.geom.Vec3D;
 public class Kinect {
 
     public static PApplet parent;
-    public float closeThreshold = 300f, farThreshold = 1800f;
+    private float closeThreshold = 300f, farThreshold = 1800f;
     private Vec3D[] kinectPoints;
     private int[] colorPoints;
     private boolean[] validPoints;
+    private boolean[] computedPoints;
     private PImage validPointsPImage;
     private byte[] depthRaw;
     private byte[] colorRaw;
@@ -45,25 +51,38 @@ public class Kinect {
     // Debug purposes
     public static byte[] connectedComponent;
     public static byte currentCompo = 1;
+    public static final int KINECT_WIDTH = 640;
+    public static final int KINECT_HEIGHT = 480;
+    public static final int KINECT_SIZE = KINECT_WIDTH * KINECT_HEIGHT;
+    static PApplet CURRENTPAPPLET = null;
+    // Threading for depth and color computation
+    private ExecutorService threadPool;
+    public int nbThreads = 8;
+    public int threadLoad = 40;
+
+    static public void initApplet(PApplet applet) {
+        CURRENTPAPPLET = applet;
+    }
+
+    static public PApplet getApplet() {
+        return CURRENTPAPPLET;
+    }
 
 //  Kinect with the standard calibration
     // DEPRECATED  (already...)
     public Kinect(PApplet parent, String calib, int id) {
         Kinect.parent = parent;
+        initApplet(parent);
 
-
-        boolean useRGB = false;
         try {
             kinectCalibRGB = ProjectiveDeviceP.loadCameraDevice(calib, 0);
             kinectCalibIR = ProjectiveDeviceP.loadCameraDevice(calib, 1);
-            useRGB = true;
         } catch (Exception e) {
             System.out.println("Use IR kinect calibration only.");
         }
 
         try {
             kinectCalibIR = ProjectiveDeviceP.loadCameraDevice(calib, 0);
-            useRGB = false;
         } catch (Exception e) {
             System.err.println("Error loading IR Kinect Calibration: " + e);
             e.printStackTrace();
@@ -85,43 +104,28 @@ public class Kinect {
         init(id);
     }
 
-    // Kinect with advanced calibration 
-    // Not ready yet
-//    public Kinect(PApplet parent, int id, String calibrationFile) {
-//        init(id);
-//    }
     public int getCurrentSkip() {
         return currentSkip;
     }
-    // Deprecated
-    PMatrix3D translateCam = new PMatrix3D(1, 0, 0, 5,
+    private PMatrix3D translateCam = new PMatrix3D(1, 0, 0, 5,
             0, 1, 0, 0,
             0, 0, 1, 0,
             0, 0, 0, 1);
 
-//    PMatrix3D translateCam = new PMatrix3D(1, 0, 0, 0,
-//            0, 1, 0, 0,
-//            0, 0, 1, 0,
+//    PMatrix3D translateCam = new PMatrix3D(1, 0, 0, 27,
+//            0, 1, 0, -4.5f,
+//            0, 0, 1, -2.65f,
 //            0, 0, 0, 1);
     public int findColorOffset(Vec3D v) {
-//        PVector vt = new PVector(v.x, v.y, v.z);
-//        PVector vt2 = new PVector();
-//        kinectCalibRGB.getExtrinsics().mult(vt, vt2);
-//
-////        return kinectCalibRGB.worldToPixel(new Vec3D(vt.x, vt.y, vt.z));
-//        return kinectCalibRGB.worldToPixel(new Vec3D(vt2.x, vt2.y, vt2.z));
-
         PVector vt = new PVector(v.x, v.y, v.z);
         PVector vt2 = new PVector();
-
+        //  Ideally use a calibration... 
+//        kinectCalibRGB.getExtrinsics().mult(vt, vt2);       
         translateCam.mult(vt, vt2);
-
-//        return kinectCalibRGB.worldToPixel(new Vec3D(vt.x, vt.y, vt.z));
         return kinectCalibRGB.worldToPixel(new Vec3D(vt2.x, vt2.y, vt2.z));
     }
 
-    // TODO: change registration here... 
-    // TODO: Change init to smaller inits, called by Update functions.
+//    public static 
     private void init(int id) {
         this.id = id;
 
@@ -130,6 +134,7 @@ public class Kinect {
         // TODO: create them at first use !!
         kinectPoints = new Vec3D[kinectCalibIR.getSize()];
         validPoints = new boolean[kinectCalibIR.getSize()];
+        computedPoints = new boolean[kinectCalibIR.getSize()];
 
         colorRaw = new byte[kinectCalibIR.getSize() * 3];
         depthRaw = new byte[kinectCalibIR.getSize() * 2];
@@ -148,6 +153,9 @@ public class Kinect {
                 depthLookUp[i] = rawDepthToMeters(i);
             }
         }
+
+        threadPool = Executors.newFixedThreadPool(8);
+
     }
 
     public int getId() {
@@ -158,14 +166,122 @@ public class Kinect {
         return this.colorRaw;
     }
 
-    // Deprecated
     public void undistortRGB(IplImage rgb, IplImage out) {
         kinectCalibRGB.getDevice().undistort(rgb, out);
     }
 
-    // Deprecated
+    // Not Working ! 
     public void undistortIR(IplImage ir, IplImage out) {
         kinectCalibIR.getDevice().undistort(ir, out);
+    }
+
+    public void setSkipValue(int skip) {
+        this.currentSkip = skip;
+    }
+
+    public void setNearFarValue(float near, float far) {
+        this.closeThreshold = near;
+        this.farThreshold = far;
+    }
+
+    public void computeDepth(IplImage depth) {
+        // Get the depth as an array 
+        ByteBuffer depthBuff = depth.getByteBuffer();
+        depthBuff.get(depthRaw);
+
+        float begin = parent.millis();
+
+        // for each point
+
+//            for (int iter = 0; iter < 200; iter++) {
+        for (int y = 0; y < kinectCalibIR.getHeight(); y += currentSkip * threadLoad) {
+            Runnable worker = new DepthComputation(y);
+            threadPool.execute(worker);
+        }
+//            }
+
+        // This will make the executor accept no new threads
+        // and finish all existing threads in the queue
+        // threadPool.shutdown();
+        // Wait until all threads are finish
+//            threadPool.
+//            threadPool.awaitTermination(2, TimeUnit.SECONDS);
+
+        System.out.println("Temps1 " + (parent.millis() - begin));
+
+//            begin = parent.millis();
+//            for (int iter = 0; iter < 200; iter++) {
+//                // for each point
+//                for (int y = 0; y < kinectCalibIR.getHeight(); y += currentSkip) {
+//                    for (int x = 0; x < kinectCalibIR.getWidth(); x += currentSkip) {
+//
+//                        // current point
+//                        int offset = y * kinectCalibIR.getWidth() + x;
+//
+//                        // raw depth
+//                        float d = (depthRaw[offset * 2] & 0xFF) << 8
+//                                | (depthRaw[offset * 2 + 1] & 0xFF);
+//
+//                        // clear out invalid depth
+//                        if (d >= 2047) {
+//                            validPoints[offset] = false;
+//                            break;
+//                        }
+//                        // compute the depth 
+//                        d = 1000 * depthLookUp[(int) d];
+//
+//                        // TODO: check perfs with this...
+//                        boolean goodDepth = (d >= closeThreshold && d < farThreshold);
+//                        validPoints[offset] = goodDepth;
+//
+//    //                validPoints[offset] = true;
+//                        kinectPoints[offset] = kinectCalibIR.pixelToWorld(x, y, d);
+//                    }
+//                }
+//            }
+//            System.out.println("Temps2 " + (parent.millis() - begin));
+
+    }
+
+    class DepthComputation implements Runnable {
+
+        private final int startY;
+
+        DepthComputation(int y) {
+            this.startY = y;
+        }
+
+        @Override
+        public void run() {
+
+            for (int y = startY; y <= startY + threadLoad; y++) {
+                for (int x = 0; x < kinectCalibIR.getWidth(); x += currentSkip) {
+
+                    // current point
+                    int offset = y * kinectCalibIR.getWidth() + x;
+
+                    // raw depth
+                    float d = (depthRaw[offset * 2] & 0xFF) << 8
+                            | (depthRaw[offset * 2 + 1] & 0xFF);
+
+                    // clear out invalid depth
+                    if (d >= 2047) {
+                        validPoints[offset] = false;
+                        break;
+                    }
+                    // compute the depth 
+                    d = 1000 * depthLookUp[(int) d];
+
+                    // TODO: check perfs with this...
+                    boolean goodDepth = (d >= closeThreshold && d < farThreshold);
+                    validPoints[offset] = goodDepth;
+
+//                validPoints[offset] = true;
+                    kinectPoints[offset] = kinectCalibIR.pixelToWorld(x, y, d);
+                }
+            }
+
+        }
     }
 
     public void update(IplImage depth, int skip) {
@@ -374,16 +490,16 @@ public class Kinect {
 
                     colorPoints[offset] = this.findColorOffset(p);
                     int colorOffset = colorPoints[offset] * 3;
-                    
+
 //                    int c = (colorRaw[colorOffset + 2] & 0xFF) << 16
 //                            | (colorRaw[colorOffset + 1] & 0xFF) << 8
 //                            | (colorRaw[colorOffset + 0] & 0xFF);
 //                    validPointsPImage.pixels[offset] = c;
 
-                     validPointsRaw[outputOffset + 2] = colorRaw[colorOffset + 2];
+                    validPointsRaw[outputOffset + 2] = colorRaw[colorOffset + 2];
                     validPointsRaw[outputOffset + 1] = colorRaw[colorOffset + 1];
                     validPointsRaw[outputOffset + 0] = colorRaw[colorOffset + 0];
-                    
+
 //                    int colorOffset = offset * 3;
 //                    validPointsRaw[outputOffset + 2] = colorRaw[colorOffset + 2];
 //                    validPointsRaw[outputOffset + 1] = colorRaw[colorOffset + 1];

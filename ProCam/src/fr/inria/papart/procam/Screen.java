@@ -7,7 +7,6 @@ import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import toxi.geom.*;
-import toxi.processing.ToxiclibsSupport;
 
 /**
  * This class implements a virtual screen. The position of the screen has to be
@@ -17,9 +16,6 @@ import toxi.processing.ToxiclibsSupport;
  */
 public class Screen {
 
-    //       private PVector userPos = new PVector(-paperSheetWidth/2, -paperSheetHeight/2 +500, 300);
-    //       private PVector userPos = new PVector(paperSheetWidth/2, paperSheetHeight/2, 500);
-    //    public PVector userPos = new PVector(0, -700, 1300);
     private PApplet parent;
     // The current graphics
     public GLGraphicsOffScreen thisGraphics;
@@ -27,8 +23,6 @@ public class Screen {
     private PVector initPos = null;
     private PMatrix3D initPosM = null;
     private float[] pos3D;
-    private Vec3D posPaper;
-    private PVector posPaperP;
     private PMatrix3D pos;
     private PVector size;
     private float scale;
@@ -50,8 +44,6 @@ public class Screen {
         this.scale = scale;
         this.parent = parent;
         pos = new PMatrix3D();
-        posPaper = new Vec3D();
-        posPaperP = new PVector();
         initHomography();
 //        initImageGetter();
     }
@@ -301,8 +293,6 @@ public class Screen {
                     pos3D[4], pos3D[5], pos3D[6], pos3D[7],
                     pos3D[8], pos3D[9], pos3D[10], pos3D[11],
                     0, 0, 0, 1);
-
-
         }
 
         pos.set(pos3D[0], pos3D[1], pos3D[2], pos3D[3],
@@ -310,26 +300,13 @@ public class Screen {
                 pos3D[8], pos3D[9], pos3D[10], pos3D[11],
                 0, 0, 0, 1);
 
-
-//        pos = new PMatrix3D(pos3D[0], pos3D[1], pos3D[2], pos3D[3],
-//                pos3D[4], pos3D[5], pos3D[6], pos3D[7],
-//                pos3D[8], pos3D[9], pos3D[10], pos3D[11],
-//                0, 0, 0, 1);
-
-        posPaper.x = pos3D[3];
-        posPaper.y = pos3D[7];
-        posPaper.z = pos3D[11];
-
-        posPaperP.x = pos3D[3];
-        posPaperP.y = pos3D[7];
-        posPaperP.z = pos3D[11];
     }
 
     public void setPos(PMatrix3D position) {
         pos = position.get();
     }
 
-    // Available only if pos3D is being updated elsewhere...
+    
     public void updatePos(Camera camera, MarkerBoard board) {
 
         pos3D = board.getTransfo(camera);
@@ -338,53 +315,10 @@ public class Screen {
                 pos3D[4], pos3D[5], pos3D[6], pos3D[7],
                 pos3D[8], pos3D[9], pos3D[10], pos3D[11],
                 0, 0, 0, 1);
-//        pos.m00 = pos3D[0];
-//        pos.m01 = pos3D[1];
-//        pos.m02 = pos3D[2];
-//        pos.m03 = pos3D[3];
-//        pos.m10 = pos3D[4];
-//        pos.m11 = pos3D[5];
-//        pos.m12 = pos3D[6];
-//        pos.m13 = pos3D[7];
-//        pos.m20 = pos3D[8];
-//        pos.m12 = pos3D[9];
-//        pos.m22 = pos3D[10];
-//        pos.m23 = pos3D[11];
 
-        posPaper.x = pos3D[3];
-        posPaper.y = pos3D[7];
-        posPaper.z = pos3D[11];
-
-        posPaperP.x = pos3D[3];
-        posPaperP.y = pos3D[7];
-        posPaperP.z = pos3D[11];
     }
-//    public void setPos(float pos3D[]) {
-//
-//        // TODO: not optimal, need to check the pos3D creation / deletion
-//        this.pos3D = pos3D;
-//        pos.m00 = pos3D[0];
-//        pos.m01 = pos3D[1];
-//        pos.m02 = pos3D[2];
-//        pos.m03 = pos3D[3];
-//        pos.m10 = pos3D[4];
-//        pos.m11 = pos3D[5];
-//        pos.m12 = pos3D[6];
-//        pos.m13 = pos3D[7];
-//        pos.m20 = pos3D[8];
-//        pos.m12 = pos3D[9];
-//        pos.m22 = pos3D[10];
-//        pos.m23 = pos3D[11];
-//
-//        posPaper.x = pos3D[3];
-//        posPaper.y = pos3D[7];
-//        posPaper.z = pos3D[11];
-//
-//        posPaperP.x = pos3D[3];
-//        posPaperP.y = pos3D[7];
-//        posPaperP.z = pos3D[11];
-//
-//    }
+    
+    
 
     public PVector getZMinMax() {
 
