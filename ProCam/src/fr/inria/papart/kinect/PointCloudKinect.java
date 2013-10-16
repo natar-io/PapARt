@@ -14,6 +14,7 @@ import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.opengl.PGraphicsOpenGL;
+import toxi.geom.Triangle3D;
 import toxi.geom.Vec3D;
 import toxi.geom.mesh.OBJWriter;
 
@@ -31,6 +32,7 @@ public class PointCloudKinect {
     private GLModel triangleModel = null;
     private int[] indicesMap;
     private int[] indices;
+    private float[] normals;
     private boolean[] valid;
     private Vec3D[] points;
     private PImage colors;
@@ -86,16 +88,17 @@ public class PointCloudKinect {
             }
             model.endUpdateColors();
         }
-        
+
     }
 
-   
     private void initTriangleModel() {
         triangleModel = new GLModel(parent, Kinect.KINECT_SIZE, GLModel.TRIANGLES, GLModel.STREAM);
         triangleModel.initIndices(Kinect.KINECT_SIZE * 6, GLModel.STREAM);
+        triangleModel.initNormals();
         triangleModel.initColors();
         indicesMap = new int[Kinect.KINECT_SIZE];
         indices = new int[Kinect.KINECT_SIZE * 6];
+        normals = new float[Kinect.KINECT_SIZE * 4]; // 1 normal per vertex ?
     }
 
     public void updateTrianglesColorsProcessing() {
@@ -138,7 +141,7 @@ public class PointCloudKinect {
         triangleModel.endUpdateVertices();
 
 
-        ///////////////  Indices 
+        ///////////////  Triangles  ////////////////
         int currentIndex = 0;
 
         for (int y = skip; y < Kinect.KINECT_HEIGHT; y += skip) {
@@ -156,6 +159,8 @@ public class PointCloudKinect {
         triangleModel.updateIndices(indices, currentIndex);
 //        triangleModel.endUpdateIndices();
 
+        triangleModel.updateNormals(normals);
+        
         nbToDraw = currentIndex;
 
 
@@ -172,7 +177,7 @@ public class PointCloudKinect {
                             (c >> 16) & 0xFF,
                             (c >> 8) & 0xFF,
                             c & 0xFF);
-                    
+
 //                    triangleModel.updateColor(k++, 0, 255, 0);
                 }
             }
@@ -198,17 +203,49 @@ public class PointCloudKinect {
                 && valid[offsetC]
                 && valid[offsetD]) {
 
-            if (points[offsetA].distanceTo(points[offsetB]) < maxDist &&
-                points[offsetA].distanceTo(points[offsetC]) < maxDist &&    
-                points[offsetA].distanceTo(points[offsetD]) < maxDist) {
+            if (points[offsetA].distanceTo(points[offsetB]) < maxDist
+                    && points[offsetA].distanceTo(points[offsetC]) < maxDist
+                    && points[offsetA].distanceTo(points[offsetD]) < maxDist) {
 
 
+                // Get the normal !
+                Triangle3D triangle1 = new Triangle3D(points[offsetB], points[offsetD], points[offsetC]);
+                Triangle3D triangle2 = new Triangle3D(points[offsetA], points[offsetB], points[offsetC]);
+
+                triangle1.computeNormal();
+                triangle2.computeNormal();
+
+                int vertexIndex = indicesMap[offsetB];
+                normals[vertexIndex * 4 + 0] = triangle1.normal.x;
+                normals[vertexIndex * 4 + 1] = triangle1.normal.y;
+                normals[vertexIndex * 4  + 2] = triangle1.normal.z;  
+                normals[vertexIndex * 4  + 3] = 0;  
+                
+                vertexIndex = indicesMap[offsetC];
+                normals[vertexIndex * 4  + 0] = triangle1.normal.x;
+                normals[vertexIndex * 4  + 1] = triangle1.normal.y;
+                normals[vertexIndex * 4  + 2] = triangle1.normal.z;      
+                normals[vertexIndex * 4  + 3] = 0;      
+                
+                vertexIndex = indicesMap[offsetD];
+                normals[vertexIndex * 4  + 0] = triangle1.normal.x;
+                normals[vertexIndex * 4  + 1] = triangle1.normal.y;
+                normals[vertexIndex * 4  + 2] = triangle1.normal.z;  
+                normals[vertexIndex * 4  + 3] = 0;  
+                
+                vertexIndex = indicesMap[offsetA];
+                normals[vertexIndex * 4  + 0] = triangle2.normal.x;
+                normals[vertexIndex * 4  + 1] = triangle2.normal.y;
+                normals[vertexIndex * 4  + 2] = triangle2.normal.z;  
+                normals[vertexIndex * 4  + 3] = 0;  
+
+                indices[currentIndex++] = indicesMap[offsetB];
                 indices[currentIndex++] = indicesMap[offsetD];
                 indices[currentIndex++] = indicesMap[offsetC];
                 indices[currentIndex++] = indicesMap[offsetA];
-                indices[currentIndex++] = indicesMap[offsetD];
-                indices[currentIndex++] = indicesMap[offsetA];
                 indices[currentIndex++] = indicesMap[offsetB];
+                indices[currentIndex++] = indicesMap[offsetC];
+//                
             }
 //            model.updateIndices(indicesMap);
         }

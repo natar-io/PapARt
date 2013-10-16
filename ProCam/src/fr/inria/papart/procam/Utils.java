@@ -51,6 +51,7 @@ public class Utils {
         IplImage imgOut = cvCreateImage(outSize, // size
                 imgIn.depth(), // depth
                 imgIn.nChannels());
+//        imgIn.w
         return imgOut;
     }
 

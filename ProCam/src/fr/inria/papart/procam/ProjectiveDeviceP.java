@@ -9,6 +9,7 @@ import com.googlecode.javacv.ProjectiveDevice;
 import com.googlecode.javacv.ProjectorDevice;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
+import processing.core.PVector;
 import toxi.geom.Vec3D;
 
 /**
@@ -83,6 +84,17 @@ public class ProjectiveDeviceP {
 
         int px = PApplet.constrain(PApplet.round((pt.x() * invZ * fx) + cx), 0, w - 1);
         int py = PApplet.constrain(PApplet.round((pt.y() * invZ * fy) + cy), 0, h - 1);
+
+        return (int) (py * w + px);
+    }
+    
+    public int worldToPixel(PVector pt) {
+
+        // Reprojection 
+        float invZ = 1.0f / pt.z;
+
+        int px = PApplet.constrain(PApplet.round((pt.x* invZ * fx) + cx), 0, w - 1);
+        int py = PApplet.constrain(PApplet.round((pt.y* invZ * fy) + cy), 0, h - 1);
 
         return (int) (py * w + px);
     }

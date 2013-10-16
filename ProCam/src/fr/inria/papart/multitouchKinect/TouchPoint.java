@@ -13,7 +13,6 @@ import toxi.geom.Vec3D;
  */
 public class TouchPoint {
 
-    public Vec3D prevV;
     public Vec3D v;
     public Vec3D oldV;
     public Vec3D vKinect;
@@ -24,10 +23,8 @@ public class TouchPoint {
     public boolean toDelete = false;
     public boolean isUpdated = false;
     protected int id;
-    public int idPressed;
     protected int updateTime = 0;
     private OneEuroFilter[] filters;
-
     
     private static int globalID = 0;
     public static float filterFreq = 30f;

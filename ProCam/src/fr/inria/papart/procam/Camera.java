@@ -522,6 +522,10 @@ public class Camera {
         imageRetreived();
         return iimg;
     }
+    
+    public ProjectiveDeviceP getProjectiveDevice(){
+        return this.pdp;
+    }
 
     public void close() {
         if (grabber != null) {
