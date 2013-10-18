@@ -12,6 +12,9 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -23,6 +26,7 @@ import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import toxi.geom.Matrix4x4;
+import toxi.geom.Triangle3D;
 import toxi.geom.Vec3D;
 
 /**
@@ -38,6 +42,7 @@ public class Kinect {
     private Vec3D[] kinectPoints;
     private int[] colorPoints;
     private boolean[] validPoints;
+    private int[] connexity;  // TODO: check for Byte instead of int
     private boolean[] computedPoints;
     private PImage validPointsPImage;
     private byte[] depthRaw;
@@ -138,6 +143,8 @@ public class Kinect {
 
         colorRaw = new byte[kinectCalibIR.getSize() * 3];
         depthRaw = new byte[kinectCalibIR.getSize() * 2];
+
+        connexity = new int[kinectCalibIR.getSize()];
 
         // For Processing output
         colorPoints = new int[kinectCalibIR.getSize()];
@@ -348,7 +355,6 @@ public class Kinect {
                 validPointsPImage.pixels[offset] = parent.color(0, 0, 255);
                 if (good) {
 
-
                     kinectPoints[offset] = kinectCalibIR.pixelToWorld(x, y, d);
                     colorPoints[offset] = this.findColorOffset(kinectPoints[offset]);
                     int colorOffset = colorPoints[offset] * 3;
@@ -366,6 +372,16 @@ public class Kinect {
 //                    validPointsPImage.pixels[offset] = c;
                 }
 
+            }
+        }
+
+        Arrays.fill(connexity, 0);
+        for (int y = 0; y < kinectCalibIR.getHeight(); y += skip) {
+            for (int x = 0; x < kinectCalibIR.getWidth(); x += skip) {
+                int offset = y * kinectCalibIR.getWidth() + x;
+                if (validPoints[offset]) {
+                    computeConnexity(x, y, skip);
+                }
             }
         }
 
@@ -438,6 +454,16 @@ public class Kinect {
 
             }
 
+        }
+
+        Arrays.fill(connexity, 0);
+        for (int y = 0; y < kinectCalibIR.getHeight(); y += skip) {
+            for (int x = 0; x < kinectCalibIR.getWidth(); x += skip) {
+                int offset = y * kinectCalibIR.getWidth() + x;
+                if (validPoints[offset]) {
+                    computeConnexity(x, y, skip);
+                }
+            }
         }
 
         validPointsPImage.updatePixels();
@@ -819,6 +845,67 @@ public class Kinect {
         }
         return points;
     }
+    public static final int TOPLEFT = 1;
+    public static final int TOP = 1 << 1;
+    public static final int TOPRIGHT = 1 << 2;
+    public static final int LEFT = 1 << 3;
+    public static final int RIGHT = 1 << 4;
+    public static final int BOTLEFT = 1 << 5;
+    public static final int BOT = 1 << 6;
+    public static final int BOTRIGHT = 1 << 7;
+
+    //    public static enum ConnexityType {
+//        TOPLEFT, TOP, TOPRIGHT, LEFT, RIGHT, BOTLEFT, BOT, BOTRIGHT;
+//        public int getFlagValue() {
+//            return 1 << this.ordinal();
+//        }
+//    }
+    private void computeConnexity(int x, int y, int skip) {
+
+        // Connexity map 
+        //  0 1 2 
+        //  3 x 4
+        //  5 6 7
+
+        final float maxDist = 8.0f;
+
+
+        int minX = PApplet.constrain(x - skip, 0, Kinect.KINECT_WIDTH - skip);
+        int maxX = PApplet.constrain(x + skip, 0, Kinect.KINECT_WIDTH - skip);
+        int minY = PApplet.constrain(y - skip, 0, Kinect.KINECT_HEIGHT - skip);
+        int maxY = PApplet.constrain(y + skip, 0, Kinect.KINECT_HEIGHT - skip);
+
+        // Todo: Unroll these for loops for optimisation...
+        int currentOffset = y * Kinect.KINECT_WIDTH + x;
+
+        int type = 0;
+
+        for (int j = minY, k = 0; j <= maxY; j += skip, k++) {
+            for (int i = minX, l = 0; i <= maxX; i += skip, l++) {
+
+                // Do not try the current point
+                if (k == 1 && l == 1) {
+                    continue;
+                }
+                int offset = j * Kinect.KINECT_WIDTH + i;
+                int connNo = k * 3 + l;
+
+                // See map in the comments. 
+                if (connNo >= 5) {
+                    connNo--;
+                }
+
+//                System.out.println("ConnNo " + connNo);
+
+                if (validPoints[offset] && kinectPoints[currentOffset].distanceTo(kinectPoints[offset]) < maxDist) {
+                    type = type | (1 << connNo);
+                }
+
+            }
+        }
+
+        connexity[currentOffset] = type;
+    }
 
     public PImage getDepthColor() {
         return validPointsPImage;
@@ -830,6 +917,10 @@ public class Kinect {
 
     public boolean[] getValidPoints() {
         return validPoints;
+    }
+
+    public int[] getConnexity() {
+        return this.connexity;
     }
 
     public Vec3D[] getDepthPoints() {

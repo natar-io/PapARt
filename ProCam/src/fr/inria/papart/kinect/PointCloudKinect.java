@@ -36,6 +36,7 @@ public class PointCloudKinect {
     private boolean[] valid;
     private Vec3D[] points;
     private PImage colors;
+    private int[] connexity;
     private int skip;
 
     public PointCloudKinect(PApplet parent, Kinect kinect) {
@@ -112,6 +113,7 @@ public class PointCloudKinect {
 
         lastModel = triangleModel;
 
+        this.connexity = kinect.getConnexity();
         valid = kinect.getValidPoints();
         points = kinect.getDepthPoints();
         colors = kinect.getDepthColor();
@@ -133,7 +135,6 @@ public class PointCloudKinect {
 
                 indicesMap[i] = nbToDraw;
                 triangleModel.updateVertex(nbToDraw++, p.x, p.y, -p.z);
-
 //                triangleModel.updateVertex(nbToDraw++, p2.x, p2.y, -p2.z);
 
             }
@@ -150,7 +151,8 @@ public class PointCloudKinect {
                 int offset = y * Kinect.KINECT_WIDTH + x;
 
                 if (valid[offset]) {
-                    currentIndex = checkAndCreateTriangle(x, y, currentIndex);
+//                    currentIndex = checkAndCreateTriangle(x, y, currentIndex);
+                    currentIndex = checkAndCreateTriangle2(x, y, currentIndex);
                 }
             }
         }
@@ -160,7 +162,7 @@ public class PointCloudKinect {
 //        triangleModel.endUpdateIndices();
 
         triangleModel.updateNormals(normals);
-        
+
         nbToDraw = currentIndex;
 
 
@@ -185,6 +187,130 @@ public class PointCloudKinect {
         }
     }
 
+    // Connexity map 
+    //  0 1 2 
+    //  3 x 4
+    //  5 6 7
+    private int checkAndCreateTriangle2(int x, int y, int currentIndex) {
+
+        // Triangles indices this way. A is current
+        // D B 
+        // C A
+
+        // Triangles indices this way. A is current
+        // 0   1   2 
+        //   a   b
+        // 3   x   4
+        //   c   d 
+        // 5   6   7
+
+        int offset1 = ((y - skip) * Kinect.KINECT_WIDTH) + x;
+        int offsetx = (y * Kinect.KINECT_WIDTH) + x;
+        int offset3 = offsetx - skip;
+        int offset0 = offset1 - skip;
+
+        int c = connexity[offsetx];
+
+        // MORE !
+        int[] offsets = new int[8];
+        int k = 0;
+        for (int j = 0; j < 3; j++) {
+            for (int i = 0; i < 3; i++) {
+
+                if (i == 1 && j == 1) {
+                    continue;
+                }
+
+                if ((c & (1 << k)) == 1 << k) {
+                    offsets[k] = ((y + (j - 1) * skip) * Kinect.KINECT_WIDTH) + (x + (i - 1) * skip);
+
+                } else {
+                    offsets[k] = -1;
+                }
+
+//                System.out.println("Offset " + k + "  " + offsets[k]);
+                k++;
+            }
+        }
+
+        // x 1  3  
+        boolean tra = offsets[1] != -1 && offsets[3] != -1;
+
+        // x 4 1
+        boolean trb = offsets[1] != -1 && offsets[4] != -1;
+
+        // x 6 4
+        boolean trc = offsets[4] != -1 && offsets[6] != -1;
+
+        // x 3 6
+        boolean trd = offsets[3] != -1 && offsets[6] != -1;
+
+        Vec3D normal = new Vec3D(0, 0, 0);
+
+        if (tra) {
+            // X 1 3 
+            Triangle3D trianglea = new Triangle3D(points[offsetx], points[offsets[1]], points[offsets[3]]);
+            trianglea.computeNormal();
+
+            normal = normal.add(trianglea.normal);
+
+
+            indices[currentIndex++] = indicesMap[offsetx];
+            indices[currentIndex++] = indicesMap[offsets[1]];
+            indices[currentIndex++] = indicesMap[offsets[3]];
+
+            int vertexIndex = indicesMap[offsetx];
+            normals[vertexIndex * 4 + 0] = trianglea.normal.x;
+            normals[vertexIndex * 4 + 1] = trianglea.normal.y;
+            normals[vertexIndex * 4 + 2] = trianglea.normal.z;
+            normals[vertexIndex * 4 + 3] = 0;
+        }
+
+        if (trb) {
+            // X 1 4
+            Triangle3D triangleb = new Triangle3D(points[offsetx], points[offsets[4]], points[offsets[1]]);
+            triangleb.computeNormal();
+            normal = normal.add(triangleb.normal);
+
+            indices[currentIndex++] = indicesMap[offsetx];
+            indices[currentIndex++] = indicesMap[offsets[1]];
+            indices[currentIndex++] = indicesMap[offsets[4]];
+        }
+        
+        if (trc) {
+            // X 6 4
+            Triangle3D triangleb = new Triangle3D(points[offsetx], points[offsets[6]], points[offsets[4]]);
+            triangleb.computeNormal();
+            normal = normal.add(triangleb.normal);
+
+            indices[currentIndex++] = indicesMap[offsetx];
+            indices[currentIndex++] = indicesMap[offsets[6]];
+            indices[currentIndex++] = indicesMap[offsets[4]];
+        }
+        if (trd) {
+            // X 3 6
+            Triangle3D triangleb = new Triangle3D(points[offsetx], points[offsets[3]], points[offsets[6]]);
+            triangleb.computeNormal();
+            normal = normal.add(triangleb.normal);
+
+            indices[currentIndex++] = indicesMap[offsetx];
+            indices[currentIndex++] = indicesMap[offsets[3]];
+            indices[currentIndex++] = indicesMap[offsets[6]];
+        }
+
+        normal.normalize();
+        int vertexIndex = indicesMap[offsetx];
+        normals[vertexIndex * 4 + 0] = normal.x;
+        normals[vertexIndex * 4 + 1] = normal.y;
+        normals[vertexIndex * 4 + 2] = normal.z;
+        normals[vertexIndex * 4 + 3] = 0;
+
+        return currentIndex;
+
+    }
+
+    
+    // Old version...
     private int checkAndCreateTriangle(int x, int y, int currentIndex) {
 
         // Triangles indices this way. A is current
@@ -218,26 +344,26 @@ public class PointCloudKinect {
                 int vertexIndex = indicesMap[offsetB];
                 normals[vertexIndex * 4 + 0] = triangle1.normal.x;
                 normals[vertexIndex * 4 + 1] = triangle1.normal.y;
-                normals[vertexIndex * 4  + 2] = triangle1.normal.z;  
-                normals[vertexIndex * 4  + 3] = 0;  
-                
+                normals[vertexIndex * 4 + 2] = triangle1.normal.z;
+                normals[vertexIndex * 4 + 3] = 0;
+
                 vertexIndex = indicesMap[offsetC];
-                normals[vertexIndex * 4  + 0] = triangle1.normal.x;
-                normals[vertexIndex * 4  + 1] = triangle1.normal.y;
-                normals[vertexIndex * 4  + 2] = triangle1.normal.z;      
-                normals[vertexIndex * 4  + 3] = 0;      
-                
+                normals[vertexIndex * 4 + 0] = triangle1.normal.x;
+                normals[vertexIndex * 4 + 1] = triangle1.normal.y;
+                normals[vertexIndex * 4 + 2] = triangle1.normal.z;
+                normals[vertexIndex * 4 + 3] = 0;
+
                 vertexIndex = indicesMap[offsetD];
-                normals[vertexIndex * 4  + 0] = triangle1.normal.x;
-                normals[vertexIndex * 4  + 1] = triangle1.normal.y;
-                normals[vertexIndex * 4  + 2] = triangle1.normal.z;  
-                normals[vertexIndex * 4  + 3] = 0;  
-                
+                normals[vertexIndex * 4 + 0] = triangle1.normal.x;
+                normals[vertexIndex * 4 + 1] = triangle1.normal.y;
+                normals[vertexIndex * 4 + 2] = triangle1.normal.z;
+                normals[vertexIndex * 4 + 3] = 0;
+
                 vertexIndex = indicesMap[offsetA];
-                normals[vertexIndex * 4  + 0] = triangle2.normal.x;
-                normals[vertexIndex * 4  + 1] = triangle2.normal.y;
-                normals[vertexIndex * 4  + 2] = triangle2.normal.z;  
-                normals[vertexIndex * 4  + 3] = 0;  
+                normals[vertexIndex * 4 + 0] = triangle2.normal.x;
+                normals[vertexIndex * 4 + 1] = triangle2.normal.y;
+                normals[vertexIndex * 4 + 2] = triangle2.normal.z;
+                normals[vertexIndex * 4 + 3] = 0;
 
                 indices[currentIndex++] = indicesMap[offsetB];
                 indices[currentIndex++] = indicesMap[offsetD];

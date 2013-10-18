@@ -98,7 +98,8 @@ public class Material {
             }
 
             if (map_Kd != null && useTexture) {
-                gl.glActiveTexture(GL.GL_TEXTURE3);
+//                gl.glActiveTexture(GL.GL_TEXTURE0);
+                gl.glActiveTexture(GL.GL_TEXTURE0 + textureLoc);
                 gl.glEnable(GL.GL_TEXTURE_2D);
                 gl.glBindTexture(GL.GL_TEXTURE_2D, tex[0]);
 
