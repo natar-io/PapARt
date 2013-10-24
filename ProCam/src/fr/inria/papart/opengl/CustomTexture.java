@@ -15,6 +15,9 @@ import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 import processing.core.PConstants;
 import processing.opengl.PGL;
+import static processing.opengl.PGL.RGBA;
+import static processing.opengl.PGL.TEXTURE_2D;
+import static processing.opengl.PGL.UNSIGNED_BYTE;
 import processing.opengl.Texture;
 
 /**
@@ -23,7 +26,6 @@ import processing.opengl.Texture;
  */
 public class CustomTexture extends Texture implements PConstants {
 
-    private int texTarget;
 
     public CustomTexture(int width, int height) {
         super(width, height);
@@ -49,13 +51,21 @@ public class CustomTexture extends Texture implements PConstants {
         pgl.bindTexture(glTarget, 0);
     }
 
+    public void updateBuffer(IntBuffer buffer){
+        this.pixelBuffer = buffer;
+    }
+    
     public void putBuffer(int glFormat, int glType, IntBuffer buffer) {
-
+        
         pgl.bindTexture(glTarget, glName);
 
 //        pgl.texSubImage2D(texTarget, 0, 0, 0, width, height, glFormat, glType, buffer);
-        pgl.texImage2D(texTarget, 0, 0, 0, width, height, glFormat, glType, buffer);
+//        public void texImage2D(  int target, int level, int internalFormat, int width, int height, int border, int format, int type, Buffer data) {
+        pgl.texImage2D(PGL.TEXTURE_2D, 0, PGL.RGB, width, height, 0, PGL.RGB, GL.GL_UNSIGNED_BYTE, buffer);
 
+//              texImage2D(TEXTURE_2D, 0, RGBA, fboWidth, fboHeight, 0,
+//                 RGBA, UNSIGNED_BYTE, null);
+        
         pgl.bindTexture(glTarget, 0);
     }
 }

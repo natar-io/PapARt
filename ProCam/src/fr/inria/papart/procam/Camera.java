@@ -16,6 +16,7 @@ import com.googlecode.javacv.cpp.opencv_core.IplImage;
 import fr.inria.papart.opengl.CustomTexture;
 import fr.inria.papart.tools.GSIplImage;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,12 +45,12 @@ public class Camera {
 //    protected GSCapture gsCapture;
 //    protected GSPipeline pipeline;
     protected GSIplImage converter;
-    
     // OpenCV  video input 
     private FrameGrabber grabber;
     // Texture for video visualization (OpenCV generally)
     protected IplImage iimg = null, copyUndist;
     protected CustomTexture tex = null;
+    protected PImage camImage = null;
     public final static int OPENCV_VIDEO = 1;
     public final static int GSTREAMER_VIDEO = 2;
     public final static int GSTREAMER_PIPELINE = 3;
@@ -65,7 +66,7 @@ public class Camera {
         try {
             // ARToolkit Plus 2.1.1
 //            fr.inria.papart.procam.Utils.convertARParam(parent, calibrationYAML, calibrationData, width, height);
-          // ARToolkit Plus 2.3.0
+            // ARToolkit Plus 2.3.0
             fr.inria.papart.procam.Utils.convertARParam2(parent, calibrationYAML, calibrationData, width, height);
         } catch (Exception e) {
             PApplet.println("Conversion error. " + e);
@@ -171,7 +172,6 @@ public class Camera {
 //    public void pipelineEvent(GSPipeline pipeline) {
 //        pipeline.read();
 //    }
-
     public void initMarkerDetection(PApplet applet, String calibrationARToolkit, MarkerBoard[] paperSheets) {
         art = new ARTagDetector(applet, this, calibrationARToolkit, width, height, paperSheets, videoInputType);
         this.sheets = paperSheets;
@@ -501,33 +501,42 @@ public class Camera {
         this.hasNewPhoto = false;
     }
 
-    public Texture getTexture() {
+    public PImage getPImage() {
         imageRetreived();
-        if (tex == null) {
-            tex = new CustomTexture(width, height);
-        }
+//        if (tex == null) {
+//            tex = new CustomTexture(width, height);
+//        }
 
-//        System.out.println("iimg " + iimg);
+//        if (iimg != null) {
+//            if (videoInputType == OPENCV_VIDEO) {
+//                // TODO: Check direct link to OpenGL again... :( 
+////                tex.updateBuffer(iimg.getIntBuffer());
+////                tex.putBuffer(GL2.GL_BGR, GL.GL_UNSIGNED_BYTE, iimg.getIntBuffer());
+//            } else {
+//                // TODO: GSTREAMER !
+////                if (videoInputType == GSTREAMER_VIDEO) {
+////                    tex.putBuffer(GL2.GL_RGBA, GL.GL_UNSIGNED_BYTE, iimg.getIntBuffer());
+////                }
+//            }
+//        }
+
+        if (camImage == null) {
+            System.out.println("Creation ...");
+            camImage = parent.createImage(width, height, PApplet.RGB);
+        }
 
         if (iimg != null) {
-            if (videoInputType == OPENCV_VIDEO) {
-                tex.putBuffer(GL2.GL_BGR, GL.GL_UNSIGNED_BYTE, iimg.getIntBuffer());
-            } else {
-                if (videoInputType == GSTREAMER_VIDEO) {
-                    tex.putBuffer(GL2.GL_RGBA, GL.GL_UNSIGNED_BYTE, iimg.getIntBuffer());
-                }
-            }
+            Utils.IplImageToPImage(iimg, false, camImage);
         }
-
-        return tex;
+        return camImage;
     }
 
     public IplImage getIplImage() {
         imageRetreived();
         return iimg;
     }
-    
-    public ProjectiveDeviceP getProjectiveDevice(){
+
+    public ProjectiveDeviceP getProjectiveDevice() {
         return this.pdp;
     }
 

@@ -37,7 +37,7 @@ public class DrawUtils {
 //        g.rotate(PApplet.PI);
 //        g.image(img, 0, 0, w, h);
 //        g.popMatrix();
-        
+
         g.beginShape(QUADS);
         g.texture(img);
         g.vertex(x, y, 0, h);
@@ -45,25 +45,20 @@ public class DrawUtils {
         g.vertex(x + w, y + h, w, 0);
         g.vertex(x + w, y, w, h);
         g.endShape();
-        
-    }
 
-    static public void drawImage(PGraphicsOpenGL g, Texture tex, int x, int y, int w, int h) {
-
-//         vertex(-100, -100, 0, 0, 0);
-//  vertex(100, -100, 0, img.width, 0);
-//  vertex(100, 100, 0, img.width, img.height);
-//  vertex(-100, 100, 0, 0, img.height);
-        
-        tex.bind();
-        g.beginShape(QUADS);
-        g.vertex(x, y, 0, 0);
-        g.vertex(x, y + h, 0, h);
-        g.vertex(x + w, y + h, w, h);
-        g.vertex(x + w, y, w, 0);
-        g.endShape();
-        tex.unbind();
     }
+    
+//    static public void drawImage(PGraphicsOpenGL g, Texture tex, int x, int y, int w, int h) {
+//
+//        PGL pgl = g.beginPGL();
+//        
+//        pgl.drawTexture(PGL.TEXTURE_2D, tex.glName, 
+//                        w, h, 
+//                        x, y, 
+//                        x + w, x + h);
+//        g.endPGL();
+//        
+//    }
 
 //    static public void drawImage(GLGraphicsOffScreen pg3d, PImage img, int x, int y, int w, int h) {
 //        pg3d.pushMatrix();

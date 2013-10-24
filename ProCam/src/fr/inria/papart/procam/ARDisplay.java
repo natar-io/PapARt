@@ -178,7 +178,8 @@ public class ARDisplay {
 
         }
         mapImg.updatePixels();
-
+        
+        parent.colorMode(PApplet.RGB, 255);
 
         lensFilter.set("mapTex", mapImg);
         lensFilter.set("texture", this.graphics);
@@ -264,10 +265,8 @@ public class ARDisplay {
 //        }
 
         if (distort) {
-
             graphics.filter(lensFilter);
             return graphics;
-
 //            graphicsUndist.beginDraw();
 //            graphicsUndist.filter(lensFilter);
 //            graphicsUndist.image(graphics, 0, 0);
