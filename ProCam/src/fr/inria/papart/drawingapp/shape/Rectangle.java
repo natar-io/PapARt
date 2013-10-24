@@ -7,7 +7,7 @@ package fr.inria.papart.drawingapp.shape;
 import fr.inria.papart.drawingapp.Descriptor;
 import fr.inria.papart.drawingapp.PositionDescriptor;
 import processing.core.PApplet;
-import processing.core.PGraphics3D;
+import processing.opengl.PGraphics3D;
 import processing.core.PVector;
 
 /**

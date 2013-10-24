@@ -6,7 +6,6 @@ package fr.inria.papart.drawingapp.shape;
 
 import fr.inria.papart.drawingapp.Descriptor;
 import fr.inria.papart.drawingapp.PositionDescriptor;
-import processing.core.PGraphics3D;
 import processing.core.PVector;
 
 /**
@@ -33,22 +32,22 @@ public class Arc extends Shape {
 
     }
 
-    @Override
-    public void drawSelf(PGraphics3D graphics) {
-        super.drawSelf(graphics);
-        graphics.pushMatrix();
-
-        graphics.translate(center.x, center.y);
-        graphics.stroke(strokeColor);
-        graphics.strokeWeight(strokeWeight);
-        graphics.noFill();
-        graphics.arc(p1.x, p1.y, p2.x, p2.y, p3.x / 50f, p4.x / 50f);
-        graphics.popMatrix();
-
-        if (isSelected) {
-            for (Descriptor desc : descriptors) {
-                ((PositionDescriptor) desc).drawSelf(graphics);
-            }
-        }
-    }
+//    @Override
+//    public void drawSelf(PGraphics3D graphics) {
+//        super.drawSelf(graphics);
+//        graphics.pushMatrix();
+//
+//        graphics.translate(center.x, center.y);
+//        graphics.stroke(strokeColor);
+//        graphics.strokeWeight(strokeWeight);
+//        graphics.noFill();
+//        graphics.arc(p1.x, p1.y, p2.x, p2.y, p3.x / 50f, p4.x / 50f);
+//        graphics.popMatrix();
+//
+//        if (isSelected) {
+//            for (Descriptor desc : descriptors) {
+//                ((PositionDescriptor) desc).drawSelf(graphics);
+//            }
+//        }
+//    }
 }

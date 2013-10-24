@@ -4,7 +4,7 @@
  */
 package fr.inria.papart.procam;
 
-import codeanticode.glgraphics.GLGraphicsOffScreen;
+import processing.opengl.PGraphicsOpenGL;
 import fr.inria.papart.drawingapp.Button;
 import fr.inria.papart.multitouchKinect.TouchElement;
 import fr.inria.papart.multitouchKinect.TouchInput;
@@ -80,16 +80,17 @@ public class PaperInterface {
     // Example Draw... to check ? Or put it as begin / end ...
     public void draw() {
 
-        GLGraphicsOffScreen g = screen.getGraphics();
+        PGraphicsOpenGL g = screen.getGraphics();
         g.beginDraw();
-        g.clear(0, 0);
+        // T
+//        g.clear(0, 0);
         g.scale(resolution);
         g.background(20, 20);
         g.endDraw();
 
     }
 
-    protected void drawTouch(GLGraphicsOffScreen g, int ellipseSize) {
+    protected void drawTouch(PGraphicsOpenGL g, int ellipseSize) {
 
         if (!touch.position2D.isEmpty()) {
             for (PVector v : touch.position2D) {

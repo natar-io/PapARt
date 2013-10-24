@@ -8,13 +8,12 @@ package fr.inria.papart.procam;
  *
  * @author jeremylaviole
  */
-import codeanticode.glgraphics.GLTexture;
-import codeanticode.gsvideo.GSCapture;
-import codeanticode.gsvideo.GSPipeline;
+import processing.opengl.Texture;
 import com.googlecode.javacv.CameraDevice;
 import com.googlecode.javacv.FrameGrabber;
 import com.googlecode.javacv.OpenCVFrameGrabber;
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
+import fr.inria.papart.opengl.CustomTexture;
 import fr.inria.papart.tools.GSIplImage;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -24,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import processing.core.PApplet;
 import processing.core.PImage;
@@ -41,14 +41,15 @@ public class Camera {
     private ARTThread thread = null;
     protected ProjectiveDeviceP pdp;
     // GStreamer  Video input
-    protected GSCapture gsCapture;
+//    protected GSCapture gsCapture;
+//    protected GSPipeline pipeline;
     protected GSIplImage converter;
-    protected GSPipeline pipeline;
+    
     // OpenCV  video input 
     private FrameGrabber grabber;
     // Texture for video visualization (OpenCV generally)
     protected IplImage iimg = null, copyUndist;
-    protected GLTexture tex = null;
+    protected CustomTexture tex = null;
     public final static int OPENCV_VIDEO = 1;
     public final static int GSTREAMER_VIDEO = 2;
     public final static int GSTREAMER_PIPELINE = 3;
@@ -116,22 +117,24 @@ public class Camera {
             this.grabber = grabberCV;
         }
 
+        // Broken for now ... -> Use Capture from Processing now ! 
         if (videoInputType == GSTREAMER_VIDEO) {
-
-            gsCapture = new GSCapture(parent, width, height, camDevice);
-            converter = new GSIplImage(width, height);
-            gsCapture.setPixelDest(converter, false);
-            gsCapture.setEventHandlerObject(this);
-            gsCapture.start();
+            System.out.println("GSTREAMER BROKEN FOR NOW.");
+//            gsCapture = new GSCapture(parent, width, height, camDevice);
+//            converter = new GSIplImage(width, height);
+//            gsCapture.setPixelDest(converter, false);
+//            gsCapture.setEventHandlerObject(this);
+//            gsCapture.start();
         }
 
         if (videoInputType == GSTREAMER_PIPELINE) {
 
-            pipeline = new GSPipeline(parent, camDevice);
-            converter = new GSIplImage(width, height);
-            pipeline.setPixelDest(converter, true);
-            pipeline.setEventHandlerObject(this);
-            pipeline.play();
+            System.out.println("GSTREAMER BROKEN FOR NOW.");
+//            pipeline = new GSPipeline(parent, camDevice);
+//            converter = new GSIplImage(width, height);
+//            pipeline.setPixelDest(converter, true);
+//            pipeline.setEventHandlerObject(this);
+//            pipeline.play();
         }
 
 
@@ -160,14 +163,14 @@ public class Camera {
         return this.frameRate;
     }
 
-    public void captureEvent(GSCapture cam) {
-        cam.read();
-        this.gotPicture = true;
-    }
-
-    public void pipelineEvent(GSPipeline pipeline) {
-        pipeline.read();
-    }
+//    public void captureEvent(GSCapture cam) {
+//        cam.read();
+//        this.gotPicture = true;
+//    }
+//
+//    public void pipelineEvent(GSPipeline pipeline) {
+//        pipeline.read();
+//    }
 
     public void initMarkerDetection(PApplet applet, String calibrationARToolkit, MarkerBoard[] paperSheets) {
         art = new ARTagDetector(applet, this, calibrationARToolkit, width, height, paperSheets, videoInputType);
@@ -180,7 +183,7 @@ public class Camera {
 
         this.photoCapture = true;
         if (useGStreamer()) {
-            gsCapture.stop();
+//            gsCapture.stop();
         }
         if (useOpenCV()) {
             try {
@@ -240,7 +243,8 @@ public class Camera {
             System.out.println("Grabbing frames");
             if (cam.useGStreamer()) {
 
-                gsCapture.start();
+                System.out.println("GStreamer support broken for now. I will crash unexpectedly...");
+//                gsCapture.start();
                 while (!gotPicture) {
                     try {
                         Thread.sleep(20);
@@ -272,7 +276,7 @@ public class Camera {
                 if (img != null) {
                     grabTo(img, undist);
                 }
-                gsCapture.stop();
+//                gsCapture.stop();
             }
 
 
@@ -497,20 +501,20 @@ public class Camera {
         this.hasNewPhoto = false;
     }
 
-    public PImage getPImage() {
+    public Texture getTexture() {
         imageRetreived();
         if (tex == null) {
-            tex = new GLTexture(parent, width, height);
+            tex = new CustomTexture(width, height);
         }
 
 //        System.out.println("iimg " + iimg);
 
         if (iimg != null) {
             if (videoInputType == OPENCV_VIDEO) {
-                tex.putBuffer(GL.GL_BGR, GL.GL_UNSIGNED_BYTE, iimg.getIntBuffer());
+                tex.putBuffer(GL2.GL_BGR, GL.GL_UNSIGNED_BYTE, iimg.getIntBuffer());
             } else {
                 if (videoInputType == GSTREAMER_VIDEO) {
-                    tex.putBuffer(GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, iimg.getIntBuffer());
+                    tex.putBuffer(GL2.GL_RGBA, GL.GL_UNSIGNED_BYTE, iimg.getIntBuffer());
                 }
             }
         }

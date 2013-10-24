@@ -4,7 +4,7 @@
  */
 package fr.inria.papart.drawingapp;
 
-import processing.core.PGraphics3D;
+import processing.opengl.PGraphics3D;
 
 /**
  *

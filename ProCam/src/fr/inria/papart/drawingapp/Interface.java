@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import fr.inria.papart.multitouchKinect.TouchPoint;
 import processing.core.PApplet;
 import processing.core.PFont;
-import processing.core.PGraphics3D;
+import processing.opengl.PGraphics3D;
 import processing.core.PVector;
 
 /**

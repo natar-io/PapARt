@@ -5,516 +5,735 @@
  */
 package fr.inria.papart.kinect;
 
-import codeanticode.glgraphics.GLModel;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 import processing.core.PApplet;
+import static processing.core.PConstants.GROUP;
+import static processing.core.PConstants.X;
+import static processing.core.PConstants.Y;
+import static processing.core.PConstants.Z;
+import processing.core.PGraphics;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
+import processing.core.PShape;
+import static processing.core.PShape.GEOMETRY;
+import static processing.core.PShape.PATH;
+import static processing.core.PShape.PRIMITIVE;
 import processing.core.PVector;
+import processing.opengl.PGL;
+import static processing.opengl.PGL.ARRAY_BUFFER;
+import static processing.opengl.PGL.DEPTH_TEST;
+import static processing.opengl.PGL.FLOAT;
+import static processing.opengl.PGL.TEXTURE_2D;
 import processing.opengl.PGraphicsOpenGL;
+import static processing.opengl.PGraphicsOpenGL.pgl;
+import processing.opengl.PShader;
+import processing.opengl.PShapeOpenGL;
 import toxi.geom.Triangle3D;
 import toxi.geom.Vec3D;
 import toxi.geom.mesh.OBJWriter;
 
 /**
  *
- * @author jeremy
+ * @author jeremy  From GLGraphics...
  */
 public class PointCloudKinect {
 
-    protected GLModel model;
     private Kinect kinect;
-    private PApplet parent;
-    protected int nbToDraw = 0;
-    protected GLModel lastModel = model;
-    private GLModel triangleModel = null;
-    private int[] indicesMap;
-    private int[] indices;
-    private float[] normals;
-    private boolean[] valid;
-    private Vec3D[] points;
-    private PImage colors;
-    private int[] connexity;
-    private int skip;
+    private PApplet parentApplet;
+    protected int nbColors = 0;
+    protected int nbVertices = 0;
+    // OpenGL values  -- Point rendering.
+    private int vboUsage = GL2.GL_STREAM_COPY;
+    private int vertexMode = GL2.GL_POINTS;
+    // openGL shader program    
+    PShader kinectShader;
+    int shaderProgram;
+    // locations associated
+    private int vertLoc;
+    private int glVertBuff;
+    private int colorsLoc;
+    private int glColorsBuff;
+    private int transformLoc;
+    // Local buffers 
+    private float[] verticesTmp;
+    private int[] colorsTmp;
+    // openGL Internal buffers
+    private FloatBuffer vertices;
+    private IntBuffer colors;
+    private FloatBuffer normals;
+    private FloatBuffer texCoords;
+    private FloatBuffer attributes;
+    private IntBuffer indices;
+    protected static final int SIZEOF_SHORT = Short.SIZE / 8;
+    protected static final int SIZEOF_INT = Integer.SIZE / 8;
+    protected static final int SIZEOF_FLOAT = Float.SIZE / 8;
+    protected static final int SIZEOF_BYTE = Byte.SIZE / 8;
 
     public PointCloudKinect(PApplet parent, Kinect kinect) {
+
         this.kinect = kinect;
-        this.parent = parent;
+        this.parentApplet = parent;
 
         // TODO: try pointSprites ? -- not working on MacBook
-        model = new GLModel(parent, Kinect.KINECT_SIZE, GLModel.POINTS, GLModel.STREAM);
+//        model = new GLModel(parent, Kinect.KINECT_SIZE, GLModel.POINTS, GLModel.STREAM);
 
 //        model = new GLModel(parent, Kinect.size, GLModel.POINT_SPRITES, GLModel.STREAM);
 //        model.setSpriteSize(80, 400);
 
-        model.initColors();
+//        vertices = new float[kinect.KINECT_SIZE][];
+//        for (int i = 0; i < kinect.KINECT_SIZE; i++) {
+//            vertices[i] = new float[PGraphics.VERTEX_FIELD_COUNT];
+//        }
+
+        // TODO:!!!!!!!!!!!!
+//        vertCoordsVBO[0] = GLState.createGLResource(GL_VERTEX_BUFFER);
+
+        PGL pgl = PGraphicsOpenGL.pgl;
+
+        kinectShader = parent.loadShader("shaders/kinect/kinect1.frag", "shaders/kinect/kinect1.vert");
+
+        kinectShader.bind();
+        shaderProgram = kinectShader.glProgram;
+        vertLoc = pgl.getAttribLocation(shaderProgram, "vertex");
+        colorsLoc = pgl.getAttribLocation(shaderProgram, "color");
+        transformLoc = pgl.getUniformLocation(shaderProgram, "transform");
+
+        kinectShader.unbind();
+
+        System.out.println("Shader program " + shaderProgram + " vertex loc " + vertLoc + " transform loc " + transformLoc + " colors " + colorsLoc);
+        // Todo allocate this intbuffer...
+
+        // Allocate the buffer in central memory (native),  then java, then OpenGL 
+
+        // Native memory         
+        int bytes = Kinect.KINECT_SIZE * 4 * 4; // 4 : SizeOf Float
+        vertices = ByteBuffer.allocateDirect(bytes).order(ByteOrder.nativeOrder()).
+                asFloatBuffer();
+        colors = ByteBuffer.allocateDirect(bytes).order(ByteOrder.nativeOrder()).asIntBuffer();
+//        colors = ByteBuffer.allocateDirect(bytes).asIntBuffer();
+
+        // Java memory 
+        verticesTmp = new float[Kinect.KINECT_SIZE * 4];
+        colorsTmp = new int[Kinect.KINECT_SIZE];
+
+
+        // OpenGL memory
+
+        // Not necessary as data are streamed... ??
+        IntBuffer intBuffer = allocateIntBuffer(1);
+        pgl.genBuffers(1, intBuffer);
+//        glVertBuff = intBuffer.get(0);
+//
+        pgl.genBuffers(1, intBuffer);
+        glColorsBuff = intBuffer.get(0);
+
+//        pgl.bindBuffer(PGL.ARRAY_BUFFER, glVertBuff);
+//        pgl.bufferData(PGL.ARRAY_BUFFER, Kinect.KINECT_SIZE * 4 * SIZEOF_FLOAT, vertices, PGL.STREAM_DRAW);
+//        
+        pgl.bindBuffer(PGL.ARRAY_BUFFER, glColorsBuff);
+        pgl.bufferData(PGL.ARRAY_BUFFER, Kinect.KINECT_SIZE * 4 * SIZEOF_BYTE, colors, PGL.STREAM_DRAW);
+
+        System.out.println("Buffer vertex object: " + glVertBuff);
+
+        // unbind the buffer.
+        pgl.bindBuffer(PGL.ARRAY_BUFFER, 0);
     }
 
-    public GLModel getModel() {
-        return this.model;
-    }
-
+//    private void initTriangleModel() {
+//        triangleModel = new GLModel(parentApplet, Kinect.KINECT_SIZE, GLModel.TRIANGLES, GLModel.STREAM);
+//        triangleModel.initIndices(Kinect.KINECT_SIZE * 6, GLModel.STREAM);
+//        triangleModel.initNormals();
+//        triangleModel.initColors();
+//        indicesMap = new int[Kinect.KINECT_SIZE];
+//        indices = new int[Kinect.KINECT_SIZE * 6];
+//        normals = new float[Kinect.KINECT_SIZE * 4]; // 1 normal per vertex ?
+//    }
+    
     public void updateColorsProcessing() {
 
         boolean[] valid = kinect.getValidPoints();
         Vec3D[] points = kinect.getDepthPoints();
-        PImage colors = kinect.getDepthColor();
-        lastModel = model;
-        model.beginUpdateVertices();
-        nbToDraw = 0;
+        PImage colorsImg = kinect.getDepthColor();
+
+        nbVertices = 0;
+        nbColors = 0;
+
         for (int i = 0; i < Kinect.KINECT_SIZE; i++) {
 
             if (valid[i]) {
                 Vec3D p = points[i];
-                model.updateVertex(nbToDraw++, p.x, p.y, -p.z);
+                int c = colorsImg.pixels[i];
+
+//                float[] vert = vertices[nbToDraw];
+                verticesTmp[nbVertices++] = p.x;
+                verticesTmp[nbVertices++] = p.y;
+                verticesTmp[nbVertices++] = -p.z;
+                verticesTmp[nbVertices++] = 1;
+
+                int c2 = javaToNativeARGB(c);
+
+                colorsTmp[nbColors++] = c2;
+                // Think about dividing the color intensity by 255 in the shader...
             }
         }
-        model.endUpdateVertices();
 
-        if (colors != null) {
-            colors.loadPixels();
-            model.beginUpdateColors();
-            int k = 0;
-            for (int i = 0; i < Kinect.KINECT_SIZE; i++) {
-                if (valid[i]) {
-                    int c = colors.pixels[i];
+        vertices.rewind();
+        vertices.put(verticesTmp, 0, nbVertices);
 
-                    model.updateColor(k++,
-                            (c >> 16) & 0xFF,
-                            (c >> 8) & 0xFF,
-                            c & 0xFF);
-                }
-            }
-            model.endUpdateColors();
-        }
+        colors.rewind();
+        colors.put(colorsTmp, 0, nbColors);
 
     }
 
-    private void initTriangleModel() {
-        triangleModel = new GLModel(parent, Kinect.KINECT_SIZE, GLModel.TRIANGLES, GLModel.STREAM);
-        triangleModel.initIndices(Kinect.KINECT_SIZE * 6, GLModel.STREAM);
-        triangleModel.initNormals();
-        triangleModel.initColors();
-        indicesMap = new int[Kinect.KINECT_SIZE];
-        indices = new int[Kinect.KINECT_SIZE * 6];
-        normals = new float[Kinect.KINECT_SIZE * 4]; // 1 normal per vertex ?
-    }
+    public void drawSelf(PGraphicsOpenGL g) {
 
-    public void updateTrianglesColorsProcessing() {
+        // get cache object using g.
+        PGL pgl = PGraphicsOpenGL.pgl;
+        GL2 gl = PGL.gl.getGL2();
 
-        if (triangleModel == null) {
-            initTriangleModel();
-        } else {
-//            Arrays.fill(indicesMap, 0);
-//            Arrays.fill(indices, 0);
-        }
+        // Use the shader program
+        kinectShader.bind();
 
-        lastModel = triangleModel;
+        // enable the vertice array
+        pgl.enableVertexAttribArray(vertLoc);
+        pgl.enableVertexAttribArray(colorsLoc);
 
-        this.connexity = kinect.getConnexity();
-        valid = kinect.getValidPoints();
-        points = kinect.getDepthPoints();
-        colors = kinect.getDepthColor();
-
-        triangleModel.beginUpdateVertices();
-        nbToDraw = 0;
-
-        skip = kinect.getCurrentSkip();
-
-        ///////////////  Vertices
-
-        nbToDraw = 0;
-        for (int i = 0; i < Kinect.KINECT_SIZE; i++) {
-
-            if (valid[i]) {
-                Vec3D p = points[i];
-//                PVector p2 = new PVector(p.x, p.y, p.z);
-//                transfo.mult(p2, p2);
-
-                indicesMap[i] = nbToDraw;
-                triangleModel.updateVertex(nbToDraw++, p.x, p.y, -p.z);
-//                triangleModel.updateVertex(nbToDraw++, p2.x, p2.y, -p2.z);
-
-            }
-        }
-        triangleModel.endUpdateVertices();
+        // load the transformation matrix
+        pgl.uniformMatrix4fv(transformLoc, 1, false, toOpenGL(g.projmodelview));
 
 
-        ///////////////  Triangles  ////////////////
-        int currentIndex = 0;
+        // Making sure that no VBO is bound at this point.
+        pgl.bindBuffer(GL2.GL_ARRAY_BUFFER, 0);
 
-        for (int y = skip; y < Kinect.KINECT_HEIGHT; y += skip) {
-            for (int x = skip; x < Kinect.KINECT_WIDTH; x += skip) {
+        // check the positions -> uselesse ? !
+        vertices.position(0); // start at 0
+        colors.position(0); // start at 0
 
-                int offset = y * Kinect.KINECT_WIDTH + x;
+        // Say where vertices are
 
-                if (valid[offset]) {
-//                    currentIndex = checkAndCreateTriangle(x, y, currentIndex);
-                    currentIndex = checkAndCreateTriangle2(x, y, currentIndex);
-                }
-            }
-        }
+        // Version 1
+        pgl.vertexAttribPointer(vertLoc, 4, PGL.FLOAT, false, 4 * SIZEOF_FLOAT, vertices);
 
-//        triangleModel.beginUpdateIndices();
-        triangleModel.updateIndices(indices, currentIndex);
-//        triangleModel.endUpdateIndices();
-
-        triangleModel.updateNormals(normals);
-
-        nbToDraw = currentIndex;
+        // Version 2
+//        pgl.bindBuffer(PGL.ARRAY_BUFFER, glVertBuff);
+//        pgl.bufferData(PGL.ARRAY_BUFFER, nbVertices * 4 * SIZEOF_FLOAT, vertices, PGL.STREAM_DRAW);
+//        gl.glVertexAttribPointer(vertLoc, 4, PGL.FLOAT, false, 4 * SIZEOF_FLOAT, 0);
 
 
-        ///////////////  Colors 
-        if (colors != null) {
-            colors.loadPixels();
-            triangleModel.beginUpdateColors();
-            int k = 0;
-            for (int i = 0; i < Kinect.KINECT_SIZE; i++) {
-                if (valid[i]) {
-                    int c = colors.pixels[i];
-
-                    triangleModel.updateColor(k++,
-                            (c >> 16) & 0xFF,
-                            (c >> 8) & 0xFF,
-                            c & 0xFF);
-
-//                    triangleModel.updateColor(k++, 0, 255, 0);
-                }
-            }
-            triangleModel.endUpdateColors();
-        }
-    }
-
-    // Connexity map 
-    //  0 1 2 
-    //  3 x 4
-    //  5 6 7
-    private int checkAndCreateTriangle2(int x, int y, int currentIndex) {
-
-        // Triangles indices this way. A is current
-        // D B 
-        // C A
-
-        // Triangles indices this way. A is current
-        // 0   1   2 
-        //   a   b
-        // 3   x   4
-        //   c   d 
-        // 5   6   7
-
-        int offset1 = ((y - skip) * Kinect.KINECT_WIDTH) + x;
-        int offsetx = (y * Kinect.KINECT_WIDTH) + x;
-        int offset3 = offsetx - skip;
-        int offset0 = offset1 - skip;
-
-        int c = connexity[offsetx];
-
-        // MORE !
-        int[] offsets = new int[8];
-        int k = 0;
-        for (int j = 0; j < 3; j++) {
-            for (int i = 0; i < 3; i++) {
-
-                if (i == 1 && j == 1) {
-                    continue;
-                }
-
-                if ((c & (1 << k)) == 1 << k) {
-                    offsets[k] = ((y + (j - 1) * skip) * Kinect.KINECT_WIDTH) + (x + (i - 1) * skip);
-
-                } else {
-                    offsets[k] = -1;
-                }
-
-//                System.out.println("Offset " + k + "  " + offsets[k]);
-                k++;
-            }
-        }
-
-        // x 1  3  
-        boolean tra = offsets[1] != -1 && offsets[3] != -1;
-
-        // x 4 1
-        boolean trb = offsets[1] != -1 && offsets[4] != -1;
-
-        // x 6 4
-        boolean trc = offsets[4] != -1 && offsets[6] != -1;
-
-        // x 3 6
-        boolean trd = offsets[3] != -1 && offsets[6] != -1;
-
-        Vec3D normal = new Vec3D(0, 0, 0);
-
-        if (tra) {
-            // X 1 3 
-            Triangle3D trianglea = new Triangle3D(points[offsetx], points[offsets[1]], points[offsets[3]]);
-            trianglea.computeNormal();
-
-            normal = normal.add(trianglea.normal);
+        // Version 1 
+//        pgl.bindBuffer(GL2.GL_ARRAY_BUFFER, 0);
+        // Say where colors are
+        pgl.vertexAttribPointer(colorsLoc, 4, PGL.UNSIGNED_BYTE, false, 4 * SIZEOF_BYTE, colors);
 
 
-            indices[currentIndex++] = indicesMap[offsetx];
-            indices[currentIndex++] = indicesMap[offsets[1]];
-            indices[currentIndex++] = indicesMap[offsets[3]];
+        // Version 2 
+//        pgl.bindBuffer(PGL.ARRAY_BUFFER, glColorsBuff);
+//        pgl.bufferData(PGL.ARRAY_BUFFER, nbVertices * 4 * SIZEOF_BYTE, colors, PGL.STREAM_DRAW);
+//        gl.glVertexAttribPointer(colorsLoc, 4, PGL.UNSIGNED_BYTE, false, 4 * SIZEOF_BYTE, 0);
 
-            int vertexIndex = indicesMap[offsetx];
-            normals[vertexIndex * 4 + 0] = trianglea.normal.x;
-            normals[vertexIndex * 4 + 1] = trianglea.normal.y;
-            normals[vertexIndex * 4 + 2] = trianglea.normal.z;
-            normals[vertexIndex * 4 + 3] = 0;
-        }
-
-        if (trb) {
-            // X 1 4
-            Triangle3D triangleb = new Triangle3D(points[offsetx], points[offsets[4]], points[offsets[1]]);
-            triangleb.computeNormal();
-            normal = normal.add(triangleb.normal);
-
-            indices[currentIndex++] = indicesMap[offsetx];
-            indices[currentIndex++] = indicesMap[offsets[1]];
-            indices[currentIndex++] = indicesMap[offsets[4]];
-        }
         
-        if (trc) {
-            // X 6 4
-            Triangle3D triangleb = new Triangle3D(points[offsetx], points[offsets[6]], points[offsets[4]]);
-            triangleb.computeNormal();
-            normal = normal.add(triangleb.normal);
+        
+//        glPolyColor, 4, PGL.UNSIGNED_BYTE, 0, 4 * voffset * PGL.SIZEOF_BYTE);
+        
+//         vertexAttribPointer(int index, int size, int type, boolean normalized, int stride, Buffer data) {
+// loc, size, type, normalized, stride, offset);
 
-            indices[currentIndex++] = indicesMap[offsetx];
-            indices[currentIndex++] = indicesMap[offsets[6]];
-            indices[currentIndex++] = indicesMap[offsets[4]];
-        }
-        if (trd) {
-            // X 3 6
-            Triangle3D triangleb = new Triangle3D(points[offsetx], points[offsets[3]], points[offsets[6]]);
-            triangleb.computeNormal();
-            normal = normal.add(triangleb.normal);
+        // Draw the array nbToDraw elements.
+        pgl.drawArrays(vertexMode, 0, nbVertices);
 
-            indices[currentIndex++] = indicesMap[offsetx];
-            indices[currentIndex++] = indicesMap[offsets[3]];
-            indices[currentIndex++] = indicesMap[offsets[6]];
-        }
+        pgl.disableVertexAttribArray(vertLoc);
+        pgl.disableVertexAttribArray(colorsLoc);
 
-        normal.normalize();
-        int vertexIndex = indicesMap[offsetx];
-        normals[vertexIndex * 4 + 0] = normal.x;
-        normals[vertexIndex * 4 + 1] = normal.y;
-        normals[vertexIndex * 4 + 2] = normal.z;
-        normals[vertexIndex * 4 + 3] = 0;
+        kinectShader.unbind();
 
-        return currentIndex;
+        // stop shader
+        pgl.useProgram(0);
 
     }
+    float[] glProjmodelview = null;
+    FloatBuffer glProjBuff = null;
 
-    
-    // Old version...
-    private int checkAndCreateTriangle(int x, int y, int currentIndex) {
+    public FloatBuffer toOpenGL(PMatrix3D projmodelview) {
 
-        // Triangles indices this way. A is current
-        // D B 
-        // C A
-
-        final float maxDist = 10.0f;
-
-        int offsetB = ((y - skip) * Kinect.KINECT_WIDTH) + x;
-        int offsetA = (y * Kinect.KINECT_WIDTH) + x;
-        int offsetC = offsetA - skip;
-        int offsetD = offsetB - skip;
-
-        if (valid[offsetA]
-                && valid[offsetB]
-                && valid[offsetC]
-                && valid[offsetD]) {
-
-            if (points[offsetA].distanceTo(points[offsetB]) < maxDist
-                    && points[offsetA].distanceTo(points[offsetC]) < maxDist
-                    && points[offsetA].distanceTo(points[offsetD]) < maxDist) {
-
-
-                // Get the normal !
-                Triangle3D triangle1 = new Triangle3D(points[offsetB], points[offsetD], points[offsetC]);
-                Triangle3D triangle2 = new Triangle3D(points[offsetA], points[offsetB], points[offsetC]);
-
-                triangle1.computeNormal();
-                triangle2.computeNormal();
-
-                int vertexIndex = indicesMap[offsetB];
-                normals[vertexIndex * 4 + 0] = triangle1.normal.x;
-                normals[vertexIndex * 4 + 1] = triangle1.normal.y;
-                normals[vertexIndex * 4 + 2] = triangle1.normal.z;
-                normals[vertexIndex * 4 + 3] = 0;
-
-                vertexIndex = indicesMap[offsetC];
-                normals[vertexIndex * 4 + 0] = triangle1.normal.x;
-                normals[vertexIndex * 4 + 1] = triangle1.normal.y;
-                normals[vertexIndex * 4 + 2] = triangle1.normal.z;
-                normals[vertexIndex * 4 + 3] = 0;
-
-                vertexIndex = indicesMap[offsetD];
-                normals[vertexIndex * 4 + 0] = triangle1.normal.x;
-                normals[vertexIndex * 4 + 1] = triangle1.normal.y;
-                normals[vertexIndex * 4 + 2] = triangle1.normal.z;
-                normals[vertexIndex * 4 + 3] = 0;
-
-                vertexIndex = indicesMap[offsetA];
-                normals[vertexIndex * 4 + 0] = triangle2.normal.x;
-                normals[vertexIndex * 4 + 1] = triangle2.normal.y;
-                normals[vertexIndex * 4 + 2] = triangle2.normal.z;
-                normals[vertexIndex * 4 + 3] = 0;
-
-                indices[currentIndex++] = indicesMap[offsetB];
-                indices[currentIndex++] = indicesMap[offsetD];
-                indices[currentIndex++] = indicesMap[offsetC];
-                indices[currentIndex++] = indicesMap[offsetA];
-                indices[currentIndex++] = indicesMap[offsetB];
-                indices[currentIndex++] = indicesMap[offsetC];
-//                
-            }
-//            model.updateIndices(indicesMap);
+        if (glProjmodelview == null) {
+            glProjmodelview = new float[16];
         }
 
-        return currentIndex;
+        glProjmodelview[0] = projmodelview.m00;
+        glProjmodelview[1] = projmodelview.m10;
+        glProjmodelview[2] = projmodelview.m20;
+        glProjmodelview[3] = projmodelview.m30;
+
+        glProjmodelview[4] = projmodelview.m01;
+        glProjmodelview[5] = projmodelview.m11;
+        glProjmodelview[6] = projmodelview.m21;
+        glProjmodelview[7] = projmodelview.m31;
+
+        glProjmodelview[8] = projmodelview.m02;
+        glProjmodelview[9] = projmodelview.m12;
+        glProjmodelview[10] = projmodelview.m22;
+        glProjmodelview[11] = projmodelview.m32;
+
+        glProjmodelview[12] = projmodelview.m03;
+        glProjmodelview[13] = projmodelview.m13;
+        glProjmodelview[14] = projmodelview.m23;
+        glProjmodelview[15] = projmodelview.m33;
+
+
+        if (glProjBuff == null || glProjBuff.capacity() < glProjmodelview.length) {
+            glProjBuff = FloatBuffer.allocate(glProjmodelview.length);
+        }
+        glProjBuff.position(0);
+        glProjBuff.put(glProjmodelview);
+        glProjBuff.rewind();
+
+        return glProjBuff;
+    }
+    protected static boolean BIG_ENDIAN = ByteOrder.nativeOrder() == ByteOrder.BIG_ENDIAN;
+
+    protected static int javaToNativeARGB(int color) {
+        if (BIG_ENDIAN) { // ARGB to RGBA
+            return ((color >> 24) & 0xFF) | ((color << 8) & 0xFFFFFF00);
+        } else { // ARGB to ABGR
+            return (color & 0xFF000000) | ((color << 16) & 0xFF0000)
+                    | (color & 0xFF00) | ((color >> 16) & 0xFF);
+        }
     }
 
-    public void update() {
+    protected static IntBuffer allocateDirectIntBuffer(int size) {
+        int bytes = PApplet.max(MIN_DIRECT_BUFFER_SIZE, size) * SIZEOF_INT;
+        return ByteBuffer.allocateDirect(bytes).order(ByteOrder.nativeOrder()).
+                asIntBuffer();
+    }
 
-        boolean[] valid = kinect.getValidPoints();
-        Vec3D[] points = kinect.getDepthPoints();
-        PImage colors = kinect.getDepthColor();
-        lastModel = model;
-        model.beginUpdateVertices();
-        nbToDraw = 0;
-        for (int i = 0; i < Kinect.KINECT_SIZE; i++) {
-
-            if (valid[i]) {
-                Vec3D p = points[i];
-//                if (plane.orientation(p)) {
-//                if (calib.plane().hasGoodOrientationAndDistance(p)) {
-//                    if (isInside(calib.project(p), 0.f, 1.f, 0.05f)) {
-                model.updateVertex(nbToDraw++, p.x, p.y, -p.z);
-//                    }
-
-//                } else {
-//                    valid[i] = false;
+    protected static IntBuffer allocateIntBuffer(int size) {
+        if (USE_DIRECT_BUFFERS) {
+            return allocateDirectIntBuffer(size);
+        } else {
+            return IntBuffer.allocate(size);
+        }
+    }
+    /**
+     * Switches between the use of regular and direct buffers.
+     */
+    protected static final boolean USE_DIRECT_BUFFERS = true;
+    protected static final int MIN_DIRECT_BUFFER_SIZE = 1;
+//
+//    public void updateTrianglesColorsProcessing() {
+//
+//        if (triangleModel == null) {
+//            initTriangleModel();
+//        } else {
+////            Arrays.fill(indicesMap, 0);
+////            Arrays.fill(indices, 0);
+//        }
+//
+//        lastModel = triangleModel;
+//
+//        this.connexity = kinect.getConnexity();
+//        valid = kinect.getValidPoints();
+//        points = kinect.getDepthPoints();
+//        colors = kinect.getDepthColor();
+//
+//        triangleModel.beginUpdateVertices();
+//        nbToDraw = 0;
+//
+//        skip = kinect.getCurrentSkip();
+//
+//        ///////////////  Vertices
+//
+//        nbToDraw = 0;
+//        for (int i = 0; i < Kinect.KINECT_SIZE; i++) {
+//
+//            if (valid[i]) {
+//                Vec3D p = points[i];
+////                PVector p2 = new PVector(p.x, p.y, p.z);
+////                transfo.mult(p2, p2);
+//
+//                indicesMap[i] = nbToDraw;
+//                triangleModel.updateVertex(nbToDraw++, p.x, p.y, -p.z);
+////                triangleModel.updateVertex(nbToDraw++, p2.x, p2.y, -p2.z);
+//
+//            }
+//        }
+//        triangleModel.endUpdateVertices();
+//
+//
+//        ///////////////  Triangles  ////////////////
+//        int currentIndex = 0;
+//
+//        for (int y = skip; y < Kinect.KINECT_HEIGHT; y += skip) {
+//            for (int x = skip; x < Kinect.KINECT_WIDTH; x += skip) {
+//
+//                int offset = y * Kinect.KINECT_WIDTH + x;
+//
+//                if (valid[offset]) {
+////                    currentIndex = checkAndCreateTriangle(x, y, currentIndex);
+//                    currentIndex = checkAndCreateTriangle2(x, y, currentIndex);
 //                }
-            }
-        }
-
-        model.endUpdateVertices();
-
-        if (colors != null) {
-            colors.loadPixels();
-            model.beginUpdateColors();
-            int k = 0;
-            for (int i = 0; i < Kinect.KINECT_SIZE; i++) {
-                if (valid[i]) {
-                    int c = colors.pixels[i];
-
-                    model.updateColor(k++,
-                            (c >> 16) & 0xFF,
-                            (c >> 8) & 0xFF,
-                            c & 0xFF);
-                }
-            }
-            model.endUpdateColors();
-        }
-    }
-
-    public void updateMultiTouch() {
-
-        boolean[] valid = kinect.getValidPoints();
-        Vec3D[] points = kinect.getDepthPoints();
-        PImage colors = kinect.getDepthColor();
-        lastModel = model;
-        model.beginUpdateVertices();
-        nbToDraw = 0;
-        for (int i = 0; i < Kinect.KINECT_SIZE; i++) {
-
-            if (valid[i]) {
-                Vec3D p = points[i];
-                model.updateVertex(nbToDraw++, p.x, p.y, -p.z);
-            }
-        }
-        model.endUpdateVertices();
-
-        colors.loadPixels();
-        model.beginUpdateColors();
-        int k = 0;
-        for (int i = 0; i < Kinect.KINECT_SIZE; i++) {
-            if (valid[i]) {
-                int c = colors.pixels[i];
-
-                model.updateColor(k++,
-                        (c >> 16) & 0xFF,
-                        (c >> 8) & 0xFF,
-                        c & 0xFF);
-            }
-        }
-        model.endUpdateColors();
-    }
-
-    public void updateMultiTouch(Vec3D[] projectedPoints) {
-
-        boolean[] valid = kinect.getValidPoints();
-        Vec3D[] points = kinect.getDepthPoints();
-        lastModel = model;
-        model.beginUpdateVertices();
-        nbToDraw = 0;
-        for (int i = 0; i < Kinect.KINECT_SIZE; i++) {
-
-            if (valid[i]) {
-                Vec3D p = points[i];
-                model.updateVertex(nbToDraw++, p.x, p.y, -p.z);
-            }
-        }
-        model.endUpdateVertices();
-
-        model.beginUpdateColors();
-        int k = 0;
-        for (int i = 0; i < Kinect.KINECT_SIZE; i++) {
-            if (valid[i]) {
-
-                int c = parent.color(255, 255, 255);
-
-                if (Kinect.connectedComponent[i] > 0) {
-                    switch (Kinect.connectedComponent[i]) {
-                        case 1:
-                            c = parent.color(100, 200, 100);
-                            break;
-                        case 2:
-                            c = parent.color(0, 200, 100);
-                            break;
-                        case 3:
-                            c = parent.color(200, 200, 100);
-                            break;
-                        case 4:
-                            c = parent.color(0, 0, 200);
-                            break;
-                        case 5:
-                            c = parent.color(0, 100, 200);
-                            break;
-                        default:
-                    }
-                }
-
-                model.updateColor(k++,
-                        (c >> 16) & 0xFF,
-                        (c >> 8) & 0xFF,
-                        c & 0xFF);
-            }
-        }
-        model.endUpdateColors();
-
-    }
-
-    public void drawSelf(PGraphicsOpenGL graphics) {
-//        System.out.println("Trying to draw " + nbToDraw);
-        lastModel.render(0, nbToDraw);
-//        lastModel.render();
-    }
+//            }
+//        }
+//
+////        triangleModel.beginUpdateIndices();
+//        triangleModel.updateIndices(indices, currentIndex);
+////        triangleModel.endUpdateIndices();
+//
+//        triangleModel.updateNormals(normals);
+//
+//        nbToDraw = currentIndex;
+//
+//
+//        ///////////////  Colors 
+//        if (colors != null) {
+//            colors.loadPixels();
+//            triangleModel.beginUpdateColors();
+//            int k = 0;
+//            for (int i = 0; i < Kinect.KINECT_SIZE; i++) {
+//                if (valid[i]) {
+//                    int c = colors.pixels[i];
+//
+//                    triangleModel.updateColor(k++,
+//                            (c >> 16) & 0xFF,
+//                            (c >> 8) & 0xFF,
+//                            c & 0xFF);
+//
+////                    triangleModel.updateColor(k++, 0, 255, 0);
+//                }
+//            }
+//            triangleModel.endUpdateColors();
+//        }
+//    }
+//
+//    // Connexity map 
+//    //  0 1 2 
+//    //  3 x 4
+//    //  5 6 7
+//    private int checkAndCreateTriangle2(int x, int y, int currentIndex) {
+//
+//        // Triangles indices this way. A is current
+//        // D B 
+//        // C A
+//
+//        // Triangles indices this way. A is current
+//        // 0   1   2 
+//        //   a   b
+//        // 3   x   4
+//        //   c   d 
+//        // 5   6   7
+//
+//        int offset1 = ((y - skip) * Kinect.KINECT_WIDTH) + x;
+//        int offsetx = (y * Kinect.KINECT_WIDTH) + x;
+//        int offset3 = offsetx - skip;
+//        int offset0 = offset1 - skip;
+//
+//        int c = connexity[offsetx];
+//
+//        // MORE !
+//        int[] offsets = new int[8];
+//        int k = 0;
+//        for (int j = 0; j < 3; j++) {
+//            for (int i = 0; i < 3; i++) {
+//
+//                if (i == 1 && j == 1) {
+//                    continue;
+//                }
+//
+//                if ((c & (1 << k)) == 1 << k) {
+//                    offsets[k] = ((y + (j - 1) * skip) * Kinect.KINECT_WIDTH) + (x + (i - 1) * skip);
+//
+//                } else {
+//                    offsets[k] = -1;
+//                }
+//
+////                System.out.println("Offset " + k + "  " + offsets[k]);
+//                k++;
+//            }
+//        }
+//
+//        // x 1  3  
+//        boolean tra = offsets[1] != -1 && offsets[3] != -1;
+//
+//        // x 4 1
+//        boolean trb = offsets[1] != -1 && offsets[4] != -1;
+//
+//        // x 6 4
+//        boolean trc = offsets[4] != -1 && offsets[6] != -1;
+//
+//        // x 3 6
+//        boolean trd = offsets[3] != -1 && offsets[6] != -1;
+//
+//        Vec3D normal = new Vec3D(0, 0, 0);
+//
+//        if (tra) {
+//            // X 1 3 
+//            Triangle3D trianglea = new Triangle3D(points[offsetx], points[offsets[1]], points[offsets[3]]);
+//            trianglea.computeNormal();
+//
+//            normal = normal.add(trianglea.normal);
+//
+//
+//            indices[currentIndex++] = indicesMap[offsetx];
+//            indices[currentIndex++] = indicesMap[offsets[1]];
+//            indices[currentIndex++] = indicesMap[offsets[3]];
+//
+//            int vertexIndex = indicesMap[offsetx];
+//            normals[vertexIndex * 4 + 0] = trianglea.normal.x;
+//            normals[vertexIndex * 4 + 1] = trianglea.normal.y;
+//            normals[vertexIndex * 4 + 2] = trianglea.normal.z;
+//            normals[vertexIndex * 4 + 3] = 0;
+//        }
+//
+//        if (trb) {
+//            // X 1 4
+//            Triangle3D triangleb = new Triangle3D(points[offsetx], points[offsets[4]], points[offsets[1]]);
+//            triangleb.computeNormal();
+//            normal = normal.add(triangleb.normal);
+//
+//            indices[currentIndex++] = indicesMap[offsetx];
+//            indices[currentIndex++] = indicesMap[offsets[1]];
+//            indices[currentIndex++] = indicesMap[offsets[4]];
+//        }
+//
+//        if (trc) {
+//            // X 6 4
+//            Triangle3D triangleb = new Triangle3D(points[offsetx], points[offsets[6]], points[offsets[4]]);
+//            triangleb.computeNormal();
+//            normal = normal.add(triangleb.normal);
+//
+//            indices[currentIndex++] = indicesMap[offsetx];
+//            indices[currentIndex++] = indicesMap[offsets[6]];
+//            indices[currentIndex++] = indicesMap[offsets[4]];
+//        }
+//        if (trd) {
+//            // X 3 6
+//            Triangle3D triangleb = new Triangle3D(points[offsetx], points[offsets[3]], points[offsets[6]]);
+//            triangleb.computeNormal();
+//            normal = normal.add(triangleb.normal);
+//
+//            indices[currentIndex++] = indicesMap[offsetx];
+//            indices[currentIndex++] = indicesMap[offsets[3]];
+//            indices[currentIndex++] = indicesMap[offsets[6]];
+//        }
+//
+//        normal.normalize();
+//        int vertexIndex = indicesMap[offsetx];
+//        normals[vertexIndex * 4 + 0] = normal.x;
+//        normals[vertexIndex * 4 + 1] = normal.y;
+//        normals[vertexIndex * 4 + 2] = normal.z;
+//        normals[vertexIndex * 4 + 3] = 0;
+//
+//        return currentIndex;
+//
+//    }
+//
+//    // Old version...
+//    private int checkAndCreateTriangle(int x, int y, int currentIndex) {
+//
+//        // Triangles indices this way. A is current
+//        // D B 
+//        // C A
+//
+//        final float maxDist = 10.0f;
+//
+//        int offsetB = ((y - skip) * Kinect.KINECT_WIDTH) + x;
+//        int offsetA = (y * Kinect.KINECT_WIDTH) + x;
+//        int offsetC = offsetA - skip;
+//        int offsetD = offsetB - skip;
+//
+//        if (valid[offsetA]
+//                && valid[offsetB]
+//                && valid[offsetC]
+//                && valid[offsetD]) {
+//
+//            if (points[offsetA].distanceTo(points[offsetB]) < maxDist
+//                    && points[offsetA].distanceTo(points[offsetC]) < maxDist
+//                    && points[offsetA].distanceTo(points[offsetD]) < maxDist) {
+//
+//
+//                // Get the normal !
+//                Triangle3D triangle1 = new Triangle3D(points[offsetB], points[offsetD], points[offsetC]);
+//                Triangle3D triangle2 = new Triangle3D(points[offsetA], points[offsetB], points[offsetC]);
+//
+//                triangle1.computeNormal();
+//                triangle2.computeNormal();
+//
+//                int vertexIndex = indicesMap[offsetB];
+//                normals[vertexIndex * 4 + 0] = triangle1.normal.x;
+//                normals[vertexIndex * 4 + 1] = triangle1.normal.y;
+//                normals[vertexIndex * 4 + 2] = triangle1.normal.z;
+//                normals[vertexIndex * 4 + 3] = 0;
+//
+//                vertexIndex = indicesMap[offsetC];
+//                normals[vertexIndex * 4 + 0] = triangle1.normal.x;
+//                normals[vertexIndex * 4 + 1] = triangle1.normal.y;
+//                normals[vertexIndex * 4 + 2] = triangle1.normal.z;
+//                normals[vertexIndex * 4 + 3] = 0;
+//
+//                vertexIndex = indicesMap[offsetD];
+//                normals[vertexIndex * 4 + 0] = triangle1.normal.x;
+//                normals[vertexIndex * 4 + 1] = triangle1.normal.y;
+//                normals[vertexIndex * 4 + 2] = triangle1.normal.z;
+//                normals[vertexIndex * 4 + 3] = 0;
+//
+//                vertexIndex = indicesMap[offsetA];
+//                normals[vertexIndex * 4 + 0] = triangle2.normal.x;
+//                normals[vertexIndex * 4 + 1] = triangle2.normal.y;
+//                normals[vertexIndex * 4 + 2] = triangle2.normal.z;
+//                normals[vertexIndex * 4 + 3] = 0;
+//
+//                indices[currentIndex++] = indicesMap[offsetB];
+//                indices[currentIndex++] = indicesMap[offsetD];
+//                indices[currentIndex++] = indicesMap[offsetC];
+//                indices[currentIndex++] = indicesMap[offsetA];
+//                indices[currentIndex++] = indicesMap[offsetB];
+//                indices[currentIndex++] = indicesMap[offsetC];
+////                
+//            }
+////            model.updateIndices(indicesMap);
+//        }
+//
+//        return currentIndex;
+//    }
+//    public void update() {
+//
+//        boolean[] valid = kinect.getValidPoints();
+//        Vec3D[] points = kinect.getDepthPoints();
+//        PImage colors = kinect.getDepthColor();
+//        lastModel = model;
+//        model.beginUpdateVertices();
+//        nbToDraw = 0;
+//        for (int i = 0; i < Kinect.KINECT_SIZE; i++) {
+//
+//            if (valid[i]) {
+//                Vec3D p = points[i];
+////                if (plane.orientation(p)) {
+////                if (calib.plane().hasGoodOrientationAndDistance(p)) {
+////                    if (isInside(calib.project(p), 0.f, 1.f, 0.05f)) {
+//                model.updateVertex(nbToDraw++, p.x, p.y, -p.z);
+////                    }
+//
+////                } else {
+////                    valid[i] = false;
+////                }
+//            }
+//        }
+//
+//        model.endUpdateVertices();
+//
+//        if (colors != null) {
+//            colors.loadPixels();
+//            model.beginUpdateColors();
+//            int k = 0;
+//            for (int i = 0; i < Kinect.KINECT_SIZE; i++) {
+//                if (valid[i]) {
+//                    int c = colors.pixels[i];
+//
+//                    model.updateColor(k++,
+//                            (c >> 16) & 0xFF,
+//                            (c >> 8) & 0xFF,
+//                            c & 0xFF);
+//                }
+//            }
+//            model.endUpdateColors();
+//        }
+//    }
+//    public void updateMultiTouch() {
+//        boolean[] valid = kinect.getValidPoints();
+//        Vec3D[] points = kinect.getDepthPoints();
+//        PImage colors = kinect.getDepthColor();
+//        lastModel = model;
+//        model.beginUpdateVertices();
+//        nbToDraw = 0;
+//        for (int i = 0; i < Kinect.KINECT_SIZE; i++) {
+//
+//            if (valid[i]) {
+//                Vec3D p = points[i];
+//                model.updateVertex(nbToDraw++, p.x, p.y, -p.z);
+//            }
+//        }
+//        model.endUpdateVertices();
+//
+//        colors.loadPixels();
+//        model.beginUpdateColors();
+//        int k = 0;
+//        for (int i = 0; i < Kinect.KINECT_SIZE; i++) {
+//            if (valid[i]) {
+//                int c = colors.pixels[i];
+//
+//                model.updateColor(k++,
+//                        (c >> 16) & 0xFF,
+//                        (c >> 8) & 0xFF,
+//                        c & 0xFF);
+//            }
+//        }
+//        model.endUpdateColors();
+//    }
+//
+//    public void updateMultiTouch(Vec3D[] projectedPoints) {
+//
+//        boolean[] valid = kinect.getValidPoints();
+//        Vec3D[] points = kinect.getDepthPoints();
+//        lastModel = model;
+//        model.beginUpdateVertices();
+//        nbToDraw = 0;
+//        for (int i = 0; i < Kinect.KINECT_SIZE; i++) {
+//
+//            if (valid[i]) {
+//                Vec3D p = points[i];
+//                model.updateVertex(nbToDraw++, p.x, p.y, -p.z);
+//            }
+//        }
+//        model.endUpdateVertices();
+//
+//        model.beginUpdateColors();
+//        int k = 0;
+//        for (int i = 0; i < Kinect.KINECT_SIZE; i++) {
+//            if (valid[i]) {
+//
+//                int c = parentApplet.color(255, 255, 255);
+//
+//                if (Kinect.connectedComponent[i] > 0) {
+//                    switch (Kinect.connectedComponent[i]) {
+//                        case 1:
+//                            c = parentApplet.color(100, 200, 100);
+//                            break;
+//                        case 2:
+//                            c = parentApplet.color(0, 200, 100);
+//                            break;
+//                        case 3:
+//                            c = parentApplet.color(200, 200, 100);
+//                            break;
+//                        case 4:
+//                            c = parentApplet.color(0, 0, 200);
+//                            break;
+//                        case 5:
+//                            c = parentApplet.color(0, 100, 200);
+//                            break;
+//                        default:
+//                    }
+//                }
+//
+//                model.updateColor(k++,
+//                        (c >> 16) & 0xFF,
+//                        (c >> 8) & 0xFF,
+//                        c & 0xFF);
+//            }
+//        }
+//        model.endUpdateColors();
+//
+//    }
+//    public void drawSelf(PGraphicsOpenGL graphics) {
+////        System.out.println("Trying to draw " + nbToDraw);
+////        lastModel.render(0, nbToDraw);
+////        lastModel.render();
+//    }
 
     public void exportToObj(String fileName) {
         OBJWriter writer = new OBJWriter();

@@ -4,7 +4,6 @@
  */
 package fr.inria.papart.procam;
 
-import codeanticode.glgraphics.GLTexture;
 import com.googlecode.javacv.cpp.opencv_imgproc.*;
 
 import com.googlecode.javacv.CameraDevice;
@@ -22,6 +21,7 @@ import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import javax.media.opengl.GL;
 import processing.core.*;
+import processing.opengl.Texture;
 
 /**
  *
@@ -114,27 +114,31 @@ public class Utils {
     }
 
     // TO USE INSIDE THE DRAW FUNCTION
-    static public GLTexture createTextureFrom(PApplet parent, IplImage img) {
-        GLTexture tex = null;
+    // TODO: Experimental -> To validate...
+    static public Texture createTextureFrom(PApplet parent, IplImage img) {
+        Texture tex = null;
 
         // We suppose...  Depth = 3 : BGR and Depth = 4 :  RGBA  (even though it is written ARGB for Processing...)
         if (img.nChannels() == 3) {
-            tex = new GLTexture(parent, img.width(), img.height(), PApplet.RGB);
+            tex = new Texture(img.width(), img.height(), PApplet.RGB);
         }
         if (img.nChannels() == 4) {
-            tex = new GLTexture(parent, img.width(), img.height(), PApplet.ARGB);
+            tex = new Texture(img.width(), img.height(), PApplet.ARGB);
         }
 
         return tex;
     }
 
-    static public void updateTexture(IplImage img, GLTexture tex) {
-        if (img.nChannels() == 3) {
-            tex.putBuffer(GL.GL_BGR, GL.GL_UNSIGNED_BYTE, img.getIntBuffer());
-        }
-        if (img.nChannels() == 4) {
-            tex.putBuffer(GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, img.getIntBuffer());
-        }
+    static public void updateTexture(IplImage img, Texture tex) {
+        
+        System.out.println("Update Texture broken ? May Require CustomTexture...");
+        
+//        if (img.nChannels() == 3) {
+//            tex.putBuffer(GL.GL_BGR, GL.GL_UNSIGNED_BYTE, img.getIntBuffer());
+//        }
+//        if (img.nChannels() == 4) {
+//            tex.putBuffer(GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, img.getIntBuffer());
+//        }
     }
 
     static public void remapImage(PVector[] in, PVector[] out, IplImage imgIn, IplImage imgTmp, PImage Pout) {

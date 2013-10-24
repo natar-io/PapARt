@@ -1,12 +1,13 @@
 package fr.inria.papart.procam;
 
-import codeanticode.glgraphics.GLGraphicsOffScreen;
 import com.googlecode.javacv.ProjectiveDevice;
 import com.googlecode.javacv.ProjectorDevice;
+import fr.inria.papart.drawingapp.DrawUtils;
 import fr.inria.papart.multitouchKinect.TouchPoint;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
+import processing.opengl.PGraphicsOpenGL;
 import toxi.geom.Ray3D;
 import toxi.geom.ReadonlyVec3D;
 import toxi.geom.Vec3D;
@@ -56,7 +57,7 @@ public class Projector extends ARDisplay {
 
     }
 
-    public GLGraphicsOffScreen beginDrawOnScreen(Screen screen) {
+    public PGraphicsOpenGL beginDrawOnScreen(Screen screen) {
 
         this.beginDraw();
 
@@ -75,7 +76,7 @@ public class Projector extends ARDisplay {
         return this.graphics;
     }
 
-    public GLGraphicsOffScreen beginDrawOnBoard(Camera camera, MarkerBoard board) {
+    public PGraphicsOpenGL beginDrawOnBoard(Camera camera, MarkerBoard board) {
 
         this.beginDraw();
 
@@ -104,7 +105,7 @@ public class Projector extends ARDisplay {
 
     public void drawScreens() {
         this.beginDraw();
-        this.graphics.clear(0);
+        this.graphics.clear();
         drawScreensProjection();
         this.endDraw();
     }
@@ -129,9 +130,10 @@ public class Projector extends ARDisplay {
 
             // Goto to the screen position
             this.graphics.modelview.apply(screen.getPos());
-
             // Draw the screen image
+
             this.graphics.image(screen.getTexture(), 0, 0, screen.getSize().x, screen.getSize().y);
+            
             this.graphics.popMatrix();
         }
     }

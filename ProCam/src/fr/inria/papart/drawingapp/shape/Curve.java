@@ -6,7 +6,6 @@ package fr.inria.papart.drawingapp.shape;
 
 import fr.inria.papart.drawingapp.Descriptor;
 import fr.inria.papart.drawingapp.PositionDescriptor;
-import processing.core.PGraphics3D;
 import processing.core.PVector;
 
 /**
@@ -33,22 +32,22 @@ public class Curve extends Shape {
 
     }
 
-    @Override
-    public void drawSelf(PGraphics3D graphics) {
-        super.drawSelf(graphics);
-        graphics.pushMatrix();
-
-        graphics.translate(center.x, center.y);
-        graphics.stroke(strokeColor);
-        graphics.strokeWeight(strokeWeight);
-        graphics.noFill();
-        graphics.curve(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, p4.x, p4.y);
-        graphics.popMatrix();
-
-        if (isSelected) {
-            for (Descriptor desc : descriptors) {
-                ((PositionDescriptor) desc).drawSelf(graphics);
-            }
-        }
-    }
+//    @Override
+//    public void drawSelf(PGraphics3D graphics) {
+//        super.drawSelf(graphics);
+//        graphics.pushMatrix();
+//
+//        graphics.translate(center.x, center.y);
+//        graphics.stroke(strokeColor);
+//        graphics.strokeWeight(strokeWeight);
+//        graphics.noFill();
+//        graphics.curve(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, p4.x, p4.y);
+//        graphics.popMatrix();
+//
+//        if (isSelected) {
+//            for (Descriptor desc : descriptors) {
+//                ((PositionDescriptor) desc).drawSelf(graphics);
+//            }
+//        }
+//    }
 }

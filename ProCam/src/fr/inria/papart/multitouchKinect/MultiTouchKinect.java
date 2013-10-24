@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import processing.core.PApplet;
 import processing.core.PVector;
-import processing.xml.XMLElement;
 import toxi.geom.Matrix4x4;
 import toxi.geom.Vec3D;
 

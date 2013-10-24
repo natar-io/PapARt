@@ -2,7 +2,7 @@ package fr.inria.papart.drawingapp;
 
 import fr.inria.papart.multitouchKinect.TouchPoint;
 import processing.core.PApplet;
-import processing.core.PGraphics3D;
+import processing.opengl.PGraphics3D;
 import processing.core.PVector;
 
 public class InteractiveZone implements Drawable {

@@ -324,6 +324,8 @@ public class Kinect {
         return updateP(depth, color, 1);
     }
 
+    protected int nbValid = 0;
+    
     public PImage updateP(IplImage depth, IplImage color, int skip) {
 
         this.currentSkip = skip;
@@ -364,6 +366,7 @@ public class Kinect {
 
                     validPointsPImage.pixels[offset] = c;
 
+                    nbValid++;
 //                    int colorOffset = offset * 3;
 //                    int c = (colorRaw[colorOffset + 2] & 0xFF) << 16
 //                            | (colorRaw[colorOffset + 1] & 0xFF) << 8

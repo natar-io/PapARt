@@ -5,7 +5,6 @@
 package fr.inria.papart.kinect;
 
 import java.net.NoRouteToHostException;
-import processing.xml.XMLElement;
 import toxi.geom.Plane;
 import toxi.geom.Triangle3D;
 import toxi.geom.Vec3D;

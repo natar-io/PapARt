@@ -1,11 +1,12 @@
 package fr.inria.papart.procam;
 
-import codeanticode.glgraphics.GLGraphicsOffScreen;
-import codeanticode.glgraphics.GLTexture;
 import fr.inria.papart.tools.Homography;
 import processing.core.PApplet;
+import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
+import processing.opengl.PGraphicsOpenGL;
+import processing.opengl.Texture;
 import toxi.geom.*;
 
 /**
@@ -18,7 +19,7 @@ public class Screen {
 
     private PApplet parent;
     // The current graphics
-    public GLGraphicsOffScreen thisGraphics;
+    private PGraphicsOpenGL thisGraphics;
     // Position holding...
     private PVector initPos = null;
     private PMatrix3D initPosM = null;
@@ -39,7 +40,13 @@ public class Screen {
     }
 
     public Screen(PApplet parent, PVector size, float scale, boolean useAA, int AAValue) {
-        thisGraphics = new GLGraphicsOffScreen(parent, (int) (size.x * scale), (int) (size.y * scale), useAA, AAValue);
+        // AA not available anymore
+        thisGraphics = (PGraphicsOpenGL) parent.createGraphics((int) (size.x * scale), (int) (size.y * scale), PApplet.OPENGL);
+        
+//        thisGraphics = new PGraphicsOpenGL(); 
+//        thisGraphics.setPrimary(false);
+//        thisGraphics.setSize((int) (size.x * scale), (int) (size.y * scale));
+        
         this.size = size.get();
         this.scale = scale;
         this.parent = parent;
@@ -57,8 +64,10 @@ public class Screen {
         homography.setPoint(false, 3, new PVector(0, 1, 0));
     }
 
-    public GLTexture getTexture() {
-        return thisGraphics.getTexture();
+    // Get the texture to display...
+    public PGraphicsOpenGL getTexture() {
+//        thisGraphics.updateDisplay();
+        return thisGraphics;
     }
 
     public void computeScreenPosTransform() {
@@ -94,24 +103,24 @@ public class Screen {
         transformationProjPaper = homography.getTransformation();
     }
 
-    public GLGraphicsOffScreen getGraphics() {
+    public PGraphicsOpenGL getGraphics() {
         return thisGraphics;
     }
 
-    public GLGraphicsOffScreen initDraw(PVector userPos) {
+    public PGraphicsOpenGL initDraw(PVector userPos) {
         return initDraw(userPos, 40, 5000);
     }
 
-    public GLGraphicsOffScreen initDraw(PVector userPos, float nearPlane, float farPlane) {
+    public PGraphicsOpenGL initDraw(PVector userPos, float nearPlane, float farPlane) {
         return initDraw(userPos, nearPlane, farPlane, false, false, true);
     }
 
-    public GLGraphicsOffScreen initDraw(PVector userPos, float nearPlane, float farPlane, boolean isAnaglyph, boolean isLeft, boolean isOnly) {
+    public PGraphicsOpenGL initDraw(PVector userPos, float nearPlane, float farPlane, boolean isAnaglyph, boolean isLeft, boolean isOnly) {
         return initDraw(userPos, nearPlane, farPlane, isAnaglyph, isLeft, isOnly, thisGraphics);
     }
     // TODO: optionnal args.
 
-    public GLGraphicsOffScreen initDraw(PVector userPos, float nearPlane, float farPlane, boolean isAnaglyph, boolean isLeft, boolean isOnly, GLGraphicsOffScreen graphics) {
+    public PGraphicsOpenGL initDraw(PVector userPos, float nearPlane, float farPlane, boolean isAnaglyph, boolean isLeft, boolean isOnly, PGraphicsOpenGL graphics) {
 
         if (initPos == null) {
 
@@ -128,7 +137,8 @@ public class Screen {
 
         if (isOnly) {
             graphics.beginDraw();
-            graphics.clear(0, 0);
+// TODO: Check if the clear() is the same as clear(0, 0);
+            graphics.clear();
         }
 
         PVector paperCameraPos = new PVector();
@@ -165,8 +175,8 @@ public class Screen {
 //        } else {
 //            paperCameraPos = initPos;
 //        }
-        
-        
+
+
         // http://www.gamedev.net/topic/597564-view-and-projection-matrices-for-vr-window-using-head-tracking/
 
 //        graphics.camera(tmp2.x, tmp2.y, tmp2.z,
@@ -217,7 +227,7 @@ public class Screen {
      */
     public ReadonlyVec3D projectMouse(Projector projector, int mouseX, int mouseY, int width, int height) {
 
-        GLGraphicsOffScreen projGraphics = projector.getGraphics();
+        PGraphicsOpenGL projGraphics = projector.getGraphics();
         PMatrix3D projMat = projector.projectionInit.get();
         PMatrix3D modvw = projGraphics.modelview.get();
 
@@ -306,7 +316,6 @@ public class Screen {
         pos = position.get();
     }
 
-    
     public void updatePos(Camera camera, MarkerBoard board) {
 
         pos3D = board.getTransfo(camera);
@@ -317,8 +326,6 @@ public class Screen {
                 0, 0, 0, 1);
 
     }
-    
-    
 
     public PVector getZMinMax() {
 

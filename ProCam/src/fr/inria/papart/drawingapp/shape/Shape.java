@@ -9,7 +9,7 @@ import fr.inria.papart.drawingapp.Descriptor;
 import fr.inria.papart.drawingapp.Drawable;
 import fr.inria.papart.drawingapp.DrawingApp;
 import fr.inria.papart.drawingapp.PositionDescriptor;
-import processing.core.PGraphics3D;
+import processing.opengl.PGraphics3D;
 import processing.core.PVector;
 
 /**

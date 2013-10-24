@@ -4,15 +4,23 @@
  */
 package fr.inria.papart.procam;
 
-import codeanticode.glgraphics.GLGraphicsOffScreen;
-import codeanticode.glgraphics.GLTexture;
-import codeanticode.glgraphics.GLTextureFilter;
+import processing.opengl.PGraphicsOpenGL;
+import processing.opengl.Texture;
 import com.googlecode.javacv.ProjectiveDevice;
+import fr.inria.papart.opengl.CustomTexture;
 import java.util.ArrayList;
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 import processing.core.PApplet;
+import processing.core.PConstants;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
+import processing.opengl.PGL;
+import static processing.opengl.PGL.CLAMP_TO_EDGE;
+import static processing.opengl.PGL.NEAREST;
+import static processing.opengl.PGL.RGBA;
+import static processing.opengl.PGL.TEXTURE_2D;
+import processing.opengl.PShader;
 
 /**
  *
@@ -21,10 +29,11 @@ import processing.core.PMatrix3D;
 public class ARDisplay {
 
     protected PApplet parent;
-    public GLGraphicsOffScreen graphics;
+    public PGraphicsOpenGL graphics;
+//    public PGraphicsOpenGL graphicsUndist;
     public ArrayList<Screen> screens;
-    // TODO: this has to be useless.
-    protected GLTexture finalImage;
+    private PImage mapImg;
+
     // Projector information
     protected ProjectiveDevice proj;
     protected PMatrix3D projIntrinsicsP3D, projExtrinsicsP3D, projExtrinsicsP3DInv;
@@ -32,14 +41,20 @@ public class ARDisplay {
     protected int frameWidth, frameHeight;
     // OpenGL information
     protected float[] projectionMatrixGL = new float[16];
-    protected GLTexture myMap;
+    protected CustomTexture myMap;
     protected PMatrix3D projectionInit;
-    protected GLTextureFilter lensFilter;
-    protected GL gl = null;
+    // TODO...
+    protected PShader lensFilter;
+    protected GL2 gl = null;
     protected PMatrix3D invProjModelView;
     protected float znear;
     protected float zfar;
     protected ProjectiveDeviceP pdp;
+
+    public ARDisplay(PApplet parent, String calibrationYAML,
+            int width, int height, float near, float far) {
+        this(parent, calibrationYAML, width, height, near, far, 0);
+    }
 
     public ARDisplay(PApplet parent, String calibrationYAML,
             int width, int height, float near, float far, int AA) {
@@ -50,12 +65,16 @@ public class ARDisplay {
         this.znear = near;
         this.zfar = far;
 
-        // create the offscreen rendering for this projector.
-        if (AA > 0) {
-            this.graphics = new GLGraphicsOffScreen(parent, width, height, true, AA);
-        } else {
-            this.graphics = new GLGraphicsOffScreen(parent, width, height);
-        }
+        // TODO: BROKEN: No more AA in Processing2 ! 
+        this.graphics = (PGraphicsOpenGL) parent.createGraphics(width, height, PApplet.OPENGL);// true, AA);
+//        this.graphicsUndist = (PGraphicsOpenGL) parent.createGraphics(width, height, PApplet.OPENGL);// true, AA);
+
+//        // create the offscreen rendering for this projector.
+//        if (AA > 0) {
+////            this.graphics = new PGraphicsOpenGL(parent, width, height, true, AA);
+//        } else {
+////            this.graphics = new PGraphicsOpenGL(parent, width, height);
+//        }
 
         screens = new ArrayList<Screen>();
         loadInternalParams(calibrationYAML);
@@ -90,7 +109,7 @@ public class ARDisplay {
         // ----------- OPENGL --------------
         // Reusing the internal projective parameters for the scene rendering.
 
-        PMatrix3D oldProj = this.graphics.projection.get();
+//        PMatrix3D oldProj = this.graphics.projection.get();
 
         // Working params
         p00 = 2 * projIntrinsicsP3D.m00 / frameWidth;
@@ -112,10 +131,10 @@ public class ARDisplay {
         // Save these good parameters
         projectionInit = this.graphics.projection.get();
 
-        this.graphics.projection.transpose();
-        this.graphics.projection.get(projectionMatrixGL);
-
-        this.graphics.projection.set(oldProj);
+//        this.graphics.projection.transpose();
+//        this.graphics.projection.get(projectionMatrixGL);
+//
+//        this.graphics.projection.set(oldProj);
         this.graphics.endDraw();
     }
 
@@ -135,43 +154,67 @@ public class ARDisplay {
      * @param proj
      */
     private void initDistortMap() {
-        lensFilter = new GLTextureFilter(parent, "projDistort.xml");
-        finalImage = new GLTexture(parent, frameWidth, frameHeight);
+        lensFilter = parent.loadShader("distortFrag.glsl", "distortVert.glsl"); // projDistort.xml");
 
-        myMap = new GLTexture(parent, frameWidth, frameHeight, GLTexture.FLOAT);
-        float[] mapTmp = new float[frameWidth * frameHeight * 3];
+        mapImg = parent.createImage(graphics.width, graphics.height, PApplet.RGB);
+
+        // Essai avec une image RGB demain...
+        mapImg.loadPixels();
+
+        float mag = 30;
+
+        parent.colorMode(PApplet.RGB, 1.0f);
         int k = 0;
-
-        for (int y = 0; y < frameHeight; y++) {
-            for (int x = 0; x < frameWidth; x++) {
+        for (int y = 0; y < mapImg.height; y++) {
+            for (int x = 0; x < mapImg.width; x++) {
 
                 double[] out = proj.undistort(x, y);
 //                double[] out = proj.distort(x, y);
-                mapTmp[k++] = (float) (out[0] / frameWidth);
-                mapTmp[k++] = (float) (out[1] / frameHeight);
-                mapTmp[k++] = 0;
+                float r = ((float) out[0] - x) / mag + 0.5f;/// frameWidth; 
+                float g = ((float) out[1] - y) / mag + 0.5f;// / frameHeight; 
+
+                mapImg.pixels[k++] = parent.color(r, g, parent.random(1f));
             }
+
         }
+        mapImg.updatePixels();
 
-        myMap.putBuffer(mapTmp, 3);
+
+        lensFilter.set("mapTex", mapImg);
+        lensFilter.set("texture", this.graphics);
+        lensFilter.set("resX", this.graphics.width);
+        lensFilter.set("resY", this.graphics.height);
+        lensFilter.set("mag", mag);
     }
-
     // Actual GLGraphics BUG :  projection has to be loaded directly into OpenGL.
     public void loadProjection() {
-        gl = this.graphics.beginGL();
-        gl.glMatrixMode(GL.GL_PROJECTION);
-        gl.glPushMatrix();
-        gl.glLoadMatrixf(projectionMatrixGL, 0);
-        gl.glMatrixMode(GL.GL_MODELVIEW);
-        this.graphics.endGL();
+
+//        this.graphics.resetProjection();
+//        this.graphics.applyProjection(projectionInit);
+
+        // Same As :  
+        this.graphics.projection.set(projectionInit);
+
+//        gl = this.graphics.beginGL();
+//        gl.glMatrixMode(GL.GL_PROJECTION);
+//        gl.glPushMatrix();
+//        gl.glLoadMatrixf(projectionMatrixGL, 0);
+//        gl.glMatrixMode(GL.GL_MODELVIEW);
+//        this.graphics.endGL();
     }
 
     public void unLoadProjection() {
-        gl = this.graphics.beginGL();
-        gl.glMatrixMode(GL.GL_PROJECTION);
-        gl.glPopMatrix();
-        gl.glMatrixMode(GL.GL_MODELVIEW);
-        this.graphics.endGL();
+//        PGL pgl = this.graphics.beginPGL();
+//        gl = pgl.gl.getGL2();
+//        gl.glMatrixMode(GL2.GL_PROJECTION);
+//        gl.glPopMatrix();
+//        gl.glMatrixMode(GL2.GL_MODELVIEW);
+//        this.graphics.endPGL();
+//        gl = this.graphics.beginGL();
+//        gl.glMatrixMode(GL.GL_PROJECTION);
+//        gl.glPopMatrix();
+//        gl.glMatrixMode(GL.GL_MODELVIEW);
+//        this.graphics.endGL();
     }
 
     public PMatrix3D getProjectionInit() {
@@ -182,7 +225,7 @@ public class ARDisplay {
         return this.proj;
     }
 
-    public GLGraphicsOffScreen beginDraw() {
+    public PGraphicsOpenGL beginDraw() {
 
         ////////  3D PROJECTION  //////////////
         this.graphics.beginDraw();
@@ -210,24 +253,34 @@ public class ARDisplay {
 
     }
 
-    public PImage distort(boolean distort) {
+    // BROKEN in Processing 2 for now !
+    public PGraphicsOpenGL distort(boolean distort) {
 //        return graphics.getTexture();
 
-        if (!distort) {
+//        if (!distort) {
 //            System.out.println("No distort");
-            return this.graphics.getTexture();
+//            return this.graphics.textureImage;
+//            return this.graphics.getTexture();
+//        }
+
+        if (distort) {
+
+            graphics.filter(lensFilter);
+            return graphics;
+
+//            graphicsUndist.beginDraw();
+//            graphicsUndist.filter(lensFilter);
+//            graphicsUndist.image(graphics, 0, 0);
+//            graphicsUndist.endDraw();
+//            return this.graphicsUndist;
         }
 
-        // TODO: BUG : works once, cannot be disabled and enabled
-        GLTexture off = this.graphics.getTexture();
-//        lensFilter.apply(new GLTexture[]{off, myMap}, off);
-        lensFilter.apply(new GLTexture[]{off, myMap}, finalImage);
-//        lensFilter.apply(new GLTexture[]{off, myMap}, off);
+        // TODO: check how to apply a shader to a texture only... 
 
-        return finalImage;
+        return this.graphics;
     }
 
-    public GLGraphicsOffScreen getGraphics() {
+    public PGraphicsOpenGL getGraphics() {
         return this.graphics;
     }
 
