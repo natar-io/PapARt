@@ -80,7 +80,7 @@ public class ARDisplay {
         loadInternalParams(calibrationYAML);
         initProjection();
 
-        initDistortMap();
+       // initDistortMap();
     }
 
     protected void loadInternalParams(String calibrationYAML) {
@@ -264,15 +264,15 @@ public class ARDisplay {
 //            return this.graphics.getTexture();
 //        }
 
-        if (distort) {
-            graphics.filter(lensFilter);
-            return graphics;
+    //    if (distort) {
+    //        graphics.filter(lensFilter);
+    //        return graphics;
 //            graphicsUndist.beginDraw();
 //            graphicsUndist.filter(lensFilter);
 //            graphicsUndist.image(graphics, 0, 0);
 //            graphicsUndist.endDraw();
 //            return this.graphicsUndist;
-        }
+    //    }
 
         // TODO: check how to apply a shader to a texture only... 
 

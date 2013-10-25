@@ -22,6 +22,8 @@ class ARTThread extends Thread {
     private boolean undistort;
     private boolean compute;
     public boolean stop;
+    
+    // TODO: what is this ?
     private boolean waitForFrames = false;
 
     public ARTThread(Camera camera, MarkerBoard[] sheets, float frameRate) {
@@ -32,7 +34,7 @@ class ARTThread extends Thread {
         this.undistort = undistort;
         this.camera = camera;
         this.sheets = sheets;
-        waitForFrames = camera.useGStreamer();
+        waitForFrames = camera.useProcessingVideo();
         stop = false;
     }
 
@@ -40,7 +42,7 @@ class ARTThread extends Thread {
     public void run() {
         while (!stop) {
             IplImage img = camera.grab(undistort);
-
+            
             if (img != null && compute) {
                 this.compute(img);
             }

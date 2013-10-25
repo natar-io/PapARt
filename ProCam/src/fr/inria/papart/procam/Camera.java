@@ -14,6 +14,7 @@ import com.googlecode.javacv.FrameGrabber;
 import com.googlecode.javacv.OpenCVFrameGrabber;
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
 import fr.inria.papart.opengl.CustomTexture;
+import fr.inria.papart.tools.CaptureIpl;
 import fr.inria.papart.tools.GSIplImage;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -44,7 +45,8 @@ public class Camera {
     // GStreamer  Video input
 //    protected GSCapture gsCapture;
 //    protected GSPipeline pipeline;
-    protected GSIplImage converter;
+//    protected GSIplImage converter;
+    protected CaptureIpl captureIpl;
     // OpenCV  video input 
     private FrameGrabber grabber;
     // Texture for video visualization (OpenCV generally)
@@ -52,8 +54,7 @@ public class Camera {
     protected CustomTexture tex = null;
     protected PImage camImage = null;
     public final static int OPENCV_VIDEO = 1;
-    public final static int GSTREAMER_VIDEO = 2;
-    public final static int GSTREAMER_PIPELINE = 3;
+    public final static int PROCESSING_VIDEO = 2;
     public static int videoInput = OPENCV_VIDEO;
     protected int width, height;
     protected int videoInputType;
@@ -118,24 +119,18 @@ public class Camera {
             this.grabber = grabberCV;
         }
 
-        // Broken for now ... -> Use Capture from Processing now ! 
-        if (videoInputType == GSTREAMER_VIDEO) {
-            System.out.println("GSTREAMER BROKEN FOR NOW.");
-//            gsCapture = new GSCapture(parent, width, height, camDevice);
-//            converter = new GSIplImage(width, height);
-//            gsCapture.setPixelDest(converter, false);
-//            gsCapture.setEventHandlerObject(this);
-//            gsCapture.start();
-        }
+        if (videoInputType == PROCESSING_VIDEO) {
 
-        if (videoInputType == GSTREAMER_PIPELINE) {
-
-            System.out.println("GSTREAMER BROKEN FOR NOW.");
-//            pipeline = new GSPipeline(parent, camDevice);
-//            converter = new GSIplImage(width, height);
-//            pipeline.setPixelDest(converter, true);
-//            pipeline.setEventHandlerObject(this);
-//            pipeline.play();
+            if (camDevice == null) {
+                System.out.println("Starting capture !");
+                this.captureIpl = new CaptureIpl(parent, width, height);
+            } else {
+                
+                System.out.println("Starting capture on device " + camDevice);
+                this.captureIpl = new CaptureIpl(parent, width, height, camDevice);
+            }
+            
+            this.captureIpl.start();
         }
 
 
@@ -152,8 +147,8 @@ public class Camera {
 
     }
 
-    public boolean useGStreamer() {
-        return this.videoInputType == GSTREAMER_VIDEO;
+    public boolean useProcessingVideo() {
+        return this.videoInputType == PROCESSING_VIDEO;
     }
 
     public boolean useOpenCV() {
@@ -179,11 +174,247 @@ public class Camera {
     }
     protected boolean photoCapture;
 
+    /**
+     * It makes the camera update continuously.
+     */
+    public void setThread() {
+        setThread(true);
+    }
+
+    /**
+     * It makes the camera update continuously.
+     */
+    public void setThread(boolean undistort) {
+
+        if (thread == null) {
+            thread = new ARTThread(this, sheets, undistort);
+            thread.start();
+        } else {
+            System.err.println("Camera: Error Thread already launched");
+        }
+    }
+
+    /**
+     * Stops the update thread.
+     */
+    public void stopThread() {
+        if (thread != null) {
+            thread.stopThread();
+            thread = null;
+        }
+    }
+
+    /**
+     * If the video is threaded, this sets if the tracking is on or not.
+     *
+     * @param auto automatic Tag detection: ON if true.
+     */
+    public void setAutoUpdate(boolean auto) {
+        this.autoUpdate = auto;
+
+        if (thread != null) {
+            thread.setCompute(auto);
+        } else {
+            System.err.println("Camera: Error AutoCompute only if threaded.");
+        }
+
+    }
+
+    public boolean useThread() {
+        return thread != null;
+    }
+
+    /**
+     * Asks the camera to grab an image. Not to use with the threaded option.
+     */
+    public void grab() {
+        grab(true);
+    }
+
+    public IplImage grab(boolean undistort) {
+
+        IplImage img = null;
+
+        if (videoInputType == OPENCV_VIDEO) {
+
+            try {
+                img = grabber.grab();
+
+            } catch (Exception e) {
+                System.err.println("Camera: Grab() Error ! " + e);
+                e.printStackTrace();
+            }
+        }
+
+        if (videoInputType == PROCESSING_VIDEO) {
+
+            // System.out.println("Grab () ?");
+            if (this.captureIpl.available()) {
+                
+               // System.out.println("Avail");
+                captureIpl.read();
+               img = captureIpl.getIplImage();
+
+            } 
+            else {
+                try {
+                   // System.out.println("Sleep...");
+                    
+   
+               // TimeUnit.MILLISECONDS.sleep((long) (1f / frameRate));
+               TimeUnit.MILLISECONDS.sleep((long) (10));
+   
+                } catch (Exception e) {
+                }
+
+                return null;
+            }
+        }
+
+
+        if (img != null) {
+            if (undistort) {
+                if (copyUndist == null) {
+                    copyUndist = img.clone();
+                }
+                pdp.getDevice().undistort(img, copyUndist);
+                iimg = copyUndist;
+            } else {
+                iimg = img;
+            }
+
+            this.gotPicture = true;
+        }
+
+        return iimg;
+
+    }
+
+    public PImage getPImage() {
+        imageRetreived();
+//        if (tex == null) {
+//            tex = new CustomTexture(width, height);
+//        }
+
+//        if (iimg != null) {
+//            if (videoInputType == OPENCV_VIDEO) {
+//                // TODO: Check direct link to OpenGL again... :( 
+////                tex.updateBuffer(iimg.getIntBuffer());
+////                tex.putBuffer(GL2.GL_BGR, GL.GL_UNSIGNED_BYTE, iimg.getIntBuffer());
+//            } else {
+//                // TODO: GSTREAMER !
+////                if (videoInputType == GSTREAMER_VIDEO) {
+////                    tex.putBuffer(GL2.GL_RGBA, GL.GL_UNSIGNED_BYTE, iimg.getIntBuffer());
+////                }
+//            }
+//        }
+
+        if (camImage == null) {
+            System.out.println("Creation ...");
+            camImage = parent.createImage(width, height, PApplet.RGB);
+        }
+
+        if (useProcessingVideo()) {
+            return captureIpl;
+        }
+
+        if (iimg != null) {
+            Utils.IplImageToPImage(iimg, false, camImage);
+        }
+        return camImage;
+    }
+
+    public IplImage getIplImage() {
+        imageRetreived();
+        return iimg;
+    }
+
+    public ProjectiveDeviceP getProjectiveDevice() {
+        return this.pdp;
+    }
+
+    public void close() {
+        if (grabber != null) {
+            try {
+                this.stopThread();
+                grabber.stop();
+            } catch (Exception e) {
+            }
+        }
+    }
+
+    /**
+     * Gets the 2D location in the image of a 3D point. TODO: undistort ?
+     *
+     * @param pt 3D point seen by the camera.
+     * @return 2D location of the 3D point in the image.
+     */
+    public PVector getCamViewPoint(PVector pt) {
+        PVector tmp = new PVector();
+        camIntrinsicsP3D.mult(new PVector(pt.x, pt.y, pt.z), tmp);
+        //TODO: lens distorsion ?
+        return new PVector(tmp.x / tmp.z, tmp.y / tmp.z);
+    }
+
+    /**
+     * Add a tracked view to the camera. This camera must be tracking the board
+     * already. Returns true if the camera is already tracking.
+     *
+     * @param view
+     * @return
+     */
+    public boolean addTrackedView(TrackedView view) {
+        return trackedViews.add(view);
+    }
+
+    public IplImage getView(TrackedView trackedView) {
+        return getViewIpl(trackedView);
+    }
+
+    public PImage getPView(TrackedView trackedView) {
+        if (iimg == null) {
+            return null;
+        }
+
+        trackedView.computeCorners(this);
+        return trackedView.getImage(iimg);
+    }
+
+    public IplImage getViewIpl(TrackedView trackedView) {
+        if (iimg == null) {
+            return null;
+        }
+
+        trackedView.computeCorners();
+        return trackedView.getImageIpl(iimg);
+    }
+
+    public void grabTo(PImage pimg, boolean undist) {
+        try {
+
+            IplImage img = this.grab(undist);
+
+            if (img != null) {
+                Utils.IplImageToPImage(img, false, pimg);
+            }
+
+        } catch (Exception e) {
+            System.err.println("Error while grabbing frame " + e);
+            e.printStackTrace();
+        }
+    }
+
+    protected void imageRetreived() {
+        this.hasNewPhoto = false;
+    }
+
+    // TODO: check this code... may be broken.
     public void setPhotoCapture() {
 
         this.photoCapture = true;
-        if (useGStreamer()) {
-//            gsCapture.stop();
+        if (useProcessingVideo()) {
+
+            captureIpl.stop();
         }
         if (useOpenCV()) {
             try {
@@ -241,10 +472,12 @@ public class Camera {
         public void run() {
 
             System.out.println("Grabbing frames");
-            if (cam.useGStreamer()) {
+            if (cam.useProcessingVideo()) {
 
-                System.out.println("GStreamer support broken for now. I will crash unexpectedly...");
-//                gsCapture.start();
+                captureIpl.start();
+
+                // check gotPicture etc... 
+
                 while (!gotPicture) {
                     try {
                         Thread.sleep(20);
@@ -307,246 +540,6 @@ public class Camera {
             System.out.println("Photo OK ");
             cam.isTakingPhoto = false;
             cam.hasNewPhoto = true;
-        }
-    }
-
-    /**
-     * It makes the camera update continuously.
-     */
-    public void setThread() {
-        setThread(true);
-    }
-
-    /**
-     * It makes the camera update continuously.
-     */
-    public void setThread(boolean undistort) {
-
-        if (thread == null) {
-            thread = new ARTThread(this, sheets, undistort);
-            thread.start();
-        } else {
-            System.err.println("Camera: Error Thread already launched");
-        }
-    }
-
-    /**
-     * Stops the update thread.
-     */
-    public void stopThread() {
-        if (thread != null) {
-            thread.stopThread();
-            thread = null;
-        }
-    }
-
-    /**
-     * If the video is threaded, this sets if the tracking is on or not.
-     *
-     * @param auto automatic Tag detection: ON if true.
-     */
-    public void setAutoUpdate(boolean auto) {
-        this.autoUpdate = auto;
-
-        if (thread != null) {
-            thread.setCompute(auto);
-        } else {
-            System.err.println("Camera: Error AutoCompute only if threaded.");
-        }
-
-    }
-
-    /**
-     * Gets the 2D location in the image of a 3D point. TODO: undistort ?
-     *
-     * @param pt 3D point seen by the camera.
-     * @return 2D location of the 3D point in the image.
-     */
-    public PVector getCamViewPoint(PVector pt) {
-        PVector tmp = new PVector();
-        camIntrinsicsP3D.mult(new PVector(pt.x, pt.y, pt.z), tmp);
-        //TODO: lens distorsion ?
-        return new PVector(tmp.x / tmp.z, tmp.y / tmp.z);
-    }
-
-    public boolean useThread() {
-        return thread != null;
-    }
-
-    /**
-     * Asks the camera to grab an image. Not to use with the threaded option.
-     */
-    public void grab() {
-        grab(true);
-    }
-
-    public IplImage grab(boolean undistort) {
-
-        IplImage img = null;
-
-        if (videoInputType == OPENCV_VIDEO) {
-
-            try {
-                img = grabber.grab();
-
-            } catch (Exception e) {
-                System.err.println("Camera: Grab() Error ! " + e);
-                e.printStackTrace();
-            }
-        }
-
-        if (videoInputType == GSTREAMER_VIDEO) {
-            if (converter.putPixelsToImage()) {
-                ;
-            } else {
-
-                // System.err.println("Camera: GStreamer no Frame ?!");
-                try {
-                    TimeUnit.MILLISECONDS.sleep((long) (1f / frameRate));
-                } catch (Exception e) {
-                }
-
-                return null;
-            }
-            img = converter.getImage();
-        }
-
-
-        if (videoInputType == GSTREAMER_PIPELINE) {
-
-            // TODO: check got Picture.
-            if (converter.putPixelsToImage()) {
-                ;
-            } else {
-
-                // System.err.println("Camera: GStreamer no Frame ?!");
-                try {
-                    TimeUnit.MILLISECONDS.sleep((long) (1f / frameRate));
-                } catch (Exception e) {
-                }
-
-                return null;
-            }
-            img = converter.getImage();
-        }
-
-
-        if (img != null) {
-            if (undistort) {
-                if (copyUndist == null) {
-                    copyUndist = img.clone();
-                }
-                pdp.getDevice().undistort(img, copyUndist);
-                iimg = copyUndist;
-            } else {
-                iimg = img;
-            }
-
-            this.gotPicture = true;
-        }
-
-        return iimg;
-
-    }
-
-    /**
-     * Add a tracked view to the camera. This camera must be tracking the board
-     * already. Returns true if the camera is already tracking.
-     *
-     * @param view
-     * @return
-     */
-    public boolean addTrackedView(TrackedView view) {
-        return trackedViews.add(view);
-    }
-
-    public IplImage getView(TrackedView trackedView) {
-        return getViewIpl(trackedView);
-    }
-
-    public PImage getPView(TrackedView trackedView) {
-        if (iimg == null) {
-            return null;
-        }
-
-        trackedView.computeCorners(this);
-        return trackedView.getImage(iimg);
-    }
-
-    public IplImage getViewIpl(TrackedView trackedView) {
-        if (iimg == null) {
-            return null;
-        }
-
-        trackedView.computeCorners();
-        return trackedView.getImageIpl(iimg);
-    }
-
-    public void grabTo(PImage pimg, boolean undist) {
-        try {
-
-            IplImage img = this.grab(undist);
-
-            if (img != null) {
-                Utils.IplImageToPImage(img, false, pimg);
-            }
-
-        } catch (Exception e) {
-            System.err.println("Error while grabbing frame " + e);
-            e.printStackTrace();
-        }
-    }
-
-    protected void imageRetreived() {
-        this.hasNewPhoto = false;
-    }
-
-    public PImage getPImage() {
-        imageRetreived();
-//        if (tex == null) {
-//            tex = new CustomTexture(width, height);
-//        }
-
-//        if (iimg != null) {
-//            if (videoInputType == OPENCV_VIDEO) {
-//                // TODO: Check direct link to OpenGL again... :( 
-////                tex.updateBuffer(iimg.getIntBuffer());
-////                tex.putBuffer(GL2.GL_BGR, GL.GL_UNSIGNED_BYTE, iimg.getIntBuffer());
-//            } else {
-//                // TODO: GSTREAMER !
-////                if (videoInputType == GSTREAMER_VIDEO) {
-////                    tex.putBuffer(GL2.GL_RGBA, GL.GL_UNSIGNED_BYTE, iimg.getIntBuffer());
-////                }
-//            }
-//        }
-
-        if (camImage == null) {
-            System.out.println("Creation ...");
-            camImage = parent.createImage(width, height, PApplet.RGB);
-        }
-
-        if (iimg != null) {
-            Utils.IplImageToPImage(iimg, false, camImage);
-        }
-        return camImage;
-    }
-
-    public IplImage getIplImage() {
-        imageRetreived();
-        return iimg;
-    }
-
-    public ProjectiveDeviceP getProjectiveDevice() {
-        return this.pdp;
-    }
-
-    public void close() {
-        if (grabber != null) {
-            try {
-                this.stopThread();
-                grabber.stop();
-            } catch (Exception e) {
-            }
         }
     }
 }

@@ -43,7 +43,7 @@ public class ARTagDetector {
             if (type == Camera.OPENCV_VIDEO) {
                 pixfmt = ARToolKitPlus.PIXEL_FORMAT_BGR;
             }
-            if (type == Camera.GSTREAMER_VIDEO) {
+            if (type == Camera.PROCESSING_VIDEO) {
                 pixfmt = ARToolKitPlus.PIXEL_FORMAT_ABGR;
             }
 
