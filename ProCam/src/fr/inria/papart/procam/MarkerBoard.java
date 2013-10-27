@@ -99,6 +99,12 @@ public class MarkerBoard {
         minDistanceDrawingMode.set(id, dist);
     }
 
+    public void setFakeLocation(Camera camera, PMatrix3D location) {
+        int id = cameras.indexOf(camera);
+        float transfo[] = transfos.get(id);
+        location.get(transfo);
+    }
+
     private OneEuroFilter[] createFilter(double freq, double minCutOff) {
         OneEuroFilter[] f = new OneEuroFilter[12];
         try {
@@ -147,7 +153,6 @@ public class MarkerBoard {
     public synchronized void updatePosition(Camera camera, IplImage img) {
 
         int id = cameras.indexOf(camera);
-
         TrackerMultiMarker tracker = trackers.get(id);
 
         int currentTime = applet.millis();

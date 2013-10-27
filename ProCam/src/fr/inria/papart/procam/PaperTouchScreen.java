@@ -12,53 +12,40 @@ import java.util.ArrayList;
 import processing.core.PApplet;
 import processing.core.PVector;
 
-public class PaperInterface {
+public class PaperTouchScreen extends PaperScreen {
 
-    Screen screen;
-    MarkerBoard board;
     TouchElement touch;
-    protected PVector drawingSize;
-    Camera cameraTracking;
-    Projector projector;
-    float resolution;
     TouchInput touchInput;
     ArrayList<Button> buttons;
-    PApplet parent;
 
-    public PaperInterface(PApplet parent, MarkerBoard board,
-            PVector size, Camera cam,
-            float resolution, Projector proj,
+    public PaperTouchScreen(PApplet parent,
+            MarkerBoard board,
+            PVector size,
+            float resolution,
+            Camera cam,
+            Projector proj,
             TouchInput touchinput) {
 
-        this.parent = parent;
-        this.board = board;
-        this.drawingSize = size.get();
-        this.cameraTracking = cam;
-        this.projector = proj;
-        this.resolution = resolution;
+        super(parent, board, size,
+                resolution,
+                cam, proj);
+
         this.touchInput = touchinput;
-
         this.buttons = new ArrayList<Button>();
-
-        this.screen = new Screen(parent, size, resolution);
-        screen.setAutoUpdatePos(cameraTracking, board);
-        projector.addScreen(screen);
-
-        board.setDrawingMode(cameraTracking, true, 25);
-        board.setFiltering(cameraTracking, 30, 25);
     }
 
     ///// Load ressources ////////
+    @Override
     public void init() {
     }
 
+    @Override
     public void update() {
-        screen.updatePos();
+        super.update();
+        
         screen.computeScreenPosTransform();
-
         touch = touchInput.projectTouchToScreen(screen, projector,
                 true, true);
-
 
         if (!touch.position2D.isEmpty()) {
             for (PVector v : touch.position2D) {
@@ -78,6 +65,7 @@ public class PaperInterface {
     }
 
     // Example Draw... to check ? Or put it as begin / end ...
+    @Override
     public void draw() {
 
         PGraphicsOpenGL g = screen.getGraphics();
@@ -86,6 +74,8 @@ public class PaperInterface {
 //        g.clear(0, 0);
         g.scale(resolution);
         g.background(20, 20);
+        
+        drawTouch(g, 20);
         g.endDraw();
 
     }

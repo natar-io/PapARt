@@ -5,6 +5,7 @@
 package fr.inria.papart.procam;
 
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
@@ -17,8 +18,7 @@ import toxi.geom.Vec3D;
 class ARTThread extends Thread {
 
     private Camera camera;
-    private ARTagDetector art;
-    private MarkerBoard[] sheets = null;
+    private ArrayList<MarkerBoard> sheets = null;
     private boolean undistort;
     private boolean compute;
     public boolean stop;
@@ -26,11 +26,11 @@ class ARTThread extends Thread {
     // TODO: what is this ?
     private boolean waitForFrames = false;
 
-    public ARTThread(Camera camera, MarkerBoard[] sheets, float frameRate) {
+    public ARTThread(Camera camera, ArrayList<MarkerBoard> sheets, float frameRate) {
         this(camera, sheets, true);
     }
 
-    public ARTThread(Camera camera, MarkerBoard[] sheets, boolean undistort) {
+    public ARTThread(Camera camera, ArrayList<MarkerBoard> sheets, boolean undistort) {
         this.undistort = undistort;
         this.camera = camera;
         this.sheets = sheets;

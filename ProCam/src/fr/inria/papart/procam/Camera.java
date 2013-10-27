@@ -12,6 +12,8 @@ import processing.opengl.Texture;
 import com.googlecode.javacv.CameraDevice;
 import com.googlecode.javacv.FrameGrabber;
 import com.googlecode.javacv.OpenCVFrameGrabber;
+import com.googlecode.javacv.cpp.ARToolKitPlus;
+import com.googlecode.javacv.cpp.ARToolKitPlus.TrackerMultiMarker;
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
 import fr.inria.papart.opengl.CustomTexture;
 import fr.inria.papart.tools.CaptureIpl;
@@ -34,12 +36,12 @@ import processing.core.PVector;
 
 public class Camera {
 
-    protected ARTagDetector art;
     // Camera parameters
     protected PMatrix3D camIntrinsicsP3D;
     protected PApplet parent;
     private ArrayList<TrackedView> trackedViews;
-    private MarkerBoard[] sheets;
+    private ArrayList<MarkerBoard> sheets;
+    private String calibrationARToolkit;
     private ARTThread thread = null;
     protected ProjectiveDeviceP pdp;
     // GStreamer  Video input
@@ -103,6 +105,9 @@ public class Camera {
         this.frameRate = frameRate;
         this.videoInputType = videoInputType;
 
+
+
+        // Init the video
         if (videoInputType == OPENCV_VIDEO) {
             OpenCVFrameGrabber grabberCV = new OpenCVFrameGrabber(Integer.parseInt(camDevice));
 
@@ -125,11 +130,11 @@ public class Camera {
                 System.out.println("Starting capture !");
                 this.captureIpl = new CaptureIpl(parent, width, height);
             } else {
-                
+
                 System.out.println("Starting capture on device " + camDevice);
                 this.captureIpl = new CaptureIpl(parent, width, height, camDevice);
             }
-            
+
             this.captureIpl.start();
         }
 
@@ -159,21 +164,76 @@ public class Camera {
         return this.frameRate;
     }
 
-//    public void captureEvent(GSCapture cam) {
-//        cam.read();
-//        this.gotPicture = true;
-//    }
-//
-//    public void pipelineEvent(GSPipeline pipeline) {
-//        pipeline.read();
-//    }
+    // Legacy, use the two next functions.
     public void initMarkerDetection(PApplet applet, String calibrationARToolkit, MarkerBoard[] paperSheets) {
-        art = new ARTagDetector(applet, this, calibrationARToolkit, width, height, paperSheets, videoInputType);
-        this.sheets = paperSheets;
-        this.trackedViews = new ArrayList<TrackedView>();
-    }
-    protected boolean photoCapture;
+        initMarkerDetection(calibrationARToolkit);
 
+        for (MarkerBoard b : paperSheets) {
+            trackMarkerBoard(b);
+        }
+    }
+
+    // Legacy, use trackMarkerBoard now. 
+    public void initMarkerDetection(String calibrationARToolkit) {
+        // Marker Detection and view
+        this.trackedViews = new ArrayList<TrackedView>();
+        this.sheets = new ArrayList<MarkerBoard>();
+    }
+
+    public void trackMarkerBoard(MarkerBoard sheet) {
+
+        this.sheets.add(sheet);
+        // create a tracker that does:
+        //  - 6x6 sized marker images (required for binary markers)
+        //  - samples at a maximum of 6x6 
+        //  - works with luminance (gray) images
+        //  - can load a maximum of 0 non-binary pattern
+        //  - can detect a maximum of 8 patterns in one image
+
+        TrackerMultiMarker tracker = new ARToolKitPlus.TrackerMultiMarker(width, height, 10, 6, 6, 6, 0);
+
+        // ARToolKit 2.1.1 - version
+        // MultiTracker tracker = new MultiTracker(w, h);
+
+        //            int pixfmt = ARToolKitPlus.PIXEL_FORMAT_LUM;
+
+        int pixfmt = 0;
+
+        if (videoInputType == Camera.OPENCV_VIDEO) {
+            pixfmt = ARToolKitPlus.PIXEL_FORMAT_BGR;
+        }
+        if (videoInputType == Camera.PROCESSING_VIDEO) {
+            pixfmt = ARToolKitPlus.PIXEL_FORMAT_ABGR;
+        }
+
+        tracker.setPixelFormat(pixfmt);
+        tracker.setBorderWidth(0.125f);
+        tracker.activateAutoThreshold(true);
+        tracker.setUndistortionMode(ARToolKitPlus.UNDIST_NONE);
+        tracker.setPoseEstimator(ARToolKitPlus.POSE_ESTIMATOR_RPP);
+        tracker.setMarkerMode(ARToolKitPlus.MARKER_ID_BCH);
+        tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_FULL_RES);
+//            tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_HALF_RES);
+        tracker.setUseDetectLite(false);
+//            tracker.setUseDetectLite(true);
+
+        // Initialize the tracker, with camera parameters and marker config. 
+        if (!tracker.init(calibrationARToolkit, sheet.getFileName(), 1.0f, 1000.f)) {
+            System.err.println("Init ARTOOLKIT Error " + calibrationARToolkit + " " + sheet.getFileName() + " " + sheet.getName());
+        }
+
+        float[] transfo = new float[16];
+        for (int i = 0; i < 3; i++) {
+            transfo[12 + i] = 0;
+        }
+        transfo[15] = 0;
+        sheet.addTracker(parent, this, tracker, transfo);
+    }
+
+    public boolean tracks(MarkerBoard board){
+        return this.sheets.contains(board);
+    }
+    
     /**
      * It makes the camera update continuously.
      */
@@ -250,20 +310,19 @@ public class Camera {
 
             // System.out.println("Grab () ?");
             if (this.captureIpl.available()) {
-                
-               // System.out.println("Avail");
-                captureIpl.read();
-               img = captureIpl.getIplImage();
 
-            } 
-            else {
+                // System.out.println("Avail");
+                captureIpl.read();
+                img = captureIpl.getIplImage();
+
+            } else {
                 try {
-                   // System.out.println("Sleep...");
-                    
-   
-               // TimeUnit.MILLISECONDS.sleep((long) (1f / frameRate));
-               TimeUnit.MILLISECONDS.sleep((long) (10));
-   
+                    // System.out.println("Sleep...");
+
+
+                    // TimeUnit.MILLISECONDS.sleep((long) (1f / frameRate));
+                    TimeUnit.MILLISECONDS.sleep((long) (10));
+
                 } catch (Exception e) {
                 }
 
@@ -407,6 +466,7 @@ public class Camera {
     protected void imageRetreived() {
         this.hasNewPhoto = false;
     }
+    protected boolean photoCapture;
 
     // TODO: check this code... may be broken.
     public void setPhotoCapture() {
