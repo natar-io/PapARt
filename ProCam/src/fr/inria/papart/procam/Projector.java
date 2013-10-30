@@ -106,6 +106,7 @@ public class Projector extends ARDisplay {
     public void drawScreens() {
         this.beginDraw();
         this.graphics.clear();
+        this.graphics.background(100, 200, 0);
         drawScreensProjection();
         this.endDraw();
     }

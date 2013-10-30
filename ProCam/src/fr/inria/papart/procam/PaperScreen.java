@@ -66,7 +66,7 @@ public class PaperScreen {
         // T
 //        g.clear(0, 0);
         g.scale(resolution);
-        g.background(20, 20);
+        g.background(0, 100, 200);
         g.endDraw();
 
     }

@@ -23,7 +23,6 @@ public class CaptureIpl extends Capture implements PConstants {
 
     protected IplImage iplImage;
 
-
     public CaptureIpl(PApplet parent, int requestWidth, int requestHeight) {
         super(parent, requestWidth, requestHeight);
 
@@ -50,59 +49,66 @@ public class CaptureIpl extends Capture implements PConstants {
             frameRate = getSourceFrameRate();
         }
 
-        // TODO: check the sinkcopy methods to do this.
-        ByteBuffer byteBuffer = natBuffer.getByteBuffer();
-        ByteBuffer imageBuffer = iplImage.getByteBuffer();
-        ByteBuffer incomingBuffer = byteBuffer;
-        imageBuffer.put(incomingBuffer);
-        
-        byteBuffer.rewind();
-        imageBuffer.rewind();
+        // Try catch to allow proper exit. 
+        try {
+            // TODO: check the sinkcopy methods to do this.
+            ByteBuffer byteBuffer = natBuffer.getByteBuffer();
+            ByteBuffer imageBuffer = iplImage.getByteBuffer();
+            ByteBuffer incomingBuffer = byteBuffer;
+            imageBuffer.put(incomingBuffer);
 
-        if (useBufferSink) { // The native buffer from gstreamer is copied to the buffer sink.
-            if (natBuffer == null) {
-                return;
-            }
+            byteBuffer.rewind();
+            imageBuffer.rewind();
 
-            if (firstFrame) {
-                super.init(bufWidth, bufHeight, ARGB);
-                firstFrame = false;
-            }
 
-            if (bufferSink == null) {
-                Object cache = parent.g.getCache(this);
-                if (cache == null) {
+            if (useBufferSink) { // The native buffer from gstreamer is copied to the buffer sink.
+                if (natBuffer == null) {
                     return;
                 }
-                setBufferSink(cache);
-                getSinkMethods();
+
+                if (firstFrame) {
+                    super.init(bufWidth, bufHeight, ARGB);
+                    firstFrame = false;
+                }
+
+                if (bufferSink == null) {
+                    Object cache = parent.g.getCache(this);
+                    if (cache == null) {
+                        return;
+                    }
+                    setBufferSink(cache);
+                    getSinkMethods();
+                }
+
+                // ByteBuffer byteBuffer = natBuffer.getByteBuffer();
+
+                try {
+                    sinkCopyMethod.invoke(bufferSink,
+                            new Object[]{natBuffer, byteBuffer, bufWidth, bufHeight});
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+
+                natBuffer = null;
+            } else { // The pixels just read from gstreamer are copied to the pixels array.
+                if (copyPixels == null) {
+                    return;
+                }
+
+                if (firstFrame) {
+                    super.init(bufWidth, bufHeight, RGB);
+                    firstFrame = false;
+                }
+
+                int[] temp = pixels;
+                pixels = copyPixels;
+                updatePixels();
+                copyPixels = temp;
             }
 
-            // ByteBuffer byteBuffer = natBuffer.getByteBuffer();
-
-            try {
-                sinkCopyMethod.invoke(bufferSink,
-                        new Object[]{natBuffer, byteBuffer, bufWidth, bufHeight});
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-
-            natBuffer = null;
-        } else { // The pixels just read from gstreamer are copied to the pixels array.
-            if (copyPixels == null) {
-                return;
-            }
-
-            if (firstFrame) {
-                super.init(bufWidth, bufHeight, RGB);
-                firstFrame = false;
-            }
-
-            int[] temp = pixels;
-            pixels = copyPixels;
-            updatePixels();
-            copyPixels = temp;
+        } catch (Exception e) {
+            System.out.println("Error");
         }
 
         available = false;

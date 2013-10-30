@@ -261,7 +261,6 @@ public class Utils {
         }
 
         if (img.nChannels() == 4) {
-
             ByteBuffer buff = img.getByteBuffer();
             //  PImage ret = new PImage(img.width(), img.height(), PApplet.RGB);
             ret.loadPixels();

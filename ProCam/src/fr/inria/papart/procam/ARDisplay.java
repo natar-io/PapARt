@@ -226,6 +226,11 @@ public class ARDisplay {
         return this.proj;
     }
 
+    public ProjectiveDeviceP getProjectiveDeviceP() {
+        return this.pdp;
+    }
+
+        
     public PGraphicsOpenGL beginDraw() {
 
         ////////  3D PROJECTION  //////////////

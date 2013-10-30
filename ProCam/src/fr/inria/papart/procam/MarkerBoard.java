@@ -171,7 +171,7 @@ public class MarkerBoard {
             return;
         }
 
-//System.out.println("Markers found: " + tracker.getNumDetectedMarkers());
+        System.out.println("Markers found: " + tracker.getNumDetectedMarkers());
         ARToolKitPlus.ARMultiMarkerInfoT multiMarkerConfig = tracker.getMultiMarkerConfig();
 
         // if the update is forced 

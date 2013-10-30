@@ -14,6 +14,8 @@ import com.googlecode.javacv.FrameGrabber;
 import com.googlecode.javacv.OpenCVFrameGrabber;
 import com.googlecode.javacv.cpp.ARToolKitPlus;
 import com.googlecode.javacv.cpp.ARToolKitPlus.TrackerMultiMarker;
+import com.googlecode.javacv.cpp.opencv_calib3d;
+import com.googlecode.javacv.cpp.opencv_core.CvMat;
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
 import fr.inria.papart.opengl.CustomTexture;
 import fr.inria.papart.tools.CaptureIpl;
@@ -194,7 +196,6 @@ public class Camera {
 
         // ARToolKit 2.1.1 - version
         // MultiTracker tracker = new MultiTracker(w, h);
-
         //            int pixfmt = ARToolKitPlus.PIXEL_FORMAT_LUM;
 
         int pixfmt = 0;
@@ -203,6 +204,7 @@ public class Camera {
             pixfmt = ARToolKitPlus.PIXEL_FORMAT_BGR;
         }
         if (videoInputType == Camera.PROCESSING_VIDEO) {
+            // ABRG or ARGB
             pixfmt = ARToolKitPlus.PIXEL_FORMAT_ABGR;
         }
 
@@ -230,10 +232,10 @@ public class Camera {
         sheet.addTracker(parent, this, tracker, transfo);
     }
 
-    public boolean tracks(MarkerBoard board){
+    public boolean tracks(MarkerBoard board) {
         return this.sheets.contains(board);
     }
-    
+
     /**
      * It makes the camera update continuously.
      */
@@ -369,7 +371,6 @@ public class Camera {
 //        }
 
         if (camImage == null) {
-            System.out.println("Creation ...");
             camImage = parent.createImage(width, height, PApplet.RGB);
         }
 
@@ -378,7 +379,7 @@ public class Camera {
         }
 
         if (iimg != null) {
-            Utils.IplImageToPImage(iimg, false, camImage);
+            Utils.IplImageToPImage(iimg, true, camImage);
         }
         return camImage;
     }
@@ -414,6 +415,70 @@ public class Camera {
         //TODO: lens distorsion ?
         return new PVector(tmp.x / tmp.z, tmp.y / tmp.z);
     }
+    private CvMat internalParams = null;
+
+    public PMatrix3D estimateOrientation(PVector[] objectPoints,
+            PVector[] imagePoints) {
+
+        return pdp.estimateOrientation(objectPoints, imagePoints);   
+    }
+//        public static double[] computeReprojectionError(CvMat object_points,
+//            CvMat image_points, CvMat point_counts, CvMat camera_matrix,
+//            CvMat dist_coeffs, CvMat rot_vects, CvMat trans_vects,
+//            CvMat per_view_errors ) {
+//        CvMat image_points2 = CvMat.create(image_points.rows(),
+//            image_points.cols(), image_points.type());
+//
+//        int i, image_count = rot_vects.rows(), points_so_far = 0;
+//        double total_err = 0, max_err = 0, err;
+//
+//        CvMat object_points_i = new CvMat(),
+//              image_points_i  = new CvMat(),
+//              image_points2_i = new CvMat();
+//        IntBuffer point_counts_buf = point_counts.getIntBuffer();
+//        CvMat rot_vect = new CvMat(), trans_vect = new CvMat();
+//
+//        for (i = 0; i < image_count; i++) {
+//            object_points_i.reset();
+//            image_points_i .reset();
+//            image_points2_i.reset();
+//            int point_count = point_counts_buf.get(i);
+//
+//            cvGetCols(object_points, object_points_i,
+//                    points_so_far, points_so_far + point_count);
+//            cvGetCols(image_points, image_points_i,
+//                    points_so_far, points_so_far + point_count);
+//            cvGetCols(image_points2, image_points2_i,
+//                    points_so_far, points_so_far + point_count);
+//            points_so_far += point_count;
+//
+//            cvGetRows(rot_vects,   rot_vect,   i, i+1, 1);
+//            cvGetRows(trans_vects, trans_vect, i, i+1, 1);
+//
+//            cvProjectPoints2(object_points_i, rot_vect, trans_vect,
+//                                camera_matrix, dist_coeffs, image_points2_i);
+//            err = cvNorm(image_points_i, image_points2_i);
+//            err *= err;
+//            if (per_view_errors != null)
+//                per_view_errors.put(i, Math.sqrt(err/point_count));
+//            total_err += err;
+//
+//            for (int j = 0; j < point_count; j++) {
+//                double x1 = image_points_i .get(0, j, 0);
+//                double y1 = image_points_i .get(0, j, 1);
+//                double x2 = image_points2_i.get(0, j, 0);
+//                double y2 = image_points2_i.get(0, j, 1);
+//                double dx = x1-x2;
+//                double dy = y1-y2;
+//                err = Math.sqrt(dx*dx + dy*dy);
+//                if (err > max_err) {
+//                    max_err = err;
+//                }
+//            }
+//        }
+//
+//        return new double[] { Math.sqrt(total_err/points_so_far), max_err };
+//    }
 
     /**
      * Add a tracked view to the camera. This camera must be tracking the board
