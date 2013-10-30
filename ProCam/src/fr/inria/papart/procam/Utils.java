@@ -423,6 +423,32 @@ public class Utils {
         }
         ret.updatePixels();
     }
+    
+    static public void PImageToIplImage2(IplImage img, PApplet applet, boolean RGB, PImage ret) {
+
+        ByteBuffer buff = img.getByteBuffer();
+
+        ret.loadPixels();
+        if (RGB) {
+            for (int i = 0; i < img.width() * img.height(); i++) {
+                int offset = i * 3;
+                ret.pixels[i] = (buff.get(offset) & 0xFF) << 16
+                        | (buff.get(offset + 1) & 0xFF) << 8
+                        | (buff.get(offset + 2) & 0xFF);
+
+            }
+        } else {
+            for (int i = 0; i < img.width() * img.height(); i++) {
+                int offset = i * 3;
+                ret.pixels[i] = (buff.get(offset + 2) & 0xFF) << 16
+                        | (buff.get(offset + 1) & 0xFF) << 8
+                        | (buff.get(offset) & 0xFF);
+
+            }
+
+        }
+        ret.updatePixels();
+    }
     //                                   int int  12 double  4 double
     static final int SIZE_OF_PARAM_SET = 4 + 4 + (3 * 4 * 8) + (4 * 8);
 
