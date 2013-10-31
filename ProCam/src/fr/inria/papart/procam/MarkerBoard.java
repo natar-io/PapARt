@@ -153,6 +153,9 @@ public class MarkerBoard {
     public synchronized void updatePosition(Camera camera, IplImage img) {
 
         int id = cameras.indexOf(camera);
+        if(id == -1){
+            throw new RuntimeException("The board " + this.name + " is not registered with the camera you asked");
+        }
         TrackerMultiMarker tracker = trackers.get(id);
 
         int currentTime = applet.millis();
@@ -171,7 +174,6 @@ public class MarkerBoard {
             return;
         }
 
-        System.out.println("Markers found: " + tracker.getNumDetectedMarkers());
         ARToolKitPlus.ARMultiMarkerInfoT multiMarkerConfig = tracker.getMultiMarkerConfig();
 
         // if the update is forced 
@@ -255,6 +257,16 @@ public class MarkerBoard {
                 t[8], t[9], t[10], t[11],
                 0, 0, 0, 1);
     }
+    
+    public PMatrix3D getTransfoRelativeTo(Camera camera, MarkerBoard board2){
+        
+        PMatrix3D tr1 = getTransfoMat(camera);
+        PMatrix3D tr2 = board2.getTransfoMat(camera);
+        
+        tr2.apply(tr1);
+        return tr2;
+    }
+    
 
     public String getFileName() {
         return fileName;

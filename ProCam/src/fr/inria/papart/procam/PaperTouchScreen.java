@@ -40,8 +40,8 @@ public class PaperTouchScreen extends PaperScreen {
     }
 
     @Override
-    public void update() {
-        super.update();
+    public void pre() {
+        super.pre();
         
         screen.computeScreenPosTransform();
         touch = touchInput.projectTouchToScreen(screen, projector,
@@ -53,7 +53,7 @@ public class PaperTouchScreen extends PaperScreen {
                         v.y * drawingSize.y);
             }
         }
-
+        
     }
 
     protected void checkButtons(float x, float y) {
@@ -70,14 +70,13 @@ public class PaperTouchScreen extends PaperScreen {
 
         PGraphicsOpenGL g = screen.getGraphics();
         g.beginDraw();
-        // T
-//        g.clear(0, 0);
-        g.scale(resolution);
-        g.background(20, 20);
-        
-        drawTouch(g, 20);
-        g.endDraw();
 
+        g.clear();
+        g.scale(resolution);
+        g.background(0, 200, 100);
+        
+        drawTouch(g, 10);
+        g.endDraw();
     }
 
     protected void drawTouch(PGraphicsOpenGL g, int ellipseSize) {

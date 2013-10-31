@@ -38,7 +38,6 @@ public class PaperScreen {
         this.resolution = resolution;
 
         this.screen = new Screen(parent, size, resolution);
-        // screen.setAutoUpdatePos(cameraTracking, board);
         projector.addScreen(screen);
 
         if(!cam.tracks(board))
@@ -47,14 +46,15 @@ public class PaperScreen {
         screen.setAutoUpdatePos(cam, board);
         board.setDrawingMode(cameraTracking, true, 25);
         board.setFiltering(cameraTracking, 30, 25);
+        
+        parent.registerMethod("pre", this);
     }
 
     ///// Load ressources ////////
     public void init() {
     }
 
-    public void update() {
-        
+    public void pre() {
         screen.updatePos();
     }
 

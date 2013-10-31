@@ -42,11 +42,11 @@ public class Screen {
     public Screen(PApplet parent, PVector size, float scale, boolean useAA, int AAValue) {
         // AA not available anymore
         thisGraphics = (PGraphicsOpenGL) parent.createGraphics((int) (size.x * scale), (int) (size.y * scale), PApplet.OPENGL);
-        
+
 //        thisGraphics = new PGraphicsOpenGL(); 
 //        thisGraphics.setPrimary(false);
 //        thisGraphics.setSize((int) (size.x * scale), (int) (size.y * scale));
-        
+
         this.size = size.get();
         this.scale = scale;
         this.parent = parent;
@@ -251,16 +251,15 @@ public class Screen {
         return res;
     }
 
-    
     // The board must be registered with the camera. 
     public void setAutoUpdatePos(Camera camera, MarkerBoard board) {
-        
-        // TODO: 
-        if(!camera.tracks(board))
+
+        if (!camera.tracks(board)) {
             camera.trackMarkerBoard(board);
-        
-      pos3D = board.getTransfo(camera);
- 
+        }
+
+        pos3D = board.getTransfo(camera);
+
     }
 
 //    public void setManualUpdatePos() {
@@ -327,8 +326,8 @@ public class Screen {
 
         pos3D = board.getTransfo(camera);
 
-        
-                if (pos == null) {
+
+        if (pos == null) {
             pos = new PMatrix3D(pos3D[0], pos3D[1], pos3D[2], pos3D[3],
                     pos3D[4], pos3D[5], pos3D[6], pos3D[7],
                     pos3D[8], pos3D[9], pos3D[10], pos3D[11],

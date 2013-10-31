@@ -76,6 +76,7 @@ public class Projector extends ARDisplay {
         return this.graphics;
     }
 
+//   @deprecated
     public PGraphicsOpenGL beginDrawOnBoard(Camera camera, MarkerBoard board) {
 
         this.beginDraw();
@@ -95,6 +96,13 @@ public class Projector extends ARDisplay {
 
         return this.graphics;
     }
+    
+    public void drawOnBoard(Camera camera, MarkerBoard board){
+        loadModelView();
+        PMatrix3D camBoard = board.getTransfoMat(camera);
+        camBoard.preApply(getExtrinsics());
+        this.graphics.modelview.apply(camBoard);
+    }
 
     public void endDrawOnScreen() {
 
@@ -106,7 +114,7 @@ public class Projector extends ARDisplay {
     public void drawScreens() {
         this.beginDraw();
         this.graphics.clear();
-        this.graphics.background(100, 200, 0);
+        this.graphics.background(0);
         drawScreensProjection();
         this.endDraw();
     }

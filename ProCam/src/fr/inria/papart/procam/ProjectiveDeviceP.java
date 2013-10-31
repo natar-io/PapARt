@@ -37,7 +37,7 @@ public class ProjectiveDeviceP {
     private float cx;
     private float cy;
     private CvMat intrinsicsMat;
-    
+
     public ProjectiveDeviceP() {
     }
 
@@ -96,33 +96,30 @@ public class ProjectiveDeviceP {
 
         return (int) (py * w + px);
     }
-    
+
     public int worldToPixel(PVector pt) {
 
         // Reprojection 
         float invZ = 1.0f / pt.z;
 
-        int px = PApplet.constrain(PApplet.round((pt.x* invZ * fx) + cx), 0, w - 1);
-        int py = PApplet.constrain(PApplet.round((pt.y* invZ * fy) + cy), 0, h - 1);
+        int px = PApplet.constrain(PApplet.round((pt.x * invZ * fx) + cx), 0, w - 1);
+        int py = PApplet.constrain(PApplet.round((pt.y * invZ * fy) + cy), 0, h - 1);
 
         return (int) (py * w + px);
     }
 
-    
-    public PMatrix3D estimateOrientation2(PVector[] objectPoints, PVector[] imagePoints){
-        
-        
-        ARMarkerInfo marker_info = new ARMarkerInfo();
-        
+//    public PMatrix3D estimateOrientation2(PVector[] objectPoints, PVector[] imagePoints) {
+//        ARMarkerInfo marker_info = new ARMarkerInfo();
+
 //        public native float arGetTransMat(ARMarkerInfo marker_info, float center[/*2*/],
 //                float width, @Cast("ARFloat(*)[4]") float conv[/*3][4*/]);
 //        public native float arGetTransMatCont(ARMarkerInfo marker_info,
 //                @Cast("ARFloat(*)[4]") float prev_conv[/*3][4*/],   float center[/*2*/],
 //                float width, @Cast("ARFloat(*)[4]") float conv[/*3][4*/]);
-        return null;
-    }
-    
-     public PMatrix3D estimateOrientation(PVector[] objectPoints,
+//        return null;
+//    }
+
+    public PMatrix3D estimateOrientation(PVector[] objectPoints,
             PVector[] imagePoints) {
 
         assert (objectPoints.length == imagePoints.length);
@@ -130,30 +127,28 @@ public class ProjectiveDeviceP {
         CvMat op = CvMat.create(objectPoints.length, 3);
         CvMat ip = CvMat.create(imagePoints.length, 2);
 
-        
+
         CvMat rotation = CvMat.create(3, 1);
         CvMat translation = CvMat.create(3, 1);
-        
+
         // Create internal parameters matrix.
         if (intrinsicsMat == null) {
             intrinsicsMat = CvMat.create(3, 3);
-            
-            for(int i = 0; i < 3; i++){
-                for(int j = 0; j < 3; j++){
+
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 3; j++) {
                     intrinsicsMat.put(i, j, 0);
                 }
             }
-            
-            
-            PMatrix3D intrinsics = getIntrinsics();
-             intrinsicsMat.put(0, 0, intrinsics.m00);
-             intrinsicsMat.put(1, 1, intrinsics.m11);
-             intrinsicsMat.put(0, 2, intrinsics.m02);
-             intrinsicsMat.put(1, 2, intrinsics.m12);
-             intrinsicsMat.put(2, 2, 1);
+
+            intrinsicsMat.put(0, 0, intrinsics.m00);
+            intrinsicsMat.put(1, 1, intrinsics.m11);
+            intrinsicsMat.put(0, 2, intrinsics.m02);
+            intrinsicsMat.put(1, 2, intrinsics.m12);
+            intrinsicsMat.put(2, 2, 1);
         }
-        
-        
+
+
         // Fill the object and image matrices.
         for (int i = 0; i < objectPoints.length; i++) {
             op.put(i, 0, objectPoints[i].x);
@@ -164,89 +159,40 @@ public class ProjectiveDeviceP {
             ip.put(i, 1, imagePoints[i].y);
         }
 
-        
+
 //        ITERATIVE=CV_ITERATIVE,
 //        EPNP=CV_EPNP,
 //        P3P=CV_P3P;
-        
-        boolean solved = opencv_calib3d.solvePnP(op, ip, intrinsicsMat, null, rotation, translation, 
+
+        boolean solved = opencv_calib3d.solvePnP(op, ip, intrinsicsMat, null, rotation, translation,
                 false, opencv_calib3d.ITERATIVE);
-        
+
 //        boolean solvePnP(@InputArray CvMat objectPoints,
 //            @InputArray CvMat imagePoints, @InputArray CvMat cameraMatrix,
 //            @InputArray CvMat distCoeffs,  @OutputArray CvMat rvec,
 //            @OutputArray CvMat tvec, boolean useExtrinsicGuess/*=false*/, int flags/*=ITERATIVE*/);
-        
-     
+
+
         PMatrix3D mat = new PMatrix3D();
-        mat.translate((float) translation.get(0),
-                      (float) translation.get(1), 
-                      (float) translation.get(2)); 
-        
-        mat.rotateX((float) rotation.get(0));
-        mat.rotateY((float) rotation.get(1));
-        mat.rotateZ((float) rotation.get(2));
         
         CvMat rotMat = CvMat.create(3, 3);
-        
-        rotation.put(0, rotation.get(0));        
+        rotation.put(0, rotation.get(0));
         rotation.put(1, rotation.get(1));
         rotation.put(2, rotation.get(2));
         
         cvRodrigues2(rotation, rotMat, null);
-        
-        mat.m00 = (float) rotMat.get(0); 
-        mat.m01 = (float) rotMat.get(1); 
-        mat.m02 = (float) rotMat.get(2); 
-        
-        mat.m10 = (float) rotMat.get(3); 
-        mat.m11 = (float) rotMat.get(4); 
-        mat.m12 = (float) rotMat.get(5); 
 
-        mat.m20 = (float) rotMat.get(6); 
-        mat.m21 = (float) rotMat.get(7); 
-        mat.m21 = (float) rotMat.get(8); 
-        
-        mat.m03 = (float) translation.get(0);
-        mat.m13 = (float) translation.get(1);
-        mat.m23 = (float) translation.get(2);
-     
-        mat.scale(1, 1, 1);
-        
-//        
-//        // use the rotation vector generated from OpenCV's cvFindExtrinsicCameraParams2() 
-//float rv[] = {rotation->data.fl[0], rotation->data.fl[1], rotation->data.fl[2] }; 
-//
-//// use the translation vector generated from OpenCV's cvFindExtrinsicCameraParams2() 
-//float tv[] = {translation->data.fl[0], translation->data.fl[1], translation->data.fl[2]} ; 
-//
-//float rm[9];
-//// rotation matrix
-//CvMat* rotMat = cvCreateMat (3, 3, CV_32FC1); 
-//
-//// rotation vectors can be converted to a 3-by-3 rotation matrix
-//// by calling cvRodrigues2() - Source: O'Reilly Learning OpenCV
-//cvRodrigues2(rotation, rotMat, NULL);
-//
-//for(int i=0; i<9; i++){
-//    rm[i] = rotMat->data.fl[i];
-//}
-//
-//rv[1]=-1.0f * rv[1]; rv[2]=-1.0f * rv[2];
-////Convert the rotation vector into a matrix here.
-//
-////Complete matrix ready to use for OpenGL
-//float RTMat[] = {rm[0], rm[3], rm[6], 0.0f,
-//             rm[1], rm[4], rm[7], 0.0f,
-//             rm[2], rm[5], rm[8], 0.0f,
-//             tv[0], -tv[1], -tv[2], 1.0f};
-        
-        
+        float RTMat[] = {
+            (float) rotMat.get(0), (float) rotMat.get(1), (float) rotMat.get(2), (float) translation.get(0),
+            (float) rotMat.get(3), (float) rotMat.get(4), (float) rotMat.get(5), (float) translation.get(1),
+            (float) rotMat.get(6), (float) rotMat.get(7), (float) rotMat.get(8), (float) translation.get(2),
+            0, 0, 0, 1f};
+
+        mat.set(RTMat);
+
         return mat;
     }
 
-    
-    
     private static void loadParameters(ProjectiveDevice dev, ProjectiveDeviceP p) {
         double[] camMat = dev.cameraMatrix.get();
 

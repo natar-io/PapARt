@@ -241,16 +241,20 @@ public class ARDisplay {
 
         // load the projector parameters into OpenGL
         loadProjection();
-
-        // make the modelview matrix as the default matrix
-        this.graphics.resetMatrix();
-
-        // Setting the projector negative because ARToolkit provides neg Z values
-        this.graphics.scale(1, 1, -1);
+        
+        loadModelView();
 
         return this.graphics;
     }
 
+    protected void loadModelView(){
+                // make the modelview matrix as the default matrix
+        this.graphics.resetMatrix();
+
+        // Setting the projector negative because ARToolkit provides neg Z values
+        this.graphics.scale(1, 1, -1);
+    }
+    
     public void endDraw() {
 
         // Put the projection matrix back to normal

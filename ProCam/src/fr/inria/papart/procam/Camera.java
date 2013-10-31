@@ -63,7 +63,7 @@ public class Camera {
     protected int width, height;
     protected int videoInputType;
     protected int frameRate;
-    protected boolean autoUpdate = false;
+    protected boolean trackSheets = false;
     protected boolean gotPicture = false;
 
     static public void convertARParams(PApplet parent, String calibrationYAML,
@@ -178,13 +178,13 @@ public class Camera {
     // Legacy, use trackMarkerBoard now. 
     public void initMarkerDetection(String calibrationARToolkit) {
         // Marker Detection and view
+        this.calibrationARToolkit = calibrationARToolkit;
         this.trackedViews = new ArrayList<TrackedView>();
         this.sheets = new ArrayList<MarkerBoard>();
     }
 
     public void trackMarkerBoard(MarkerBoard sheet) {
 
-        this.sheets.add(sheet);
         // create a tracker that does:
         //  - 6x6 sized marker images (required for binary markers)
         //  - samples at a maximum of 6x6 
@@ -204,7 +204,7 @@ public class Camera {
             pixfmt = ARToolKitPlus.PIXEL_FORMAT_BGR;
         }
         if (videoInputType == Camera.PROCESSING_VIDEO) {
-            // ABRG or ARGB
+            // Works on MacBook
             pixfmt = ARToolKitPlus.PIXEL_FORMAT_ABGR;
         }
 
@@ -230,6 +230,7 @@ public class Camera {
         }
         transfo[15] = 0;
         sheet.addTracker(parent, this, tracker, transfo);
+        this.sheets.add(sheet);
     }
 
     public boolean tracks(MarkerBoard board) {
@@ -267,19 +268,27 @@ public class Camera {
     }
 
     /**
+     * Deprecated : use trackSheets instead
+     *
+     * @param auto
+     */
+    public void setAutoUpdate(boolean auto) {
+        this.trackSheets(auto);
+    }
+
+    /**
      * If the video is threaded, this sets if the tracking is on or not.
      *
      * @param auto automatic Tag detection: ON if true.
      */
-    public void setAutoUpdate(boolean auto) {
-        this.autoUpdate = auto;
+    public void trackSheets(boolean auto) {
+        this.trackSheets = auto;
 
         if (thread != null) {
             thread.setCompute(auto);
         } else {
             System.err.println("Camera: Error AutoCompute only if threaded.");
         }
-
     }
 
     public boolean useThread() {
@@ -420,7 +429,7 @@ public class Camera {
     public PMatrix3D estimateOrientation(PVector[] objectPoints,
             PVector[] imagePoints) {
 
-        return pdp.estimateOrientation(objectPoints, imagePoints);   
+        return pdp.estimateOrientation(objectPoints, imagePoints);
     }
 //        public static double[] computeReprojectionError(CvMat object_points,
 //            CvMat image_points, CvMat point_counts, CvMat camera_matrix,
