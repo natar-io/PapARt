@@ -5,6 +5,7 @@
  */
 package fr.inria.papart.kinect;
 
+import static fr.inria.papart.kinect.Kinect.KINECT_WIDTH;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -111,7 +112,6 @@ public class PointCloudKinect implements PConstants {
         // Todo allocate this intbuffer...
 
         // Allocate the buffer in central memory (native),  then java, then OpenGL 
-
         // Native memory         
         int bytes = Kinect.KINECT_SIZE * 4 * 4; // 4 : SizeOf Float
         vertices = ByteBuffer.allocateDirect(bytes).order(ByteOrder.nativeOrder()).
@@ -123,9 +123,7 @@ public class PointCloudKinect implements PConstants {
         verticesTmp = new float[Kinect.KINECT_SIZE * 4];
         colorsTmp = new int[Kinect.KINECT_SIZE];
 
-
         // OpenGL memory
-
         // Not necessary as data are streamed... ??
         IntBuffer intBuffer = allocateIntBuffer(1);
         pgl.genBuffers(1, intBuffer);
@@ -212,7 +210,6 @@ public class PointCloudKinect implements PConstants {
 //            }
 //
 //            parentApplet.endShape();
-
         } else {
 
             boolean[] valid = kinect.getValidPoints();
@@ -223,11 +220,11 @@ public class PointCloudKinect implements PConstants {
             nbColors = 0;
             parentApplet.beginShape(TRIANGLES);
             parentApplet.noStroke();
-            
+
             skip = kinect.getCurrentSkip();
 
-            for (int y = skip; y < kinect.KINECT_HEIGHT; y += skip) {
-                for (int x = skip; x < kinect.KINECT_WIDTH; x += skip) {
+            for (int y = 0; y < kinect.KINECT_HEIGHT ; y += skip) {
+                for (int x = 0; x < kinect.KINECT_WIDTH ; x += skip) {
 
                     int offset = y * kinect.KINECT_WIDTH + x;
 
@@ -239,7 +236,6 @@ public class PointCloudKinect implements PConstants {
 //                    parentApplet.fill(c);
 //                    parentApplet.vertex(p.x, p.y, -p.z);
 //                    parentApplet.normal(0, 0, 1);
-
                         checkAndCreateTriangle2(x, y, offset, c);
                     }
                 }
@@ -253,7 +249,6 @@ public class PointCloudKinect implements PConstants {
 //
 //                }
 //            }
-
             parentApplet.endShape();
         }
     }
@@ -273,7 +268,6 @@ public class PointCloudKinect implements PConstants {
         // load the transformation matrix
         pgl.uniformMatrix4fv(transformLoc, 1, false, toOpenGL(g.projmodelview));
 
-
         // Making sure that no VBO is bound at this point.
         pgl.bindBuffer(GL2.GL_ARRAY_BUFFER, 0);
 
@@ -282,7 +276,6 @@ public class PointCloudKinect implements PConstants {
         colors.position(0); // start at 0
 
         // Say where vertices are
-
         // Version 1
         pgl.vertexAttribPointer(vertLoc, 4, PGL.FLOAT, false, 4 * SIZEOF_FLOAT, vertices);
 
@@ -290,19 +283,15 @@ public class PointCloudKinect implements PConstants {
 //        pgl.bindBuffer(PGL.ARRAY_BUFFER, glVertBuff);
 //        pgl.bufferData(PGL.ARRAY_BUFFER, nbVertices * 4 * SIZEOF_FLOAT, vertices, PGL.STREAM_DRAW);
 //        gl.glVertexAttribPointer(vertLoc, 4, PGL.FLOAT, false, 4 * SIZEOF_FLOAT, 0);
-
-
         // Version 1 
 //        pgl.bindBuffer(GL2.GL_ARRAY_BUFFER, 0);
         // Say where colors are
         pgl.vertexAttribPointer(colorsLoc, 4, PGL.UNSIGNED_BYTE, false, 4 * SIZEOF_BYTE, colors);
 
-
         // Version 2 
 //        pgl.bindBuffer(PGL.ARRAY_BUFFER, glColorsBuff);
 //        pgl.bufferData(PGL.ARRAY_BUFFER, nbVertices * 4 * SIZEOF_BYTE, colors, PGL.STREAM_DRAW);
 //        gl.glVertexAttribPointer(colorsLoc, 4, PGL.UNSIGNED_BYTE, false, 4 * SIZEOF_BYTE, 0);
-
         // Draw the array nbToDraw elements.
         pgl.drawArrays(vertexMode, 0, nbVertices);
 
@@ -343,7 +332,6 @@ public class PointCloudKinect implements PConstants {
         glProjmodelview[13] = projmodelview.m13;
         glProjmodelview[14] = projmodelview.m23;
         glProjmodelview[15] = projmodelview.m33;
-
 
         if (glProjBuff == null || glProjBuff.capacity() < glProjmodelview.length) {
             glProjBuff = FloatBuffer.allocate(glProjmodelview.length);
@@ -392,41 +380,49 @@ public class PointCloudKinect implements PConstants {
         // Triangles indices this way. A is current
         // D B 
         // C A
-
         // Triangles indices this way. A is current
         // 0   1   2 
         //   a   b
         // 3   x   4
         //   c   d 
         // 5   6   7
-
-
         int offset1 = ((y - skip) * Kinect.KINECT_WIDTH) + x;
         int offsetx = (y * Kinect.KINECT_WIDTH) + x;
         int offset3 = offsetx - skip;
         int offset0 = offset1 - skip;
 
         int c = connexity[offsetx];
-
-        // MORE !
         int[] offsets = new int[8];
-        int k = 0;
-        for (int j = 0; j < 3; j++) {
-            for (int i = 0; i < 3; i++) {
 
-                if (i == 1 && j == 1) {
+        for (int y1 = y - skip, connNo = 0; y1 <= y + skip;  y1 = y1 + skip) {
+            for (int x1 = x - skip; x1 <= x + skip; x1 = x1 + skip) {
+
+                // Do not try the current point
+                if (x1 == x && y1 == y) {
                     continue;
                 }
-
-                if ((c & (1 << k)) == 1 << k) {
-                    offsets[k] = ((y + (j - 1) * skip) * Kinect.KINECT_WIDTH) + (x + (i - 1) * skip);
-
-                } else {
-                    offsets[k] = -1;
+                
+                offsets[connNo] = -1;
+                
+                // If the point is not in image
+                if (y1 >= Kinect.KINECT_HEIGHT || y1 < 0 || x1 < 0 || x1 >= Kinect.KINECT_WIDTH) {
+                    connNo++;
+                    continue; 
                 }
 
-//                System.out.println("Offset " + k + "  " + offsets[k]);
-                k++;
+                int offset = y1 * Kinect.KINECT_WIDTH + x1;
+
+                if ((c & (1 << connNo)) == 1 << connNo) {
+                    offsets[connNo] = offset;
+                }
+
+                if(offsets[connNo] != -1){
+                    if(points[offsets[connNo]] == null){
+                        System.out.println("Bug dans la Matrice. L'élu est là.");
+                    }
+                }
+
+                connNo++;
             }
         }
 
@@ -445,7 +441,6 @@ public class PointCloudKinect implements PConstants {
         Vec3D normal = new Vec3D(0, 0, 0);
 
 //        System.out.println("Offsets " + offsets[1] + " " + offsetx + " " + offsets[3]);
-
         if (tra) {
             // X 1 3 
 //            System.out.println("point " + points[offsetx] + " " + points[offsets[1]] + " " + points[offsets[3]]);
@@ -480,6 +475,8 @@ public class PointCloudKinect implements PConstants {
 
         if (trb) {
             // X 1 4
+//            System.out.println("Offets " + offsetx + offsets[4] + " " + offsets[1]);
+
             Triangle3D triangleb = new Triangle3D(points[offsetx], points[offsets[4]], points[offsets[1]]);
             triangleb.computeNormal();
             normal = normal.add(triangleb.normal);
@@ -495,7 +492,6 @@ public class PointCloudKinect implements PConstants {
             parentApplet.fill(c);
             parentApplet.vertex(points[offsets[1]].x, points[offsets[1]].y, -points[offsets[1]].z);
             parentApplet.normal(normal.x, normal.y, -normal.z);
-
 
 //            indices[currentIndex++] = indicesMap[offsetx];
 //            indices[currentIndex++] = indicesMap[offsets[1]];
@@ -535,7 +531,6 @@ public class PointCloudKinect implements PConstants {
             parentApplet.vertex(points[offsetx].x, points[offsetx].y, -points[offsetx].z);
             parentApplet.normal(normal.x, normal.y, -normal.z);
 
-
             parentApplet.fill(c);
             parentApplet.vertex(points[offsets[6]].x, points[offsets[6]].y, -points[offsets[6]].z);
             parentApplet.normal(normal.x, normal.y, -normal.z);
@@ -543,7 +538,6 @@ public class PointCloudKinect implements PConstants {
             parentApplet.fill(c);
             parentApplet.vertex(points[offsets[6]].x, points[offsets[6]].y, -points[offsets[6]].z);
             parentApplet.normal(normal.x, normal.y, -normal.z);
-
 
 //            indices[currentIndex++] = indicesMap[offsetx];
 //            indices[currentIndex++] = indicesMap[offsets[3]];
@@ -556,7 +550,6 @@ public class PointCloudKinect implements PConstants {
 //        normals[vertexIndex * 4 + 1] = normal.y;
 //        normals[vertexIndex * 4 + 2] = normal.z;
 //        normals[vertexIndex * 4 + 3] = 0;
-
         return currentIndex;
 
     }
@@ -794,7 +787,6 @@ public class PointCloudKinect implements PConstants {
 //            }
 //            model.endUpdateColors();
 //        }
-
         writer.endSave();
     }
     private OBJWriter writer = null;

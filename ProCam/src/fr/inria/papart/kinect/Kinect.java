@@ -199,7 +199,6 @@ public class Kinect {
         float begin = parent.millis();
 
         // for each point
-
 //            for (int iter = 0; iter < 200; iter++) {
         for (int y = 0; y < kinectCalibIR.getHeight(); y += currentSkip * threadLoad) {
             Runnable worker = new DepthComputation(y);
@@ -213,7 +212,6 @@ public class Kinect {
         // Wait until all threads are finish
 //            threadPool.
 //            threadPool.awaitTermination(2, TimeUnit.SECONDS);
-
         System.out.println("Temps1 " + (parent.millis() - begin));
 
 //            begin = parent.millis();
@@ -247,7 +245,6 @@ public class Kinect {
 //                }
 //            }
 //            System.out.println("Temps2 " + (parent.millis() - begin));
-
     }
 
     class DepthComputation implements Runnable {
@@ -325,7 +322,7 @@ public class Kinect {
     }
 
     protected int nbValid = 0;
-    
+
     public PImage updateP(IplImage depth, IplImage color, int skip) {
 
         this.currentSkip = skip;
@@ -422,7 +419,6 @@ public class Kinect {
                 }
                 d = 1000 * depthLookUp[(int) d];
 
-
                 validPoints[offset] = false;
                 validPointsPImage.pixels[offset] = parent.color(0, 0, 255);
 
@@ -496,7 +492,6 @@ public class Kinect {
                 int offset = y * kinectCalibIR.getWidth() + x;
                 int outputOffset = offset * 3;
 
-
                 float d = (depthRaw[offset * 2] & 0xFF) << 8
                         | (depthRaw[offset * 2 + 1] & 0xFF);
 
@@ -524,7 +519,6 @@ public class Kinect {
 //                            | (colorRaw[colorOffset + 1] & 0xFF) << 8
 //                            | (colorRaw[colorOffset + 0] & 0xFF);
 //                    validPointsPImage.pixels[offset] = c;
-
                     validPointsRaw[outputOffset + 2] = colorRaw[colorOffset + 2];
                     validPointsRaw[outputOffset + 1] = colorRaw[colorOffset + 1];
                     validPointsRaw[outputOffset + 0] = colorRaw[colorOffset + 0];
@@ -584,7 +578,6 @@ public class Kinect {
                         Vec3D project = calib.project(p);
                         if (isInside(project, 0.f, 1.f, 0.0f)) {
 
-
                             kinectPoints[offset] = p;
                             validPoints[offset] = true;
                             // Projection
@@ -598,8 +591,6 @@ public class Kinect {
 //                                    | (colorRaw[colorOffset + 0] & 0xFF);
 //
 //                            validPointsPImage.pixels[offset] = c;
-
-
                             kinectPoints[offset] = kinectCalibIR.pixelToWorld(x, y, d);
                             colorPoints[offset] = this.findColorOffset(kinectPoints[offset]);
                             int colorOffset = colorPoints[offset] * 3;
@@ -608,8 +599,6 @@ public class Kinect {
                                     | (colorRaw[colorOffset + 0] & 0xFF);
 
                             validPointsPImage.pixels[offset] = c;
-
-
 
                         }
                     }
@@ -662,12 +651,10 @@ public class Kinect {
                     kinectPoints[offset] = p;
 //                    colorPoints[offset] = this.findColorOffset(p);
 
-
                     if (calib.plane().hasGoodOrientationAndDistance(p)) {
 
                         Vec3D project = calib.project(p);
                         if (isInside(project, 0.f, 1.f, 0.1f)) {
-
 
                             kinectPoints[offset] = p;
                             validPoints[offset] = true;
@@ -680,8 +667,6 @@ public class Kinect {
 //                            validPointsRaw[colorOutputOffset + 2] = colorRaw[colorOffset + 2];
 //                            validPointsRaw[colorOutputOffset + 1] = colorRaw[colorOffset + 1];
 //                            validPointsRaw[colorOutputOffset + 0] = colorRaw[colorOffset + 0];
-
-
                             kinectPoints[offset] = kinectCalibIR.pixelToWorld(x, y, d);
                             colorPoints[offset] = this.findColorOffset(kinectPoints[offset]);
                             int colorOffset = colorPoints[offset] * 3;
@@ -689,7 +674,6 @@ public class Kinect {
                             validPointsRaw[colorOutputOffset + 2] = colorRaw[colorOffset + 2];
                             validPointsRaw[colorOutputOffset + 1] = colorRaw[colorOffset + 1];
                             validPointsRaw[colorOutputOffset + 0] = colorRaw[colorOffset + 0];
-
 
                         }
                     }
@@ -863,6 +847,12 @@ public class Kinect {
 //            return 1 << this.ordinal();
 //        }
 //    }
+    private float connexityDist = 10;
+
+    public void setConnexityDist(float dist) {
+        this.connexityDist = dist;
+    }
+
     private void computeConnexity(int x, int y, int skip) {
 
         // Connexity map 
@@ -870,43 +860,35 @@ public class Kinect {
         //  3 x 4
         //  5 6 7
 
-        final float maxDist = 8.0f;
-
-
-        int minX = PApplet.constrain(x - skip, 0, Kinect.KINECT_WIDTH - skip);
-        int maxX = PApplet.constrain(x + skip, 0, Kinect.KINECT_WIDTH - skip);
-        int minY = PApplet.constrain(y - skip, 0, Kinect.KINECT_HEIGHT - skip);
-        int maxY = PApplet.constrain(y + skip, 0, Kinect.KINECT_HEIGHT - skip);
-
         // Todo: Unroll these for loops for optimisation...
         int currentOffset = y * Kinect.KINECT_WIDTH + x;
 
         int type = 0;
-
-        for (int j = minY, k = 0; j <= maxY; j += skip, k++) {
-            for (int i = minX, l = 0; i <= maxX; i += skip, l++) {
+        
+        for (int y1 = y - skip, connNo = 0; y1 <= y + skip;  y1 = y1 + skip) {
+            for (int x1 = x - skip; x1 <= x + skip; x1 = x1 + skip) {
 
                 // Do not try the current point
-                if (k == 1 && l == 1) {
+                if (x1 == x && y1 == y) {
                     continue;
                 }
-                int offset = j * Kinect.KINECT_WIDTH + i;
-                int connNo = k * 3 + l;
-
-                // See map in the comments. 
-                if (connNo >= 5) {
-                    connNo--;
+                
+                // If the point is not in image
+                if (y1 >= Kinect.KINECT_HEIGHT || y1 < 0 || x1 < 0 || x1 >= Kinect.KINECT_WIDTH) {
+                    connNo++;
+                    continue; 
                 }
-
-//                System.out.println("ConnNo " + connNo);
-
-                if (validPoints[offset] && kinectPoints[currentOffset].distanceTo(kinectPoints[offset]) < maxDist) {
+                
+                int offset = y1 * Kinect.KINECT_WIDTH + x1;
+                if (validPoints[offset] && kinectPoints[currentOffset].distanceTo(kinectPoints[offset]) < connexityDist) {
                     type = type | (1 << connNo);
                 }
 
+                connNo++;
             }
         }
-
+        
+         
         connexity[currentOffset] = type;
     }
 

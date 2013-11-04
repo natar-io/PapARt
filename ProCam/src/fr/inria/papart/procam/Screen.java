@@ -137,7 +137,6 @@ public class Screen {
 
         if (isOnly) {
             graphics.beginDraw();
-// TODO: Check if the clear() is the same as clear(0, 0);
             graphics.clear();
         }
 
@@ -145,12 +144,9 @@ public class Screen {
         PMatrix3D tr = initPosM.get();
         PVector virtualPos = userPos.get();
 
-
-
         if (isAnaglyph) {
             virtualPos.add(isLeft ? -halfEyeDist : halfEyeDist, 0, 0);
         }
-
 
         /////////// GOOOD ONE ////////////////////
         virtualPos.mult(-1);
@@ -179,36 +175,31 @@ public class Screen {
 
         // http://www.gamedev.net/topic/597564-view-and-projection-matrices-for-vr-window-using-head-tracking/
 
-//        graphics.camera(tmp2.x, tmp2.y, tmp2.z,
-//                tmp2.x, tmp2.y, 0,
-//                0, 1, 0);
-//
-//        float nearFactor = nearPlane / tmp2.z;
-//
-//        float left = nearFactor * (-scale * size.x / 2f - tmp2.x);
-//        float right = nearFactor * (scale * size.x / 2f - tmp2.x);
-//        float top = nearFactor * (scale * size.y / 2f - tmp2.y);
-//        float bottom = nearFactor * (-scale * size.y / 2f - tmp2.y);
-
-        graphics.camera(paperCameraPos.x, paperCameraPos.y, paperCameraPos.z,
-                paperCameraPos.x, paperCameraPos.y, 0,
+        graphics.camera(userPos.x, userPos.y, userPos.z,
+                userPos.x, userPos.y, 0,
                 0, 1, 0);
 
-        float nearFactor = nearPlane / paperCameraPos.z;
+        float nearFactor = nearPlane / userPos.z;
 
-        float left = nearFactor * (-size.x / 2f - paperCameraPos.x);
-        float right = nearFactor * (size.x / 2f - paperCameraPos.x);
-        float top = nearFactor * (size.y / 2f - paperCameraPos.y);
-        float bottom = nearFactor * (-size.y / 2f - paperCameraPos.y);
-//        
+        float left = nearFactor * (-size.x / 2f - userPos.x);
+        float right = nearFactor * (size.x / 2f - userPos.x);
+        float top = nearFactor * (size.y / 2f - userPos.y);
+        float bottom = nearFactor * (-size.y / 2f - userPos.y);
 
-//        float left = nearFactor * (-scale * size.x / 2f - paperCameraPos.x);
-//        float right = nearFactor * (scale * size.x / 2f - paperCameraPos.x);
-//        float top = nearFactor * (scale * size.y / 2f - paperCameraPos.y);
-//        float bottom = nearFactor * (-scale * size.y / 2f - paperCameraPos.y);
+//        graphics.camera(paperCameraPos.x, paperCameraPos.y, paperCameraPos.z,
+//                paperCameraPos.x, paperCameraPos.y, 0,
+//                0, 1, 0);
+//
+//        float nearFactor = nearPlane / paperCameraPos.z;
+//
+//        float left = nearFactor * (-size.x / 2f - paperCameraPos.x);
+//        float right = nearFactor * (size.x / 2f - paperCameraPos.x);
+//        float top = nearFactor * (size.y / 2f - paperCameraPos.y);
+//        float bottom = nearFactor * (-size.y / 2f - paperCameraPos.y);
 
         graphics.frustum(left, right, bottom, top, nearPlane, farPlane);
-
+        graphics.projection.m11 = -graphics.projection.m11;
+        
         return graphics;
     }
 

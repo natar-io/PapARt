@@ -58,6 +58,10 @@ public class PaperScreen {
         screen.updatePos();
     }
 
+    public PGraphicsOpenGL getGraphics(){
+        return screen.getGraphics();
+    }
+    
     // Example Draw... to check ? Or put it as begin / end ...
     public void draw() {
 

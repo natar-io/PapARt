@@ -170,7 +170,8 @@ public class TrackedView {
         cornerPos[3].z = tmp.m23;
 
         for (int i = 0; i < 4; i++) {
-            screenP[i] = camera.getCamViewPoint(cornerPos[i]);
+            screenP[i] = camera.pdp.worldToPixel(cornerPos[i], true);
+//            screenP[i] = camera.getCamViewPoint(cornerPos[i]);
         }
     }
 //    protected void computeCorners() {

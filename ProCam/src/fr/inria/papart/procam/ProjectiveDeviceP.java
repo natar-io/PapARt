@@ -108,9 +108,24 @@ public class ProjectiveDeviceP {
         return (int) (py * w + px);
     }
 
+    public PVector worldToPixel(PVector pt, boolean undistort) {
+
+        // Reprojection 
+        float invZ = 1.0f / pt.z;
+
+        int px = PApplet.constrain(PApplet.round((pt.x * invZ * fx) + cx), 0, w - 1);
+        int py = PApplet.constrain(PApplet.round((pt.y * invZ * fy) + cy), 0, h - 1);
+
+        if (undistort) {
+            double[] out = device.distort(px, py);
+            return new PVector((float) out[0], (float) out[1]);
+        } else {
+            return new PVector(px, py);
+        }
+    }
+
 //    public PMatrix3D estimateOrientation2(PVector[] objectPoints, PVector[] imagePoints) {
 //        ARMarkerInfo marker_info = new ARMarkerInfo();
-
 //        public native float arGetTransMat(ARMarkerInfo marker_info, float center[/*2*/],
 //                float width, @Cast("ARFloat(*)[4]") float conv[/*3][4*/]);
 //        public native float arGetTransMatCont(ARMarkerInfo marker_info,
@@ -118,7 +133,6 @@ public class ProjectiveDeviceP {
 //                float width, @Cast("ARFloat(*)[4]") float conv[/*3][4*/]);
 //        return null;
 //    }
-
     public PMatrix3D estimateOrientation(PVector[] objectPoints,
             PVector[] imagePoints) {
 
@@ -126,7 +140,6 @@ public class ProjectiveDeviceP {
 
         CvMat op = CvMat.create(objectPoints.length, 3);
         CvMat ip = CvMat.create(imagePoints.length, 2);
-
 
         CvMat rotation = CvMat.create(3, 1);
         CvMat translation = CvMat.create(3, 1);
@@ -148,7 +161,6 @@ public class ProjectiveDeviceP {
             intrinsicsMat.put(2, 2, 1);
         }
 
-
         // Fill the object and image matrices.
         for (int i = 0; i < objectPoints.length; i++) {
             op.put(i, 0, objectPoints[i].x);
@@ -159,11 +171,9 @@ public class ProjectiveDeviceP {
             ip.put(i, 1, imagePoints[i].y);
         }
 
-
 //        ITERATIVE=CV_ITERATIVE,
 //        EPNP=CV_EPNP,
 //        P3P=CV_P3P;
-
         boolean solved = opencv_calib3d.solvePnP(op, ip, intrinsicsMat, null, rotation, translation,
                 false, opencv_calib3d.ITERATIVE);
 
@@ -171,15 +181,13 @@ public class ProjectiveDeviceP {
 //            @InputArray CvMat imagePoints, @InputArray CvMat cameraMatrix,
 //            @InputArray CvMat distCoeffs,  @OutputArray CvMat rvec,
 //            @OutputArray CvMat tvec, boolean useExtrinsicGuess/*=false*/, int flags/*=ITERATIVE*/);
-
-
         PMatrix3D mat = new PMatrix3D();
-        
+
         CvMat rotMat = CvMat.create(3, 3);
         rotation.put(0, rotation.get(0));
         rotation.put(1, rotation.get(1));
         rotation.put(2, rotation.get(2));
-        
+
         cvRodrigues2(rotation, rotMat, null);
 
         float RTMat[] = {
@@ -201,7 +209,6 @@ public class ProjectiveDeviceP {
                 (float) camMat[6], (float) camMat[7], (float) camMat[8], 0,
                 0, 0, 0, 1);
 
-
         p.w = dev.imageWidth;
         p.h = dev.imageHeight;
         p.fx = p.intrinsics.m00;
@@ -222,7 +229,6 @@ public class ProjectiveDeviceP {
         } catch (NullPointerException npe) {
             System.out.println("Loading Parameters, without extrinsics");
         }
-
 
     }
 
