@@ -5,6 +5,7 @@ import com.googlecode.javacv.ProjectorDevice;
 import fr.inria.papart.drawingapp.DrawUtils;
 import fr.inria.papart.multitouchKinect.TouchPoint;
 import processing.core.PApplet;
+import processing.core.PConstants;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.opengl.PGraphicsOpenGL;
@@ -96,8 +97,8 @@ public class Projector extends ARDisplay {
 
         return this.graphics;
     }
-    
-    public void drawOnBoard(Camera camera, MarkerBoard board){
+
+    public void drawOnBoard(Camera camera, MarkerBoard board) {
         loadModelView();
         PMatrix3D camBoard = board.getTransfoMat(camera);
         camBoard.preApply(getExtrinsics());
@@ -116,6 +117,14 @@ public class Projector extends ARDisplay {
         this.graphics.clear();
         this.graphics.background(0);
         drawScreensProjection();
+        this.endDraw();
+    }
+
+    public void drawScreensLegacy() {
+        this.beginDraw();
+        this.graphics.clear();
+        this.graphics.background(0);
+        drawScreensProjectionLegacy();
         this.endDraw();
     }
 
@@ -141,8 +150,43 @@ public class Projector extends ARDisplay {
             this.graphics.modelview.apply(screen.getPos());
             // Draw the screen image
 
+            // If it is openGL renderer, use the standard  (0, 0) is bottom left
+            if (screen.isOpenGL()) {
+                this.graphics.image(screen.getTexture(), 0, 0, screen.getSize().x, screen.getSize().y);
+            } else {
+                float w = screen.getSize().x;
+                float h = screen.getSize().y;
+
+                this.graphics.textureMode(PApplet.NORMAL);
+                this.graphics.beginShape(PApplet.QUADS);
+                this.graphics.texture(screen.getTexture());
+                this.graphics.vertex(0, 0, 0, 0, 1);
+                this.graphics.vertex(0, h, 0, 0, 0);
+                this.graphics.vertex(w, h, 0, 1, 0);
+                this.graphics.vertex(w, 0, 0, 1, 1);
+                this.graphics.endShape();
+            }
+            this.graphics.popMatrix();
+        }
+    }
+
+    private void drawScreensProjectionLegacy() {
+
+        // Place the projector to his projection respective to the origin (camera here)
+        this.graphics.modelview.apply(getExtrinsics());
+
+        for (Screen screen : screens) {
+            if (!screen.isDrawing()) {
+                continue;
+            }
+            this.graphics.pushMatrix();
+
+            // Goto to the screen position
+            this.graphics.modelview.apply(screen.getPos());
+            // Draw the screen image
+
             this.graphics.image(screen.getTexture(), 0, 0, screen.getSize().x, screen.getSize().y);
-            
+
             this.graphics.popMatrix();
         }
     }

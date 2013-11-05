@@ -21,7 +21,6 @@ public class Screen {
     // The current graphics
     private PGraphicsOpenGL thisGraphics;
     // Position holding...
-    private PVector initPos = null;
     private PMatrix3D initPosM = null;
     private float[] pos3D;
     private PMatrix3D pos = null;
@@ -34,6 +33,7 @@ public class Screen {
     protected Matrix4x4 transformationProjPaper;
     public float halfEyeDist = 10; // 2cm
     private boolean isDrawing = true;
+    private boolean isOpenGL = false;
 
     public Screen(PApplet parent, PVector size, float scale) {
         this(parent, size, scale, false, 1);
@@ -56,12 +56,13 @@ public class Screen {
     }
 
     ////////////////// 3D SPACE TO PAPER HOMOGRAPHY ///////////////
+    // Version 2.0 :  (0,0) is the top-left corner.
     private void initHomography() {
         homography = new Homography(parent, 3, 3, 4);
-        homography.setPoint(false, 0, new PVector(0, 0, 0));
-        homography.setPoint(false, 1, new PVector(1, 0, 0));
-        homography.setPoint(false, 2, new PVector(1, 1, 0));
-        homography.setPoint(false, 3, new PVector(0, 1, 0));
+        homography.setPoint(false, 0, new PVector(0, 1, 0));
+        homography.setPoint(false, 1, new PVector(1, 1, 0));
+        homography.setPoint(false, 2, new PVector(1, 0, 0));
+        homography.setPoint(false, 3, new PVector(0, 0, 0));
     }
 
     // Get the texture to display...
@@ -115,51 +116,157 @@ public class Screen {
         return initDraw(userPos, nearPlane, farPlane, false, false, true);
     }
 
-    public PGraphicsOpenGL initDraw(PVector userPos, float nearPlane, float farPlane, boolean isAnaglyph, boolean isLeft, boolean isOnly) {
-        return initDraw(userPos, nearPlane, farPlane, isAnaglyph, isLeft, isOnly, thisGraphics);
-    }
+//    public PGraphicsOpenGL initDraw(PVector userPos, float nearPlane, float farPlane, boolean isAnaglyph, boolean isLeft, boolean isOnly) {
+//        return initDraw(userPos, nearPlane, farPlane, isAnaglyph, isLeft, isOnly);
+//    }
     // TODO: optionnal args.
+    private PVector userPosCam = null;
 
-    public PGraphicsOpenGL initDraw(PVector userPos, float nearPlane, float farPlane, boolean isAnaglyph, boolean isLeft, boolean isOnly, PGraphicsOpenGL graphics) {
+    // TODO:remettre ça...
+//    public PGraphicsOpenGL initDraw(PVector userPos, float nearPlane, float farPlane, boolean isAnaglyph, boolean isLeft, boolean isOnly) {
+//        return initDraw(userPos, nearPlane, farPlane, isAnaglyph, isLeft, isOnly);
+//    }
+    public PGraphicsOpenGL initDraw(PVector userPos, float nearPlane, float farPlane, boolean isAnaglyph, boolean isLeft, boolean isOnly) {
 
-        if (initPos == null) {
+        PGraphicsOpenGL graphics = thisGraphics;
 
-            // Not used...
-            initPos = new PVector();
+        PVector userP = userPos.get();
+        
+        // Magic numbers...
+        userP.x = -userP.x;
+        userP.y = -userP.y;
+        userP.add(20, -120, 0);
+        
+//        PMatrix3D tr1 = new PMatrix3D();
+//        tr1.reset();
+        
+//        tr1.translate(tr.x, tr.y, tr.z);
+        // Go to the middle of the piece of paper
+//        tr1.translate(size.x / 2f, size.y / 2f);
+        // invert the Y axis
+//        tr1.scale(1f, 1f, 1);
 
+        if (initPosM == null) {
+            this.isOpenGL = true;
+            // Transformation  Camera -> Marker
             initPosM = pos.get();
+            // No translation mode
+//            initPosM.m03 = 0;
+//            initPosM.m13 = 0;
+//            initPosM.m23 = 0;
 
-            initPosM.m03 = 0;
-            initPosM.m13 = 0;
-            initPosM.m23 = 0;
-//            initPosM.invert();
+            initPosM.m00 = 1;
+            initPosM.m11 = 1;
+            initPosM.m22 = 1;
+            initPosM.m01 = 0;
+            initPosM.m02 = 0;
+            initPosM.m10 = 0;
+            initPosM.m12 = 0;
+            initPosM.m20 = 0;
+            initPosM.m21 = 0;
+
+            // Transformation  Camera -> Center of screen
+//            initPosM.preApply(tr1);
+
+            // Maybe the Z axis is inverted ? Or any other axis ?
+            initPosM.invert();
+
+            initPosM.print();
+            // Now we have  Cam ->  new 3D origin
         }
+
+         PMatrix3D newPos = pos.get();
+        // goto center...
+//        newPos.preApply(tr1);
+
+        // Compute the difference with the initial...
+        newPos.preApply(initPosM);
+
+        // No rotation 
+        newPos.m00 = 1;
+        newPos.m11 = 1;
+        newPos.m22 = 1;
+        newPos.m01 = 0;
+        newPos.m02 = 0;
+        newPos.m10 = 0;
+        newPos.m12 = 0;
+        newPos.m20 = 0;
+        newPos.m21 = 0;
+
+        // Compute the new transformation   
+        PVector virtualPos = userP.get();
+//        virtualPos.x -=  size.x / 2f;
+//        virtualPos.y -=  size.y / 2f;
+//        virtualPos.mult(-1);
+        
+        newPos.mult(virtualPos, virtualPos);
+        
+                
+        
+
+        PMatrix3D rotationPaper = pos.get();
+        rotationPaper.invert();
+        rotationPaper.m03 = 0; // newPos.m03;
+        rotationPaper.m13 = 0; // newPos.m13;
+        rotationPaper.m23 = 0; // newPos.m23;
+
+        
+        PVector paperCameraPos = new PVector();
+        rotationPaper.mult(virtualPos, paperCameraPos);
+
+        paperCameraPos.x = -paperCameraPos.x + newPos.m30;
+        paperCameraPos.y = paperCameraPos.y - newPos.m31;
+        paperCameraPos.z = -paperCameraPos.z + newPos.m32;
+
 
         if (isOnly) {
             graphics.beginDraw();
             graphics.clear();
         }
 
-        PVector paperCameraPos = new PVector();
-        PMatrix3D tr = initPosM.get();
-        PVector virtualPos = userPos.get();
+        // Camera must look perpendicular to the screen. 
+        graphics.camera(paperCameraPos.x, paperCameraPos.y, paperCameraPos.z,
+                paperCameraPos.x, paperCameraPos.y, 0,
+                0, 1, 0);
 
-        if (isAnaglyph) {
-            virtualPos.add(isLeft ? -halfEyeDist : halfEyeDist, 0, 0);
-        }
+//        graphics.camera(userPos.x, userPos.y, userPos.z,
+//                userPos.x, userPos.y, 0,
+//                0, 1, 0);
+
+
+//        graphics.modelview.preApply(newPos);
+
+
+        ///////////////////////////////////////////////////////////
+
+//        if (isAnaglyph) {
+//            virtualPos.add(isLeft ? -halfEyeDist : halfEyeDist, 0, 0);
+//        }
+
+
+//        PMatrix3D currentTransfo = pos2.get();
+        // No translation
+//        currentTransfo.m03 = 0;
+//        currentTransfo.m13 = 0;
+//        currentTransfo.m23 = 0;
+
+//         currentTransfo.invert();
+//        currentTransfo.preApply(initPosM);
+//        currentTransfo.mult(virtualPos, paperCameraPos);
+
 
         /////////// GOOOD ONE ////////////////////
-        virtualPos.mult(-1);
-
-        // Get the current paperSheet position
-        PMatrix3D rotationPaper = pos.get();
-        rotationPaper.invert();
-
-        rotationPaper.m03 = 0;
-        rotationPaper.m13 = 0;
-        rotationPaper.m23 = 0;   // inverse of the Transformation (without position)
-
-        rotationPaper.mult(virtualPos, paperCameraPos);
+//        virtualPos.mult(-1);
+//
+//        // Get the current paperSheet position
+//        PMatrix3D rotationPaper = pos.get();
+//        rotationPaper.invert();
+//
+//        rotationPaper.m03 = 0;
+//        rotationPaper.m13 = 0;
+//        rotationPaper.m23 = 0;   // inverse of the Transformation (without position)
+//
+//        rotationPaper.mult(virtualPos, paperCameraPos);
         /////////// GOOOD ONE ////////////////////
 
 
@@ -174,17 +281,12 @@ public class Screen {
 
 
         // http://www.gamedev.net/topic/597564-view-and-projection-matrices-for-vr-window-using-head-tracking/
+        float nearFactor = nearPlane / paperCameraPos.z;
 
-        graphics.camera(userPos.x, userPos.y, userPos.z,
-                userPos.x, userPos.y, 0,
-                0, 1, 0);
-
-        float nearFactor = nearPlane / userPos.z;
-
-        float left = nearFactor * (-size.x / 2f - userPos.x);
-        float right = nearFactor * (size.x / 2f - userPos.x);
-        float top = nearFactor * (size.y / 2f - userPos.y);
-        float bottom = nearFactor * (-size.y / 2f - userPos.y);
+        float left = nearFactor * (-size.x / 2f - paperCameraPos.x);
+        float right = nearFactor * (size.x / 2f - paperCameraPos.x);
+        float top = nearFactor * (size.y / 2f - paperCameraPos.y);
+        float bottom = nearFactor * (-size.y / 2f - paperCameraPos.y);
 
 //        graphics.camera(paperCameraPos.x, paperCameraPos.y, paperCameraPos.z,
 //                paperCameraPos.x, paperCameraPos.y, 0,
@@ -199,8 +301,16 @@ public class Screen {
 
         graphics.frustum(left, right, bottom, top, nearPlane, farPlane);
         graphics.projection.m11 = -graphics.projection.m11;
-        
+
+        // No detection?
+        if (pos.m03 == 0 && pos.m13 == 0 && pos.m23 == 0) {
+            resetPos();
+        }
         return graphics;
+    }
+
+    public void resetPos() {
+        initPosM = null;
     }
 
     ///////////////////// POINTER PROJECTION  ////////////////
@@ -256,6 +366,10 @@ public class Screen {
 //    public void setManualUpdatePos() {
 //        pos3D = new float[16];
 //    }
+    public boolean isOpenGL() {
+        return isOpenGL;
+    }
+
     public boolean isDrawing() {
         return isDrawing;
     }

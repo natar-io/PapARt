@@ -6,10 +6,6 @@ package fr.inria.papart.procam;
 
 
 import processing.opengl.PGraphicsOpenGL;
-import fr.inria.papart.drawingapp.Button;
-import fr.inria.papart.multitouchKinect.TouchElement;
-import fr.inria.papart.multitouchKinect.TouchInput;
-import java.util.ArrayList;
 import processing.core.PApplet;
 import processing.core.PVector;
 
@@ -73,7 +69,14 @@ public class PaperScreen {
         g.background(0, 100, 200);
         g.endDraw();
 
-    }
+   }
 
+    public void keyPressed(){
+        
+    }
+    
+    public void keyReleased(){
+    }
+    
     
 }

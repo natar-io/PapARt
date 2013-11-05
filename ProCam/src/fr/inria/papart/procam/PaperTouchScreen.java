@@ -42,7 +42,11 @@ public class PaperTouchScreen extends PaperScreen {
     @Override
     public void pre() {
         super.pre();
-        
+
+        updateTouch();
+    }
+
+    public void updateTouch() {
         screen.computeScreenPosTransform();
         touch = touchInput.projectTouchToScreen(screen, projector,
                 true, true);
@@ -53,7 +57,6 @@ public class PaperTouchScreen extends PaperScreen {
                         v.y * drawingSize.y);
             }
         }
-        
     }
 
     protected void checkButtons(float x, float y) {
@@ -74,7 +77,7 @@ public class PaperTouchScreen extends PaperScreen {
         g.clear();
         g.scale(resolution);
         g.background(0, 200, 100);
-        
+
         drawTouch(g, 10);
         g.endDraw();
     }

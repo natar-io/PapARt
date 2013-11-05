@@ -29,6 +29,15 @@ public class DrawUtils {
         pg3d.image(img, 0, 0, w, h);
         pg3d.popMatrix();
     }
+    
+    static public void drawImage2(PGraphicsOpenGL g, PImage img, int x, int y, int w, int h) {
+        g.pushMatrix();
+        g.translate(x, y);
+        g.scale(-1, 1, 1);
+        g.rotate(PApplet.PI);
+        g.image(img, 0, 0, w, h);
+        g.popMatrix();
+    }
 
     static public void drawImage(PGraphicsOpenGL g, PImage img, int x, int y, int w, int h) {
 //        g.pushMatrix();
