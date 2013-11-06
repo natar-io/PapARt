@@ -14,9 +14,9 @@ import processing.core.PVector;
 
 public class PaperTouchScreen extends PaperScreen {
 
-    TouchElement touch;
-    TouchInput touchInput;
-    ArrayList<Button> buttons;
+    protected TouchElement touch;
+    protected TouchInput touchInput;
+    protected ArrayList<Button> buttons;
 
     public PaperTouchScreen(PApplet parent,
             MarkerBoard board,

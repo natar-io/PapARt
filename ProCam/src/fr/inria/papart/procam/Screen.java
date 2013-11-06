@@ -115,7 +115,6 @@ public class Screen {
     public PGraphicsOpenGL initDraw(PVector userPos, float nearPlane, float farPlane) {
         return initDraw(userPos, nearPlane, farPlane, false, false, true);
     }
-
 //    public PGraphicsOpenGL initDraw(PVector userPos, float nearPlane, float farPlane, boolean isAnaglyph, boolean isLeft, boolean isOnly) {
 //        return initDraw(userPos, nearPlane, farPlane, isAnaglyph, isLeft, isOnly);
 //    }
@@ -131,20 +130,11 @@ public class Screen {
         PGraphicsOpenGL graphics = thisGraphics;
 
         PVector userP = userPos.get();
-        
+
         // Magic numbers...
         userP.x = -userP.x;
         userP.y = -userP.y;
         userP.add(20, -120, 0);
-        
-//        PMatrix3D tr1 = new PMatrix3D();
-//        tr1.reset();
-        
-//        tr1.translate(tr.x, tr.y, tr.z);
-        // Go to the middle of the piece of paper
-//        tr1.translate(size.x / 2f, size.y / 2f);
-        // invert the Y axis
-//        tr1.scale(1f, 1f, 1);
 
         if (initPosM == null) {
             this.isOpenGL = true;
@@ -171,11 +161,11 @@ public class Screen {
             // Maybe the Z axis is inverted ? Or any other axis ?
             initPosM.invert();
 
-            initPosM.print();
+//            initPosM.print();
             // Now we have  Cam ->  new 3D origin
         }
 
-         PMatrix3D newPos = pos.get();
+        PMatrix3D newPos = pos.get();
         // goto center...
 //        newPos.preApply(tr1);
 
@@ -195,14 +185,12 @@ public class Screen {
 
         // Compute the new transformation   
         PVector virtualPos = userP.get();
-//        virtualPos.x -=  size.x / 2f;
-//        virtualPos.y -=  size.y / 2f;
-//        virtualPos.mult(-1);
         
+        if (isAnaglyph) {
+            virtualPos.add(isLeft ? -halfEyeDist : halfEyeDist, 0, 0);
+        }
+
         newPos.mult(virtualPos, virtualPos);
-        
-                
-        
 
         PMatrix3D rotationPaper = pos.get();
         rotationPaper.invert();
@@ -210,7 +198,7 @@ public class Screen {
         rotationPaper.m13 = 0; // newPos.m13;
         rotationPaper.m23 = 0; // newPos.m23;
 
-        
+
         PVector paperCameraPos = new PVector();
         rotationPaper.mult(virtualPos, paperCameraPos);
 
@@ -218,11 +206,11 @@ public class Screen {
         paperCameraPos.y = paperCameraPos.y - newPos.m31;
         paperCameraPos.z = -paperCameraPos.z + newPos.m32;
 
-
-        if (isOnly) {
-            graphics.beginDraw();
-            graphics.clear();
-        }
+//
+//        if (isOnly) {
+//            graphics.beginDraw();
+//            graphics.clear();
+//        }
 
         // Camera must look perpendicular to the screen. 
         graphics.camera(paperCameraPos.x, paperCameraPos.y, paperCameraPos.z,
@@ -239,9 +227,7 @@ public class Screen {
 
         ///////////////////////////////////////////////////////////
 
-//        if (isAnaglyph) {
-//            virtualPos.add(isLeft ? -halfEyeDist : halfEyeDist, 0, 0);
-//        }
+
 
 
 //        PMatrix3D currentTransfo = pos2.get();

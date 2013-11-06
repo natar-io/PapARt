@@ -19,6 +19,7 @@ public class TouchPoint {
     public int color;
     public int confidence;
     public boolean is3D;
+    public boolean isNew;
     public boolean isCloseToPlane;
     public boolean toDelete = false;
     public boolean isUpdated = false;
@@ -35,6 +36,7 @@ public class TouchPoint {
     public TouchPoint() {
         id = globalID++;
         toDelete = false;
+        isNew = true;
         try {
             filters = new OneEuroFilter[3];
             for (int i = 0; i < 3; i++) {
@@ -90,6 +92,7 @@ public class TouchPoint {
         isCloseToPlane = tp.isCloseToPlane;
 
          filter();
+         isNew = false;
         return true;
 
     }

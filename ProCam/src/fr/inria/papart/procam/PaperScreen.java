@@ -58,6 +58,10 @@ public class PaperScreen {
         return screen.getGraphics();
     }
     
+    public boolean isMoving(){
+        return board.isMoving(cameraTracking);
+    }
+    
     // Example Draw... to check ? Or put it as begin / end ...
     public void draw() {
 
