@@ -24,7 +24,9 @@ import toxi.geom.Vec3D;
  */
 public class TouchDetection {
 
+    public static float currentMaxDistance;
     public static float maxDistance = 12f;    // in mm
+    public static float maxDistance3D = 20f;    // in mm
 
     public static ArrayList<Integer> findNeighboursRec(int currentPoint, int halfNeigh,
             ArrayList<Integer> validPoints,
@@ -53,7 +55,7 @@ public class TouchDetection {
                 // Avoid getting ouside the limits
                 if (!(readPoints[offset] // already parsed point 
                         || !isValidPoints[offset]
-//                        || !isInside(projPoints[offset], 0.f, 1.f))) {
+                        //                        || !isInside(projPoints[offset], 0.f, 1.f))) {
                         || !isInside(projPoints[offset], 0.f, 1.f)
                         || points[offset].distanceTo(points[currentPoint]) > maxDistance)) {
 
@@ -67,7 +69,7 @@ public class TouchDetection {
 
 //                    // if is is on a border ??
 //                    if (i == minX || i == maxX || j == minY || j == maxY) {
-                        visitNext.add(offset);
+                    visitNext.add(offset);
 //                    } // if it is a border
 
 
@@ -97,6 +99,8 @@ public class TouchDetection {
             return null;
         }
 
+
+        currentMaxDistance = is3D ? maxDistance3D : maxDistance;
 
         // Debug purposes
         Arrays.fill(Kinect.connectedComponent, (byte) 0);
@@ -183,13 +187,12 @@ public class TouchDetection {
 
         return allTouchPoints;
     }
-    
     public static float sideError = 0.2f;
 
     public static boolean isInside(Vec3D v, float min, float max) {
         return v.x > min - sideError && v.x < max + sideError && v.y < max + sideError && v.y > min - sideError;
     }
-    
+
     public static boolean isInside(PVector v, float min, float max) {
         return v.x > min - sideError && v.x < max + sideError && v.y < max + sideError && v.y > min - sideError;
     }

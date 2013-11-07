@@ -6,7 +6,7 @@ package fr.inria.papart.drawingapp;
 
 import processing.core.PApplet;
 import processing.core.PFont;
-import processing.opengl.PGraphics3D;
+import processing.opengl.PGraphicsOpenGL;
 import processing.core.PVector;
 
 /**
@@ -45,7 +45,7 @@ public class PositionDescriptor extends Descriptor {
     }
 
     @Override
-    public void drawSelf(PGraphics3D graphics) {
+    public void drawSelf(PGraphicsOpenGL graphics) {
         if (isHidden) {
             return;
         }

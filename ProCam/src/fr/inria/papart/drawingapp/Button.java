@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import processing.core.PApplet;
 import processing.core.PFont;
-import processing.opengl.PGraphics3D;
+import processing.opengl.PGraphicsOpenGL;
 import processing.core.PImage;
 
 public class Button extends InteractiveZone {
@@ -116,7 +116,7 @@ public class Button extends InteractiveZone {
     }
 
     @Override
-    public void drawSelf(PGraphics3D pgraphics3d) {
+    public void drawSelf(PGraphicsOpenGL pgraphics3d) {
 
         if (isHidden) {
             return;

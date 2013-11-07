@@ -7,8 +7,8 @@ package fr.inria.papart.drawingapp;
 
 import fr.inria.papart.multitouchKinect.TouchPoint;
 import processing.core.PApplet;
-import processing.opengl.PGraphics3D;
 import processing.core.PVector;
+import processing.opengl.PGraphicsOpenGL;
 
 public class Slider extends InteractiveZone{
 
@@ -40,7 +40,7 @@ public class Slider extends InteractiveZone{
 
 
     @Override
-    public void drawSelf(PGraphics3D pgraphics3d){
+    public void drawSelf(PGraphicsOpenGL pgraphics3d){
 	if(isHidden)
                 return;
 

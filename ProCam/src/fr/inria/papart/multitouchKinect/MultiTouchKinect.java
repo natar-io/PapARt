@@ -22,6 +22,7 @@ import toxi.geom.Vec3D;
 public class MultiTouchKinect {
 
     static public final float trackNearDist = 30f;  // in mm
+    static public final float trackNearDist3D = 70f;  // in mm
     static public final int forgetTime = 250;       // in ms
     PApplet applet;
     Vec3D[] kinectPoints;
@@ -171,8 +172,10 @@ public class MultiTouchKinect {
         // to keep the informations coherent.
         Collections.sort(tpt);
 
+        float trackDist =  is3D ? trackNearDist3D : trackNearDist;
+        
         for (TouchPointTracker tpt1 : tpt) {
-            if (tpt1.distance < trackNearDist) {
+            if (tpt1.distance < trackDist ) {
                 tpt1.update(applet.millis());
             }
         }

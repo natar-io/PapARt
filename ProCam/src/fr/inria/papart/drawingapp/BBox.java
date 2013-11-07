@@ -5,7 +5,7 @@
 package fr.inria.papart.drawingapp;
 
 import processing.core.PApplet;
-import processing.opengl.PGraphics3D;
+import processing.opengl.PGraphicsOpenGL;
 import processing.core.PVector;
 
 /**
@@ -32,7 +32,7 @@ public class BBox {
 //        center.y = (max.y - min.y) / 2f + min.y;
     }
 
-    void drawSelf(PGraphics3D graphics) {
+    void drawSelf(PGraphicsOpenGL graphics) {
         graphics.pushMatrix();
         graphics.fill(255, 30);
         graphics.noStroke();

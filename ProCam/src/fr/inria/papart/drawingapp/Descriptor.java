@@ -5,6 +5,7 @@
 package fr.inria.papart.drawingapp;
 
 import processing.opengl.PGraphics3D;
+import processing.opengl.PGraphicsOpenGL;
 
 /**
  *
@@ -28,7 +29,7 @@ public class Descriptor implements Drawable{
 
     // TODO: draw the text ? 
     @Override
-    public void drawSelf(PGraphics3D graphics) {
+    public void drawSelf(PGraphicsOpenGL graphics) {
         // nothing...
     }
 

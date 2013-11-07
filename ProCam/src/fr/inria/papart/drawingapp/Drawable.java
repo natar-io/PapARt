@@ -5,6 +5,7 @@
 package fr.inria.papart.drawingapp;
 
 import processing.opengl.PGraphics3D;
+import processing.opengl.PGraphicsOpenGL;
 
 /**
  *
@@ -14,6 +15,6 @@ public interface Drawable {
 
     public void show();
     public void hide();
-    public void drawSelf(PGraphics3D graphics);
+    public void drawSelf(PGraphicsOpenGL graphics);
 
 }

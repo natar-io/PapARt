@@ -9,7 +9,7 @@ import fr.inria.papart.drawingapp.Descriptor;
 import fr.inria.papart.drawingapp.Drawable;
 import fr.inria.papart.drawingapp.DrawingApp;
 import fr.inria.papart.drawingapp.PositionDescriptor;
-import processing.opengl.PGraphics3D;
+import processing.opengl.PGraphicsOpenGL;
 import processing.core.PVector;
 
 /**
@@ -34,7 +34,7 @@ public class Shape implements Drawable {
     }
 
     @Override
-    public void drawSelf(PGraphics3D graphics) {
+    public void drawSelf(PGraphicsOpenGL graphics) {
         if (isMovable) {
             centerDescriptor.drawSelf(graphics);
         }

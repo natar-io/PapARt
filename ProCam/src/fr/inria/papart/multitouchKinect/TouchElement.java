@@ -21,4 +21,9 @@ public class TouchElement {
 
     public ArrayList<TouchPoint> points2D;
     public ArrayList<TouchPoint> points3D;
+
+    public ArrayList<Touch> touches;
+    
+
+
 }

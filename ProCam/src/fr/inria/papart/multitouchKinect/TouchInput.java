@@ -189,20 +189,21 @@ public class TouchInput {
         ArrayList<PVector> speed2D = new ArrayList<PVector>();
         ArrayList<PVector> speed3D = new ArrayList<PVector>();
 
+
         ArrayList<TouchPoint> points2D = new ArrayList<TouchPoint>();
         ArrayList<TouchPoint> points3D = new ArrayList<TouchPoint>();
 
-        // OLD API
+        ArrayList<Touch> locationList = new ArrayList<Touch>();
+
+
         TouchElement elem = new TouchElement();
         elem.position2D = position2D;
         elem.position3D = position3D;
-
         elem.speed2D = speed2D;
         elem.speed3D = speed3D;
-
-        // New API
         elem.points2D = points2D;
         elem.points3D = points3D;
+        elem.touches = locationList;
 
 
         try {
@@ -214,35 +215,52 @@ public class TouchInput {
         if (is2D && !touchPoints2D.isEmpty()) {
             for (TouchPoint tp : touchPoints2D) {
 
-                if (TouchDetection.isInside(tp.v, 0, 1) || isAll) {
+                Touch tl = new Touch();
 
-                    PVector res, res2;
-                    res = projector.projectPointer(screen, tp.v.x, tp.v.y);
+                if (!(TouchDetection.isInside(tp.v, 0, 1) || isAll)) {
+                    continue;
+                }
+
+                PVector res, res2;
+                res = projector.projectPointer(screen, tp.v.x, tp.v.y);
 //                    res = projector.projectPointer(screen, tp);
 
-                    if (isSpeed2D) {
-                        res2 = (tp.oldV != null) ? projector.projectPointer(screen, tp.oldV.x, tp.oldV.y) : null;
-                    } else {
-                        res2 = null;
-                    }
+                if (isSpeed2D) {
+                    res2 = (tp.oldV != null) ? projector.projectPointer(screen, tp.oldV.x, tp.oldV.y) : null;
+                } else {
+                    res2 = null;
+                }
 
-                    if (res != null) {
+                if (res == null) {
+                    continue;
+                }
 
-                        // inside the paper sheet 	      
-                        if (TouchDetection.isInside(res, 0, 1) || isAll) {
-                            position2D.add(new PVector(res.x, res.y));
-                            points2D.add(tp);
-                        }
+                tl.p = null;
+                // inside the paper sheet 	      
+                if (TouchDetection.isInside(res, 0, 1) || isAll) {
+                    PVector p = new PVector(res.x, res.y);
+                    position2D.add(p);
+                    tl.p = p;
+                    points2D.add(tp);
+                } else {
+                    continue;
+                }
 
-                        if (res2 != null) {
-                            // inside the paper sheet 	      
-                            if (TouchDetection.isInside(res2, 0, 1) || isAll) {
-                                speed2D.add(new PVector(res.x - res2.x,
-                                        res.y - res2.y));
-                            }
-                        }
+                tl.is3D = false;
+                tl.speed = null;
+                tl.touchPoint = tp;
+                
+                if (res2 != null) {
+                    // inside the paper sheet 	      
+                    if (TouchDetection.isInside(res2, 0, 1) || isAll) {
+                        PVector p = new PVector(res.x - res2.x,
+                                res.y - res2.y);
+                        tl.speed = p;
+                        speed2D.add(p);
                     }
                 }
+
+                locationList.add(tl);
 
             }
         }
@@ -250,47 +268,58 @@ public class TouchInput {
         if (is3D && !touchPoints3D.isEmpty()) {
             for (TouchPoint tp : touchPoints3D) {
 
+                Touch tl = new Touch();
+
                 // TODO: inside necessary ??
                 // Inside the window
-                if (TouchDetection.isInside(tp.v, 0, 1) || isAll) {
+                if (!(TouchDetection.isInside(tp.v, -0.5f, 1.5f) || isAll)) {
+                    continue;
+                }
 
-                    PVector res, res2;
-                    res = projector.projectPointer(screen, tp.v.x, tp.v.y);
+                PVector res, res2;
+                res = projector.projectPointer(screen, tp.v.x, tp.v.y);
 //                    res = projector.projectPointer(screen, tp);
 
 
-                    if (isSpeed3D && tp.oldV != null) {
-                        res2 = projector.projectPointer(screen, tp.oldV.x, tp.oldV.y);
+                if (isSpeed3D && tp.oldV != null) {
+                    res2 = projector.projectPointer(screen, tp.oldV.x, tp.oldV.y);
 
-                        if (res2 != null) {
-                            res2.z = tp.oldV.z;
-                        }
+                    if (res2 != null) {
+                        res2.z = tp.oldV.z;
+                    }
 //                        res2 = (tp.oldV != null) ? projector.projectPointer(screen, tp) : null;
-                    } else {
-                        res2 = null;
-                    }
-
-                    if (res != null) {
-
-                        res.z = tp.v.z;
-                        // inside the paper sheet 	      
-                        if (TouchDetection.isInside(res, 0f, 1f) || isAll) {
-
-                            position3D.add(new PVector(res.x, res.y, tp.v.z));
-                            points3D.add(tp);
-                        }
-
-                        if (res2 != null) {
-
-                            // inside the paper sheet 	      
-                            //			if(res2.x >= 0 && res2.x <= 1 && res2.y >= 0 && res2.y <= 1)
-                            speed3D.add(new PVector(res.x - res2.x,
-                                    res.y - res2.y,
-                                    (tp.v.z - tp.oldV.z)));
-                        }
-                    }
-
+                } else {
+                    res2 = null;
                 }
+
+                if (res == null) {
+                    continue;
+                }
+
+                res.z = tp.v.z;
+                // inside the paper sheet 	      
+                if (TouchDetection.isInside(res, 0f, 1f) || isAll) {
+                    PVector p = new PVector(res.x, res.y, tp.v.z);
+                    position3D.add(p);
+                    tl.p = p;
+                    points3D.add(tp);
+                }
+
+                tl.speed = null;
+                if (res2 != null) {
+                    // inside the paper sheet 	      
+                    //			if(res2.x >= 0 && res2.x <= 1 && res2.y >= 0 && res2.y <= 1)
+
+                    PVector p = new PVector(res.x - res2.x,
+                            res.y - res2.y,
+                            (tp.v.z - tp.oldV.z));
+                    speed3D.add(p);
+                    tl.speed = p;
+                }
+
+                tl.touchPoint = tp;
+                tl.is3D = true;
+                locationList.add(tl);
             }
         }
 
