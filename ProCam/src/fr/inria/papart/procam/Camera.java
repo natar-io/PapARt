@@ -403,11 +403,20 @@ public class Camera {
     }
 
     public void close() {
-        if (grabber != null) {
-            try {
-                this.stopThread();
-                grabber.stop();
-            } catch (Exception e) {
+
+        if (videoInputType == OPENCV_VIDEO) {
+            if (grabber != null) {
+                try {
+                    this.stopThread();
+                    grabber.stop();
+                } catch (Exception e) {
+                }
+            }
+        }
+        if (videoInputType == PROCESSING_VIDEO) {
+
+            if (captureIpl != null) {
+                captureIpl.stop();
             }
         }
     }
@@ -424,8 +433,6 @@ public class Camera {
         //TODO: lens distorsion ?
         return new PVector(tmp.x / tmp.z, tmp.y / tmp.z);
     }
-    
-    
     private CvMat internalParams = null;
 
     public PMatrix3D estimateOrientation(PVector[] objectPoints,

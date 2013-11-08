@@ -223,10 +223,10 @@ public class PointCloudKinect implements PConstants {
 
             skip = kinect.getCurrentSkip();
 
-            for (int y = 0; y < kinect.KINECT_HEIGHT ; y += skip) {
-                for (int x = 0; x < kinect.KINECT_WIDTH ; x += skip) {
+            for (int y = skip; y < Kinect.KINECT_HEIGHT - skip; y += skip) {
+                for (int x = skip; x < Kinect.KINECT_WIDTH -skip ; x += skip) {
 
-                    int offset = y * kinect.KINECT_WIDTH + x;
+                    int offset = y * Kinect.KINECT_WIDTH + x;
 
                     if (valid[offset]) {
 
