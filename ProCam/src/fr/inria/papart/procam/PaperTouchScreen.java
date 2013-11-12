@@ -17,9 +17,8 @@ public class PaperTouchScreen extends PaperScreen {
     protected TouchElement touch;
     protected TouchInput touchInput;
     protected ArrayList<Button> buttons;
-
     public boolean isTranslated = false;
-    
+
     public PaperTouchScreen(PApplet parent,
             MarkerBoard board,
             PVector size,
@@ -44,26 +43,33 @@ public class PaperTouchScreen extends PaperScreen {
     @Override
     public void pre() {
         super.pre();
-        
-        if(!isTranslated)
-         updateTouch();
+
+        if (!isTranslated && screen.isDrawing()) {
+            updateTouch();
+        }
     }
 
     @Override
-    public void setLocation(PVector v){
+    public void setLocation(PVector v) {
         setLocation(v.x, v.y, v.z);
     }
- 
+
     @Override
-    public void setLocation(float x, float y, float z){
+    public void setLocation(float x, float y, float z) {
         super.setLocation(x, y, z);
         isTranslated = true;
-        updateTouch();
+
+        if (screen.isDrawing()) {
+            updateTouch();
+        }
     }
-       
-    
-    
+
     public void updateTouch() {
+
+        if (!screen.isDrawing()) {
+            System.err.println("UpdateTouch on disabled screen.");
+            return;
+        }
         screen.computeScreenPosTransform();
         touch = touchInput.projectTouchToScreen(screen, projector,
                 true, true);

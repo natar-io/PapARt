@@ -43,7 +43,6 @@ public class PaperScreen {
         screen.setAutoUpdatePos(cam, board);
         board.setDrawingMode(cameraTracking, true, 25);
         board.setFiltering(cameraTracking, 30, 25);
-
         parent.registerMethod("pre", this);
     }
 
@@ -77,6 +76,7 @@ public class PaperScreen {
     }
 
     public void noDraw() {
+        screen.setDrawing(false);
         PGraphicsOpenGL pg = screen.getGraphics();
         pg.beginDraw();
         pg.clear();
@@ -86,6 +86,7 @@ public class PaperScreen {
     // Example Draw... to check ? Or put it as begin / end ...
     public void draw() {
 
+        screen.setDrawing(true);
         PGraphicsOpenGL g = screen.getGraphics();
         g.beginDraw();
         // T
@@ -97,10 +98,8 @@ public class PaperScreen {
     }
 
     public void keyPressed() {
-
     }
 
     public void keyReleased() {
     }
-
 }

@@ -38,7 +38,7 @@ import toxi.geom.Vec3D;
 public class Kinect {
 
     public static PApplet parent;
-    private float closeThreshold = 300f, farThreshold = 1800f;
+    private float closeThreshold = 300f, farThreshold = 4000f;
     private Vec3D[] kinectPoints;
     private int[] colorPoints;
     private boolean[] validPoints;
@@ -52,7 +52,7 @@ public class Kinect {
     private int id;
     private int currentSkip = 1;
     private ProjectiveDeviceP kinectCalibIR, kinectCalibRGB;
-    static float[] depthLookUp = null;
+    private float[] depthLookUp = null;
     // Debug purposes
     public static byte[] connectedComponent;
     public static byte currentCompo = 1;
@@ -64,6 +64,9 @@ public class Kinect {
     private ExecutorService threadPool;
     public int nbThreads = 8;
     public int threadLoad = 40;
+    public static final int KINECT_MM = 1;
+    public static final int KINECT_10BIT = 0;
+    private int mode;
 
     static public void initApplet(PApplet applet) {
         CURRENTPAPPLET = applet;
@@ -73,9 +76,7 @@ public class Kinect {
         return CURRENTPAPPLET;
     }
 
-//  Kinect with the standard calibration
-    // DEPRECATED  (already...)
-    public Kinect(PApplet parent, String calib, int id) {
+    public Kinect(PApplet parent, String calib, int id, int mode) {
         Kinect.parent = parent;
         initApplet(parent);
 
@@ -92,11 +93,14 @@ public class Kinect {
             System.err.println("Error loading IR Kinect Calibration: " + e);
             e.printStackTrace();
         }
-
-        init(id);
+        init(id, KINECT_10BIT);
     }
 
     public Kinect(PApplet parent, String calibIR, String calibRGB, int id) {
+        this(parent, calibIR, calibRGB, id, KINECT_10BIT);
+    }
+
+    public Kinect(PApplet parent, String calibIR, String calibRGB, int id, int mode) {
         Kinect.parent = parent;
 
         try {
@@ -106,7 +110,7 @@ public class Kinect {
             System.out.println("Kinect init exception." + e);
         }
 
-        init(id);
+        init(id, mode);
     }
 
     public int getCurrentSkip() {
@@ -131,8 +135,9 @@ public class Kinect {
     }
 
 //    public static 
-    private void init(int id) {
+    private void init(int id, int mode) {
         this.id = id;
+        this.mode = mode;
 
         connectedComponent = new byte[kinectCalibIR.getSize()];
 
@@ -156,12 +161,21 @@ public class Kinect {
 
         if (depthLookUp == null) {
             depthLookUp = new float[2048];
-            for (int i = 0; i < depthLookUp.length; i++) {
-                depthLookUp[i] = rawDepthToMeters(i);
-            }
-        }
 
-        threadPool = Executors.newFixedThreadPool(8);
+            if (this.mode == KINECT_10BIT) {
+                for (int i = 0; i < depthLookUp.length; i++) {
+                    depthLookUp[i] = rawDepthToMeters10Bits(i);
+                }
+            }
+            if (this.mode == KINECT_MM) {
+                for (int i = 0; i < depthLookUp.length; i++) {
+                    depthLookUp[i] = rawDepthToMetersNoChange(i);
+                }
+            }
+
+        }
+        // TODO threading
+//        threadPool = Executors.newFixedThreadPool(8);
 
     }
 
@@ -247,6 +261,7 @@ public class Kinect {
 //            System.out.println("Temps2 " + (parent.millis() - begin));
     }
 
+    // TODO: Finish this someday...
     class DepthComputation implements Runnable {
 
         private final int startY;
@@ -320,7 +335,6 @@ public class Kinect {
     public PImage updateP(IplImage depth, IplImage color) {
         return updateP(depth, color, 1);
     }
-
     protected int nbValid = 0;
 
     public PImage updateP(IplImage depth, IplImage color, int skip) {
@@ -840,7 +854,6 @@ public class Kinect {
     public static final int BOTLEFT = 1 << 5;
     public static final int BOT = 1 << 6;
     public static final int BOTRIGHT = 1 << 7;
-
     //    public static enum ConnexityType {
 //        TOPLEFT, TOP, TOPRIGHT, LEFT, RIGHT, BOTLEFT, BOT, BOTRIGHT;
 //        public int getFlagValue() {
@@ -864,21 +877,21 @@ public class Kinect {
         int currentOffset = y * Kinect.KINECT_WIDTH + x;
 
         int type = 0;
-        
-        for (int y1 = y - skip, connNo = 0; y1 <= y + skip;  y1 = y1 + skip) {
+
+        for (int y1 = y - skip, connNo = 0; y1 <= y + skip; y1 = y1 + skip) {
             for (int x1 = x - skip; x1 <= x + skip; x1 = x1 + skip) {
 
                 // Do not try the current point
                 if (x1 == x && y1 == y) {
                     continue;
                 }
-                
+
                 // If the point is not in image
                 if (y1 >= Kinect.KINECT_HEIGHT || y1 < 0 || x1 < 0 || x1 >= Kinect.KINECT_WIDTH) {
                     connNo++;
-                    continue; 
+                    continue;
                 }
-                
+
                 int offset = y1 * Kinect.KINECT_WIDTH + x1;
                 if (validPoints[offset] && kinectPoints[currentOffset].distanceTo(kinectPoints[offset]) < connexityDist) {
                     type = type | (1 << connNo);
@@ -887,8 +900,8 @@ public class Kinect {
                 connNo++;
             }
         }
-        
-         
+
+
         connexity[currentOffset] = type;
     }
 
@@ -912,20 +925,22 @@ public class Kinect {
         return kinectPoints;
     }
 
-//     public static float rawDepthToMeters(int depthValue) {
-//        if (depthValue < 2047) {
-//            return (float) (1.0 / ((float) (depthValue) * -0.0030711016f + 3.3309495161f));
-//        }
-//        return 0.0f;
-//    }
-//    public static float rawDepthToMeters(int depthValue) {
-//        if (depthValue < 2047) {
-//            return 0.1236f * (float) Math.tan((double) depthValue / 2842.5 + 1.1863);
-//        }
-//        return 0.0f;
-//    }
+    public static float rawDepthToMeters10Bits(int depthValue) {
+        if (depthValue < 2047) {
+            return (float) (1.0 / ((float) (depthValue) * -0.0030711016f + 3.3309495161f));
+        }
+        return 0.0f;
+    }
+
+    public static float rawDepthToMeters10Bits2(int depthValue) {
+        if (depthValue < 2047) {
+            return 0.1236f * (float) Math.tan((double) depthValue / 2842.5 + 1.1863);
+        }
+        return 0.0f;
+    }
     ////////////// WORKS WITH   DEPTH- REGISTERED - MM ////////
-    public static float rawDepthToMeters(int depthValue) {
+
+    public static float rawDepthToMetersNoChange(int depthValue) {
         if (depthValue < 2047) {
             return (float) depthValue / 1000f;
         }
