@@ -27,7 +27,7 @@ public class Slider extends InteractiveZone{
    public boolean isSelected(float x, float y, TouchPoint tp){
        boolean selected = super.isSelected(x, y, tp);
 
-       if(isSelected && activationZone.isActive){
+       if(isTouched() && activationZone.isActive){
 	   position.x = x;
 	   //	   position.y = y;
 	   isSliding = true;

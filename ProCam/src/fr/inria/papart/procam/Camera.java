@@ -8,28 +8,18 @@ package fr.inria.papart.procam;
  *
  * @author jeremylaviole
  */
-import processing.opengl.Texture;
-import com.googlecode.javacv.CameraDevice;
 import com.googlecode.javacv.FrameGrabber;
 import com.googlecode.javacv.OpenCVFrameGrabber;
 import com.googlecode.javacv.cpp.ARToolKitPlus;
 import com.googlecode.javacv.cpp.ARToolKitPlus.TrackerMultiMarker;
-import com.googlecode.javacv.cpp.opencv_calib3d;
 import com.googlecode.javacv.cpp.opencv_core.CvMat;
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
 import fr.inria.papart.opengl.CustomTexture;
 import fr.inria.papart.tools.CaptureIpl;
-import fr.inria.papart.tools.GSIplImage;
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
 
 import processing.core.PApplet;
 import processing.core.PImage;

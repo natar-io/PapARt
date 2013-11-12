@@ -4,9 +4,9 @@
  */
 package fr.inria.papart.procam;
 
-
 import processing.opengl.PGraphicsOpenGL;
 import processing.core.PApplet;
+import processing.core.PMatrix3D;
 import processing.core.PVector;
 
 public class PaperScreen {
@@ -19,9 +19,9 @@ public class PaperScreen {
     protected float resolution;
     protected PApplet parent;
 
-    public PaperScreen(PApplet parent, 
+    public PaperScreen(PApplet parent,
             MarkerBoard board,
-            PVector size, 
+            PVector size,
             float resolution,
             Camera cam,
             Projector proj) {
@@ -36,13 +36,14 @@ public class PaperScreen {
         this.screen = new Screen(parent, size, resolution);
         projector.addScreen(screen);
 
-        if(!cam.tracks(board))
-          cam.trackMarkerBoard(board);
-        
+        if (!cam.tracks(board)) {
+            cam.trackMarkerBoard(board);
+        }
+
         screen.setAutoUpdatePos(cam, board);
         board.setDrawingMode(cameraTracking, true, 25);
         board.setFiltering(cameraTracking, 30, 25);
-        
+
         parent.registerMethod("pre", this);
     }
 
@@ -54,14 +55,34 @@ public class PaperScreen {
         screen.updatePos();
     }
 
-    public PGraphicsOpenGL getGraphics(){
+    public PGraphicsOpenGL getGraphics() {
         return screen.getGraphics();
     }
-    
-    public boolean isMoving(){
+
+    public boolean isMoving() {
         return board.isMoving(cameraTracking);
     }
-    
+
+    public void setLocation(PVector v) {
+        setLocation(v.x, v.y, v.z);
+    }
+
+    void setLocation(float x, float y, float z) {
+        PMatrix3D screenPos = screen.getPos();
+        screenPos.translate(x, y, z);
+    }
+
+    public PVector getScreenPos() {
+        return board.getBoardLocation(cameraTracking, projector);
+    }
+
+    public void noDraw() {
+        PGraphicsOpenGL pg = screen.getGraphics();
+        pg.beginDraw();
+        pg.clear();
+        pg.endDraw();
+    }
+
     // Example Draw... to check ? Or put it as begin / end ...
     public void draw() {
 
@@ -73,14 +94,13 @@ public class PaperScreen {
         g.background(0, 100, 200);
         g.endDraw();
 
-   }
+    }
 
-    public void keyPressed(){
-        
+    public void keyPressed() {
+
     }
-    
-    public void keyReleased(){
+
+    public void keyReleased() {
     }
-    
-    
+
 }

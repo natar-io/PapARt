@@ -25,7 +25,7 @@ import toxi.geom.Vec3D;
 public class TouchDetection {
 
     public static float currentMaxDistance;
-    public static float maxDistance = 12f;    // in mm
+    public static float maxDistance = 8f;    // in mm
     public static float maxDistance3D = 20f;    // in mm
 
     public static ArrayList<Integer> findNeighboursRec(int currentPoint, int halfNeigh,
@@ -72,12 +72,10 @@ public class TouchDetection {
                     visitNext.add(offset);
 //                    } // if it is a border
 
-
                 } // if is ValidPoint
 
             } // for j
         } // for i
-
 
         for (int offset : visitNext) {
             ret.addAll(findNeighboursRec(offset,
@@ -98,7 +96,6 @@ public class TouchDetection {
         if (validPoints == null || validPoints.isEmpty()) {
             return null;
         }
-
 
         currentMaxDistance = is3D ? maxDistance3D : maxDistance;
 
@@ -127,10 +124,9 @@ public class TouchDetection {
         ArrayList<TouchPoint> allTouchPoints = new ArrayList<TouchPoint>();
 
 //        int minSize = 50 / (skip * skip); // in pixels
-
         // TODO: Magic numbers ...
         int minSize = 5;
-
+        int nbPoints3D = 15;
         if (is3D) {
             minSize = 60;
         }
@@ -153,16 +149,61 @@ public class TouchDetection {
 
             Vec3D mean = new Vec3D(0, 0, 0);
 
+            Vec3D min = new Vec3D(projPoints[vint.get(0)]);
+            Vec3D max = new Vec3D(projPoints[vint.get(0)]);
+
             if (is3D) {
                 // select only the closest 
-                for (int k = 0; k < minSize; k++) {
+                for (int k = 0; k < nbPoints3D; k++) {
+
+//                    Vec3D p = projPoints[vint.get(k)];
+//                    if (p.x < min.x) {
+//                        min.x = p.x;
+//                    }
+//                    if (p.y < min.y) {
+//                        min.y = p.y;
+//                    }
+//                    if (p.z < min.z) {
+//                        min.z = p.z;
+//                    }
+//                    if (p.x > max.x) {
+//                        max.x = p.x;
+//                    }
+//                    if (p.y > max.y) {
+//                        max.y = p.y;
+//                    }
+//                    if (p.z > max.z) {
+//                        max.z = p.z;
+//                    }
+                    
                     mean.addSelf(points[vint.get(k)]);
                 }
-                mean.scaleSelf(1.0f / minSize);
+                mean.scaleSelf(1.0f / nbPoints3D);
             } else {
 
                 // REAL MEAN
                 for (int offset : vint) {
+
+//                    Vec3D p = points[offset];
+//                    if (p.x < min.x) {
+//                        min.x = p.x;
+//                    }
+//                    if (p.y < min.y) {
+//                        min.y = p.y;
+//                    }
+//                    if (p.z < min.z) {
+//                        min.z = p.z;
+//                    }
+//                    if (p.x > max.x) {
+//                        max.x = p.x;
+//                    }
+//                    if (p.y > max.y) {
+//                        max.y = p.y;
+//                    }
+//                    if (p.z > max.z) {
+//                        max.z = p.z;
+//                    }
+
                     mean.addSelf(points[offset]);
                 }
                 mean.scaleSelf(1.0f / vint.size());
@@ -175,6 +216,7 @@ public class TouchDetection {
 
             tp.is3D = is3D;
             tp.confidence = vint.size();
+//            tp.size = min.distanceTo(max);
 
             tp.v = mean;
             tp.vKinect = tp.v.copy();

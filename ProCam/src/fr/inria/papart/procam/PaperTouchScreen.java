@@ -18,6 +18,8 @@ public class PaperTouchScreen extends PaperScreen {
     protected TouchInput touchInput;
     protected ArrayList<Button> buttons;
 
+    public boolean isTranslated = false;
+    
     public PaperTouchScreen(PApplet parent,
             MarkerBoard board,
             PVector size,
@@ -42,10 +44,25 @@ public class PaperTouchScreen extends PaperScreen {
     @Override
     public void pre() {
         super.pre();
-
-        updateTouch();
+        
+        if(!isTranslated)
+         updateTouch();
     }
 
+    @Override
+    public void setLocation(PVector v){
+        setLocation(v.x, v.y, v.z);
+    }
+ 
+    @Override
+    public void setLocation(float x, float y, float z){
+        super.setLocation(x, y, z);
+        isTranslated = true;
+        updateTouch();
+    }
+       
+    
+    
     public void updateTouch() {
         screen.computeScreenPosTransform();
         touch = touchInput.projectTouchToScreen(screen, projector,
@@ -57,6 +74,7 @@ public class PaperTouchScreen extends PaperScreen {
                         v.y * drawingSize.y);
             }
         }
+
     }
 
     protected void checkButtons(float x, float y) {

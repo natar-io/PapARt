@@ -75,20 +75,23 @@ public class Button extends InteractiveZone {
 
     @Override
     public boolean isSelected(float x, float y, TouchPoint tp) {
+
         if (isHidden) {
-            isSelected = false;
+            System.err.println("Error : inactive Button updated ");
+            this.setNotTouched();
             return false;
         }
         if (x == PApplet.constrain(x,
                 position.x - (this.width / 2) - BUTTON_ERROR,
                 position.x + (this.width / 2) + BUTTON_ERROR)
                 && y == PApplet.constrain(y,
-                position.y - (this.height / 2) - BUTTON_ERROR,
-                position.y + (this.height / 2) + BUTTON_ERROR)) {
+                        position.y - (this.height / 2) - BUTTON_ERROR,
+                        position.y + (this.height / 2) + BUTTON_ERROR)) {
+
+            setTouched();
 
 //            System.out.println(" x " + x + " min " + (position.x - (this.width / 2) - BUTTON_ERROR));
 //            System.out.println(" x " + x + " max " + (position.x + (this.width / 2) + BUTTON_ERROR));
-
             if (isCooldownDone) {
                 isActive = !isActive;
                 currentTP = tp;
@@ -105,12 +108,10 @@ public class Button extends InteractiveZone {
                 }
             }
 
-            isSelected = true;
             lastPressedTime = DrawUtils.applet.millis();
+
             return true;
         }
-
-        isSelected = false;
 
         return false;
     }
@@ -121,15 +122,11 @@ public class Button extends InteractiveZone {
         if (isHidden) {
             return;
         }
-        if ((DrawUtils.applet.millis() - lastPressedTime) > BUTTON_COOLDOWN) {
-            isCooldownDone = true;
-            currentTP = null;
-        }
+
+        checkCooldown();
 
         // if(currentTP != null)
         //     pgraphics3d.tint(0, 153, 204, 126); 
-
-
         pgraphics3d.imageMode(PApplet.CENTER);
 
         if (img != null) {
@@ -173,18 +170,20 @@ public class Button extends InteractiveZone {
                         (int) position.x, (int) position.y, (int) width, (int) height);
             }
         }
+    }
 
+    protected void checkCooldown() {
+        if ((DrawUtils.applet.millis() - lastPressedTime) > BUTTON_COOLDOWN) {
+            setNotTouched();
+            isCooldownDone = true;
+            currentTP = null;
+        }
     }
 
     public void reset() {
         isActive = false;
         currentTP = null;
-        isSelected = false;
-        lastPressedTime = DrawUtils.applet.millis();
-        isCooldownDone = false;
-    }
-
-    public void cooldown() { // TODO ???
+        setNotTouched();
         lastPressedTime = DrawUtils.applet.millis();
         isCooldownDone = false;
     }

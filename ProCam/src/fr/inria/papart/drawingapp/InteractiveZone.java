@@ -12,12 +12,12 @@ public class InteractiveZone implements Drawable {
     protected float height = 40;
     protected int lastPressedTime = 0;
     protected TouchPoint currentTP = null;
-    public boolean isActive = false;
-    public boolean isSelected = false;
+    protected boolean isActive = false;
+    protected boolean isSelected = false;
     public boolean isCooldownDone = true;
     protected boolean isHidden = false;
     protected PVector position = new PVector();
-    
+
     public InteractiveZone(int x, int y, int width, int height) {
         position.x = x;
         position.y = y;
@@ -27,27 +27,27 @@ public class InteractiveZone implements Drawable {
 
     public boolean isSelected(float x, float y, TouchPoint tp) {
         if (isHidden) {
-            isSelected = false;
+            System.err.println("Error : inactive zone updated ");
+            setNotTouched();
             return false;
         }
         if (x == PApplet.constrain(x,
                 position.x - (this.width / 2) - Button.BUTTON_ERROR,
                 position.x + (this.height / 2) + Button.BUTTON_ERROR)
                 && y == PApplet.constrain(y,
-                position.y - (this.width / 2) - Button.BUTTON_ERROR,
-                position.y + (this.height / 2) + Button.BUTTON_ERROR)) {
+                        position.y - (this.width / 2) - Button.BUTTON_ERROR,
+                        position.y + (this.height / 2) + Button.BUTTON_ERROR)) {
 
+            setTouched();
             if (isCooldownDone) {
                 isActive = !isActive;
                 currentTP = tp;
                 isCooldownDone = false;
             }
-            isSelected = true;
+
             lastPressedTime = DrawUtils.applet.millis();
             return true;
-        } else {
-            isSelected = false;
-        }
+        } 
 
         return false;
     }
@@ -59,6 +59,7 @@ public class InteractiveZone implements Drawable {
             return;
         }
         if ((DrawUtils.applet.millis() - lastPressedTime) > INTERACTIVE_COOLDOWN) {
+            setNotTouched();
             isCooldownDone = true;
             currentTP = null;
         }
@@ -71,6 +72,18 @@ public class InteractiveZone implements Drawable {
 
         pgraphics3d.rectMode(PApplet.CENTER);
         pgraphics3d.rect(position.x, position.y, width, height);
+    }
+
+    protected void setTouched() {
+        this.isSelected = true;
+    }
+
+    protected void setNotTouched() {
+        this.isSelected = false;
+    }
+
+    public boolean isTouched() {
+        return this.isSelected;
     }
 
     public void setPosition(PVector pos) {

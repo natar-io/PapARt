@@ -150,10 +150,29 @@ public class MarkerBoard {
         return true;
     }
 
+    public PVector getBoardLocation(Camera camera, Projector projector) {
+        int id = cameras.indexOf(camera);
+        float transfo[] = transfos.get(id);
+
+        PVector v = new PVector(transfo[3], transfo[7], transfo[11]);
+        PVector v2 = new PVector();
+        projector.getExtrinsics().mult(v, v2);
+        PVector px = projector.pdp.worldToPixel(v2, true);
+        return px;
+    }
+
+    public boolean isSeenBy(Camera camera, Projector projector, float error) {
+        PVector px = this.getBoardLocation(camera, projector);
+        return !(px.x < (0 - error)
+                || px.x > projector.frameWidth
+                || px.y < (0 - error)
+                || px.y > (projector.frameHeight + error));
+    }
+
     public synchronized void updatePosition(Camera camera, IplImage img) {
 
         int id = cameras.indexOf(camera);
-        if(id == -1){
+        if (id == -1) {
             throw new RuntimeException("The board " + this.name + " is not registered with the camera you asked");
         }
         TrackerMultiMarker tracker = trackers.get(id);
@@ -193,7 +212,6 @@ public class MarkerBoard {
 
 //        System.out.println("Current Pos " + currentPos);
 //        System.out.println("Distance " + currentPos.dist(lastPos.get(id)));
-
         float distance = currentPos.dist(lastPos.get(id));
 
         // if it is a drawing mode
@@ -213,7 +231,6 @@ public class MarkerBoard {
         }
 
 //        Arrays.copyOf(transfo, width)
-
     }
 
     private void update(ARToolKitPlus.ARMultiMarkerInfoT multiMarkerConfig, int id) {
@@ -257,16 +274,15 @@ public class MarkerBoard {
                 t[8], t[9], t[10], t[11],
                 0, 0, 0, 1);
     }
-    
-    public PMatrix3D getTransfoRelativeTo(Camera camera, MarkerBoard board2){
-        
+
+    public PMatrix3D getTransfoRelativeTo(Camera camera, MarkerBoard board2) {
+
         PMatrix3D tr1 = getTransfoMat(camera);
         PMatrix3D tr2 = board2.getTransfoMat(camera);
-        
+
         tr2.apply(tr1);
         return tr2;
     }
-    
 
     public String getFileName() {
         return fileName;

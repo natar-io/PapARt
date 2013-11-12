@@ -19,7 +19,7 @@ public class ActiveZone extends Button {
     @Override
     public boolean isSelected(float x, float y, TouchPoint tp) {
         if (isHidden) {
-            isSelected = false;
+            setNotTouched();
             return false;
         }
 
@@ -35,11 +35,12 @@ public class ActiveZone extends Button {
                 currentTP = tp;
                 isCooldownDone = false;
             }
-            isSelected = true;
+            setTouched();
             lastPressedTime = DrawUtils.applet.millis();
             return true;
+        } else {
+            setNotTouched();
         }
-        isSelected = false;
         return false;
     }
 
@@ -50,8 +51,7 @@ public class ActiveZone extends Button {
             return;
         }
 
-
-        if (isSelected) {
+        if (isTouched()) {
             pgraphics3d.tint(DrawUtils.applet.color(100, 255, 100));
         } else {
             pgraphics3d.fill(DrawUtils.applet.color(UNSELECTED));

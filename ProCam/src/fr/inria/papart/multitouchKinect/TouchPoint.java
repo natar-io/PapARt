@@ -18,6 +18,7 @@ public class TouchPoint {
     public Vec3D vKinect;
     public int color;
     public int confidence;
+//    public float size;
     public boolean is3D;
     public boolean isNew;
     public boolean isCloseToPlane;
@@ -63,6 +64,10 @@ public class TouchPoint {
 
     public int getColor(){
         return this.color;
+    }
+    
+    public int getID(){
+        return this.id;
     }
     
     // TODO: speed etc..

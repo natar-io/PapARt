@@ -135,7 +135,7 @@ public class Projector extends ARDisplay {
         this.endDraw();
     }
 
-    private void drawScreensProjection() {
+    public void drawScreensProjection() {
 
         // Place the projector to his projection respective to the origin (camera here)
         this.graphics.modelview.apply(getExtrinsics());
