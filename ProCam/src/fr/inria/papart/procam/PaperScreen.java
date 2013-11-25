@@ -15,7 +15,7 @@ public class PaperScreen {
     protected MarkerBoard board;
     protected PVector drawingSize;
     protected Camera cameraTracking;
-    protected Projector projector;
+    protected ARDisplay projector;
     protected float resolution;
     protected PApplet parent;
 
@@ -24,7 +24,7 @@ public class PaperScreen {
             PVector size,
             float resolution,
             Camera cam,
-            Projector proj) {
+            ARDisplay proj) {
 
         this.parent = parent;
         this.board = board;
@@ -71,6 +71,7 @@ public class PaperScreen {
         screenPos.translate(x, y, z);
     }
 
+    // TODO: check this !
     public PVector getScreenPos() {
         return board.getBoardLocation(cameraTracking, projector);
     }

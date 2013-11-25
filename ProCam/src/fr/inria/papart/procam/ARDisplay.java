@@ -15,12 +15,16 @@ import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
+import processing.core.PVector;
 import processing.opengl.PGL;
 import static processing.opengl.PGL.CLAMP_TO_EDGE;
 import static processing.opengl.PGL.NEAREST;
 import static processing.opengl.PGL.RGBA;
 import static processing.opengl.PGL.TEXTURE_2D;
 import processing.opengl.PShader;
+import toxi.geom.Ray3D;
+import toxi.geom.ReadonlyVec3D;
+import toxi.geom.Vec3D;
 
 /**
  *
@@ -33,7 +37,6 @@ public class ARDisplay {
 //    public PGraphicsOpenGL graphicsUndist;
     public ArrayList<Screen> screens;
     private PImage mapImg;
-
     // Projector information
     protected ProjectiveDevice proj;
     protected PMatrix3D projIntrinsicsP3D, projExtrinsicsP3D, projExtrinsicsP3DInv;
@@ -178,7 +181,7 @@ public class ARDisplay {
 
         }
         mapImg.updatePixels();
-        
+
         parent.colorMode(PApplet.RGB, 255);
 
         lensFilter.set("mapTex", mapImg);
@@ -188,6 +191,7 @@ public class ARDisplay {
         lensFilter.set("mag", mag);
     }
     // Actual GLGraphics BUG :  projection has to be loaded directly into OpenGL.
+
     public void loadProjection() {
 
 //        this.graphics.resetProjection();
@@ -230,7 +234,6 @@ public class ARDisplay {
         return this.pdp;
     }
 
-        
     public PGraphicsOpenGL beginDraw() {
 
         ////////  3D PROJECTION  //////////////
@@ -241,20 +244,20 @@ public class ARDisplay {
 
         // load the projector parameters into OpenGL
         loadProjection();
-        
+
         loadModelView();
 
         return this.graphics;
     }
 
-    protected void loadModelView(){
-                // make the modelview matrix as the default matrix
+    protected void loadModelView() {
+        // make the modelview matrix as the default matrix
         this.graphics.resetMatrix();
 
         // Setting the projector negative because ARToolkit provides neg Z values
         this.graphics.scale(1, 1, -1);
     }
-    
+
     public void endDraw() {
 
         // Put the projection matrix back to normal
@@ -288,6 +291,109 @@ public class ARDisplay {
         return this.graphics;
     }
 
+    public void drawScreens() {
+        this.beginDraw();
+        this.graphics.clear();
+//        this.graphics.background(0);
+        renderScreens();
+        this.endDraw();
+    }
+
+    // TODO: check this !!!
+    public void renderScreens() {
+
+        for (Screen screen : screens) {
+            if (!screen.isDrawing()) {
+                continue;
+            }
+            this.graphics.pushMatrix();
+
+            // Goto to the screen position
+            this.graphics.modelview.apply(screen.getPos());
+            // Draw the screen image
+
+            // If it is openGL renderer, use the standard  (0, 0) is bottom left
+            if (screen.isOpenGL()) {
+                this.graphics.image(screen.getTexture(), 0, 0, screen.getSize().x, screen.getSize().y);
+            } else {
+                float w = screen.getSize().x;
+                float h = screen.getSize().y;
+
+                this.graphics.textureMode(PApplet.NORMAL);
+                this.graphics.beginShape(PApplet.QUADS);
+                this.graphics.texture(screen.getTexture());
+                this.graphics.vertex(0, 0, 0, 0, 1);
+                this.graphics.vertex(0, h, 0, 0, 0);
+                this.graphics.vertex(w, h, 0, 1, 0);
+                this.graphics.vertex(w, 0, 0, 1, 1);
+                this.graphics.endShape();
+            }
+            this.graphics.popMatrix();
+        }
+    }
+
+    // We consider px and py are normalized screen space... 
+    public PVector projectPointer(Screen screen, float px, float py) {
+
+//        float x = px * 2 - 1;
+//        float y = py * 2 - 1;
+
+        double[] undist = proj.undistort(px * getWidth(), py * getHeight());
+
+        // go from screen coordinates to normalized coordinates  (-1, 1) 
+        float x = (float) undist[0] / getWidth() * 2 - 1;
+        float y = (float) undist[1] / getHeight() * 2 - 1;
+
+        // Not the cleaniest method...
+        PMatrix3D invProjModelView1 = createProjection(screen.getZMinMax());
+        invProjModelView1.scale(1, 1, -1);
+        invProjModelView1.invert();
+
+        PVector p1 = new PVector(x, y, -1f);
+        PVector p2 = new PVector(x, y, 1f);
+        PVector out1 = new PVector();
+        PVector out2 = new PVector();
+
+        // view of the point from the projector.
+        Utils.mult(invProjModelView1, p1, out1);
+        Utils.mult(invProjModelView1, p2, out2);
+
+        Ray3D ray = new Ray3D(new Vec3D(out1.x, out1.y, out1.z),
+                new Vec3D(out2.x, out2.y, out2.z));
+
+        ReadonlyVec3D inter = screen.plane.getIntersectionWithRay(ray);
+//        dist = screen.plane.intersectRayDistance(ray);
+
+        if (inter == null) {
+            return null;
+        }
+
+        Vec3D res = screen.transformationProjPaper.applyTo(inter);
+        PVector out = new PVector(res.x() / res.z(),
+                res.y() / res.z(), 1);
+        return out;
+    }
+
+    protected PMatrix3D createProjection(PVector nearFar) {
+
+        PMatrix3D init = this.graphics.projection.get();
+        this.graphics.beginDraw();
+
+        this.graphics.frustum(0, 0, 0, 0, nearFar.x, nearFar.y);
+
+        this.graphics.projection.m00 = projectionInit.m00;
+        this.graphics.projection.m11 = projectionInit.m11;
+        this.graphics.projection.m02 = projectionInit.m02;
+        this.graphics.projection.m12 = projectionInit.m12;
+
+        PMatrix3D out = this.graphics.projection.get();
+
+        this.graphics.endDraw();
+        this.graphics.projection.set(init);
+
+        return out;
+    }
+
     public PGraphicsOpenGL getGraphics() {
         return this.graphics;
     }
@@ -298,5 +404,9 @@ public class ARDisplay {
 
     public int getHeight() {
         return frameHeight;
+    }
+
+    public void addScreen(Screen s) {
+        screens.add(s);
     }
 }

@@ -2,7 +2,8 @@ package fr.inria.papart.multitouchKinect;
 
 import com.googlecode.javacv.OpenKinectFrameGrabber;
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
-import fr.inria.papart.procam.Projector;
+import fr.inria.papart.kinect.Homography;
+import fr.inria.papart.procam.ARDisplay;
 import fr.inria.papart.procam.Screen;
 import fr.inria.papart.kinect.Kinect;
 import fr.inria.papart.multitouchKinect.MultiTouchKinect;
@@ -11,6 +12,8 @@ import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 import processing.core.PApplet;
 import processing.core.PVector;
+import toxi.geom.Matrix4x4;
+import toxi.geom.Vec3D;
 
 /**
  * Touch input, using a Kinect device for now.
@@ -55,6 +58,11 @@ public class TouchInput {
             grabberThread = new GrabberThread(this, grabber, color, colorUndist);
             grabberThread.start();
         }
+    }
+    private Matrix4x4 transfo = null;
+
+    public void setTransfo(Homography homography) {
+        this.transfo = homography.getTransformation();
     }
 
     class GrabberThread extends Thread {
@@ -164,18 +172,17 @@ public class TouchInput {
         return touchPoints3D;
     }
 
-    public TouchElement projectTouchToScreen(Screen screen, Projector projector) {
+    public TouchElement projectTouchToScreen(Screen screen, ARDisplay projector) {
         return projectTouchToScreen(screen, projector, false, true, true, true, true);
     }
 
-    public TouchElement projectTouchToScreen(Screen screen, Projector projector, boolean is2D, boolean is3D) {
+    public TouchElement projectTouchToScreen(Screen screen, ARDisplay projector, boolean is2D, boolean is3D) {
         return projectTouchToScreen(screen, projector, false, is2D, is3D, is2D, is3D);
     }
 
-    public TouchElement projectTouchToScreen(Screen screen, Projector projector, boolean isAll,
+    public TouchElement projectTouchToScreen(Screen screen, ARDisplay projector, boolean isAll,
             boolean is2D, boolean is3D,
             boolean isSpeed2D, boolean isSpeed3D) {
-
 
         if (isSpeed2D) {
             is2D = true;
@@ -217,12 +224,17 @@ public class TouchInput {
 
                 Touch tl = new Touch();
 
-                if (!(TouchDetection.isInside(tp.v, 0, 1) || isAll)) {
+                Vec3D vec = tp.v;
+                if (this.transfo != null) {
+                    vec = transfo.applyTo(vec);
+                }
+
+                if (!(TouchDetection.isInside(vec, 0, 1) || isAll)) {
                     continue;
                 }
 
                 PVector res, res2;
-                res = projector.projectPointer(screen, tp.v.x, tp.v.y);
+                res = projector.projectPointer(screen, vec.x, vec.y);
 //                    res = projector.projectPointer(screen, tp);
 
                 if (isSpeed2D) {
@@ -249,7 +261,7 @@ public class TouchInput {
                 tl.is3D = false;
                 tl.speed = null;
                 tl.touchPoint = tp;
-                
+
                 if (res2 != null) {
                     // inside the paper sheet 	      
                     if (TouchDetection.isInside(res2, 0, 1) || isAll) {
@@ -270,14 +282,19 @@ public class TouchInput {
 
                 Touch tl = new Touch();
 
+                Vec3D vec = tp.v;
+                if (this.transfo != null) {
+                    vec = transfo.applyTo(vec);
+                }
+
                 // TODO: inside necessary ??
                 // Inside the window
-                if (!(TouchDetection.isInside(tp.v, -0.5f, 1.5f) || isAll)) {
+                if (!(TouchDetection.isInside(vec, -0.5f, 1.5f) || isAll)) {
                     continue;
                 }
 
                 PVector res, res2;
-                res = projector.projectPointer(screen, tp.v.x, tp.v.y);
+                res = projector.projectPointer(screen, vec.x, vec.y);
 //                    res = projector.projectPointer(screen, tp);
 
 
@@ -296,10 +313,10 @@ public class TouchInput {
                     continue;
                 }
 
-                res.z = tp.v.z;
+                res.z = vec.z;
                 // inside the paper sheet 	      
                 if (TouchDetection.isInside(res, 0f, 1f) || isAll) {
-                    PVector p = new PVector(res.x, res.y, tp.v.z);
+                    PVector p = new PVector(res.x, res.y, vec.z);
                     position3D.add(p);
                     tl.p = p;
                     points3D.add(tp);
@@ -312,7 +329,7 @@ public class TouchInput {
 
                     PVector p = new PVector(res.x - res2.x,
                             res.y - res2.y,
-                            (tp.v.z - tp.oldV.z));
+                            (vec.z - tp.oldV.z));
                     speed3D.add(p);
                     tl.speed = p;
                 }

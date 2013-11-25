@@ -161,6 +161,17 @@ public class MarkerBoard {
         return px;
     }
 
+    
+    // We suppose that the ARDisplay is the one of the camera...
+    public PVector getBoardLocation(Camera camera, ARDisplay display) {
+        int id = cameras.indexOf(camera);
+        float transfo[] = transfos.get(id);
+
+        PVector v = new PVector(transfo[3], transfo[7], transfo[11]);
+        PVector px = display.pdp.worldToPixel(v, true);
+        return px;
+    }
+
     public boolean isSeenBy(Camera camera, Projector projector, float error) {
         PVector px = this.getBoardLocation(camera, projector);
         return !(px.x < (0 - error)

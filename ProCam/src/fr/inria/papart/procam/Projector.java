@@ -112,6 +112,7 @@ public class Projector extends ARDisplay {
         this.graphics.endDraw();
     }
 
+    @Override
     public void drawScreens() {
         this.beginDraw();
         this.graphics.clear();
@@ -136,38 +137,10 @@ public class Projector extends ARDisplay {
     }
 
     public void drawScreensProjection() {
-
         // Place the projector to his projection respective to the origin (camera here)
         this.graphics.modelview.apply(getExtrinsics());
 
-        for (Screen screen : screens) {
-            if (!screen.isDrawing()) {
-                continue;
-            }
-            this.graphics.pushMatrix();
-
-            // Goto to the screen position
-            this.graphics.modelview.apply(screen.getPos());
-            // Draw the screen image
-
-            // If it is openGL renderer, use the standard  (0, 0) is bottom left
-            if (screen.isOpenGL()) {
-                this.graphics.image(screen.getTexture(), 0, 0, screen.getSize().x, screen.getSize().y);
-            } else {
-                float w = screen.getSize().x;
-                float h = screen.getSize().y;
-
-                this.graphics.textureMode(PApplet.NORMAL);
-                this.graphics.beginShape(PApplet.QUADS);
-                this.graphics.texture(screen.getTexture());
-                this.graphics.vertex(0, 0, 0, 0, 1);
-                this.graphics.vertex(0, h, 0, 0, 0);
-                this.graphics.vertex(w, h, 0, 1, 0);
-                this.graphics.vertex(w, 0, 0, 1, 1);
-                this.graphics.endShape();
-            }
-            this.graphics.popMatrix();
-        }
+        super.renderScreens();
     }
 
     private void drawScreensProjectionLegacy() {
@@ -200,6 +173,7 @@ public class Projector extends ARDisplay {
      * @param py Normalized y position (0,1) in projector space
      * @return Position of the pointer.
      */
+    @Override
     public PVector projectPointer(Screen screen, float px, float py) {
 
 //        float x = px * 2 - 1;
@@ -242,27 +216,5 @@ public class Projector extends ARDisplay {
         return out;
     }
 
-    private PMatrix3D createProjection(PVector nearFar) {
 
-        PMatrix3D init = this.graphics.projection.get();
-        this.graphics.beginDraw();
-
-        this.graphics.frustum(0, 0, 0, 0, nearFar.x, nearFar.y);
-
-        this.graphics.projection.m00 = projectionInit.m00;
-        this.graphics.projection.m11 = projectionInit.m11;
-        this.graphics.projection.m02 = projectionInit.m02;
-        this.graphics.projection.m12 = projectionInit.m12;
-
-        PMatrix3D out = this.graphics.projection.get();
-
-        this.graphics.endDraw();
-        this.graphics.projection.set(init);
-
-        return out;
-    }
-
-    public void addScreen(Screen s) {
-        screens.add(s);
-    }
 }

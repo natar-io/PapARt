@@ -16,6 +16,7 @@ import java.io.FileNotFoundException;
 
 import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.opencv_calib3d.*;
+import processing.core.PMatrix3D;
 
 public class Homography {
 
@@ -33,7 +34,11 @@ public class Homography {
     PApplet pa;
 
     public Homography(String filename) throws FileNotFoundException {
-        load(filename);
+        load(Kinect.parent, filename);
+    }
+
+    public Homography(PApplet parent, String filename) throws FileNotFoundException {
+        load(parent, filename);
     }
 
     public Homography(Matrix4x4 transfo) throws FileNotFoundException {
@@ -109,8 +114,9 @@ public class Homography {
 
     public void findHomography() {
 
-        cvFindHomography(srcPoints, dstPoints, homography, 4, 2, null);
-        //    cvFindHomography(srcPoints, dstPoints, homography);
+//        cvFindHomography(srcPoints, dstPoints, homography, 4, 2, null);
+//        cvFindHomography(srcPoints, dstPoints, homography, 0, 3, null);
+            cvFindHomography(srcPoints, dstPoints, homography);
 
         //    cvFindHomography(srcPoints, dstPoints, homography, int method, int reprojThresholderror);
 
@@ -127,12 +133,32 @@ public class Homography {
                     0, 0, 0, 1);
 
         }
-        
+
         isValid = true;
     }
 
     public Matrix4x4 getTransformation() {
         return transform;
+    }
+
+    public PMatrix3D getTransformationP() {
+        return new PMatrix3D(
+                (float)transform.matrix[0][0], 
+                (float)transform.matrix[0][1], 
+                (float)transform.matrix[0][2], 
+                (float)transform.matrix[0][3], 
+                (float)transform.matrix[1][0], 
+                (float)transform.matrix[1][1], 
+                (float)transform.matrix[1][2], 
+                (float)transform.matrix[1][3], 
+                (float)transform.matrix[2][0], 
+                (float)transform.matrix[2][1], 
+                (float)transform.matrix[2][2], 
+                (float)transform.matrix[2][3], 
+                (float)transform.matrix[3][0], 
+                (float)transform.matrix[3][1], 
+                (float)transform.matrix[3][2], 
+                (float)transform.matrix[3][3]);
     }
 
     CvMat getHomography() {
@@ -152,8 +178,8 @@ public class Homography {
         pa.println("Homography successfully saved");
     }
 
-    private void load(String filename) throws FileNotFoundException {
-        String[] lines = Kinect.getApplet().loadStrings(filename);
+    private void load(PApplet parent, String filename) throws FileNotFoundException {
+        String[] lines = parent.loadStrings(filename);
         if (lines == null) {
             throw new FileNotFoundException(filename);
         }

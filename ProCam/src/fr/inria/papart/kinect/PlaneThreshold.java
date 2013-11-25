@@ -73,6 +73,10 @@ public class PlaneThreshold {
     }
 
     public boolean computePlane() {
+        
+        if(points[0] == null || points[1] == null || points[2] == null)
+            return false;
+        
         Triangle3D tri = new Triangle3D(points[0],
                 points[1],
                 points[2]);

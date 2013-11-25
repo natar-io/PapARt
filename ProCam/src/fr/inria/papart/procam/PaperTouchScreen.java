@@ -24,7 +24,7 @@ public class PaperTouchScreen extends PaperScreen {
             PVector size,
             float resolution,
             Camera cam,
-            Projector proj,
+            ARDisplay proj,
             TouchInput touchinput) {
 
         super(parent, board, size,
@@ -70,6 +70,8 @@ public class PaperTouchScreen extends PaperScreen {
             System.err.println("UpdateTouch on disabled screen.");
             return;
         }
+        
+        // TODO: check how to add the Screen calibration
         screen.computeScreenPosTransform();
         touch = touchInput.projectTouchToScreen(screen, projector,
                 true, true);
