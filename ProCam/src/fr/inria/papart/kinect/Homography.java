@@ -8,6 +8,7 @@ package fr.inria.papart.kinect;
  *
  * @author jeremy
  */
+import com.googlecode.javacv.JavaCV;
 import processing.core.PApplet;
 import processing.core.PMatrix2D;
 import processing.core.PVector;
@@ -16,7 +17,9 @@ import java.io.FileNotFoundException;
 
 import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.opencv_calib3d.*;
+import static com.googlecode.javacv.cpp.opencv_imgproc.*;
 import processing.core.PMatrix3D;
+import toxi.geom.Vec3D;
 
 public class Homography {
 
@@ -24,8 +27,11 @@ public class Homography {
     CvMat dstPoints;
     int nbPoints;
     CvMat homography;
-    PMatrix2D transform2D;
+//    public PMatrix2D transform2D = null;
+//    public PMatrix3D transform3D = null;
     int currentPoint = 0;
+    
+    // TEMPORARY PUBLIC
     Matrix4x4 transform = null;
     boolean isValid;
     int srcDim;
@@ -106,7 +112,7 @@ public class Homography {
             dstPoints.put(id, point.x);
             dstPoints.put(id + nbPoints, point.y);
             if (dstDim == 3) {
-                dstPoints.put(id + nbPoints * 2, point.y);
+                dstPoints.put(id + nbPoints * 2, point.z);
 
             }
         }
@@ -116,15 +122,78 @@ public class Homography {
 
 //        cvFindHomography(srcPoints, dstPoints, homography, 4, 2, null);
 //        cvFindHomography(srcPoints, dstPoints, homography, 0, 3, null);
-            cvFindHomography(srcPoints, dstPoints, homography);
+//            cvFindHomography(srcPoints, dstPoints, homography);
 
-        //    cvFindHomography(srcPoints, dstPoints, homography, int method, int reprojThresholderror);
+        // If 4 points && 2D
+        if (srcDim == 2 && dstDim == 2 && nbPoints == 4) {
+
+//            System.out.println("Perspective transform...");
+//
+//            double[] d1 = new double[]{
+//                srcPoints.get(0), srcPoints.get(4 + 0),
+//                srcPoints.get(1), srcPoints.get(4 + 1),
+//                srcPoints.get(2), srcPoints.get(4 + 2),
+//                srcPoints.get(3), srcPoints.get(4 + 3)};
+//            double[] d2 = new double[]{
+//                dstPoints.get(0), dstPoints.get(4 + 0),
+//                dstPoints.get(1), dstPoints.get(4 + 1),
+//                dstPoints.get(2), dstPoints.get(4 + 2),
+//                dstPoints.get(3), dstPoints.get(4 + 3)};
+//            float[] f1 = new float[]{
+//                (float) srcPoints.get(0), (float) srcPoints.get(4 + 0),
+//                (float) srcPoints.get(1), (float) srcPoints.get(4 + 1),
+//                (float) srcPoints.get(2), (float) srcPoints.get(4 + 2),
+//                (float) srcPoints.get(3), (float) srcPoints.get(4 + 3)};
+//            float[] f2 = new float[]{
+//                (float) dstPoints.get(0), (float) dstPoints.get(4 + 0),
+//                (float) dstPoints.get(1), (float) dstPoints.get(4 + 1),
+//                (float) dstPoints.get(2), (float) dstPoints.get(4 + 2),
+//                (float) dstPoints.get(3), (float) dstPoints.get(4 + 3)};
+//
+//            JavaCV.getPerspectiveTransform(d1, d2, homography);
+//            System.out.println("javacv persp");
+//            transform2D = new PMatrix2D((float) homography.get(0), (float) homography.get(1), (float) homography.get(2),
+//                    (float) homography.get(3), (float) homography.get(4), (float) homography.get(5));
+//            transform2D.print();
+//
+//
+//            cvGetPerspectiveTransform(f1, f2, homography);
+//            System.out.println("opencv persp");
+//            transform2D = new PMatrix2D((float) homography.get(0), (float) homography.get(1), (float) homography.get(2),
+//                    (float) homography.get(3), (float) homography.get(4), (float) homography.get(5));
+//            transform2D.print();
+//
+
+            cvFindHomography(srcPoints, dstPoints, homography);
+//            System.out.println("findhomography");
+//            transform2D = new PMatrix2D((float) homography.get(0), (float) homography.get(1), (float) homography.get(2),
+//                    (float) homography.get(3), (float) homography.get(4), (float) homography.get(5));
+//            transform2D.print();
+
+        } else {
+//            cvFindHomography(srcPoints, dstPoints, homography, 4, 2, null);
+            cvFindHomography(srcPoints, dstPoints, homography);
+            //    cvFindHomography(srcPoints, dstPoints, homography, int method, int reprojThresholderror);
+        }
+
+        initMatrices();
+
+        isValid = true;
+    }
+
+    private void initMatrices() {
 
         if (srcDim == dstDim && srcDim == 2) {
+
             transform = new Matrix4x4(homography.get(0), homography.get(1), 0, homography.get(2),
                     homography.get(3), homography.get(4), 0, homography.get(5),
                     0, 0, 1, 0,
                     0, 0, 0, 1);
+            
+            transform.scale(1, 1, 1);
+
+//            transform2D = new PMatrix2D((float) homography.get(0), (float) homography.get(1), (float) homography.get(2),
+//                    (float) homography.get(2), (float) homography.get(4), (float) homography.get(5));
 
         } else {
             transform = new Matrix4x4(homography.get(0), homography.get(1), homography.get(2), 0,
@@ -132,9 +201,11 @@ public class Homography {
                     homography.get(6), homography.get(7), homography.get(8), 0,
                     0, 0, 0, 1);
 
+//            transform3D = getTransformationP();
+
         }
 
-        isValid = true;
+
     }
 
     public Matrix4x4 getTransformation() {
@@ -143,22 +214,26 @@ public class Homography {
 
     public PMatrix3D getTransformationP() {
         return new PMatrix3D(
-                (float)transform.matrix[0][0], 
-                (float)transform.matrix[0][1], 
-                (float)transform.matrix[0][2], 
-                (float)transform.matrix[0][3], 
-                (float)transform.matrix[1][0], 
-                (float)transform.matrix[1][1], 
-                (float)transform.matrix[1][2], 
-                (float)transform.matrix[1][3], 
-                (float)transform.matrix[2][0], 
-                (float)transform.matrix[2][1], 
-                (float)transform.matrix[2][2], 
-                (float)transform.matrix[2][3], 
-                (float)transform.matrix[3][0], 
-                (float)transform.matrix[3][1], 
-                (float)transform.matrix[3][2], 
-                (float)transform.matrix[3][3]);
+                (float) transform.matrix[0][0],
+                (float) transform.matrix[0][1],
+                (float) transform.matrix[0][2],
+                (float) transform.matrix[0][3],
+                (float) transform.matrix[1][0],
+                (float) transform.matrix[1][1],
+                (float) transform.matrix[1][2],
+                (float) transform.matrix[1][3],
+                (float) transform.matrix[2][0],
+                (float) transform.matrix[2][1],
+                (float) transform.matrix[2][2],
+                (float) transform.matrix[2][3],
+                (float) transform.matrix[3][0],
+                (float) transform.matrix[3][1],
+                (float) transform.matrix[3][2],
+                (float) transform.matrix[3][3]);
+    }
+
+    public Vec3D applyTo(Vec3D src) {
+        return this.transform.applyTo(src);
     }
 
     CvMat getHomography() {

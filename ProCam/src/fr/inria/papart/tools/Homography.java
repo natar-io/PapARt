@@ -8,6 +8,7 @@ package fr.inria.papart.tools;
  *
  * @author jeremy
  */
+import com.googlecode.javacv.JavaCV;
 import processing.core.PApplet;
 import processing.core.PMatrix2D;
 import processing.core.PVector;
@@ -17,8 +18,8 @@ import java.io.FileNotFoundException;
 import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.opencv_calib3d.*;
 
-// TODO: create another class homography loader, without any OpenCV dependency
 
+// TODO: REMOVE THIS CLASS, OR THE OTHER
 public class Homography {
 
     CvMat srcPoints;
@@ -124,7 +125,7 @@ public class Homography {
             dstPoints.put(id, point.x);
             dstPoints.put(id + nbPoints, point.y);
             if (dstDim == 3) {
-                dstPoints.put(id + nbPoints * 2, point.y);
+                dstPoints.put(id + nbPoints * 2, point.z);
 
             }
         }
@@ -136,17 +137,28 @@ public class Homography {
         // println(srcPoints);
         // println(dstPoints);
 
-        cvFindHomography(srcPoints, dstPoints, homography, 4, 2, null);
-        //    cvFindHomography(srcPoints, dstPoints, homography);
 
-        //    cvFindHomography(srcPoints, dstPoints, homography, int method, int reprojThresholderror);
+        // If 4 points && 2D ? 
+        if (srcDim == 2 && dstDim == 2 && nbPoints == 4) {
+            JavaCV.getPerspectiveTransform(srcPoints.get(), dstPoints.get(), homography);
+        } else {
+            cvFindHomography(srcPoints, dstPoints, homography, 4, 2, null);
+            //    cvFindHomography(srcPoints, dstPoints, homography);
+            //    cvFindHomography(srcPoints, dstPoints, homography, int method, int reprojThresholderror);
+        }
+
         // naive : 0
         // CV_LMEDS = 4,
         // CV_RANSAC = 8,
 
         // TODO: if ( hom == ...)
 
+
         if (srcDim == dstDim && srcDim == 2) {
+
+
+
+
             transform = new Matrix4x4(homography.get(0), homography.get(1), 0, homography.get(2),
                     homography.get(3), homography.get(4), 0, homography.get(5),
                     0, 0, 1, 0,
