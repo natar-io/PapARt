@@ -378,7 +378,7 @@ public class Camera {
         }
 
         if (iimg != null) {
-            Utils.IplImageToPImage(iimg, true, camImage);
+            Utils.IplImageToPImage(iimg, false, camImage);
         }
         return camImage;
     }

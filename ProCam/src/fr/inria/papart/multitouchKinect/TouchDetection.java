@@ -27,13 +27,14 @@ public class TouchDetection {
     public static float currentMaxDistance;
     public static float maxDistance = 8f;    // in mm
     public static float maxDistance3D = 20f;    // in mm
+    public static int MAX_REC = 500;
 
     public static ArrayList<Integer> findNeighboursRec(int currentPoint, int halfNeigh,
             ArrayList<Integer> validPoints,
             Vec3D points[], Vec3D[] projPoints,
             boolean[] isValidPoints,
             boolean[] readPoints, Set<Integer> toVisit,
-            int skip) {
+            int skip, int recLevel) {
 
         // TODO: optimisations here ?
         int x = currentPoint % Kinect.KINECT_WIDTH;
@@ -42,6 +43,9 @@ public class TouchDetection {
         ArrayList<Integer> ret = new ArrayList<Integer>();
         ArrayList<Integer> visitNext = new ArrayList<Integer>();
 
+        if(recLevel == MAX_REC)
+            return ret;
+        
         int minX = PApplet.constrain(x - halfNeigh, 0, Kinect.KINECT_WIDTH - 1);
         int maxX = PApplet.constrain(x + halfNeigh, 0, Kinect.KINECT_WIDTH - 1);
         int minY = PApplet.constrain(y - halfNeigh, 0, Kinect.KINECT_HEIGHT - 1);
@@ -68,7 +72,7 @@ public class TouchDetection {
                     Kinect.connectedComponent[offset] = Kinect.currentCompo;
 
 //                    // if is is on a border ??
-//                    if (i == minX || i == maxX || j == minY || j == maxY) {
+//                    if (i == minX || j == minX || i >= maxX - skip || j >= maxY - skip) {
                     visitNext.add(offset);
 //                    } // if it is a border
 
@@ -83,7 +87,7 @@ public class TouchDetection {
                     validPoints,
                     points, projPoints,
                     isValidPoints,
-                    readPoints, toVisit, skip));
+                    readPoints, toVisit, skip, recLevel +1));
         }
 
         return ret;
@@ -104,7 +108,7 @@ public class TouchDetection {
         Kinect.currentCompo = 1;
 
 //        int searchDepth = 1 * skip; // on each direction
-        int searchDepth = 10 * skip; // on each direction
+        int searchDepth = 1 * skip; // on each direction
 
         Arrays.fill(readPoints, false);
         Set<Integer> toVisit = new HashSet<Integer>();
@@ -117,7 +121,7 @@ public class TouchDetection {
         while (toVisit.size() > 0) {
             int p = toVisit.iterator().next();
             allNeighbourhood.add(findNeighboursRec(p, searchDepth, validPoints,
-                    points, projPoints, isValidPoints, readPoints, toVisit, skip));
+                    points, projPoints, isValidPoints, readPoints, toVisit, skip, 0));
             Kinect.currentCompo++;
         }
 
@@ -175,7 +179,7 @@ public class TouchDetection {
 //                    if (p.z > max.z) {
 //                        max.z = p.z;
 //                    }
-                    
+
                     mean.addSelf(points[vint.get(k)]);
                 }
                 mean.scaleSelf(1.0f / nbPoints3D);
