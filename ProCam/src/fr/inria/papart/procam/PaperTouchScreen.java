@@ -71,7 +71,6 @@ public class PaperTouchScreen extends PaperScreen {
             return;
         }
         
-        // TODO: check how to add the Screen calibration
         screen.computeScreenPosTransform();
         touch = touchInput.projectTouchToScreen(screen, projector,
                 true, true);

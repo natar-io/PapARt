@@ -134,11 +134,13 @@ public class Button extends InteractiveZone {
             if (isActive) {
 
                 if (imgSel != null) {
-                    DrawUtils.drawImage(pgraphics3d, imgSel, (int) position.x, (int) position.y, (int) width, (int) height);
+//                    DrawUtils.drawImage(pgraphics3d, imgSel, (int) position.x, (int) position.y, (int) width, (int) height);
+                    pgraphics3d.image(imgSel, (int) position.x, (int) position.y, (int) width, (int) height);
                 } else {
 
                     pgraphics3d.tint(DrawUtils.applet.color(100, 255, 100));
-                    DrawUtils.drawImage(pgraphics3d, img, (int) position.x, (int) position.y, (int) width, (int) height);
+//                    DrawUtils.drawImage(pgraphics3d, img, (int) position.x, (int) position.y, (int) width, (int) height);
+                    pgraphics3d.image(img, (int) position.x, (int) position.y, (int) width, (int) height);
                 }
 
             } else {
@@ -146,7 +148,8 @@ public class Button extends InteractiveZone {
                 if (imgSel == null) {
                     pgraphics3d.tint(DrawUtils.applet.color(UNSELECTED));
                 }
-                DrawUtils.drawImage(pgraphics3d, img, (int) position.x, (int) position.y, (int) width, (int) height);
+//                DrawUtils.drawImage(pgraphics3d, img, (int) position.x, (int) position.y, (int) width, (int) height);
+                pgraphics3d.image(img, (int) position.x, (int) position.y, (int) width, (int) height);
             }
             pgraphics3d.noTint();
         } else {

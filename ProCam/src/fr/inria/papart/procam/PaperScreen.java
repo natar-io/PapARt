@@ -66,7 +66,7 @@ public class PaperScreen {
         setLocation(v.x, v.y, v.z);
     }
 
-    void setLocation(float x, float y, float z) {
+    public void setLocation(float x, float y, float z) {
         PMatrix3D screenPos = screen.getPos();
         screenPos.translate(x, y, z);
     }

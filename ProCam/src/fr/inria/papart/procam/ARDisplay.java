@@ -54,13 +54,16 @@ public class ARDisplay {
     protected float zfar;
     protected ProjectiveDeviceP pdp;
 
+    protected float resolution = 1;
+    
+    
     public ARDisplay(PApplet parent, String calibrationYAML,
             int width, int height, float near, float far) {
-        this(parent, calibrationYAML, width, height, near, far, 0);
+        this(parent, calibrationYAML, width, height, near, far, 1);
     }
 
     public ARDisplay(PApplet parent, String calibrationYAML,
-            int width, int height, float near, float far, int AA) {
+            int width, int height, float near, float far, float resolution) {
 
         frameWidth = width;
         frameHeight = height;
@@ -68,17 +71,11 @@ public class ARDisplay {
         this.znear = near;
         this.zfar = far;
 
+        this.resolution = resolution;
+        
         // TODO: BROKEN: No more AA in Processing2 ! 
-        this.graphics = (PGraphicsOpenGL) parent.createGraphics(width, height, PApplet.OPENGL);// true, AA);
-//        this.graphicsUndist = (PGraphicsOpenGL) parent.createGraphics(width, height, PApplet.OPENGL);// true, AA);
-
-//        // create the offscreen rendering for this projector.
-//        if (AA > 0) {
-////            this.graphics = new PGraphicsOpenGL(parent, width, height, true, AA);
-//        } else {
-////            this.graphics = new PGraphicsOpenGL(parent, width, height);
-//        }
-
+        this.graphics = (PGraphicsOpenGL) parent.createGraphics((int) (width * resolution), (int) (height * resolution), PApplet.OPENGL);// true, AA);
+//        this.graphics = (PGraphicsOpenGL) parent.createGraphics(width ,height, PApplet.OPENGL);// true, AA);
         screens = new ArrayList<Screen>();
         loadInternalParams(calibrationYAML);
         initProjection();
@@ -159,20 +156,30 @@ public class ARDisplay {
     private void initDistortMap() {
         lensFilter = parent.loadShader("distortFrag.glsl", "distortVert.glsl"); // projDistort.xml");
 
-        mapImg = parent.createImage(graphics.width, graphics.height, PApplet.RGB);
+//        mapImg = parent.createImage(graphics.width, graphics.height, PApplet.RGB);
+        mapImg = parent.createImage((int) (resolution * frameWidth), (int) (resolution * frameHeight), PApplet.RGB);
 
-        // Essai avec une image RGB demain...
         mapImg.loadPixels();
 
+        // Maximum disparity, in pixels
         float mag = 30;
-
+        
         parent.colorMode(PApplet.RGB, 1.0f);
         int k = 0;
         for (int y = 0; y < mapImg.height; y++) {
             for (int x = 0; x < mapImg.width; x++) {
 
-                double[] out = proj.undistort(x, y);
+                // get the points without the scale
+                int x1 =(int) ((float) x / resolution);
+                int y1 =(int) ((float) y / resolution);
+                
+                double[] out = proj.undistort(x1, y1);
 //                double[] out = proj.distort(x, y);
+                
+                // get back at the rendering resolution
+                out[0] *= resolution;
+                out[1] *= resolution;
+                
                 float r = ((float) out[0] - x) / mag + 0.5f;/// frameWidth; 
                 float g = ((float) out[1] - y) / mag + 0.5f;// / frameHeight; 
 
@@ -186,40 +193,16 @@ public class ARDisplay {
 
         lensFilter.set("mapTex", mapImg);
         lensFilter.set("texture", this.graphics);
-        lensFilter.set("resX", this.graphics.width);
-        lensFilter.set("resY", this.graphics.height);
+        lensFilter.set("resX", (int) (frameWidth * resolution));
+        lensFilter.set("resY", (int) (frameHeight * resolution));
         lensFilter.set("mag", mag);
     }
-    // Actual GLGraphics BUG :  projection has to be loaded directly into OpenGL.
 
     public void loadProjection() {
-
-//        this.graphics.resetProjection();
-//        this.graphics.applyProjection(projectionInit);
-
-        // Same As :  
         this.graphics.projection.set(projectionInit);
-
-//        gl = this.graphics.beginGL();
-//        gl.glMatrixMode(GL.GL_PROJECTION);
-//        gl.glPushMatrix();
-//        gl.glLoadMatrixf(projectionMatrixGL, 0);
-//        gl.glMatrixMode(GL.GL_MODELVIEW);
-//        this.graphics.endGL();
     }
 
     public void unLoadProjection() {
-//        PGL pgl = this.graphics.beginPGL();
-//        gl = pgl.gl.getGL2();
-//        gl.glMatrixMode(GL2.GL_PROJECTION);
-//        gl.glPopMatrix();
-//        gl.glMatrixMode(GL2.GL_MODELVIEW);
-//        this.graphics.endPGL();
-//        gl = this.graphics.beginGL();
-//        gl.glMatrixMode(GL.GL_PROJECTION);
-//        gl.glPopMatrix();
-//        gl.glMatrixMode(GL.GL_MODELVIEW);
-//        this.graphics.endGL();
     }
 
     public PMatrix3D getProjectionInit() {
@@ -246,7 +229,7 @@ public class ARDisplay {
         loadProjection();
 
         loadModelView();
-
+ 
         return this.graphics;
     }
 
@@ -256,6 +239,10 @@ public class ARDisplay {
 
         // Setting the projector negative because ARToolkit provides neg Z values
         this.graphics.scale(1, 1, -1);
+               
+        // TODO: check !
+        this.graphics.scale(1f / resolution);
+
     }
 
     public void endDraw() {
@@ -266,40 +253,28 @@ public class ARDisplay {
 
     }
 
-    // BROKEN in Processing 2 for now !
+    /**
+     *  Note: The distorsions for the view are important for Projectors. 
+     *  For cameras it is not necessary. And not desired if the rendering image
+     * is scaled. 
+     * @param distort
+     * @return 
+     */
     public PGraphicsOpenGL distort(boolean distort) {
-//        return graphics.getTexture();
-
-//        if (!distort) {
-//            System.out.println("No distort");
-//            return this.graphics.textureImage;
-//            return this.graphics.getTexture();
-//        }
-
         if (distort) {
             graphics.filter(lensFilter);
             return graphics;
-//            graphicsUndist.beginDraw();
-//            graphicsUndist.filter(lensFilter);
-//            graphicsUndist.image(graphics, 0, 0);
-//            graphicsUndist.endDraw();
-//            return this.graphicsUndist;
         }
-
-        // TODO: check how to apply a shader to a texture only... 
-
         return this.graphics;
     }
 
     public void drawScreens() {
         this.beginDraw();
         this.graphics.clear();
-//        this.graphics.background(0);
         renderScreens();
         this.endDraw();
     }
 
-    // TODO: check this !!!
     public void renderScreens() {
 
         for (Screen screen : screens) {

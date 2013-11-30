@@ -11,13 +11,14 @@ import processing.core.PImage;
 
 import processing.opengl.*;
 import javax.media.opengl.*;
+import processing.core.PConstants;
 import static processing.core.PConstants.QUADS;
 
 /**
  *
  * @author jeremylaviole
  */
-public class DrawUtils {
+public class DrawUtils implements PConstants{
 
     public static PApplet applet;
 
@@ -47,13 +48,26 @@ public class DrawUtils {
 //        g.image(img, 0, 0, w, h);
 //        g.popMatrix();
 
+//        g.beginShape(QUADS);
+//        g.texture(img);
+//        g.vertex(x, y, 0, h);
+//        g.vertex(x, y + h, 0, 0);
+//        g.vertex(x + w, y + h, w, 0);
+//        g.vertex(x + w, y, w, h);
+//        g.endShape();
+
+        g.pushMatrix();
+        g.translate(x, y);
         g.beginShape(QUADS);
+        g.textureMode(NORMAL);
         g.texture(img);
-        g.vertex(x, y, 0, h);
-        g.vertex(x, y + h, 0, 0);
-        g.vertex(x + w, y + h, w, 0);
-        g.vertex(x + w, y, w, h);
+        g.vertex(0, 0, 0, 1);
+        g.vertex(0, h, 0, 0);
+        g.vertex(w, h, 1, 0);
+        g.vertex(w, 0, 1, 1);
         g.endShape();
+        
+        g.popMatrix();
 
     }
     
