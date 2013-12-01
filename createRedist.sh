@@ -21,13 +21,17 @@ echo "Copy the sources"
 # copy the source also
 cp -R ProCam/src ProCamLibrary/
 
+echo "Copy the JavaDoc" 
+cp -R ProCam/dist/javadoc ProCamLibrary/
+
+
 echo "Copy Examples - Common and Calib" 
 # Examples
 cp -R $SKETCHBOOK/examples/* ProCamLibrary/examples/
 
 # Source to create a new sketch
 cp -R $SKETCHBOOK/common ProCamLibrary/common
-cp -R $SKETCHBOOK/calib/config/config.pde ProCamLibrary/common/
+
 
 # Calibration stuff
 cp -R $SKETCHBOOK/calib ProCamLibrary/calib

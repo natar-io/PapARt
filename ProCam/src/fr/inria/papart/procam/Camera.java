@@ -14,6 +14,10 @@ import com.googlecode.javacv.cpp.ARToolKitPlus;
 import com.googlecode.javacv.cpp.ARToolKitPlus.TrackerMultiMarker;
 import com.googlecode.javacv.cpp.opencv_core.CvMat;
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
+import diewald_PS3.PS3;
+import diewald_PS3.constants.COLOR_MODE;
+import diewald_PS3.constants.VIDEO_MODE;
+import diewald_PS3.logger.PS3Logger;
 import fr.inria.papart.opengl.CustomTexture;
 import fr.inria.papart.tools.CaptureIpl;
 import java.util.ArrayList;
@@ -43,12 +47,14 @@ public class Camera {
     protected CaptureIpl captureIpl;
     // OpenCV  video input 
     private FrameGrabber grabber;
+    private PS3 ps3;
     // Texture for video visualization (OpenCV generally)
     protected IplImage iimg = null, copyUndist;
     protected CustomTexture tex = null;
     protected PImage camImage = null;
     public final static int OPENCV_VIDEO = 1;
     public final static int PROCESSING_VIDEO = 2;
+    public final static int PSEYE_VIDEO = 3;
     public static int videoInput = OPENCV_VIDEO;
     protected int width, height;
     protected int videoInputType;
@@ -97,8 +103,6 @@ public class Camera {
         this.frameRate = frameRate;
         this.videoInputType = videoInputType;
 
-
-
         // Init the video
         if (videoInputType == OPENCV_VIDEO) {
             OpenCVFrameGrabber grabberCV = new OpenCVFrameGrabber(Integer.parseInt(camDevice));
@@ -116,6 +120,19 @@ public class Camera {
             this.grabber = grabberCV;
         }
 
+        if (videoInputType == PSEYE_VIDEO) {
+
+            PS3Logger.TYPE.DEBUG.active(false);
+            PS3Logger.TYPE.ERROR.active(false);
+            PS3Logger.TYPE.INFO.active(false);
+            PS3Logger.TYPE.WARNING.active(false);
+
+            ps3 = PS3.create(Integer.parseInt(camDevice));
+            ps3.init(VIDEO_MODE.VGA, COLOR_MODE.COLOR_PROCESSED, 30);
+            ps3.start();
+            ps3.setLed(true);
+        }
+
         if (videoInputType == PROCESSING_VIDEO) {
 
             if (camDevice == null) {
@@ -129,7 +146,6 @@ public class Camera {
 
             this.captureIpl.start();
         }
-
 
         if (calibrationYAML != null) {
 
@@ -150,6 +166,10 @@ public class Camera {
 
     public boolean useOpenCV() {
         return this.videoInputType == OPENCV_VIDEO;
+    }
+
+    public boolean usePSEYE() {
+        return this.videoInputType == PSEYE_VIDEO;
     }
 
     public int getFrameRate() {
@@ -181,13 +201,11 @@ public class Camera {
         //  - works with luminance (gray) images
         //  - can load a maximum of 0 non-binary pattern
         //  - can detect a maximum of 8 patterns in one image
-
         TrackerMultiMarker tracker = new ARToolKitPlus.TrackerMultiMarker(width, height, 10, 6, 6, 6, 0);
 
         // ARToolKit 2.1.1 - version
         // MultiTracker tracker = new MultiTracker(w, h);
         //            int pixfmt = ARToolKitPlus.PIXEL_FORMAT_LUM;
-
         int pixfmt = 0;
 
         if (videoInputType == Camera.OPENCV_VIDEO) {
@@ -308,7 +326,6 @@ public class Camera {
         }
 
         if (videoInputType == PROCESSING_VIDEO) {
-
             // System.out.println("Grab () ?");
             if (this.captureIpl.available()) {
 
@@ -320,7 +337,6 @@ public class Camera {
                 try {
                     // System.out.println("Sleep...");
 
-
                     // TimeUnit.MILLISECONDS.sleep((long) (1f / frameRate));
                     TimeUnit.MILLISECONDS.sleep((long) (10));
 
@@ -331,6 +347,13 @@ public class Camera {
             }
         }
 
+// Grab is done in a separate thread...         
+        if (videoInputType == PSEYE_VIDEO) {
+            
+            // TODO: Check for clone() ? 
+            // Performance issues, can be handled with synchronized calls ?
+                img = ps3.getIplImage().clone();
+        }
 
         if (img != null) {
             if (undistort) {
@@ -368,7 +391,6 @@ public class Camera {
 ////                }
 //            }
 //        }
-
         if (camImage == null) {
             camImage = parent.createImage(width, height, PApplet.RGB);
         }
@@ -377,8 +399,16 @@ public class Camera {
             return captureIpl;
         }
 
-        if (iimg != null) {
-            Utils.IplImageToPImage(iimg, false, camImage);
+        if (usePSEYE()) {
+            camImage.loadPixels();
+            ps3.getFrame(camImage.pixels);
+            camImage.updatePixels();
+        }
+
+        if (useOpenCV()) {
+            if (iimg != null) {
+                Utils.IplImageToPImage(iimg, false, camImage);
+            }
         }
         return camImage;
     }
@@ -409,6 +439,11 @@ public class Camera {
                 captureIpl.stop();
             }
         }
+
+        if (videoInputType == PSEYE_VIDEO) {
+            PS3.shutDown();
+        }
+
     }
 
     /**
@@ -610,7 +645,6 @@ public class Camera {
                 captureIpl.start();
 
                 // check gotPicture etc... 
-
                 while (!gotPicture) {
                     try {
                         Thread.sleep(20);
@@ -644,7 +678,6 @@ public class Camera {
                 }
 //                gsCapture.stop();
             }
-
 
             if (cam.useOpenCV()) {
                 try {
