@@ -10,6 +10,7 @@ package fr.inria.papart.procam;
  */
 import com.googlecode.javacv.FrameGrabber;
 import com.googlecode.javacv.OpenCVFrameGrabber;
+import com.googlecode.javacv.OpenKinectFrameGrabber;
 import com.googlecode.javacv.cpp.ARToolKitPlus;
 import com.googlecode.javacv.cpp.ARToolKitPlus.TrackerMultiMarker;
 import com.googlecode.javacv.cpp.opencv_core.CvMat;
@@ -48,6 +49,7 @@ public class Camera {
     // OpenCV  video input 
     private FrameGrabber grabber;
     private PS3 ps3;
+    private OpenKinectFrameGrabber openKinectGrabber;
     // Texture for video visualization (OpenCV generally)
     protected IplImage iimg = null, copyUndist;
     protected CustomTexture tex = null;
@@ -55,6 +57,7 @@ public class Camera {
     public final static int OPENCV_VIDEO = 1;
     public final static int PROCESSING_VIDEO = 2;
     public final static int PSEYE_VIDEO = 3;
+    public final static int KINECT_VIDEO = 4;
     public static int videoInput = OPENCV_VIDEO;
     protected int width, height;
     protected int videoInputType;
@@ -119,6 +122,24 @@ public class Camera {
 
             this.grabber = grabberCV;
         }
+        
+        if (videoInputType == KINECT_VIDEO) {
+            openKinectGrabber = new OpenKinectFrameGrabber(Integer.parseInt(camDevice));
+
+            // TODO: check 640 * 480... ?
+            openKinectGrabber.setImageWidth(width);
+            openKinectGrabber.setImageHeight(height);
+
+            try {
+                openKinectGrabber.start();
+                openKinectGrabber.setVideoFormat(0);
+                
+            } catch (Exception e) {
+                System.err.println("Could not start frameGrabber... " + e);
+            }
+
+            this.grabber = openKinectGrabber;
+        }
 
         if (videoInputType == PSEYE_VIDEO) {
 
@@ -170,6 +191,10 @@ public class Camera {
 
     public boolean usePSEYE() {
         return this.videoInputType == PSEYE_VIDEO;
+    }
+    
+    public boolean useKinect() {
+        return this.videoInputType == KINECT_VIDEO;
     }
 
     public int getFrameRate() {
@@ -315,12 +340,20 @@ public class Camera {
         IplImage img = null;
 
         if (videoInputType == OPENCV_VIDEO) {
-
             try {
                 img = grabber.grab();
 
             } catch (Exception e) {
-                System.err.println("Camera: Grab() Error ! " + e);
+                System.err.println("Camera: OpenCV Grab() Error ! " + e);
+                e.printStackTrace();
+            }
+        }
+        
+        if (videoInputType == KINECT_VIDEO) {
+            try {
+                img = openKinectGrabber.grabVideo();
+            } catch (Exception e) {
+                System.err.println("Camera: Kinect Grab() Error ! " + e);
                 e.printStackTrace();
             }
         }
@@ -354,7 +387,7 @@ public class Camera {
             // Performance issues, can be handled with synchronized calls ?
                 img = ps3.getIplImage().clone();
         }
-
+  
         if (img != null) {
             if (undistort) {
                 if (copyUndist == null) {
@@ -405,7 +438,7 @@ public class Camera {
             camImage.updatePixels();
         }
 
-        if (useOpenCV()) {
+        if (useOpenCV() || useKinect()) {
             if (iimg != null) {
                 Utils.IplImageToPImage(iimg, false, camImage);
             }
