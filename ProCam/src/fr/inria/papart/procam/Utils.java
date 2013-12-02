@@ -220,10 +220,10 @@ public class Utils {
 
     static public void IplImageToPImage(IplImage img, boolean RGB, PImage ret) {
 
-        conversionCount++;
-        if (conversionCount % 30 == 0) {
-            System.gc();
-        }
+//        conversionCount++;
+//        if (conversionCount % 600 == 0) {
+//            System.gc();
+//        }
 
         assert (img.width() == ret.width);
         assert (img.height() == ret.height);
@@ -325,10 +325,10 @@ public class Utils {
 
     static public void IplImageToPImageKinect(IplImage img, boolean RGB, PImage ret) {
 
-        conversionCount++;
-        if (conversionCount % 30 == 0) {
-            System.gc();
-        }
+//        conversionCount++;
+//        if (conversionCount % 30 == 0) {
+//            System.gc();
+//        }
 
         assert (img.width() == ret.width);
         assert (img.height() == ret.height);
