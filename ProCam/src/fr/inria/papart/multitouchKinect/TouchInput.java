@@ -8,6 +8,8 @@ import fr.inria.papart.procam.Screen;
 import fr.inria.papart.kinect.Kinect;
 import fr.inria.papart.multitouchKinect.MultiTouchKinect;
 import fr.inria.papart.multitouchKinect.TouchPoint;
+import fr.inria.papart.procam.Camera;
+import fr.inria.papart.procam.ProjectiveDeviceP;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 import processing.core.PApplet;
@@ -29,6 +31,8 @@ public class TouchInput {
     private GrabberThread grabberThread = null;
     private static final int MAX_AVAILABLE = 1;
     private final Semaphore touchPointSemaphore = new Semaphore(MAX_AVAILABLE, true);
+    private ProjectiveDeviceP pdp;
+    private boolean useExternalGrabber = false;
 
     public TouchInput(PApplet applet, String calibrationFile, Kinect kinect) {
         this(applet, calibrationFile, kinect, null, 1, 4);
@@ -44,6 +48,23 @@ public class TouchInput {
 
     public TouchInput(PApplet applet, String calibrationFile, Kinect kinect, OpenKinectFrameGrabber grabber, boolean color, int precision2D, int precision3D) {
         this(applet, calibrationFile, kinect, grabber, color, true, precision2D, precision3D);
+    }
+
+    public TouchInput(PApplet applet, String calibrationFile, Camera kinectCamera, Kinect kinect, boolean color, int precision2D, int precision3D) {
+        if (!kinectCamera.useKinect()) {
+            System.err.println("Impossible to init a Touch Input without a  Kinect camera. ");
+
+        }
+        mtk = new MultiTouchKinect(applet, kinect, calibrationFile);
+        this.touch2DPrecision = precision2D;
+        this.touch3DPrecision = precision3D;
+        touchPoints2D = mtk.getTouchPoint2D();
+        touchPoints3D = mtk.getTouchPoint3D();
+        this.kinect = kinect;
+        kinectCamera.setTouch(this);
+        this.useExternalGrabber = true;
+        this.pdp = kinectCamera.getProjectiveDevice();
+        // TODO: récup le Grabber, et récup le grabber de la profondeur. 
     }
 
     public TouchInput(PApplet applet, String calibrationFile, Kinect kinect, OpenKinectFrameGrabber grabber, boolean color, boolean colorUndist, int precision2D, int precision3D) {
@@ -149,10 +170,8 @@ public class TouchInput {
         }
     }
 
-    protected void findColors(IplImage depthImage, IplImage colorImage) {
+    public void findColors(IplImage depthImage, IplImage colorImage) {
         mtk.findColor(depthImage, colorImage, kinect, touchPoints2D, touch2DPrecision);
-
-
     }
 
     public void endTouch() {
@@ -233,14 +252,34 @@ public class TouchInput {
                     continue;
                 }
 
-                PVector res, res2;
-                res = projector.projectPointer(screen, vec.x, vec.y);
+                PVector res, res2 = null;
+
+                if (useExternalGrabber) {
+
+                    int p = pdp.worldToPixel(tp.vKinect);
+                    res = projector.projectPointer(screen,
+                            (float) (p % Kinect.KINECT_WIDTH) / Kinect.KINECT_WIDTH,
+                            ((float) p / Kinect.KINECT_WIDTH) / Kinect.KINECT_HEIGHT);
+
+                } else {
+                    res = projector.projectPointer(screen, vec.x, vec.y);
+                }
 //                    res = projector.projectPointer(screen, tp);
 
                 if (isSpeed2D) {
-                    res2 = (tp.oldV != null) ? projector.projectPointer(screen, tp.oldV.x, tp.oldV.y) : null;
-                } else {
-                    res2 = null;
+
+                    if (tp.oldvKinect != null) {
+                        if (useExternalGrabber) {
+
+                            int p = pdp.worldToPixel(tp.oldvKinect);
+                            res2 = projector.projectPointer(screen,
+                                    (float) (p % Kinect.KINECT_WIDTH) / Kinect.KINECT_WIDTH,
+                                    ((float) p / Kinect.KINECT_WIDTH) / Kinect.KINECT_HEIGHT);
+
+                        } else {
+                            res2 = projector.projectPointer(screen, tp.oldV.x, tp.oldV.y);
+                        }
+                    }
                 }
 
                 if (res == null) {
@@ -293,22 +332,39 @@ public class TouchInput {
                     continue;
                 }
 
-                PVector res, res2;
-                res = projector.projectPointer(screen, vec.x, vec.y);
+                PVector res, res2 = null;
+
+                if (useExternalGrabber) {
+                    int p = pdp.worldToPixel(tp.vKinect);
+                    res = projector.projectPointer(screen,
+                            (float) (p % Kinect.KINECT_WIDTH) / Kinect.KINECT_WIDTH,
+                            ((float) p / Kinect.KINECT_WIDTH) / Kinect.KINECT_HEIGHT);
+
+                } else {
+                    res = projector.projectPointer(screen, vec.x, vec.y);
+                }
+
 //                    res = projector.projectPointer(screen, tp);
 
 
                 if (isSpeed3D && tp.oldV != null) {
-                    res2 = projector.projectPointer(screen, tp.oldV.x, tp.oldV.y);
+
+
+                    if (useExternalGrabber) {
+                        int p = pdp.worldToPixel(tp.oldvKinect);
+                        res2 = projector.projectPointer(screen,
+                                (float) (p % Kinect.KINECT_WIDTH) / Kinect.KINECT_WIDTH,
+                                ((float) p / Kinect.KINECT_WIDTH) / Kinect.KINECT_HEIGHT);
+                    } else {
+                        res2 = projector.projectPointer(screen, tp.oldV.x, tp.oldV.y);
+                    }
 
                     if (res2 != null) {
                         res2.z = tp.oldV.z;
                     }
 //                        res2 = (tp.oldV != null) ? projector.projectPointer(screen, tp) : null;
-                } else {
-                    res2 = null;
-                }
-
+                } 
+                
                 if (res == null) {
                     continue;
                 }

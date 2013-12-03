@@ -19,6 +19,7 @@ import diewald_PS3.PS3;
 import diewald_PS3.constants.COLOR_MODE;
 import diewald_PS3.constants.VIDEO_MODE;
 import diewald_PS3.logger.PS3Logger;
+import fr.inria.papart.multitouchKinect.TouchInput;
 import fr.inria.papart.opengl.CustomTexture;
 import fr.inria.papart.tools.CaptureIpl;
 import java.util.ArrayList;
@@ -133,9 +134,10 @@ public class Camera {
             try {
                 openKinectGrabber.start();
                 openKinectGrabber.setVideoFormat(0);
+                openKinectGrabber.setDepthFormat(1);
                 
             } catch (Exception e) {
-                System.err.println("Could not start frameGrabber... " + e);
+                System.err.println("Could not Kinect start frameGrabber... " + e);
             }
 
             this.grabber = openKinectGrabber;
@@ -328,6 +330,16 @@ public class Camera {
         return thread != null;
     }
 
+    
+    private TouchInput touchInput = null;
+    public void setTouch(TouchInput touchInput){
+        if(!this.useKinect()){
+            System.err.println("ERROR: SetTouch must be used with KINECT ONLY");
+        }
+        this.touchInput = touchInput;
+                
+    }
+    
     /**
      * Asks the camera to grab an image. Not to use with the threaded option.
      */
@@ -352,6 +364,15 @@ public class Camera {
         if (videoInputType == KINECT_VIDEO) {
             try {
                 img = openKinectGrabber.grabVideo();
+                
+                if(touchInput != null){
+                    IplImage dimg = openKinectGrabber.grabDepth();
+                    
+                                touchInput.startTouch(dimg);
+                        touchInput.findColors(dimg, img);
+                        touchInput.endTouch();
+                }
+                
             } catch (Exception e) {
                 System.err.println("Camera: Kinect Grab() Error ! " + e);
                 e.printStackTrace();

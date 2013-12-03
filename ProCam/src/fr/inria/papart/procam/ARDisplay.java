@@ -80,7 +80,7 @@ public class ARDisplay {
         loadInternalParams(calibrationYAML);
         initProjection();
 
-        initDistortMap();
+       //  initDistortMap();
     }
 
     protected void loadInternalParams(String calibrationYAML) {
@@ -261,11 +261,13 @@ public class ARDisplay {
      * @return 
      */
     public PGraphicsOpenGL distort(boolean distort) {
-        if (distort) {
-            graphics.filter(lensFilter);
-            return graphics;
-        }
         return this.graphics;
+        
+     //   if (distort) {
+     //       graphics.filter(lensFilter);
+     //       return graphics;
+     //   }
+     //   return this.graphics;
     }
 
     public void drawScreens() {
@@ -307,18 +309,21 @@ public class ARDisplay {
         }
     }
 
-    // We consider px and py are normalized screen space... 
+    // We consider px and py are normalized screen or subScreen space... 
     public PVector projectPointer(Screen screen, float px, float py) {
 
-//        float x = px * 2 - 1;
-//        float y = py * 2 - 1;
+        
+        
+        float x = px * 2 - 1;
+        float y = py * 2 - 1;
 
-        double[] undist = proj.undistort(px * getWidth(), py * getHeight());
+//        double[] undist = proj.undistort(px * getWidth(), py * getHeight());
+//
+//        // go from screen coordinates to normalized coordinates  (-1, 1) 
+//        float x = (float) undist[0] / getWidth() * 2 - 1;
+//        float y = (float) undist[1] / getHeight() * 2 - 1;
 
-        // go from screen coordinates to normalized coordinates  (-1, 1) 
-        float x = (float) undist[0] / getWidth() * 2 - 1;
-        float y = (float) undist[1] / getHeight() * 2 - 1;
-
+        
         // Not the cleaniest method...
         PMatrix3D invProjModelView1 = createProjection(screen.getZMinMax());
         invProjModelView1.scale(1, 1, -1);
@@ -329,7 +334,7 @@ public class ARDisplay {
         PVector out1 = new PVector();
         PVector out2 = new PVector();
 
-        // view of the point from the projector.
+        // view of the point from the display.
         Utils.mult(invProjModelView1, p1, out1);
         Utils.mult(invProjModelView1, p2, out2);
 

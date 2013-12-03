@@ -14,8 +14,9 @@ import toxi.geom.Vec3D;
 public class TouchPoint {
 
     public Vec3D v;
-    public Vec3D oldV;
+    public Vec3D oldV = null;
     public Vec3D vKinect;
+    public Vec3D oldvKinect = null;
     public int color;
     public int confidence;
 //    public float size;
@@ -90,6 +91,7 @@ public class TouchPoint {
 //        System.out.println("Update " + this.id + " with " + tp.id +" distance was " + this.v.distanceTo(tp.v)  );
         
         oldV = v.copy();
+        oldvKinect = vKinect.copy();
         v = tp.v;
 
         vKinect = tp.vKinect;
