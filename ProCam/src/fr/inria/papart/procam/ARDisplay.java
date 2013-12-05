@@ -80,7 +80,7 @@ public class ARDisplay {
         loadInternalParams(calibrationYAML);
         initProjection();
 
-       //  initDistortMap();
+        initDistortMap();
     }
 
     protected void loadInternalParams(String calibrationYAML) {
@@ -261,13 +261,12 @@ public class ARDisplay {
      * @return 
      */
     public PGraphicsOpenGL distort(boolean distort) {
-        return this.graphics;
         
-     //   if (distort) {
-     //       graphics.filter(lensFilter);
-     //       return graphics;
-     //   }
-     //   return this.graphics;
+        if (distort) {
+            graphics.filter(lensFilter);
+            return graphics;
+        }
+        return this.graphics;
     }
 
     public void drawScreens() {

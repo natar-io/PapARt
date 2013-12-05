@@ -29,7 +29,7 @@ public class Projector extends ARDisplay {
     public Projector(PApplet parent, String calibrationYAML,
             int width, int height,
             float near, float far) {
-        this(parent, calibrationYAML, width, height, near, far, 0);
+        this(parent, calibrationYAML, width, height, near, far, 1);
     }
 
     public Projector(PApplet parent, String calibrationYAML,
