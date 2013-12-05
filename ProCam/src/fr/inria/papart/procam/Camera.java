@@ -123,7 +123,7 @@ public class Camera {
 
             this.grabber = grabberCV;
         }
-        
+
         if (videoInputType == KINECT_VIDEO) {
             openKinectGrabber = new OpenKinectFrameGrabber(Integer.parseInt(camDevice));
 
@@ -135,7 +135,7 @@ public class Camera {
                 openKinectGrabber.start();
                 openKinectGrabber.setVideoFormat(0);
                 openKinectGrabber.setDepthFormat(1);
-                
+
             } catch (Exception e) {
                 System.err.println("Could not Kinect start frameGrabber... " + e);
             }
@@ -194,7 +194,7 @@ public class Camera {
     public boolean usePSEYE() {
         return this.videoInputType == PSEYE_VIDEO;
     }
-    
+
     public boolean useKinect() {
         return this.videoInputType == KINECT_VIDEO;
     }
@@ -329,15 +329,14 @@ public class Camera {
     public boolean useThread() {
         return thread != null;
     }
-
-    
     private TouchInput touchInput = null;
-    public void setTouch(TouchInput touchInput){
-        if(!this.useKinect()){
+
+    public void setTouch(TouchInput touchInput) {
+        if (!this.useKinect()) {
             System.err.println("ERROR: SetTouch must be used with KINECT ONLY");
         }
         this.touchInput = touchInput;
-                
+
     }
     
     /**
@@ -360,19 +359,20 @@ public class Camera {
                 e.printStackTrace();
             }
         }
-        
+
         if (videoInputType == KINECT_VIDEO) {
             try {
                 img = openKinectGrabber.grabVideo();
-                
-                if(touchInput != null){
+
+                if (touchInput != null) {
                     IplImage dimg = openKinectGrabber.grabDepth();
-                    
-                                touchInput.startTouch(dimg);
-                        touchInput.findColors(dimg, img);
-                        touchInput.endTouch();
+                    touchInput.lock();
+                    touchInput.startTouch(dimg);
+                    touchInput.findColors(dimg, img);
+                    touchInput.endTouch();
+                    touchInput.unlock();
                 }
-                
+
             } catch (Exception e) {
                 System.err.println("Camera: Kinect Grab() Error ! " + e);
                 e.printStackTrace();
@@ -403,12 +403,12 @@ public class Camera {
 
 // Grab is done in a separate thread...         
         if (videoInputType == PSEYE_VIDEO) {
-            
+
             // TODO: Check for clone() ? 
             // Performance issues, can be handled with synchronized calls ?
-                img = ps3.getIplImage().clone();
+            img = ps3.getIplImage().clone();
         }
-  
+
         if (img != null) {
             if (undistort) {
                 if (copyUndist == null) {

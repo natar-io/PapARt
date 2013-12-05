@@ -86,6 +86,19 @@ public class TouchInput {
         this.transfo = homography.getTransformation();
     }
 
+    public void lock() {
+        try{
+        touchPointSemaphore.acquire();
+        } catch(Exception e){
+            
+        }
+        
+    }
+
+    public void unlock() {
+        touchPointSemaphore.release();
+    }
+
     class GrabberThread extends Thread {
 
         private OpenKinectFrameGrabber grabber;
@@ -363,8 +376,7 @@ public class TouchInput {
                         res2.z = tp.oldV.z;
                     }
 //                        res2 = (tp.oldV != null) ? projector.projectPointer(screen, tp) : null;
-                } 
-                
+                }
                 if (res == null) {
                     continue;
                 }
