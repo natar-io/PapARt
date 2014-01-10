@@ -52,9 +52,9 @@ public class Camera {
     private PS3 ps3;
     private OpenKinectFrameGrabber openKinectGrabber;
     // Texture for video visualization (OpenCV generally)
-    protected IplImage iimg = null, copyUndist;
+    protected IplImage iimg = null, copyUndist, depthImage = null;
     protected CustomTexture tex = null;
-    protected PImage camImage = null;
+    protected PImage camImage = null, depthPImage = null;
     public final static int OPENCV_VIDEO = 1;
     public final static int PROCESSING_VIDEO = 2;
     public final static int PSEYE_VIDEO = 3;
@@ -330,15 +330,24 @@ public class Camera {
         return thread != null;
     }
     private TouchInput touchInput = null;
+    private boolean isGrabbingDepth = false;
 
     public void setTouch(TouchInput touchInput) {
         if (!this.useKinect()) {
             System.err.println("ERROR: SetTouch must be used with KINECT ONLY");
         }
+        grabDepthImage(true);
         this.touchInput = touchInput;
 
     }
-    
+
+    public void grabDepthImage(boolean isGrabDepth) {
+        if (!this.useKinect()) {
+            System.err.println("ERROR: SetTouch must be used with KINECT ONLY");
+        }
+        this.isGrabbingDepth = isGrabDepth;
+    }
+
     /**
      * Asks the camera to grab an image. Not to use with the threaded option.
      */
@@ -364,13 +373,21 @@ public class Camera {
             try {
                 img = openKinectGrabber.grabVideo();
 
-                if (touchInput != null) {
+                if (isGrabbingDepth) {
                     IplImage dimg = openKinectGrabber.grabDepth();
-                    touchInput.lock();
-                    touchInput.startTouch(dimg);
-                    touchInput.findColors(dimg, img);
-                    touchInput.endTouch();
-                    touchInput.unlock();
+
+                    this.depthImage = dimg;
+                    if (touchInput != null) {
+                        touchInput.lock();
+                        touchInput.startTouch(dimg);
+                        touchInput.findColors(dimg, img);
+                        touchInput.endTouch();
+                        touchInput.unlock();
+                    }
+                } else {
+                    if (touchInput != null) {
+                        System.err.println("Error, the TouchInput is set, but no DepthImg is grabbed.");
+                    }
                 }
 
             } catch (Exception e) {
@@ -470,6 +487,23 @@ public class Camera {
     public IplImage getIplImage() {
         imageRetreived();
         return iimg;
+    }
+
+    public IplImage getDepthIplImage() {
+        return depthImage;
+    }
+
+    public PImage getDepthPImage() {
+
+        assert (useKinect());
+        if (depthPImage == null) {
+            depthPImage = parent.createImage(width, height, PApplet.ALPHA);
+        }
+
+        if (depthImage != null) {
+            Utils.IplImageToPImageKinect(depthImage, false, depthPImage);
+        }
+        return depthPImage;
     }
 
     public ProjectiveDeviceP getProjectiveDevice() {

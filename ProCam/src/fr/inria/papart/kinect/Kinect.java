@@ -37,22 +37,24 @@ import toxi.geom.Vec3D;
 //  Change every Update Function, to use the Hardware calibration. 
 public class Kinect {
 
+    // All these public for the IOGS courses...
+    
     public static PApplet parent;
-    private float closeThreshold = 300f, farThreshold = 4000f;
-    private Vec3D[] kinectPoints;
-    private int[] colorPoints;
-    private boolean[] validPoints;
-    private int[] connexity;  // TODO: check for Byte instead of int
-    private boolean[] computedPoints;
-    private PImage validPointsPImage;
-    private byte[] depthRaw;
-    private byte[] colorRaw;
-    private byte[] validPointsRaw;
-    private IplImage validPointsIpl;
-    private int id;
-    private int currentSkip = 1;
-    private ProjectiveDeviceP kinectCalibIR, kinectCalibRGB;
-    private float[] depthLookUp = null;
+    public float closeThreshold = 300f, farThreshold = 4000f;
+    public Vec3D[] kinectPoints;
+    public int[] colorPoints;
+    public boolean[] validPoints;
+    public int[] connexity;  // TODO: check for Byte instead of int
+    public boolean[] computedPoints;
+    public PImage validPointsPImage;
+    public byte[] depthRaw;
+    public byte[] colorRaw;
+    public byte[] validPointsRaw;
+    public IplImage validPointsIpl;
+    public int id;
+    public int currentSkip = 1;
+    public ProjectiveDeviceP kinectCalibIR, kinectCalibRGB;
+    public float[] depthLookUp = null;
     // Debug purposes
     public static byte[] connectedComponent;
     public static byte currentCompo = 1;
@@ -61,7 +63,7 @@ public class Kinect {
     public static final int KINECT_SIZE = KINECT_WIDTH * KINECT_HEIGHT;
     static PApplet CURRENTPAPPLET = null;
     // Threading for depth and color computation
-    private ExecutorService threadPool;
+    public ExecutorService threadPool;
     public int nbThreads = 8;
     public int threadLoad = 40;
     public static final int KINECT_MM = 1;
@@ -367,7 +369,6 @@ public class Kinect {
 
                 validPointsPImage.pixels[offset] = parent.color(0, 0, 255);
                 if (good) {
-
                     kinectPoints[offset] = kinectCalibIR.pixelToWorld(x, y, d);
                     colorPoints[offset] = this.findColorOffset(kinectPoints[offset]);
                     int colorOffset = colorPoints[offset] * 3;
@@ -905,6 +906,14 @@ public class Kinect {
         connexity[currentOffset] = type;
     }
 
+    public ProjectiveDeviceP getColorProjectiveDevice() {
+        return kinectCalibRGB;
+    }
+    
+    public ProjectiveDeviceP getDepthProjectiveDevice() {
+        return kinectCalibIR;
+    }
+    
     public PImage getDepthColor() {
         return validPointsPImage;
     }

@@ -19,6 +19,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
+import java.util.Arrays;
 import javax.media.opengl.GL;
 import processing.core.*;
 import processing.opengl.Texture;
@@ -130,9 +131,9 @@ public class Utils {
     }
 
     static public void updateTexture(IplImage img, Texture tex) {
-        
+
         System.out.println("Update Texture broken ? May Require CustomTexture...");
-        
+
 //        if (img.nChannels() == 3) {
 //            tex.putBuffer(GL.GL_BGR, GL.GL_UNSIGNED_BYTE, img.getIntBuffer());
 //        }
@@ -322,6 +323,8 @@ public class Utils {
 //        buff = null;
         ret.updatePixels();
     }
+    // TODO
+    private static byte[] kinectByteArray = null;
 
     static public void IplImageToPImageKinect(IplImage img, boolean RGB, PImage ret) {
 
@@ -336,8 +339,8 @@ public class Utils {
 
         if (img.nChannels() == 3) {
 
+            System.out.println("3 channels");
             ByteBuffer buff = img.getByteBuffer();
-
 
             //  PImage ret = new PImage(img.width(), img.height(), PApplet.RGB);
             ret.loadPixels();
@@ -367,15 +370,20 @@ public class Utils {
             if (img.nChannels() == 1) {
 
                 ////////////// Kinect Depth //////////////
-                //                // TODO: no more allocations. 
                 ByteBuffer buff = img.getByteBuffer();
-                byte[] arr = new byte[2 * img.width() * img.height()];
-                buff.get(arr);
+
+                if (Utils.kinectByteArray == null) {
+                    kinectByteArray = new byte[2 * img.width() * img.height()];
+                }
+//                else {
+//                    Arrays.fill(kinectByteArray, (byte) 0);
+//                }
+
+                buff.get(kinectByteArray);
 
                 for (int i = 0; i < img.width() * img.height() * 2; i += 2) {
-
-                    int d = (arr[i] & 0xFF) << 8
-                            | (arr[i + 1] & 0xFF);
+                    int d = (kinectByteArray[i] & 0xFF) << 8
+                            | (kinectByteArray[i + 1] & 0xFF);
 
                     ret.pixels[i / 2] = d;
 //                    ret.pixels[i] =
@@ -386,8 +394,6 @@ public class Utils {
 
             }
         }
-
-
 
 //        buff = null;
         ret.updatePixels();
@@ -422,7 +428,7 @@ public class Utils {
         }
         ret.updatePixels();
     }
-    
+
     static public void PImageToIplImage2(IplImage img, PApplet applet, boolean RGB, PImage ret) {
 
         ByteBuffer buff = img.getByteBuffer();
