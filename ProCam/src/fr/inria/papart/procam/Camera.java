@@ -38,7 +38,7 @@ public class Camera {
     protected PMatrix3D camIntrinsicsP3D;
     protected PApplet parent;
     private ArrayList<TrackedView> trackedViews;
-    private ArrayList<MarkerBoard> sheets;
+    private ArrayList<MarkerBoard> sheets = null;
     private String calibrationARToolkit;
     private ARTThread thread = null;
     protected ProjectiveDeviceP pdp;
@@ -66,6 +66,8 @@ public class Camera {
     protected boolean trackSheets = false;
     protected boolean gotPicture = false;
 
+    private boolean isClosing = false;
+    
     static public void convertARParams(PApplet parent, String calibrationYAML,
             String calibrationData, int width, int height) {
         try {
@@ -253,7 +255,7 @@ public class Camera {
 //            tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_HALF_RES);
         tracker.setUseDetectLite(false);
 //            tracker.setUseDetectLite(true);
-
+    
         // Initialize the tracker, with camera parameters and marker config. 
         if (!tracker.init(calibrationARToolkit, sheet.getFileName(), 1.0f, 1000.f)) {
             System.err.println("Init ARTOOLKIT Error " + calibrationARToolkit + " " + sheet.getFileName() + " " + sheet.getName());
@@ -272,6 +274,10 @@ public class Camera {
         return this.sheets.contains(board);
     }
 
+    public ArrayList<MarkerBoard> getTrackedSheets() {
+        return this.sheets;
+    }
+
     /**
      * It makes the camera update continuously.
      */
@@ -286,6 +292,7 @@ public class Camera {
 
         if (thread == null) {
             thread = new ARTThread(this, sheets, undistort);
+            thread.setCompute(this.trackSheets);
             thread.start();
         } else {
             System.err.println("Camera: Error Thread already launched");
@@ -357,6 +364,9 @@ public class Camera {
 
     public IplImage grab(boolean undistort) {
 
+        if(isClosing)
+            return iimg;
+        
         IplImage img = null;
 
         if (videoInputType == OPENCV_VIDEO) {
@@ -512,6 +522,8 @@ public class Camera {
 
     public void close() {
 
+        this.isClosing = true;
+        
         if (videoInputType == OPENCV_VIDEO) {
             if (grabber != null) {
                 try {

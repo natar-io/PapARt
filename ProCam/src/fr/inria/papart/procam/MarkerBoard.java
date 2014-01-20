@@ -161,13 +161,21 @@ public class MarkerBoard {
         return px;
     }
 
-    
     // We suppose that the ARDisplay is the one of the camera...
     public PVector getBoardLocation(Camera camera, ARDisplay display) {
         int id = cameras.indexOf(camera);
         float transfo[] = transfos.get(id);
 
+        //
         PVector v = new PVector(transfo[3], transfo[7], transfo[11]);
+        
+        // Apply extrinsics if required.
+        PMatrix3D extr = display.getExtrinsics();
+        if (extr != null) {
+            PVector v2 = new PVector();
+            extr.mult(v, v2);
+            v = v2;
+        }
         PVector px = display.pdp.worldToPixel(v, true);
         return px;
     }

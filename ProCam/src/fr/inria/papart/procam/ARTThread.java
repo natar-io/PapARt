@@ -43,7 +43,7 @@ class ARTThread extends Thread {
         while (!stop) {
             IplImage img = camera.grab(undistort);
             
-            if (img != null && compute) {
+            if (img != null && compute && this.sheets != null) {
                 this.compute(img);
             }
 
@@ -62,6 +62,9 @@ class ARTThread extends Thread {
 
     public void setCompute(boolean compute) {
         this.compute = compute;
+        if(compute && this.sheets == null){
+            this.sheets = camera.getTrackedSheets();
+        }
     }
 
     public void stopThread() {

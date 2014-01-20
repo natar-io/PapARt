@@ -53,10 +53,8 @@ public class ARDisplay {
     protected float znear;
     protected float zfar;
     protected ProjectiveDeviceP pdp;
-
     protected float resolution = 1;
-    
-    
+
     public ARDisplay(PApplet parent, String calibrationYAML,
             int width, int height, float near, float far) {
         this(parent, calibrationYAML, width, height, near, far, 1);
@@ -72,7 +70,7 @@ public class ARDisplay {
         this.zfar = far;
 
         this.resolution = resolution;
-        
+
         // TODO: BROKEN: No more AA in Processing2 ! 
         this.graphics = (PGraphicsOpenGL) parent.createGraphics((int) (width * resolution), (int) (height * resolution), PApplet.OPENGL);// true, AA);
 //        this.graphics = (PGraphicsOpenGL) parent.createGraphics(width ,height, PApplet.OPENGL);// true, AA);
@@ -146,6 +144,23 @@ public class ARDisplay {
     public PMatrix3D getExtrinsics() {
         return projExtrinsicsP3D;
     }
+    /**
+     * graphics.modelview.apply(projExtrinsicsP3D);
+     *
+     * @return
+     */
+    public PMatrix3D getIntrinsics() {
+        return projIntrinsicsP3D;
+    }
+    
+    /* *
+     *  For hand-made calibration exercices. 
+     */
+    public void setIntrinsics(PMatrix3D intr){
+        
+        projIntrinsicsP3D = intr;
+        initProjection();
+    }
 
     /**
      * This function initializes the distorsion map used by the distorsion
@@ -163,23 +178,23 @@ public class ARDisplay {
 
         // Maximum disparity, in pixels
         float mag = 30;
-        
+
         parent.colorMode(PApplet.RGB, 1.0f);
         int k = 0;
         for (int y = 0; y < mapImg.height; y++) {
             for (int x = 0; x < mapImg.width; x++) {
 
                 // get the points without the scale
-                int x1 =(int) ((float) x / resolution);
-                int y1 =(int) ((float) y / resolution);
-                
+                int x1 = (int) ((float) x / resolution);
+                int y1 = (int) ((float) y / resolution);
+
                 double[] out = proj.undistort(x1, y1);
 //                double[] out = proj.distort(x, y);
-                
+
                 // get back at the rendering resolution
                 out[0] *= resolution;
                 out[1] *= resolution;
-                
+
                 float r = ((float) out[0] - x) / mag + 0.5f;/// frameWidth; 
                 float g = ((float) out[1] - y) / mag + 0.5f;// / frameHeight; 
 
@@ -229,7 +244,7 @@ public class ARDisplay {
         loadProjection();
 
         loadModelView();
- 
+
         return this.graphics;
     }
 
@@ -239,7 +254,7 @@ public class ARDisplay {
 
         // Setting the projector negative because ARToolkit provides neg Z values
         this.graphics.scale(1, 1, -1);
-               
+
         // TODO: check !
         this.graphics.scale(1f / resolution);
 
@@ -254,14 +269,15 @@ public class ARDisplay {
     }
 
     /**
-     *  Note: The distorsions for the view are important for Projectors. 
-     *  For cameras it is not necessary. And not desired if the rendering image
-     * is scaled. 
+     * Note: The distorsions for the view are important for Projectors. For
+     * cameras it is not necessary. And not desired if the rendering image is
+     * scaled.
+     *
      * @param distort
-     * @return 
+     * @return
      */
     public PGraphicsOpenGL distort(boolean distort) {
-        
+
         if (distort) {
             graphics.filter(lensFilter);
             return graphics;
@@ -311,8 +327,8 @@ public class ARDisplay {
     // We consider px and py are normalized screen or subScreen space... 
     public PVector projectPointer(Screen screen, float px, float py) {
 
-        
-        
+
+
         float x = px * 2 - 1;
         float y = py * 2 - 1;
 
@@ -322,7 +338,7 @@ public class ARDisplay {
 //        float x = (float) undist[0] / getWidth() * 2 - 1;
 //        float y = (float) undist[1] / getHeight() * 2 - 1;
 
-        
+
         // Not the cleaniest method...
         PMatrix3D invProjModelView1 = createProjection(screen.getZMinMax());
         invProjModelView1.scale(1, 1, -1);
