@@ -57,6 +57,10 @@ public class PaperScreen {
     public PGraphicsOpenGL getGraphics() {
         return screen.getGraphics();
     }
+    
+    public Screen getScreen(){
+        return this.screen;
+    }
 
     public boolean isMoving() {
         return board.isMoving(cameraTracking);

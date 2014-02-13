@@ -106,9 +106,7 @@ public class ARDisplay {
 
         // ----------- OPENGL --------------
         // Reusing the internal projective parameters for the scene rendering.
-
 //        PMatrix3D oldProj = this.graphics.projection.get();
-
         // Working params
         p00 = 2 * projIntrinsicsP3D.m00 / frameWidth;
         p11 = 2 * projIntrinsicsP3D.m11 / frameHeight;
@@ -152,12 +150,12 @@ public class ARDisplay {
     public PMatrix3D getIntrinsics() {
         return projIntrinsicsP3D;
     }
-    
+
     /* *
      *  For hand-made calibration exercices. 
      */
     public void setIntrinsics(PMatrix3D intr){
-        
+
         projIntrinsicsP3D = intr;
         initProjection();
     }
@@ -239,7 +237,6 @@ public class ARDisplay {
 
         // clear the screen
         // this.graphics.clear(0, 0);
-
         // load the projector parameters into OpenGL
         loadProjection();
 
@@ -324,11 +321,9 @@ public class ARDisplay {
         }
     }
 
+ 
     // We consider px and py are normalized screen or subScreen space... 
     public PVector projectPointer(Screen screen, float px, float py) {
-
-
-
         float x = px * 2 - 1;
         float y = py * 2 - 1;
 
@@ -337,8 +332,6 @@ public class ARDisplay {
 //        // go from screen coordinates to normalized coordinates  (-1, 1) 
 //        float x = (float) undist[0] / getWidth() * 2 - 1;
 //        float y = (float) undist[1] / getHeight() * 2 - 1;
-
-
         // Not the cleaniest method...
         PMatrix3D invProjModelView1 = createProjection(screen.getZMinMax());
         invProjModelView1.scale(1, 1, -1);

@@ -16,15 +16,17 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.opencv_imgproc.*;
 
 import processing.core.PApplet;
+import processing.core.PConstants;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
+import toxi.geom.Ray3D;
 import toxi.geom.Vec3D;
 
 /**
  *
  * @author jiii
  */
-public class ProjectiveDeviceP {
+public class ProjectiveDeviceP implements PConstants {
 
     private PMatrix3D intrinsics;
     private PMatrix3D extrinsics;
@@ -81,8 +83,72 @@ public class ProjectiveDeviceP {
         result.x = (float) ((x - cx) * depth * ifx);
         result.y = (float) ((y - cy) * depth * ify);
 
-        // TODO: put it back to -z somehow ?
         result.z = depth;
+        return result;
+    }
+
+    // without depth value, focal distance is assumed
+    public Vec3D pixelToWorld(int x, int y) {
+
+        Vec3D result = new Vec3D();
+        float depth = fx;
+//        float depth = 1000 * depthLookUp[depthValue]; 
+        result.x = (float) (x - cx);
+        result.y = (float) (y - cy);
+        result.z = depth;
+        return result;
+    }
+
+    public PVector pixelToWorldP(int x, int y) {
+        PVector result = new PVector();
+        float depth = (fx + fy) / 2;
+        result.x = (float) x - cx;
+        result.y = (float) y - cy;
+        result.z = depth;
+        return result;
+    }
+
+    // To use with a projector...
+    public PVector pixelToWorldPDistort(int x, int y, boolean distort) {
+        PVector result = new PVector();
+
+        if (distort) {
+            double[] out = device.distort(x, y);
+            result.x = (float) out[0];
+            result.y = (float) out[1];
+        }
+
+        float depth = (fx + fy) / 2;
+        result.x = (float) x - cx;
+        result.y = (float) y - cy;
+        result.z = depth;
+        return result;
+    }
+
+    public PVector pixelToWorldPUndistort(int x, int y, boolean distort) {
+        PVector result = new PVector();
+
+        if (distort) {
+            double[] out = device.undistort(x, y);
+            result.x = (float) out[0];
+            result.y = (float) out[1];
+        }
+
+        float depth = fx;
+        result.x = (float) x - cx;
+        result.y = (float) y - cy;
+        result.z = depth;
+        return result;
+    }
+
+    /* * Working, use this one for Low error !
+        
+    */
+    public PVector pixelToWorldNormP(int x, int y) {
+        PVector result = new PVector();
+        result.x = ((float) x - cx) / (float) fx;
+        result.y = ((float) y - cy) / (float) fy;
+        result.z = 1;
         return result;
     }
 
@@ -122,6 +188,20 @@ public class ProjectiveDeviceP {
         } else {
             return new PVector(px, py);
         }
+    }
+
+    public PVector createRayFrom(PVector pixels) {
+
+        double[] out = device.undistort(pixels.x, pixels.y);
+
+        float norm = PApplet.sqrt(PApplet.pow((float) out[0], 2)
+                + PApplet.pow((float) out[1], 2)
+                + 1.0f);
+
+        PVector v = new PVector((float) out[0] / norm,
+                (float) out[1] / norm,
+                1.f / norm);
+        return v;
     }
 
 //    public PMatrix3D estimateOrientation2(PVector[] objectPoints, PVector[] imagePoints) {
@@ -227,7 +307,7 @@ public class ProjectiveDeviceP {
                     (float) projR[6], (float) projR[7], (float) projR[8], (float) projT[2],
                     0, 0, 0, 1);
         } catch (NullPointerException npe) {
-            System.out.println("Loading Parameters, without extrinsics");
+//            System.out.println("Loading Parameters, without extrinsics");
         }
 
     }
@@ -235,10 +315,10 @@ public class ProjectiveDeviceP {
     public static ProjectiveDeviceP loadCameraDevice(String filename, int id) throws Exception {
         ProjectiveDeviceP p = new ProjectiveDeviceP();
         try {
-            System.out.println("Loading camera device file :" + filename);
+//            System.out.println("Loading camera device file :" + filename);
 
             CameraDevice[] camDev = CameraDevice.read(filename);
-            System.out.println("Loading camera device OK.");
+//            System.out.println("Loading camera device OK.");
 
             if (camDev.length <= id) {
                 throw new Exception("No camera device with the id " + id + " in the calibration file: " + filename);

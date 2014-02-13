@@ -1,5 +1,6 @@
 package fr.inria.papart.procam;
 
+import static fr.inria.papart.procam.Utils.toVec;
 import fr.inria.papart.tools.Homography;
 import processing.core.PApplet;
 import processing.core.PImage;
@@ -58,11 +59,16 @@ public class Screen {
     ////////////////// 3D SPACE TO PAPER HOMOGRAPHY ///////////////
     // Version 2.0 :  (0,0) is the top-left corner.
     private void initHomography() {
-        homography = new Homography(parent, 3, 3, 4);
-        homography.setPoint(false, 0, new PVector(0, 1, 0));
-        homography.setPoint(false, 1, new PVector(1, 1, 0));
-        homography.setPoint(false, 2, new PVector(1, 0, 0));
-        homography.setPoint(false, 3, new PVector(0, 0, 0));
+        homography = new Homography(parent, 3, 2, 4);
+        homography.setPoint(false, 0, new PVector(0, 0));
+        homography.setPoint(false, 1, new PVector(1, 0));
+        homography.setPoint(false, 2, new PVector(1, 1));
+        homography.setPoint(false, 3, new PVector(0, 1));
+        
+//        homography.setPoint(false, 0, new PVector(0, 1));
+//        homography.setPoint(false, 1, new PVector(1, 1));
+//        homography.setPoint(false, 2, new PVector(1, 0));
+//        homography.setPoint(false, 3, new PVector(0, 0));
     }
 
     // Get the texture to display...
@@ -76,19 +82,6 @@ public class Screen {
         ///////////////////// PLANE COMPUTATION  //////////////////
         PMatrix3D mat = pos.get();
 
-        PVector origin = new PVector(mat.m03, mat.m13, mat.m23);
-
-        // got a little higher for the normal.
-
-        mat.translate(0, 0, -20);
-        PVector normal = new PVector(mat.m03, mat.m13, mat.m23);
-
-        plane.set(new Vec3D(origin.x, origin.y, origin.z));
-        plane.normal.set(new Vec3D(normal.x, normal.y, normal.z));
-
-        // go back to the paper place
-        mat.translate(0, 0, 20);
-
         paperPosCorners3D[0] = new PVector(mat.m03, mat.m13, mat.m23);
         mat.translate(size.x, 0, 0);
         paperPosCorners3D[1] = new PVector(mat.m03, mat.m13, mat.m23);
@@ -97,6 +90,8 @@ public class Screen {
         mat.translate(-size.x, 0, 0);
         paperPosCorners3D[3] = new PVector(mat.m03, mat.m13, mat.m23);
 
+        plane = new Plane(new Triangle3D(toVec(paperPosCorners3D[0]), toVec(paperPosCorners3D[1]), toVec(paperPosCorners3D[2])));
+        
         for (int i = 0; i < 4; i++) {
             homography.setPoint(true, i, paperPosCorners3D[i]);
         }

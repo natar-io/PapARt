@@ -23,6 +23,7 @@ import java.util.Arrays;
 import javax.media.opengl.GL;
 import processing.core.*;
 import processing.opengl.Texture;
+import toxi.geom.Vec3D;
 
 /**
  *
@@ -42,6 +43,10 @@ public class Utils {
             target.div(tw);
         }
         return target;
+    }
+    
+    static public Vec3D toVec(PVector p){
+        return new Vec3D(p.x, p.y, p.z);
     }
 
     static public IplImage createImageFrom(IplImage imgIn, PImage Pout) {

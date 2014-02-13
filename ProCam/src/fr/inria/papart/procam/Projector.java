@@ -49,7 +49,6 @@ public class Projector extends ARDisplay {
             projIntrinsicsP3D = pdp.getIntrinsics();
             projExtrinsicsP3DInv = projExtrinsicsP3D.get();
             projExtrinsicsP3DInv.invert();
-
             proj = pdp.getDevice();
 
         } catch (Exception e) {
@@ -73,7 +72,6 @@ public class Projector extends ARDisplay {
 //
 //        // Goto to the screen position
 //        this.graphics.modelview.apply(screen.getPos());
-
         return this.graphics;
     }
 
@@ -94,7 +92,6 @@ public class Projector extends ARDisplay {
 //
 //        // Goto to the screen position
 //        this.graphics.modelview.apply(board.getTransfoMat(camera));
-
         return this.graphics;
     }
 
@@ -164,57 +161,70 @@ public class Projector extends ARDisplay {
         }
     }
 
-    // TODO: more doc...
-    /**
-     * Projects the position of a pointer in normalized screen space. If you
-     * need to undistort the pointer, do so before passing px and py.
-     *
-     * @param px Normalized x position (0,1) in projector space
-     * @param py Normalized y position (0,1) in projector space
-     * @return Position of the pointer.
-     */
+    // *** Projects the pixels viewed by the projector to the screen.
+    // px and py are normalized -> [0, 1] in screen space
     @Override
     public PVector projectPointer(Screen screen, float px, float py) {
 
-//        float x = px * 2 - 1;
-//        float y = py * 2 - 1;
+        // Create ray from the projector (origin / viewed pixel)
+        // Intersect this ray with the piece of paper. 
+        // Compute the Two points for the ray          
+        PVector originP = new PVector(0, 0, 0);
+        PVector viewedPtP = pdp.pixelToWorldNormP((int) (px * frameWidth), (int) (py * frameHeight));
 
-        double[] undist = proj.undistort(px * getWidth(), py * getHeight());
+        // Pass it to the camera point of view (origin)
+        PMatrix3D extr = projExtrinsicsP3DInv;
+        PVector originC = new PVector();
+        PVector viewedPtC = new PVector();
+        extr.mult(originP, originC);
+        extr.mult(viewedPtP, viewedPtC);
 
-        // go from screen coordinates to normalized coordinates  (-1, 1) 
-        float x = (float) undist[0] / getWidth() * 2 - 1;
-        float y = (float) undist[1] / getHeight() * 2 - 1;
+        // Second argument is a direction
+        viewedPtC.sub(originC);
 
-        // Not the cleaniest method...
-        PMatrix3D invProjModelView1 = createProjection(screen.getZMinMax());
-        invProjModelView1.scale(1, 1, -1);
-        invProjModelView1.apply(getExtrinsics());
-        invProjModelView1.invert();
+        Ray3D ray
+                = new Ray3D(new Vec3D(originC.x,
+                                originC.y,
+                                originC.z),
+                        new Vec3D(viewedPtC.x,
+                                viewedPtC.y,
+                                viewedPtC.z));
 
-        PVector p1 = new PVector(x, y, -1f);
-        PVector p2 = new PVector(x, y, 1f);
-        PVector out1 = new PVector();
-        PVector out2 = new PVector();
-
-        // view of the point from the projector.
-        Utils.mult(invProjModelView1, p1, out1);
-        Utils.mult(invProjModelView1, p2, out2);
-
-        Ray3D ray = new Ray3D(new Vec3D(out1.x, out1.y, out1.z),
-                new Vec3D(out2.x, out2.y, out2.z));
-
+        // Intersect ray with Plane 
         ReadonlyVec3D inter = screen.plane.getIntersectionWithRay(ray);
-//        dist = screen.plane.intersectRayDistance(ray);
 
+        // It may not intersect.
         if (inter == null) {
             return null;
         }
+        // Check the error of the ray casting -- Debug only  
+//        PVector inter1P = new PVector();
+//        projExtrinsicsP3D.mult(interP, inter1P);
+//        PVector px2 = pdp.worldToPixel(inter1P, false);
+//        px2.sub(px * frameWidth, py * frameHeight, 0);
+//        System.out.println("Error " + px2.mag());
 
+        // Get the normalized coordinates in Paper coordinates
         Vec3D res = screen.transformationProjPaper.applyTo(inter);
+//        PVector out = new PVector(res.x(), res.y(), res.z());
         PVector out = new PVector(res.x() / res.z(),
                 res.y() / res.z(), 1);
+        out.y = 1 - out.y;
+        
+        // Second possiblity... (WORKING)  Use directly the 3D location instead of the plane.
+//     PVector interP = new PVector(inter.x(), inter.y(), inter.z());
+//        PVector out3 = new PVector();
+//        PMatrix3D posInv = screen.getPos().get();
+//        posInv.invert();
+//        posInv.mult(interP, out3);
+//        out3.x /= screen.getSize().x;
+//        out3.y /= screen.getSize().y;
+//
+//        PVector diff = PVector.sub(out, out3);
+//        System.out.println("Diff " + diff);
+
+//        out3.y = 1 - out3.y;
         return out;
     }
-
 
 }

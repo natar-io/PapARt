@@ -1,5 +1,6 @@
 package fr.inria.papart.multitouchKinect;
 
+import com.googlecode.javacv.FrameGrabber;
 import com.googlecode.javacv.OpenKinectFrameGrabber;
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
 import fr.inria.papart.kinect.Homography;
@@ -10,6 +11,7 @@ import fr.inria.papart.multitouchKinect.MultiTouchKinect;
 import fr.inria.papart.multitouchKinect.TouchPoint;
 import fr.inria.papart.procam.Camera;
 import fr.inria.papart.procam.ProjectiveDeviceP;
+import fr.inria.papart.procam.Projector;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 import processing.core.PApplet;
@@ -87,12 +89,12 @@ public class TouchInput {
     }
 
     public void lock() {
-        try{
-        touchPointSemaphore.acquire();
-        } catch(Exception e){
-            
+        try {
+            touchPointSemaphore.acquire();
+        } catch (Exception e) {
+
         }
-        
+
     }
 
     public void unlock() {
@@ -139,8 +141,11 @@ public class TouchInput {
                         touchInput.findColors(depthImage, colorImage);
                         touchInput.endTouch();
 
-                    } catch (Exception e) {
+                    } catch (FrameGrabber.Exception e) {
                         System.err.println("ERROR in grabber " + e);
+                        e.printStackTrace();
+                    } catch (Exception e) {
+                        System.err.println("Semaphore Exception in grabber " + e);
                         e.printStackTrace();
                     } finally {
                         touchPointSemaphore.release();
@@ -204,15 +209,15 @@ public class TouchInput {
         return touchPoints3D;
     }
 
-    public TouchElement projectTouchToScreen(Screen screen, ARDisplay projector) {
-        return projectTouchToScreen(screen, projector, false, true, true, true, true);
+    public TouchElement projectTouchToScreen(Screen screen, ARDisplay display) {
+        return projectTouchToScreen(screen, display, false, true, true, true, true);
     }
 
-    public TouchElement projectTouchToScreen(Screen screen, ARDisplay projector, boolean is2D, boolean is3D) {
-        return projectTouchToScreen(screen, projector, false, is2D, is3D, is2D, is3D);
+    public TouchElement projectTouchToScreen(Screen screen, ARDisplay display, boolean is2D, boolean is3D) {
+        return projectTouchToScreen(screen, display, false, is2D, is3D, is2D, is3D);
     }
 
-    public TouchElement projectTouchToScreen(Screen screen, ARDisplay projector, boolean isAll,
+    public TouchElement projectTouchToScreen(Screen screen, ARDisplay display, boolean isAll,
             boolean is2D, boolean is3D,
             boolean isSpeed2D, boolean isSpeed3D) {
 
@@ -228,12 +233,10 @@ public class TouchInput {
         ArrayList<PVector> speed2D = new ArrayList<PVector>();
         ArrayList<PVector> speed3D = new ArrayList<PVector>();
 
-
         ArrayList<TouchPoint> points2D = new ArrayList<TouchPoint>();
         ArrayList<TouchPoint> points3D = new ArrayList<TouchPoint>();
 
         ArrayList<Touch> locationList = new ArrayList<Touch>();
-
 
         TouchElement elem = new TouchElement();
         elem.position2D = position2D;
@@ -244,18 +247,22 @@ public class TouchInput {
         elem.points3D = points3D;
         elem.touches = locationList;
 
+        boolean isProjector = display instanceof Projector;
 
+//        Projector display = 
         try {
             touchPointSemaphore.acquire();
         } catch (InterruptedException ie) {
             System.err.println("Semaphore Exception: " + ie);
         }
 
+        
         if (is2D && !touchPoints2D.isEmpty()) {
             for (TouchPoint tp : touchPoints2D) {
 
                 Touch tl = new Touch();
 
+                // TouchPoint -> Normalized (screen) coordinates
                 Vec3D vec = tp.v;
                 if (this.transfo != null) {
                     vec = transfo.applyTo(vec);
@@ -268,16 +275,15 @@ public class TouchInput {
                 PVector res, res2 = null;
 
                 if (useExternalGrabber) {
-
                     int p = pdp.worldToPixel(tp.vKinect);
-                    res = projector.projectPointer(screen,
+                    res = (isProjector ? (Projector)display : display ).projectPointer(screen,
                             (float) (p % Kinect.KINECT_WIDTH) / Kinect.KINECT_WIDTH,
                             ((float) p / Kinect.KINECT_WIDTH) / Kinect.KINECT_HEIGHT);
 
                 } else {
-                    res = projector.projectPointer(screen, vec.x, vec.y);
+                    res = (isProjector?(Projector)display : display).projectPointer(screen, vec.x, vec.y);
                 }
-//                    res = projector.projectPointer(screen, tp);
+//                    res = (isProjector ? (Projector)display : display ).projectPointer(screen, tp);
 
                 if (isSpeed2D) {
 
@@ -285,12 +291,12 @@ public class TouchInput {
                         if (useExternalGrabber) {
 
                             int p = pdp.worldToPixel(tp.oldvKinect);
-                            res2 = projector.projectPointer(screen,
+                            res2 = (isProjector ? (Projector)display : display ).projectPointer(screen,
                                     (float) (p % Kinect.KINECT_WIDTH) / Kinect.KINECT_WIDTH,
                                     ((float) p / Kinect.KINECT_WIDTH) / Kinect.KINECT_HEIGHT);
 
                         } else {
-                            res2 = projector.projectPointer(screen, tp.oldV.x, tp.oldV.y);
+                            res2 = (isProjector ? (Projector)display : display ).projectPointer(screen, tp.oldV.x, tp.oldV.y);
                         }
                     }
                 }
@@ -349,33 +355,30 @@ public class TouchInput {
 
                 if (useExternalGrabber) {
                     int p = pdp.worldToPixel(tp.vKinect);
-                    res = projector.projectPointer(screen,
+                    res = (isProjector ? (Projector)display : display ).projectPointer(screen,
                             (float) (p % Kinect.KINECT_WIDTH) / Kinect.KINECT_WIDTH,
                             ((float) p / Kinect.KINECT_WIDTH) / Kinect.KINECT_HEIGHT);
 
                 } else {
-                    res = projector.projectPointer(screen, vec.x, vec.y);
+                    res = (isProjector ? (Projector)display : display ).projectPointer(screen, vec.x, vec.y);
                 }
 
-//                    res = projector.projectPointer(screen, tp);
-
-
+//                    res = (isProjector ? (Projector)display : display ).projectPointer(screen, tp);
                 if (isSpeed3D && tp.oldV != null) {
-
 
                     if (useExternalGrabber) {
                         int p = pdp.worldToPixel(tp.oldvKinect);
-                        res2 = projector.projectPointer(screen,
+                        res2 = (isProjector ? (Projector)display : display ).projectPointer(screen,
                                 (float) (p % Kinect.KINECT_WIDTH) / Kinect.KINECT_WIDTH,
                                 ((float) p / Kinect.KINECT_WIDTH) / Kinect.KINECT_HEIGHT);
                     } else {
-                        res2 = projector.projectPointer(screen, tp.oldV.x, tp.oldV.y);
+                        res2 = (isProjector ? (Projector)display : display ).projectPointer(screen, tp.oldV.x, tp.oldV.y);
                     }
 
                     if (res2 != null) {
                         res2.z = tp.oldV.z;
                     }
-//                        res2 = (tp.oldV != null) ? projector.projectPointer(screen, tp) : null;
+//                        res2 = (tp.oldV != null) ? (isProjector ? (Projector)display : display ).projectPointer(screen, tp) : null;
                 }
                 if (res == null) {
                     continue;
