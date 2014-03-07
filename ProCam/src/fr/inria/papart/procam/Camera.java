@@ -15,12 +15,11 @@ import com.googlecode.javacv.cpp.ARToolKitPlus;
 import com.googlecode.javacv.cpp.ARToolKitPlus.TrackerMultiMarker;
 import com.googlecode.javacv.cpp.opencv_core.CvMat;
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
-import diewald_PS3.PS3;
-import diewald_PS3.constants.COLOR_MODE;
-import diewald_PS3.constants.VIDEO_MODE;
-import diewald_PS3.logger.PS3Logger;
+//import diewald_PS3.PS3;
+//import diewald_PS3.constants.COLOR_MODE;
+//import diewald_PS3.constants.VIDEO_MODE;
+//import diewald_PS3.logger.PS3Logger;
 import fr.inria.papart.multitouchKinect.TouchInput;
-import fr.inria.papart.opengl.CustomTexture;
 import fr.inria.papart.tools.CaptureIpl;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
@@ -49,15 +48,14 @@ public class Camera {
     protected CaptureIpl captureIpl;
     // OpenCV  video input 
     private FrameGrabber grabber;
-    private PS3 ps3;
+//    private PS3 ps3;
     private OpenKinectFrameGrabber openKinectGrabber;
     // Texture for video visualization (OpenCV generally)
     protected IplImage iimg = null, copyUndist, depthImage = null;
-    protected CustomTexture tex = null;
     protected PImage camImage = null, depthPImage = null;
     public final static int OPENCV_VIDEO = 1;
     public final static int PROCESSING_VIDEO = 2;
-    public final static int PSEYE_VIDEO = 3;
+//    public final static int PSEYE_VIDEO = 3;
     public final static int KINECT_VIDEO = 4;
     public static int videoInput = OPENCV_VIDEO;
     protected int width, height;
@@ -145,18 +143,18 @@ public class Camera {
             this.grabber = openKinectGrabber;
         }
 
-        if (videoInputType == PSEYE_VIDEO) {
-
-            PS3Logger.TYPE.DEBUG.active(false);
-            PS3Logger.TYPE.ERROR.active(false);
-            PS3Logger.TYPE.INFO.active(false);
-            PS3Logger.TYPE.WARNING.active(false);
-
-            ps3 = PS3.create(Integer.parseInt(camDevice));
-            ps3.init(VIDEO_MODE.VGA, COLOR_MODE.COLOR_PROCESSED, 30);
-            ps3.start();
-            ps3.setLed(true);
-        }
+//        if (videoInputType == PSEYE_VIDEO) {
+//
+//            PS3Logger.TYPE.DEBUG.active(false);
+//            PS3Logger.TYPE.ERROR.active(false);
+//            PS3Logger.TYPE.INFO.active(false);
+//            PS3Logger.TYPE.WARNING.active(false);
+//
+//            ps3 = PS3.create(Integer.parseInt(camDevice));
+//            ps3.init(VIDEO_MODE.VGA, COLOR_MODE.COLOR_PROCESSED, 30);
+//            ps3.start();
+//            ps3.setLed(true);
+//        }
 
         if (videoInputType == PROCESSING_VIDEO) {
 
@@ -193,9 +191,9 @@ public class Camera {
         return this.videoInputType == OPENCV_VIDEO;
     }
 
-    public boolean usePSEYE() {
-        return this.videoInputType == PSEYE_VIDEO;
-    }
+//    public boolean usePSEYE() {
+//        throw new Exception("PSEye Not supported anymore");
+//    }
 
     public boolean useKinect() {
         return this.videoInputType == KINECT_VIDEO;
@@ -428,13 +426,13 @@ public class Camera {
             }
         }
 
-// Grab is done in a separate thread...         
-        if (videoInputType == PSEYE_VIDEO) {
-
-            // TODO: Check for clone() ? 
-            // Performance issues, can be handled with synchronized calls ?
-            img = ps3.getIplImage().clone();
-        }
+//// Grab is done in a separate thread...         
+//        if (videoInputType == PSEYE_VIDEO) {
+//
+//            // TODO: Check for clone() ? 
+//            // Performance issues, can be handled with synchronized calls ?
+//            img = ps3.getIplImage().clone();
+//        }
 
         if (img != null) {
             if (undistort) {
@@ -480,11 +478,11 @@ public class Camera {
             return captureIpl;
         }
 
-        if (usePSEYE()) {
-            camImage.loadPixels();
-            ps3.getFrame(camImage.pixels);
-            camImage.updatePixels();
-        }
+//        if (usePSEYE()) {
+//            camImage.loadPixels();
+//            ps3.getFrame(camImage.pixels);
+//            camImage.updatePixels();
+//        }
 
         if (useOpenCV() || useKinect()) {
             if (iimg != null) {
@@ -540,9 +538,9 @@ public class Camera {
             }
         }
 
-        if (videoInputType == PSEYE_VIDEO) {
-            PS3.shutDown();
-        }
+//        if (videoInputType == PSEYE_VIDEO) {
+//            PS3.shutDown();
+//        }
 
     }
 

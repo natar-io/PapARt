@@ -4,13 +4,19 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/procam/ProjectiveDeviceP.java</file>
-            <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/multitouchKinect/MultiTouchKinect.java</file>
-            <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/procam/ARDisplay.java</file>
-            <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/multitouchKinect/TouchInput.java</file>
+            <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/tools/Homography.java</file>
+            <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/multitouchKinect/TouchPoint.java</file>
+            <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/procam/ARTThread.java</file>
             <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/procam/Projector.java</file>
+            <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/procam/Camera.java</file>
+            <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/procam/PaperScreen.java</file>
+            <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/procam/ProjectiveDeviceP.java</file>
+            <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/kinect/PointCloudKinect.java</file>
+            <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/procam/ARDisplay.java</file>
+            <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/kinect/Homography.java</file>
+            <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/multitouchKinect/TouchInput.java</file>
+            <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/procam/MarkerBoard.java</file>
             <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/procam/Utils.java</file>
-            <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/procam/Screen.java</file>
         </group>
     </open-files>
 </project-private>

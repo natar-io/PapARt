@@ -121,19 +121,18 @@ public class Utils {
 
     // TO USE INSIDE THE DRAW FUNCTION
     // TODO: Experimental -> To validate...
-    static public Texture createTextureFrom(PApplet parent, IplImage img) {
-        Texture tex = null;
-
-        // We suppose...  Depth = 3 : BGR and Depth = 4 :  RGBA  (even though it is written ARGB for Processing...)
-        if (img.nChannels() == 3) {
-            tex = new Texture(img.width(), img.height(), PApplet.RGB);
-        }
-        if (img.nChannels() == 4) {
-            tex = new Texture(img.width(), img.height(), PApplet.ARGB);
-        }
-
-        return tex;
-    }
+//    static public Texture createTextureFrom(PApplet parent, IplImage img) {
+//        Texture tex = null;
+//
+//        // We suppose...  Depth = 3 : BGR and Depth = 4 :  RGBA  (even though it is written ARGB for Processing...)
+//        if (img.nChannels() == 3) {
+//            tex = new Texture(img.width(), img.height(), PApplet.RGB);
+//        }
+//        if (img.nChannels() == 4) {
+//            tex = new Texture(img.width(), img.height(), PApplet.ARGB);
+//        }
+//        return tex;
+//    }
 
     static public void updateTexture(IplImage img, Texture tex) {
 

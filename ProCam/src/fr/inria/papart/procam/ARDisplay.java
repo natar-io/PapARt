@@ -7,7 +7,6 @@ package fr.inria.papart.procam;
 import processing.opengl.PGraphicsOpenGL;
 import processing.opengl.Texture;
 import com.googlecode.javacv.ProjectiveDevice;
-import fr.inria.papart.opengl.CustomTexture;
 import java.util.ArrayList;
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
@@ -44,7 +43,6 @@ public class ARDisplay {
     protected int frameWidth, frameHeight;
     // OpenGL information
     protected float[] projectionMatrixGL = new float[16];
-    protected CustomTexture myMap;
     protected PMatrix3D projectionInit;
     // TODO...
     protected PShader lensFilter;
@@ -358,7 +356,7 @@ public class ARDisplay {
 
         Vec3D res = screen.transformationProjPaper.applyTo(inter);
         PVector out = new PVector(res.x() / res.z(),
-                res.y() / res.z(), 1);
+                1f- (res.y() / res.z()), 1);
         return out;
     }
 

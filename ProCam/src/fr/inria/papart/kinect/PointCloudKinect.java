@@ -5,39 +5,20 @@
  */
 package fr.inria.papart.kinect;
 
-import static fr.inria.papart.kinect.Kinect.KINECT_WIDTH;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 import processing.core.PApplet;
 import processing.core.PConstants;
-import static processing.core.PConstants.GROUP;
 import static processing.core.PConstants.TRIANGLES;
-import static processing.core.PConstants.X;
-import static processing.core.PConstants.Y;
-import static processing.core.PConstants.Z;
-import processing.core.PGraphics;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PShape;
-import static processing.core.PShape.GEOMETRY;
-import static processing.core.PShape.PATH;
-import static processing.core.PShape.PRIMITIVE;
-import processing.core.PVector;
 import processing.opengl.PGL;
-import static processing.opengl.PGL.ARRAY_BUFFER;
-import static processing.opengl.PGL.DEPTH_TEST;
-import static processing.opengl.PGL.FLOAT;
-import static processing.opengl.PGL.TEXTURE_2D;
 import processing.opengl.PGraphicsOpenGL;
-import static processing.opengl.PGraphicsOpenGL.pgl;
 import processing.opengl.PShader;
-import processing.opengl.PShapeOpenGL;
 import toxi.geom.Triangle3D;
 import toxi.geom.Vec3D;
 import toxi.geom.mesh.OBJWriter;
@@ -96,7 +77,7 @@ public class PointCloudKinect implements PConstants {
     }
 
     private void initPointCloud() {
-        PGL pgl = PGraphicsOpenGL.pgl;
+        PGL pgl = ((PGraphicsOpenGL) parentApplet.g).pgl;
 
         kinectShader = parentApplet.loadShader("shaders/kinect/kinect1.frag", "shaders/kinect/kinect1.vert");
 
@@ -256,7 +237,7 @@ public class PointCloudKinect implements PConstants {
     private void drawPoints(PGraphicsOpenGL g) {
 
         // get cache object using g.
-        PGL pgl = PGraphicsOpenGL.pgl;
+        PGL pgl = g.pgl;
 
         // Use the shader program
         kinectShader.bind();

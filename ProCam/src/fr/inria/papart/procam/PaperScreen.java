@@ -41,8 +41,9 @@ public class PaperScreen {
         }
 
         screen.setAutoUpdatePos(cam, board);
-        board.setDrawingMode(cameraTracking, true, 25);
-        board.setFiltering(cameraTracking, 30, 25);
+        board.setDrawingMode(cameraTracking, true, 4);
+        board.setFiltering(cameraTracking, 30, 4);
+
         parent.registerMethod("pre", this);
     }
 
