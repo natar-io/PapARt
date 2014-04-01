@@ -23,10 +23,7 @@ class ARTThread extends Thread {
     private boolean compute;
     public boolean stop;
     
-    // TODO: what is this ?
-    private boolean waitForFrames = false;
-
-    public ARTThread(Camera camera, ArrayList<MarkerBoard> sheets, float frameRate) {
+    public ARTThread(Camera camera, ArrayList<MarkerBoard> sheets) {
         this(camera, sheets, true);
     }
 
@@ -34,7 +31,6 @@ class ARTThread extends Thread {
         this.undistort = undistort;
         this.camera = camera;
         this.sheets = sheets;
-        waitForFrames = camera.useProcessingVideo();
         stop = false;
     }
 

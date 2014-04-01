@@ -40,7 +40,7 @@ public class Camera {
     private ArrayList<MarkerBoard> sheets = null;
     private String calibrationARToolkit;
     private ARTThread thread = null;
-    protected ProjectiveDeviceP pdp;
+    protected ProjectiveDeviceP pdp = null;
     // GStreamer  Video input
 //    protected GSCapture gsCapture;
 //    protected GSPipeline pipeline;
@@ -65,7 +65,7 @@ public class Camera {
     protected boolean gotPicture = false;
 
     private boolean isClosing = false;
-    
+
     static public void convertARParams(PApplet parent, String calibrationYAML,
             String calibrationData, int width, int height) {
         try {
@@ -109,18 +109,18 @@ public class Camera {
 
         // Init the video
         if (videoInputType == OPENCV_VIDEO) {
+            System.out.println("Camera: Grabbing OpenCV Camera");
             OpenCVFrameGrabber grabberCV = new OpenCVFrameGrabber(Integer.parseInt(camDevice));
-
             grabberCV.setImageWidth(width);
             grabberCV.setImageHeight(height);
             grabberCV.setImageMode(FrameGrabber.ImageMode.COLOR);
 
             try {
                 grabberCV.start();
+                System.out.println("Camera: " + camDevice + " Camera started");
             } catch (Exception e) {
                 System.err.println("Could not start frameGrabber... " + e);
             }
-
             this.grabber = grabberCV;
         }
 
@@ -155,7 +155,6 @@ public class Camera {
 //            ps3.start();
 //            ps3.setLed(true);
 //        }
-
         if (videoInputType == PROCESSING_VIDEO) {
 
             if (camDevice == null) {
@@ -176,6 +175,7 @@ public class Camera {
             try {
                 pdp = ProjectiveDeviceP.loadCameraDevice(calibrationYAML, 0);
                 camIntrinsicsP3D = pdp.getIntrinsics();
+                System.out.println("Calibration loaded for camera " + camDevice);
             } catch (Exception e) {
                 parent.die("Error reading the calibration file : " + calibrationYAML + " \n" + e);
             }
@@ -194,7 +194,6 @@ public class Camera {
 //    public boolean usePSEYE() {
 //        throw new Exception("PSEye Not supported anymore");
 //    }
-
     public boolean useKinect() {
         return this.videoInputType == KINECT_VIDEO;
     }
@@ -253,7 +252,7 @@ public class Camera {
 //            tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_HALF_RES);
         tracker.setUseDetectLite(false);
 //            tracker.setUseDetectLite(true);
-    
+
         // Initialize the tracker, with camera parameters and marker config. 
         if (!tracker.init(calibrationARToolkit, sheet.getFileName(), 1.0f, 1000.f)) {
             System.err.println("Init ARTOOLKIT Error " + calibrationARToolkit + " " + sheet.getFileName() + " " + sheet.getName());
@@ -357,14 +356,15 @@ public class Camera {
      * Asks the camera to grab an image. Not to use with the threaded option.
      */
     public void grab() {
-        grab(true);
+        grab(pdp != null);
     }
 
     public IplImage grab(boolean undistort) {
 
-        if(isClosing)
+        if (isClosing) {
             return iimg;
-        
+        }
+
         IplImage img = null;
 
         if (videoInputType == OPENCV_VIDEO) {
@@ -374,6 +374,7 @@ public class Camera {
             } catch (Exception e) {
                 System.err.println("Camera: OpenCV Grab() Error ! " + e);
                 e.printStackTrace();
+                return null;
             }
         }
 
@@ -401,6 +402,7 @@ public class Camera {
             } catch (Exception e) {
                 System.err.println("Camera: Kinect Grab() Error ! " + e);
                 e.printStackTrace();
+                return null;
             }
         }
 
@@ -433,7 +435,6 @@ public class Camera {
 //            // Performance issues, can be handled with synchronized calls ?
 //            img = ps3.getIplImage().clone();
 //        }
-
         if (img != null) {
             if (undistort) {
                 if (copyUndist == null) {
@@ -483,7 +484,6 @@ public class Camera {
 //            ps3.getFrame(camImage.pixels);
 //            camImage.updatePixels();
 //        }
-
         if (useOpenCV() || useKinect()) {
             if (iimg != null) {
                 Utils.IplImageToPImage(iimg, false, camImage);
@@ -521,7 +521,7 @@ public class Camera {
     public void close() {
 
         this.isClosing = true;
-        
+
         if (videoInputType == OPENCV_VIDEO) {
             if (grabber != null) {
                 try {
@@ -541,7 +541,6 @@ public class Camera {
 //        if (videoInputType == PSEYE_VIDEO) {
 //            PS3.shutDown();
 //        }
-
     }
 
     /**
