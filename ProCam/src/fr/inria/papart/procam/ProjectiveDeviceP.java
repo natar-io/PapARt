@@ -146,9 +146,19 @@ public class ProjectiveDeviceP implements PConstants {
     */
     public PVector pixelToWorldNormP(int x, int y) {
         PVector result = new PVector();
-        result.x = ((float) x - cx) / (float) fx;
-        result.y = ((float) y - cy) / (float) fy;
+        result.x = ((float) x - cx) / fx;
+        result.y = ((float) y - cy) / fy;
         result.z = 1;
+        return result;
+    }
+    
+    public PVector pixelToWorldNormPMM(int x, int y, float sizeX) {
+        
+        PVector result = pixelToWorldNormP(x, y);
+
+        float sizeY = sizeX *  ((float)h/(float) w);
+        result.x *= (float) sizeX / (float) w;
+        result.y *= (float) sizeY / (float) h;
         return result;
     }
 

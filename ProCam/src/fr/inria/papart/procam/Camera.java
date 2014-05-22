@@ -183,6 +183,14 @@ public class Camera {
 
     }
 
+    public int width() {
+        return width;
+    }
+
+    public int height() {
+        return height;
+    }
+
     public boolean useProcessingVideo() {
         return this.videoInputType == PROCESSING_VIDEO;
     }
