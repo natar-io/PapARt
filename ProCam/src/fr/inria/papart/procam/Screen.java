@@ -29,7 +29,7 @@ public class Screen {
     private float scale;
     protected Plane plane = new Plane();
     private static final int nbPaperPosRender = 4;
-    private PVector[] paperPosCorners3D = new PVector[nbPaperPosRender];
+    private final PVector[] paperPosCorners3D = new PVector[nbPaperPosRender];
     protected Homography homography;
     protected Matrix4x4 transformationProjPaper;
     public float halfEyeDist = 10; // 2cm
@@ -42,12 +42,14 @@ public class Screen {
 
     public Screen(PApplet parent, PVector size, float scale, boolean useAA, int AAValue) {
         // AA not available anymore
-        thisGraphics = (PGraphicsOpenGL) parent.createGraphics((int) (size.x * scale), (int) (size.y * scale), PApplet.OPENGL);
+         // Now it is loading when use, to save memory (for PaperScreens)
+//        thisGraphics = (PGraphicsOpenGL) parent.createGraphics((int) (size.x * scale), (int) (size.y * scale), PApplet.OPENGL);
 
+        
+        
 //        thisGraphics = new PGraphicsOpenGL(); 
 //        thisGraphics.setPrimary(false);
 //        thisGraphics.setSize((int) (size.x * scale), (int) (size.y * scale));
-
         this.size = size.get();
         this.scale = scale;
         this.parent = parent;
@@ -64,7 +66,7 @@ public class Screen {
         homography.setPoint(false, 1, new PVector(1, 0));
         homography.setPoint(false, 2, new PVector(1, 1));
         homography.setPoint(false, 3, new PVector(0, 1));
-        
+
 //        homography.setPoint(false, 0, new PVector(0, 1));
 //        homography.setPoint(false, 1, new PVector(1, 1));
 //        homography.setPoint(false, 2, new PVector(1, 0));
@@ -73,8 +75,7 @@ public class Screen {
 
     // Get the texture to display...
     public PGraphicsOpenGL getTexture() {
-//        thisGraphics.updateDisplay();
-        return thisGraphics;
+        return getGraphics();
     }
 
     public void computeScreenPosTransform() {
@@ -91,7 +92,7 @@ public class Screen {
         paperPosCorners3D[3] = new PVector(mat.m03, mat.m13, mat.m23);
 
         plane = new Plane(new Triangle3D(toVec(paperPosCorners3D[0]), toVec(paperPosCorners3D[1]), toVec(paperPosCorners3D[2])));
-        
+
         for (int i = 0; i < 4; i++) {
             homography.setPoint(true, i, paperPosCorners3D[i]);
         }
@@ -100,6 +101,10 @@ public class Screen {
     }
 
     public PGraphicsOpenGL getGraphics() {
+        if (thisGraphics == null) {
+            thisGraphics = (PGraphicsOpenGL) parent.createGraphics((int) (size.x * scale), (int) (size.y * scale), PApplet.OPENGL);
+        }
+
         return thisGraphics;
     }
 
@@ -122,7 +127,7 @@ public class Screen {
 //    }
     public PGraphicsOpenGL initDraw(PVector userPos, float nearPlane, float farPlane, boolean isAnaglyph, boolean isLeft, boolean isOnly) {
 
-        PGraphicsOpenGL graphics = thisGraphics;
+        PGraphicsOpenGL graphics = getGraphics();
 
         PVector userP = userPos.get();
 
@@ -152,7 +157,6 @@ public class Screen {
 
             // Transformation  Camera -> Center of screen
 //            initPosM.preApply(tr1);
-
             // Maybe the Z axis is inverted ? Or any other axis ?
             initPosM.invert();
 
@@ -180,7 +184,7 @@ public class Screen {
 
         // Compute the new transformation   
         PVector virtualPos = userP.get();
-        
+
         if (isAnaglyph) {
             virtualPos.add(isLeft ? -halfEyeDist : halfEyeDist, 0, 0);
         }
@@ -192,7 +196,6 @@ public class Screen {
         rotationPaper.m03 = 0; // newPos.m03;
         rotationPaper.m13 = 0; // newPos.m13;
         rotationPaper.m23 = 0; // newPos.m23;
-
 
         PVector paperCameraPos = new PVector();
         rotationPaper.mult(virtualPos, paperCameraPos);
@@ -206,7 +209,6 @@ public class Screen {
 //            graphics.beginDraw();
 //            graphics.clear();
 //        }
-
         // Camera must look perpendicular to the screen. 
         graphics.camera(paperCameraPos.x, paperCameraPos.y, paperCameraPos.z,
                 paperCameraPos.x, paperCameraPos.y, 0,
@@ -215,27 +217,16 @@ public class Screen {
 //        graphics.camera(userPos.x, userPos.y, userPos.z,
 //                userPos.x, userPos.y, 0,
 //                0, 1, 0);
-
-
 //        graphics.modelview.preApply(newPos);
-
-
         ///////////////////////////////////////////////////////////
-
-
-
-
 //        PMatrix3D currentTransfo = pos2.get();
         // No translation
 //        currentTransfo.m03 = 0;
 //        currentTransfo.m13 = 0;
 //        currentTransfo.m23 = 0;
-
 //         currentTransfo.invert();
 //        currentTransfo.preApply(initPosM);
 //        currentTransfo.mult(virtualPos, paperCameraPos);
-
-
         /////////// GOOOD ONE ////////////////////
 //        virtualPos.mult(-1);
 //
@@ -249,18 +240,13 @@ public class Screen {
 //
 //        rotationPaper.mult(virtualPos, paperCameraPos);
         /////////// GOOOD ONE ////////////////////
-
-
 //        paperCameraPos.x -= this.size.x / 2;
 //        paperCameraPos.y -= this.size.y / 2;
-
 //        if (initPos == null) {
 //            initPos = paperCameraPos.get();
 //        } else {
 //            paperCameraPos = initPos;
 //        }
-
-
         // http://www.gamedev.net/topic/597564-view-and-projection-matrices-for-vr-window-using-head-tracking/
         float nearFactor = nearPlane / paperCameraPos.z;
 
@@ -279,7 +265,6 @@ public class Screen {
 //        float right = nearFactor * (size.x / 2f - paperCameraPos.x);
 //        float top = nearFactor * (size.y / 2f - paperCameraPos.y);
 //        float bottom = nearFactor * (-size.y / 2f - paperCameraPos.y);
-
         graphics.frustum(left, right, bottom, top, nearPlane, farPlane);
         graphics.projection.m11 = -graphics.projection.m11;
 
@@ -411,7 +396,6 @@ public class Screen {
     public void updatePos(Camera camera, MarkerBoard board) {
 
         pos3D = board.getTransfo(camera);
-
 
         if (pos == null) {
             pos = new PMatrix3D(pos3D[0], pos3D[1], pos3D[2], pos3D[3],

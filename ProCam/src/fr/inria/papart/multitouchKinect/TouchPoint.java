@@ -108,6 +108,16 @@ public class TouchPoint {
         return v;
     }
 
+    public Vec3D getSpeed() {
+        if(this.oldV == null)
+            return new Vec3D(0, 0,0);
+        
+        
+        Vec3D cp = v.copy();
+        cp.subSelf(this.oldV);
+        return cp;
+    }
+
     protected void setUpdated(boolean updated) {
         this.isUpdated = updated;
     }

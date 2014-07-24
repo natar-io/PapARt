@@ -207,6 +207,8 @@ public class Kinect {
         this.farThreshold = far;
     }
 
+    
+    /**** Experimental, not used. *******/
     public void computeDepth(IplImage depth) {
         // Get the depth as an array 
         ByteBuffer depthBuff = depth.getByteBuffer();
@@ -420,6 +422,8 @@ public class Kinect {
 
         validPointsPImage.loadPixels();
 
+        Arrays.fill(validPoints, false);
+        
         for (int y = 0; y < kinectCalibIR.getHeight(); y += skip) {
             for (int x = 0; x < kinectCalibIR.getWidth(); x += skip) {
 

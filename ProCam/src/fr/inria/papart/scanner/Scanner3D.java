@@ -26,21 +26,19 @@ public class Scanner3D implements PConstants {
     private final ProjectiveDeviceP projDev, camDev;
 
     private float cx, cy, fx, fy;
-    private final Camera camera;
     private final Projector projector;
 
     private PVector lastError = new PVector();
 
     // We suppose that the camera is loaded, and running.
-    public Scanner3D(Camera camera, Projector projector) {
-        this.camera = camera;
+    public Scanner3D(ProjectiveDeviceP camera, Projector projector) {
         this.projector = projector;
 
 //        backgroundRemover = new BackgroundRemover(
 //                camera.width(), camera.height());
         // Projective device 
         projDev = projector.getProjectiveDeviceP();
-        camDev = camera.getProjectiveDevice();
+        camDev = camera;
 
         // Projector --> Camera (Origin)
         extrinsics = projector.getExtrinsics();
@@ -132,10 +130,10 @@ public class Scanner3D implements PConstants {
 
         // Need Lens distorsions !
 //    println("Projected " + projPixelsOrig);
-        if (error < 40) {
-            return intersection;
-        }
-        return null;
+//        if (error < 40) {
+//            return intersection;
+//        }
+        return intersection;
     }
 
     public PVector lastError() {

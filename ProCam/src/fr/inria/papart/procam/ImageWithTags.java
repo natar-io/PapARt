@@ -1,4 +1,4 @@
-/*
+  /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
@@ -10,9 +10,12 @@ import com.googlecode.javacv.cpp.ARToolKitPlus.MultiTracker;
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
 
 import com.googlecode.javacv.CameraDevice;
+import com.googlecode.javacv.ProjectiveDevice;
 import com.googlecode.javacv.cpp.opencv_highgui;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 
@@ -23,12 +26,12 @@ import processing.core.PVector;
 public class ImageWithTags {
 
     private CameraDevice cam;
-    private PMatrix3D camIntrinsics;
-    private MultiTracker tracker;
+    private final PMatrix3D camIntrinsics;
+    private final MultiTracker tracker;
     private IplImage imageSrc;
-    private float[] transfo;
-    private int outWidth, outHeight;
-    private MarkerBoard board;
+    private final float[] transfo;
+    private final int outWidth, outHeight;
+    private final MarkerBoard board;
 
     public ImageWithTags(String filename, String cameraConfig, String artConfig, MarkerBoard board, int outWidth, int outHeight) {
 
@@ -36,11 +39,9 @@ public class ImageWithTags {
         this.outHeight = outHeight;
         this.board = board;
 
-        
         // TODO: errors instead of assert
 //        File f1 = new File(filename);
 //        assert (f1.exists());
-
         String boardName = board.getFileName();
         File f2 = new File(boardName);
         assert (f2.exists());
@@ -54,7 +55,7 @@ public class ImageWithTags {
             if (c.length > 0) {
                 cam = c[0];
             }
-        } catch (Exception e) {
+        } catch (ProjectiveDevice.Exception e) {
             System.out.println("No camera error..." + e);
         }
 
@@ -79,7 +80,6 @@ public class ImageWithTags {
         tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_FULL_RES);
         tracker.setUseDetectLite(false);
 
-
         if (!tracker.init(artConfig, board.getFileName(), 1.0f, 1000.f)) {
             System.out.println("ERROR at ARToolkIT");
             // throw new Exception("Init ARTOOLKIT Error" + board.getFileName() + " " + board.getName());
@@ -92,7 +92,6 @@ public class ImageWithTags {
 
         ////////// Find the markers ///////////////
         //findMarkers();
-
     }
 
     public IplImage getImageFrom(String filename) {
@@ -104,8 +103,8 @@ public class ImageWithTags {
             System.out.println("No marker found...");
             // TODO: error
         }
- System.out.println(tracker.getNumDetectedMarkers() + " markers found");
- 
+        System.out.println(tracker.getNumDetectedMarkers() + " markers found");
+
         ARMultiMarkerInfoT multiMarkerConfig = tracker.getMultiMarkerConfig();
 
         for (int i = 0; i < 12; i++) {
@@ -115,7 +114,7 @@ public class ImageWithTags {
         TrackedView trackedView = new TrackedView(board, outWidth, outHeight);
         trackedView.setPos(transfo);
         trackedView.computeCorners(this);
-        
+
         return trackedView.getImageIpl(imageSrc);
     }
 
@@ -125,4 +124,91 @@ public class ImageWithTags {
         //TODO: lens distorsion ?
         return new PVector(tmp.x / tmp.z, tmp.y / tmp.z);
     }
+
+    public static PMatrix3D getCamMarkerTransform(PApplet pa,
+            String cameraConfig,
+            String artConfig,
+            MarkerBoard board,
+            String imageFilename) throws FileNotFoundException {
+
+        /////////////// Load the inital image  ////////////////
+        IplImage imageSrc = opencv_highgui.cvLoadImage(imageFilename);
+
+        // Check the distorsions if available ? 
+        return getCamMarkerTransform(pa, cameraConfig, artConfig, board, imageSrc);
+    }
+
+    public static PMatrix3D getCamMarkerTransform(PApplet pa,
+            String cameraConfig,
+            String artConfig,
+            MarkerBoard board,
+            IplImage imageSrc) throws FileNotFoundException {
+
+        // TODO: errors instead of assert
+//        File f1 = new File(filename);
+//        assert (f1.exists());
+        String boardName = board.getFileName();
+        File f2 = new File(boardName);
+
+        if (!f2.exists()) {
+            throw new FileNotFoundException("MarkerBoard file not found.");
+        }
+
+        ProjectiveDeviceP cam;
+        try {
+            cam = ProjectiveDeviceP.loadCameraDevice(cameraConfig, 0);
+        } catch (Exception e) {
+            throw new FileNotFoundException("Camera configuration file error. " + e);
+        }
+
+        // TODO: check this...
+        Camera.convertARParams(pa, cameraConfig, artConfig);
+
+        assert (imageSrc.width() == cam.getWidth());
+        assert (imageSrc.height() == cam.getHeight());
+
+        ///////////// Load ARToolkit parameters /////////////
+        MultiTracker tracker = new MultiTracker(cam.getWidth(), cam.getHeight());
+
+        int pixfmt = ARToolKitPlus.PIXEL_FORMAT_BGR;
+        tracker.setPixelFormat(pixfmt);
+        tracker.setBorderWidth(0.125f);
+//        tracker.activateAutoThreshold(true);
+        tracker.activateAutoThreshold(false);
+        tracker.setUndistortionMode(ARToolKitPlus.UNDIST_NONE);
+        tracker.setPoseEstimator(ARToolKitPlus.POSE_ESTIMATOR_RPP);
+        tracker.setMarkerMode(ARToolKitPlus.MARKER_ID_BCH);
+        tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_FULL_RES);
+        tracker.setUseDetectLite(false);
+
+        if (!tracker.init(artConfig, board.getFileName(), 1.0f, 1000.f)) {
+            System.out.println("ERROR at ARToolkIT");
+            // throw new Exception("Init ARTOOLKIT Error" + board.getFileName() + " " + board.getName());
+        }
+
+        float[] t = new float[16];
+        for (int i = 0; i < 3; i++) {
+            t[12 + i] = 0;
+        }
+        t[15] = 0;
+
+        // Find the markers
+        tracker.calc(imageSrc.imageData());
+
+        if (tracker.getNumDetectedMarkers() <= 0) {
+            return null;
+        }
+
+        ARToolKitPlus.ARMultiMarkerInfoT multiMarkerConfig = tracker.getMultiMarkerConfig();
+
+        for (int i = 0; i < 12; i++) {
+            t[i] = (float) multiMarkerConfig.trans().get(i);
+        }
+
+        return new PMatrix3D(t[0], t[1], t[2], t[3],
+                t[4], t[5], t[6], t[7],
+                t[8], t[9], t[10], t[11],
+                0, 0, 0, 1);
+    }
+
 }

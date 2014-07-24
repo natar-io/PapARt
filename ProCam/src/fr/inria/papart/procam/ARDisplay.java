@@ -7,6 +7,8 @@ package fr.inria.papart.procam;
 import processing.opengl.PGraphicsOpenGL;
 import processing.opengl.Texture;
 import com.googlecode.javacv.ProjectiveDevice;
+import fr.inria.papart.drawingapp.DrawUtils;
+import fr.inria.papart.exceptions.BoardNotDetectedException;
 import java.util.ArrayList;
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
@@ -39,6 +41,7 @@ public class ARDisplay {
     // Projector information
     protected ProjectiveDevice proj;
     protected PMatrix3D projIntrinsicsP3D, projExtrinsicsP3D, projExtrinsicsP3DInv;
+    protected boolean hasExtrinsics = false;
     // Resolution
     protected int frameWidth, frameHeight;
     // OpenGL information
@@ -52,10 +55,26 @@ public class ARDisplay {
     protected float zfar;
     protected ProjectiveDeviceP pdp;
     protected float resolution = 1;
+    private Camera camera = null;
+    protected boolean registered = false;
 
     public ARDisplay(PApplet parent, String calibrationYAML,
             int width, int height, float near, float far) {
         this(parent, calibrationYAML, width, height, near, far, 1);
+    }
+
+    public ARDisplay(PApplet parent, Camera camera, float near, float far, float resolution) {
+
+        this.frameWidth = camera.width;
+        this.frameHeight = camera.height;
+        this.parent = parent;
+        this.znear = near;
+        this.zfar = far;
+        this.resolution = resolution;
+        this.camera = camera;
+
+        loadInternalParams(camera.getProjectiveDevice());
+        init();
     }
 
     public ARDisplay(PApplet parent, String calibrationYAML,
@@ -69,14 +88,40 @@ public class ARDisplay {
 
         this.resolution = resolution;
 
-        // TODO: BROKEN: No more AA in Processing2 ! 
-        this.graphics = (PGraphicsOpenGL) parent.createGraphics((int) (width * resolution), (int) (height * resolution), PApplet.OPENGL);// true, AA);
-//        this.graphics = (PGraphicsOpenGL) parent.createGraphics(width ,height, PApplet.OPENGL);// true, AA);
-        screens = new ArrayList<Screen>();
         loadInternalParams(calibrationYAML);
-        initProjection();
+        init();
 
+    }
+
+    private void init() {
+        this.graphics = (PGraphicsOpenGL) parent.createGraphics((int) (frameWidth * resolution),
+                (int) (frameHeight * resolution), PApplet.OPENGL);
+        screens = new ArrayList<Screen>();
+        initProjection();
         initDistortMap();
+        automaticMode();
+    }
+
+    public void automaticMode() {
+        registered = true;
+        // Before drawing. 
+        parent.registerMethod("pre", this);
+        // At the end of drawing.
+        parent.registerMethod("draw", this);
+    }
+
+    public void manualMode() {
+        registered = false;
+        parent.unregisterMethod("draw", this);
+        parent.unregisterMethod("pre", this);
+    }
+
+    public void registerAgain() {
+        if (!registered) {
+            return;
+        }
+        manualMode();
+        automaticMode();
     }
 
     protected void loadInternalParams(String calibrationYAML) {
@@ -84,19 +129,23 @@ public class ARDisplay {
         try {
 //            pdp = ProjectiveDeviceP.loadProjectiveDevice(calibrationYAML, 0);
             pdp = ProjectiveDeviceP.loadCameraDevice(calibrationYAML, 0);
-
-            projIntrinsicsP3D = pdp.getIntrinsics();
-            projExtrinsicsP3D = pdp.getExtrinsics();
-            if (projExtrinsicsP3D != null) {
-                projExtrinsicsP3DInv = projExtrinsicsP3D.get();
-                projExtrinsicsP3DInv.invert();
-            }
-
-            proj = pdp.getDevice();
-
+            loadInternalParams(pdp);
         } catch (Exception e) {
-            System.out.println("ARDisplay, Error !!" + e);
+            System.out.println("ARDisplay, Error at loading internals !!" + e);
         }
+    }
+
+    protected void loadInternalParams(ProjectiveDeviceP pdp) {
+        // Load the camera parameters.
+//            pdp = ProjectiveDeviceP.loadProjectiveDevice(calibrationYAML, 0);
+
+        projIntrinsicsP3D = pdp.getIntrinsics();
+        projExtrinsicsP3D = pdp.getExtrinsics();
+        if (projExtrinsicsP3D != null) {
+            projExtrinsicsP3DInv = projExtrinsicsP3D.get();
+            projExtrinsicsP3DInv.invert();
+        }
+        proj = pdp.getDevice();
     }
 
     private void initProjection() {
@@ -132,6 +181,32 @@ public class ARDisplay {
         this.graphics.endDraw();
     }
 
+    public void pre() {
+        /* Clear everything */
+        this.clear();
+//        display.drawScreensOver();
+
+//        this.beginDraw().background(0);
+//        this.endDraw();
+    }
+
+    public void draw() {
+
+        drawScreensOver();
+
+        parent.noStroke();
+
+        if (camera != null) {
+            parent.image(camera.getPImage(), 0, 0, frameWidth, frameHeight);
+//            ((PGraphicsOpenGL) (parent.g)).image(camera.getPImage(), 0, 0, frameWidth, frameHeight);
+        }
+
+        // -> TODO: FIXME Distort transparency ERROR !
+        DrawUtils.drawImage((PGraphicsOpenGL) parent.g,
+                this.distort(true),
+                0, 0, frameWidth, frameHeight);
+    }
+
     /**
      * graphics.modelview.apply(projExtrinsicsP3D);
      *
@@ -140,6 +215,7 @@ public class ARDisplay {
     public PMatrix3D getExtrinsics() {
         return projExtrinsicsP3D;
     }
+
     /**
      * graphics.modelview.apply(projExtrinsicsP3D);
      *
@@ -152,10 +228,18 @@ public class ARDisplay {
     /* *
      *  For hand-made calibration exercices. 
      */
-    public void setIntrinsics(PMatrix3D intr){
-
+    public void setIntrinsics(PMatrix3D intr) {
         projIntrinsicsP3D = intr;
         initProjection();
+    }
+
+    /* *
+     *  For custom calibration. 
+     */
+    public void setExtrinsics(PMatrix3D extr) {
+        projExtrinsicsP3D = extr;
+        projExtrinsicsP3DInv = extr.get();
+        projExtrinsicsP3DInv.invert();
     }
 
     /**
@@ -165,8 +249,15 @@ public class ARDisplay {
      * @param proj
      */
     private void initDistortMap() {
-        lensFilter = parent.loadShader("distortFrag.glsl", "distortVert.glsl"); // projDistort.xml");
+//        lensFilter = parent.loadShader("distortFrag.glsl", "distortVert.glsl"); // projDistort.xml");
+        lensFilter = parent.loadShader(ARDisplay.class.getResource("distortFrag.glsl").toString(),
+                ARDisplay.class.getResource("distortVert.glsl").toString());
 
+        System.out.println("Shader file " + ARDisplay.class.getResource("distortFrag.glsl").getFile());
+        System.out.println("Shader file " + ARDisplay.class.getResource("distortFrag.glsl").toString());
+//        System.out.println("Shader file " + this.getClass().getResource("distortFrag.glsl").getPath());
+
+//        InputStream in = getClass().getResourceAsStream("bg.png");
 //        mapImg = parent.createImage(graphics.width, graphics.height, PApplet.RGB);
         mapImg = parent.createImage((int) (resolution * frameWidth), (int) (resolution * frameHeight), PApplet.RGB);
 
@@ -228,6 +319,12 @@ public class ARDisplay {
         return this.pdp;
     }
 
+    public void clear() {
+        this.graphics.beginDraw();
+        this.graphics.clear();
+        this.graphics.endDraw();
+    }
+
     public PGraphicsOpenGL beginDraw() {
 
         ////////  3D PROJECTION  //////////////
@@ -240,6 +337,30 @@ public class ARDisplay {
 
         loadModelView();
 
+        return this.graphics;
+    }
+
+    public PGraphicsOpenGL beginDrawOnScreen(Screen screen) throws BoardNotDetectedException {
+
+        // Get the markerboard viewed by the camera
+        PMatrix3D camBoard = screen.getPos();
+        if (camBoard == null) {
+            throw new BoardNotDetectedException("Board not detected, at beginDrawOnScreen.");
+        }
+
+        this.beginDraw();
+
+        if (this.hasExtrinsics) {
+            camBoard.preApply(getExtrinsics());
+        }
+
+        this.graphics.applyMatrix(camBoard);
+
+//        // Place the projector to his projection respective to the origin (camera here)
+//        this.graphics.modelview.apply(getExtrinsics());
+//
+//        // Goto to the screen position
+//        this.graphics.modelview.apply(screen.getPos());
         return this.graphics;
     }
 
@@ -272,7 +393,6 @@ public class ARDisplay {
      * @return
      */
     public PGraphicsOpenGL distort(boolean distort) {
-
         if (distort) {
             graphics.filter(lensFilter);
             return graphics;
@@ -287,6 +407,12 @@ public class ARDisplay {
         this.endDraw();
     }
 
+    public void drawScreensOver() {
+        this.beginDraw();
+        renderScreens();
+        this.endDraw();
+    }
+
     public void renderScreens() {
 
         for (Screen screen : screens) {
@@ -296,7 +422,7 @@ public class ARDisplay {
             this.graphics.pushMatrix();
 
             // Goto to the screen position
-            this.graphics.modelview.apply(screen.getPos());
+            this.graphics.applyMatrix(screen.getPos());
             // Draw the screen image
 
             // If it is openGL renderer, use the standard  (0, 0) is bottom left
@@ -319,7 +445,6 @@ public class ARDisplay {
         }
     }
 
- 
     // We consider px and py are normalized screen or subScreen space... 
     public PVector projectPointer(Screen screen, float px, float py) {
         float x = px * 2 - 1;
@@ -335,6 +460,7 @@ public class ARDisplay {
         invProjModelView1.scale(1, 1, -1);
         invProjModelView1.invert();
 
+        // Ray from Origin..
         PVector p1 = new PVector(x, y, -1f);
         PVector p2 = new PVector(x, y, 1f);
         PVector out1 = new PVector();
@@ -347,6 +473,7 @@ public class ARDisplay {
         Ray3D ray = new Ray3D(new Vec3D(out1.x, out1.y, out1.z),
                 new Vec3D(out2.x, out2.y, out2.z));
 
+        // 3D intersection with the screen plane. 
         ReadonlyVec3D inter = screen.plane.getIntersectionWithRay(ray);
 //        dist = screen.plane.intersectRayDistance(ray);
 
@@ -354,9 +481,10 @@ public class ARDisplay {
             return null;
         }
 
+        // 3D -> 2D transformation
         Vec3D res = screen.transformationProjPaper.applyTo(inter);
         PVector out = new PVector(res.x() / res.z(),
-                1f- (res.y() / res.z()), 1);
+                1f - (res.y() / res.z()), 1);
         return out;
     }
 

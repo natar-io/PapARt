@@ -7,12 +7,14 @@ package fr.inria.papart.procam;
 import com.googlecode.javacv.cpp.opencv_imgproc.*;
 
 import com.googlecode.javacv.CameraDevice;
+import com.googlecode.javacv.CameraDevice.Settings;
 import com.googlecode.javacv.ProjectorDevice;
 import com.googlecode.javacv.cpp.ARToolKitPlus.Tracker;
 import com.googlecode.javacv.cpp.opencv_imgproc;
 import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.opencv_calib3d.*;
 import java.awt.image.BufferedImage;
+import java.io.FileNotFoundException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.ByteBuffer;
@@ -22,6 +24,8 @@ import java.nio.ShortBuffer;
 import java.util.Arrays;
 import javax.media.opengl.GL;
 import processing.core.*;
+import static processing.core.PConstants.ARGB;
+import static processing.core.PConstants.RGB;
 import processing.opengl.Texture;
 import toxi.geom.Vec3D;
 
@@ -44,9 +48,81 @@ public class Utils {
         }
         return target;
     }
-    
-    static public Vec3D toVec(PVector p){
+
+    static public Vec3D toVec(PVector p) {
         return new Vec3D(p.x, p.y, p.z);
+    }
+
+    // TODO:  throws ...
+    public static void savePMatrix3D(PApplet pa, PMatrix3D mat, String filename) {
+        String[] lines = new String[16];
+
+        lines[0] = Float.toString(mat.m00);
+        lines[1] = Float.toString(mat.m01);
+        lines[2] = Float.toString(mat.m02);
+        lines[3] = Float.toString(mat.m03);
+        lines[4] = Float.toString(mat.m10);
+        lines[5] = Float.toString(mat.m11);
+        lines[6] = Float.toString(mat.m12);
+        lines[7] = Float.toString(mat.m13);
+        lines[8] = Float.toString(mat.m20);
+        lines[9] = Float.toString(mat.m21);
+        lines[10] = Float.toString(mat.m22);
+        lines[11] = Float.toString(mat.m23);
+        lines[12] = Float.toString(mat.m30);
+        lines[13] = Float.toString(mat.m31);
+        lines[14] = Float.toString(mat.m32);
+        lines[15] = Float.toString(mat.m33);
+
+        pa.saveStrings(filename, lines);
+    }
+    
+    
+    public static void addPMatrix3D(PMatrix3D src, PMatrix3D toAdd) {
+        src.m00 += toAdd.m00;
+        src.m01 += toAdd.m01;
+        src.m02 += toAdd.m02;
+        src.m03 += toAdd.m03;
+
+        src.m10 += toAdd.m10;
+        src.m11 += toAdd.m11;
+        src.m12 += toAdd.m12;
+        src.m13 += toAdd.m13;
+        
+        src.m20 += toAdd.m20;
+        src.m21 += toAdd.m21;
+        src.m22 += toAdd.m22;
+        src.m23 += toAdd.m23;
+        
+        src.m30 += toAdd.m30;
+        src.m31 += toAdd.m31;
+        src.m32 += toAdd.m32;
+        src.m33 += toAdd.m33;
+        
+  }
+        
+        
+
+  static public void scaleMat(PMatrix3D mat, float scale) {
+    //applscale(scale, 0, 0, 0,  0, scale, 0, 0,  0, 0, scale, 0,  0, 0, 0, 1);
+    mat.m00 *= scale;  mat.m01 *= scale;  mat.m02 *= scale; mat.m03 *= scale;
+    mat.m10 *= scale;  mat.m11 *= scale;  mat.m12 *= scale; mat.m13 *= scale;
+    mat.m20 *= scale;  mat.m21 *= scale;  mat.m22 *= scale; mat.m23 *= scale;
+    mat.m30 *= scale;  mat.m31 *= scale;  mat.m32 *= scale; mat.m33 *= scale;
+  }
+
+
+    public static PMatrix3D loadPMatrix3D(PApplet pa, String filename) throws FileNotFoundException {
+        String[] lines = pa.loadStrings(filename);
+        if (lines == null) {
+            throw new FileNotFoundException(filename);
+        }
+
+        PMatrix3D mat = new PMatrix3D(Float.parseFloat(lines[0]), Float.parseFloat(lines[1]), Float.parseFloat(lines[2]), Float.parseFloat(lines[3]),
+                Float.parseFloat(lines[4]), Float.parseFloat(lines[5]), Float.parseFloat(lines[6]), Float.parseFloat(lines[7]),
+                Float.parseFloat(lines[8]), Float.parseFloat(lines[9]), Float.parseFloat(lines[10]), Float.parseFloat(lines[11]),
+                Float.parseFloat(lines[12]), Float.parseFloat(lines[13]), Float.parseFloat(lines[14]), Float.parseFloat(lines[15]));
+        return mat;
     }
 
     static public IplImage createImageFrom(IplImage imgIn, PImage Pout) {
@@ -57,6 +133,29 @@ public class Utils {
         IplImage imgOut = cvCreateImage(outSize, // size
                 imgIn.depth(), // depth
                 imgIn.nChannels());
+//        imgIn.w
+        return imgOut;
+    }
+
+    static public IplImage createImageFrom(PImage in) {
+        // TODO: avoid this creation !!
+        CvSize outSize = new CvSize();
+        outSize.width(in.width);
+        outSize.height(in.height);
+
+        IplImage imgOut = null;
+        if (in.format == RGB) {
+            imgOut = cvCreateImage(outSize, // size
+                    IPL_DEPTH_8U, // depth
+                    3);
+        }
+
+        if (in.format == ARGB) {
+            imgOut = cvCreateImage(outSize, // size
+                    IPL_DEPTH_8U, // depth
+                    4);
+        }
+
 //        imgIn.w
         return imgOut;
     }
@@ -133,7 +232,6 @@ public class Utils {
 //        }
 //        return tex;
 //    }
-
     static public void updateTexture(IplImage img, Texture tex) {
 
         System.out.println("Update Texture broken ? May Require CustomTexture...");
@@ -229,15 +327,14 @@ public class Utils {
 //        if (conversionCount % 600 == 0) {
 //            System.gc();
 //        }
-
         assert (img.width() == ret.width);
         assert (img.height() == ret.height);
-//        BufferedImage bimg = new BufferedImage();
+       BufferedImage bimg;
+       //= new BufferedImage();
 
         if (img.nChannels() == 3) {
 
             ByteBuffer buff = img.getByteBuffer();
-
 
             //  PImage ret = new PImage(img.width(), img.height(), PApplet.RGB);
             ret.loadPixels();
@@ -281,7 +378,6 @@ public class Utils {
             }
         }
 
-
         if (img.nChannels() == 1) {
 
             // TODO: no more allocations. 
@@ -300,7 +396,6 @@ public class Utils {
 //                            | (buff.get(i) & 0xFF);
             }
 
-
             ////////////// Kinect Depth //////////////
             //                // TODO: no more allocations. 
 //                ByteBuffer buff = img.getByteBuffer();
@@ -318,11 +413,7 @@ public class Utils {
 ////                            | (buff.get(i) & 0xFF) << 8
 ////                            | (buff.get(i) & 0xFF);
 //                }
-
         }
-
-
-
 
 //        buff = null;
         ret.updatePixels();
@@ -336,7 +427,6 @@ public class Utils {
 //        if (conversionCount % 30 == 0) {
 //            System.gc();
 //        }
-
         assert (img.width() == ret.width);
         assert (img.height() == ret.height);
 //        BufferedImage bimg = new BufferedImage();
@@ -407,30 +497,8 @@ public class Utils {
      *
      * Deprecated
      */
-    static public void PImageToIplImage(IplImage img, PApplet applet, boolean RGB, PImage ret) {
-
-        ByteBuffer buff = img.getByteBuffer();
-
-        ret.loadPixels();
-        if (RGB) {
-            for (int i = 0; i < img.width() * img.height(); i++) {
-                int offset = i * 3;
-                ret.pixels[i] = (buff.get(offset) & 0xFF) << 16
-                        | (buff.get(offset + 1) & 0xFF) << 8
-                        | (buff.get(offset + 2) & 0xFF);
-
-            }
-        } else {
-            for (int i = 0; i < img.width() * img.height(); i++) {
-                int offset = i * 3;
-                ret.pixels[i] = (buff.get(offset + 2) & 0xFF) << 16
-                        | (buff.get(offset + 1) & 0xFF) << 8
-                        | (buff.get(offset) & 0xFF);
-
-            }
-
-        }
-        ret.updatePixels();
+    static public void PImageToIplImage(PImage src, IplImage dst) {
+        dst.copyFrom((BufferedImage) src.getImage());
     }
 
     static public void PImageToIplImage2(IplImage img, PApplet applet, boolean RGB, PImage ret) {
@@ -504,7 +572,7 @@ public class Utils {
         return;
     }
 
-    static public void convertARParam2(PApplet pa, String inputYAML, String outputDAT, int w, int h) throws Exception {
+    static public void convertARParam2(PApplet pa, String inputYAML, String outputDAT) throws Exception {
 
         CameraDevice cam = null;
 
@@ -512,6 +580,9 @@ public class Utils {
         if (c.length > 0) {
             cam = c[0];
         }
+        Settings camSettings = (com.googlecode.javacv.CameraDevice.Settings) cam.getSettings();
+        int w = camSettings.getImageWidth();
+        int h = camSettings.getImageHeight();
 
         double[] proj = cam.cameraMatrix.get();
         double[] distort = cam.distortionCoeffs.get();
@@ -522,28 +593,26 @@ public class Utils {
 
         StringBuffer sb = new StringBuffer();
 
-
 //        byte[] buf = new byte[SIZE_OF_PARAM_SET];
 //        ByteBuffer bb = ByteBuffer.wrap(buf);
 //        bb.order(ByteOrder.BIG_ENDIAN);
-
 //        bb.putInt(w);
 //        bb.putInt(h);
-
         // From ARToolkitPlus...
 //http://www.vision.caltech.edu/bouguetj/calib_doc/htmls/parameters.html
         sb.append("ARToolKitPlus_CamCal_Rev02\n");
-        sb.append(w + " " + h + " ");
+        sb.append(w).append(" ").append(h).append(" ");
 
         // cx cy  fx fy  
-        sb.append(proj[2] + " " + proj[5] + " " + proj[0] + " " + proj[4] + " ");
+        sb.append(proj[2]).append(" ").append(proj[5])
+                .append(" ").append(proj[0]).
+                append(" ").append(proj[4]).append(" ");
 
         // alpha_c ?  
 //        sb.append("0 ");
-
         // kc(1 - x)  -> 6 values
         for (int i = 0; i < distort.length; i++) {
-            sb.append(distort[i] + " ");
+            sb.append(distort[i]).append(" ");
         }
         for (int i = distort.length; i < 6; i++) {
             sb.append("0 ");
@@ -552,14 +621,9 @@ public class Utils {
         // undist iterations
         sb.append("10\n");
 
-//        System.out.print(sb);
-
         pw.print(sb);
         pw.flush();
         pw.close();
-
-        pa.println("Conversion done !");
-        return;
     }
 
     static public void convertProjParam(PApplet pa, String inputYAML, String outputDAT, int w, int h) throws Exception {
@@ -597,7 +661,6 @@ public class Utils {
         bb.putDouble(projM[5]);
         bb.putDouble(0);
         bb.putDouble(1d);
-
 
         os.write(buf);
         os.flush();

@@ -6,7 +6,7 @@ package fr.inria.papart.procam;
 
 import processing.opengl.PGraphicsOpenGL;
 import fr.inria.papart.drawingapp.Button;
-import fr.inria.papart.multitouchKinect.TouchElement;
+import fr.inria.papart.multitouchKinect.Touch;
 import fr.inria.papart.multitouchKinect.TouchInput;
 import java.util.ArrayList;
 import processing.core.PApplet;
@@ -14,7 +14,7 @@ import processing.core.PVector;
 
 public class PaperTouchScreen extends PaperScreen {
 
-    protected TouchElement touch;
+    protected ArrayList<Touch> touchList;
     protected TouchInput touchInput;
     protected ArrayList<Button> buttons;
     public boolean isTranslated = false;
@@ -36,10 +36,6 @@ public class PaperTouchScreen extends PaperScreen {
     }
 
     ///// Load ressources ////////
-    @Override
-    public void init() {
-    }
-
     @Override
     public void pre() {
         super.pre();
@@ -70,15 +66,16 @@ public class PaperTouchScreen extends PaperScreen {
             System.err.println("UpdateTouch on disabled screen.");
             return;
         }
-        
+
         screen.computeScreenPosTransform();
-        touch = touchInput.projectTouchToScreen(screen, projector,
+        touchList = touchInput.projectTouchToScreen(screen, projector,
                 true, true);
 
-        if (!touch.position2D.isEmpty()) {
-            for (PVector v : touch.position2D) {
-                checkButtons(v.x * drawingSize.x,
-                        v.y * drawingSize.y);
+        if (!touchList.isEmpty()) {
+            for (Touch t : touchList) {
+                PVector p = t.p;
+                checkButtons(p.x * drawingSize.x,
+                        p.y * drawingSize.y);
             }
         }
 
@@ -109,13 +106,13 @@ public class PaperTouchScreen extends PaperScreen {
 
     protected void drawTouch(PGraphicsOpenGL g, int ellipseSize) {
 
-        if (!touch.position2D.isEmpty()) {
-            for (PVector v : touch.position2D) {
-                PVector p1 = new PVector(v.x * drawingSize.x,
-                        v.y * drawingSize.y);
+        if (!touchList.isEmpty()) {
+            for (Touch t : touchList) {
+                PVector p = t.p;
+                PVector p1 = new PVector(p.x * drawingSize.x,
+                        p.y * drawingSize.y);
                 g.ellipse(p1.x, p1.y, ellipseSize, ellipseSize);
             }
         }
-
     }
 }

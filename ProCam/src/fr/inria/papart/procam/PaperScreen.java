@@ -4,10 +4,13 @@
  */
 package fr.inria.papart.procam;
 
+import fr.inria.papart.exceptions.BoardNotDetectedException;
+import java.lang.reflect.AccessibleObject;
 import processing.opengl.PGraphicsOpenGL;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
+import processing.event.KeyEvent;
 
 public class PaperScreen {
 
@@ -18,6 +21,9 @@ public class PaperScreen {
     protected ARDisplay projector;
     protected float resolution;
     protected PApplet parent;
+    PGraphicsOpenGL currentGraphics;
+
+    protected boolean isDrawingOnScreen;
 
     public PaperScreen(PApplet parent,
             MarkerBoard board,
@@ -25,7 +31,6 @@ public class PaperScreen {
             float resolution,
             Camera cam,
             ARDisplay proj) {
-
         this.parent = parent;
         this.board = board;
         this.drawingSize = size.get();
@@ -41,14 +46,20 @@ public class PaperScreen {
         }
 
         screen.setAutoUpdatePos(cam, board);
-        board.setDrawingMode(cameraTracking, true, 4);
+//        board.setDrawingMode(cameraTracking, true, 4);
+//        board.setFiltering(cameraTracking, 30, 4);
+
+        board.setDrawingMode(cameraTracking, true, 10);
         board.setFiltering(cameraTracking, 30, 4);
 
         parent.registerMethod("pre", this);
+        parent.registerMethod("draw", this);
+        projector.registerAgain();
     }
 
-    ///// Load ressources ////////
-    public void init() {
+    ///// Load ressources -> to remove ?////////
+    protected void init() {
+
     }
 
     public void pre() {
@@ -58,8 +69,8 @@ public class PaperScreen {
     public PGraphicsOpenGL getGraphics() {
         return screen.getGraphics();
     }
-    
-    public Screen getScreen(){
+
+    public Screen getScreen() {
         return this.screen;
     }
 
@@ -76,6 +87,15 @@ public class PaperScreen {
         screenPos.translate(x, y, z);
     }
 
+    public PVector getLocationVector() {
+        PMatrix3D p = screen.getPos();
+        return new PVector(p.m03, p.m13, p.m23);
+    }
+
+    public PMatrix3D getLocation() {
+        return this.screen.getPos();
+    }
+
     // TODO: check this !
     public PVector getScreenPos() {
         return board.getBoardLocation(cameraTracking, projector);
@@ -89,9 +109,35 @@ public class PaperScreen {
         pg.endDraw();
     }
 
+    public PGraphicsOpenGL beginDraw2D() {
+        screen.setDrawing(true);
+        PGraphicsOpenGL g = screen.getGraphics();
+        g.beginDraw();
+        g.scale(resolution);
+        this.isDrawingOnScreen = true;
+        return g;
+    }
+
+    public PGraphicsOpenGL beginDraw3D() throws BoardNotDetectedException {
+        screen.setDrawing(false);
+        PGraphicsOpenGL g = projector.beginDrawOnScreen(this.screen);
+        this.isDrawingOnScreen = false;
+        this.currentGraphics = g;
+//        this.screen.getPos().print();
+        return g;
+    }
+
+    public PGraphicsOpenGL beginDraw3DProjected(PVector userPos) {
+        screen.setDrawing(true);
+        PGraphicsOpenGL g = screen.getGraphics();
+        g.beginDraw();
+        this.isDrawingOnScreen = true;
+        screen.initDraw(userPos);
+        return g;
+    }
+
     // Example Draw... to check ? Or put it as begin / end ...
     public void draw() {
-
         screen.setDrawing(true);
         PGraphicsOpenGL g = screen.getGraphics();
         g.beginDraw();
@@ -103,9 +149,32 @@ public class PaperScreen {
 
     }
 
-    public void keyPressed() {
+    /**
+     * *
+     * Works only in 3D mode with beginDraw3D().
+     *
+     * @param ps PaperScreen to go to.
+     */
+    public void goTo(PaperScreen ps, PGraphicsOpenGL graphics) {
+
+        if (this.isDrawingOnScreen == true) {
+            throw new RuntimeException("Impossible to draw on another board. You need to drawi using beginDraw3D() to do so.");
+        }
+
+        if (this.currentGraphics != graphics) {
+            throw new RuntimeException("The given graphics context is not valid. Use the one given by beginDraw3D().");
+        }
+
+        // get the location of this board...
+        PMatrix3D loc = this.getLocation().get();
+        loc.invert();
+        loc.apply(ps.getLocation());
+
+        // Sun POV
+        currentGraphics.applyMatrix(loc);
     }
 
-    public void keyReleased() {
+    public void keyEvent(KeyEvent e) {
+
     }
 }

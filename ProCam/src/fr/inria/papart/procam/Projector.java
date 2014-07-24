@@ -33,9 +33,9 @@ public class Projector extends ARDisplay {
     }
 
     public Projector(PApplet parent, String calibrationYAML,
-            int width, int height, float near, float far, int AA) {
+            int width, int height, float near, float far, int res) {
 
-        super(parent, calibrationYAML, width, height, near, far, AA);
+        super(parent, calibrationYAML, width, height, near, far, res);
     }
 
     @Override
@@ -50,6 +50,7 @@ public class Projector extends ARDisplay {
             projExtrinsicsP3DInv = projExtrinsicsP3D.get();
             projExtrinsicsP3DInv.invert();
             proj = pdp.getDevice();
+            this.hasExtrinsics = true;
 
         } catch (Exception e) {
             System.out.println("Error !!" + e);
@@ -57,25 +58,21 @@ public class Projector extends ARDisplay {
 
     }
 
-    public PGraphicsOpenGL beginDrawOnScreen(Screen screen) {
-
-        this.beginDraw();
-
-        ///////// New version /////////////
-        // Get the markerboard viewed by the camera
-        PMatrix3D camBoard = screen.getPos();
-        camBoard.preApply(getExtrinsics());
-        this.graphics.modelview.apply(camBoard);
-
-//        // Place the projector to his projection respective to the origin (camera here)
-//        this.graphics.modelview.apply(getExtrinsics());
-//
-//        // Goto to the screen position
-//        this.graphics.modelview.apply(screen.getPos());
-        return this.graphics;
+    // TODO: test & validate this. !
+    public void pre() {
+        this.clear();
+        this.graphics.background(0);
     }
 
-//   @deprecated
+    public void draw() {
+        drawScreensOver();
+        parent.noStroke();
+        DrawUtils.drawImage((PGraphicsOpenGL) parent.g,
+                this.distort(true),
+                0, 0, this.frameWidth, this.frameHeight);
+    }
+
+    //   @deprecated
     public PGraphicsOpenGL beginDrawOnBoard(Camera camera, MarkerBoard board) {
 
         this.beginDraw();
@@ -84,7 +81,7 @@ public class Projector extends ARDisplay {
         // Get the markerboard viewed by the camera
         PMatrix3D camBoard = board.getTransfoMat(camera);
         camBoard.preApply(getExtrinsics());
-        this.graphics.modelview.apply(camBoard);
+        this.graphics.applyMatrix(camBoard);
 
         ////////// old Version  //////////////
 //        // Place the projector to his projection respective to the origin (camera here)
@@ -94,26 +91,19 @@ public class Projector extends ARDisplay {
 //        this.graphics.modelview.apply(board.getTransfoMat(camera));
         return this.graphics;
     }
+//   @deprecated
 
     public void drawOnBoard(Camera camera, MarkerBoard board) {
         loadModelView();
         PMatrix3D camBoard = board.getTransfoMat(camera);
         camBoard.preApply(getExtrinsics());
-        this.graphics.modelview.apply(camBoard);
-    }
-
-    public void endDrawOnScreen() {
-
-        // Put the projection matrix back to normal
-        unLoadProjection();
-        this.graphics.endDraw();
+        this.graphics.applyMatrix(camBoard);
     }
 
     @Override
     public void drawScreens() {
         this.beginDraw();
         this.graphics.clear();
-        this.graphics.background(0);
         drawScreensProjection();
         this.endDraw();
     }
@@ -121,13 +111,12 @@ public class Projector extends ARDisplay {
     public void drawScreensLegacy() {
         this.beginDraw();
         this.graphics.clear();
-        this.graphics.background(0);
         drawScreensProjectionLegacy();
         this.endDraw();
     }
 
+    @Override
     public void drawScreensOver() {
-
         this.beginDraw();
         drawScreensProjection();
         this.endDraw();
@@ -135,7 +124,7 @@ public class Projector extends ARDisplay {
 
     public void drawScreensProjection() {
         // Place the projector to his projection respective to the origin (camera here)
-        this.graphics.modelview.apply(getExtrinsics());
+        this.graphics.applyMatrix(getExtrinsics());
 
         super.renderScreens();
     }
@@ -143,7 +132,7 @@ public class Projector extends ARDisplay {
     private void drawScreensProjectionLegacy() {
 
         // Place the projector to his projection respective to the origin (camera here)
-        this.graphics.modelview.apply(getExtrinsics());
+        this.graphics.applyMatrix(getExtrinsics());
 
         for (Screen screen : screens) {
             if (!screen.isDrawing()) {
@@ -152,7 +141,8 @@ public class Projector extends ARDisplay {
             this.graphics.pushMatrix();
 
             // Goto to the screen position
-            this.graphics.modelview.apply(screen.getPos());
+//            this.graphics.modelview.apply(screen.getPos());
+            this.graphics.applyMatrix(screen.getPos());
             // Draw the screen image
 
             this.graphics.image(screen.getTexture(), 0, 0, screen.getSize().x, screen.getSize().y);
@@ -210,7 +200,7 @@ public class Projector extends ARDisplay {
         PVector out = new PVector(res.x() / res.z(),
                 res.y() / res.z(), 1);
         out.y = 1 - out.y;
-        
+
         // Second possiblity... (WORKING)  Use directly the 3D location instead of the plane.
 //     PVector interP = new PVector(inter.x(), inter.y(), inter.z());
 //        PVector out3 = new PVector();
@@ -222,7 +212,6 @@ public class Projector extends ARDisplay {
 //
 //        PVector diff = PVector.sub(out, out3);
 //        System.out.println("Diff " + diff);
-
 //        out3.y = 1 - out3.y;
         return out;
     }
