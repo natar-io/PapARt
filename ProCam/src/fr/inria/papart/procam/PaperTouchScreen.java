@@ -69,10 +69,13 @@ public class PaperTouchScreen extends PaperScreen {
 
         screen.computeScreenPosTransform();
         touchList = touchInput.projectTouchToScreen(screen, projector,
-                true, true);
+                true, true, true, true, true);
 
         if (!touchList.isEmpty()) {
             for (Touch t : touchList) {
+                if (t.is3D) {
+                    continue;
+                }
                 PVector p = t.p;
                 checkButtons(p.x * drawingSize.x,
                         p.y * drawingSize.y);
@@ -111,6 +114,12 @@ public class PaperTouchScreen extends PaperScreen {
                 PVector p = t.p;
                 PVector p1 = new PVector(p.x * drawingSize.x,
                         p.y * drawingSize.y);
+                if (t.is3D) {
+                    g.fill(185, 142, 62);
+                } else {
+                    g.fill(58, 71, 198);
+                }
+
                 g.ellipse(p1.x, p1.y, ellipseSize, ellipseSize);
             }
         }

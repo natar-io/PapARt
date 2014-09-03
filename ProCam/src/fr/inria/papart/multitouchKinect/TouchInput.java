@@ -304,7 +304,7 @@ public class TouchInput {
         if (is2D && !touchPoint2D.isEmpty()) {
             for (TouchPoint tp : touchPoint2D) {
 
-                Touch tl = new Touch();
+                Touch touch = new Touch();
 
                 // TouchPoint -> Normalized (screen) coordinates
                 Vec3D vec = tp.v;
@@ -349,32 +349,32 @@ public class TouchInput {
                     continue;
                 }
 
-                tl.p = null;
+                touch.p = null;
                 // inside the paper sheet 	      
                 if (TouchDetection.isInside(res, 0, 1) || isAll) {
                     PVector p = new PVector(res.x, res.y);
 //                    touchList.position2D.add(p);
-                    tl.p = p;
+                    touch.p = p;
 //                    touchList.points2D.add(tp);
                 } else {
                     continue;
                 }
 
-                tl.is3D = false;
-                tl.speed = null;
-                tl.touchPoint = tp;
+                touch.is3D = false;
+                touch.speed = null;
+                touch.touchPoint = tp;
 
                 if (res2 != null) {
                     // inside the paper sheet 	      
                     if (TouchDetection.isInside(res2, 0, 1) || isAll) {
                         PVector p = new PVector(res.x - res2.x,
                                 res.y - res2.y);
-                        tl.speed = p;
+                        touch.speed = p;
 //                        touchList.speed2D.add(p);
                     }
                 }
 
-                touchList.add(tl);
+                touchList.add(touch);
 
             }
         }
