@@ -66,7 +66,7 @@ public class PlaneThreshold {
     
     public void addPoint(Vec3D point) {
         if (currentPoint == 3) {
-            Kinect.CURRENTPAPPLET.println("Enough points are selected, calculate the plane");
+            System.out.println("Enough points are selected, calculate the plane");
             return;
         }
         points[currentPoint++] = point;
@@ -157,8 +157,8 @@ public class PlaneThreshold {
         lines[4] = "" + plane.normal.y;
         lines[5] = "" + plane.normal.z;
         lines[6] = "" + planeHeight;
-        Kinect.CURRENTPAPPLET.saveStrings(filename, lines);
-        Kinect.CURRENTPAPPLET.println("Plane successfully saved");
+        Kinect.papplet.saveStrings(filename, lines);
+        Kinect.papplet.println("Plane successfully saved");
     }
     
     @Override
@@ -167,13 +167,13 @@ public class PlaneThreshold {
     }
 
     public void loadPlane(String fileName) {
-        String[] lines = Kinect.CURRENTPAPPLET.loadStrings(fileName);
+        String[] lines = Kinect.papplet.loadStrings(fileName);
         Vec3D pos = new Vec3D(Float.parseFloat(lines[0]), Float.parseFloat(lines[1]), Float.parseFloat(lines[2]));
         Vec3D norm = new Vec3D(Float.parseFloat(lines[3]), Float.parseFloat(lines[4]), Float.parseFloat(lines[5]));
         planeHeight = Float.parseFloat(lines[6]);
 
         plane = new Plane(pos, norm);
-        Kinect.CURRENTPAPPLET.println("Plane " + fileName + " successfully loaded");
+        System.out.println("Plane " + fileName + " successfully loaded");
     }
     static int nbPlanes = 0;
 

@@ -18,7 +18,7 @@ import processing.core.PVector;
  */
 public class MarkerBoard {
 
-    private String fileName, name;
+    private final String fileName, name;
     protected int width;
     protected int height;
     protected ArrayList<Camera> cameras;
@@ -36,6 +36,10 @@ public class MarkerBoard {
     static public final int BLOCK_UPDATE = 2;
     static public final int FORCE_UPDATE = 3;
 
+    public MarkerBoard(String fileName, String name, PVector size){
+        this(fileName, name, (int) size.x, (int) size.y);
+    }
+    
     public MarkerBoard(String fileName, String name, int width, int height) {
         this.fileName = fileName;
         this.width = width;

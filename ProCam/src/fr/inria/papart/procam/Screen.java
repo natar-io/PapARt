@@ -3,11 +3,9 @@ package fr.inria.papart.procam;
 import static fr.inria.papart.procam.Utils.toVec;
 import fr.inria.papart.tools.Homography;
 import processing.core.PApplet;
-import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.opengl.PGraphicsOpenGL;
-import processing.opengl.Texture;
 import toxi.geom.*;
 
 /**
@@ -44,13 +42,11 @@ public class Screen {
         // AA not available anymore
          // Now it is loading when use, to save memory (for PaperScreens)
 //        thisGraphics = (PGraphicsOpenGL) parent.createGraphics((int) (size.x * scale), (int) (size.y * scale), PApplet.OPENGL);
-
-        
-        
+             
 //        thisGraphics = new PGraphicsOpenGL(); 
 //        thisGraphics.setPrimary(false);
 //        thisGraphics.setSize((int) (size.x * scale), (int) (size.y * scale));
-        this.size = size.get();
+        this.size = size.copy();
         this.scale = scale;
         this.parent = parent;
         pos = new PMatrix3D();
@@ -129,7 +125,7 @@ public class Screen {
 
         PGraphicsOpenGL graphics = getGraphics();
 
-        PVector userP = userPos.get();
+        PVector userP = userPos.copy();
 
         // Magic numbers...
         userP.x = -userP.x;
@@ -183,7 +179,7 @@ public class Screen {
         newPos.m21 = 0;
 
         // Compute the new transformation   
-        PVector virtualPos = userP.get();
+        PVector virtualPos = userP.copy();
 
         if (isAnaglyph) {
             virtualPos.add(isLeft ? -halfEyeDist : halfEyeDist, 0, 0);

@@ -40,12 +40,15 @@ public class BackgroundRemover implements PConstants {
 
         projZone = IplImage.create(size, IPL_DEPTH_8U, 1);
         output = IplImage.create(size, IPL_DEPTH_8U, 1);
-        diff = IplImage.create(size, IPL_DEPTH_8U, 4);
+        diff = IplImage.create(size, IPL_DEPTH_8U, 3);
 
         this.state = BackgroundState.NO_BACKGROUND;
     }
-
-    // Please wait for a few frames ~5 or 10 before calling 
+    
+    /**
+     * Please wait for a few frames ~5 or 10 before calling 
+     * @param rawImage background image to store.
+     */
     public void setBackground(IplImage rawImage) {
         this.background = rawImage.clone();
         this.state = BackgroundState.FULL_IMAGE;

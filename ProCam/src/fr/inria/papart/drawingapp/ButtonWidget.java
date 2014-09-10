@@ -42,69 +42,6 @@ public class ButtonWidget extends Button {
         absPos = abs;
     }
 
-    @Override
-    public boolean isSelected(float x, float y, TouchPoint tp) {
-        if (isHidden) {
-            return false;
-        }
-
-//        DrawingApp.currentIZ != null && DrawingApp.currentIZ != this;
-        if (DrawingApp.currentIZ != null) {
-            if (DrawingApp.currentIZ == this) {
-
-//             System.out.println("Close ?" + tp.isCloseToPlane());
-//                ButtonWidget p = DrawingApp.preciseWidget;
-//                PVector old = DrawingApp.preciseWidgetInitPos;
-//                position.x += PRECISE_SPEED * (p.position.x - old.x);
-//                position.y += PRECISE_SPEED * (p.position.y - old.y);
-//                old.x = p.position.x;
-//                old.y = p.position.y;
-                return false;
-            }
-            if (this != DrawingApp.preciseWidget) {
-                return false;
-            }
-        }
-
-
-        if (x == PApplet.constrain(x, position.x + absPos.x - (BUTTON_WIDTH / 2) - BUTTON_ERROR_2, position.x + absPos.x + (BUTTON_WIDTH / 2) + BUTTON_ERROR_2)
-                && y == PApplet.constrain(y, position.y + absPos.y - (BUTTON_HEIGHT / 2) - BUTTON_ERROR_2, position.y + absPos.y + (BUTTON_HEIGHT / 2) + BUTTON_ERROR_2)) {
-
-
-            if (currentSelected == null) {
-                currentSelected = this;
-            }
-
-            if (DrawingApp.isSearchingIZ) {
-                DrawingApp.isSearchingIZ = false;
-                DrawingApp.preciseWidget.position.x = position.x;
-                DrawingApp.preciseWidget.position.y = position.y;
-                DrawingApp.preciseWidget.absPos.x = absPos.x;
-                DrawingApp.preciseWidget.absPos.y = absPos.y;
-                DrawingApp.preciseWidget.show();
-
-                DrawingApp.preciseWidgetInitPos = new PVector(position.x, position.y);
-                DrawingApp.currentIZ = this;
-                System.out.println("Psecise Widget selectionned");
-                return true;
-            }
-
-//            if (currentSelected == this) {
-                position.x = x - absPos.x;
-                position.y = y - absPos.y;
-//            }
-            
-            return true;
-        }
-//        else {
-//            if (currentSelected == this) {
-//                currentSelected = null;
-//            }
-//        }
-
-        return false;
-
-    }
 
     @Override
     public void drawSelf(PGraphicsOpenGL pgraphics3d) {
@@ -112,27 +49,28 @@ public class ButtonWidget extends Button {
             return;
         }
 
-        if (DrawingApp.preciseWidget == this) {
-
-//            System.out.println(pgraphics3d + "  I am precise Widget at : " + position.x + "  " + position.y + " from : " + absPos.x + " " + absPos.y);
-            pgraphics3d.imageMode(PApplet.CENTER);
-//            pgraphics3d.ellipse((int) (position.x + absPos.x), (int) (position.y + absPos.y), (int) width * 0.2f, (int) height * 0.2f);
-
-            DrawUtils.drawImage(pgraphics3d, img, (int) (position.x + absPos.x), (int) (position.y + absPos.y), (int) width, (int) height);
-            return;
-        }
-
-
-        if (DrawingApp.currentIZ == this) {
-            //        DrawingApp.currentIZ != null && DrawingApp.currentIZ != this;
-            ButtonWidget p = DrawingApp.preciseWidget;
-            PVector old = DrawingApp.preciseWidgetInitPos;
-            position.x += PRECISE_SPEED * (p.position.x - old.x);
-            position.y += PRECISE_SPEED * (p.position.y - old.y);
-            old.x = p.position.x;
-            old.y = p.position.y;
-//            pgraphics3d.ellipse((int) (position.x + absPos.x), (int) (position.y + absPos.y), (int) width, (int) height);
-        }
+        // FIXME: removal of DrawingApp class, what happens to this ?
+//        if (DrawingApp.preciseWidget == this) {
+//
+////            System.out.println(pgraphics3d + "  I am precise Widget at : " + position.x + "  " + position.y + " from : " + absPos.x + " " + absPos.y);
+//            pgraphics3d.imageMode(PApplet.CENTER);
+////            pgraphics3d.ellipse((int) (position.x + absPos.x), (int) (position.y + absPos.y), (int) width * 0.2f, (int) height * 0.2f);
+//
+//            DrawUtils.drawImage(pgraphics3d, img, (int) (position.x + absPos.x), (int) (position.y + absPos.y), (int) width, (int) height);
+//            return;
+//        }
+//
+//
+//        if (DrawingApp.currentIZ == this) {
+//            //        DrawingApp.currentIZ != null && DrawingApp.currentIZ != this;
+//            ButtonWidget p = DrawingApp.preciseWidget;
+//            PVector old = DrawingApp.preciseWidgetInitPos;
+//            position.x += PRECISE_SPEED * (p.position.x - old.x);
+//            position.y += PRECISE_SPEED * (p.position.y - old.y);
+//            old.x = p.position.x;
+//            old.y = p.position.y;
+////            pgraphics3d.ellipse((int) (position.x + absPos.x), (int) (position.y + absPos.y), (int) width, (int) height);
+//        }
 
 
         if ((DrawUtils.applet.millis() - lastPressedTime) > BUTTON_COOLDOWN) {

@@ -14,9 +14,11 @@ import com.googlecode.javacv.cpp.opencv_imgproc;
 import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.opencv_calib3d.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
@@ -27,6 +29,7 @@ import processing.core.*;
 import static processing.core.PConstants.ARGB;
 import static processing.core.PConstants.RGB;
 import processing.opengl.Texture;
+import toxi.geom.Matrix4x4;
 import toxi.geom.Vec3D;
 
 /**
@@ -34,6 +37,24 @@ import toxi.geom.Vec3D;
  * @author jeremy
  */
 public class Utils {
+
+    static public String getSketchbookFolder() {
+
+        URL main = Matrix4x4.class.getResource("Matrix4x4.class");
+        String tmp = main.getPath();
+
+        tmp = tmp.substring(0, tmp.indexOf('!'));
+        tmp = tmp.replace("file:", "");
+//        tmp = tmp.replace("file:/", "");  TODO: OS check ?
+ 
+        File f = new File(tmp);
+        if (!f.exists()) {
+            System.err.println("Error in loading the Sketchbook folder.");
+        }
+        f = f.getParentFile().getParentFile().getParentFile().getParentFile(); // go to where the config is stored
+        
+        return  f.getAbsolutePath();
+    }
 
     static public PVector mult(PMatrix3D mat, PVector source, PVector target) {
         if (target == null) {
@@ -76,8 +97,7 @@ public class Utils {
 
         pa.saveStrings(filename, lines);
     }
-    
-    
+
     public static void addPMatrix3D(PMatrix3D src, PMatrix3D toAdd) {
         src.m00 += toAdd.m00;
         src.m01 += toAdd.m01;
@@ -88,29 +108,38 @@ public class Utils {
         src.m11 += toAdd.m11;
         src.m12 += toAdd.m12;
         src.m13 += toAdd.m13;
-        
+
         src.m20 += toAdd.m20;
         src.m21 += toAdd.m21;
         src.m22 += toAdd.m22;
         src.m23 += toAdd.m23;
-        
+
         src.m30 += toAdd.m30;
         src.m31 += toAdd.m31;
         src.m32 += toAdd.m32;
         src.m33 += toAdd.m33;
-        
-  }
-        
-        
 
-  static public void scaleMat(PMatrix3D mat, float scale) {
-    //applscale(scale, 0, 0, 0,  0, scale, 0, 0,  0, 0, scale, 0,  0, 0, 0, 1);
-    mat.m00 *= scale;  mat.m01 *= scale;  mat.m02 *= scale; mat.m03 *= scale;
-    mat.m10 *= scale;  mat.m11 *= scale;  mat.m12 *= scale; mat.m13 *= scale;
-    mat.m20 *= scale;  mat.m21 *= scale;  mat.m22 *= scale; mat.m23 *= scale;
-    mat.m30 *= scale;  mat.m31 *= scale;  mat.m32 *= scale; mat.m33 *= scale;
-  }
+    }
 
+    static public void scaleMat(PMatrix3D mat, float scale) {
+        //applscale(scale, 0, 0, 0,  0, scale, 0, 0,  0, 0, scale, 0,  0, 0, 0, 1);
+        mat.m00 *= scale;
+        mat.m01 *= scale;
+        mat.m02 *= scale;
+        mat.m03 *= scale;
+        mat.m10 *= scale;
+        mat.m11 *= scale;
+        mat.m12 *= scale;
+        mat.m13 *= scale;
+        mat.m20 *= scale;
+        mat.m21 *= scale;
+        mat.m22 *= scale;
+        mat.m23 *= scale;
+        mat.m30 *= scale;
+        mat.m31 *= scale;
+        mat.m32 *= scale;
+        mat.m33 *= scale;
+    }
 
     public static PMatrix3D loadPMatrix3D(PApplet pa, String filename) throws FileNotFoundException {
         String[] lines = pa.loadStrings(filename);
@@ -329,8 +358,8 @@ public class Utils {
 //        }
         assert (img.width() == ret.width);
         assert (img.height() == ret.height);
-       BufferedImage bimg;
-       //= new BufferedImage();
+        BufferedImage bimg;
+        //= new BufferedImage();
 
         if (img.nChannels() == 3) {
 

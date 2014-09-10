@@ -24,17 +24,12 @@ public class TrackedView {
     private MarkerBoard board;
     private PVector[] screenP = new PVector[4];
     private PVector[] outScreenP = new PVector[4];
-    private Camera camera;
     private PVector botLeft, sizeCapture;
 
-    public TrackedView(MarkerBoard board, int outWidth, int outHeight) {
-        this(board, null, outWidth, outHeight);
-    }
 
     // Public constructor for capturing the whole markerboard 
-    public TrackedView(MarkerBoard board, Camera cam, int outWidth, int outHeight) {
+    public TrackedView(MarkerBoard board, int outWidth, int outHeight) {
         this.board = board;
-        this.camera = cam;
 
         // TODO: check if this img can be removed
         img = new PImage(outWidth, outHeight, PApplet.RGB);
@@ -60,9 +55,8 @@ public class TrackedView {
     }
 
     // Public constructor for capturing part of a markerboard (or oustide it)
-    public TrackedView(MarkerBoard board, Camera cam, PVector botLeft, PVector sizeCapture, int outWidth, int outHeight) {
+    public TrackedView(MarkerBoard board, PVector botLeft, PVector sizeCapture, int outWidth, int outHeight) {
         this.board = board;
-        this.camera = cam;
 
         // TODO: check if this img can be removed
         img = new PImage(outWidth, outHeight, PApplet.RGB);
@@ -87,8 +81,8 @@ public class TrackedView {
         outScreenP[2] = new PVector(outWidth, 0);
         outScreenP[3] = new PVector(0, 0);
 
-        this.botLeft = botLeft.get();
-        this.sizeCapture = sizeCapture.get();
+        this.botLeft = botLeft.copy();
+        this.sizeCapture = sizeCapture.copy();
     }
     
     public PVector getResolution(){
@@ -96,16 +90,16 @@ public class TrackedView {
     }
     
     public PVector getPosition(){
-        return botLeft.get();
+        return botLeft.copy();
     }
 
     public PVector getSize(){
-        return sizeCapture.get();
+        return sizeCapture.copy();
     }
 
     public void setObservedLocation(PVector botLeft, PVector sizeCapture) {
-        this.botLeft = botLeft.get();
-        this.sizeCapture = sizeCapture.get();
+        this.botLeft = botLeft.copy();
+        this.sizeCapture = sizeCapture.copy();
     }
 
     protected void setPos(float[] pos3D) {
@@ -118,14 +112,8 @@ public class TrackedView {
         //	pos.print();
     }
 
-    protected void computeCorners(Camera cam) {
-        Camera tmp = this.camera;
-        this.camera = cam;
-        computeCorners();
-        this.camera = tmp;
-    }
 
-    protected void computeCorners() {
+    protected void computeCorners(Camera camera) {
 
         if (camera == null) {
             System.err.println("TrackedView : Error, you must set a camera, or use computeCorners(ImageWithTags itw.");
@@ -136,7 +124,6 @@ public class TrackedView {
 //        outScreenP[1] = new PVector(outWidth, 0);
 //        outScreenP[2] = new PVector(outWidth, outHeight);
 //        outScreenP[3] = new PVector(0, outHeight);
-
 
         // TODO: test if .get() is necessary ? 
         pos = board.getTransfoMat(camera).get();
@@ -171,7 +158,6 @@ public class TrackedView {
 
         for (int i = 0; i < 4; i++) {
             screenP[i] = camera.pdp.worldToPixel(cornerPos[i], true);
-//            screenP[i] = camera.getCamViewPoint(cornerPos[i]);
         }
     }
 //    protected void computeCorners() {

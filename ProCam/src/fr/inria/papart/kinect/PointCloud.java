@@ -11,17 +11,12 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import javax.media.opengl.GL2;
 import processing.core.PApplet;
-import static processing.core.PConstants.TRIANGLES;
-import processing.core.PImage;
 import processing.core.PMatrix3D;
-import processing.core.PShape;
 import processing.core.PVector;
 import processing.opengl.PGL;
 import processing.opengl.PGraphicsOpenGL;
 import processing.opengl.PShader;
-import toxi.geom.Triangle3D;
 import toxi.geom.Vec3D;
-import toxi.geom.mesh.OBJWriter;
 
 /**
  *
@@ -41,16 +36,14 @@ public class PointCloud {
     int shaderProgram;
     // locations associated
     private int vertLoc;
-    private int glVertBuff;
     private int colorsLoc;
-    private int glColorsBuff;
     private int transformLoc;
     // Local buffers 
-    private float[] verticesTmp;
-    private int[] colorsTmp;
+    protected float[] verticesJava;
+    protected int[] colorsJava;
     // openGL Internal buffers
-    private FloatBuffer vertices;
-    private IntBuffer colors;
+    protected FloatBuffer verticesNative;
+    protected IntBuffer colorsNative;
     protected static final int SIZEOF_SHORT = Short.SIZE / 8;
     protected static final int SIZEOF_INT = Integer.SIZE / 8;
     protected static final int SIZEOF_FLOAT = Float.SIZE / 8;
@@ -68,7 +61,8 @@ public class PointCloud {
         PGL pgl = ((PGraphicsOpenGL) parentApplet.g).pgl;
 
         // TODO: lookt at the shaders... 
-        myShader = parentApplet.loadShader("shaders/kinect/kinect1.frag", "shaders/kinect/kinect1.vert");
+        myShader = parentApplet.loadShader(PointCloud.class.getResource("points.frag").toString(),
+                PointCloud.class.getResource("points.vert").toString());
 
         myShader.bind();
         shaderProgram = myShader.glProgram;
@@ -78,45 +72,28 @@ public class PointCloud {
 
         myShader.unbind();
 
-        System.out.println("Shader program " + shaderProgram + " vertex loc " + vertLoc + " transform loc " + transformLoc + " colors " + colorsLoc);
-        // Todo allocate this intbuffer...
-
+//         System.out.println("Shader program " + shaderProgram + " vertex loc " + vertLoc + " transform loc " + transformLoc + " colors " + colorsLoc);
         // Allocate the buffer in central memory (native),  then java, then OpenGL 
         // Native memory         
         int bytes = nbPoints * 4 * 4; // 4 : SizeOf Float   -> ? SIZEOF_FLOAT
-        vertices = ByteBuffer.allocateDirect(bytes).order(ByteOrder.nativeOrder()).
+        verticesNative = ByteBuffer.allocateDirect(bytes).order(ByteOrder.nativeOrder()).
                 asFloatBuffer();
-        colors = ByteBuffer.allocateDirect(bytes).order(ByteOrder.nativeOrder()).asIntBuffer();
-//        colors = ByteBuffer.allocateDirect(bytes).asIntBuffer();
+        colorsNative = ByteBuffer.allocateDirect(bytes).order(ByteOrder.nativeOrder()).asIntBuffer();
 
         // Java memory 
-        verticesTmp = new float[nbPoints * 4];
-        colorsTmp = new int[nbPoints];
+        verticesJava = new float[nbPoints * 4];
+        colorsJava = new int[nbPoints];
 
-        // OpenGL memory
-        // Not necessary as data are streamed... ??
-        // IntBuffer intBuffer = allocateIntBuffer(1);
-        //  pgl.genBuffers(1, intBuffer);
-//        glVertBuff = intBuffer.get(0);
-//
-        //pgl.genBuffers(1, intBuffer);
-        // glColorsBuff = intBuffer.get(0);
-        // Check the use of these allocations ?
-//        pgl.bindBuffer(PGL.ARRAY_BUFFER, glVertBuff);
-//        pgl.bufferData(PGL.ARRAY_BUFFER, nbPoints * 4 * SIZEOF_FLOAT, vertices, PGL.STREAM_DRAW);
-//        
-//       pgl.bindBuffer(PGL.ARRAY_BUFFER, glColorsBuff);
-//        pgl.bufferData(PGL.ARRAY_BUFFER, nbPoints * 4 * SIZEOF_BYTE, colors, PGL.STREAM_DRAW);
-//        pgl.bufferData(PGL.ARRAY_BUFFER, nbPoints * 4 * SIZEOF_BYTE, colors, PGL.DYNAMIC_DRAW);
-        System.out.println("Buffer vertex object: " + glVertBuff);
-
+//        System.out.println("Buffer vertex object: " + glVertBuff);
         // unbind the buffer.
         pgl.bindBuffer(PGL.ARRAY_BUFFER, 0);
     }
 
+    private int currentVertNo = 0;
+
     public void update(PointCloudElement[] pce, boolean[] mask) {
-        nbVertices = 0;
         nbColors = 0;
+        currentVertNo = 0;
 
         assert (pce.length <= nbPoints);
         for (int i = 0; i < pce.length; i++) {
@@ -124,15 +101,12 @@ public class PointCloud {
                 addPoint(pce[i]);
             }
         }
-        vertices.rewind();
-        vertices.put(verticesTmp, 0, nbVertices);
 
-        colors.rewind();
-        colors.put(colorsTmp, 0, nbColors);
+        loadVerticesToNative();
     }
 
     public void update(PointCloudElement[] pce) {
-        nbVertices = 0;
+        currentVertNo = 0;
         nbColors = 0;
         assert (pce.length <= nbPoints);
 
@@ -140,13 +114,8 @@ public class PointCloud {
             // TODO: parallel ?
             addPoint(pce[i]);
         }
-        vertices.rewind();
-        vertices.put(verticesTmp, 0, nbVertices);
-
-        colors.rewind();
-        colors.put(colorsTmp, 0, nbColors);
+        loadVerticesToNative();
     }
-
 
     public void updateCheck(PointCloudElement[] pce, int w, int h) {
         nbVertices = 0;
@@ -171,11 +140,7 @@ public class PointCloud {
 
             addPoint(pce[i]);
         }
-        vertices.rewind();
-        vertices.put(verticesTmp, 0, nbVertices);
-
-        colors.rewind();
-        colors.put(colorsTmp, 0, nbColors);
+        loadVerticesToNative();
     }
 
     private void addPoint(PointCloudElement pce) {
@@ -187,68 +152,27 @@ public class PointCloud {
         PVector p = pce.point;
 
 //                float[] vert = vertices[nbToDraw];
-        verticesTmp[nbVertices++] = p.x;
-        verticesTmp[nbVertices++] = p.y;
-        verticesTmp[nbVertices++] = p.z;
-        verticesTmp[nbVertices++] = 1;
+        verticesJava[currentVertNo++] = p.x;
+        verticesJava[currentVertNo++] = p.y;
+        verticesJava[currentVertNo++] = p.z;
+        verticesJava[currentVertNo++] = 1;
 
         int c = pce.ptColor;
         int c2 = javaToNativeARGB(c);
-        colorsTmp[nbColors++] = c2;
+        colorsJava[nbColors++] = c2;
+    }
+
+    private void loadVerticesToNative() {
+        nbVertices = currentVertNo / 4;
+        verticesNative.rewind();
+        verticesNative.put(verticesJava, 0, currentVertNo);
+
+        colorsNative.rewind();
+        colorsNative.put(colorsJava, 0, nbColors);
     }
 
     public void drawSelf(PGraphicsOpenGL g) {
-
         drawPoints(g);
-
-        // Some would say that... 
-//            boolean[] valid = kinect.getValidPoints();
-//            Vec3D[] points = kinect.getDepthPoints();
-//            PImage colorsImg = kinect.getDepthColor();
-//
-//            nbVertices = 0;
-//            nbColors = 0;
-//            parentApplet.beginShape(POINTS);
-//            for (int i = 0; i < nbPoints; i++) {
-//                if (valid[i]) {
-//                    Vec3D p = points[i];
-//                    int c = colorsImg.pixels[i];
-//                    parentApplet.fill(c);
-//                    parentApplet.vertex(p.x, p.y, -p.z);
-//                }
-//            }
-//
-//            parentApplet.endShape();
-        ///// Triangulation ...  TODO without KINECT
-//            boolean[] valid = kinect.getValidPoints();
-//            Vec3D[] points = kinect.getDepthPoints();
-//            PImage colorsImg = kinect.getDepthColor();
-//
-//            nbVertices = 0;
-//            nbColors = 0;
-//            parentApplet.beginShape(TRIANGLES);
-//            parentApplet.noStroke();
-//
-//            skip = kinect.getCurrentSkip();
-//
-//            for (int y = skip; y < Kinect.KINECT_HEIGHT - skip; y += skip) {
-//                for (int x = skip; x < Kinect.KINECT_WIDTH - skip; x += skip) {
-//
-//                    int offset = y * Kinect.KINECT_WIDTH + x;
-//
-//                    if (valid[offset]) {
-//
-//                        Vec3D p = points[offset];
-//                        int c = colorsImg.pixels[offset];
-//
-////                    parentApplet.fill(c);
-////                    parentApplet.vertex(p.x, p.y, -p.z);
-////                    parentApplet.normal(0, 0, 1);
-//                        checkAndCreateTriangle2(x, y, offset, c);
-//                    }
-//                }
-//            }
-//            parentApplet.endShape();
     }
 
     private void drawPoints(PGraphicsOpenGL g) {
@@ -270,12 +194,12 @@ public class PointCloud {
         pgl.bindBuffer(GL2.GL_ARRAY_BUFFER, 0);
 
         // check the positions -> useless ? !
-        vertices.position(0); // start at 0
-        colors.position(0); // start at 0
+        verticesNative.position(0); // start at 0
+        colorsNative.position(0); // start at 0
 
         // Say where vertices are
         // Version 1
-        pgl.vertexAttribPointer(vertLoc, 4, PGL.FLOAT, false, 4 * SIZEOF_FLOAT, vertices);
+        pgl.vertexAttribPointer(vertLoc, 4, PGL.FLOAT, false, 4 * SIZEOF_FLOAT, verticesNative);
 
         // Version 2
 //        pgl.bindBuffer(PGL.ARRAY_BUFFER, glVertBuff);
@@ -284,7 +208,9 @@ public class PointCloud {
         // Version 1 
 //        pgl.bindBuffer(GL2.GL_ARRAY_BUFFER, 0);
         // Say where colors are
-        pgl.vertexAttribPointer(colorsLoc, 4, PGL.UNSIGNED_BYTE, false, 4 * SIZEOF_BYTE, colors);
+        // TEST
+        pgl.vertexAttribPointer(colorsLoc, 4, PGL.UNSIGNED_BYTE, false, 4 * SIZEOF_BYTE, colorsNative);
+//        pgl.vertexAttribPointer(colorsLoc, 4, PGL.UNSIGNED_INT, false, 4 * SIZEOF_INT, colorsNative);
 
         // Version 2 
 //        pgl.bindBuffer(PGL.ARRAY_BUFFER, glColorsBuff);
@@ -371,66 +297,6 @@ public class PointCloud {
     protected static final boolean USE_DIRECT_BUFFERS = true;
     protected static final int MIN_DIRECT_BUFFER_SIZE = 1;
 
-//
-//    public void drawSelf(PGraphicsOpenGL graphics) {
-////        System.out.println("Trying to draw " + nbToDraw);
-////        lastModel.render(0, nbToDraw);
-////        lastModel.render();
-//    }
-    //// Work for Kinect only for now...
-//    public void exportToObj(String fileName) {
-//        OBJWriter writer = new OBJWriter();
-//        writer.beginSave(fileName);
-//
-//        boolean[] valid = kinect.getValidPoints();
-//        Vec3D[] points = kinect.getDepthPoints();
-////        PImage colors = kinect.getDepthColor();
-//
-//        for (int i = 0; i < nbPoints; i++) {
-//            if (valid[i]) {
-//                Vec3D p = points[i];
-//                writer.vertex(p);
-//            }
-//        }
-//        if (colors != null) {
-//            colors.loadPixels();
-//            model.beginUpdateColors();
-//            int k = 0;
-//            for (int i = 0; i < Kinect.size; i++) {
-//                if (valid[i]) {
-//                    int c = colors.pixels[i];
-//
-//                    model.updateColor(k++,
-//                            (c >> 16) & 0xFF,
-//                            (c >> 8) & 0xFF,
-//                            c & 0xFF);
-//                }
-//            }
-//            model.endUpdateColors();
-//        }
-//        writer.endSave();
-//    }
-//    private OBJWriter writer = null;
-//    public void startExportObj(String fileName) {
-//        writer = new OBJWriter();
-//        writer.beginSave(fileName);
-//    }
-//
-//    public void exportObj() {
-//        assert (writer != null);
-//        boolean[] valid = kinect.getValidPoints();
-//        Vec3D[] points = kinect.getDepthPoints();
-//        for (int i = 0; i < nbPoints; i++) {
-//            if (valid[i]) {
-//                Vec3D p = points[i];
-//                writer.vertex(p);
-//            }
-//        }
-//    }
-//
-//    public void endExportObj() {
-//        writer.endSave();
-//    }
     public static boolean isInside(Vec3D v, float min, float max, float sideError) {
         return v.x > min - sideError && v.x < max + sideError && v.y < max + sideError && v.y > min - sideError;
     }

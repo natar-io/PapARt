@@ -24,7 +24,8 @@ import toxi.geom.Vec3D;
 /**
  * Touch input, using a Kinect device for now.
  *
- *  TODO: Refactor all this. 
+ * TODO: Refactor all this.
+ *
  * @author jeremylaviole
  */
 public class TouchInput {
@@ -37,23 +38,23 @@ public class TouchInput {
     private ProjectiveDeviceP pdp;
     private boolean useExternalGrabber = false;
 
-    /*** From Multitouch kinect ***/
-        static public final float trackNearDist = 30f;  // in mm
+    /**
+     * * From Multitouch kinect **
+     */
+    static public final float trackNearDist = 30f;  // in mm
     static public final float trackNearDist3D = 70f;  // in mm
     static public final int forgetTime = 250;       // in ms
     PApplet papplet;
-    Vec3D[] kinectPoints;
-    Vec3D[] projPoints;
-    boolean[] validPoints, readPoints;
-    int[] depth;
+
     int currentPrecision = 1;
 //    float[] depthf;
+
+    // List of TouchPoints, given to the user
     ArrayList<TouchPoint> touchPoint2D = new ArrayList<TouchPoint>();
     ArrayList<TouchPoint> touchPoint3D = new ArrayList<TouchPoint>();
+
     private KinectScreenCalibration kinectCalibration;
-    private ArrayList<Integer> goodPointOffsets = null;
-    
-    
+
     public TouchInput(PApplet applet, String calibrationFile, Kinect kinect) {
         this(applet, calibrationFile, kinect, null, 1, 4);
     }
@@ -75,30 +76,15 @@ public class TouchInput {
             System.err.println("Impossible to init a Touch Input without a  Kinect camera. ");
 
         }
-        
-        /*****************/
-        Kinect.initApplet(applet);
         this.papplet = applet;
-
-        validPoints = kinect.getValidPoints();
-        kinectPoints = kinect.getDepthPoints();
-
-        // Not sure if used in the next versions... 
-        projPoints = new Vec3D[Kinect.KINECT_SIZE];
-        readPoints = new boolean[Kinect.KINECT_SIZE];
-
-//        this.pointCloud = new PointCloudKinect(applet, kinect);
 
         try {
             kinectCalibration = new KinectScreenCalibration(applet, calibrationFile);
-
             System.out.println("Calibration loaded : " + kinectCalibration.plane());
         } catch (FileNotFoundException e) {
             System.out.println("Calibration file error :" + calibrationFile + " \n" + e);
         }
-   /*****************/
-        
-        
+
         this.touch2DPrecision = precision2D;
         this.touch3DPrecision = precision3D;
         this.kinect = kinect;
@@ -109,32 +95,16 @@ public class TouchInput {
     }
 
     public TouchInput(PApplet applet, String calibrationFile, Kinect kinect, OpenKinectFrameGrabber grabber, boolean color, boolean colorUndist, int precision2D, int precision3D) {
-        
-        
-           /*****************/
+
         this.kinect = kinect;
-        Kinect.initApplet(applet);
         this.papplet = applet;
-
-        validPoints = kinect.getValidPoints();
-        kinectPoints = kinect.getDepthPoints();
-
-        // Not sure if used in the next versions... 
-        projPoints = new Vec3D[Kinect.KINECT_SIZE];
-        readPoints = new boolean[Kinect.KINECT_SIZE];
-
-//        this.pointCloud = new PointCloudKinect(applet, kinect);
 
         try {
             kinectCalibration = new KinectScreenCalibration(applet, calibrationFile);
-
-            System.out.println("Calibration loaded : " + kinectCalibration.plane());
         } catch (FileNotFoundException e) {
             System.out.println("Calibration file error :" + calibrationFile + " \n" + e);
-        }   
-        /*****************/
-        
-        
+        }
+
         this.touch2DPrecision = precision2D;
         this.touch3DPrecision = precision3D;
 
@@ -199,7 +169,7 @@ public class TouchInput {
 
                         touchPointSemaphore.acquire();
                         touchInput.startTouch(depthImage);
-                        touchInput.findColors(depthImage, colorImage);
+                        touchInput.getTouch2DColors(colorImage);
                         touchInput.endTouch();
 
                     } catch (FrameGrabber.Exception e) {
@@ -240,25 +210,22 @@ public class TouchInput {
 
         if (touch2DPrecision > 0) {
             updateKinect(depthImage, touch2DPrecision);
-            find2DTouch(touch2DPrecision);
+            findTouch(touchPoint2D, false, touch2DPrecision);
         }
 
         if (touch3DPrecision > 0) {
             updateKinect3D(depthImage, touch3DPrecision);
-            find3DTouch(touch3DPrecision);
+            findTouch(touchPoint3D, true, touch3DPrecision);
         }
     }
 
-    public void findColors(IplImage depthImage, IplImage colorImage) {
-        findColor(depthImage, colorImage, this.touchPoint2D, currentPrecision);
-    }
 
     public void endTouch() {
         if (touch2DPrecision > 0) {
-            touch2DFound();
+            touchFound(touchPoint2D);
         }
         if (touch3DPrecision > 0) {
-            touch3DFound();
+            touchFound(touchPoint3D);
         }
     }
 
@@ -300,7 +267,6 @@ public class TouchInput {
             System.err.println("Semaphore Exception: " + ie);
         }
 
-        
         if (is2D && !touchPoint2D.isEmpty()) {
             for (TouchPoint tp : touchPoint2D) {
 
@@ -320,12 +286,12 @@ public class TouchInput {
 
                 if (useExternalGrabber) {
                     int p = pdp.worldToPixel(tp.vKinect);
-                    res = (isProjector ? (Projector)display : display ).projectPointer(screen,
+                    res = (isProjector ? (Projector) display : display).projectPointer(screen,
                             (float) (p % Kinect.KINECT_WIDTH) / Kinect.KINECT_WIDTH,
                             ((float) p / Kinect.KINECT_WIDTH) / Kinect.KINECT_HEIGHT);
 
                 } else {
-                    res = (isProjector?(Projector)display : display).projectPointer(screen, vec.x, vec.y);
+                    res = (isProjector ? (Projector) display : display).projectPointer(screen, vec.x, vec.y);
                 }
 //                    res = (isProjector ? (Projector)display : display ).projectPointer(screen, tp);
 
@@ -335,12 +301,12 @@ public class TouchInput {
                         if (useExternalGrabber) {
 
                             int p = pdp.worldToPixel(tp.oldvKinect);
-                            res2 = (isProjector ? (Projector)display : display ).projectPointer(screen,
+                            res2 = (isProjector ? (Projector) display : display).projectPointer(screen,
                                     (float) (p % Kinect.KINECT_WIDTH) / Kinect.KINECT_WIDTH,
                                     ((float) p / Kinect.KINECT_WIDTH) / Kinect.KINECT_HEIGHT);
 
                         } else {
-                            res2 = (isProjector ? (Projector)display : display ).projectPointer(screen, tp.oldV.x, tp.oldV.y);
+                            res2 = (isProjector ? (Projector) display : display).projectPointer(screen, tp.oldV.x, tp.oldV.y);
                         }
                     }
                 }
@@ -399,12 +365,12 @@ public class TouchInput {
 
                 if (useExternalGrabber) {
                     int p = pdp.worldToPixel(tp.vKinect);
-                    res = (isProjector ? (Projector)display : display ).projectPointer(screen,
+                    res = (isProjector ? (Projector) display : display).projectPointer(screen,
                             (float) (p % Kinect.KINECT_WIDTH) / Kinect.KINECT_WIDTH,
                             ((float) p / Kinect.KINECT_WIDTH) / Kinect.KINECT_HEIGHT);
 
                 } else {
-                    res = (isProjector ? (Projector)display : display ).projectPointer(screen, vec.x, vec.y);
+                    res = (isProjector ? (Projector) display : display).projectPointer(screen, vec.x, vec.y);
                 }
 
 //                    res = (isProjector ? (Projector)display : display ).projectPointer(screen, tp);
@@ -412,11 +378,11 @@ public class TouchInput {
 
                     if (useExternalGrabber) {
                         int p = pdp.worldToPixel(tp.oldvKinect);
-                        res2 = (isProjector ? (Projector)display : display ).projectPointer(screen,
+                        res2 = (isProjector ? (Projector) display : display).projectPointer(screen,
                                 (float) (p % Kinect.KINECT_WIDTH) / Kinect.KINECT_WIDTH,
                                 ((float) p / Kinect.KINECT_WIDTH) / Kinect.KINECT_HEIGHT);
                     } else {
-                        res2 = (isProjector ? (Projector)display : display ).projectPointer(screen, tp.oldV.x, tp.oldV.y);
+                        res2 = (isProjector ? (Projector) display : display).projectPointer(screen, tp.oldV.x, tp.oldV.y);
                     }
 
                     if (res2 != null) {
@@ -459,13 +425,7 @@ public class TouchInput {
 
         return touchList;
     }
-    
-    
-    
-    
-    /******************************************/
-    
-    
+
     public KinectScreenCalibration getCalibration() {
         return this.kinectCalibration;
     }
@@ -478,28 +438,42 @@ public class TouchInput {
         return touchPoint3D;
     }
 
-    public void updateKinect(IplImage depthImage, IplImage color, int skip) {
-        currentPrecision = skip;
-        goodPointOffsets = kinect.updateMT(depthImage, color, kinectCalibration, projPoints, skip);
-    }
-
+//    /**
+//     * Not used yet 
+//     * @param depthImage
+//     * @param color
+//     * @param skip 
+//     */
+//    public void updateKinect(IplImage depthImage, IplImage color, int skip) {
+//        currentPrecision = skip;
+//        goodPointOffsets = kinect.updateMT(depthImage, color, kinectCalibration, projPoints, skip);
+//    }
     public void updateKinect(IplImage depthImage, int skip) {
-        currentPrecision = skip;
-        goodPointOffsets = kinect.updateMT(depthImage, kinectCalibration, projPoints, skip);
+        kinect.updateMT(depthImage, kinectCalibration, skip);
     }
 
     public void updateKinect3D(IplImage depthImage, int skip) {
-        currentPrecision = skip;
-        goodPointOffsets = kinect.updateMT3D(depthImage, kinectCalibration, projPoints, skip);
+        kinect.updateMT3D(depthImage, kinectCalibration, skip);
     }
 
-    public void updateKinectOptimizedMT(IplImage depthImage, int skip) {
-        currentPrecision = skip;
-        goodPointOffsets = kinect.updateOptimized3D(depthImage, kinectCalibration, projPoints, skip);
+//    /**
+//     * TO IMPLEMENT
+//     *
+//     * @param depthImage
+//     * @param skip
+//     */
+//    public void updateKinectOptimizedMT(IplImage depthImage, int skip) {
+//        currentPrecision = skip;
+//        goodPointOffsets = kinect.updateOptimized3D(depthImage, kinectCalibration, projPoints, skip);
+//    }
+    
+    
+    public void getTouch2DColors(IplImage colorImage) {
+        getTouchColors(colorImage, this.touchPoint2D);
     }
-
-    public void findColor(IplImage depthImage, IplImage colorImage,
-            ArrayList<TouchPoint> touchPointList, int skip) {
+    
+    public void getTouchColors(IplImage colorImage,
+            ArrayList<TouchPoint> touchPointList) {
 
         if (touchPointList.isEmpty()) {
             return;
@@ -508,7 +482,6 @@ public class TouchInput {
         ByteBuffer cBuff = colorImage.getByteBuffer();
 
 //        System.out.println("Searching for point color");
-
         for (TouchPoint tp : touchPointList) {
             int offset = 3 * kinect.findColorOffset(tp.vKinect);
 
@@ -520,36 +493,30 @@ public class TouchInput {
 
     }
 
-    public Vec3D[] getKinectPoints() {
-        return kinectPoints;
-    }
-
-    public Vec3D[] getProjPoints() {
-        return projPoints;
-    }
 
     // Raw versions of the algorithm are providing each points at each time. 
     // no updates, no tracking. 
     public ArrayList<TouchPoint> find2DTouchRaw(int skip) {
         assert (skip > 0);
 
-        return TouchDetection.findMultiTouch(goodPointOffsets, kinectPoints, projPoints,
-                validPoints, readPoints, kinectCalibration, false, skip);
+        return TouchDetection.findMultiTouch(kinect.getDepthData(),
+                kinectCalibration,
+                false, skip);
     }
 
     public ArrayList<TouchPoint> find3DTouchRaw(int skip) {
         assert (skip > 0);
 
-        return TouchDetection.findMultiTouch(goodPointOffsets, kinectPoints, projPoints,
-                validPoints, readPoints, kinectCalibration, true, skip);
+        return TouchDetection.findMultiTouch(kinect.getDepthData(),
+                kinectCalibration, true, skip);
     }
 
     public ArrayList<TouchPoint> findTouch(ArrayList<TouchPoint> touchPointList, boolean is3D, int skip) {
 
         assert (skip > 0);
 
-        ArrayList<TouchPoint> touchPoints = TouchDetection.findMultiTouch(goodPointOffsets, kinectPoints, projPoints,
-                validPoints, readPoints, kinectCalibration, is3D, skip);
+        ArrayList<TouchPoint> touchPoints = TouchDetection.findMultiTouch(kinect.getDepthData(),
+                kinectCalibration, is3D, skip);
 
         if (touchPoints == null) {
             return null;
@@ -576,10 +543,10 @@ public class TouchInput {
         // to keep the informations coherent.
         Collections.sort(tpt);
 
-        float trackDist =  is3D ? trackNearDist3D : trackNearDist;
-        
+        float trackDist = is3D ? trackNearDist3D : trackNearDist;
+
         for (TouchPointTracker tpt1 : tpt) {
-            if (tpt1.distance < trackDist ) {
+            if (tpt1.distance < trackDist) {
                 tpt1.update(papplet.millis());
             }
         }
@@ -617,26 +584,23 @@ public class TouchInput {
             }
         }
     }
-
-    public ArrayList<TouchPoint> find2DTouch(int skip) {
-        return findTouch(touchPoint2D, false, skip);
-    }
-
-    public ArrayList<TouchPoint> find3DTouch(int skip) {
-        return findTouch(touchPoint3D, true, skip);
-    }
-
-    public void touch2DFound() {
-        touchFound(touchPoint2D);
-    }
-
-    public void touch3DFound() {
-        touchFound(touchPoint3D);
-    }
-    
-    
-    
-    
-    
-    
 }
+
+//
+//    public ArrayList<TouchPoint> find2DTouch(int skip) {
+//        return findTouch(touchPoint2D, false, skip);
+//    }
+//
+//    public ArrayList<TouchPoint> find3DTouch(int skip) {
+//        return findTouch(touchPoint3D, true, skip);
+//    }
+//
+//    public void touch2DFound() {
+//        touchFound(touchPoint2D);
+//    }
+//
+//    public void touch3DFound() {
+//        touchFound(touchPoint3D);
+//    }
+//    
+

@@ -30,6 +30,10 @@ public class Scanner3D implements PConstants {
 
     private PVector lastError = new PVector();
 
+    public Scanner3D(Camera camera, Projector projector){
+        this(camera.getProjectiveDevice(), projector);
+    }
+    
     // We suppose that the camera is loaded, and running.
     public Scanner3D(ProjectiveDeviceP camera, Projector projector) {
         this.projector = projector;

@@ -15,6 +15,11 @@ import toxi.geom.Vec3D;
 
 public class Projector extends ARDisplay {
 
+    
+    public Projector(PApplet parent, String calibrationYAML){
+        super(parent, calibrationYAML);
+    }
+    
     /**
      * Projector allows the use of a projector for Spatial Augmented reality
      * setup. This class creates an OpenGL context which allows 3D projection.
@@ -32,9 +37,13 @@ public class Projector extends ARDisplay {
         this(parent, calibrationYAML, width, height, near, far, 1);
     }
 
+    public Projector(PApplet parent, String calibrationYAML, 
+            float near, float far, float res){
+        super(parent, calibrationYAML, near, far, res);
+    }
+    
     public Projector(PApplet parent, String calibrationYAML,
-            int width, int height, float near, float far, int res) {
-
+            int width, int height, float near, float far, float res) {
         super(parent, calibrationYAML, width, height, near, far, res);
     }
 

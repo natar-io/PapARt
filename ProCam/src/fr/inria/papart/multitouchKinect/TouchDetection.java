@@ -4,9 +4,9 @@
  */
 package fr.inria.papart.multitouchKinect;
 
+import fr.inria.papart.kinect.DepthData;
 import fr.inria.papart.kinect.Kinect;
 import fr.inria.papart.kinect.KinectScreenCalibration;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -14,7 +14,6 @@ import java.util.HashSet;
 import java.util.Set;
 import processing.core.PApplet;
 import processing.core.PVector;
-import toxi.geom.Matrix4x4;
 import toxi.geom.Vec3D;
 
 /**
@@ -28,6 +27,10 @@ public class TouchDetection {
     public static float maxDistance = 8f;    // in mm
     public static float maxDistance3D = 20f;    // in mm
     public static int MAX_REC = 500;
+
+    private static boolean[] readPoints = null;
+    private static byte[] connectedComponent = null;
+    private static byte currentCompo = 1;
 
     public static ArrayList<Integer> findNeighboursRec(int currentPoint, int halfNeigh,
             ArrayList<Integer> validPoints,
@@ -43,9 +46,10 @@ public class TouchDetection {
         ArrayList<Integer> ret = new ArrayList<Integer>();
         ArrayList<Integer> visitNext = new ArrayList<Integer>();
 
-        if(recLevel == MAX_REC)
+        if (recLevel == MAX_REC) {
             return ret;
-        
+        }
+
         int minX = PApplet.constrain(x - halfNeigh, 0, Kinect.KINECT_WIDTH - 1);
         int maxX = PApplet.constrain(x + halfNeigh, 0, Kinect.KINECT_WIDTH - 1);
         int minY = PApplet.constrain(y - halfNeigh, 0, Kinect.KINECT_HEIGHT - 1);
@@ -69,7 +73,7 @@ public class TouchDetection {
                     // we add it to the neighbour list
                     ret.add((Integer) offset);
 
-                    Kinect.connectedComponent[offset] = Kinect.currentCompo;
+                    connectedComponent[offset] = currentCompo;
 
 //                    // if is is on a border ??
 //                    if (i == minX || j == minX || i >= maxX - skip || j >= maxY - skip) {
@@ -87,30 +91,40 @@ public class TouchDetection {
                     validPoints,
                     points, projPoints,
                     isValidPoints,
-                    readPoints, toVisit, skip, recLevel +1));
+                    readPoints, toVisit, skip, recLevel + 1));
         }
 
         return ret;
     }
 
+    public static ArrayList<TouchPoint> findMultiTouch(DepthData depthData,
+            KinectScreenCalibration calib, boolean is3D, int skip) {
+        return findMultiTouch(depthData.validPointsList,
+                depthData.kinectPoints, depthData.projectedPoints,
+                depthData.validPointsMask, calib, is3D, skip);
+    }
+
     public static ArrayList<TouchPoint> findMultiTouch(ArrayList<Integer> validPoints,
-            Vec3D points[], Vec3D[] projPoints, boolean[] isValidPoints, boolean[] readPoints,
+            Vec3D points[], Vec3D[] projPoints, boolean[] isValidPoints,
             KinectScreenCalibration calib, boolean is3D, int skip) {
 
         if (validPoints == null || validPoints.isEmpty()) {
             return null;
         }
 
+        if (readPoints == null && connectedComponent == null) {
+            readPoints = new boolean[points.length];
+            connectedComponent = new byte[points.length];
+        }
+
         currentMaxDistance = is3D ? maxDistance3D : maxDistance;
 
-        // Debug purposes
-        Arrays.fill(Kinect.connectedComponent, (byte) 0);
-        Kinect.currentCompo = 1;
+        Arrays.fill(readPoints, false);
+        Arrays.fill(connectedComponent, (byte) 0);
+        currentCompo = 1;
 
-//        int searchDepth = 1 * skip; // on each direction
         int searchDepth = 1 * skip; // on each direction
 
-        Arrays.fill(readPoints, false);
         Set<Integer> toVisit = new HashSet<Integer>();
 
         ArrayList<ArrayList<Integer>> allNeighbourhood = new ArrayList<ArrayList<Integer>>();
@@ -122,7 +136,7 @@ public class TouchDetection {
             int p = toVisit.iterator().next();
             allNeighbourhood.add(findNeighboursRec(p, searchDepth, validPoints,
                     points, projPoints, isValidPoints, readPoints, toVisit, skip, 0));
-            Kinect.currentCompo++;
+            currentCompo++;
         }
 
         ArrayList<TouchPoint> allTouchPoints = new ArrayList<TouchPoint>();
@@ -179,7 +193,6 @@ public class TouchDetection {
 //                    if (p.z > max.z) {
 //                        max.z = p.z;
 //                    }
-
                     mean.addSelf(points[vint.get(k)]);
                 }
                 mean.scaleSelf(1.0f / nbPoints3D);
@@ -207,7 +220,6 @@ public class TouchDetection {
 //                    if (p.z > max.z) {
 //                        max.z = p.z;
 //                    }
-
                     mean.addSelf(points[offset]);
                 }
                 mean.scaleSelf(1.0f / vint.size());

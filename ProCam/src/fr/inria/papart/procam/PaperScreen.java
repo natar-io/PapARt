@@ -33,7 +33,7 @@ public class PaperScreen {
             ARDisplay proj) {
         this.parent = parent;
         this.board = board;
-        this.drawingSize = size.get();
+        this.drawingSize = size.copy();
         this.cameraTracking = cam;
         this.projector = proj;
         this.resolution = resolution;

@@ -12,8 +12,8 @@ import processing.opengl.PGraphicsOpenGL;
 
 public class Slider extends InteractiveZone{
 
-    private PVector previous = new PVector();
-    private InteractiveZone activationZone;
+    private final PVector previous = new PVector();
+    private final InteractiveZone activationZone;
 
     public boolean isSliding = false;
 //    public PVector translation = new PVector();

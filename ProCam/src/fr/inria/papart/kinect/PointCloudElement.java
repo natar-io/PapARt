@@ -8,7 +8,7 @@ package fr.inria.papart.kinect;
 import processing.core.PVector;
 
 /**
- *
+ * 
  * @author jiii
  */
 public class PointCloudElement {

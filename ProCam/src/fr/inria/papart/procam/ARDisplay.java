@@ -9,6 +9,7 @@ import processing.opengl.Texture;
 import com.googlecode.javacv.ProjectiveDevice;
 import fr.inria.papart.drawingapp.DrawUtils;
 import fr.inria.papart.exceptions.BoardNotDetectedException;
+import java.awt.Color;
 import java.util.ArrayList;
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
@@ -23,6 +24,7 @@ import static processing.opengl.PGL.NEAREST;
 import static processing.opengl.PGL.RGBA;
 import static processing.opengl.PGL.TEXTURE_2D;
 import processing.opengl.PShader;
+import sun.swing.SwingUtilities2;
 import toxi.geom.Ray3D;
 import toxi.geom.ReadonlyVec3D;
 import toxi.geom.Vec3D;
@@ -51,12 +53,26 @@ public class ARDisplay {
     protected PShader lensFilter;
     protected GL2 gl = null;
     protected PMatrix3D invProjModelView;
-    protected float znear;
-    protected float zfar;
     protected ProjectiveDeviceP pdp;
     protected float resolution = 1;
     private Camera camera = null;
     protected boolean registered = false;
+
+    protected float zNear = 20, zFar = 10000;
+
+    private int drawingSizeX, drawingSizeY;
+
+    public ARDisplay(PApplet parent, String calibrationYAML) {
+        loadInternalParams(calibrationYAML);
+
+        this.parent = parent;
+        this.frameWidth = proj.imageWidth;
+        this.frameHeight = proj.imageHeight;
+        this.drawingSizeX = frameWidth;
+        this.drawingSizeY = frameHeight;
+        this.resolution = 1;
+        init();
+    }
 
     public ARDisplay(PApplet parent, String calibrationYAML,
             int width, int height, float near, float far) {
@@ -67,13 +83,30 @@ public class ARDisplay {
 
         this.frameWidth = camera.width;
         this.frameHeight = camera.height;
+        this.drawingSizeX = frameWidth;
+        this.drawingSizeY = frameHeight;
         this.parent = parent;
-        this.znear = near;
-        this.zfar = far;
+        this.zNear = near;
+        this.zFar = far;
         this.resolution = resolution;
         this.camera = camera;
 
         loadInternalParams(camera.getProjectiveDevice());
+        init();
+    }
+
+    public ARDisplay(PApplet parent, String calibrationYAML, float near, float far, float resolution) {
+
+        this.parent = parent;
+        this.zNear = near;
+        this.zFar = far;
+        this.resolution = resolution;
+
+        loadInternalParams(calibrationYAML);
+        this.frameWidth = pdp.getWidth();
+        this.frameHeight = pdp.getHeight();
+        this.drawingSizeX = frameWidth;
+        this.drawingSizeY = frameHeight;
         init();
     }
 
@@ -83,8 +116,8 @@ public class ARDisplay {
         frameWidth = width;
         frameHeight = height;
         this.parent = parent;
-        this.znear = near;
-        this.zfar = far;
+        this.zNear = near;
+        this.zFar = far;
 
         this.resolution = resolution;
 
@@ -164,7 +197,7 @@ public class ARDisplay {
 
         this.graphics.beginDraw();
 
-        this.graphics.frustum(0, 0, 0, 0, znear, zfar);
+        this.graphics.frustum(0, 0, 0, 0, zNear, zFar);
 
         this.graphics.projection.m00 = p00;
         this.graphics.projection.m11 = p11;
@@ -197,14 +230,15 @@ public class ARDisplay {
         parent.noStroke();
 
         if (camera != null) {
-            parent.image(camera.getPImage(), 0, 0, frameWidth, frameHeight);
+            parent.image(camera.getPImage(), 0, 0, this.drawingSizeX, this.drawingSizeY);
 //            ((PGraphicsOpenGL) (parent.g)).image(camera.getPImage(), 0, 0, frameWidth, frameHeight);
         }
 
-        // -> TODO: FIXME Distort transparency ERROR !
+        // TODO: Distorsion problems with higher image space distorisions (useless ?)
         DrawUtils.drawImage((PGraphicsOpenGL) parent.g,
-                this.distort(true),
-                0, 0, frameWidth, frameHeight);
+                //                this.distort(true),
+                this.distort(false),
+                0, 0, this.drawingSizeX, this.drawingSizeY);
     }
 
     /**
@@ -253,11 +287,6 @@ public class ARDisplay {
         lensFilter = parent.loadShader(ARDisplay.class.getResource("distortFrag.glsl").toString(),
                 ARDisplay.class.getResource("distortVert.glsl").toString());
 
-        System.out.println("Shader file " + ARDisplay.class.getResource("distortFrag.glsl").getFile());
-        System.out.println("Shader file " + ARDisplay.class.getResource("distortFrag.glsl").toString());
-//        System.out.println("Shader file " + this.getClass().getResource("distortFrag.glsl").getPath());
-
-//        InputStream in = getClass().getResourceAsStream("bg.png");
 //        mapImg = parent.createImage(graphics.width, graphics.height, PApplet.RGB);
         mapImg = parent.createImage((int) (resolution * frameWidth), (int) (resolution * frameHeight), PApplet.RGB);
 
@@ -518,6 +547,11 @@ public class ARDisplay {
 
     public int getHeight() {
         return frameHeight;
+    }
+
+    public void setDisplaySize(int w, int h) {
+        this.drawingSizeX = w;
+        this.drawingSizeY = h;
     }
 
     public void addScreen(Screen s) {

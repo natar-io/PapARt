@@ -8,16 +8,13 @@ package fr.inria.papart.kinect;
  *
  * @author jeremy
  */
-import com.googlecode.javacv.JavaCV;
 import processing.core.PApplet;
-import processing.core.PMatrix2D;
 import processing.core.PVector;
 import toxi.geom.Matrix4x4;
 import java.io.FileNotFoundException;
 
 import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.opencv_calib3d.*;
-import static com.googlecode.javacv.cpp.opencv_imgproc.*;
 import processing.core.PMatrix3D;
 import toxi.geom.Vec3D;
 
@@ -27,8 +24,6 @@ public class Homography {
     CvMat dstPoints;
     int nbPoints;
     CvMat homography;
-//    public PMatrix2D transform2D = null;
-//    public PMatrix3D transform3D = null;
     int currentPoint = 0;
     
     // TEMPORARY PUBLIC
@@ -40,7 +35,7 @@ public class Homography {
     PApplet pa;
 
     public Homography(String filename) throws FileNotFoundException {
-        load(Kinect.parent, filename);
+        load(Kinect.papplet, filename);
     }
 
     public Homography(PApplet parent, String filename) throws FileNotFoundException {

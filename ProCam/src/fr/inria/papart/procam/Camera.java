@@ -67,17 +67,17 @@ public class Camera {
     private boolean isClosing = false;
 
     static public void convertARParams(PApplet parent, String calibrationYAML,
-            String calibrationData) {
-        convertARParams(parent, calibrationYAML, calibrationData, 0, 0);
+            String calibrationARtoolkit) {
+        convertARParams(parent, calibrationYAML, calibrationARtoolkit, 0, 0);
     }
 
     static public void convertARParams(PApplet parent, String calibrationYAML,
-            String calibrationData, int width, int height) {
+            String calibrationARtoolkit, int width, int height) {
         try {
             // ARToolkit Plus 2.1.1
 //            fr.inria.papart.procam.Utils.convertARParam(parent, calibrationYAML, calibrationData, width, height);
             // ARToolkit Plus 2.3.0
-            fr.inria.papart.procam.Utils.convertARParam2(parent, calibrationYAML, calibrationData);
+            fr.inria.papart.procam.Utils.convertARParam2(parent, calibrationYAML, calibrationARtoolkit);
         } catch (Exception e) {
             PApplet.println("Conversion error. " + e);
         }
@@ -103,6 +103,11 @@ public class Camera {
         this(parent, camDevice, width, height, 30, calibrationYAML, videoInputType);
     }
 
+    public Camera(PApplet parent, String camDevice, String calibrationYAML, int videoInputType) {
+        // Resolution is taken from the YAML file.
+        this(parent, camDevice, 0, 0, 60, calibrationYAML, videoInputType);
+    }
+
     public Camera(PApplet parent, String camDevice,
             int width, int height, int frameRate, String calibrationYAML, int videoInputType) {
 
@@ -111,6 +116,19 @@ public class Camera {
         this.height = height;
         this.frameRate = frameRate;
         this.videoInputType = videoInputType;
+
+        if (calibrationYAML != null) {
+            // Load the camera parameters. 
+            try {
+                pdp = ProjectiveDeviceP.loadCameraDevice(calibrationYAML, 0);
+                camIntrinsicsP3D = pdp.getIntrinsics();
+//                System.out.println("Calibration loaded for camera " + camDevice);
+                this.width = pdp.getWidth();
+                this.height = pdp.getHeight();
+            } catch (Exception e) {
+                parent.die("Error reading the calibration file : " + calibrationYAML + " \n" + e);
+            }
+        }
 
         // Init the video
         if (videoInputType == OPENCV_VIDEO) {
@@ -174,19 +192,41 @@ public class Camera {
             this.captureIpl.start();
         }
 
-        if (calibrationYAML != null) {
-
-            // Load the camera parameters. 
-            try {
-                pdp = ProjectiveDeviceP.loadCameraDevice(calibrationYAML, 0);
-                camIntrinsicsP3D = pdp.getIntrinsics();
-                System.out.println("Calibration loaded for camera " + camDevice);
-            } catch (Exception e) {
-                parent.die("Error reading the calibration file : " + calibrationYAML + " \n" + e);
-            }
-        }
-
     }
+    
+    public static Camera loadCamera(PApplet applet, String file, String calibration){
+          String[] lines = applet.loadStrings(file);
+          return new Camera(applet, lines[0], calibration, Integer.parseInt(lines[1]));
+    }
+    
+   
+//    public void savePlane(String filename) {
+//        String[] lines = new String[7];
+//        lines[0] = "" + plane.x;
+//        lines[1] = "" + plane.y;
+//        lines[2] = "" + plane.z;
+//        lines[3] = "" + plane.normal.x;
+//        lines[4] = "" + plane.normal.y;
+//        lines[5] = "" + plane.normal.z;
+//        lines[6] = "" + planeHeight;
+//        Kinect.CURRENTPAPPLET.saveStrings(filename, lines);
+//        Kinect.CURRENTPAPPLET.println("Plane successfully saved");
+//    }
+//    
+//    @Override
+//    public String toString(){
+//        return "Plane " + plane + " height " + planeHeight;
+//    }
+//
+//    public void loadPlane(String fileName) {
+//        String[] lines = Kinect.CURRENTPAPPLET.loadStrings(fileName);
+//        Vec3D pos = new Vec3D(Float.parseFloat(lines[0]), Float.parseFloat(lines[1]), Float.parseFloat(lines[2]));
+//        Vec3D norm = new Vec3D(Float.parseFloat(lines[3]), Float.parseFloat(lines[4]), Float.parseFloat(lines[5]));
+//        planeHeight = Float.parseFloat(lines[6]);
+//
+//        plane = new Plane(pos, norm);
+//        Kinect.CURRENTPAPPLET.println("Plane " + fileName + " successfully loaded");
+//    }
 
     public int width() {
         return width;
@@ -402,7 +442,7 @@ public class Camera {
                     if (touchInput != null) {
                         touchInput.lock();
                         touchInput.startTouch(dimg);
-                        touchInput.findColors(dimg, img);
+                        touchInput.getTouch2DColors(img);
                         touchInput.endTouch();
                         touchInput.unlock();
                     }
@@ -453,6 +493,11 @@ public class Camera {
                 if (copyUndist == null) {
                     copyUndist = img.clone();
                 }
+                // Workaround for crash when the java program is closing
+                // to avoid native code to continue to run...
+                if(isClosing)
+                    return img;
+                
                 pdp.getDevice().undistort(img, copyUndist);
                 iimg = copyUndist;
             } else {
@@ -662,7 +707,7 @@ public class Camera {
             return null;
         }
 
-        trackedView.computeCorners();
+        trackedView.computeCorners(this);
         return trackedView.getImageIpl(iimg);
     }
 

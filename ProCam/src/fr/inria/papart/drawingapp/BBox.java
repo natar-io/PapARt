@@ -17,7 +17,7 @@ public class BBox {
     public PVector min = new PVector();
     public PVector max = new PVector();
     public static float interfaceSize;
-    private ButtonWidget buttonWidget;
+    private final ButtonWidget buttonWidget;
 
 
     public BBox(PVector center) {
