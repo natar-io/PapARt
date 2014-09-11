@@ -46,7 +46,7 @@ public class Screen {
 //        thisGraphics = new PGraphicsOpenGL(); 
 //        thisGraphics.setPrimary(false);
 //        thisGraphics.setSize((int) (size.x * scale), (int) (size.y * scale));
-        this.size = size.copy();
+        this.size = size.get();
         this.scale = scale;
         this.parent = parent;
         pos = new PMatrix3D();
@@ -125,7 +125,7 @@ public class Screen {
 
         PGraphicsOpenGL graphics = getGraphics();
 
-        PVector userP = userPos.copy();
+        PVector userP = userPos.get();
 
         // Magic numbers...
         userP.x = -userP.x;
@@ -179,7 +179,7 @@ public class Screen {
         newPos.m21 = 0;
 
         // Compute the new transformation   
-        PVector virtualPos = userP.copy();
+        PVector virtualPos = userP.get();
 
         if (isAnaglyph) {
             virtualPos.add(isLeft ? -halfEyeDist : halfEyeDist, 0, 0);

@@ -1,8 +1,9 @@
 package fr.inria.papart.multitouchKinect;
 
-import com.googlecode.javacv.FrameGrabber;
-import com.googlecode.javacv.OpenKinectFrameGrabber;
-import com.googlecode.javacv.cpp.opencv_core.IplImage;
+import org.bytedeco.javacv.FrameGrabber;
+import org.bytedeco.javacv.OpenKinectFrameGrabber;
+import org.bytedeco.javacpp.opencv_core.IplImage;
+
 import fr.inria.papart.kinect.Homography;
 import fr.inria.papart.procam.ARDisplay;
 import fr.inria.papart.procam.Screen;

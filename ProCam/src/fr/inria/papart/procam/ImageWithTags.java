@@ -4,14 +4,14 @@
  */
 package fr.inria.papart.procam;
 
-import com.googlecode.javacv.cpp.ARToolKitPlus;
-import com.googlecode.javacv.cpp.ARToolKitPlus.ARMultiMarkerInfoT;
-import com.googlecode.javacv.cpp.ARToolKitPlus.MultiTracker;
-import com.googlecode.javacv.cpp.opencv_core.IplImage;
+import org.bytedeco.javacpp.ARToolKitPlus;
+import org.bytedeco.javacpp.ARToolKitPlus.ARMultiMarkerInfoT;
+import org.bytedeco.javacpp.ARToolKitPlus.MultiTracker;
+import org.bytedeco.javacpp.opencv_core.IplImage;
 
-import com.googlecode.javacv.CameraDevice;
-import com.googlecode.javacv.ProjectiveDevice;
-import com.googlecode.javacv.cpp.opencv_highgui;
+import org.bytedeco.javacv.CameraDevice;
+import org.bytedeco.javacv.ProjectiveDevice;
+import org.bytedeco.javacpp.opencv_highgui;
 
 import java.io.File;
 import java.io.FileNotFoundException;

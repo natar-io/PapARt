@@ -4,8 +4,8 @@
  */
 package fr.inria.papart.tools;
 
-import com.googlecode.javacv.cpp.opencv_core;
-import com.googlecode.javacv.cpp.opencv_core.IplImage;
+import org.bytedeco.javacpp.opencv_core;
+import org.bytedeco.javacpp.opencv_core.IplImage;
 import java.lang.reflect.Method;
 import java.nio.*;
 import java.util.LinkedList;

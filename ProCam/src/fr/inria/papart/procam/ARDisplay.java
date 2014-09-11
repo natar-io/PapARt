@@ -6,7 +6,7 @@ package fr.inria.papart.procam;
 
 import processing.opengl.PGraphicsOpenGL;
 import processing.opengl.Texture;
-import com.googlecode.javacv.ProjectiveDevice;
+import org.bytedeco.javacv.ProjectiveDevice;
 import fr.inria.papart.drawingapp.DrawUtils;
 import fr.inria.papart.exceptions.BoardNotDetectedException;
 import java.awt.Color;

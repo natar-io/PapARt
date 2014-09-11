@@ -4,15 +4,15 @@
  */
 package fr.inria.papart.procam;
 
-import com.googlecode.javacv.cpp.opencv_imgproc.*;
+import org.bytedeco.javacpp.opencv_imgproc.*;
 
-import com.googlecode.javacv.CameraDevice;
-import com.googlecode.javacv.CameraDevice.Settings;
-import com.googlecode.javacv.ProjectorDevice;
-import com.googlecode.javacv.cpp.ARToolKitPlus.Tracker;
-import com.googlecode.javacv.cpp.opencv_imgproc;
-import static com.googlecode.javacv.cpp.opencv_core.*;
-import static com.googlecode.javacv.cpp.opencv_calib3d.*;
+import org.bytedeco.javacv.CameraDevice;
+import org.bytedeco.javacv.CameraDevice.Settings;
+import org.bytedeco.javacv.ProjectorDevice;
+import org.bytedeco.javacpp.ARToolKitPlus.Tracker;
+import org.bytedeco.javacpp.opencv_imgproc;
+import static org.bytedeco.javacpp.opencv_core.*;
+import static org.bytedeco.javacpp.opencv_calib3d.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -609,7 +609,7 @@ public class Utils {
         if (c.length > 0) {
             cam = c[0];
         }
-        Settings camSettings = (com.googlecode.javacv.CameraDevice.Settings) cam.getSettings();
+        Settings camSettings = (org.bytedeco.javacv.CameraDevice.Settings) cam.getSettings();
         int w = camSettings.getImageWidth();
         int h = camSettings.getImageHeight();
 

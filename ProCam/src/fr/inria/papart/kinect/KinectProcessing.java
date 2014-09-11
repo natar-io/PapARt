@@ -5,7 +5,7 @@
  */
 package fr.inria.papart.kinect;
 
-import com.googlecode.javacv.cpp.opencv_core;
+import org.bytedeco.javacpp.opencv_core;
 import static fr.inria.papart.kinect.Kinect.isInside;
 import static fr.inria.papart.kinect.Kinect.papplet;
 import java.nio.ByteBuffer;

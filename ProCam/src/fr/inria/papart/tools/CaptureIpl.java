@@ -4,8 +4,8 @@
  */
 package fr.inria.papart.tools;
 
-import com.googlecode.javacv.cpp.opencv_core;
-import com.googlecode.javacv.cpp.opencv_core.IplImage;
+import org.bytedeco.javacpp.opencv_core;
+import org.bytedeco.javacpp.opencv_core.IplImage;
 import java.nio.ByteBuffer;
 import processing.core.PApplet;
 import processing.core.PConstants;

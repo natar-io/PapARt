@@ -13,8 +13,8 @@ import processing.core.PVector;
 import toxi.geom.Matrix4x4;
 import java.io.FileNotFoundException;
 
-import static com.googlecode.javacv.cpp.opencv_core.*;
-import static com.googlecode.javacv.cpp.opencv_calib3d.*;
+import static org.bytedeco.javacpp.opencv_core.*;
+import static org.bytedeco.javacpp.opencv_calib3d.*;
 import processing.core.PMatrix3D;
 import toxi.geom.Vec3D;
 

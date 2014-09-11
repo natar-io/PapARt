@@ -4,8 +4,8 @@
  */
 package fr.inria.papart.procam;
 
-import com.googlecode.javacv.cpp.opencv_core.CvMat;
-import com.googlecode.javacv.cpp.opencv_core.IplImage;
+import org.bytedeco.javacpp.opencv_core.CvMat;
+import org.bytedeco.javacpp.opencv_core.IplImage;
 import processing.core.PApplet;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
@@ -81,8 +81,8 @@ public class TrackedView {
         outScreenP[2] = new PVector(outWidth, 0);
         outScreenP[3] = new PVector(0, 0);
 
-        this.botLeft = botLeft.copy();
-        this.sizeCapture = sizeCapture.copy();
+        this.botLeft = botLeft.get();
+        this.sizeCapture = sizeCapture.get();
     }
     
     public PVector getResolution(){
@@ -90,16 +90,16 @@ public class TrackedView {
     }
     
     public PVector getPosition(){
-        return botLeft.copy();
+        return botLeft.get();
     }
 
     public PVector getSize(){
-        return sizeCapture.copy();
+        return sizeCapture.get();
     }
 
     public void setObservedLocation(PVector botLeft, PVector sizeCapture) {
-        this.botLeft = botLeft.copy();
-        this.sizeCapture = sizeCapture.copy();
+        this.botLeft = botLeft.get();
+        this.sizeCapture = sizeCapture.get();
     }
 
     protected void setPos(float[] pos3D) {

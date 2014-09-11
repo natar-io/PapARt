@@ -1,7 +1,7 @@
 package fr.inria.papart.procam;
 
-import com.googlecode.javacv.ProjectiveDevice;
-import com.googlecode.javacv.ProjectorDevice;
+import org.bytedeco.javacv.ProjectiveDevice;
+import org.bytedeco.javacv.ProjectorDevice;
 import fr.inria.papart.drawingapp.DrawUtils;
 import fr.inria.papart.multitouchKinect.TouchPoint;
 import processing.core.PApplet;

@@ -4,17 +4,18 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/kinect/PlaneThreshold.java</file>
+            <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/procam/ProjectiveDeviceP.java</file>
+            <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/tools/Homography.java</file>
             <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/procam/ARDisplay.java</file>
-            <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/kinect/KinectScreenCalibration.java</file>
-            <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/multitouchKinect/TouchInput.java</file>
-            <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/procam/ARGraphics.java</file>
-            <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/kinect/Kinect.java</file>
+            <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/procam/ImageWithTags.java</file>
+            <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/tools/GSIplImage.java</file>
+            <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/kinect/KinectOpenCV.java</file>
             <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/procam/Projector.java</file>
             <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/procam/Camera.java</file>
-            <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/procam/Utils.java</file>
-            <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/procam/Papart.java</file>
             <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/tools/Utils.java</file>
+            <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/tools/CaptureIpl.java</file>
+            <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/procam/Screen.java</file>
+            <file>file:/home/jiii/papart/ProCam/src/fr/inria/papart/scanner/BackgroundRemover.java</file>
         </group>
     </open-files>
 </project-private>

@@ -4,9 +4,9 @@
  */
 package fr.inria.papart.procam;
 
-import com.googlecode.javacv.cpp.ARToolKitPlus;
-import com.googlecode.javacv.cpp.ARToolKitPlus.TrackerMultiMarker;
-import com.googlecode.javacv.cpp.opencv_core.IplImage;
+import org.bytedeco.javacpp.ARToolKitPlus;
+import org.bytedeco.javacpp.ARToolKitPlus.TrackerMultiMarker;
+import org.bytedeco.javacpp.opencv_core.IplImage;
 import java.util.ArrayList;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;

@@ -5,7 +5,7 @@
  */
 package fr.inria.papart.kinect;
 
-import com.googlecode.javacv.cpp.opencv_core;
+import org.bytedeco.javacpp.opencv_core;
 import java.nio.ByteBuffer;
 import processing.core.PApplet;
 import toxi.geom.Vec3D;
@@ -25,8 +25,7 @@ public class KinectOpenCV extends Kinect {
 
     protected void init() {
         super.init();
-        validPointsIpl = opencv_core.IplImage.create(
-                new opencv_core.CvSize(
+        validPointsIpl = opencv_core.IplImage.create(opencv_core.cvSize(
                         kinectCalibIR.getWidth(),
                         kinectCalibIR.getHeight()),
                 opencv_core.IPL_DEPTH_8U, 3);

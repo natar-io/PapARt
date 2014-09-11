@@ -4,9 +4,9 @@
  */
 package fr.inria.papart.kinect;
 
-import com.googlecode.javacv.cpp.opencv_core;
-import com.googlecode.javacv.cpp.opencv_core.CvSize;
-import com.googlecode.javacv.cpp.opencv_core.IplImage;
+import org.bytedeco.javacpp.opencv_core;
+import org.bytedeco.javacpp.opencv_core.CvSize;
+import org.bytedeco.javacpp.opencv_core.IplImage;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;

@@ -8,15 +8,15 @@ package fr.inria.papart.tools;
  *
  * @author jeremy
  */
-import com.googlecode.javacv.JavaCV;
+import org.bytedeco.javacv.JavaCV;
 import processing.core.PApplet;
 import processing.core.PMatrix2D;
 import processing.core.PVector;
 import toxi.geom.Matrix4x4;
 import java.io.FileNotFoundException;
 
-import static com.googlecode.javacv.cpp.opencv_core.*;
-import static com.googlecode.javacv.cpp.opencv_calib3d.*;
+import static org.bytedeco.javacpp.opencv_core.*;
+import static org.bytedeco.javacpp.opencv_calib3d.*;
 
 
 // TODO: REMOVE THIS CLASS, OR THE OTHER

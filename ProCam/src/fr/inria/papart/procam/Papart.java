@@ -5,9 +5,9 @@
  */
 package fr.inria.papart.procam;
 
-import com.googlecode.javacv.FrameGrabber;
-import com.googlecode.javacv.OpenKinectFrameGrabber;
-import com.googlecode.javacv.cpp.freenect;
+import org.bytedeco.javacv.FrameGrabber;
+import org.bytedeco.javacv.OpenKinectFrameGrabber;
+import org.bytedeco.javacpp.freenect;
 import fr.inria.papart.drawingapp.Button;
 import fr.inria.papart.drawingapp.DrawUtils;
 import fr.inria.papart.kinect.Kinect;
@@ -239,7 +239,7 @@ public class Papart {
 
     public PVector getFrameSize() {
         assert (this.frameSize != null);
-        return this.frameSize.copy();
+        return this.frameSize.get();
     }
 
 }

@@ -4,7 +4,7 @@
  */
 package fr.inria.papart.procam;
 
-import com.googlecode.javacv.cpp.opencv_core.IplImage;
+import org.bytedeco.javacpp.opencv_core.IplImage;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 import processing.core.PMatrix3D;

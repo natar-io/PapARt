@@ -16,6 +16,12 @@ import toxi.geom.Matrix4x4;
 public class Utils {
 
     static public String getSketchbookFolder() {
+
+        String sketchbook = java.lang.System.getenv("SKETCHBOOK");
+        if (sketchbook != null) {
+            return sketchbook;
+        }
+
         URL main = Matrix4x4.class.getResource("Matrix4x4.class");
         String tmp = main.getPath();
 
@@ -27,16 +33,24 @@ public class Utils {
         if (!f.exists()) {
             System.err.println("Error in loading the Sketchbook folder.");
         }
-        f = f.getParentFile().getParentFile().getParentFile().getParentFile(); // go to where the config is stored
+
+        // if the file is within a library/lib folder
+        if (f.getParentFile().getAbsolutePath().endsWith(("/lib"))) {
+            //             pathToSketchbook/libraries/myLib/library/lib/myLib.jar
+            f = f.getParentFile().getParentFile().getParentFile().getParentFile().getParentFile();
+        } else {
+            //             pathToSketchbook/libraries/myLib/library/myLib.jar
+            f = f.getParentFile().getParentFile().getParentFile().getParentFile();
+        }
 
         return f.getAbsolutePath();
     }
-    
-    static public String getLibraryFolder(String libname){
-        return getSketchbookFolder() + "/libraries/"+libname ;
+
+    static public String getLibraryFolder(String libname) {
+        return getSketchbookFolder() + "/libraries/" + libname;
     }
-    
-    static public String getPapartFolder(){
+
+    static public String getPapartFolder() {
         return getSketchbookFolder() + "/libraries/ProCam";
     }
 }

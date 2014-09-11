@@ -4,16 +4,16 @@
  */
 package fr.inria.papart.procam;
 
-import com.googlecode.javacv.CameraDevice;
-import com.googlecode.javacv.ProjectiveDevice;
-import com.googlecode.javacv.ProjectorDevice;
-import com.googlecode.javacv.cpp.ARToolKitPlus.ARMarkerInfo;
-import com.googlecode.javacv.cpp.opencv_calib3d;
-import com.googlecode.javacv.cpp.opencv_core.CvMat;
+import org.bytedeco.javacv.CameraDevice;
+import org.bytedeco.javacv.ProjectiveDevice;
+import org.bytedeco.javacv.ProjectorDevice;
+import org.bytedeco.javacpp.ARToolKitPlus.ARMarkerInfo;
+import org.bytedeco.javacpp.opencv_calib3d;
+import org.bytedeco.javacpp.opencv_core.CvMat;
 
-import static com.googlecode.javacv.cpp.opencv_calib3d.*;
-import static com.googlecode.javacv.cpp.opencv_core.*;
-import static com.googlecode.javacv.cpp.opencv_imgproc.*;
+import static org.bytedeco.javacpp.opencv_calib3d.*;
+import static org.bytedeco.javacpp.opencv_core.*;
+import static org.bytedeco.javacpp.opencv_imgproc.*;
 
 import processing.core.PApplet;
 import processing.core.PConstants;
@@ -143,7 +143,7 @@ public class ProjectiveDeviceP implements PConstants {
 
     /* * Working, use this one for Low error !
         
-    */
+     */
     public PVector pixelToWorldNormP(int x, int y) {
         PVector result = new PVector();
         result.x = ((float) x - cx) / fx;
@@ -151,12 +151,12 @@ public class ProjectiveDeviceP implements PConstants {
         result.z = 1;
         return result;
     }
-    
+
     public PVector pixelToWorldNormPMM(int x, int y, float sizeX) {
-        
+
         PVector result = pixelToWorldNormP(x, y);
 
-        float sizeY = sizeX *  ((float)h/(float) w);
+        float sizeY = sizeX * ((float) h / (float) w);
         result.x *= (float) sizeX / (float) w;
         result.y *= (float) sizeY / (float) h;
         return result;
@@ -223,16 +223,31 @@ public class ProjectiveDeviceP implements PConstants {
 //                float width, @Cast("ARFloat(*)[4]") float conv[/*3][4*/]);
 //        return null;
 //    }
+    
+    /**
+     * Broken with Bytedeco -> To update
+     * @param objectPoints
+     * @param imagePoints
+     * @return 
+     */
     public PMatrix3D estimateOrientation(PVector[] objectPoints,
             PVector[] imagePoints) {
 
         assert (objectPoints.length == imagePoints.length);
 
-        CvMat op = CvMat.create(objectPoints.length, 3);
-        CvMat ip = CvMat.create(imagePoints.length, 2);
+        /*
+        
+//        CvMat op = CvMat.create(objectPoints.length, 3);
+//        CvMat ip = CvMat.create(imagePoints.length, 2);
+        Mat op = new Mat(objectPoints.length, 3, CV_32FC1);
+        Mat ip = new Mat(imagePoints.length, 2, CV_32FC1);
 
-        CvMat rotation = CvMat.create(3, 1);
-        CvMat translation = CvMat.create(3, 1);
+        Mat rotation = new Mat(3, 1, CV_32FC1);
+        CvMat cvRotation = CvMat.create(3, 1);
+        Mat translation = new Mat(3, 1, CV_32FC1);
+
+//        CvMat rotation = CvMat.create(3, 1);
+//        CvMat translation = CvMat.create(3, 1);
 
         // Create internal parameters matrix.
         if (intrinsicsMat == null) {
@@ -261,24 +276,31 @@ public class ProjectiveDeviceP implements PConstants {
             ip.put(i, 1, imagePoints[i].y);
         }
 
+        // TODO: remove the new ...
+        
+        
 //        ITERATIVE=CV_ITERATIVE,
 //        EPNP=CV_EPNP,
 //        P3P=CV_P3P;
-        boolean solved = opencv_calib3d.solvePnP(op, ip, intrinsicsMat, null, rotation, translation,
+        // Convert all to Mat, instead of CvMat
+        boolean solved = opencv_calib3d.solvePnP(new Mat(op),
+                new Mat(ip),
+                new Mat(intrinsicsMat), null,
+                rotation, translation,
                 false, opencv_calib3d.ITERATIVE);
 
 //        boolean solvePnP(@InputArray CvMat objectPoints,
 //            @InputArray CvMat imagePoints, @InputArray CvMat cameraMatrix,
 //            @InputArray CvMat distCoeffs,  @OutputArray CvMat rvec,
-//            @OutputArray CvMat tvec, boolean useExtrinsicGuess/*=false*/, int flags/*=ITERATIVE*/);
+//            @OutputArray CvMat tvec, boolean useExtrinsicGuess
         PMatrix3D mat = new PMatrix3D();
 
         CvMat rotMat = CvMat.create(3, 3);
-        rotation.put(0, rotation.get(0));
+        rotat   ion.put(0, rotation.get(0));
         rotation.put(1, rotation.get(1));
         rotation.put(2, rotation.get(2));
 
-        cvRodrigues2(rotation, rotMat, null);
+        cvRodrigues2(cvRotation, rotMat, null);
 
         float RTMat[] = {
             (float) rotMat.get(0), (float) rotMat.get(1), (float) rotMat.get(2), (float) translation.get(0),
@@ -287,8 +309,9 @@ public class ProjectiveDeviceP implements PConstants {
             0, 0, 0, 1f};
 
         mat.set(RTMat);
-
         return mat;
+*/
+        return null;
     }
 
     private static void loadParameters(ProjectiveDevice dev, ProjectiveDeviceP p) {

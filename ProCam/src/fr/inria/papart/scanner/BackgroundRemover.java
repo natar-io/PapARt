@@ -9,14 +9,14 @@ package fr.inria.papart.scanner;
  *
  * @author jiii
  */
-import com.googlecode.javacpp.Loader;
-import static com.googlecode.javacpp.Loader.*;
-import com.googlecode.javacv.cpp.opencv_core;
-import static com.googlecode.javacv.cpp.opencv_core.*;
-import static com.googlecode.javacv.cpp.opencv_imgproc.*;
-import static com.googlecode.javacv.cpp.opencv_highgui.*;
+import org.bytedeco.javacpp.Loader;
+import org.bytedeco.javacpp.opencv_core.*;
+import static org.bytedeco.javacpp.Loader.*;
+import static org.bytedeco.javacpp.opencv_core.*;
+import static org.bytedeco.javacpp.opencv_imgproc.*;
+import static org.bytedeco.javacpp.opencv_highgui.*;
 
-import com.googlecode.javacv.cpp.opencv_imgproc.*;
+import org.bytedeco.javacpp.opencv_imgproc.*;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -36,7 +36,7 @@ public class BackgroundRemover implements PConstants {
     private BackgroundState state;
 
     public BackgroundRemover(int w, int h) {
-        CvSize size = new CvSize(w, h);
+        CvSize size = cvSize(w, h);
 
         projZone = IplImage.create(size, IPL_DEPTH_8U, 1);
         output = IplImage.create(size, IPL_DEPTH_8U, 1);

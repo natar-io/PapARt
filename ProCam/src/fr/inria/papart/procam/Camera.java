@@ -8,13 +8,13 @@ package fr.inria.papart.procam;
  *
  * @author jeremylaviole
  */
-import com.googlecode.javacv.FrameGrabber;
-import com.googlecode.javacv.OpenCVFrameGrabber;
-import com.googlecode.javacv.OpenKinectFrameGrabber;
-import com.googlecode.javacv.cpp.ARToolKitPlus;
-import com.googlecode.javacv.cpp.ARToolKitPlus.TrackerMultiMarker;
-import com.googlecode.javacv.cpp.opencv_core.CvMat;
-import com.googlecode.javacv.cpp.opencv_core.IplImage;
+import org.bytedeco.javacv.FrameGrabber;
+import org.bytedeco.javacv.OpenCVFrameGrabber;
+import org.bytedeco.javacv.OpenKinectFrameGrabber;
+import org.bytedeco.javacpp.ARToolKitPlus;
+import org.bytedeco.javacpp.ARToolKitPlus.TrackerMultiMarker;
+import org.bytedeco.javacpp.opencv_core.CvMat;
+import org.bytedeco.javacpp.opencv_core.IplImage;
 //import diewald_PS3.PS3;
 //import diewald_PS3.constants.COLOR_MODE;
 //import diewald_PS3.constants.VIDEO_MODE;
