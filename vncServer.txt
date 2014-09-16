@@ -1,0 +1,7 @@
+Serveur :
+x11vnc -display :0 -localhost -nopw -clear_mods -clip 1024x600+100+100
+
+
+client : 
+vvnjviewer  marche bien, OpenSource, Java. 
+

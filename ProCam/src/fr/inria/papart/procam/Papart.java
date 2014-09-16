@@ -22,13 +22,13 @@ import processing.core.PVector;
  */
 public class Papart {
 
-    public final static String folder = fr.inria.papart.tools.Utils.getPapartFolder();
-    public static String proCamCalib = folder + "/common/calibration/camera-projector.yaml";
-    public static String camCalibARtoolkit = folder + "/common/calibration/camera-projector.cal";
-    public static String kinectIRCalib = folder + "/common/calibration/calibration-kinect-IR.yaml";
-    public static String kinectRGBCalib = folder + "/common/calibration/calibration-kinect-RGB.yaml";
-    public static String kinectScreenCalib = folder + "/common/calibration/KinectScreenCalibration.txt";
-    public static String defaultFont = folder + "/common/Font/" + "GentiumBookBasic-48.vlw";
+    public final static String folder = fr.inria.papart.procam.Utils.getPapartFolder();
+    public static String proCamCalib = folder + "/data/calibration/camera-projector.yaml";
+    public static String camCalibARtoolkit = folder + "/data/calibration/camera-projector.cal";
+    public static String kinectIRCalib = folder + "/data/calibration/calibration-kinect-IR.yaml";
+    public static String kinectRGBCalib = folder + "/data/calibration/calibration-kinect-RGB.yaml";
+    public static String kinectScreenCalib = folder + "/data/calibration/KinectScreenCalibration.txt";
+    public static String defaultFont = folder + "/data/Font/" + "GentiumBookBasic-48.vlw";
     public int defaultFontSize = 12;
 
     protected float zNear = 10;

@@ -21,17 +21,22 @@ import org.bytedeco.javacpp.opencv_core.IplImage;
 //import diewald_PS3.logger.PS3Logger;
 import fr.inria.papart.multitouchKinect.TouchInput;
 import fr.inria.papart.tools.CaptureIpl;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import processing.core.PApplet;
+import processing.core.PConstants;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
+import processing.opengl.PGraphicsOpenGL;
+import processing.opengl.Texture;
 
-public class Camera {
+public class Camera implements PConstants {
 
     // Camera parameters
     protected PMatrix3D camIntrinsicsP3D;
@@ -52,7 +57,8 @@ public class Camera {
     private OpenKinectFrameGrabber openKinectGrabber;
     // Texture for video visualization (OpenCV generally)
     protected IplImage iimg = null, copyUndist, depthImage = null;
-    protected PImage camImage = null, depthPImage = null;
+    protected CamImage camImage = null; 
+    protected PImage depthPImage = null;
     public final static int OPENCV_VIDEO = 1;
     public final static int PROCESSING_VIDEO = 2;
 //    public final static int PSEYE_VIDEO = 3;
@@ -193,13 +199,12 @@ public class Camera {
         }
 
     }
-    
-    public static Camera loadCamera(PApplet applet, String file, String calibration){
-          String[] lines = applet.loadStrings(file);
-          return new Camera(applet, lines[0], calibration, Integer.parseInt(lines[1]));
+
+    public static Camera loadCamera(PApplet applet, String file, String calibration) {
+        String[] lines = applet.loadStrings(file);
+        return new Camera(applet, lines[0], calibration, Integer.parseInt(lines[1]));
     }
-    
-   
+
 //    public void savePlane(String filename) {
 //        String[] lines = new String[7];
 //        lines[0] = "" + plane.x;
@@ -227,7 +232,6 @@ public class Camera {
 //        plane = new Plane(pos, norm);
 //        Kinect.CURRENTPAPPLET.println("Plane " + fileName + " successfully loaded");
 //    }
-
     public int width() {
         return width;
     }
@@ -460,17 +464,13 @@ public class Camera {
         }
 
         if (videoInputType == PROCESSING_VIDEO) {
-            // System.out.println("Grab () ?");
             if (this.captureIpl.available()) {
 
-                // System.out.println("Avail");
                 captureIpl.read();
                 img = captureIpl.getIplImage();
 
             } else {
                 try {
-                    // System.out.println("Sleep...");
-
                     // TimeUnit.MILLISECONDS.sleep((long) (1f / frameRate));
                     TimeUnit.MILLISECONDS.sleep((long) (10));
 
@@ -481,13 +481,6 @@ public class Camera {
             }
         }
 
-//// Grab is done in a separate thread...         
-//        if (videoInputType == PSEYE_VIDEO) {
-//
-//            // TODO: Check for clone() ? 
-//            // Performance issues, can be handled with synchronized calls ?
-//            img = ps3.getIplImage().clone();
-//        }
         if (img != null) {
             if (undistort) {
                 if (copyUndist == null) {
@@ -495,9 +488,10 @@ public class Camera {
                 }
                 // Workaround for crash when the java program is closing
                 // to avoid native code to continue to run...
-                if(isClosing)
+                if (isClosing) {
                     return img;
-                
+                }
+
                 pdp.getDevice().undistort(img, copyUndist);
                 iimg = copyUndist;
             } else {
@@ -511,54 +505,73 @@ public class Camera {
 
     }
 
+    public PImage getImage() {
+        return getPImage();
+    }
+
+    class Dummy {
+
+        public synchronized void disposeBuffer(Object buf) {
+            System.out.println("Dispose !");
+//    ((Buffer)buf).dispose();
+        }
+    }
+
+    Dummy dummy = new Dummy();
+    ByteBuffer argbBuffer;
+
+    /* TODO: Performance measure of Texture method vs pixel method */
     public PImage getPImage() {
         imageRetreived();
-//        if (tex == null) {
-//            tex = new CustomTexture(width, height);
-//        }
-
-//        if (iimg != null) {
-//            if (videoInputType == OPENCV_VIDEO) {
-//                // TODO: Check direct link to OpenGL again... :( 
-////                tex.updateBuffer(iimg.getIntBuffer());
-////                tex.putBuffer(GL2.GL_BGR, GL.GL_UNSIGNED_BYTE, iimg.getIntBuffer());
-//            } else {
-//                // TODO: GSTREAMER !
-////                if (videoInputType == GSTREAMER_VIDEO) {
-////                    tex.putBuffer(GL2.GL_RGBA, GL.GL_UNSIGNED_BYTE, iimg.getIntBuffer());
-////                }
-//            }
-//        }
-        if (camImage == null) {
-            camImage = parent.createImage(width, height, PApplet.RGB);
-        }
 
         if (useProcessingVideo()) {
             return captureIpl;
         }
 
-//        if (usePSEYE()) {
-//            camImage.loadPixels();
-//            ps3.getFrame(camImage.pixels);
-//            camImage.updatePixels();
-//        }
+        if (camImage == null) {
+
+            // First method, through PImage pixels
+//            camImage = parent.createImage(width, height, RGB);
+            // Second Method, with the Texture Object
+            camImage = new CamImage(parent, iimg);
+        }
+
         if (useOpenCV() || useKinect()) {
             if (iimg != null) {
-                Utils.IplImageToPImage(iimg, false, camImage);
+                // First Method
+//                Utils.IplImageToPImage(iimg, false, camImage);
+
+                // Second method
+                camImage.update(iimg);
             }
         }
         return camImage;
     }
 
+    /**
+     * Check the use of this
+     *
+     * @return
+     */
     public IplImage getIplImage() {
         imageRetreived();
         return iimg;
     }
 
+    /**
+     * Check the use of this
+     *
+     * @return
+     */
     public IplImage getDepthIplImage() {
         return depthImage;
     }
 
+    /**
+     * Check the use of this
+     *
+     * @return
+     */
     public PImage getDepthPImage() {
 
         assert (useKinect());
@@ -602,11 +615,22 @@ public class Camera {
     }
 
     /**
+     * To use instead of getCamViewpoint
+     *
+     * @param point
+     * @return
+     */
+    public PVector getViewPoint(PVector point) {
+        return getCamViewPoint(point);
+    }
+
+    /**
      * Gets the 2D location in the image of a 3D point. TODO: undistort ?
      *
      * @param pt 3D point seen by the camera.
      * @return 2D location of the 3D point in the image.
      */
+    @Deprecated
     public PVector getCamViewPoint(PVector pt) {
         PVector tmp = new PVector();
         camIntrinsicsP3D.mult(new PVector(pt.x, pt.y, pt.z), tmp);
@@ -620,63 +644,6 @@ public class Camera {
 
         return pdp.estimateOrientation(objectPoints, imagePoints);
     }
-//        public static double[] computeReprojectionError(CvMat object_points,
-//            CvMat image_points, CvMat point_counts, CvMat camera_matrix,
-//            CvMat dist_coeffs, CvMat rot_vects, CvMat trans_vects,
-//            CvMat per_view_errors ) {
-//        CvMat image_points2 = CvMat.create(image_points.rows(),
-//            image_points.cols(), image_points.type());
-//
-//        int i, image_count = rot_vects.rows(), points_so_far = 0;
-//        double total_err = 0, max_err = 0, err;
-//
-//        CvMat object_points_i = new CvMat(),
-//              image_points_i  = new CvMat(),
-//              image_points2_i = new CvMat();
-//        IntBuffer point_counts_buf = point_counts.getIntBuffer();
-//        CvMat rot_vect = new CvMat(), trans_vect = new CvMat();
-//
-//        for (i = 0; i < image_count; i++) {
-//            object_points_i.reset();
-//            image_points_i .reset();
-//            image_points2_i.reset();
-//            int point_count = point_counts_buf.get(i);
-//
-//            cvGetCols(object_points, object_points_i,
-//                    points_so_far, points_so_far + point_count);
-//            cvGetCols(image_points, image_points_i,
-//                    points_so_far, points_so_far + point_count);
-//            cvGetCols(image_points2, image_points2_i,
-//                    points_so_far, points_so_far + point_count);
-//            points_so_far += point_count;
-//
-//            cvGetRows(rot_vects,   rot_vect,   i, i+1, 1);
-//            cvGetRows(trans_vects, trans_vect, i, i+1, 1);
-//
-//            cvProjectPoints2(object_points_i, rot_vect, trans_vect,
-//                                camera_matrix, dist_coeffs, image_points2_i);
-//            err = cvNorm(image_points_i, image_points2_i);
-//            err *= err;
-//            if (per_view_errors != null)
-//                per_view_errors.put(i, Math.sqrt(err/point_count));
-//            total_err += err;
-//
-//            for (int j = 0; j < point_count; j++) {
-//                double x1 = image_points_i .get(0, j, 0);
-//                double y1 = image_points_i .get(0, j, 1);
-//                double x2 = image_points2_i.get(0, j, 0);
-//                double y2 = image_points2_i.get(0, j, 1);
-//                double dx = x1-x2;
-//                double dy = y1-y2;
-//                err = Math.sqrt(dx*dx + dy*dy);
-//                if (err > max_err) {
-//                    max_err = err;
-//                }
-//            }
-//        }
-//
-//        return new double[] { Math.sqrt(total_err/points_so_far), max_err };
-//    }
 
     /**
      * Add a tracked view to the camera. This camera must be tracking the board
@@ -689,6 +656,12 @@ public class Camera {
         return trackedViews.add(view);
     }
 
+    /**
+     * Check the use
+     *
+     * @param trackedView
+     * @return
+     */
     public IplImage getView(TrackedView trackedView) {
         return getViewIpl(trackedView);
     }
@@ -711,6 +684,16 @@ public class Camera {
         return trackedView.getImageIpl(iimg);
     }
 
+    /**
+     * *******************************
+     */
+    /// TODO: Check the end of the code 
+    /**
+     * Used only in photoTaker...
+     *
+     * @param pimg
+     * @param undist
+     */
     public void grabTo(PImage pimg, boolean undist) {
         try {
 

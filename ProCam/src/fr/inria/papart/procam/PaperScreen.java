@@ -173,6 +173,32 @@ public class PaperScreen {
         // Sun POV
         currentGraphics.applyMatrix(loc);
     }
+    
+    
+    public MarkerBoard getBoard() {
+        return board;
+    }
+
+    public PVector getDrawingSize() {
+        return drawingSize;
+    }
+
+    public Camera getCameraTracking() {
+        return cameraTracking;
+    }
+
+    public ARDisplay getProjector() {
+        return projector;
+    }
+
+    public float getResolution() {
+        return resolution;
+    }
+
+    public boolean isIsDrawingOnScreen() {
+        return isDrawingOnScreen;
+    }
+    
 
     public void keyEvent(KeyEvent e) {
 

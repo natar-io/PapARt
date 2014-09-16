@@ -124,4 +124,20 @@ public class PaperTouchScreen extends PaperScreen {
             }
         }
     }
+
+    public ArrayList<Touch> getTouchList() {
+        return touchList;
+    }
+
+    public TouchInput getTouchInput() {
+        return touchInput;
+    }
+
+    public ArrayList<Button> getButtons() {
+        return buttons;
+    }
+
+    public boolean isIsTranslated() {
+        return isTranslated;
+    }
 }

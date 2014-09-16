@@ -14,7 +14,7 @@ import java.util.NoSuchElementException;
 
 /**
  * // Insipired by GLTexture implementation.
- *
+ * @deprecated
  * @author jiii
  */
 public class GSIplImage {

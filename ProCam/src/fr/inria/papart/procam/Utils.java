@@ -40,20 +40,41 @@ public class Utils {
 
     static public String getSketchbookFolder() {
 
+        String sketchbook = java.lang.System.getenv("SKETCHBOOK");
+        if (sketchbook != null) {
+            return sketchbook;
+        }
+
         URL main = Matrix4x4.class.getResource("Matrix4x4.class");
         String tmp = main.getPath();
 
         tmp = tmp.substring(0, tmp.indexOf('!'));
         tmp = tmp.replace("file:", "");
 //        tmp = tmp.replace("file:/", "");  TODO: OS check ?
- 
+
         File f = new File(tmp);
         if (!f.exists()) {
             System.err.println("Error in loading the Sketchbook folder.");
         }
-        f = f.getParentFile().getParentFile().getParentFile().getParentFile(); // go to where the config is stored
-        
-        return  f.getAbsolutePath();
+
+        // if the file is within a library/lib folder
+        if (f.getParentFile().getAbsolutePath().endsWith(("/lib"))) {
+            //             pathToSketchbook/libraries/myLib/library/lib/myLib.jar
+            f = f.getParentFile().getParentFile().getParentFile().getParentFile().getParentFile();
+        } else {
+            //             pathToSketchbook/libraries/myLib/library/myLib.jar
+            f = f.getParentFile().getParentFile().getParentFile().getParentFile();
+        }
+
+        return f.getAbsolutePath();
+    }
+
+    static public String getLibraryFolder(String libname) {
+        return getSketchbookFolder() + "/libraries/" + libname;
+    }
+
+    static public String getPapartFolder() {
+        return getSketchbookFolder() + "/libraries/ProCam";
     }
 
     static public PVector mult(PMatrix3D mat, PVector source, PVector target) {
@@ -447,6 +468,22 @@ public class Utils {
 //        buff = null;
         ret.updatePixels();
     }
+    
+    static public void byteBufferBRGtoARGB(ByteBuffer bgr, ByteBuffer argb){
+        byte[] tmpArr = new byte[3];
+        
+        for(int i = 0; i < bgr.capacity(); i += 3){
+            bgr.get(tmpArr);
+
+            argb.put(tmpArr[2]);
+            argb.put(tmpArr[1]);
+            argb.put(tmpArr[0]);
+            argb.put((byte) Byte.MAX_VALUE);
+        }
+        argb.rewind();
+    }
+    
+    
     // TODO
     private static byte[] kinectByteArray = null;
 
