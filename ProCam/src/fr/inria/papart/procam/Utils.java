@@ -478,7 +478,7 @@ public class Utils {
             argb.put(tmpArr[2]);
             argb.put(tmpArr[1]);
             argb.put(tmpArr[0]);
-            argb.put((byte) Byte.MAX_VALUE);
+            argb.put((byte) 255);
         }
         argb.rewind();
     }

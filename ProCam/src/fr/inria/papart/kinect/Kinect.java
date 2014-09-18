@@ -4,29 +4,12 @@
  */
 package fr.inria.papart.kinect;
 
-import org.bytedeco.javacpp.opencv_core;
-import org.bytedeco.javacpp.opencv_core.CvSize;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
-import java.nio.ShortBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import processing.core.PApplet;
-import processing.core.PConstants;
-import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
-import toxi.geom.Matrix4x4;
-import toxi.geom.Triangle3D;
 import toxi.geom.Vec3D;
 
 /**
@@ -446,10 +429,16 @@ public class Kinect {
         return this.connexity;
     }
 
+    /**
+     * Return the 3D points of the depth. 
+     * 3D values in millimeters
+     * @return the array of 3D points. 
+     */
     public Vec3D[] getDepthPoints() {
         return depthData.kinectPoints;
     }
 
+    
     public DepthData getDepthData(){
         return this.depthData;
     }

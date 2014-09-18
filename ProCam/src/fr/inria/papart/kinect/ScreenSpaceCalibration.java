@@ -9,7 +9,6 @@ import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics;
 import processing.core.PVector;
-import processing.opengl.PGraphicsOpenGL;
 import toxi.geom.Vec3D;
 
 /**
