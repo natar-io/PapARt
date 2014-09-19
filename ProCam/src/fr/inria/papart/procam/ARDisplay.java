@@ -5,26 +5,16 @@
 package fr.inria.papart.procam;
 
 import processing.opengl.PGraphicsOpenGL;
-import processing.opengl.Texture;
 import org.bytedeco.javacv.ProjectiveDevice;
 import fr.inria.papart.drawingapp.DrawUtils;
 import fr.inria.papart.exceptions.BoardNotDetectedException;
-import java.awt.Color;
 import java.util.ArrayList;
-import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 import processing.core.PApplet;
-import processing.core.PConstants;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
-import processing.opengl.PGL;
-import static processing.opengl.PGL.CLAMP_TO_EDGE;
-import static processing.opengl.PGL.NEAREST;
-import static processing.opengl.PGL.RGBA;
-import static processing.opengl.PGL.TEXTURE_2D;
 import processing.opengl.PShader;
-import sun.swing.SwingUtilities2;
 import toxi.geom.Ray3D;
 import toxi.geom.ReadonlyVec3D;
 import toxi.geom.Vec3D;
@@ -402,7 +392,7 @@ public class ARDisplay {
 
         // TODO: check !
         this.graphics.scale(1f / resolution);
-
+        
     }
 
     public void endDraw() {
