@@ -143,6 +143,7 @@ public class PaperScreen {
         g.beginDraw();
         // T
 //        g.clear(0, 0);
+        getLocation().print();
         g.scale(resolution);
         g.background(0, 100, 200);
         g.endDraw();

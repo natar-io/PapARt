@@ -43,7 +43,7 @@ public class Camera implements PConstants {
     protected PApplet parent;
     private ArrayList<TrackedView> trackedViews;
     private ArrayList<MarkerBoard> sheets = null;
-    private String calibrationARToolkit;
+    protected String calibrationARToolkit;
     private ARTThread thread = null;
     protected ProjectiveDeviceP pdp = null;
     // GStreamer  Video input
@@ -57,7 +57,7 @@ public class Camera implements PConstants {
     private OpenKinectFrameGrabber openKinectGrabber;
     // Texture for video visualization (OpenCV generally)
     protected IplImage iimg = null, copyUndist, depthImage = null;
-    protected CamImage camImage = null; 
+    protected CamImage camImage = null;
     protected PImage depthPImage = null;
     public final static int OPENCV_VIDEO = 1;
     public final static int PROCESSING_VIDEO = 2;
@@ -277,50 +277,7 @@ public class Camera implements PConstants {
     }
 
     public void trackMarkerBoard(MarkerBoard sheet) {
-
-        // create a tracker that does:
-        //  - 6x6 sized marker images (required for binary markers)
-        //  - samples at a maximum of 6x6 
-        //  - works with luminance (gray) images
-        //  - can load a maximum of 0 non-binary pattern
-        //  - can detect a maximum of 8 patterns in one image
-        TrackerMultiMarker tracker = new ARToolKitPlus.TrackerMultiMarker(width, height, 10, 6, 6, 6, 0);
-
-        // ARToolKit 2.1.1 - version
-        // MultiTracker tracker = new MultiTracker(w, h);
-        //            int pixfmt = ARToolKitPlus.PIXEL_FORMAT_LUM;
-        int pixfmt = 0;
-
-        if (videoInputType == Camera.OPENCV_VIDEO) {
-            pixfmt = ARToolKitPlus.PIXEL_FORMAT_BGR;
-        }
-        if (videoInputType == Camera.PROCESSING_VIDEO) {
-            // Works on MacBook
-            pixfmt = ARToolKitPlus.PIXEL_FORMAT_ABGR;
-        }
-
-        tracker.setPixelFormat(pixfmt);
-        tracker.setBorderWidth(0.125f);
-        tracker.activateAutoThreshold(true);
-        tracker.setUndistortionMode(ARToolKitPlus.UNDIST_NONE);
-        tracker.setPoseEstimator(ARToolKitPlus.POSE_ESTIMATOR_RPP);
-        tracker.setMarkerMode(ARToolKitPlus.MARKER_ID_BCH);
-        tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_FULL_RES);
-//            tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_HALF_RES);
-        tracker.setUseDetectLite(false);
-//            tracker.setUseDetectLite(true);
-
-        // Initialize the tracker, with camera parameters and marker config. 
-        if (!tracker.init(calibrationARToolkit, sheet.getFileName(), 1.0f, 1000.f)) {
-            System.err.println("Init ARTOOLKIT Error " + calibrationARToolkit + " " + sheet.getFileName() + " " + sheet.getName());
-        }
-
-        float[] transfo = new float[16];
-        for (int i = 0; i < 3; i++) {
-            transfo[12 + i] = 0;
-        }
-        transfo[15] = 0;
-        sheet.addTracker(parent, this, tracker, transfo);
+        sheet.addTracker(parent, this);
         this.sheets.add(sheet);
     }
 
@@ -530,6 +487,9 @@ public class Camera implements PConstants {
 
         if (camImage == null) {
 
+            if (iimg == null) {
+                return null;
+            }
             // First method, through PImage pixels
 //            camImage = parent.createImage(width, height, RGB);
             // Second Method, with the Texture Object

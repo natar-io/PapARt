@@ -219,7 +219,7 @@ public class ARDisplay {
 
         parent.noStroke();
 
-        if (camera != null) {
+        if (camera != null && camera.getPImage() != null) {
             parent.image(camera.getPImage(), 0, 0, this.drawingSizeX, this.drawingSizeY);
 //            ((PGraphicsOpenGL) (parent.g)).image(camera.getPImage(), 0, 0, frameWidth, frameHeight);
         }

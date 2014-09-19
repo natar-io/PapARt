@@ -21,8 +21,15 @@ public class Screen {
     private PGraphicsOpenGL thisGraphics;
     // Position holding...
     private PMatrix3D initPosM = null;
-    private float[] pos3D;
-    private PMatrix3D pos = null;
+
+    // Either one, or the other is unique to this object. 
+    // The other one is unique to the camera/markerboard couple. 
+    private float[] posFloat;
+    private PMatrix3D posPMatrix;
+
+    private boolean isFloatArrayUpdating;
+
+    ////////////
     private PVector size;
     private float scale;
     protected Plane plane = new Plane();
@@ -40,33 +47,17 @@ public class Screen {
 
     public Screen(PApplet parent, PVector size, float scale, boolean useAA, int AAValue) {
         // AA not available anymore
-         // Now it is loading when use, to save memory (for PaperScreens)
+        // Now it is loading when use, to save memory (for PaperScreens)
 //        thisGraphics = (PGraphicsOpenGL) parent.createGraphics((int) (size.x * scale), (int) (size.y * scale), PApplet.OPENGL);
-             
+
 //        thisGraphics = new PGraphicsOpenGL(); 
 //        thisGraphics.setPrimary(false);
 //        thisGraphics.setSize((int) (size.x * scale), (int) (size.y * scale));
         this.size = size.get();
         this.scale = scale;
         this.parent = parent;
-        pos = new PMatrix3D();
         initHomography();
 //        initImageGetter();
-    }
-
-    ////////////////// 3D SPACE TO PAPER HOMOGRAPHY ///////////////
-    // Version 2.0 :  (0,0) is the top-left corner.
-    private void initHomography() {
-        homography = new Homography(parent, 3, 2, 4);
-        homography.setPoint(false, 0, new PVector(0, 0));
-        homography.setPoint(false, 1, new PVector(1, 0));
-        homography.setPoint(false, 2, new PVector(1, 1));
-        homography.setPoint(false, 3, new PVector(0, 1));
-
-//        homography.setPoint(false, 0, new PVector(0, 1));
-//        homography.setPoint(false, 1, new PVector(1, 1));
-//        homography.setPoint(false, 2, new PVector(1, 0));
-//        homography.setPoint(false, 3, new PVector(0, 0));
     }
 
     // Get the texture to display...
@@ -74,10 +65,109 @@ public class Screen {
         return getGraphics();
     }
 
+    public PGraphicsOpenGL getGraphics() {
+        if (thisGraphics == null) {
+            thisGraphics = (PGraphicsOpenGL) parent.createGraphics((int) (size.x * scale), (int) (size.y * scale), PApplet.OPENGL);
+        }
+
+        return thisGraphics;
+    }
+
+    public void setPos(PMatrix3D position) {
+        posPMatrix = position.get();
+    }
+
+    // The board must be registered with the camera. 
+    public void setAutoUpdatePos(Camera camera, MarkerBoard board) {
+        if (!camera.tracks(board)) {
+            camera.trackMarkerBoard(board);
+        }
+
+        isFloatArrayUpdating = board.useFloatArray();
+        if (this.isFloatArrayUpdating) {
+            posFloat = board.getTransfo(camera);
+            posPMatrix = new PMatrix3D();
+        } else {
+            System.out.println("Getting the original transfo");
+            
+            posPMatrix = board.getTransfoMat(camera);
+            posFloat = new float[12];
+        }
+
+    }
+
+    public boolean isOpenGL() {
+        return isOpenGL;
+    }
+
+    public boolean isDrawing() {
+        return isDrawing;
+    }
+
+    public void setDrawing(boolean isDrawing) {
+        this.isDrawing = isDrawing;
+    }
+
+    public PVector getSize() {
+        return size;
+    }
+
+    public int getDrawSizeX() {
+        return (int) (size.x * scale);
+    }
+
+    public int getDrawSizeY() {
+        return (int) (size.y * scale);
+    }
+
+    public PMatrix3D getPos() {
+        return posPMatrix;
+    }
+
+    public float getScale() {
+        return this.scale;
+    }
+
+    /**
+     * update the internals of the screen to match the tracking.
+     */
+    public void updatePos() {
+
+        System.out.println("Screen: updatePos" + posPMatrix);
+        
+        if (this.isFloatArrayUpdating) {
+            posPMatrix.set(posFloat[0], posFloat[1], posFloat[2], posFloat[3],
+                    posFloat[4], posFloat[5], posFloat[6], posFloat[7],
+                    posFloat[8], posFloat[9], posFloat[10], posFloat[11],
+                    0, 0, 0, 1);
+        }
+
+    }
+
+    // Never Used  ?
+    // Never Used ?
+//    @Deprecated
+//    public void updatePos(Camera camera, MarkerBoard board) {
+//
+//        posFloat = board.getTransfo(camera);
+//
+//        if (posPMatrix == null) {
+//            posPMatrix = new PMatrix3D(posFloat[0], posFloat[1], posFloat[2], posFloat[3],
+//                    posFloat[4], posFloat[5], posFloat[6], posFloat[7],
+//                    posFloat[8], posFloat[9], posFloat[10], posFloat[11],
+//                    0, 0, 0, 1);
+//        }
+//
+//        posPMatrix.set(posFloat[0], posFloat[1], posFloat[2], posFloat[3],
+//                posFloat[4], posFloat[5], posFloat[6], posFloat[7],
+//                posFloat[8], posFloat[9], posFloat[10], posFloat[11],
+//                0, 0, 0, 1);
+//
+//    }
     public void computeScreenPosTransform() {
 
         ///////////////////// PLANE COMPUTATION  //////////////////
-        PMatrix3D mat = pos.get();
+        PMatrix3D mat = posPMatrix.get();
 
         paperPosCorners3D[0] = new PVector(mat.m03, mat.m13, mat.m23);
         mat.translate(size.x, 0, 0);
@@ -96,12 +186,19 @@ public class Screen {
         transformationProjPaper = homography.getTransformation();
     }
 
-    public PGraphicsOpenGL getGraphics() {
-        if (thisGraphics == null) {
-            thisGraphics = (PGraphicsOpenGL) parent.createGraphics((int) (size.x * scale), (int) (size.y * scale), PApplet.OPENGL);
-        }
+    ////////////////// 3D SPACE TO PAPER HOMOGRAPHY ///////////////
+    // Version 2.0 :  (0,0) is the top-left corner.
+    private void initHomography() {
+        homography = new Homography(parent, 3, 2, 4);
+        homography.setPoint(false, 0, new PVector(0, 0));
+        homography.setPoint(false, 1, new PVector(1, 0));
+        homography.setPoint(false, 2, new PVector(1, 1));
+        homography.setPoint(false, 3, new PVector(0, 1));
 
-        return thisGraphics;
+//        homography.setPoint(false, 0, new PVector(0, 1));
+//        homography.setPoint(false, 1, new PVector(1, 1));
+//        homography.setPoint(false, 2, new PVector(1, 0));
+//        homography.setPoint(false, 3, new PVector(0, 0));
     }
 
     public PGraphicsOpenGL initDraw(PVector userPos) {
@@ -135,7 +232,7 @@ public class Screen {
         if (initPosM == null) {
             this.isOpenGL = true;
             // Transformation  Camera -> Marker
-            initPosM = pos.get();
+            initPosM = posPMatrix.get();
             // No translation mode
 //            initPosM.m03 = 0;
 //            initPosM.m13 = 0;
@@ -160,7 +257,7 @@ public class Screen {
             // Now we have  Cam ->  new 3D origin
         }
 
-        PMatrix3D newPos = pos.get();
+        PMatrix3D newPos = posPMatrix.get();
         // goto center...
 //        newPos.preApply(tr1);
 
@@ -187,7 +284,7 @@ public class Screen {
 
         newPos.mult(virtualPos, virtualPos);
 
-        PMatrix3D rotationPaper = pos.get();
+        PMatrix3D rotationPaper = posPMatrix.get();
         rotationPaper.invert();
         rotationPaper.m03 = 0; // newPos.m03;
         rotationPaper.m13 = 0; // newPos.m13;
@@ -265,7 +362,7 @@ public class Screen {
         graphics.projection.m11 = -graphics.projection.m11;
 
         // No detection?
-        if (pos.m03 == 0 && pos.m13 == 0 && pos.m23 == 0) {
+        if (posPMatrix.m03 == 0 && posPMatrix.m13 == 0 && posPMatrix.m23 == 0) {
             resetPos();
         }
         return graphics;
@@ -314,99 +411,6 @@ public class Screen {
         return res;
     }
 
-    // The board must be registered with the camera. 
-    public void setAutoUpdatePos(Camera camera, MarkerBoard board) {
-
-        if (!camera.tracks(board)) {
-            camera.trackMarkerBoard(board);
-        }
-
-        pos3D = board.getTransfo(camera);
-
-    }
-
-//    public void setManualUpdatePos() {
-//        pos3D = new float[16];
-//    }
-    public boolean isOpenGL() {
-        return isOpenGL;
-    }
-
-    public boolean isDrawing() {
-        return isDrawing;
-    }
-
-    public void setDrawing(boolean isDrawing) {
-        this.isDrawing = isDrawing;
-    }
-
-    public float getHalfEyeDist() {
-        return halfEyeDist;
-    }
-
-    public void setHalfEyeDist(float halfEyeDist) {
-        this.halfEyeDist = halfEyeDist;
-    }
-
-    public PVector getSize() {
-        return size;
-    }
-
-    public int getDrawSizeX() {
-        return (int) (size.x * scale);
-    }
-
-    public int getDrawSizeY() {
-        return (int) (size.y * scale);
-    }
-
-    public PMatrix3D getPos() {
-        return pos;
-    }
-
-    public float getScale() {
-        return this.scale;
-    }
-
-    // Available only if pos3D is being updated elsewhere...
-    public void updatePos() {
-
-        if (pos == null) {
-            pos = new PMatrix3D(pos3D[0], pos3D[1], pos3D[2], pos3D[3],
-                    pos3D[4], pos3D[5], pos3D[6], pos3D[7],
-                    pos3D[8], pos3D[9], pos3D[10], pos3D[11],
-                    0, 0, 0, 1);
-        }
-
-        pos.set(pos3D[0], pos3D[1], pos3D[2], pos3D[3],
-                pos3D[4], pos3D[5], pos3D[6], pos3D[7],
-                pos3D[8], pos3D[9], pos3D[10], pos3D[11],
-                0, 0, 0, 1);
-
-    }
-
-    public void setPos(PMatrix3D position) {
-        pos = position.get();
-    }
-
-    public void updatePos(Camera camera, MarkerBoard board) {
-
-        pos3D = board.getTransfo(camera);
-
-        if (pos == null) {
-            pos = new PMatrix3D(pos3D[0], pos3D[1], pos3D[2], pos3D[3],
-                    pos3D[4], pos3D[5], pos3D[6], pos3D[7],
-                    pos3D[8], pos3D[9], pos3D[10], pos3D[11],
-                    0, 0, 0, 1);
-        }
-
-        pos.set(pos3D[0], pos3D[1], pos3D[2], pos3D[3],
-                pos3D[4], pos3D[5], pos3D[6], pos3D[7],
-                pos3D[8], pos3D[9], pos3D[10], pos3D[11],
-                0, 0, 0, 1);
-
-    }
-
     public PVector getZMinMax() {
 
         float znear = 300000;
@@ -424,4 +428,13 @@ public class Screen {
         }
         return new PVector(znear, zfar);
     }
+
+    public float getHalfEyeDist() {
+        return halfEyeDist;
+    }
+
+    public void setHalfEyeDist(float halfEyeDist) {
+        this.halfEyeDist = halfEyeDist;
+    }
+
 }
