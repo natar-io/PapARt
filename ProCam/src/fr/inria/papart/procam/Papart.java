@@ -60,7 +60,7 @@ public class Papart {
         this.cameraInitialized = false;
         this.touchInitialized = false;
         this.applet = (PApplet) applet;
-       
+
         this.appletClass = applet.getClass();
         PFont font = this.applet.loadFont(defaultFont);
         Button.setFont(font);
@@ -74,52 +74,50 @@ public class Papart {
         return Papart.singleton;
     }
 
-   
     public void loadSketches() {
+
+        // Sketches are not within a package.
         Reflections reflections = new Reflections("");
-        Set<Class<? extends PaperScreen>> subClasses = reflections.getSubTypesOf(PaperScreen.class);
-        for (Class<? extends PaperScreen> klass : subClasses) {
+
+        Set<Class<? extends PaperTouchScreen>> paperTouchScreenClasses = reflections.getSubTypesOf(PaperTouchScreen.class);
+        for (Class<? extends PaperTouchScreen> klass : paperTouchScreenClasses) {
+            try {
+                Class[] ctorArgs2 = new Class[1];
+                ctorArgs2[0] = this.appletClass;
+                Constructor<? extends PaperTouchScreen> constructor = klass.getDeclaredConstructor(ctorArgs2);
+                System.out.println("Starting a PaperTouchScreen. " + klass.getName());
+                constructor.newInstance(this.appletClass.cast(this.applet));
+//            } catch (InstantiationException ex) {
+//                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
+//            } catch (IllegalAccessException ex) {
+//                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
+//            } catch (IllegalArgumentException ex) {
+//                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
+//            } catch (InvocationTargetException ex) {
+//                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
+//            } catch (NoSuchMethodException ex) {
+//                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
+//            } catch (SecurityException ex) {
+//                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
+//            }
+            } catch (Exception ex) {
+                System.out.println("Error loading PapartTouchApp : " + klass.getName());
+            }
+        }
+
+        Set<Class<? extends PaperScreen>> paperScreenClasses = reflections.getSubTypesOf(PaperScreen.class);
+
+        // Add them once.
+        paperScreenClasses.removeAll(paperTouchScreenClasses);
+        for (Class<? extends PaperScreen> klass : paperScreenClasses) {
             try {
                 Class[] ctorArgs2 = new Class[1];
                 ctorArgs2[0] = this.appletClass;
                 Constructor<? extends PaperScreen> constructor = klass.getDeclaredConstructor(ctorArgs2);
-                constructor.newInstance(this.applet);
-
-            } catch (IllegalArgumentException ex) {
-                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (SecurityException ex) {
-                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (NoSuchMethodException ex) {
-                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (InstantiationException ex) {
-                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (IllegalAccessException ex) {
-                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (InvocationTargetException ex) {
-                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-
-        Set<Class<? extends PaperTouchScreen>> subClasses2 = reflections.getSubTypesOf(PaperTouchScreen.class);
-        for (Class<? extends PaperScreen> klass : subClasses2) {
-                try {
-                Class[] ctorArgs2 = new Class[1];
-                ctorArgs2[0] = this.appletClass;
-                Constructor<? extends PaperScreen> constructor = klass.getDeclaredConstructor(ctorArgs2);
-                constructor.newInstance(this.applet);
-
-            } catch (IllegalArgumentException ex) {
-                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (SecurityException ex) {
-                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (NoSuchMethodException ex) {
-                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (InstantiationException ex) {
-                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (IllegalAccessException ex) {
-                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (InvocationTargetException ex) {
-                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
+                System.out.println("Starting a PaperScreen. " + klass.getName());
+                constructor.newInstance(this.appletClass.cast(this.applet));
+            } catch (Exception ex) {
+                System.out.println("Error loading PapartApp : " + klass.getName());
             }
         }
 
@@ -267,10 +265,10 @@ public class Papart {
         touchInitialized = true;
     }
 
-    public void startTracking(){
+    public void startTracking() {
         this.cameraTracking.trackSheets(true);
     }
-    
+
     public void stop() {
         this.dispose();
     }

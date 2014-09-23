@@ -4,6 +4,7 @@
  */
 package fr.inria.papart.procam;
 
+import fr.inria.papart.drawingapp.DrawUtils;
 import fr.inria.papart.exceptions.BoardNotDetectedException;
 import java.awt.Image;
 import java.lang.reflect.AccessibleObject;
@@ -39,7 +40,7 @@ public class PaperScreen {
     private boolean isInitialized = false;
 
     /**
-     * Zero arguments can be invoked in a Papart object was created. 
+     * Zero arguments can be invoked only when a Papart object was created.
      */
     public PaperScreen() {
         Papart papart = Papart.getPapart();
@@ -48,7 +49,11 @@ public class PaperScreen {
         this.projector = papart.getDisplay();
         // Default to projector graphics. 
         currentGraphics = this.projector.getGraphics();
-        setup();
+
+        register();
+        // Check This :: 
+        //  init();
+//        setup();
     }
 
     public PaperScreen(Papart papart, MarkerBoard board, PVector size,
@@ -70,12 +75,17 @@ public class PaperScreen {
         this.cameraTracking = cam;
         this.projector = proj;
         this.resolution = resolution;
-
+        currentGraphics = this.projector.getGraphics();
+        register();
         init();
     }
 
     public void markerBoard(String file, int w, int h) {
-        this.board = new MarkerBoard(file, "board", w, h);
+        markerBoard(new MarkerBoard(file, "board", w, h));
+    }
+
+    public void markerBoard(MarkerBoard mboard) {
+        this.board = mboard;
         if (this.drawingSize != null) {
             init();
         }
@@ -87,9 +97,8 @@ public class PaperScreen {
 
     ///// Load ressources -> to remove ?////////
     private void init() {
-        System.out.println("Init ? Init() : " + isInitialized);
-        
         assert (!isInitialized);
+        DrawUtils.applet = parent; // For Touch -> Check for removal ?
         this.screen = new Screen(parent, drawingSize, resolution);
         projector.addScreen(screen);
 
@@ -104,11 +113,13 @@ public class PaperScreen {
         board.setDrawingMode(cameraTracking, true, 10);
         board.setFiltering(cameraTracking, 30, 4);
 
+        isInitialized = true;
+    }
+
+    private void register() {
         parent.registerMethod("pre", this);
         parent.registerMethod("draw", this);
         projector.registerAgain();
-        System.out.println("Init PaperScreen");
-        isInitialized = true;
     }
 
     protected void setup() {
@@ -116,9 +127,7 @@ public class PaperScreen {
     }
 
     public void pre() {
-
         if (!isInitialized) {
-            System.out.println("Init ? Setup : " + isInitialized);
             setup();
         }
         assert (isInitialized);
@@ -127,7 +136,7 @@ public class PaperScreen {
     }
 
     public PGraphicsOpenGL getGraphics() {
-        return screen.getGraphics();
+        return currentGraphics;
     }
 
     public Screen getScreen() {

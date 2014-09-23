@@ -16,17 +16,17 @@ public class PaperTouchScreen extends PaperScreen {
 
     protected ArrayList<Touch> touchList;
     protected TouchInput touchInput;
-    protected ArrayList<Button> buttons;
+    protected ArrayList<Button> buttons = new ArrayList<Button>();
     public boolean isTranslated = false;
 
     /**
-     * Zero arguments can be invoked in a Papart object was created.
+     * Zero arguments can be invoked only when a Papart object was created.
      */
     public PaperTouchScreen() {
         // the super is implicity, however it has to be called.
+        // For some reasons, this is never called !
         super();
-        this.touchInput = Papart.getPapart().getTouchInput();
-        this.buttons = new ArrayList<Button>();
+        System.out.println("Construction of a PaperTouchScreen.");
     }
 
     public PaperTouchScreen(Papart papart, MarkerBoard board, PVector size,
@@ -49,13 +49,16 @@ public class PaperTouchScreen extends PaperScreen {
                 cam, proj);
 
         this.touchInput = touchinput;
-        this.buttons = new ArrayList<Button>();
     }
 
     ///// Load ressources ////////
     @Override
     public void pre() {
         super.pre();
+
+        if (this.touchInput == null) {
+            this.touchInput = Papart.getPapart().getTouchInput();
+        }
 
         if (!isTranslated && screen.isDrawing()) {
             updateTouch();
@@ -122,6 +125,10 @@ public class PaperTouchScreen extends PaperScreen {
 
         drawTouch(g, 10);
         g.endDraw();
+    }
+
+    protected void drawTouch(int ellipseSize) {
+        drawTouch(currentGraphics, ellipseSize);
     }
 
     protected void drawTouch(PGraphicsOpenGL g, int ellipseSize) {
