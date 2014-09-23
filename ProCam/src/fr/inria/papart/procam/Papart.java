@@ -9,9 +9,14 @@ import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.OpenKinectFrameGrabber;
 import org.bytedeco.javacpp.freenect;
 import fr.inria.papart.drawingapp.Button;
-import fr.inria.papart.drawingapp.DrawUtils;
 import fr.inria.papart.kinect.Kinect;
 import fr.inria.papart.multitouchKinect.TouchInput;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.reflections.Reflections;
 import processing.core.PApplet;
 import processing.core.PFont;
 import processing.core.PVector;
@@ -31,10 +36,14 @@ public class Papart {
     public static String defaultFont = folder + "/data/Font/" + "GentiumBookBasic-48.vlw";
     public int defaultFontSize = 12;
 
+    protected static Papart singleton = null;
+
     protected float zNear = 10;
     protected float zFar = 6000;
 
     private final PApplet applet;
+    private final Class appletClass;
+
     private boolean displayInitialized;
     private boolean cameraInitialized;
     private boolean touchInitialized;
@@ -46,15 +55,74 @@ public class Papart {
     private PVector frameSize;
     private OpenKinectFrameGrabber openKinectGrabber;
 
-    public Papart(PApplet applet) {
+    public Papart(Object applet) {
         this.displayInitialized = false;
         this.cameraInitialized = false;
         this.touchInitialized = false;
-        this.applet = applet;
-        DrawUtils.applet = applet;
-        PFont font = applet.loadFont(defaultFont);
+        this.applet = (PApplet) applet;
+       
+        this.appletClass = applet.getClass();
+        PFont font = this.applet.loadFont(defaultFont);
         Button.setFont(font);
         Button.setFontSize(defaultFontSize);
+        if (Papart.singleton == null) {
+            Papart.singleton = this;
+        }
+    }
+
+    public static Papart getPapart() {
+        return Papart.singleton;
+    }
+
+   
+    public void loadSketches() {
+        Reflections reflections = new Reflections("");
+        Set<Class<? extends PaperScreen>> subClasses = reflections.getSubTypesOf(PaperScreen.class);
+        for (Class<? extends PaperScreen> klass : subClasses) {
+            try {
+                Class[] ctorArgs2 = new Class[1];
+                ctorArgs2[0] = this.appletClass;
+                Constructor<? extends PaperScreen> constructor = klass.getDeclaredConstructor(ctorArgs2);
+                constructor.newInstance(this.applet);
+
+            } catch (IllegalArgumentException ex) {
+                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (SecurityException ex) {
+                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (NoSuchMethodException ex) {
+                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InstantiationException ex) {
+                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IllegalAccessException ex) {
+                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InvocationTargetException ex) {
+                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        Set<Class<? extends PaperTouchScreen>> subClasses2 = reflections.getSubTypesOf(PaperTouchScreen.class);
+        for (Class<? extends PaperScreen> klass : subClasses2) {
+                try {
+                Class[] ctorArgs2 = new Class[1];
+                ctorArgs2[0] = this.appletClass;
+                Constructor<? extends PaperScreen> constructor = klass.getDeclaredConstructor(ctorArgs2);
+                constructor.newInstance(this.applet);
+
+            } catch (IllegalArgumentException ex) {
+                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (SecurityException ex) {
+                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (NoSuchMethodException ex) {
+                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InstantiationException ex) {
+                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IllegalAccessException ex) {
+                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InvocationTargetException ex) {
+                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
     }
 
     /**
@@ -63,7 +131,6 @@ public class Papart {
      * @param quality
      * @param cameraNo
      * @param cameraType
-     * @return
      */
     public void initProjectorCamera(float quality, String cameraNo, int cameraType) {
         assert (!cameraInitialized);
@@ -200,6 +267,10 @@ public class Papart {
         touchInitialized = true;
     }
 
+    public void startTracking(){
+        this.cameraTracking.trackSheets(true);
+    }
+    
     public void stop() {
         this.dispose();
     }
@@ -240,6 +311,10 @@ public class Papart {
     public PVector getFrameSize() {
         assert (this.frameSize != null);
         return this.frameSize.get();
+    }
+
+    public PApplet getApplet() {
+        return applet;
     }
 
 }

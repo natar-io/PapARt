@@ -88,7 +88,7 @@ public class Screen {
             posFloat = board.getTransfo(camera);
             posPMatrix = new PMatrix3D();
         } else {
-            System.out.println("Getting the original transfo");
+//            System.out.println("Getting the original transfo");
             
             posPMatrix = board.getTransfoMat(camera);
             posFloat = new float[12];
@@ -133,7 +133,7 @@ public class Screen {
      */
     public void updatePos() {
 
-        System.out.println("Screen: updatePos" + posPMatrix);
+//        System.out.println("Screen: updatePos" + posPMatrix);
         
         if (this.isFloatArrayUpdating) {
             posPMatrix.set(posFloat[0], posFloat[1], posFloat[2], posFloat[3],

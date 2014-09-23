@@ -19,6 +19,23 @@ public class PaperTouchScreen extends PaperScreen {
     protected ArrayList<Button> buttons;
     public boolean isTranslated = false;
 
+    /**
+     * Zero arguments can be invoked in a Papart object was created.
+     */
+    public PaperTouchScreen() {
+        // the super is implicity, however it has to be called.
+        super();
+        this.touchInput = Papart.getPapart().getTouchInput();
+        this.buttons = new ArrayList<Button>();
+    }
+
+    public PaperTouchScreen(Papart papart, MarkerBoard board, PVector size,
+            float resolution) {
+        this(papart.getApplet(), board,
+                size, resolution, papart.getCameraTracking(),
+                papart.getDisplay(), papart.getTouchInput());
+    }
+
     public PaperTouchScreen(PApplet parent,
             MarkerBoard board,
             PVector size,
