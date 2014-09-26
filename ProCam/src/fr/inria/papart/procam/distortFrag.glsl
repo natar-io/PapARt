@@ -26,8 +26,8 @@ void main() {
   /* vec2 coord = vec2( (mapCoord.x - 0.5) * 20 / resX + vertTexCoord.s, */
   /* 		     (mapCoord.y - 0.5) * 20 / resY + vertTexCoord.t); */
 
-  vec2 coord2 = vec2( (mapCoord.x - 0.5) * mag /  resX,
-		      (mapCoord.y - 0.5) * mag / resY);
+  vec2 coord2 = vec2( (mapCoord.x - 0.5) * mag / float(resX),
+		      (mapCoord.y - 0.5) * mag / float(resY));
 
   gl_FragColor = vec4(texture2D(texture, coord2 + vertTexCoord.st ).rgba);
 

@@ -9,5 +9,5 @@ varying vec4 vertColor;
 
 void main() {
   gl_Position = transform * vertex;    
-  vertColor = color / 255;
+  vertColor.rgba = color.rgba / 255.0;
 }
