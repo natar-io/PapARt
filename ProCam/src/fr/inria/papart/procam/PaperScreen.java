@@ -80,12 +80,22 @@ public class PaperScreen {
         init();
     }
 
+    public void markerBoard(String file, int w, int h, float resolution) {
+        markerBoard(new MarkerBoard(file, "board", w, h), resolution);
+    }
+
     public void markerBoard(String file, int w, int h) {
-        markerBoard(new MarkerBoard(file, "board", w, h));
+        markerBoard(file, w, h, this.resolution);
+
     }
 
     public void markerBoard(MarkerBoard mboard) {
+        markerBoard(mboard, this.resolution);
+    }
+    
+    public void markerBoard(MarkerBoard mboard, float resolution) {
         this.board = mboard;
+        this.resolution = resolution;
         if (this.drawingSize != null) {
             init();
         }
@@ -119,7 +129,7 @@ public class PaperScreen {
         parent.registerMethod("draw", this);
         projector.registerAgain();
     }
-    
+
     protected void setup() {
         System.out.println("PaperScreen setup. You should not see this unless for debug.");
     }
