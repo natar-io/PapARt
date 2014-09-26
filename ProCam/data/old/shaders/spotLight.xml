@@ -1,0 +1,9 @@
+<effect name="Lighting shader - Spot Light">
+    <description>normal drawing</description>
+    <vertex>spotlight.vert</vertex>
+    <fragment>spotlight.frag</fragment>
+    <textures>
+      <texture type="sampler2d" name="litTexture" offset="offset" label="Input image0">0</texture> 
+    </textures>
+</effect>
+

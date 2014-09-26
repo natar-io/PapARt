@@ -1,0 +1,9 @@
+<effect name="Normal shading">
+    <description>normal drawing</description>
+    <vertex>normal.vert</vertex>
+    <fragment>normal.frag</fragment>
+    <textures>
+      <texture type="sampler2d" name="litTexture" offset="offset" label="Input image0">0</texture> 
+    </textures>
+</effect>
+

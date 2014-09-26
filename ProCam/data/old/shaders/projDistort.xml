@@ -1,0 +1,10 @@
+<filter name="Projector Distort">
+    <description>Apply the opposite of the projector lens distortion to get a good visualisation.</description>
+    <vertex>distortVert.glsl</vertex>
+    <fragment>distortFrag.glsl</fragment>
+    <textures input="2" output="1">
+        <intexture type="sampler2d" name="srcTex" offset="offset" label="Input image">0</intexture> 
+        <intexture type="sampler2d" name="mapTex" offset="offset" label="Map image">1</intexture> 
+    </textures>
+</filter>
+

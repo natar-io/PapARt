@@ -26,7 +26,6 @@ public class PaperTouchScreen extends PaperScreen {
         // the super is implicity, however it has to be called.
         // For some reasons, this is never called !
         super();
-        System.out.println("Construction of a PaperTouchScreen.");
     }
 
     public PaperTouchScreen(Papart papart, MarkerBoard board, PVector size,

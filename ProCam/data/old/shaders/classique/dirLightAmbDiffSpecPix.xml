@@ -1,0 +1,9 @@
+<effect name="Lighting shader">
+    <description>normal drawing</description>
+    <vertex>dirLightAmbDiffSpecPix.vert</vertex>
+    <fragment>dirLightAmbDiffSpecPix.frag</fragment>
+    <textures>
+      <texture type="sampler2d" name="litTexture" offset="offset" label="Input image0">0</texture> 
+    </textures>
+</effect>
+

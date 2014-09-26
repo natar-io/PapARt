@@ -1,0 +1,6 @@
+<effect name="transparency">
+    <description>transparency</description>
+    <vertex>transparency.vert</vertex>
+    <fragment>transparency.frag</fragment>
+</effect>
+

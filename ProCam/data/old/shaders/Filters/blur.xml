@@ -1,0 +1,12 @@
+<filter name="Blur">
+    <description>Blur</description>
+    <vertex>default1.vert</vertex>        
+    <fragment>blur.frag</fragment>    
+    <textures input="1" output="1">
+        <intexture type="sampler2d" name="sceneTex" offset="offset" label="Input texture">0</intexture> 
+    </textures>
+    <parameter type="vec2" name="wh" label="pixel size">0.2 0.2</parameter>
+</filter>
+
+
+

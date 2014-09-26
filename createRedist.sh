@@ -5,16 +5,19 @@ SKETCHBOOK=../sketchbook
 mkdir ProCamLibrary 
 mkdir ProCamLibrary/library
 mkdir ProCamLibrary/examples
+mkdir ProCamLibrary/examples/examples
+mkdir ProCamLibrary/examples/calib
+mkdir ProCamLibrary/examples/apps
 
 echo "Copy Library"
 
 # Library
 cp ProCam/dist/ProCam.jar ProCamLibrary/library/ProCamLibrary.jar
+cp -R ProCam/dist/lib ProCamLibrary/library/
 
-echo "Copy JavaCV, OpenCV and friends"
-
+# echo "Copy JavaCV, OpenCV and friends"
 # libs are  javaCV and javaCV cppjars
-cp libs/* ProCamLibrary/library/
+# cp libs/* ProCamLibrary/library/
 
 
 echo "Copy the sources" 
@@ -24,19 +27,19 @@ cp -R ProCam/src ProCamLibrary/
 echo "Copy the JavaDoc" 
 cp -R ProCam/dist/javadoc ProCamLibrary/
 
+echo "Copy the Data" 
+cp -R ProCam/data ProCamLibrary/
 
-echo "Copy Examples - Common and Calib" 
+
+echo "Copy Examples, Calibration & Apps" 
 # Examples
-cp -R $SKETCHBOOK/examples/* ProCamLibrary/examples/
-
-# Source to create a new sketch
-cp -R $SKETCHBOOK/common ProCamLibrary/common
-
+cp -R $SKETCHBOOK/papartExamples/* ProCamLibrary/examples/examples/
 
 # Calibration stuff
-cp -R $SKETCHBOOK/calib ProCamLibrary/calib
+cp -R $SKETCHBOOK/papartCalibration/* ProCamLibrary/examples/calib/
 
-#cp -R $SKETCHBOOK/data ProCamLibrary/data
+# Apps 
+cp -R $SKETCHBOOK/papartApps/* ProCamLibrary/examples/apps/
 
 
 echo "Create the archive..." 

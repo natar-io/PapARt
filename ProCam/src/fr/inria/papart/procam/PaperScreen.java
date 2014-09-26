@@ -101,7 +101,6 @@ public class PaperScreen {
         DrawUtils.applet = parent; // For Touch -> Check for removal ?
         this.screen = new Screen(parent, drawingSize, resolution);
         projector.addScreen(screen);
-
         if (!cameraTracking.tracks(board)) {
             cameraTracking.trackMarkerBoard(board);
         }
@@ -109,7 +108,6 @@ public class PaperScreen {
         screen.setAutoUpdatePos(cameraTracking, board);
 //        board.setDrawingMode(cameraTracking, true, 4);
 //        board.setFiltering(cameraTracking, 30, 4);
-
         board.setDrawingMode(cameraTracking, true, 10);
         board.setFiltering(cameraTracking, 30, 4);
 
@@ -121,7 +119,7 @@ public class PaperScreen {
         parent.registerMethod("draw", this);
         projector.registerAgain();
     }
-
+    
     protected void setup() {
         System.out.println("PaperScreen setup. You should not see this unless for debug.");
     }
@@ -208,6 +206,7 @@ public class PaperScreen {
 
     // Example Draw... to check ? Or put it as begin / end ...
     public void draw() {
+        System.out.println("Draw PaperScreen");
         screen.setDrawing(true);
         PGraphicsOpenGL g = screen.getGraphics();
         g.beginDraw();

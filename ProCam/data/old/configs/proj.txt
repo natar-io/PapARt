@@ -1,0 +1,6 @@
+
+gauche : 61.3
+droite : 61.4
+
+haut : 53.5
+bas : 53.8

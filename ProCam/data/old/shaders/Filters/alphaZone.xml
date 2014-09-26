@@ -1,0 +1,12 @@
+<filter name="Blur Zone">
+    <description>Blur Zone</description>
+    <vertex>default1.vert</vertex>        
+    <fragment>alphaZone.frag</fragment>    
+    <textures input="2" output="1">
+        <intexture type="sampler2d" name="sceneTex" offset="offset" label="Input texture">0</intexture> 
+        <intexture type="sampler2d" name="mask" offset="offset" label="mask texture">1</intexture> 
+    </textures>
+</filter>
+
+
+

@@ -1,0 +1,18 @@
+<filter name="Toon">
+    <description>Toon shading on images, by Agnius Vasiliauskas (http://coding-experiments.blogspot.com/2011/01/toon-pixel-shader.html)</description>
+    <vertex>ToonVert.glsl</vertex>        
+    <fragment>ToonFrag.glsl</fragment>    
+    <textures input="1" output="1">
+        <intexture type="sampler2d" name="Texture0" offset="offset" label="Input image">0</intexture> 
+    </textures>
+    <parameters>
+       
+        <parameter type="array" name="HueLevels" label="HueLevels">0.0 80.0 160.0 240.0 320.0 360.0</parameter>
+ 
+        <parameter type="array" name="SatLevels" label="SatLevels">0.0 0.15 0.3 0.45 0.6 0.8 1.0</parameter>
+        <parameter type="array" name="ValLevels" label="ValLevels">0.0 0.3 0.6 1.0</parameter>        
+    </parameters>
+</filter>
+
+
+

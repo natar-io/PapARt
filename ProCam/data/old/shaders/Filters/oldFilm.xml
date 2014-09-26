@@ -1,0 +1,18 @@
+<filter name="Blur">
+    <description>Blur</description>
+    <vertex>default1.vert</vertex>        
+    <fragment>oldFilm.frag</fragment>    
+    <textures input="1" output="1">
+        <intexture type="sampler2d" name="Sample0" offset="offset" label="Input texture">0</intexture> 
+    </textures>
+     <parameter type="float" name="SepiaValue" label="pixel size">0.2</parameter>
+    <parameter type="float" name="NoiseValue" label="pixel size">0.2</parameter>
+    <parameter type="float" name="ScratchValue" label="pixel size">0.2</parameter>
+    <parameter type="float" name="InnerVignetting" label="pixel size">0.1</parameter>
+    <parameter type="float" name="OuterVignetting" label="pixel size">0.8</parameter>
+    <parameter type="float" name="RandomValue" label="pixel size">0.2</parameter>
+    <parameter type="float" name="TimeLapse" label="pixel size">0.2</parameter>
+</filter>
+
+
+

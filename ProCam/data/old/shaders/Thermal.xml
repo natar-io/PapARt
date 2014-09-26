@@ -1,0 +1,11 @@
+<filter name="Thermal">
+    <description>Predator’s Thermal Vision Post Processing Filter</description>
+    <vertex>ThermalVert.glsl</vertex>        
+    <fragment>ThermalFrag.glsl</fragment>    
+    <textures input="1" output="1">
+        <intexture type="sampler2d" name="sceneTex" offset="offset" label="Input texture">0</intexture> 
+    </textures>
+</filter>
+
+
+

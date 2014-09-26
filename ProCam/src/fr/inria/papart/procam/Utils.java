@@ -33,6 +33,8 @@ import toxi.geom.Vec3D;
  */
 public class Utils {
 
+    static public final String LibraryName = "ProCam";
+    
     static public String getSketchbookFolder() {
 
         String sketchbook = java.lang.System.getenv("SKETCHBOOK");
@@ -69,7 +71,7 @@ public class Utils {
     }
 
     static public String getPapartFolder() {
-        return getSketchbookFolder() + "/libraries/ProCam";
+        return getSketchbookFolder() + "/libraries/" + LibraryName;
     }
 
     static public PVector mult(PMatrix3D mat, PVector source, PVector target) {

@@ -1,0 +1,75 @@
+uniform sampler2D tex;
+uniform sampler2D ShadowMap;
+
+varying vec4 ShadowCoord;
+varying vec4 diffuse,ambient;
+varying vec3 normal,lightDir,halfVector;
+
+void main()
+{	
+  vec3 n,halfV,viewV,ldir;
+  float NdotL,NdotHV;
+  vec4 color = ambient;
+  
+  /* a fragment shader can't write a verying variable, hence we need
+     a new variable to store the normalized interpolated normal */
+  n = normalize(normal);
+  
+  /* compute the dot product between normal and ldir */
+  NdotL = max(dot(n,lightDir),0.0);
+  
+  if (NdotL > 0.0) {
+    halfV = normalize(halfVector);
+    NdotHV = max(dot(n,halfV),0.0);
+    color += gl_FrontMaterial.specular * gl_LightSource[0].specular * pow(NdotHV,gl_FrontMaterial.shininess);
+    color += diffuse * NdotL;
+  }
+  
+  //	vec4 TexColor = texture2D(tex,gl_TexCoord[0].st);
+  
+  
+  vec4 shadowCoordinateWdivide = ShadowCoord / ShadowCoord.w ;
+  
+  // Used to lower moiré pattern and self-shadowing
+  shadowCoordinateWdivide.z += 0.0005;
+  
+  float distanceFromLight = texture2D(ShadowMap, shadowCoordinateWdivide.st).z;
+  
+  vec4 _color;
+  float shadow = 1.0;
+  if (ShadowCoord.w > 0.0){
+    shadow = distanceFromLight < shadowCoordinateWdivide.z ? 0.5 : 1.0 ;
+
+   
+    if( distanceFromLight < shadowCoordinateWdivide.z ){
+
+	 gl_FragColor = vec4(0.0,0.0,0.0,1.0);
+	return;
+    } 
+
+    /* return; */
+  }
+  
+  /* vec3 ct,cf; */
+  /* vec4 texel; */
+  /* float intensity,at,af; */
+  /* intensity = max(dot(lightDir,normalize(normal)),0.0); */
+  /* cf = intensity * (gl_FrontMaterial.diffuse).rgb + gl_FrontMaterial.ambient.rgb * 0.6; */
+  /* af = gl_FrontMaterial.diffuse.a; */
+
+
+   _color = vec4(color.rgb * shadow, color.a);
+
+  // Toon shader...
+ 
+  if (color.r > 0.5)
+    _color = vec4(0.8,0.8,0.8,1.0);
+  else if (color.r > 0.35)
+    _color = vec4(0.4,0.4,0.4,1.0);
+  else
+    _color = vec4(0.2,0.2,0.2,1.0);
+
+  gl_FragColor = _color;
+  
+}
+		

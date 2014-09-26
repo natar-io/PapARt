@@ -79,6 +79,7 @@ public class Papart {
         // Sketches are not within a package.
         Reflections reflections = new Reflections("");
 
+        
         Set<Class<? extends PaperTouchScreen>> paperTouchScreenClasses = reflections.getSubTypesOf(PaperTouchScreen.class);
         for (Class<? extends PaperTouchScreen> klass : paperTouchScreenClasses) {
             try {
@@ -119,6 +120,44 @@ public class Papart {
             } catch (Exception ex) {
                 System.out.println("Error loading PapartApp : " + klass.getName());
             }
+        }
+
+    }
+
+    public void loadSketches(Class[] sketches) {
+
+        for (Class klass : sketches) {
+            
+             System.out.println("First subclass. " + klass.getName());
+            Class[] ctorArgs2 = new Class[1];
+            ctorArgs2[0] = this.appletClass;
+
+            if (klass.getSuperclass() == PaperTouchScreen.class) {
+
+                try {
+                    Constructor<? extends PaperTouchScreen> constructor = klass.getDeclaredConstructor(ctorArgs2);
+                    System.out.println("Starting a PaperTouchScreen. " + klass.getName());
+                    constructor.newInstance(this.appletClass.cast(this.applet));
+                } catch (InstantiationException ex) {
+                    Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IllegalAccessException ex) {
+                    Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IllegalArgumentException ex) {
+                    Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (InvocationTargetException ex) {
+                    Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (NoSuchMethodException ex) {
+                    Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (SecurityException ex) {
+                    Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+            } else {
+                if (klass.getSuperclass() == PaperScreen.class) {
+
+                }
+            }
+
         }
 
     }

@@ -1,0 +1,9 @@
+<effect name="LitSphere">
+    <description>Lit Sphere</description>
+    <vertex>litSphere.vert</vertex>
+    <fragment>litSphere.frag</fragment>
+    <textures>
+      <texture type="sampler2d" name="litTexture" offset="offset" label="Input image0">0</texture> 
+    </textures>
+</effect>
+

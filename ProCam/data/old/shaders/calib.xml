@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+  <Calibration>
+    <PlaneParameters>
+      <MinDepth>400</MinDepth>
+      <MaxDepth>1200</MaxDepth>
+    </PlaneParameters>
+    <Plane>
+      <Origin>
+        <V>0.026787128</V>
+        <V>0.008649012</V>
+        <V>-0.872214</V>
+      </Origin>
+      <Normal>
+        <V>-0.035829786</V>
+        <V>0.60323375</V>
+        <V>-0.7967593</V>
+      </Normal>
+      <Height>0.0059999996</Height>
+      <KernelHalfsize>1</KernelHalfsize>
+    </Plane>
+    <Homography>
+      <V>-1.3911159038543701</V>
+      <V>0.07879400253295898</V>
+      <V>0.35574108362197876</V>
+      <V>-0.14813756942749023</V>
+      <V>-2.9834423065185547</V>
+      <V>0.5096640586853027</V>
+      <V>0.06685977429151535</V>
+      <V>-0.999718189239502</V>
+      <V>1.0</V>
+    </Homography>
+  </Calibration>
+  <Tuio>
+    <Host>localhost</Host>
+    <Port>3333</Port>
+  </Tuio>
+  <Blob>
+    <MinSize>50</MinSize>
+    <MaxDistance>50</MaxDistance>
+  </Blob>
+</Configuration>
