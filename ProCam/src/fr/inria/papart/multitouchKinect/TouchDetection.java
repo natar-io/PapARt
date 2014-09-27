@@ -99,13 +99,23 @@ public class TouchDetection {
 
     public static ArrayList<TouchPoint> findMultiTouch(DepthData depthData,
             KinectScreenCalibration calib, boolean is3D, int skip) {
-        return findMultiTouch(depthData.validPointsList,
-                depthData.kinectPoints, depthData.projectedPoints,
-                depthData.validPointsMask, calib, is3D, skip);
+
+        if (is3D) {
+            return findMultiTouch(
+                    depthData.kinectPoints, depthData.projectedPoints,
+                    depthData.validPointsList3D,
+                    depthData.validPointsMask3D, calib, true, skip);
+        } else {
+
+            return findMultiTouch(
+                    depthData.kinectPoints, depthData.projectedPoints,
+                    depthData.validPointsList,
+                    depthData.validPointsMask, calib, false, skip);
+        }
     }
 
-    public static ArrayList<TouchPoint> findMultiTouch(ArrayList<Integer> validPoints,
-            Vec3D points[], Vec3D[] projPoints, boolean[] isValidPoints,
+    public static ArrayList<TouchPoint> findMultiTouch(
+            Vec3D points[], Vec3D[] projPoints, ArrayList<Integer> validPoints, boolean[] isValidPoints,
             KinectScreenCalibration calib, boolean is3D, int skip) {
 
         if (validPoints == null || validPoints.isEmpty()) {

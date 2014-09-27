@@ -92,7 +92,7 @@ public class PaperScreen {
     public void markerBoard(MarkerBoard mboard) {
         markerBoard(mboard, this.resolution);
     }
-    
+
     public void markerBoard(MarkerBoard mboard, float resolution) {
         this.board = mboard;
         this.resolution = resolution;
@@ -160,8 +160,7 @@ public class PaperScreen {
     }
 
     public void setLocation(float x, float y, float z) {
-        PMatrix3D screenPos = screen.getPos();
-        screenPos.translate(x, y, z);
+        screen.setTranslation(x, y, z);
     }
 
     public PVector getLocationVector() {

@@ -24,6 +24,9 @@ import fr.inria.papart.tools.CaptureIpl;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -42,7 +45,8 @@ public class Camera implements PConstants {
     protected PMatrix3D camIntrinsicsP3D;
     protected PApplet parent;
     private ArrayList<TrackedView> trackedViews;
-    private ArrayList<MarkerBoard> sheets = null;
+    private List<MarkerBoard> sheets = null;
+    protected final Semaphore sheetsSemaphore = new Semaphore(1);
     protected String calibrationARToolkit;
     private ARTThread thread = null;
     protected ProjectiveDeviceP pdp = null;
@@ -273,19 +277,26 @@ public class Camera implements PConstants {
         // Marker Detection and view
         this.calibrationARToolkit = calibrationARToolkit;
         this.trackedViews = new ArrayList<TrackedView>();
-        this.sheets = new ArrayList<MarkerBoard>();
+        this.sheets = Collections.synchronizedList(new ArrayList<MarkerBoard>());
     }
 
     public void trackMarkerBoard(MarkerBoard sheet) {
         sheet.addTracker(parent, this);
-        this.sheets.add(sheet);
+        try {
+            sheetsSemaphore.acquire();
+            this.sheets.add(sheet);
+            sheetsSemaphore.release();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Camera.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
     }
 
     public boolean tracks(MarkerBoard board) {
         return this.sheets.contains(board);
     }
 
-    public ArrayList<MarkerBoard> getTrackedSheets() {
+    public List<MarkerBoard> getTrackedSheets() {
         return this.sheets;
     }
 

@@ -8,6 +8,8 @@ import org.bytedeco.javacpp.ARToolKitPlus;
 import org.bytedeco.javacpp.ARToolKitPlus.TrackerMultiMarker;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static org.bytedeco.javacpp.opencv_highgui.cvLoadImage;
@@ -165,6 +167,7 @@ public class MarkerBoard {
             settings.setObjectImage(imgToFind);
             settings.setUseFLANN(true);
             settings.setRansacReprojThreshold(5);
+           settings.setMatchesMin(16);
             ObjectFinder finder = new ObjectFinder(settings);
 
             this.trackers.add(finder);
@@ -484,8 +487,6 @@ public class MarkerBoard {
         PMatrix3D transfo = (PMatrix3D) transfos.get(id);
         OneEuroFilter filter[] = filters.get(id);
 
-        System.out.println("update Markerboard " + transfo);
-        
         if (filter == null) {
             transfo.set(newPos);
         } else {
@@ -548,7 +549,6 @@ public class MarkerBoard {
         if (this.type == MarkerType.OPENCV_SURF) {
             
             PMatrix3D transfo = (PMatrix3D) this.transfos.get(cameras.indexOf(camera));
-            System.out.println("Get Transfo Mat" + transfo);
             return transfo;
 //            return (PMatrix3D) this.transfos.get(cameras.indexOf(camera));
         }

@@ -15,7 +15,7 @@ import toxi.geom.*;
  * @author jeremylaviole
  */
 public class Screen {
-
+    
     private PApplet parent;
     // The current graphics
     private PGraphicsOpenGL thisGraphics;
@@ -26,7 +26,7 @@ public class Screen {
     // The other one is unique to the camera/markerboard couple. 
     private float[] posFloat;
     private PMatrix3D posPMatrix;
-
+    
     private boolean isFloatArrayUpdating;
 
     ////////////
@@ -40,11 +40,11 @@ public class Screen {
     public float halfEyeDist = 10; // 2cm
     private boolean isDrawing = true;
     private boolean isOpenGL = false;
-
+    
     public Screen(PApplet parent, PVector size, float scale) {
         this(parent, size, scale, false, 1);
     }
-
+    
     public Screen(PApplet parent, PVector size, float scale, boolean useAA, int AAValue) {
         // AA not available anymore
         // Now it is loading when use, to save memory (for PaperScreens)
@@ -64,15 +64,15 @@ public class Screen {
     public PGraphicsOpenGL getTexture() {
         return getGraphics();
     }
-
+    
     public PGraphicsOpenGL getGraphics() {
         if (thisGraphics == null) {
             thisGraphics = (PGraphicsOpenGL) parent.createGraphics((int) (size.x * scale), (int) (size.y * scale), PApplet.OPENGL);
         }
-
+        
         return thisGraphics;
     }
-
+    
     public void setPos(PMatrix3D position) {
         posPMatrix = position.get();
     }
@@ -82,48 +82,81 @@ public class Screen {
         if (!camera.tracks(board)) {
             camera.trackMarkerBoard(board);
         }
-
+        
         isFloatArrayUpdating = board.useFloatArray();
         if (this.isFloatArrayUpdating) {
             posFloat = board.getTransfo(camera);
             posPMatrix = new PMatrix3D();
         } else {
 //            System.out.println("Getting the original transfo");
-            
+
             posPMatrix = board.getTransfoMat(camera);
             posFloat = new float[12];
         }
-
+        
     }
-
+    
     public boolean isOpenGL() {
         return isOpenGL;
     }
-
+    
     public boolean isDrawing() {
         return isDrawing;
     }
-
+    
     public void setDrawing(boolean isDrawing) {
         this.isDrawing = isDrawing;
     }
-
+    
     public PVector getSize() {
         return size;
     }
-
+    
     public int getDrawSizeX() {
         return (int) (size.x * scale);
     }
-
+    
     public int getDrawSizeY() {
         return (int) (size.y * scale);
     }
+    
+    private PMatrix3D transfo = null;
 
-    public PMatrix3D getPos() {
-        return posPMatrix;
+    /**
+     * Set an additional transformation to the current location.
+     *
+     * @param tr
+     */
+    public void setTransformation(PMatrix3D tr) {
+        if (transfo == null) {
+            this.transfo = new PMatrix3D(tr);
+        } else {
+            this.transfo.set(tr);
+        }
+    }
+    
+    public void setTranslation(PVector tr) {
+        setTranslation(tr.x, tr.y, tr.z);
     }
 
+    public void setTranslation(float x, float y, float z) {
+        if (transfo == null) {
+            transfo = new PMatrix3D();
+        }
+        transfo.reset();
+        transfo.translate(x, y, z);
+    }
+    
+    public PMatrix3D getPos() {
+        if (transfo == null) {
+            return posPMatrix;
+        } else {
+            PMatrix3D tmp = posPMatrix.get();
+            tmp.apply(transfo);
+            return tmp;
+        }
+    }
+    
     public float getScale() {
         return this.scale;
     }
@@ -134,14 +167,13 @@ public class Screen {
     public void updatePos() {
 
 //        System.out.println("Screen: updatePos" + posPMatrix);
-        
         if (this.isFloatArrayUpdating) {
             posPMatrix.set(posFloat[0], posFloat[1], posFloat[2], posFloat[3],
                     posFloat[4], posFloat[5], posFloat[6], posFloat[7],
                     posFloat[8], posFloat[9], posFloat[10], posFloat[11],
                     0, 0, 0, 1);
         }
-
+        
     }
 
     // Never Used  ?
@@ -168,7 +200,7 @@ public class Screen {
 
         ///////////////////// PLANE COMPUTATION  //////////////////
         PMatrix3D mat = posPMatrix.get();
-
+        
         paperPosCorners3D[0] = new PVector(mat.m03, mat.m13, mat.m23);
         mat.translate(size.x, 0, 0);
         paperPosCorners3D[1] = new PVector(mat.m03, mat.m13, mat.m23);
@@ -176,9 +208,9 @@ public class Screen {
         paperPosCorners3D[2] = new PVector(mat.m03, mat.m13, mat.m23);
         mat.translate(-size.x, 0, 0);
         paperPosCorners3D[3] = new PVector(mat.m03, mat.m13, mat.m23);
-
+        
         plane = new Plane(new Triangle3D(toVec(paperPosCorners3D[0]), toVec(paperPosCorners3D[1]), toVec(paperPosCorners3D[2])));
-
+        
         for (int i = 0; i < 4; i++) {
             homography.setPoint(true, i, paperPosCorners3D[i]);
         }
@@ -200,11 +232,11 @@ public class Screen {
 //        homography.setPoint(false, 2, new PVector(1, 0));
 //        homography.setPoint(false, 3, new PVector(0, 0));
     }
-
+    
     public PGraphicsOpenGL initDraw(PVector userPos) {
         return initDraw(userPos, 40, 5000);
     }
-
+    
     public PGraphicsOpenGL initDraw(PVector userPos, float nearPlane, float farPlane) {
         return initDraw(userPos, nearPlane, farPlane, false, false, true);
     }
@@ -219,16 +251,16 @@ public class Screen {
 //        return initDraw(userPos, nearPlane, farPlane, isAnaglyph, isLeft, isOnly);
 //    }
     public PGraphicsOpenGL initDraw(PVector userPos, float nearPlane, float farPlane, boolean isAnaglyph, boolean isLeft, boolean isOnly) {
-
+        
         PGraphicsOpenGL graphics = getGraphics();
-
+        
         PVector userP = userPos.get();
 
         // Magic numbers...
         userP.x = -userP.x;
         userP.y = -userP.y;
         userP.add(20, -120, 0);
-
+        
         if (initPosM == null) {
             this.isOpenGL = true;
             // Transformation  Camera -> Marker
@@ -256,7 +288,7 @@ public class Screen {
 //            initPosM.print();
             // Now we have  Cam ->  new 3D origin
         }
-
+        
         PMatrix3D newPos = posPMatrix.get();
         // goto center...
 //        newPos.preApply(tr1);
@@ -277,13 +309,13 @@ public class Screen {
 
         // Compute the new transformation   
         PVector virtualPos = userP.get();
-
+        
         if (isAnaglyph) {
             virtualPos.add(isLeft ? -halfEyeDist : halfEyeDist, 0, 0);
         }
-
+        
         newPos.mult(virtualPos, virtualPos);
-
+        
         PMatrix3D rotationPaper = posPMatrix.get();
         rotationPaper.invert();
         rotationPaper.m03 = 0; // newPos.m03;
@@ -292,7 +324,7 @@ public class Screen {
 
         PVector paperCameraPos = new PVector();
         rotationPaper.mult(virtualPos, paperCameraPos);
-
+        
         paperCameraPos.x = -paperCameraPos.x + newPos.m30;
         paperCameraPos.y = paperCameraPos.y - newPos.m31;
         paperCameraPos.z = -paperCameraPos.z + newPos.m32;
@@ -342,7 +374,7 @@ public class Screen {
 //        }
         // http://www.gamedev.net/topic/597564-view-and-projection-matrices-for-vr-window-using-head-tracking/
         float nearFactor = nearPlane / paperCameraPos.z;
-
+        
         float left = nearFactor * (-size.x / 2f - paperCameraPos.x);
         float right = nearFactor * (size.x / 2f - paperCameraPos.x);
         float top = nearFactor * (size.y / 2f - paperCameraPos.y);
@@ -367,7 +399,7 @@ public class Screen {
         }
         return graphics;
     }
-
+    
     public void resetPos() {
         initPosM = null;
     }
@@ -386,15 +418,15 @@ public class Screen {
      * @return
      */
     public ReadonlyVec3D projectMouse(Projector projector, int mouseX, int mouseY, int width, int height) {
-
+        
         PGraphicsOpenGL projGraphics = projector.getGraphics();
         PMatrix3D projMat = projector.projectionInit.get();
         PMatrix3D modvw = projGraphics.modelview.get();
-
+        
         double[] mouseDist = projector.proj.undistort(mouseX, mouseY);
         float x = 2 * (float) mouseDist[0] / (float) width - 1;
         float y = 2 * (float) mouseDist[1] / (float) height - 1;
-
+        
         PVector vect = new PVector(x, y, 1);
         PVector transformVect = new PVector();
         PVector transformVect2 = new PVector();
@@ -406,35 +438,35 @@ public class Screen {
         //    println(skip / 10f);
         Ray3D ray = new Ray3D(new Vec3D(transformVect.x, transformVect.y, transformVect.z),
                 new Vec3D(transformVect2.x, transformVect2.y, transformVect2.z));
-
+        
         ReadonlyVec3D res = plane.getIntersectionWithRay(ray);
         return res;
     }
-
+    
     public PVector getZMinMax() {
-
+        
         float znear = 300000;
         float zfar = 0;
-
+        
         for (int i = 0; i < 4; i++) {
-
+            
             if (paperPosCorners3D[i].z < znear) {
                 znear = paperPosCorners3D[i].z;
             }
             if (paperPosCorners3D[i].z > zfar) {
                 zfar = paperPosCorners3D[i].z;
             }
-
+            
         }
         return new PVector(znear, zfar);
     }
-
+    
     public float getHalfEyeDist() {
         return halfEyeDist;
     }
-
+    
     public void setHalfEyeDist(float halfEyeDist) {
         this.halfEyeDist = halfEyeDist;
     }
-
+    
 }

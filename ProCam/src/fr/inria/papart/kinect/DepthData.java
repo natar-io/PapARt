@@ -28,6 +28,7 @@ public class DepthData {
      * Mask of valid Points
      */
     public boolean[] validPointsMask;
+    public boolean[] validPointsMask3D;
 
     /**
      * Not sure if used...
@@ -38,13 +39,22 @@ public class DepthData {
      * List of valid points
      */
     public ArrayList<Integer> validPointsList;
+    public ArrayList<Integer> validPointsList3D;
 
     public DepthData(int size) {
+        this(size, true);
+    }
+
+    public DepthData(int size, boolean is3D) {
         kinectPoints = new Vec3D[size];
         projectedPoints = new Vec3D[size];
         validPointsMask = new boolean[size];
         colorPoints = new int[size];
         validPointsList = new ArrayList();
+        if (is3D) {
+            validPointsMask3D = new boolean[size];
+            validPointsList3D = new ArrayList();
+        }
     }
 
 }

@@ -1,5 +1,6 @@
 package fr.inria.papart.multitouchKinect;
 
+import fr.inria.papart.kinect.DepthData;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.OpenKinectFrameGrabber;
 import org.bytedeco.javacpp.opencv_core.IplImage;
@@ -17,6 +18,8 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.Semaphore;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import processing.core.PApplet;
 import processing.core.PVector;
 import toxi.geom.Matrix4x4;
@@ -39,6 +42,7 @@ public class TouchInput {
     private ProjectiveDeviceP pdp;
     private boolean useExternalGrabber = false;
 
+    private final Semaphore depthDataSem = new Semaphore(1);
     /**
      * * From Multitouch kinect **
      */
@@ -68,10 +72,12 @@ public class TouchInput {
         this(applet, calibrationFile, kinect, grabber, false, precision2D, precision3D);
     }
 
+    // called by PapARt (with another camera for tracking) 
     public TouchInput(PApplet applet, String calibrationFile, Kinect kinect, OpenKinectFrameGrabber grabber, boolean color, int precision2D, int precision3D) {
         this(applet, calibrationFile, kinect, grabber, color, true, precision2D, precision3D);
     }
 
+    // called by PapARt (Kinect Only)! 
     public TouchInput(PApplet applet, String calibrationFile, Camera kinectCamera, Kinect kinect, boolean color, int precision2D, int precision3D) {
         if (!kinectCamera.useKinect()) {
             System.err.println("Impossible to init a Touch Input without a  Kinect camera. ");
@@ -95,6 +101,7 @@ public class TouchInput {
         // TODO: récup le Grabber, et récup le grabber de la profondeur. 
     }
 
+    // called by PapARt (with another camera for Tracking)  (color & undist = true)
     public TouchInput(PApplet applet, String calibrationFile, Kinect kinect, OpenKinectFrameGrabber grabber, boolean color, boolean colorUndist, int precision2D, int precision3D) {
 
         this.kinect = kinect;
@@ -153,6 +160,7 @@ public class TouchInput {
         @Override
         public void run() {
 
+            // default is true
             if (useColor) {
 
                 while (isRunning) {
@@ -160,6 +168,7 @@ public class TouchInput {
                         IplImage depthImage = grabber.grabDepth();
                         IplImage colorImage = grabber.grabVideo();
 
+                        // default is true
                         if (useUndist) {
                             if (colorImageUndist == null) {
                                 colorImageUndist = colorImage.clone();
@@ -169,7 +178,11 @@ public class TouchInput {
                         }
 
                         touchPointSemaphore.acquire();
+                        // Get the 3D location of kinect Points, 
+                        // Select the blobs & tracks them. 
                         touchInput.startTouch(depthImage);
+
+                        // assing a color to the touches
                         touchInput.getTouch2DColors(colorImage);
                         touchInput.endTouch();
 
@@ -209,17 +222,35 @@ public class TouchInput {
 
     public void startTouch(IplImage depthImage) {
 
-        if (touch2DPrecision > 0) {
-            updateKinect(depthImage, touch2DPrecision);
-            findTouch(touchPoint2D, false, touch2DPrecision);
-        }
+        try {
+            depthDataSem.acquire();
+            if (touch2DPrecision > 0 && touch3DPrecision > 0) {
 
-        if (touch3DPrecision > 0) {
-            updateKinect3D(depthImage, touch3DPrecision);
-            findTouch(touchPoint3D, true, touch3DPrecision);
+                // 2D & 3D precision the same ? 
+                kinect.updateMT(depthImage, kinectCalibration, touch2DPrecision, touch3DPrecision);
+
+                findTouch(touchPoint2D, false, touch2DPrecision);
+                findTouch(touchPoint3D, true, touch3DPrecision);
+
+            } else {
+
+                if (touch2DPrecision > 0) {
+                    kinect.updateMT2D(depthImage, kinectCalibration, touch2DPrecision);
+                    findTouch(touchPoint2D, false, touch2DPrecision);
+                }
+
+                if (touch3DPrecision > 0) {
+                    kinect.updateMT3D(depthImage, kinectCalibration, touch3DPrecision);
+                    findTouch(touchPoint3D, true, touch3DPrecision);
+                }
+            }
+
+        } catch (InterruptedException ex) {
+            Logger.getLogger(TouchInput.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            depthDataSem.release();
         }
     }
-
 
     public void endTouch() {
         if (touch2DPrecision > 0) {
@@ -431,6 +462,48 @@ public class TouchInput {
         return this.kinectCalibration;
     }
 
+    public ArrayList<Vec3D> projectDepthData(ARDisplay display, Screen screen) {
+        try {
+
+            depthDataSem.acquire();
+            DepthData depthData = kinect.getDepthData();
+
+            ArrayList<Vec3D> projected = new ArrayList<Vec3D>();
+            Vec3D[] projPoints = depthData.projectedPoints;
+            boolean[] valid3D = depthData.validPointsMask3D;
+            boolean isProjector = display instanceof Projector;
+
+            for (int i = 0; i < projPoints.length; i++) {
+                Vec3D vec = projPoints[i];
+                if (vec == null || valid3D[i] == false) {
+                    continue;
+                }
+
+                // Inside the window
+                if (!TouchDetection.isInside(vec, -0.5f, 1.5f)) {
+                    continue;
+                }
+
+                PVector res;
+                res = (isProjector ? (Projector) display : display).projectPointer(screen, vec.x, vec.y);
+                if (res == null) {
+                    continue;
+                }
+
+                res.z = vec.z;
+                projected.add(vec);
+            }
+            depthDataSem.release();
+            return projected;
+//                    res = (isProjector ? (Projector)display : display ).projectPointer(screen, tp);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(TouchInput.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+
+        return null;
+    }
+
     public ArrayList<TouchPoint> getTouchPoint2D() {
         return touchPoint2D;
     }
@@ -439,40 +512,10 @@ public class TouchInput {
         return touchPoint3D;
     }
 
-//    /**
-//     * Not used yet 
-//     * @param depthImage
-//     * @param color
-//     * @param skip 
-//     */
-//    public void updateKinect(IplImage depthImage, IplImage color, int skip) {
-//        currentPrecision = skip;
-//        goodPointOffsets = kinect.updateMT(depthImage, color, kinectCalibration, projPoints, skip);
-//    }
-    public void updateKinect(IplImage depthImage, int skip) {
-        kinect.updateMT(depthImage, kinectCalibration, skip);
-    }
-
-    public void updateKinect3D(IplImage depthImage, int skip) {
-        kinect.updateMT3D(depthImage, kinectCalibration, skip);
-    }
-
-//    /**
-//     * TO IMPLEMENT
-//     *
-//     * @param depthImage
-//     * @param skip
-//     */
-//    public void updateKinectOptimizedMT(IplImage depthImage, int skip) {
-//        currentPrecision = skip;
-//        goodPointOffsets = kinect.updateOptimized3D(depthImage, kinectCalibration, projPoints, skip);
-//    }
-    
-    
     public void getTouch2DColors(IplImage colorImage) {
         getTouchColors(colorImage, this.touchPoint2D);
     }
-    
+
     public void getTouchColors(IplImage colorImage,
             ArrayList<TouchPoint> touchPointList) {
 
@@ -494,7 +537,6 @@ public class TouchInput {
 
     }
 
-
     // Raw versions of the algorithm are providing each points at each time. 
     // no updates, no tracking. 
     public ArrayList<TouchPoint> find2DTouchRaw(int skip) {
@@ -512,7 +554,7 @@ public class TouchInput {
                 kinectCalibration, true, skip);
     }
 
-    public ArrayList<TouchPoint> findTouch(ArrayList<TouchPoint> touchPointList, boolean is3D, int skip) {
+    public void findTouch(ArrayList<TouchPoint> touchPointList, boolean is3D, int skip) {
 
         assert (skip > 0);
 
@@ -520,7 +562,7 @@ public class TouchInput {
                 kinectCalibration, is3D, skip);
 
         if (touchPoints == null) {
-            return null;
+            return;
         }
 
         // no previous points add all and return.
@@ -529,7 +571,7 @@ public class TouchInput {
                 tp.updateTime = papplet.millis();
                 touchPointList.add(tp);
             }
-            return touchPointList;
+            return;
         }
 
         // many previous points, try to find correspondances.
@@ -552,17 +594,13 @@ public class TouchInput {
             }
         }
 
-        ArrayList<TouchPoint> ret = new ArrayList<TouchPoint>();
-
+        // Add the new ones ?
         for (TouchPoint tp : touchPoints) {
             if (!tp.toDelete) {
                 tp.updateTime = papplet.millis();
                 touchPointList.add(tp);
-                ret.add(tp);
             }
         }
-
-        return ret;
     }
 
     public void touchFound(ArrayList<TouchPoint> touchPointList) {
