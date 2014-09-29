@@ -8,6 +8,7 @@ import fr.inria.papart.drawingapp.DrawUtils;
 import fr.inria.papart.exceptions.BoardNotDetectedException;
 import java.awt.Image;
 import java.lang.reflect.AccessibleObject;
+import java.nio.file.FileVisitResult;
 import processing.opengl.PGraphicsOpenGL;
 import processing.core.PApplet;
 import processing.core.PFont;
@@ -141,6 +142,34 @@ public class PaperScreen {
         assert (isInitialized);
         screen.updatePos();
 
+//        // check if drawing is required... 
+        PVector[] corners = screen.getCornerPos();
+        PMatrix3D extr = projector.getExtrinsics();
+        if (extr == null) {
+            System.out.println("No extrinsics");
+            return;
+        }
+
+        int nbOut = 0;
+        for (PVector c : corners) {
+            // Corners are on the camera Point of view. 
+            PVector projC = new PVector();
+            extr.mult(c, projC);
+            PVector screenCoord = projector.getProjectiveDeviceP().worldToPixelReal(projC);
+
+            System.out.println("Screen coord " + screenCoord);
+            if (screenCoord.x < 0 || screenCoord.x > projector.frameWidth
+                    || screenCoord.y < 0 || screenCoord.y > projector.frameHeight) {
+                nbOut++;
+            }
+            //   System.out.println("projector view " + screenCoord);
+        }
+        System.out.println("nbCorners " + nbOut);
+        if (nbOut >= 3) {
+            screen.setDrawing(false);
+        } else {
+            screen.setDrawing(true);
+        }
     }
 
     public PGraphicsOpenGL getGraphics() {
@@ -285,15 +314,12 @@ public class PaperScreen {
 
     }
 
-    //////// Automatic generation of delegated methods... Yay !
-    public void setPrimary(boolean primary) {
-        currentGraphics.setPrimary(primary);
-    }
-
+    //////// Automatic generation of delegated methods...
     public void setFrameRate(float frameRate) {
         currentGraphics.setFrameRate(frameRate);
     }
 
+    // TODO: check...
     public void setSize(int iwidth, int iheight) {
         currentGraphics.setSize(iwidth, iheight);
     }

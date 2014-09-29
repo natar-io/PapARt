@@ -184,7 +184,19 @@ public class ProjectiveDeviceP implements PConstants {
         return (int) (py * w + px);
     }
 
-    public PVector worldToPixel(PVector pt, boolean undistort) {
+    // TODO: find a name...
+    public PVector worldToPixelReal(PVector pt) {
+
+        // Reprojection 
+        float invZ = 1.0f / pt.z;
+
+        float px = ((pt.x * invZ * fx) + cx);
+        float py = ((pt.y * invZ * fy) + cy);
+
+        return new PVector(px, py);
+    }
+
+        public PVector worldToPixel(PVector pt, boolean undistort) {
 
         // Reprojection 
         float invZ = 1.0f / pt.z;
@@ -200,6 +212,7 @@ public class ProjectiveDeviceP implements PConstants {
         }
     }
 
+    
     public PVector createRayFrom(PVector pixels) {
 
         double[] out = device.undistort(pixels.x, pixels.y);
