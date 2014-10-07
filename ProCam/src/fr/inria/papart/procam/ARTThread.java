@@ -17,16 +17,10 @@ class ARTThread extends Thread {
 
     private Camera camera;
     private List<MarkerBoard> sheets = null;
-    private boolean undistort;
     private boolean compute;
     public boolean stop;
 
     public ARTThread(Camera camera, List<MarkerBoard> sheets) {
-        this(camera, sheets, true);
-    }
-
-    public ARTThread(Camera camera, List<MarkerBoard> sheets, boolean undistort) {
-        this.undistort = undistort;
         this.camera = camera;
         this.sheets = sheets;
         stop = false;
@@ -35,8 +29,9 @@ class ARTThread extends Thread {
     @Override
     public void run() {
         while (!stop) {
-            IplImage img = camera.grab(undistort);
-
+            camera.grab();
+            IplImage img = camera.getIplImage();
+            // TODO: check if img can be null...        
             if (img != null && compute && this.sheets != null) {
                 this.compute(img);
             }

@@ -8,8 +8,6 @@ import org.bytedeco.javacpp.ARToolKitPlus;
 import org.bytedeco.javacpp.ARToolKitPlus.TrackerMultiMarker;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static org.bytedeco.javacpp.opencv_highgui.cvLoadImage;
@@ -24,9 +22,9 @@ import processing.core.PVector;
  */
 public class MarkerBoard {
 
-    private final String fileName, name;
-    protected int width;
-    protected int height;
+    private final String fileName;
+    protected float width;
+    protected float height;
     protected ArrayList<Camera> cameras;
     protected ArrayList<Boolean> drawingMode;
     protected ArrayList<Float> minDistanceDrawingMode;
@@ -54,15 +52,14 @@ public class MarkerBoard {
         ARTOOLKITPLUS, OPENCV_SURF
     }
 
-    public MarkerBoard(String fileName, String name, PVector size) {
-        this(fileName, name, (int) size.x, (int) size.y);
+    public MarkerBoard(String fileName, PVector size) {
+        this(fileName, size.x, size.y);
     }
 
-    public MarkerBoard(String fileName, String name, int width, int height) {
+    public MarkerBoard(String fileName, float width, float height) {
         this.fileName = fileName;
         this.width = width;
         this.height = height;
-        this.name = name;
         checkType(fileName);
 
         cameras = new ArrayList<Camera>();
@@ -120,17 +117,21 @@ public class MarkerBoard {
             //  - can detect a maximum of 8 patterns in one image
             TrackerMultiMarker tracker = new ARToolKitPlus.TrackerMultiMarker(camera.width(), camera.height(), 10, 6, 6, 6, 0);
 
-            // ARToolKit 2.1.1 - version
-            // MultiTracker tracker = new MultiTracker(w, h);
-            //            int pixfmt = ARToolKitPlus.PIXEL_FORMAT_LUM;
             int pixfmt = 0;
-
-            if (camera.videoInputType == Camera.OPENCV_VIDEO) {
-                pixfmt = ARToolKitPlus.PIXEL_FORMAT_BGR;
-            }
-            if (camera.videoInputType == Camera.PROCESSING_VIDEO) {
-                // Works on MacBook
-                pixfmt = ARToolKitPlus.PIXEL_FORMAT_ABGR;
+            switch(camera.getPixelFormat()){
+                case BGR: 
+                    pixfmt = ARToolKitPlus.PIXEL_FORMAT_BGR;
+                    break;
+                case RGB: 
+                    pixfmt = ARToolKitPlus.PIXEL_FORMAT_RGB;
+                    break;
+                case ARGB: // closest, not the same.
+                    pixfmt = ARToolKitPlus.PIXEL_FORMAT_ABGR;
+                    break;
+                case RGBA:
+                    pixfmt = ARToolKitPlus.PIXEL_FORMAT_RGBA;
+                default: 
+                    throw new RuntimeException("ARtoolkit : Camera pixel format unknown");
             }
 
             tracker.setPixelFormat(pixfmt);
@@ -146,7 +147,7 @@ public class MarkerBoard {
 
             // Initialize the tracker, with camera parameters and marker config. 
             if (!tracker.init(camera.calibrationARToolkit, this.getFileName(), 1.0f, 1000.f)) {
-                System.err.println("Init ARTOOLKIT Error " + camera.calibrationARToolkit + " " + this.getFileName() + " " + getName());
+                System.err.println("Init ARTOOLKIT Error " + camera.calibrationARToolkit + " " + this.getFileName());
             }
 
             float[] transfo = new float[16];
@@ -316,7 +317,8 @@ public class MarkerBoard {
 
         int id = cameras.indexOf(camera);
         if (id == -1) {
-            throw new RuntimeException("The board " + this.name + " is not registered with the camera you asked");
+            throw new RuntimeException("The board " + this.fileName + " is"
+                    + " not registered with the camera you asked");
         }
 
         int currentTime = applet.millis();
@@ -576,11 +578,7 @@ public class MarkerBoard {
         return fileName;
     }
 
-    public String getName() {
-        return name;
-    }
-
     public String toString() {
-        return "MarkerBoard " + getName();
+        return "MarkerBoard " + getFileName();
     }
 }

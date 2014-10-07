@@ -25,7 +25,7 @@ public class Screen {
     // Either one, or the other is unique to this object. 
     // The other one is unique to the camera/markerboard couple. 
     private float[] posFloat;
-    private PMatrix3D posPMatrix;
+    private PMatrix3D posPMatrix = new PMatrix3D(); // init to avoid nullPointerExceptions 
 
     private boolean isFloatArrayUpdating;
 

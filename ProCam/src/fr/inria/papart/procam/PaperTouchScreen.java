@@ -14,7 +14,8 @@ import processing.core.PVector;
 
 public class PaperTouchScreen extends PaperScreen {
 
-    protected ArrayList<Touch> touchList;
+    // TODO: check -> never used. 
+    protected ArrayList<Touch> touchList = new ArrayList<Touch>();
     protected TouchInput touchInput;
     protected ArrayList<Button> buttons = new ArrayList<Button>();
     public boolean isTranslated = false;
@@ -28,24 +29,14 @@ public class PaperTouchScreen extends PaperScreen {
         super();
     }
 
-    public PaperTouchScreen(Papart papart, MarkerBoard board, PVector size,
-            float resolution) {
-        this(papart.getApplet(), board,
-                size, resolution, papart.getCameraTracking(),
-                papart.getDisplay(), papart.getTouchInput());
+    public PaperTouchScreen(Papart papart) {
+        this(papart.getCameraTracking(),
+                papart.getDisplay(),
+                papart.getTouchInput());
     }
 
-    public PaperTouchScreen(PApplet parent,
-            MarkerBoard board,
-            PVector size,
-            float resolution,
-            Camera cam,
-            ARDisplay proj,
-            TouchInput touchinput) {
-
-        super(parent, board, size,
-                resolution,
-                cam, proj);
+    public PaperTouchScreen(Camera cam, ARDisplay proj, TouchInput touchinput) {
+        super(cam, proj);
 
         this.touchInput = touchinput;
     }
@@ -59,9 +50,7 @@ public class PaperTouchScreen extends PaperScreen {
             this.touchInput = Papart.getPapart().getTouchInput();
         }
 
-        if (!isTranslated && screen.isDrawing()) {
-            updateTouch();
-        }
+        updateTouch();
     }
 
     @Override
@@ -72,24 +61,23 @@ public class PaperTouchScreen extends PaperScreen {
     @Override
     public void setLocation(float x, float y, float z) {
         super.setLocation(x, y, z);
-        isTranslated = true;
-
-        if (screen.isDrawing()) {
-            updateTouch();
-        }
+        updateTouch();
     }
 
     public void updateTouch() {
-
         if (!screen.isDrawing()) {
-            System.err.println("UpdateTouch on disabled screen.");
             return;
         }
 
         screen.computeScreenPosTransform();
-        touchList = touchInput.projectTouchToScreen(screen, projector,
+        touchList = touchInput.projectTouchToScreen(screen, display,
                 true, true, true, true, true);
+        if (!buttons.isEmpty()) {
+            updateButtons();
+        }
+    }
 
+    public void updateButtons() {
         if (!touchList.isEmpty()) {
             for (Touch t : touchList) {
                 if (t.is3D) {
@@ -100,7 +88,6 @@ public class PaperTouchScreen extends PaperScreen {
                         p.y * drawingSize.y);
             }
         }
-
     }
 
     protected void checkButtons(float x, float y) {
@@ -124,6 +111,12 @@ public class PaperTouchScreen extends PaperScreen {
 
         drawTouch(g, 10);
         g.endDraw();
+    }
+
+    static private final int DEFAULT_TOUCH_SIZE = 10;
+
+    protected void drawTouch() {
+        drawTouch(currentGraphics, DEFAULT_TOUCH_SIZE);
     }
 
     protected void drawTouch(int ellipseSize) {

@@ -51,6 +51,7 @@ public class ARDisplay {
     protected float zNear = 20, zFar = 10000;
 
     private int drawingSizeX, drawingSizeY;
+    private boolean distort = false;
 
     public ARDisplay(PApplet parent, String calibrationYAML) {
         loadInternalParams(calibrationYAML);
@@ -204,21 +205,19 @@ public class ARDisplay {
         this.graphics.endDraw();
     }
 
+    /** 
+     * Called in automatic mode. 
+     */
     public void pre() {
-        /* Clear everything */
         this.clear();
-//        display.drawScreensOver();
-
-//        this.beginDraw().background(0);
-//        this.endDraw();
     }
 
+    /**
+     * Called in Automatic mode to display the image. 
+     */
     public void draw() {
-
         drawScreensOver();
-
         parent.noStroke();
-
         if (camera != null && camera.getPImage() != null) {
             parent.image(camera.getPImage(), 0, 0, this.drawingSizeX, this.drawingSizeY);
 //            ((PGraphicsOpenGL) (parent.g)).image(camera.getPImage(), 0, 0, frameWidth, frameHeight);
@@ -226,9 +225,26 @@ public class ARDisplay {
 
         // TODO: Distorsion problems with higher image space distorisions (useless ?)
         DrawUtils.drawImage((PGraphicsOpenGL) parent.g,
-                //                this.distort(true),
-                this.distort(false),
+                this.render(),
                 0, 0, this.drawingSizeX, this.drawingSizeY);
+    }
+
+    /**
+     * Draw an image.  
+     * @see  image()  from the Processing API. 
+     * @param g graphics context to draw on. 
+     * @param image Image to be drawn
+     * @param x location x
+     * @param y location y
+     * @param width 
+     * @param height 
+     */
+    public void drawImage(PGraphicsOpenGL g, PImage image,
+            int x, int y,
+            int width, int height) {
+        DrawUtils.drawImage(g,
+                image,
+                x,y, width, height);
     }
 
     /**
@@ -359,13 +375,10 @@ public class ARDisplay {
         return this.graphics;
     }
 
-    public PGraphicsOpenGL beginDrawOnScreen(Screen screen) throws BoardNotDetectedException {
+    public PGraphicsOpenGL beginDrawOnScreen(Screen screen){
 
         // Get the markerboard viewed by the camera
         PMatrix3D camBoard = screen.getPos();
-        if (camBoard == null) {
-            throw new BoardNotDetectedException("Board not detected, at beginDrawOnScreen.");
-        }
 
         this.beginDraw();
 
@@ -392,7 +405,7 @@ public class ARDisplay {
 
         // TODO: check !
         this.graphics.scale(1f / resolution);
-        
+
     }
 
     public void endDraw() {
@@ -403,18 +416,20 @@ public class ARDisplay {
 
     }
 
+    public void setDistort(boolean distort) {
+        this.distort = distort;
+    }
+
     /**
      * Note: The distorsions for the view are important for Projectors. For
      * cameras it is not necessary. And not desired if the rendering image is
      * scaled.
      *
-     * @param distort
-     * @return
+     * @return graphics context
      */
-    public PGraphicsOpenGL distort(boolean distort) {
+    public PGraphicsOpenGL render() {
         if (distort) {
-            graphics.filter(lensFilter);
-            return graphics;
+            this.graphics.filter(lensFilter);
         }
         return this.graphics;
     }
@@ -539,7 +554,7 @@ public class ARDisplay {
         return frameHeight;
     }
 
-    public void setDisplaySize(int w, int h) {
+    public void setDrawingSize(int w, int h) {
         this.drawingSizeX = w;
         this.drawingSizeY = h;
     }

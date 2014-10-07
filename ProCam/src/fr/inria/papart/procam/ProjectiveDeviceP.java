@@ -336,7 +336,6 @@ public class ProjectiveDeviceP implements PConstants {
         p.cy = p.intrinsics.m12;
 
         try {
-
             double[] projR = dev.R.get();
             double[] projT = dev.T.get();
             p.extrinsics = new PMatrix3D((float) projR[0], (float) projR[1], (float) projR[2], (float) projT[0],
@@ -344,7 +343,8 @@ public class ProjectiveDeviceP implements PConstants {
                     (float) projR[6], (float) projR[7], (float) projR[8], (float) projT[2],
                     0, 0, 0, 1);
         } catch (NullPointerException npe) {
-//            System.out.println("Loading Parameters, without extrinsics");
+            // TODO: Error handling, or no extrinsics handling ? !
+//           System.out.println("Loading Parameters, without extrinsics");
         }
 
     }
@@ -352,11 +352,7 @@ public class ProjectiveDeviceP implements PConstants {
     public static ProjectiveDeviceP loadCameraDevice(String filename, int id) throws Exception {
         ProjectiveDeviceP p = new ProjectiveDeviceP();
         try {
-//            System.out.println("Loading camera device file :" + filename);
-
             CameraDevice[] camDev = CameraDevice.read(filename);
-//            System.out.println("Loading camera device OK.");
-
             if (camDev.length <= id) {
                 throw new Exception("No camera device with the id " + id + " in the calibration file: " + filename);
             }

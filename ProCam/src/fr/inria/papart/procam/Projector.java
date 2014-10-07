@@ -67,17 +67,18 @@ public class Projector extends ARDisplay {
 
     }
 
-    // TODO: test & validate this. !
+    @Override
     public void pre() {
         this.clear();
         this.graphics.background(0);
     }
 
+    @Override
     public void draw() {
         drawScreensOver();
         parent.noStroke();
         DrawUtils.drawImage((PGraphicsOpenGL) parent.g,
-                this.distort(true),
+                this.render(),
                 0, 0, this.frameWidth, this.frameHeight);
     }
 

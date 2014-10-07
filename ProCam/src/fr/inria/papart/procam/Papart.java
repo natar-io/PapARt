@@ -11,11 +11,10 @@ import org.bytedeco.javacpp.freenect;
 import fr.inria.papart.drawingapp.Button;
 import fr.inria.papart.kinect.Kinect;
 import fr.inria.papart.multitouchKinect.TouchInput;
+import fr.inria.papart.procam.camera.CameraFactory;
+import fr.inria.papart.procam.camera.CameraOpenKinect;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.reflections.Reflections;
 import processing.core.PApplet;
 import processing.core.PFont;
@@ -79,7 +78,6 @@ public class Papart {
         // Sketches are not within a package.
         Reflections reflections = new Reflections("");
 
-        
         Set<Class<? extends PaperTouchScreen>> paperTouchScreenClasses = reflections.getSubTypesOf(PaperTouchScreen.class);
         for (Class<? extends PaperTouchScreen> klass : paperTouchScreenClasses) {
             try {
@@ -88,19 +86,6 @@ public class Papart {
                 Constructor<? extends PaperTouchScreen> constructor = klass.getDeclaredConstructor(ctorArgs2);
                 System.out.println("Starting a PaperTouchScreen. " + klass.getName());
                 constructor.newInstance(this.appletClass.cast(this.applet));
-//            } catch (InstantiationException ex) {
-//                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
-//            } catch (IllegalAccessException ex) {
-//                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
-//            } catch (IllegalArgumentException ex) {
-//                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
-//            } catch (InvocationTargetException ex) {
-//                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
-//            } catch (NoSuchMethodException ex) {
-//                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
-//            } catch (SecurityException ex) {
-//                Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
-//            }
             } catch (Exception ex) {
                 System.out.println("Error loading PapartTouchApp : " + klass.getName());
             }
@@ -124,42 +109,8 @@ public class Papart {
 
     }
 
-    public void loadSketches(Class[] sketches) {
-
-        for (Class klass : sketches) {
-            
-             System.out.println("First subclass. " + klass.getName());
-            Class[] ctorArgs2 = new Class[1];
-            ctorArgs2[0] = this.appletClass;
-
-            if (klass.getSuperclass() == PaperTouchScreen.class) {
-
-                try {
-                    Constructor<? extends PaperTouchScreen> constructor = klass.getDeclaredConstructor(ctorArgs2);
-                    System.out.println("Starting a PaperTouchScreen. " + klass.getName());
-                    constructor.newInstance(this.appletClass.cast(this.applet));
-                } catch (InstantiationException ex) {
-                    Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (IllegalAccessException ex) {
-                    Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (IllegalArgumentException ex) {
-                    Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (InvocationTargetException ex) {
-                    Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (NoSuchMethodException ex) {
-                    Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (SecurityException ex) {
-                    Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
-                }
-
-            } else {
-                if (klass.getSuperclass() == PaperScreen.class) {
-
-                }
-            }
-
-        }
-
+    public void initProjectorCamera(String cameraNo, Camera.Type cameraType) {
+        initProjectorCamera(cameraNo, cameraType, 1);
     }
 
     /**
@@ -169,43 +120,75 @@ public class Papart {
      * @param cameraNo
      * @param cameraType
      */
-    public void initProjectorCamera(float quality, String cameraNo, int cameraType) {
+    public void initProjectorCamera(String cameraNo, Camera.Type cameraType, float quality) {
         assert (!cameraInitialized);
-        // TODO: check if file exists !
-        projector = new Projector(this.applet, proCamCalib, zNear, zFar, quality);
-        display = projector;
-        displayInitialized = true;
 
-        cameraTracking = new Camera(this.applet, cameraNo, proCamCalib, cameraType);
+        initProjectorDisplay(quality);
+
+        cameraTracking = CameraFactory.createCamera(cameraType, cameraNo);
+        cameraTracking.setParent(applet);
+        cameraTracking.setCalibration(proCamCalib);
+        cameraTracking.start();
         loadTracking(proCamCalib);
+        cameraTracking.setThread();
 
-        frameSize = new PVector(projector.getWidth(), projector.getHeight());
         checkInitialization();
     }
 
     public void initKinectCamera(float quality) {
         assert (!cameraInitialized);
 
-        cameraTracking = new Camera(this.applet, "0", Kinect.KINECT_WIDTH,
-                Kinect.KINECT_HEIGHT, kinectRGBCalib, Camera.KINECT_VIDEO);
+        cameraTracking = CameraFactory.createCamera(Camera.Type.OPEN_KINECT, 0);
+        cameraTracking.setParent(applet);
+        cameraTracking.setCalibration(kinectRGBCalib);
+        cameraTracking.start();
+
         loadTracking(kinectRGBCalib);
-        display = new ARDisplay(this.applet, cameraTracking,
-                zNear, zFar, quality);
-        displayInitialized = true;
-        frameSize = new PVector(display.getWidth(), display.getHeight());
+        cameraTracking.setThread();
+
+        initARDisplay(quality);
+
         checkInitialization();
     }
 
-    public void initCamera(float quality, String cameraNo, int cameraType) {
+    /**
+     * Initialize a camera for object tracking.
+     *
+     * @see initCamera(String, int, float)
+     */
+    public void initCamera(String cameraNo, Camera.Type cameraType) {
+        initCamera(cameraNo, cameraType, 1);
+    }
+
+    public void initCamera(String cameraNo, Camera.Type cameraType, float quality) {
         assert (!cameraInitialized);
 
-        cameraTracking = new Camera(this.applet, cameraNo, proCamCalib, cameraType);
+        cameraTracking = CameraFactory.createCamera(cameraType, cameraNo);
+        cameraTracking.setParent(applet);
+        cameraTracking.setCalibration(proCamCalib);
+        cameraTracking.start();
         loadTracking(proCamCalib);
+        cameraTracking.setThread();
+
+        initARDisplay(quality);
+        checkInitialization();
+    }
+
+    private void initProjectorDisplay(float quality) {
+        // TODO: check if file exists !
+        projector = new Projector(this.applet, proCamCalib, zNear, zFar, quality);
+        display = projector;
+        displayInitialized = true;
+        frameSize = new PVector(projector.getWidth(), projector.getHeight());
+    }
+
+    private void initARDisplay(float quality) {
+        assert(this.cameraTracking != null && this.applet != null);
+        
         display = new ARDisplay(this.applet, cameraTracking,
                 zNear, zFar, quality);
         frameSize = new PVector(display.getWidth(), display.getHeight());
         displayInitialized = true;
-        checkInitialization();
     }
 
     private void checkInitialization() {
@@ -220,7 +203,6 @@ public class Papart {
         cameraTracking.initMarkerDetection(camCalibARtoolkit);
 
         // The camera view is handled in another thread;
-        cameraTracking.setThread(true);
         cameraInitialized = true;
     }
 
@@ -255,21 +237,24 @@ public class Papart {
             int touch3DPrecision) {
 
         if (this.cameraTracking == null) {
-            cameraTracking = new Camera(this.applet, "0", Kinect.KINECT_WIDTH,
-                    Kinect.KINECT_HEIGHT, kinectRGBCalib, Camera.KINECT_VIDEO);
-            cameraTracking.setThread(true);
+
+            cameraTracking = CameraFactory.createCamera(Camera.Type.OPEN_KINECT, "0");
+            cameraTracking.setParent(applet);
+            cameraTracking.setCalibration(kinectRGBCalib);
+            cameraTracking.start();
+            cameraTracking.setThread();
             cameraInitialized = true;
             checkInitialization();
         }
 
-        assert (this.cameraTracking.useKinect());
+        assert (cameraTrackingIsKinect());
         kinect = new Kinect(this.applet,
                 kinectIRCalib,
                 kinectRGBCalib,
                 0, kinectFormat);
 
         touchInput = new TouchInput(this.applet, kinectScreenCalib,
-                cameraTracking, kinect, true, touch2DPrecision, touch3DPrecision);
+                (CameraOpenKinect) cameraTracking, kinect, true, touch2DPrecision, touch3DPrecision);
         touchInitialized = true;
     }
 
@@ -281,7 +266,7 @@ public class Papart {
      * @param touch3DPrecision
      */
     public void loadTouchInput(int touch2DPrecision, int touch3DPrecision) {
-        assert (!this.cameraTracking.useKinect());
+        assert (!cameraTrackingIsKinect());
 
         openKinectGrabber = new OpenKinectFrameGrabber(0);
 
@@ -302,6 +287,10 @@ public class Papart {
         touchInput = new TouchInput(this.applet, kinectScreenCalib,
                 kinect, openKinectGrabber, false, touch2DPrecision, touch3DPrecision);
         touchInitialized = true;
+    }
+
+    private boolean cameraTrackingIsKinect() {
+        return this.cameraTracking instanceof CameraOpenKinect;
     }
 
     public void startTracking() {

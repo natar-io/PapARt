@@ -13,6 +13,7 @@ import fr.inria.papart.kinect.KinectScreenCalibration;
 import fr.inria.papart.procam.Camera;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.procam.Projector;
+import fr.inria.papart.procam.camera.CameraOpenKinect;
 import java.io.FileNotFoundException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -77,29 +78,7 @@ public class TouchInput {
         this(applet, calibrationFile, kinect, grabber, color, true, precision2D, precision3D);
     }
 
-    // called by PapARt (Kinect Only)! 
-    public TouchInput(PApplet applet, String calibrationFile, Camera kinectCamera, Kinect kinect, boolean color, int precision2D, int precision3D) {
-        if (!kinectCamera.useKinect()) {
-            System.err.println("Impossible to init a Touch Input without a  Kinect camera. ");
-
-        }
-        this.papplet = applet;
-
-        try {
-            kinectCalibration = new KinectScreenCalibration(applet, calibrationFile);
-            System.out.println("Calibration loaded : " + kinectCalibration.plane());
-        } catch (FileNotFoundException e) {
-            System.out.println("Calibration file error :" + calibrationFile + " \n" + e);
-        }
-
-        this.touch2DPrecision = precision2D;
-        this.touch3DPrecision = precision3D;
-        this.kinect = kinect;
-        kinectCamera.setTouch(this);
-        this.useExternalGrabber = true;
-        this.pdp = kinectCamera.getProjectiveDevice();
-        // TODO: récup le Grabber, et récup le grabber de la profondeur. 
-    }
+   
 
     // called by PapARt (with another camera for Tracking)  (color & undist = true)
     public TouchInput(PApplet applet, String calibrationFile, Kinect kinect, OpenKinectFrameGrabber grabber, boolean color, boolean colorUndist, int precision2D, int precision3D) {
@@ -121,6 +100,27 @@ public class TouchInput {
             grabberThread.start();
         }
     }
+    
+     // called by PapARt (Kinect Only)! 
+    public TouchInput(PApplet applet, String calibrationFile, CameraOpenKinect kinectCamera, Kinect kinect, boolean color, int precision2D, int precision3D) {
+        this.papplet = applet;
+
+        try {
+            kinectCalibration = new KinectScreenCalibration(applet, calibrationFile);
+            System.out.println("Calibration loaded : " + kinectCalibration.plane());
+        } catch (FileNotFoundException e) {
+            System.out.println("Calibration file error :" + calibrationFile + " \n" + e);
+        }
+
+        this.touch2DPrecision = precision2D;
+        this.touch3DPrecision = precision3D;
+        this.kinect = kinect;
+        kinectCamera.setTouch(this);
+        this.useExternalGrabber = true;
+        this.pdp = kinectCamera.getProjectiveDevice();
+        // TODO: récup le Grabber, et récup le grabber de la profondeur. 
+    }
+    
     private Matrix4x4 transfo = null;
 
     public void setTransfo(Homography homography) {

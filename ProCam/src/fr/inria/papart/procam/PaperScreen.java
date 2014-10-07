@@ -7,8 +7,6 @@ package fr.inria.papart.procam;
 import fr.inria.papart.drawingapp.DrawUtils;
 import fr.inria.papart.exceptions.BoardNotDetectedException;
 import java.awt.Image;
-import java.lang.reflect.AccessibleObject;
-import java.nio.file.FileVisitResult;
 import processing.opengl.PGraphicsOpenGL;
 import processing.core.PApplet;
 import processing.core.PFont;
@@ -22,115 +20,172 @@ import processing.core.PStyle;
 import processing.core.PVector;
 import processing.event.KeyEvent;
 import processing.opengl.FrameBuffer;
-import processing.opengl.PGL;
 import processing.opengl.PShader;
 import processing.opengl.Texture;
 
 public class PaperScreen {
 
-    protected Screen screen;
-    protected MarkerBoard board;
-    protected PVector drawingSize = null;
-    protected Camera cameraTracking;
-    protected ARDisplay projector;
-    protected float resolution = 2;
+    private static final int DEFAULT_DRAWING_SIZE = 100;
+    private static final float DEFAULT_RESOLUTION = 2;
+
     protected PApplet parent;
+
+    protected Screen screen;
+    protected ARDisplay display;
+    protected Camera cameraTracking;
+    protected MarkerBoard markerBoard;
+
+    protected PVector drawingSize
+            = new PVector(DEFAULT_DRAWING_SIZE, DEFAULT_DRAWING_SIZE);
+    protected float resolution = DEFAULT_RESOLUTION;
+
     protected PGraphicsOpenGL currentGraphics;
 
     protected boolean isDrawingOnScreen;
     private boolean isInitialized = false;
+    private boolean isRegistered = false;
 
     /**
-     * Zero arguments can be invoked only when a Papart object was created.
+     * Create a new PaperScreen, a Papart object has to be created first.
      */
     public PaperScreen() {
         Papart papart = Papart.getPapart();
+
+        if (papart == null) {
+            throw new RuntimeException("Cannot create the PaperScreen, "
+                    + "the Papart singleton cannot be found.");
+        }
+
         this.parent = papart.getApplet();
         this.cameraTracking = papart.getCameraTracking();
-        this.projector = papart.getDisplay();
+        this.display = papart.getDisplay();
         // Default to projector graphics. 
-        currentGraphics = this.projector.getGraphics();
-
+        currentGraphics = this.display.getGraphics();
         register();
-        // Check This :: 
-        //  init();
-//        setup();
     }
 
-    public PaperScreen(Papart papart, MarkerBoard board, PVector size,
-            float resolution) {
-        this(papart.getApplet(), board,
-                size, resolution, papart.getCameraTracking(),
-                papart.getDisplay());
+    public PaperScreen(Papart papart) {
+        this(papart.getCameraTracking(), papart.getDisplay());
     }
 
-    public PaperScreen(PApplet parent,
-            MarkerBoard board,
-            PVector size,
-            float resolution,
-            Camera cam,
-            ARDisplay proj) {
-        this.parent = parent;
-        this.board = board;
-        this.drawingSize = size.get();
+    public PaperScreen(Camera cam, ARDisplay proj) {
         this.cameraTracking = cam;
-        this.projector = proj;
+        this.display = proj;
+        currentGraphics = this.display.getGraphics();
+    }
+
+    /**
+     * Load a Markerboard with the given configuration file and size. The
+     * configuration file can end with ".cfg" for an ARToolKitPlus tracking
+     * technique. (faster) The configuration file can end with ".jpg" or ".png"
+     * to track "images" using SURF features. (slower)
+     *
+     * @param configFile
+     * @param width width of the markerboard in millimeters.
+     * @param height height of the markerboard in millimeters.
+     */
+    public void loadMarkerBoard(String configFile, float width, float height) {
+        this.markerBoard = new MarkerBoard(configFile, width, height);
+        trackCurrentMarkerBoard();
+    }
+
+    /**
+     * Assign an existing markerboard to this PaperScreen.
+     *
+     * @param markerboard
+     */
+    public final void setMarkerBoard(MarkerBoard markerboard) {
+        this.markerBoard = markerboard;
+        trackCurrentMarkerBoard();
+    }
+
+    /**
+     * Sets the drawing size in millimeters. To get the resolution you must
+     * multiply the drawing size by the resolution.
+     *
+     * @see setResolution
+     * @param width
+     * @param height
+     */
+    public final void setDrawingSize(float width, float height) {
+        this.drawingSize.x = width;
+        this.drawingSize.y = height;
+    }
+
+    /**
+     * Set the resolution of the drawing in px/mm . e.g.: A board with 100mm
+     * width and 2 resolution will have 200 pixels.
+     *
+     * @param resolution
+     */
+    public void setResolution(float resolution) {
         this.resolution = resolution;
-        currentGraphics = this.projector.getGraphics();
-        register();
-        init();
     }
 
-    public void markerBoard(String file, int w, int h, float resolution) {
-        markerBoard(new MarkerBoard(file, "board", w, h), resolution);
+    public void init() {
+        init(this.parent);
     }
 
-    public void markerBoard(String file, int w, int h) {
-        markerBoard(file, w, h, this.resolution);
-
-    }
-
-    public void markerBoard(MarkerBoard mboard) {
-        markerBoard(mboard, this.resolution);
-    }
-
-    public void markerBoard(MarkerBoard mboard, float resolution) {
-        this.board = mboard;
-        this.resolution = resolution;
-        if (this.drawingSize != null) {
-            init();
+    public void init(PApplet parent) {
+        if (isInitialized) {
+            System.err.println("PaperScreen: init, already initalized.");
+            return;
         }
-    }
+        if (parent == null) {
+            String message = "This PaperScreen cannot be initialized without "
+                    + "the current PApplet, use PapARt or pass it as an arugment "
+                    + "to init. ";
+            throw new RuntimeException(message);
+        }
+        if (this.markerBoard == null) {
+            String message = "This PaperScreen cannot be initialized without "
+                    + "a markerboard. See loadMarkerBoard and setMarkerboard "
+                    + "methods. ";
+            throw new RuntimeException(message);
+        }
 
-    public void drawingSize(float x, float y) {
-        this.drawingSize = new PVector(x, y);
-    }
-
-    ///// Load ressources -> to remove ?////////
-    private void init() {
-        assert (!isInitialized);
+        this.parent = parent;
         DrawUtils.applet = parent; // For Touch -> Check for removal ?
-        this.screen = new Screen(parent, drawingSize, resolution);
-        projector.addScreen(screen);
-        if (!cameraTracking.tracks(board)) {
-            cameraTracking.trackMarkerBoard(board);
+
+        // register the draw (public, overridable)  & pre (protected) methods. 
+        if (!isRegistered) {
+            this.register();
         }
 
-        screen.setAutoUpdatePos(cameraTracking, board);
-//        board.setDrawingMode(cameraTracking, true, 4);
-//        board.setFiltering(cameraTracking, 30, 4);
-        board.setDrawingMode(cameraTracking, true, 10);
-        board.setFiltering(cameraTracking, 30, 4);
+        // Create a screen
+        this.screen = new Screen(parent, drawingSize, resolution);
+        // add it to the display
+        display.addScreen(screen);
+
+        trackCurrentMarkerBoard();
+        
+        // automatic update of the paper screen, regarding the camera. 
+        screen.setAutoUpdatePos(cameraTracking, markerBoard);
+
+        // default filtering
+        markerBoard.setDrawingMode(cameraTracking, true, 10);
+        markerBoard.setFiltering(cameraTracking, 30, 4);
 
         isInitialized = true;
     }
 
-    private void register() {
-        parent.registerMethod("pre", this);
-        parent.registerMethod("draw", this);
-        projector.registerAgain();
+    private void trackCurrentMarkerBoard() {
+        if (!cameraTracking.tracks(markerBoard)) {
+            cameraTracking.trackMarkerBoard(markerBoard);
+        }
     }
 
+    private void register() {
+        this.isRegistered = true;
+        parent.registerMethod("pre", this);
+        parent.registerMethod("draw", this);
+        display.registerAgain();
+    }
+
+    /**
+     * This method must be overloaded in the child class. For example to load
+     * images, 3D models etc...
+     */
     protected void setup() {
         System.out.println("PaperScreen setup. You should not see this unless for debug.");
     }
@@ -138,15 +193,22 @@ public class PaperScreen {
     public void pre() {
         if (!isInitialized) {
             setup();
+            init();
         }
         assert (isInitialized);
         screen.updatePos();
+        checkCorners();
+    }
 
-//        // check if drawing is required... 
+    /**
+     * Experimental
+     */
+    private void checkCorners() {
+        //        // check if drawing is required... 
         PVector[] corners = screen.getCornerPos();
-        PMatrix3D extr = projector.getExtrinsics();
-        if (extr == null) {
-            System.out.println("No extrinsics");
+        PMatrix3D extr = display.getExtrinsics();
+        if (extr == null || display.getProjectiveDeviceP() == null) {
+//            System.out.println("No extrinsics");
             return;
         }
 
@@ -155,16 +217,14 @@ public class PaperScreen {
             // Corners are on the camera Point of view. 
             PVector projC = new PVector();
             extr.mult(c, projC);
-            PVector screenCoord = projector.getProjectiveDeviceP().worldToPixelReal(projC);
+            PVector screenCoord = display.getProjectiveDeviceP().worldToPixelReal(projC);
 
-            System.out.println("Screen coord " + screenCoord);
-            if (screenCoord.x < 0 || screenCoord.x > projector.frameWidth
-                    || screenCoord.y < 0 || screenCoord.y > projector.frameHeight) {
+            if (screenCoord.x < 0 || screenCoord.x > display.frameWidth
+                    || screenCoord.y < 0 || screenCoord.y > display.frameHeight) {
                 nbOut++;
             }
             //   System.out.println("projector view " + screenCoord);
         }
-        System.out.println("nbCorners " + nbOut);
         if (nbOut >= 3) {
             screen.setDrawing(false);
         } else {
@@ -172,38 +232,9 @@ public class PaperScreen {
         }
     }
 
-    public PGraphicsOpenGL getGraphics() {
-        return currentGraphics;
-    }
-
-    public Screen getScreen() {
-        return this.screen;
-    }
-
-    public boolean isMoving() {
-        return board.isMoving(cameraTracking);
-    }
-
-    public void setLocation(PVector v) {
-        setLocation(v.x, v.y, v.z);
-    }
-
-    public void setLocation(float x, float y, float z) {
-        screen.setTranslation(x, y, z);
-    }
-
-    public PVector getLocationVector() {
-        PMatrix3D p = screen.getPos();
-        return new PVector(p.m03, p.m13, p.m23);
-    }
-
-    public PMatrix3D getLocation() {
-        return this.screen.getPos();
-    }
-
     // TODO: check this !
     public PVector getScreenPos() {
-        return board.getBoardLocation(cameraTracking, projector);
+        return markerBoard.getBoardLocation(cameraTracking, display);
     }
 
     public void noDraw() {
@@ -224,9 +255,9 @@ public class PaperScreen {
         return g;
     }
 
-    public PGraphicsOpenGL beginDraw3D() throws BoardNotDetectedException {
+    public PGraphicsOpenGL beginDraw3D() {
         screen.setDrawing(false);
-        PGraphicsOpenGL g = projector.beginDrawOnScreen(this.screen);
+        PGraphicsOpenGL g = display.beginDrawOnScreen(this.screen);
         this.isDrawingOnScreen = false;
         this.currentGraphics = g;
 //        this.screen.getPos().print();
@@ -242,19 +273,15 @@ public class PaperScreen {
         return g;
     }
 
-    // Example Draw... to check ? Or put it as begin / end ...
+    /**
+     * Method to override in your class. Default implementation is a blue
+     * rectangle.
+     */
     public void draw() {
-        System.out.println("Draw PaperScreen");
         screen.setDrawing(true);
-        PGraphicsOpenGL g = screen.getGraphics();
-        g.beginDraw();
-        // T
-//        g.clear(0, 0);
-        getLocation().print();
-        g.scale(resolution);
-        g.background(0, 100, 200);
-        g.endDraw();
-
+        beginDraw2D();
+        background(0, 100, 200);
+        endDraw();
     }
 
     public void endDraw() {
@@ -267,27 +294,55 @@ public class PaperScreen {
      *
      * @param ps PaperScreen to go to.
      */
-    public void goTo(PaperScreen ps, PGraphicsOpenGL graphics) {
+    public void goTo(PaperScreen ps) {
 
         if (this.isDrawingOnScreen == true) {
             throw new RuntimeException("Impossible to draw on another board. You need to drawi using beginDraw3D() to do so.");
         }
 
-        if (this.currentGraphics != graphics) {
-            throw new RuntimeException("The given graphics context is not valid. Use the one given by beginDraw3D().");
-        }
-
+//        if (this.currentGraphics != graphics) {
+//            throw new RuntimeException("The given graphics context is not valid. Use the one given by beginDraw3D().");
+//        }
         // get the location of this board...
         PMatrix3D loc = this.getLocation().get();
         loc.invert();
         loc.apply(ps.getLocation());
 
         // Sun POV
-        currentGraphics.applyMatrix(loc);
+        applyMatrix(loc);
+    }
+
+    public PGraphicsOpenGL getGraphics() {
+        return currentGraphics;
+    }
+
+    public Screen getScreen() {
+        return this.screen;
+    }
+
+    public boolean isMoving() {
+        return markerBoard.isMoving(cameraTracking);
+    }
+
+    public void setLocation(PVector v) {
+        setLocation(v.x, v.y, v.z);
+    }
+
+    public void setLocation(float x, float y, float z) {
+        screen.setTranslation(x, y, z);
+    }
+
+    public PVector getLocationVector() {
+        PMatrix3D p = screen.getPos();
+        return new PVector(p.m03, p.m13, p.m23);
+    }
+
+    public PMatrix3D getLocation() {
+        return this.screen.getPos();
     }
 
     public MarkerBoard getBoard() {
-        return board;
+        return markerBoard;
     }
 
     public PVector getDrawingSize() {
@@ -299,7 +354,7 @@ public class PaperScreen {
     }
 
     public ARDisplay getProjector() {
-        return projector;
+        return display;
     }
 
     public float getResolution() {

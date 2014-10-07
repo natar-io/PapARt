@@ -8,26 +8,16 @@ package fr.inria.papart.procam;
  *
  * @author jeremylaviole
  */
-import org.bytedeco.javacv.FrameGrabber;
-import org.bytedeco.javacv.OpenCVFrameGrabber;
-import org.bytedeco.javacv.OpenKinectFrameGrabber;
-import org.bytedeco.javacpp.ARToolKitPlus;
-import org.bytedeco.javacpp.ARToolKitPlus.TrackerMultiMarker;
 import org.bytedeco.javacpp.opencv_core.CvMat;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 //import diewald_PS3.PS3;
 //import diewald_PS3.constants.COLOR_MODE;
 //import diewald_PS3.constants.VIDEO_MODE;
 //import diewald_PS3.logger.PS3Logger;
-import fr.inria.papart.multitouchKinect.TouchInput;
-import fr.inria.papart.tools.CaptureIpl;
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -36,206 +26,106 @@ import processing.core.PConstants;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
-import processing.opengl.PGraphicsOpenGL;
-import processing.opengl.Texture;
 
-public class Camera implements PConstants {
+public abstract class Camera implements PConstants {
 
-    // Camera parameters
+    protected IplImage currentImage, copyUndist;
+
+    protected CamImage camImage = null;
+    protected PImage depthPImage = null;
+
+    public enum Type {
+
+        OPENCV, PROCESSING, OPEN_KINECT
+    }
+    
+    public enum PixelFormat {
+        RGB, BGR, ARGB, RGBA
+    }
+
+    protected PixelFormat format;
+
+    
+    // Parameters
+    // One or the other. 
+    protected String cameraDescription = null;
+    protected int systemNumber = -1;
+
+    protected int width, height;
+    protected int frameRate;
+    protected boolean trackSheets = false;
+    private boolean isClosing = false;
+
+    private boolean undistort = false;
+
+    // Properties
+    protected ProjectiveDeviceP pdp = null;
     protected PMatrix3D camIntrinsicsP3D;
-    protected PApplet parent;
+    protected PApplet parent = null;
     private ArrayList<TrackedView> trackedViews;
     private List<MarkerBoard> sheets = null;
     protected final Semaphore sheetsSemaphore = new Semaphore(1);
+
+    // ARToolkit 
     protected String calibrationARToolkit;
     private ARTThread thread = null;
-    protected ProjectiveDeviceP pdp = null;
-    // GStreamer  Video input
-//    protected GSCapture gsCapture;
-//    protected GSPipeline pipeline;
-//    protected GSIplImage converter;
-    protected CaptureIpl captureIpl;
-    // OpenCV  video input 
-    private FrameGrabber grabber;
-//    private PS3 ps3;
-    private OpenKinectFrameGrabber openKinectGrabber;
-    // Texture for video visualization (OpenCV generally)
-    protected IplImage iimg = null, copyUndist, depthImage = null;
-    protected CamImage camImage = null;
-    protected PImage depthPImage = null;
-    public final static int OPENCV_VIDEO = 1;
-    public final static int PROCESSING_VIDEO = 2;
-//    public final static int PSEYE_VIDEO = 3;
-    public final static int KINECT_VIDEO = 4;
-    public static int videoInput = OPENCV_VIDEO;
-    protected int width, height;
-    protected int videoInputType;
-    protected int frameRate;
-    protected boolean trackSheets = false;
-    protected boolean gotPicture = false;
 
-    private boolean isClosing = false;
+    protected void checkParameters() {
+        if (width == 0 || height == 0) {
+            throw new RuntimeException("Camera: Width or Height are 0, set them or load a calibration.");
+        }
+        if (this.parent == null) {
+            throw new RuntimeException("Camera: the parent (current applet) is not set.");
+        }
+        if (this.systemNumber == -1 && cameraDescription == null) {
+            throw new RuntimeException("Camera: initalization failed");
+        }
 
-    static public void convertARParams(PApplet parent, String calibrationYAML,
-            String calibrationARtoolkit) {
-        convertARParams(parent, calibrationYAML, calibrationARtoolkit, 0, 0);
     }
 
-    static public void convertARParams(PApplet parent, String calibrationYAML,
-            String calibrationARtoolkit, int width, int height) {
+    public void setCalibration(String calibrationYAML) {
         try {
-            // ARToolkit Plus 2.1.1
-//            fr.inria.papart.procam.Utils.convertARParam(parent, calibrationYAML, calibrationData, width, height);
-            // ARToolkit Plus 2.3.0
-            fr.inria.papart.procam.Utils.convertARParam2(parent, calibrationYAML, calibrationARtoolkit);
+            pdp = ProjectiveDeviceP.loadCameraDevice(calibrationYAML, 0);
+            camIntrinsicsP3D = pdp.getIntrinsics();
+            this.width = pdp.getWidth();
+            this.height = pdp.getHeight();
         } catch (Exception e) {
-            PApplet.println("Conversion error. " + e);
+            parent.die("Error reading the calibration file : " + calibrationYAML + " \n" + e);
         }
     }
 
-    public Camera(PApplet parent, String camDevice,
-            int width, int height) {
-        this(parent, camDevice, width, height, 30, null, videoInput);
+    /**
+     * Description of the cameara, the number if using OpenCV or OpenKinect, and
+     * a name or file if using Processing.
+     *
+     * @param description
+     */
+    public void setCameraDevice(String description) {
+        this.cameraDescription = description;
     }
 
-    public Camera(PApplet parent, String camDevice,
-            int width, int height, int videoInput) {
-        this(parent, camDevice, width, height, 30, null, videoInput);
+    protected String getCameraDevice() {
+        return this.cameraDescription;
     }
 
-    public Camera(PApplet parent, String camDevice,
-            int width, int height, String calibrationYAML) {
-        this(parent, camDevice, width, height, 30, calibrationYAML, videoInput);
+    public void setParent(PApplet applet) {
+        this.parent = applet;
     }
 
-    public Camera(PApplet parent, String camDevice,
-            int width, int height, String calibrationYAML, int videoInputType) {
-        this(parent, camDevice, width, height, 30, calibrationYAML, videoInputType);
+    public void setSystemNumber(int systemNumber) {
+        this.systemNumber = systemNumber;
     }
 
-    public Camera(PApplet parent, String camDevice, String calibrationYAML, int videoInputType) {
-        // Resolution is taken from the YAML file.
-        this(parent, camDevice, 0, 0, 60, calibrationYAML, videoInputType);
-    }
-
-    public Camera(PApplet parent, String camDevice,
-            int width, int height, int frameRate, String calibrationYAML, int videoInputType) {
-
-        this.parent = parent;
+    public void setSize(int width, int height) {
+        // TODO: error handling while running. 
         this.width = width;
         this.height = height;
+    }
+
+    public void setFrameRate(int frameRate) {
         this.frameRate = frameRate;
-        this.videoInputType = videoInputType;
-
-        if (calibrationYAML != null) {
-            // Load the camera parameters. 
-            try {
-                pdp = ProjectiveDeviceP.loadCameraDevice(calibrationYAML, 0);
-                camIntrinsicsP3D = pdp.getIntrinsics();
-//                System.out.println("Calibration loaded for camera " + camDevice);
-                this.width = pdp.getWidth();
-                this.height = pdp.getHeight();
-            } catch (Exception e) {
-                parent.die("Error reading the calibration file : " + calibrationYAML + " \n" + e);
-            }
-        }
-
-        // Init the video
-        if (videoInputType == OPENCV_VIDEO) {
-            System.out.println("Camera: Grabbing OpenCV Camera");
-            OpenCVFrameGrabber grabberCV = new OpenCVFrameGrabber(Integer.parseInt(camDevice));
-            grabberCV.setImageWidth(width);
-            grabberCV.setImageHeight(height);
-            grabberCV.setImageMode(FrameGrabber.ImageMode.COLOR);
-
-            try {
-                grabberCV.start();
-                System.out.println("Camera: " + camDevice + " Camera started");
-            } catch (Exception e) {
-                System.err.println("Could not start frameGrabber... " + e);
-            }
-            this.grabber = grabberCV;
-        }
-
-        if (videoInputType == KINECT_VIDEO) {
-            openKinectGrabber = new OpenKinectFrameGrabber(Integer.parseInt(camDevice));
-
-            // TODO: check 640 * 480... ?
-            openKinectGrabber.setImageWidth(width);
-            openKinectGrabber.setImageHeight(height);
-
-            try {
-                openKinectGrabber.start();
-                openKinectGrabber.setVideoFormat(0);
-                openKinectGrabber.setDepthFormat(1);
-
-            } catch (Exception e) {
-                System.err.println("Could not Kinect start frameGrabber... " + e);
-            }
-
-            this.grabber = openKinectGrabber;
-        }
-
-//        if (videoInputType == PSEYE_VIDEO) {
-//
-//            PS3Logger.TYPE.DEBUG.active(false);
-//            PS3Logger.TYPE.ERROR.active(false);
-//            PS3Logger.TYPE.INFO.active(false);
-//            PS3Logger.TYPE.WARNING.active(false);
-//
-//            ps3 = PS3.create(Integer.parseInt(camDevice));
-//            ps3.init(VIDEO_MODE.VGA, COLOR_MODE.COLOR_PROCESSED, 30);
-//            ps3.start();
-//            ps3.setLed(true);
-//        }
-        if (videoInputType == PROCESSING_VIDEO) {
-
-            if (camDevice == null) {
-                System.out.println("Starting capture !");
-                this.captureIpl = new CaptureIpl(parent, width, height);
-            } else {
-
-                System.out.println("Starting capture on device " + camDevice);
-                this.captureIpl = new CaptureIpl(parent, width, height, camDevice);
-            }
-
-            this.captureIpl.start();
-        }
-
     }
 
-    public static Camera loadCamera(PApplet applet, String file, String calibration) {
-        String[] lines = applet.loadStrings(file);
-        return new Camera(applet, lines[0], calibration, Integer.parseInt(lines[1]));
-    }
-
-//    public void savePlane(String filename) {
-//        String[] lines = new String[7];
-//        lines[0] = "" + plane.x;
-//        lines[1] = "" + plane.y;
-//        lines[2] = "" + plane.z;
-//        lines[3] = "" + plane.normal.x;
-//        lines[4] = "" + plane.normal.y;
-//        lines[5] = "" + plane.normal.z;
-//        lines[6] = "" + planeHeight;
-//        Kinect.CURRENTPAPPLET.saveStrings(filename, lines);
-//        Kinect.CURRENTPAPPLET.println("Plane successfully saved");
-//    }
-//    
-//    @Override
-//    public String toString(){
-//        return "Plane " + plane + " height " + planeHeight;
-//    }
-//
-//    public void loadPlane(String fileName) {
-//        String[] lines = Kinect.CURRENTPAPPLET.loadStrings(fileName);
-//        Vec3D pos = new Vec3D(Float.parseFloat(lines[0]), Float.parseFloat(lines[1]), Float.parseFloat(lines[2]));
-//        Vec3D norm = new Vec3D(Float.parseFloat(lines[3]), Float.parseFloat(lines[4]), Float.parseFloat(lines[5]));
-//        planeHeight = Float.parseFloat(lines[6]);
-//
-//        plane = new Plane(pos, norm);
-//        Kinect.CURRENTPAPPLET.println("Plane " + fileName + " successfully loaded");
-//    }
     public int width() {
         return width;
     }
@@ -244,24 +134,19 @@ public class Camera implements PConstants {
         return height;
     }
 
-    public boolean useProcessingVideo() {
-        return this.videoInputType == PROCESSING_VIDEO;
-    }
-
-    public boolean useOpenCV() {
-        return this.videoInputType == OPENCV_VIDEO;
-    }
-
-//    public boolean usePSEYE() {
-//        throw new Exception("PSEye Not supported anymore");
-//    }
-    public boolean useKinect() {
-        return this.videoInputType == KINECT_VIDEO;
-    }
-
     public int getFrameRate() {
         return this.frameRate;
     }
+
+    public boolean isUndistort() {
+        return undistort;
+    }
+
+    public void setUndistort(boolean undistort) {
+        this.undistort = undistort;
+    }
+
+    abstract public void start();
 
     // Legacy, use the two next functions.
     public void initMarkerDetection(PApplet applet, String calibrationARToolkit, MarkerBoard[] paperSheets) {
@@ -304,16 +189,8 @@ public class Camera implements PConstants {
      * It makes the camera update continuously.
      */
     public void setThread() {
-        setThread(true);
-    }
-
-    /**
-     * It makes the camera update continuously.
-     */
-    public void setThread(boolean undistort) {
-
         if (thread == null) {
-            thread = new ARTThread(this, sheets, undistort);
+            thread = new ARTThread(this, sheets);
             thread.setCompute(this.trackSheets);
             thread.start();
         } else {
@@ -358,232 +235,69 @@ public class Camera implements PConstants {
     public boolean useThread() {
         return thread != null;
     }
-    private TouchInput touchInput = null;
-    private boolean isGrabbingDepth = false;
 
-    public void setTouch(TouchInput touchInput) {
-        if (!this.useKinect()) {
-            System.err.println("ERROR: SetTouch must be used with KINECT ONLY");
-        }
-        grabDepthImage(true);
-        this.touchInput = touchInput;
+    public abstract void grab();
 
-    }
 
-    public void grabDepthImage(boolean isGrabDepth) {
-        if (!this.useKinect()) {
-            System.err.println("ERROR: SetTouch must be used with KINECT ONLY");
-        }
-        this.isGrabbingDepth = isGrabDepth;
-    }
-
-    /**
-     * Asks the camera to grab an image. Not to use with the threaded option.
-     */
-    public void grab() {
-        grab(pdp != null);
-    }
-
-    public IplImage grab(boolean undistort) {
-
-        if (isClosing) {
-            return iimg;
-        }
-
-        IplImage img = null;
-
-        if (videoInputType == OPENCV_VIDEO) {
-            try {
-                img = grabber.grab();
-
-            } catch (Exception e) {
-                System.err.println("Camera: OpenCV Grab() Error ! " + e);
-                e.printStackTrace();
-                return null;
+    protected void updateCurrentImage(IplImage img) {
+        if (undistort) {
+            if (copyUndist == null) {
+                copyUndist = img.clone();
             }
-        }
-
-        if (videoInputType == KINECT_VIDEO) {
-            try {
-                img = openKinectGrabber.grabVideo();
-
-                if (isGrabbingDepth) {
-                    IplImage dimg = openKinectGrabber.grabDepth();
-
-                    this.depthImage = dimg;
-                    if (touchInput != null) {
-                        touchInput.lock();
-                        touchInput.startTouch(dimg);
-                        touchInput.getTouch2DColors(img);
-                        touchInput.endTouch();
-                        touchInput.unlock();
-                    }
-                } else {
-                    if (touchInput != null) {
-                        System.err.println("Error, the TouchInput is set, but no DepthImg is grabbed.");
-                    }
-                }
-
-            } catch (Exception e) {
-                System.err.println("Camera: Kinect Grab() Error ! " + e);
-                e.printStackTrace();
-                return null;
+            // Workaround for crash when the java program is closing
+            // to avoid native code to continue to run...
+            if (isClosing()) {
+                return;
             }
+            pdp.getDevice().undistort(img, copyUndist);
+            currentImage = copyUndist;
+        } else {
+            currentImage = img;
         }
-
-        if (videoInputType == PROCESSING_VIDEO) {
-            if (this.captureIpl.available()) {
-
-                captureIpl.read();
-                img = captureIpl.getIplImage();
-
-            } else {
-                try {
-                    // TimeUnit.MILLISECONDS.sleep((long) (1f / frameRate));
-                    TimeUnit.MILLISECONDS.sleep((long) (10));
-
-                } catch (Exception e) {
-                }
-
-                return null;
-            }
-        }
-
-        if (img != null) {
-            if (undistort) {
-                if (copyUndist == null) {
-                    copyUndist = img.clone();
-                }
-                // Workaround for crash when the java program is closing
-                // to avoid native code to continue to run...
-                if (isClosing) {
-                    return img;
-                }
-
-                pdp.getDevice().undistort(img, copyUndist);
-                iimg = copyUndist;
-            } else {
-                iimg = img;
-            }
-
-            this.gotPicture = true;
-        }
-
-        return iimg;
-
     }
 
     public PImage getImage() {
         return getPImage();
     }
 
-    class Dummy {
-
-        public synchronized void disposeBuffer(Object buf) {
-            System.out.println("Dispose !");
-//    ((Buffer)buf).dispose();
-        }
-    }
-
-    Dummy dummy = new Dummy();
-    ByteBuffer argbBuffer;
-
     /* TODO: Performance measure of Texture method vs pixel method */
-    public PImage getPImage() {
-        imageRetreived();
+    public abstract PImage getPImage();
 
-        if (useProcessingVideo()) {
-            return captureIpl;
-        }
-
+    protected void checkCamImage() {
         if (camImage == null) {
-
-            if (iimg == null) {
-                return null;
-            }
-            // First method, through PImage pixels
-//            camImage = parent.createImage(width, height, RGB);
-            // Second Method, with the Texture Object
-            camImage = new CamImage(parent, iimg);
+            camImage = new CamImage(parent, currentImage);
         }
-
-        if (useOpenCV() || useKinect()) {
-            if (iimg != null) {
-                // First Method
-//                Utils.IplImageToPImage(iimg, false, camImage);
-
-                // Second method
-                camImage.update(iimg);
-            }
-        }
-        return camImage;
     }
 
-    /**
-     * Check the use of this
-     *
-     * @return
-     */
     public IplImage getIplImage() {
-        imageRetreived();
-        return iimg;
-    }
-
-    /**
-     * Check the use of this
-     *
-     * @return
-     */
-    public IplImage getDepthIplImage() {
-        return depthImage;
-    }
-
-    /**
-     * Check the use of this
-     *
-     * @return
-     */
-    public PImage getDepthPImage() {
-
-        assert (useKinect());
-        if (depthPImage == null) {
-            depthPImage = parent.createImage(width, height, PApplet.ALPHA);
-        }
-
-        if (depthImage != null) {
-            Utils.IplImageToPImageKinect(depthImage, false, depthPImage);
-        }
-        return depthPImage;
+        return currentImage;
     }
 
     public ProjectiveDeviceP getProjectiveDevice() {
         return this.pdp;
     }
 
-    public void close() {
+    
+    public abstract void close();
 
+    protected void setClosing() {
         this.isClosing = true;
-
-        if (videoInputType == OPENCV_VIDEO) {
-            if (grabber != null) {
-                try {
-                    this.stopThread();
-                    grabber.stop();
-                } catch (Exception e) {
-                }
-            }
-        }
-        if (videoInputType == PROCESSING_VIDEO) {
-
-            if (captureIpl != null) {
-                captureIpl.stop();
-            }
-        }
-
-//        if (videoInputType == PSEYE_VIDEO) {
-//            PS3.shutDown();
-//        }
+        this.stopThread();
     }
+
+    public boolean isClosing() {
+        return isClosing;
+    }
+    
+    
+    public PixelFormat getPixelFormat() {
+        return format;
+    }
+
+    public void setPixelFormat(PixelFormat format) {
+        this.format = format;
+    }
+    
 
     /**
      * To use instead of getCamViewpoint
@@ -638,183 +352,38 @@ public class Camera implements PConstants {
     }
 
     public PImage getPView(TrackedView trackedView) {
-        if (iimg == null) {
+        if (currentImage == null) {
             return null;
         }
 
         trackedView.computeCorners(this);
-        return trackedView.getImage(iimg);
+        return trackedView.getImage(currentImage);
     }
 
     public IplImage getViewIpl(TrackedView trackedView) {
-        if (iimg == null) {
+        if (currentImage == null) {
             return null;
         }
 
         trackedView.computeCorners(this);
-        return trackedView.getImageIpl(iimg);
+        return trackedView.getImageIpl(currentImage);
     }
 
-    /**
-     * *******************************
-     */
-    /// TODO: Check the end of the code 
-    /**
-     * Used only in photoTaker...
-     *
-     * @param pimg
-     * @param undist
-     */
-    public void grabTo(PImage pimg, boolean undist) {
+    static public void convertARParams(PApplet parent, String calibrationYAML,
+            String calibrationARtoolkit) {
+        convertARParams(parent, calibrationYAML, calibrationARtoolkit, 0, 0);
+    }
+
+    static public void convertARParams(PApplet parent, String calibrationYAML,
+            String calibrationARtoolkit, int width, int height) {
         try {
-
-            IplImage img = this.grab(undist);
-
-            if (img != null) {
-                Utils.IplImageToPImage(img, false, pimg);
-            }
-
+            // ARToolkit Plus 2.1.1
+//            fr.inria.papart.procam.Utils.convertARParam(parent, calibrationYAML, calibrationData, width, height);
+            // ARToolkit Plus 2.3.0
+            fr.inria.papart.procam.Utils.convertARParam2(parent, calibrationYAML, calibrationARtoolkit);
         } catch (Exception e) {
-            System.err.println("Error while grabbing frame " + e);
-            e.printStackTrace();
+            PApplet.println("Conversion error. " + e);
         }
     }
 
-    protected void imageRetreived() {
-        this.hasNewPhoto = false;
-    }
-    protected boolean photoCapture;
-
-    // TODO: check this code... may be broken.
-    public void setPhotoCapture() {
-
-        this.photoCapture = true;
-        if (useProcessingVideo()) {
-
-            captureIpl.stop();
-        }
-        if (useOpenCV()) {
-            try {
-                grabber.stop();
-            } catch (Exception e) {
-                System.out.println("Error " + e);
-            }
-        }
-
-    }
-    protected boolean isTakingPhoto = false;
-    protected boolean hasNewPhoto = false;
-
-    public void takePhoto(boolean undistort) {
-        takePhoto(null, undistort);
-    }
-
-    public void takePhoto(PImage img, boolean undistort) {
-        System.out.println("Is Takiing ? " + this.isTakingPhoto);
-        if (!this.isTakingPhoto) {
-            this.hasNewPhoto = false;
-            this.isTakingPhoto = true;
-            System.out.println("Is Takiing ? " + this.isTakingPhoto);
-            PhotoTaker pt = new PhotoTaker(this, img, undistort);
-            pt.start();
-            System.out.println("Photo started...");
-        } else {
-            System.out.println("Wait for the previous photo.");
-        }
-    }
-
-    public boolean isTakingPhoto() {
-        return this.isTakingPhoto;
-    }
-
-    public boolean hasNewPhoto() {
-        return this.hasNewPhoto;
-    }
-
-    /////////////// TODO: MOVE TO A CLASS ??? /////////
-    class PhotoTaker extends Thread {
-
-        private PImage img;
-        private boolean undist;
-        private Camera cam;
-
-        PhotoTaker(Camera cam, PImage img, boolean undistort) {
-            this.img = img;
-            this.undist = undistort;
-            this.cam = cam;
-        }
-
-        // TODO: Magic numbers... 
-        @Override
-        public void run() {
-
-            System.out.println("Grabbing frames");
-            if (cam.useProcessingVideo()) {
-
-                captureIpl.start();
-
-                // check gotPicture etc... 
-                while (!gotPicture) {
-                    try {
-                        Thread.sleep(20);
-                    } catch (InterruptedException ex) {
-                        Logger.getLogger(Camera.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-
-                // Drop 10 frames
-                for (int i = 0; i < 10; i++) {
-                    if (img != null) {
-                        grabTo(img, false);
-                    }
-
-                    while (!gotPicture) {
-
-                        try {
-                            Thread.sleep(20);
-                        } catch (InterruptedException ex) {
-                            Logger.getLogger(Camera.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-
-                    }
-                    grab(false);
-
-                    // NO IDEA WHY THIS IS NOT WORKING
-                }
-
-                if (img != null) {
-                    grabTo(img, undist);
-                }
-//                gsCapture.stop();
-            }
-
-            if (cam.useOpenCV()) {
-                try {
-                    grabber.start();
-                } catch (Exception e) {
-                    System.err.println("Could not start frameGrabber... " + e);
-                }
-                // Drop 10 frames
-                for (int i = 0; i < 30; i++) {
-//                    grabTo(img, undist);
-                    grab(false);
-                    System.out.println("Grabbed " + i);
-                }
-
-                if (img != null) {
-                    grabTo(img, undist);
-                }
-
-                try {
-                    grabber.stop();
-                } catch (Exception e) {
-                    System.err.println("Could not stop frameGrabber... " + e);
-                }
-            }
-
-            System.out.println("Photo OK ");
-            cam.isTakingPhoto = false;
-            cam.hasNewPhoto = true;
-        }
-    }
 }
