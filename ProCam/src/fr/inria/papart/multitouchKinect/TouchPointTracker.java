@@ -17,7 +17,6 @@ public class TouchPointTracker implements Comparable<TouchPointTracker> {
     public TouchPointTracker(TouchPoint oldTp, TouchPoint newTp) {
         this.oldTp = oldTp;
         this.newTp = newTp;
-//        distance = oldTp.getPosition().distanceTo(newTp.getPosition());
         distance = oldTp.vKinect.distanceTo(newTp.vKinect);
     }
 
@@ -31,7 +30,6 @@ public class TouchPointTracker implements Comparable<TouchPointTracker> {
 
     public boolean update(int currentTime) {
         return oldTp.updateWith(newTp, currentTime);
-//    newTp.id = oldTp.id;
     }
 
     public int compareTo(TouchPointTracker tpt) {

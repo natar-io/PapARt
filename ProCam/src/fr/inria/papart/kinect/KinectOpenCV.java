@@ -38,8 +38,6 @@ public class KinectOpenCV extends Kinect {
 
     public opencv_core.IplImage update(opencv_core.IplImage depth, opencv_core.IplImage color, int skip) {
 
-        this.currentSkip = skip;
-
         ByteBuffer depthBuff = depth.getByteBuffer();
         ByteBuffer colorBuff = color.getByteBuffer();
 

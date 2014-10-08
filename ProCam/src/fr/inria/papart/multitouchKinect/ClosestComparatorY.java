@@ -25,7 +25,7 @@ public class ClosestComparatorY implements Comparator{
 
     Vec3D pos1 = projPoints[(Integer)tp1];
     Vec3D pos2 = projPoints[(Integer)tp2];
-    if(pos1.y > pos2.y)
+    if(pos1.y < pos2.y)
       return 1;
     return -1;
   }

@@ -213,10 +213,10 @@ public class PaperScreen {
         }
 
         int nbOut = 0;
-        for (PVector c : corners) {
+        for (PVector corner : corners) {
             // Corners are on the camera Point of view. 
             PVector projC = new PVector();
-            extr.mult(c, projC);
+            extr.mult(corner, projC);
             PVector screenCoord = display.getProjectiveDeviceP().worldToPixelReal(projC);
 
             if (screenCoord.x < 0 || screenCoord.x > display.frameWidth

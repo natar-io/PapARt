@@ -128,15 +128,14 @@ public class PaperTouchScreen extends PaperScreen {
         if (!touchList.isEmpty()) {
             for (Touch t : touchList) {
                 PVector p = t.p;
-                PVector p1 = new PVector(p.x * drawingSize.x,
-                        p.y * drawingSize.y);
+                float x = p.x * drawingSize.x;
+                float y = p.y * drawingSize.y;
                 if (t.is3D) {
                     g.fill(185, 142, 62);
                 } else {
                     g.fill(58, 71, 198);
                 }
-
-                g.ellipse(p1.x, p1.y, ellipseSize, ellipseSize);
+                g.ellipse(x, y, ellipseSize, ellipseSize);
             }
         }
     }

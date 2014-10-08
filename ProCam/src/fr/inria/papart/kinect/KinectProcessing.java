@@ -38,13 +38,9 @@ public class KinectProcessing extends Kinect {
 
     public PImage update(opencv_core.IplImage depth, opencv_core.IplImage color, int skip) {
 
-        this.currentSkip = skip;
-
-        ByteBuffer depthBuff = depth.getByteBuffer();
-        ByteBuffer colorBuff = color.getByteBuffer();
-
-        depthBuff.get(depthRaw);
-        colorBuff.get(colorRaw);
+        this.updateRawDepth(depth);
+        this.updateRawColor(color);
+        depthData.clear();
 
         validPointsPImage.loadPixels();
 
@@ -68,32 +64,9 @@ public class KinectProcessing extends Kinect {
                 if (good) {
                     depthData.kinectPoints[offset] = kinectCalibIR.pixelToWorld(x, y, d);
 
-                    int colorOffset = this.findColorOffset(depthData.kinectPoints[offset]) * 3;
-
-                    int c = (colorRaw[colorOffset + 2] & 0xFF) << 16
-                            | (colorRaw[colorOffset + 1] & 0xFF) << 8
-                            | (colorRaw[colorOffset + 0] & 0xFF);
-
-                    validPointsPImage.pixels[offset] = c;
-
-//                    int colorOffset = offset * 3;
-//                    int c = (colorRaw[colorOffset + 2] & 0xFF) << 16
-//                            | (colorRaw[colorOffset + 1] & 0xFF) << 8
-//                            | (colorRaw[colorOffset + 0] & 0xFF);
-//
-//                    validPointsPImage.pixels[offset] = c;
+                    setPixelColor(offset);
                 }
 
-            }
-        }
-
-        Arrays.fill(connexity, 0);
-        for (int y = 0; y < kinectCalibIR.getHeight(); y += skip) {
-            for (int x = 0; x < kinectCalibIR.getWidth(); x += skip) {
-                int offset = y * kinectCalibIR.getWidth() + x;
-                if (depthData.validPointsMask[offset]) {
-                    computeConnexity(x, y, skip);
-                }
             }
         }
 
@@ -101,13 +74,20 @@ public class KinectProcessing extends Kinect {
         return validPointsPImage;
     }
 
+    private void setPixelColor(int offset) {
+        int colorOffset = this.findColorOffset(depthData.kinectPoints[offset]) * 3;
+        int c = (colorRaw[colorOffset + 2] & 0xFF) << 16
+                | (colorRaw[colorOffset + 1] & 0xFF) << 8
+                | (colorRaw[colorOffset + 0] & 0xFF);
+
+        validPointsPImage.pixels[offset] = c;
+    }
+
     public PImage update(opencv_core.IplImage depth, opencv_core.IplImage color, KinectScreenCalibration calib) {
         return update(depth, color, 1, calib);
     }
 
     public PImage update(opencv_core.IplImage depth, opencv_core.IplImage color, int skip, KinectScreenCalibration calib) {
-
-        this.currentSkip = skip;
 
         ByteBuffer depthBuff = depth.getByteBuffer();
         ByteBuffer colorBuff = color.getByteBuffer();
@@ -170,16 +150,6 @@ public class KinectProcessing extends Kinect {
 
         }
 
-        Arrays.fill(connexity, 0);
-        for (int y = 0; y < kinectCalibIR.getHeight(); y += skip) {
-            for (int x = 0; x < kinectCalibIR.getWidth(); x += skip) {
-                int offset = y * kinectCalibIR.getWidth() + x;
-                if (depthData.validPointsMask[offset]) {
-                    computeConnexity(x, y, skip);
-                }
-            }
-        }
-
         validPointsPImage.updatePixels();
         return validPointsPImage;
     }
@@ -197,8 +167,6 @@ public class KinectProcessing extends Kinect {
      */
     @Deprecated
     public PImage updateProj(opencv_core.IplImage depth, opencv_core.IplImage color, KinectScreenCalibration calib, Vec3D[] projectedPoints, int skip) {
-
-        this.currentSkip = skip;
 
         ByteBuffer depthBuff = depth.getByteBuffer();
         ByteBuffer colorBuff = color.getByteBuffer();
@@ -250,9 +218,9 @@ public class KinectProcessing extends Kinect {
 //
 //                            validPointsPImage.pixels[offset] = c;
                             depthData.kinectPoints[offset] = kinectCalibIR.pixelToWorld(x, y, d);
-                            
+
                             int colorOffset = this.findColorOffset(depthData.kinectPoints[offset]) * 3;
-                            
+
                             int c = (colorRaw[colorOffset + 2] & 0xFF) << 16
                                     | (colorRaw[colorOffset + 1] & 0xFF) << 8
                                     | (colorRaw[colorOffset + 0] & 0xFF);

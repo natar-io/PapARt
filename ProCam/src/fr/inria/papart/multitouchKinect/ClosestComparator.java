@@ -9,7 +9,7 @@ import java.util.Comparator;
 import toxi.geom.Vec3D;
 
 /**
- *
+ * Comparator on the Z axis
  * @author jeremy
 */
 

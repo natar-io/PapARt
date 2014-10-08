@@ -78,7 +78,6 @@ public class CamImage extends PImage {
     }
 
     public synchronized void update(IplImage iplImage) {
-
         Texture tex = ((PGraphicsOpenGL) parent.g).getTexture(this);
         ByteBuffer bgrBuffer = iplImage.getByteBuffer();
         Utils.byteBufferBRGtoARGB(bgrBuffer, argbBuffer);

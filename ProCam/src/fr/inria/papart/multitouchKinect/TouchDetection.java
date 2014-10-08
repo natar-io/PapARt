@@ -11,8 +11,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import processing.core.PApplet;
+import static processing.core.PConstants.EPSILON;
 import processing.core.PVector;
 import toxi.geom.Vec3D;
 
@@ -26,28 +28,37 @@ public class TouchDetection {
     public static float currentMaxDistance;
     public static float maxDistance = 8f;    // in mm
     public static float maxDistance3D = 20f;    // in mm
+
+    public static float MINIMUM_COMPONENT_SIZE = 5;   // in px
+    public static float MINIMUM_COMPONENT_SIZE_3D = 50; // in px
+
     public static int MAX_REC = 500;
 
-    private static boolean[] readPoints = null;
-    private static byte[] connectedComponent = null;
-    private static byte currentCompo = 1;
+    // created here
+    protected static boolean[] assignedPoints = null;
+    protected static byte[] connectedComponentImage = null;
+    protected static byte currentCompo = 1;
 
-    public static ArrayList<Integer> findNeighboursRec(int currentPoint, int halfNeigh,
-            ArrayList<Integer> validPoints,
-            Vec3D points[], Vec3D[] projPoints,
-            boolean[] isValidPoints,
-            boolean[] readPoints, Set<Integer> toVisit,
-            int skip, int recLevel) {
+// set by calling function
+    protected static boolean[] validPoints;
+    protected static DepthData depthData;
+    protected static int precision;
+
+    public static ConnectedComponent findNeighboursRec(
+            int currentPoint,
+            int halfNeigh,
+            Set<Integer> toVisit,
+            int recLevel) {
 
         // TODO: optimisations here ?
         int x = currentPoint % Kinect.KINECT_WIDTH;
         int y = currentPoint / Kinect.KINECT_WIDTH;
 
-        ArrayList<Integer> ret = new ArrayList<Integer>();
+        ConnectedComponent neighbourList = new ConnectedComponent();
         ArrayList<Integer> visitNext = new ArrayList<Integer>();
 
         if (recLevel == MAX_REC) {
-            return ret;
+            return neighbourList;
         }
 
         int minX = PApplet.constrain(x - halfNeigh, 0, Kinect.KINECT_WIDTH - 1);
@@ -55,25 +66,19 @@ public class TouchDetection {
         int minY = PApplet.constrain(y - halfNeigh, 0, Kinect.KINECT_HEIGHT - 1);
         int maxY = PApplet.constrain(y + halfNeigh, 0, Kinect.KINECT_HEIGHT - 1);
 
-        for (int j = minY; j <= maxY; j += skip) {
-            for (int i = minX; i <= maxX; i += skip) {
+        for (int j = minY; j <= maxY; j += precision) {
+            for (int i = minX; i <= maxX; i += precision) {
 
                 int offset = j * Kinect.KINECT_WIDTH + i;
 
                 // Avoid getting ouside the limits
-                if (!(readPoints[offset] // already parsed point 
-                        || !isValidPoints[offset]
-                        //                        || !isInside(projPoints[offset], 0.f, 1.f))) {
-                        || !isInside(projPoints[offset], 0.f, 1.f)
-                        || points[offset].distanceTo(points[currentPoint]) > maxDistance)) {
+                if (isValidNeighbour(offset, currentPoint)) {
 
-                    readPoints[offset] = true;
+                    assignedPoints[offset] = true;
+                    connectedComponentImage[offset] = currentCompo;
 
                     toVisit.remove(offset);
-                    // we add it to the neighbour list
-                    ret.add((Integer) offset);
-
-                    connectedComponent[offset] = currentCompo;
+                    neighbourList.add((Integer) offset);
 
 //                    // if is is on a border ??
 //                    if (i == minX || j == minX || i >= maxX - skip || j >= maxY - skip) {
@@ -86,175 +91,132 @@ public class TouchDetection {
         } // for i
 
         for (int offset : visitNext) {
-            ret.addAll(findNeighboursRec(offset,
+            neighbourList.addAll(findNeighboursRec(
+                    offset,
                     halfNeigh,
-                    validPoints,
-                    points, projPoints,
-                    isValidPoints,
-                    readPoints, toVisit, skip, recLevel + 1));
+                    toVisit,
+                    recLevel + 1));
         }
 
-        return ret;
+        return neighbourList;
     }
 
-    public static ArrayList<TouchPoint> findMultiTouch(DepthData depthData,
-            KinectScreenCalibration calib, boolean is3D, int skip) {
+    protected static boolean isValidNeighbour(int offset, int currentPoint) {
+        float distanceToCurrent = depthData.kinectPoints[offset].distanceTo(depthData.kinectPoints[currentPoint]);
 
-        if (is3D) {
-            return findMultiTouch(
-                    depthData.kinectPoints, depthData.projectedPoints,
-                    depthData.validPointsList3D,
-                    depthData.validPointsMask3D, calib, true, skip);
-        } else {
-
-            return findMultiTouch(
-                    depthData.kinectPoints, depthData.projectedPoints,
-                    depthData.validPointsList,
-                    depthData.validPointsMask, calib, false, skip);
-        }
+        return !assignedPoints[offset] // not assigned  
+                && validPoints[offset] // valid point (in the research space)
+                && (depthData.kinectPoints[offset] != Kinect.INVALID_POINT) // invalid point (invalid depth)
+                && distanceToCurrent < maxDistance;
     }
 
-    public static ArrayList<TouchPoint> findMultiTouch(
-            Vec3D points[], Vec3D[] projPoints, ArrayList<Integer> validPoints, boolean[] isValidPoints,
-            KinectScreenCalibration calib, boolean is3D, int skip) {
+    public static ArrayList<TouchPoint> findMultiTouch2D(DepthData dData, int skip) {
+        initWith(dData, skip);
 
-        if (validPoints == null || validPoints.isEmpty()) {
-            return null;
-        }
-
-        if (readPoints == null && connectedComponent == null) {
-            readPoints = new boolean[points.length];
-            connectedComponent = new byte[points.length];
-        }
-
-        currentMaxDistance = is3D ? maxDistance3D : maxDistance;
-
-        Arrays.fill(readPoints, false);
-        Arrays.fill(connectedComponent, (byte) 0);
-        currentCompo = 1;
-
-        int searchDepth = 1 * skip; // on each direction
-
+        validPoints = depthData.validPointsMask;
         Set<Integer> toVisit = new HashSet<Integer>();
+        toVisit.addAll(depthData.validPointsList);
 
-        ArrayList<ArrayList<Integer>> allNeighbourhood = new ArrayList<ArrayList<Integer>>();
+        ArrayList<TouchPoint> touchPointFounds = new ArrayList<TouchPoint>();
+        ArrayList<ConnectedComponent> connectedComponents = findConnectedComponents(toVisit);
 
-        // New method, recursive way. 
-        toVisit.addAll(validPoints);
+        for (ConnectedComponent connectedComponent : connectedComponents) {
 
-        while (toVisit.size() > 0) {
-            int p = toVisit.iterator().next();
-            allNeighbourhood.add(findNeighboursRec(p, searchDepth, validPoints,
-                    points, projPoints, isValidPoints, readPoints, toVisit, skip, 0));
-            currentCompo++;
+            if (connectedComponent.size() < MINIMUM_COMPONENT_SIZE) {
+                continue;
+            }
+            
+            Vec3D meanProj = connectedComponent.getMean(depthData.projectedPoints);
+            Vec3D meanKinect = connectedComponent.getMean(depthData.kinectPoints);
+            TouchPoint tp = new TouchPoint();
+            tp.v = meanProj;
+            tp.vKinect = meanKinect;
+            tp.set3D(false);
+            tp.setConfidence(connectedComponent.size() / MINIMUM_COMPONENT_SIZE);
+            
+            touchPointFounds.add(tp);
         }
 
-        ArrayList<TouchPoint> allTouchPoints = new ArrayList<TouchPoint>();
+        return touchPointFounds;
+    }
 
-//        int minSize = 50 / (skip * skip); // in pixels
-        // TODO: Magic numbers ...
-        int minSize = 5;
-        int nbPoints3D = 15;
-        if (is3D) {
-            minSize = 60;
-        }
+    public static ArrayList<TouchPoint> findMultiTouch3D(DepthData dData, int skip) {
+        initWith(dData, skip);
 
-        float goodPointsDist = 0.03f;
+        validPoints = depthData.validPointsMask3D;
+        Set<Integer> toVisit = new HashSet<Integer>();
+        toVisit.addAll(depthData.validPointsList3D);
 
-        float closeDistance = calib.plane().getHeight();   // valeur indiquée dans calib * 0.05
+        ArrayList<ConnectedComponent> connectedComponents = findConnectedComponents(toVisit);
+        ArrayList<TouchPoint> touchPointFounds = new ArrayList<TouchPoint>();
+        ClosestComparatorY closestComparator = new ClosestComparatorY(depthData.projectedPoints);
 
-        ClosestComparatorHeight cch = new ClosestComparatorHeight(points, calib);
+        for (ConnectedComponent connectedComponent : connectedComponents) {
 
-        // remove too small elements
-        for (ArrayList<Integer> vint : allNeighbourhood) {
-
-            if (vint.size() < minSize) {
+            if (connectedComponent.size() < MINIMUM_COMPONENT_SIZE_3D) {
                 continue;
             }
 
-            // sort all points
-            Collections.sort(vint, cch);
+            // get a subset of the points.
+            Collections.sort(connectedComponent, closestComparator);
 
-            Vec3D mean = new Vec3D(0, 0, 0);
+            //  Get a sublist
+            List<Integer> subList = connectedComponent.subList(0, 10);
+            ConnectedComponent subCompo = new ConnectedComponent();
+            subCompo.addAll(subList);
 
-            Vec3D min = new Vec3D(projPoints[vint.get(0)]);
-            Vec3D max = new Vec3D(projPoints[vint.get(0)]);
-
-            if (is3D) {
-                // select only the closest 
-                for (int k = 0; k < nbPoints3D; k++) {
-
-//                    Vec3D p = projPoints[vint.get(k)];
-//                    if (p.x < min.x) {
-//                        min.x = p.x;
-//                    }
-//                    if (p.y < min.y) {
-//                        min.y = p.y;
-//                    }
-//                    if (p.z < min.z) {
-//                        min.z = p.z;
-//                    }
-//                    if (p.x > max.x) {
-//                        max.x = p.x;
-//                    }
-//                    if (p.y > max.y) {
-//                        max.y = p.y;
-//                    }
-//                    if (p.z > max.z) {
-//                        max.z = p.z;
-//                    }
-                    mean.addSelf(points[vint.get(k)]);
-                }
-                mean.scaleSelf(1.0f / nbPoints3D);
-            } else {
-
-                // REAL MEAN
-                for (int offset : vint) {
-
-//                    Vec3D p = points[offset];
-//                    if (p.x < min.x) {
-//                        min.x = p.x;
-//                    }
-//                    if (p.y < min.y) {
-//                        min.y = p.y;
-//                    }
-//                    if (p.z < min.z) {
-//                        min.z = p.z;
-//                    }
-//                    if (p.x > max.x) {
-//                        max.x = p.x;
-//                    }
-//                    if (p.y > max.y) {
-//                        max.y = p.y;
-//                    }
-//                    if (p.z > max.z) {
-//                        max.z = p.z;
-//                    }
-                    mean.addSelf(points[offset]);
-                }
-                mean.scaleSelf(1.0f / vint.size());
-//                for (int k = 0; k < vint.size() / 2; k++) {
-//                    mean.addSelf(points[vint.get(k)]);
-//                }
-            }
-
+            Vec3D meanProj = subCompo.getMean(depthData.projectedPoints);
+            Vec3D meanKinect = subCompo.getMean(depthData.kinectPoints);
             TouchPoint tp = new TouchPoint();
-
-            tp.is3D = is3D;
-            tp.confidence = vint.size();
-//            tp.size = min.distanceTo(max);
-
-            tp.v = mean;
-            tp.vKinect = tp.v.copy();
-            tp.isCloseToPlane = calib.plane().distanceTo(mean) < closeDistance;
-            tp.v = calib.project(tp.v);
-            tp.v.z = calib.plane().distanceTo(mean);
-
-            allTouchPoints.add(tp);
+            tp.v = meanProj;
+            tp.vKinect = meanKinect;
+            tp.set3D(true);
+            tp.setConfidence(connectedComponent.size() / MINIMUM_COMPONENT_SIZE_3D);
+            touchPointFounds.add(tp);
         }
 
-        return allTouchPoints;
+        return touchPointFounds;
     }
+
+    protected static void initWith(DepthData dData, int skip) {
+        depthData = dData;
+        precision = skip;
+        int nbPoints = depthData.kinectPoints.length;
+        checkMemoryAllocation(nbPoints);
+    }
+
+    protected static ArrayList<ConnectedComponent> findConnectedComponents(Set<Integer> toVisit) {
+        clearMemory();
+        currentCompo = 1;
+        ArrayList<ConnectedComponent> connectedComponents = new ArrayList<ConnectedComponent>();
+        int searchDepth = precision; // on each direction
+        // New method, recursive way. 
+        while (toVisit.size() > 0) {
+            int startingPoint = toVisit.iterator().next();
+            ConnectedComponent neighbours = findNeighboursRec(
+                    startingPoint,
+                    searchDepth,
+                    toVisit,
+                    0);
+
+            connectedComponents.add(neighbours);
+            currentCompo++;
+        }
+        return connectedComponents;
+    }
+
+    protected static void checkMemoryAllocation(int size) {
+        if (assignedPoints == null && connectedComponentImage == null) {
+            assignedPoints = new boolean[size];
+            connectedComponentImage = new byte[size];
+        }
+    }
+
+    protected static void clearMemory() {
+        Arrays.fill(assignedPoints, false);
+        Arrays.fill(connectedComponentImage, (byte) 0);
+    }
+
     public static float sideError = 0.2f;
 
     public static boolean isInside(Vec3D v, float min, float max) {

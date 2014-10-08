@@ -6,8 +6,12 @@ package fr.inria.papart.kinect;
 
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import fr.inria.papart.procam.ProjectiveDeviceP;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
@@ -27,7 +31,6 @@ public class Kinect {
     public float closeThreshold = 300f, farThreshold = 4000f;
 
     // Configuration 
-    public int currentSkip = 1;
     public ProjectiveDeviceP kinectCalibIR, kinectCalibRGB;
 
     // Protected values, important data. 
@@ -47,10 +50,17 @@ public class Kinect {
 
     public static PApplet papplet;
 
+    public static final Vec3D INVALID_POINT = new Vec3D();
+
     ///// Modes
     public static final int KINECT_MM = 1;
     public static final int KINECT_10BIT = 0;
     private int mode;
+
+    public interface DepthPointManiplation {
+
+        public void execute(Vec3D p, int x, int y, int offset);
+    }
 
     public Kinect(PApplet parent, String calibIR, String calibRGB, int id) {
         this(parent, calibIR, calibRGB, id, KINECT_10BIT);
@@ -68,18 +78,11 @@ public class Kinect {
         init();
     }
 
-    public int getCurrentSkip() {
-        return currentSkip;
-    }
     private PMatrix3D translateCam = new PMatrix3D(1, 0, 0, 5,
             0, 1, 0, 0,
             0, 0, 1, 0,
             0, 0, 0, 1);
 
-//    PMatrix3D translateCam = new PMatrix3D(1, 0, 0, 27,
-//            0, 1, 0, -4.5f,
-//            0, 0, 1, -2.65f,
-//            0, 0, 0, 1);
     public int findColorOffset(Vec3D v) {
         PVector vt = new PVector(v.x, v.y, v.z);
         PVector vt2 = new PVector();
@@ -91,14 +94,9 @@ public class Kinect {
 
 //    public static 
     protected void init() {
-
         colorRaw = new byte[kinectCalibIR.getSize() * 3];
         depthRaw = new byte[kinectCalibIR.getSize() * 2];
-
         depthData = new DepthData(KINECT_SIZE);
-
-        // TODO: check to remove this.
-        connexity = new int[kinectCalibIR.getSize()];
 
         if (depthLookUp == null) {
             depthLookUp = new float[2048];
@@ -113,7 +111,148 @@ public class Kinect {
                 }
             }
         }
+    }
 
+    public void setNearFarValue(float near, float far) {
+        this.closeThreshold = near;
+        this.farThreshold = far;
+    }
+
+    public void update(IplImage depth, int skip) {
+        depthData.clearDepth();
+        updateRawDepth(depth);
+        computeDepthAndDo(skip, new DoNothing());
+    }
+
+    public void updateMT(IplImage depth, KinectScreenCalibration calib, int skip2D, int skip3D) {
+        updateRawDepth(depth);
+        depthData.clear();
+        depthData.calibration = calib;
+        computeDepthAndDo(1, new DoNothing());
+        doForEachPoint(skip2D, new Select2DPoint());
+        doForEachPoint(skip3D, new Select3DPoint());
+    }
+
+    public void updateMT2D(IplImage depth, KinectScreenCalibration calib, int skip) {
+        updateRawDepth(depth);
+        depthData.clearDepth();
+        depthData.clear2D();
+        depthData.calibration = calib;
+        computeDepthAndDo(skip, new Select2DPoint());
+    }
+
+    public void updateMT3D(IplImage depth, KinectScreenCalibration calib, int skip) {
+        updateRawDepth(depth);
+        depthData.clearDepth();
+        depthData.clear3D();
+        depthData.calibration = calib;
+        computeDepthAndDo(skip, new Select3DPoint());
+    }
+
+    protected void computeDepthAndDo(int precision, DepthPointManiplation manip) {
+        for (int y = 0; y < kinectCalibIR.getHeight(); y += precision) {
+            for (int x = 0; x < kinectCalibIR.getWidth(); x += precision) {
+
+                int offset = y * kinectCalibIR.getWidth() + x;
+                float d = getDepth(offset);
+                if (d != INVALID_DEPTH) {
+                    Vec3D pKinect = kinectCalibIR.pixelToWorld(x, y, d);
+                    depthData.kinectPoints[offset] = pKinect;
+                    manip.execute(pKinect, x, y, offset);
+                }
+            }
+        }
+    }
+
+    protected void doForEachPoint(int precision, DepthPointManiplation manip) {
+        for (int y = 0; y < kinectCalibIR.getHeight(); y += precision) {
+            for (int x = 0; x < kinectCalibIR.getWidth(); x += precision) {
+                int offset = y * kinectCalibIR.getWidth() + x;
+                Vec3D pKinect = depthData.kinectPoints[offset];
+                if (pKinect != INVALID_POINT) {
+                    manip.execute(pKinect, x, y, offset);
+                }
+            }
+        }
+    }
+
+    protected void updateRawDepth(IplImage depthImage) {
+        ByteBuffer depthBuff = depthImage.getByteBuffer();
+        depthBuff.get(depthRaw);
+    }
+
+    protected void updateRawColor(IplImage colorImage) {
+        ByteBuffer colBuff = colorImage.getByteBuffer();
+        colBuff.get(colorRaw);
+    }
+
+    static protected final float INVALID_DEPTH = -1;
+
+    /**
+     * @return the depth (float) or -1 if it failed.
+     */
+    protected float getDepth(int offset) {
+        float d = (depthRaw[offset * 2] & 0xFF) << 8
+                | (depthRaw[offset * 2 + 1] & 0xFF);
+        if (d >= 2047) {
+            return INVALID_DEPTH;
+        }
+        d = 1000 * depthLookUp[(int) d];
+        if (isGoodDepth(d)) {
+            return d;
+        } else {
+            return INVALID_DEPTH;
+        }
+    }
+
+    class ComputeCalibration implements DepthPointManiplation {
+
+        @Override
+        public void execute(Vec3D p, int x, int y, int offset) {
+            if (depthData.calibration.plane().hasGoodOrientation(p)) {
+                Vec3D project = depthData.calibration.project(p);
+                depthData.kinectPoints[offset] = p;
+                depthData.projectedPoints[offset] = project;
+            }
+        }
+    }
+
+    class Select2DPoint implements DepthPointManiplation {
+
+        @Override
+        public void execute(Vec3D p, int x, int y, int offset) {
+            if (depthData.calibration.plane().hasGoodOrientationAndDistance(p)) {
+                Vec3D projected = depthData.calibration.project(p);
+                depthData.projectedPoints[offset] = projected;
+                if (isInside(projected, 0.f, 1.f, 0.0f)) {
+                    depthData.validPointsMask[offset] = true;
+                    depthData.validPointsList.add(offset);
+                }
+            }
+        }
+    }
+
+    class Select3DPoint implements DepthPointManiplation {
+
+        @Override
+        public void execute(Vec3D p, int x, int y, int offset) {
+            if (depthData.calibration.plane().hasGoodOrientation(p)) {
+                Vec3D projected = depthData.calibration.project(p);
+                depthData.projectedPoints[offset] = projected;
+                if (isInside(projected, 0.f, 1.f, 0.2f)) {
+                    depthData.validPointsMask3D[offset] = true;
+                    depthData.validPointsList3D.add(offset);
+                }
+            }
+        }
+    }
+
+    class DoNothing implements DepthPointManiplation {
+
+        @Override
+        public void execute(Vec3D p, int x, int y, int offset) {
+
+        }
     }
 
     public int getId() {
@@ -137,337 +276,6 @@ public class Kinect {
      */
     public void undistortIR(IplImage ir, IplImage out) {
         kinectCalibIR.getDevice().undistort(ir, out);
-    }
-
-    public void setSkipValue(int skip) {
-        this.currentSkip = skip;
-    }
-
-    public void setNearFarValue(float near, float far) {
-        this.closeThreshold = near;
-        this.farThreshold = far;
-    }
-
-    public void update(IplImage depth, int skip) {
-        this.currentSkip = skip;
-        ByteBuffer depthBuff = depth.getByteBuffer();
-        depthBuff.get(depthRaw);
-
-        for (int y = 0; y < kinectCalibIR.getHeight(); y += skip) {
-            for (int x = 0; x < kinectCalibIR.getWidth(); x += skip) {
-
-                int offset = y * kinectCalibIR.getWidth() + x;
-
-                float d = (depthRaw[offset * 2] & 0xFF) << 8
-                        | (depthRaw[offset * 2 + 1] & 0xFF);
-
-                if (d >= 2047) {
-                    depthData.validPointsMask[offset] = false;
-                    break;
-                }
-                d = 1000 * depthLookUp[(int) d];
-
-                boolean good = isGoodDepth(d);
-                depthData.validPointsMask[offset] = good;
-
-//                if (good) {
-                depthData.kinectPoints[offset] = kinectCalibIR.pixelToWorld(x, y, d);
-//                }
-            }
-        }
-    }
-
-    @Deprecated
-    public void updateMT(IplImage depth, IplImage color, KinectScreenCalibration calib) {
-        updateMT(depth, color, calib, 1);
-    }
-
-    @Deprecated
-    public void updateMT(IplImage depth, IplImage color, KinectScreenCalibration calib, int skip) {
-
-        this.currentSkip = skip;
-
-        depthData.validPointsList.clear();
-
-        ByteBuffer depthBuff = depth.getByteBuffer();
-        ByteBuffer colorBuff = color.getByteBuffer();
-
-        depthBuff.get(depthRaw);
-        colorBuff.get(colorRaw);
-
-        for (int y = 0; y < kinectCalibIR.getHeight(); y += skip) {
-            for (int x = 0; x < kinectCalibIR.getWidth(); x += skip) {
-
-                int offset = y * kinectCalibIR.getWidth() + x;
-
-                int colorOutputOffset = offset * 3;
-
-                float d = (depthRaw[offset * 2] & 0xFF) << 8
-                        | (depthRaw[offset * 2 + 1] & 0xFF);
-                if (d >= 2047) {
-                    depthData.validPointsMask[offset] = false;
-                    break;
-                }
-                d = 1000 * depthLookUp[(int) d];
-
-                depthData.validPointsMask[offset] = false;
-
-                if (isGoodDepth(d)) {
-                    Vec3D p = kinectCalibIR.pixelToWorld(x, y, d);
-                    depthData.kinectPoints[offset] = p;
-
-                    if (calib.plane().hasGoodOrientationAndDistance(p)) {
-
-                        Vec3D project = calib.project(p);
-                        if (isInside(project, 0.f, 1.f, 0.1f)) {
-
-                            depthData.kinectPoints[offset] = p;
-                            depthData.validPointsMask[offset] = true;
-                            depthData.validPointsList.add(offset);
-                            // Projection
-                            depthData.projectedPoints[offset] = project;
-
-//                            int colorOffset = offset * 3;
-//
-//                            validPointsRaw[colorOutputOffset + 2] = colorRaw[colorOffset + 2];
-//                            validPointsRaw[colorOutputOffset + 1] = colorRaw[colorOffset + 1];
-//                            validPointsRaw[colorOutputOffset + 0] = colorRaw[colorOffset + 0];
-                            depthData.kinectPoints[offset] = kinectCalibIR.pixelToWorld(x, y, d);
-
-                        }
-                    }
-                }
-            }
-        }
-
-    }
-
-    public void updateMT(IplImage depth, KinectScreenCalibration calib, int skip2D, int skip3D) {
-        this.currentSkip = skip2D;
-        depthData.validPointsList.clear();
-        depthData.validPointsList3D.clear();
-        ByteBuffer depthBuff = depth.getByteBuffer();
-        depthBuff.get(depthRaw);
-
-        Arrays.fill(depthData.validPointsMask, false);
-        Arrays.fill(depthData.validPointsMask3D, false);
-        Arrays.fill(depthData.kinectPoints, null);
-        Arrays.fill(depthData.projectedPoints, null);
-
-        // Todo check skip 2D/ 3D...
-        for (int y = 0; y < kinectCalibIR.getHeight(); y += 1) {
-            for (int x = 0; x < kinectCalibIR.getWidth(); x += 1) {
-
-                int offset = y * kinectCalibIR.getWidth() + x;
-
-                float d = (depthRaw[offset * 2] & 0xFF) << 8
-                        | (depthRaw[offset * 2 + 1] & 0xFF);
-                if (d >= 2047) {
-                    continue;
-                }
-
-                d = 1000 * depthLookUp[(int) d];
-
-                if (isGoodDepth(d)) {
-
-                    Vec3D p = kinectCalibIR.pixelToWorld(x, y, d);
-
-                    if (calib.plane().hasGoodOrientation(p)) {
-
-                        Vec3D project = calib.project(p);
-                        depthData.kinectPoints[offset] = p;
-                        depthData.projectedPoints[offset] = project;
-                    }
-                }
-            }
-        }
-
-        for (int y = 0; y < kinectCalibIR.getHeight(); y += skip2D) {
-            for (int x = 0; x < kinectCalibIR.getWidth(); x += skip2D) {
-
-                int offset = y * kinectCalibIR.getWidth() + x;
-
-                Vec3D p = depthData.kinectPoints[offset];
-                if (p == null) {
-                    continue;
-                }
-                Vec3D project = depthData.projectedPoints[offset];
-
-                if (calib.plane().hasGoodDistance(p) && isInside(project, 0.f, 1.f, 0.0f)) {
-                    depthData.validPointsMask[offset] = true;
-                    depthData.validPointsList.add(offset);
-                }
-            }
-        }
-
-        for (int y = 0; y < kinectCalibIR.getHeight(); y += skip3D) {
-            for (int x = 0; x < kinectCalibIR.getWidth(); x += skip3D) {
-
-                int offset = y * kinectCalibIR.getWidth() + x;
-
-                Vec3D p = depthData.kinectPoints[offset];
-                if (p == null) {
-                    continue;
-                }
-                Vec3D project = depthData.projectedPoints[offset];
-
-                if (isInside(project, 0.f, 1.f, 0.2f)) {
-                    depthData.validPointsMask3D[offset] = true;
-                    depthData.validPointsList3D.add(offset);
-                }
-            }
-        }
-        
-    }
-
-    public void updateMT2D(IplImage depth, KinectScreenCalibration calib, int skip) {
-
-        this.currentSkip = skip;
-        depthData.validPointsList.clear();
-        ByteBuffer depthBuff = depth.getByteBuffer();
-        depthBuff.get(depthRaw);
-
-        for (int y = 0; y < kinectCalibIR.getHeight(); y += skip) {
-            for (int x = 0; x < kinectCalibIR.getWidth(); x += skip) {
-
-                int offset = y * kinectCalibIR.getWidth() + x;
-
-                float d = (depthRaw[offset * 2] & 0xFF) << 8
-                        | (depthRaw[offset * 2 + 1] & 0xFF);
-                if (d >= 2047) {
-                    depthData.validPointsMask[offset] = false;
-                    break;
-                }
-                d = 1000 * depthLookUp[(int) d];
-
-                depthData.validPointsMask[offset] = false;
-
-                if (isGoodDepth(d)) {
-
-                    Vec3D p = kinectCalibIR.pixelToWorld(x, y, d);
-
-                    if (calib.plane().hasGoodOrientationAndDistance(p)) {
-
-                        Vec3D project = calib.project(p);
-                        if (isInside(project, 0.f, 1.f, 0.0f)) {
-
-                            depthData.kinectPoints[offset] = p;
-                            depthData.validPointsMask[offset] = true;
-                            depthData.validPointsList.add(offset);
-                            // Projection
-                            depthData.projectedPoints[offset] = project;
-                        }
-                    }
-                }
-            }
-
-        }
-    }
-
-    // TODO !!
-    public void updateMT3D(IplImage depth, KinectScreenCalibration calib, int skip) {
-
-        this.currentSkip = skip;
-        depthData.validPointsList.clear();
-
-        ByteBuffer depthBuff = depth.getByteBuffer();
-        depthBuff.get(depthRaw);
-
-        for (int y = 0; y < kinectCalibIR.getHeight(); y += skip) {
-            for (int x = 0; x < kinectCalibIR.getWidth(); x += skip) {
-
-                int offset = y * kinectCalibIR.getWidth() + x;
-
-                float d = (depthRaw[offset * 2] & 0xFF) << 8
-                        | (depthRaw[offset * 2 + 1] & 0xFF);
-                if (d >= 2047) {
-                    depthData.validPointsMask[offset] = false;
-                    break;
-                }
-                d = 1000 * depthLookUp[(int) d];
-
-                depthData.validPointsMask[offset] = false;
-
-                if (isGoodDepth(d)) {
-
-                    Vec3D p = kinectCalibIR.pixelToWorld(x, y, d);
-
-                    if (calib.plane().hasGoodOrientation(p)) {
-
-                        Vec3D project = calib.project(p);
-//                        if (isInside(project, 0.f, 1.f, 0.8f)) {
-                        if (isInside(project, 0.f, 1.f, 0.2f)) {
-
-                            depthData.kinectPoints[offset] = p;
-                            depthData.validPointsMask[offset] = true;
-                            depthData.validPointsList.add(offset);
-                            // Projection
-                            depthData.projectedPoints[offset] = project;
-                        }
-                    }
-                }
-            }
-
-        }
-    }
-
-    public static final int TOPLEFT = 1;
-    public static final int TOP = 1 << 1;
-    public static final int TOPRIGHT = 1 << 2;
-    public static final int LEFT = 1 << 3;
-    public static final int RIGHT = 1 << 4;
-    public static final int BOTLEFT = 1 << 5;
-    public static final int BOT = 1 << 6;
-    public static final int BOTRIGHT = 1 << 7;
-    //    public static enum ConnexityType {
-//        TOPLEFT, TOP, TOPRIGHT, LEFT, RIGHT, BOTLEFT, BOT, BOTRIGHT;
-//        public int getFlagValue() {
-//            return 1 << this.ordinal();
-//        }
-//    }
-    private float connexityDist = 10;
-
-    @Deprecated
-    public void setConnexityDist(float dist) {
-        this.connexityDist = dist;
-    }
-
-    @Deprecated
-    protected void computeConnexity(int x, int y, int skip) {
-
-        // Connexity map 
-        //  0 1 2 
-        //  3 x 4
-        //  5 6 7
-        // Todo: Unroll these for loops for optimisation...
-        int currentOffset = y * Kinect.KINECT_WIDTH + x;
-
-        int type = 0;
-
-        for (int y1 = y - skip, connNo = 0; y1 <= y + skip; y1 = y1 + skip) {
-            for (int x1 = x - skip; x1 <= x + skip; x1 = x1 + skip) {
-
-                // Do not try the current point
-                if (x1 == x && y1 == y) {
-                    continue;
-                }
-
-                // If the point is not in image
-                if (y1 >= Kinect.KINECT_HEIGHT || y1 < 0 || x1 < 0 || x1 >= Kinect.KINECT_WIDTH) {
-                    connNo++;
-                    continue;
-                }
-
-                int offset = y1 * Kinect.KINECT_WIDTH + x1;
-                if (depthData.validPointsMask[offset] && depthData.kinectPoints[currentOffset].distanceTo(depthData.kinectPoints[offset]) < connexityDist) {
-                    type = type | (1 << connNo);
-                }
-
-                connNo++;
-            }
-        }
-
-        connexity[currentOffset] = type;
     }
 
     public ProjectiveDeviceP getColorProjectiveDevice() {

@@ -62,9 +62,8 @@ public class CameraOpenKinect extends Camera {
                 this.depthImage = dImage;
                 if (touchInput != null) {
                     touchInput.lock();
-                    touchInput.startTouch(dImage);
+                    touchInput.updateTouch(dImage);
                     touchInput.getTouch2DColors(img);
-                    touchInput.endTouch();
                     touchInput.unlock();
                 }
             } else {
@@ -76,6 +75,7 @@ public class CameraOpenKinect extends Camera {
 
         } catch (Exception e) {
             System.err.println("Camera: Kinect Grab() Error ! " + e);
+            e.printStackTrace();
         }
     }
 

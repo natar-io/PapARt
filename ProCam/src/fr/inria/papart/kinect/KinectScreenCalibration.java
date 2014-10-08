@@ -66,6 +66,7 @@ public class KinectScreenCalibration {
         Vec3D tr = transform.applyTo(planeThreshold.plane.getProjectedPoint(pt));
         tr.x /= tr.z;
         tr.y /= tr.z;
+        tr.z = planeThreshold.plane.distanceTo(pt);
         return tr; 
     }
 
