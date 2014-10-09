@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package fr.inria.papart.kinect;
+package fr.inria.papart.depthcam;
 
-import static fr.inria.papart.kinect.Kinect.INVALID_POINT;
+import static fr.inria.papart.depthcam.Kinect.INVALID_POINT;
 import java.util.ArrayList;
 import java.util.Arrays;
 import toxi.geom.Vec3D;

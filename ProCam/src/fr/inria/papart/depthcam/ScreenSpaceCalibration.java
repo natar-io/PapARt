@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package fr.inria.papart.kinect;
+package fr.inria.papart.depthcam;
 
 import processing.core.PApplet;
 import processing.core.PConstants;
@@ -39,7 +39,7 @@ public class ScreenSpaceCalibration implements PConstants {
         int nbPointsSpeed = (int) ((1 + 1f / speed) * (1 + 1f / speed));
 
         nbPoints = nPoints + nbPointsSpeed + 3;
-        homography = new fr.inria.papart.kinect.Homography(parent, 3, 2, nbPoints);
+        homography = new fr.inria.papart.depthcam.Homography(parent, 3, 2, nbPoints);
 
         // First 3 points for the plane
         homography.setPoint(false, 0, new PVector(0, 0));

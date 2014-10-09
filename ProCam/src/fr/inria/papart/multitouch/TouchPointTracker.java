@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package fr.inria.papart.multitouchKinect;
+package fr.inria.papart.multitouch;
 
 /**
  *
@@ -17,7 +17,8 @@ public class TouchPointTracker implements Comparable<TouchPointTracker> {
     public TouchPointTracker(TouchPoint oldTp, TouchPoint newTp) {
         this.oldTp = oldTp;
         this.newTp = newTp;
-        distance = oldTp.vKinect.distanceTo(newTp.vKinect);
+        
+        distance = oldTp.distanceTo(newTp);
     }
 
     public TouchPoint getOld() {

@@ -260,7 +260,6 @@ public abstract class Camera implements PConstants {
         return getPImage();
     }
 
-    /* TODO: Performance measure of Texture method vs pixel method */
     public abstract PImage getPImage();
 
     protected void checkCamImage() {

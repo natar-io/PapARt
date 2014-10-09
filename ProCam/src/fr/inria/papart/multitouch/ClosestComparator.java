@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package fr.inria.papart.multitouchKinect;
+package fr.inria.papart.multitouch;
 
 import java.util.Comparator;
 import toxi.geom.Vec3D;

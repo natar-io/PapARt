@@ -6,8 +6,8 @@ package fr.inria.papart.procam;
 
 import processing.opengl.PGraphicsOpenGL;
 import fr.inria.papart.drawingapp.Button;
-import fr.inria.papart.multitouchKinect.Touch;
-import fr.inria.papart.multitouchKinect.TouchInput;
+import fr.inria.papart.multitouch.Touch;
+import fr.inria.papart.multitouch.TouchInput;
 import java.util.ArrayList;
 import processing.core.PApplet;
 import processing.core.PVector;
@@ -70,8 +70,7 @@ public class PaperTouchScreen extends PaperScreen {
         }
 
         screen.computeScreenPosTransform();
-        touchList = touchInput.projectTouchToScreen(screen, display,
-                true, true, true, true, true);
+        touchList = touchInput.projectTouchToScreen(screen, display);
         if (!buttons.isEmpty()) {
             updateButtons();
         }
@@ -83,7 +82,7 @@ public class PaperTouchScreen extends PaperScreen {
                 if (t.is3D) {
                     continue;
                 }
-                PVector p = t.p;
+                PVector p = t.position;
                 checkButtons(p.x * drawingSize.x,
                         p.y * drawingSize.y);
             }
@@ -127,7 +126,7 @@ public class PaperTouchScreen extends PaperScreen {
 
         if (!touchList.isEmpty()) {
             for (Touch t : touchList) {
-                PVector p = t.p;
+                PVector p = t.position;
                 float x = p.x * drawingSize.x;
                 float y = p.y * drawingSize.y;
                 if (t.is3D) {

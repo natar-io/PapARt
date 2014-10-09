@@ -3,9 +3,9 @@
  * and open the template in the editor.
  */
 
-package fr.inria.papart.multitouchKinect;
+package fr.inria.papart.multitouch;
 
-import fr.inria.papart.kinect.KinectScreenCalibration;
+import fr.inria.papart.depthcam.KinectScreenCalibration;
 import java.util.Comparator;
 import toxi.geom.Vec3D;
 

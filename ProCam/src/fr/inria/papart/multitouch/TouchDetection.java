@@ -2,11 +2,11 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package fr.inria.papart.multitouchKinect;
+package fr.inria.papart.multitouch;
 
-import fr.inria.papart.kinect.DepthData;
-import fr.inria.papart.kinect.Kinect;
-import fr.inria.papart.kinect.KinectScreenCalibration;
+import fr.inria.papart.depthcam.DepthData;
+import fr.inria.papart.depthcam.Kinect;
+import fr.inria.papart.depthcam.KinectScreenCalibration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -129,8 +129,8 @@ public class TouchDetection {
             Vec3D meanProj = connectedComponent.getMean(depthData.projectedPoints);
             Vec3D meanKinect = connectedComponent.getMean(depthData.kinectPoints);
             TouchPoint tp = new TouchPoint();
-            tp.v = meanProj;
-            tp.vKinect = meanKinect;
+            tp.setPosition(meanProj);
+            tp.setPositionKinect(meanKinect);
             tp.set3D(false);
             tp.setConfidence(connectedComponent.size() / MINIMUM_COMPONENT_SIZE);
             
@@ -168,8 +168,8 @@ public class TouchDetection {
             Vec3D meanProj = subCompo.getMean(depthData.projectedPoints);
             Vec3D meanKinect = subCompo.getMean(depthData.kinectPoints);
             TouchPoint tp = new TouchPoint();
-            tp.v = meanProj;
-            tp.vKinect = meanKinect;
+            tp.setPosition(meanProj);
+            tp.setPositionKinect(meanKinect);
             tp.set3D(true);
             tp.setConfidence(connectedComponent.size() / MINIMUM_COMPONENT_SIZE_3D);
             touchPointFounds.add(tp);

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package fr.inria.papart.kinect;
+package fr.inria.papart.depthcam;
 
 import processing.core.PVector;
 
@@ -11,32 +11,29 @@ import processing.core.PVector;
  * 
  * @author jiii
  */
-public class PointCloudElement {
+public class PointCloudElement extends DepthPoint{
 
-    public PVector point;
     public PVector error;
-    public int ptColor;
-    public boolean hasColor = false;
 
-    public static void filterConnexity(PointCloudElement[] pce,
+    public static void filterConnexity(PointCloudElement[] PointCloud,
             int w,
             int h,
             float dist, 
             int nbNeighbours) {
         
-        Connexity connexity = new Connexity(pce, w, h);
+        Connexity connexity = new Connexity(PointCloud, w, h);
         connexity.setConnexityDist(dist);
         connexity.computeAll();
         byte[] connexSum = connexity.getSum();
 
-        for (int i = 0; i < pce.length; i++) {
-            if (pce[i] == null
-                    || pce[i].point == null) {
+        for (int i = 0; i < PointCloud.length; i++) {
+            if (PointCloud[i] == null
+                    || PointCloud[i].position == null) {
                 continue;
             }
 
             if (connexSum[i] < nbNeighbours) {
-                pce[i] = null;
+                PointCloud[i] = null;
             }
         }
     }

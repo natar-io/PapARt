@@ -2,16 +2,11 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package fr.inria.papart.kinect;
+package fr.inria.papart.depthcam;
 
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import fr.inria.papart.procam.ProjectiveDeviceP;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
@@ -24,7 +19,7 @@ import toxi.geom.Vec3D;
  * @author jeremy
  */
 // TODO: 
-//  Change every Update Function, to use the Hardware calibration. 
+//   use the Hardware calibration. 
 public class Kinect {
 
 // TODO: check theses...
@@ -57,18 +52,13 @@ public class Kinect {
     public static final int KINECT_10BIT = 0;
     private int mode;
 
-    public interface DepthPointManiplation {
-
-        public void execute(Vec3D p, int x, int y, int offset);
+    public Kinect(PApplet parent, String calibIR, String calibRGB) {
+        this(parent, calibIR, calibRGB, KINECT_10BIT);
     }
 
-    public Kinect(PApplet parent, String calibIR, String calibRGB, int id) {
-        this(parent, calibIR, calibRGB, id, KINECT_10BIT);
-    }
-
-    public Kinect(PApplet parent, String calibIR, String calibRGB, int id, int mode) {
+    public Kinect(PApplet parent, String calibIR, String calibRGB, int mode) {
         Kinect.papplet = parent;
-
+        this.mode = mode;
         try {
             kinectCalibRGB = ProjectiveDeviceP.loadCameraDevice(calibRGB, 0);
             kinectCalibIR = ProjectiveDeviceP.loadCameraDevice(calibIR, 0);
@@ -84,6 +74,15 @@ public class Kinect {
             0, 0, 0, 1);
 
     public int findColorOffset(Vec3D v) {
+        PVector vt = new PVector(v.x, v.y, v.z);
+        PVector vt2 = new PVector();
+        //  Ideally use a calibration... 
+//        kinectCalibRGB.getExtrinsics().mult(vt, vt2);       
+        translateCam.mult(vt, vt2);
+        return kinectCalibRGB.worldToPixel(new Vec3D(vt2.x, vt2.y, vt2.z));
+    }
+    
+    public int findColorOffset(PVector v) {
         PVector vt = new PVector(v.x, v.y, v.z);
         PVector vt2 = new PVector();
         //  Ideally use a calibration... 
@@ -164,6 +163,23 @@ public class Kinect {
         }
     }
 
+    protected void computeDepthAndDo(int precision, DepthPointManiplation manip, InvalidPointManiplation invalidManip) {
+        for (int y = 0; y < kinectCalibIR.getHeight(); y += precision) {
+            for (int x = 0; x < kinectCalibIR.getWidth(); x += precision) {
+
+                int offset = y * kinectCalibIR.getWidth() + x;
+                float d = getDepth(offset);
+                if (d != INVALID_DEPTH) {
+                    Vec3D pKinect = kinectCalibIR.pixelToWorld(x, y, d);
+                    depthData.kinectPoints[offset] = pKinect;
+                    manip.execute(pKinect, x, y, offset);
+                } else {
+                    invalidManip.execute(x, y, offset);
+                }
+            }
+        }
+    }
+
     protected void doForEachPoint(int precision, DepthPointManiplation manip) {
         for (int y = 0; y < kinectCalibIR.getHeight(); y += precision) {
             for (int x = 0; x < kinectCalibIR.getWidth(); x += precision) {
@@ -203,6 +219,16 @@ public class Kinect {
         } else {
             return INVALID_DEPTH;
         }
+    }
+
+    public interface InvalidPointManiplation {
+
+        public void execute(int x, int y, int offset);
+    }
+
+    public interface DepthPointManiplation {
+
+        public void execute(Vec3D p, int x, int y, int offset);
     }
 
     class ComputeCalibration implements DepthPointManiplation {

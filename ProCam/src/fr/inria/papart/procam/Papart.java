@@ -9,8 +9,8 @@ import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.OpenKinectFrameGrabber;
 import org.bytedeco.javacpp.freenect;
 import fr.inria.papart.drawingapp.Button;
-import fr.inria.papart.kinect.Kinect;
-import fr.inria.papart.multitouchKinect.TouchInput;
+import fr.inria.papart.depthcam.Kinect;
+import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.procam.camera.CameraFactory;
 import fr.inria.papart.procam.camera.CameraOpenKinect;
 import java.lang.reflect.Constructor;
@@ -52,7 +52,13 @@ public class Papart {
     private Kinect kinect;
     private TouchInput touchInput;
     private PVector frameSize;
-    private OpenKinectFrameGrabber openKinectGrabber;
+    private CameraOpenKinect cameraOpenKinect;
+
+    // TODO: find what to do with these...
+    private final int depthFormat = freenect.FREENECT_DEPTH_10BIT;
+    private final int kinectFormat = Kinect.KINECT_10BIT;
+//    private final int depthFormat = freenect.FREENECT_DEPTH_MM;
+//    private final int kinectFormat = Kinect.KINECT_MM;
 
     public Papart(Object applet) {
         this.displayInitialized = false;
@@ -71,42 +77,6 @@ public class Papart {
 
     public static Papart getPapart() {
         return Papart.singleton;
-    }
-
-    public void loadSketches() {
-
-        // Sketches are not within a package.
-        Reflections reflections = new Reflections("");
-
-        Set<Class<? extends PaperTouchScreen>> paperTouchScreenClasses = reflections.getSubTypesOf(PaperTouchScreen.class);
-        for (Class<? extends PaperTouchScreen> klass : paperTouchScreenClasses) {
-            try {
-                Class[] ctorArgs2 = new Class[1];
-                ctorArgs2[0] = this.appletClass;
-                Constructor<? extends PaperTouchScreen> constructor = klass.getDeclaredConstructor(ctorArgs2);
-                System.out.println("Starting a PaperTouchScreen. " + klass.getName());
-                constructor.newInstance(this.appletClass.cast(this.applet));
-            } catch (Exception ex) {
-                System.out.println("Error loading PapartTouchApp : " + klass.getName());
-            }
-        }
-
-        Set<Class<? extends PaperScreen>> paperScreenClasses = reflections.getSubTypesOf(PaperScreen.class);
-
-        // Add them once.
-        paperScreenClasses.removeAll(paperTouchScreenClasses);
-        for (Class<? extends PaperScreen> klass : paperScreenClasses) {
-            try {
-                Class[] ctorArgs2 = new Class[1];
-                ctorArgs2[0] = this.appletClass;
-                Constructor<? extends PaperScreen> constructor = klass.getDeclaredConstructor(ctorArgs2);
-                System.out.println("Starting a PaperScreen. " + klass.getName());
-                constructor.newInstance(this.appletClass.cast(this.applet));
-            } catch (Exception ex) {
-                System.out.println("Error loading PapartApp : " + klass.getName());
-            }
-        }
-
     }
 
     public void initProjectorCamera(String cameraNo, Camera.Type cameraType) {
@@ -183,8 +153,8 @@ public class Papart {
     }
 
     private void initARDisplay(float quality) {
-        assert(this.cameraTracking != null && this.applet != null);
-        
+        assert (this.cameraTracking != null && this.applet != null);
+
         display = new ARDisplay(this.applet, cameraTracking,
                 zNear, zFar, quality);
         frameSize = new PVector(display.getWidth(), display.getHeight());
@@ -206,27 +176,6 @@ public class Papart {
         cameraInitialized = true;
     }
 
-    // TODO: find what to do with these...
-    private final int depthFormat = freenect.FREENECT_DEPTH_10BIT;
-    private final int kinectFormat = Kinect.KINECT_10BIT;
-
-//    private final int depthFormat = freenect.FREENECT_DEPTH_MM;
-//    private final int kinectFormat = Kinect.KINECT_MM;
-    // OpenKinectGrabber depth format
-// /** 11 bit depth information in one uint16_t/pixel */
-// FREENECT_DEPTH_11BIT        = 0,
-// /** 10 bit depth information in one uint16_t/pixel */
-// FREENECT_DEPTH_10BIT        = 1,
-// /** 11 bit packed depth information */
-// FREENECT_DEPTH_11BIT_PACKED = 2,
-// /** 10 bit packed depth information */
-// FREENECT_DEPTH_10BIT_PACKED = 3,
-// /** processed depth data in mm, aligned to 640x480 RGB */
-// FREENECT_DEPTH_REGISTERED   = 4,
-// /** depth to each pixel in mm, but left unaligned to RGB image */
-// FREENECT_DEPTH_MM           = 5,
-// /** Dummy value to force enum to be 32 bits wide */
-// FREENECT_DEPTH_DUMMY        = 2147483647;
     /**
      * Touch input when the camera tracking the markers is a Kinect.
      *
@@ -237,8 +186,7 @@ public class Papart {
             int touch3DPrecision) {
 
         if (this.cameraTracking == null) {
-
-            cameraTracking = CameraFactory.createCamera(Camera.Type.OPEN_KINECT, "0");
+            cameraTracking = CameraFactory.createCamera(Camera.Type.OPEN_KINECT, 0);
             cameraTracking.setParent(applet);
             cameraTracking.setCalibration(kinectRGBCalib);
             cameraTracking.start();
@@ -247,14 +195,17 @@ public class Papart {
             checkInitialization();
         }
 
-        assert (cameraTrackingIsKinect());
         kinect = new Kinect(this.applet,
                 kinectIRCalib,
                 kinectRGBCalib,
-                0, kinectFormat);
+                kinectFormat);
 
-        touchInput = new TouchInput(this.applet, kinectScreenCalib,
-                (CameraOpenKinect) cameraTracking, kinect, true, touch2DPrecision, touch3DPrecision);
+        touchInput = new TouchInput(this.applet,
+                (CameraOpenKinect) cameraTracking,
+                kinect, kinectScreenCalib);
+        touchInput.useRawDepth( (CameraOpenKinect) cameraTracking);
+        
+        touchInput.setPrecision(touch2DPrecision, touch3DPrecision);
         touchInitialized = true;
     }
 
@@ -266,31 +217,61 @@ public class Papart {
      * @param touch3DPrecision
      */
     public void loadTouchInput(int touch2DPrecision, int touch3DPrecision) {
-        assert (!cameraTrackingIsKinect());
 
-        openKinectGrabber = new OpenKinectFrameGrabber(0);
-
-        try {
-            openKinectGrabber.start();
-            openKinectGrabber.setVideoFormat(0);  // rgb
-            openKinectGrabber.setDepthFormat(depthFormat);  //  depth mm
-
-        } catch (FrameGrabber.Exception e) {
-            System.err.println("Kinect exception: " + e);
-        }
+        cameraOpenKinect = (CameraOpenKinect) CameraFactory.createCamera(Camera.Type.OPEN_KINECT, 0);
+        cameraOpenKinect.setParent(this.applet);
+        cameraOpenKinect.setCalibration(Papart.kinectRGBCalib);
+        cameraOpenKinect.setDepthFormat(depthFormat);
+        cameraOpenKinect.start();
+        cameraOpenKinect.setThread();
 
         kinect = new Kinect(this.applet,
                 kinectIRCalib,
                 kinectRGBCalib,
-                0, kinectFormat);
+                kinectFormat);
+        
+        touchInput = new TouchInput(this.applet,
+                cameraOpenKinect,
+                kinect, kinectScreenCalib);
+        touchInput.setPrecision(touch2DPrecision, touch3DPrecision);
 
-        touchInput = new TouchInput(this.applet, kinectScreenCalib,
-                kinect, openKinectGrabber, false, touch2DPrecision, touch3DPrecision);
         touchInitialized = true;
     }
 
-    private boolean cameraTrackingIsKinect() {
-        return this.cameraTracking instanceof CameraOpenKinect;
+    public void loadSketches() {
+
+        // Sketches are not within a package.
+        Reflections reflections = new Reflections("");
+
+        Set<Class<? extends PaperTouchScreen>> paperTouchScreenClasses = reflections.getSubTypesOf(PaperTouchScreen.class);
+        for (Class<? extends PaperTouchScreen> klass : paperTouchScreenClasses) {
+            try {
+                Class[] ctorArgs2 = new Class[1];
+                ctorArgs2[0] = this.appletClass;
+                Constructor<? extends PaperTouchScreen> constructor = klass.getDeclaredConstructor(ctorArgs2);
+                System.out.println("Starting a PaperTouchScreen. " + klass.getName());
+                constructor.newInstance(this.appletClass.cast(this.applet));
+            } catch (Exception ex) {
+                System.out.println("Error loading PapartTouchApp : " + klass.getName());
+            }
+        }
+
+        Set<Class<? extends PaperScreen>> paperScreenClasses = reflections.getSubTypesOf(PaperScreen.class);
+
+        // Add them once.
+        paperScreenClasses.removeAll(paperTouchScreenClasses);
+        for (Class<? extends PaperScreen> klass : paperScreenClasses) {
+            try {
+                Class[] ctorArgs2 = new Class[1];
+                ctorArgs2[0] = this.appletClass;
+                Constructor<? extends PaperScreen> constructor = klass.getDeclaredConstructor(ctorArgs2);
+                System.out.println("Starting a PaperScreen. " + klass.getName());
+                constructor.newInstance(this.appletClass.cast(this.applet));
+            } catch (Exception ex) {
+                System.out.println("Error loading PapartApp : " + klass.getName());
+            }
+        }
+
     }
 
     public void startTracking() {
@@ -302,12 +283,8 @@ public class Papart {
     }
 
     public void dispose() {
-        if (touchInitialized && openKinectGrabber != null) {
-            try {
-                openKinectGrabber.stop();
-            } catch (FrameGrabber.Exception e) {
-                System.err.println("Error closing Kinect grabber " + e);
-            }
+        if (touchInitialized && cameraOpenKinect != null) {
+            cameraOpenKinect.close();
         }
         if (cameraInitialized && cameraTracking != null) {
             try {

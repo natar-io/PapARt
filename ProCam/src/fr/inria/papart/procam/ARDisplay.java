@@ -480,7 +480,7 @@ public class ARDisplay {
     }
 
     // We consider px and py are normalized screen or subScreen space... 
-    public PVector projectPointer(Screen screen, float px, float py) {
+    public PVector projectPointer(Screen screen, float px, float py) throws Exception{
         float x = px * 2 - 1;
         float y = py * 2 - 1;
 
@@ -512,7 +512,7 @@ public class ARDisplay {
 //        dist = screen.plane.intersectRayDistance(ray);
 
         if (inter == null) {
-            return null;
+            throw new Exception("No Intersection");
         }
 
         // 3D -> 2D transformation

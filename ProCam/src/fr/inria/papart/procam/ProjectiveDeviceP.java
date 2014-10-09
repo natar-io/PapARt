@@ -172,6 +172,17 @@ public class ProjectiveDeviceP implements PConstants {
 
         return (int) (py * w + px);
     }
+    
+    public PVector worldToPixelCoord(Vec3D pt) {
+
+        // Reprojection 
+        float invZ = 1.0f / pt.z();
+
+        int px = PApplet.constrain(PApplet.round((pt.x() * invZ * fx) + cx), 0, w - 1);
+        int py = PApplet.constrain(PApplet.round((pt.y() * invZ * fy) + cy), 0, h - 1);
+
+        return new PVector(px, py);
+    }
 
     public int worldToPixel(PVector pt) {
 
@@ -196,7 +207,7 @@ public class ProjectiveDeviceP implements PConstants {
         return new PVector(px, py);
     }
 
-        public PVector worldToPixel(PVector pt, boolean undistort) {
+    public PVector worldToPixel(PVector pt, boolean undistort) {
 
         // Reprojection 
         float invZ = 1.0f / pt.z;
@@ -212,7 +223,6 @@ public class ProjectiveDeviceP implements PConstants {
         }
     }
 
-    
     public PVector createRayFrom(PVector pixels) {
 
         double[] out = device.undistort(pixels.x, pixels.y);
@@ -306,7 +316,7 @@ public class ProjectiveDeviceP implements PConstants {
         cvRodrigues2(rotation.asCvMat(), rotMat, null);
 
         CvMat translationCv = translation.asCvMat();
-        
+
         float RTMat[] = {
             (float) rotMat.get(0), (float) rotMat.get(1), (float) rotMat.get(2), (float) translationCv.get(0),
             (float) rotMat.get(3), (float) rotMat.get(4), (float) rotMat.get(5), (float) translationCv.get(1),

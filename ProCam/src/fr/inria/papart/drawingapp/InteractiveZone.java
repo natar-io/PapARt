@@ -1,6 +1,6 @@
 package fr.inria.papart.drawingapp;
 
-import fr.inria.papart.multitouchKinect.TouchPoint;
+import fr.inria.papart.multitouch.TouchPoint;
 import processing.core.PApplet;
 import processing.core.PVector;
 import processing.opengl.PGraphicsOpenGL;

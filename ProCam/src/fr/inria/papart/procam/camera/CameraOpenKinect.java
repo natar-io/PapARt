@@ -5,9 +5,10 @@
  */
 package fr.inria.papart.procam.camera;
 
-import fr.inria.papart.multitouchKinect.TouchInput;
+import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.procam.Camera;
 import fr.inria.papart.procam.Utils;
+import org.bytedeco.javacpp.freenect;
 import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import org.bytedeco.javacv.OpenKinectFrameGrabber;
@@ -20,10 +21,13 @@ import processing.core.PImage;
  */
 public class CameraOpenKinect extends Camera {
 
-    private TouchInput touchInput = null;
+    private TouchInput touchInput;
     private boolean isGrabbingDepth = false;
     private OpenKinectFrameGrabber grabber;
-    private IplImage depthImage = null;
+    private IplImage depthImage;
+
+    private int depthFormat = freenect.FREENECT_DEPTH_10BIT;
+    // other possibility freenect.FREENECT_DEPTH_MM;
 
     protected CameraOpenKinect(int cameraNo) {
         this.systemNumber = cameraNo;
@@ -32,18 +36,18 @@ public class CameraOpenKinect extends Camera {
 
     @Override
     public void start() {
-            grabber = new OpenKinectFrameGrabber(this.systemNumber);
-            grabber.setImageWidth(width());
-            grabber.setImageHeight(height());
+        grabber = new OpenKinectFrameGrabber(this.systemNumber);
+        grabber.setImageWidth(width());
+        grabber.setImageHeight(height());
 
-            try {
-                grabber.start();
-                grabber.setVideoFormat(0);
-                grabber.setDepthFormat(1);
+        try {
+            grabber.start();
+            grabber.setVideoFormat(freenect.FREENECT_VIDEO_RGB);
+            grabber.setDepthFormat(depthFormat);
 
-            } catch (Exception e) {
-                System.err.println("Could not Kinect start frameGrabber... " + e);
-            }
+        } catch (Exception e) {
+            System.err.println("Could not Kinect start frameGrabber... " + e);
+        }
     }
 
     @Override
@@ -103,12 +107,14 @@ public class CameraOpenKinect extends Camera {
     }
 
     public void setTouch(TouchInput touchInput) {
-        this.isGrabbingDepth = true;
+        this.setGrabDepth(true);
         this.touchInput = touchInput;
-
     }
 
     public IplImage getDepthIplImage() {
+        if(!this.isGrabbingDepth){
+            throw new RuntimeException("Cannot grab depth, setGrabdepth to true to enable it.");
+        }
         return depthImage;
     }
 
@@ -123,4 +129,14 @@ public class CameraOpenKinect extends Camera {
         }
         return depthPImage;
     }
+
+    public void setDepthFormat(int depthFormat) {
+        this.depthFormat = depthFormat;
+        this.setGrabDepth(true);
+    }
+
+    public void setGrabDepth(boolean grabDepth) {
+        this.isGrabbingDepth = grabDepth;
+    }
+
 }

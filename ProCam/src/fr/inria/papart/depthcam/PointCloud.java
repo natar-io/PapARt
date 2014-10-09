@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package fr.inria.papart.kinect;
+package fr.inria.papart.depthcam;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -133,7 +133,7 @@ public class PointCloud {
         for (int i = 0; i < pce.length; i++) {
             // TODO: parallel ?
             if (pce[i] == null
-                    || pce[i].point == null
+                    || pce[i].position == null
                     || connexSum[i] < 3) {
                 continue;
             }
@@ -145,11 +145,11 @@ public class PointCloud {
 
     private void addPoint(PointCloudElement pce) {
 
-        if (pce == null || pce.point == null) {
+        if (pce == null || pce.position == null) {
             return;
         }
 
-        PVector p = pce.point;
+        PVector p = pce.position;
 
 //                float[] vert = vertices[nbToDraw];
         verticesJava[currentVertNo++] = p.x;
@@ -157,7 +157,7 @@ public class PointCloud {
         verticesJava[currentVertNo++] = p.z;
         verticesJava[currentVertNo++] = 1;
 
-        int c = pce.ptColor;
+        int c = pce.colorPt;
         int c2 = javaToNativeARGB(c);
         colorsJava[nbColors++] = c2;
     }
@@ -231,7 +231,7 @@ public class PointCloud {
     float[] glProjmodelview = null;
     FloatBuffer glProjBuff = null;
 
-    public FloatBuffer toOpenGL(PMatrix3D projmodelview) {
+    private FloatBuffer toOpenGL(PMatrix3D projmodelview) {
 
         if (glProjmodelview == null) {
             glProjmodelview = new float[16];

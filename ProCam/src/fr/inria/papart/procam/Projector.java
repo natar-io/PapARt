@@ -3,7 +3,7 @@ package fr.inria.papart.procam;
 import org.bytedeco.javacv.ProjectiveDevice;
 import org.bytedeco.javacv.ProjectorDevice;
 import fr.inria.papart.drawingapp.DrawUtils;
-import fr.inria.papart.multitouchKinect.TouchPoint;
+import fr.inria.papart.multitouch.TouchPoint;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PMatrix3D;
@@ -164,7 +164,7 @@ public class Projector extends ARDisplay {
     // *** Projects the pixels viewed by the projector to the screen.
     // px and py are normalized -> [0, 1] in screen space
     @Override
-    public PVector projectPointer(Screen screen, float px, float py) {
+    public PVector projectPointer(Screen screen, float px, float py) throws Exception {
 
         // Create ray from the projector (origin / viewed pixel)
         // Intersect this ray with the piece of paper. 
@@ -195,7 +195,7 @@ public class Projector extends ARDisplay {
 
         // It may not intersect.
         if (inter == null) {
-            return null;
+            throw new Exception("No intersection");
         }
         // Check the error of the ray casting -- Debug only  
 //        PVector inter1P = new PVector();

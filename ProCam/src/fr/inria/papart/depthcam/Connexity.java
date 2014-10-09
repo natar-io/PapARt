@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package fr.inria.papart.kinect;
+package fr.inria.papart.depthcam;
 
 import processing.core.PVector;
 
@@ -71,7 +71,7 @@ public class Connexity {
         int currentOffset = y * width + x;
 
         if (points[currentOffset] == null
-                || points[currentOffset].point == null) {
+                || points[currentOffset].position == null) {
             connexity[currentOffset] = 0;
             connexitySum[currentOffset] = 0;
             return;
@@ -102,9 +102,9 @@ public class Connexity {
 //                    type = type | (1 << connNo);
 //                }
                 if (points[offset] != null
-                        && points[offset].point != null
-                        && PVector.dist(points[currentOffset].point,
-                                points[offset].point) < connexityDist) {
+                        && points[offset].position != null
+                        && PVector.dist(points[currentOffset].position,
+                                points[offset].position) < connexityDist) {
                     type = (byte) (type | 1 << connNo);
                     sum++;
                 }

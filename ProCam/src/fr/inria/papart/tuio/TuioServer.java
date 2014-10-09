@@ -5,12 +5,13 @@
  */
 package fr.inria.papart.tuio;
 
-import fr.inria.papart.multitouchKinect.TouchPoint;
+import fr.inria.papart.multitouch.TouchPoint;
 import java.util.ArrayList;
 import netP5.NetAddress;
 import oscP5.OscMessage;
 import oscP5.OscP5;
 import processing.core.PApplet;
+import processing.core.PVector;
 import toxi.geom.Vec3D;
 
 /**
@@ -50,8 +51,8 @@ public class TuioServer {
 
         int k = 1;
         for (TouchPoint tp : touchs) {
-            Vec3D pos = tp.getPosition();
-            Vec3D speed = tp.getSpeed();
+            PVector pos = tp.getPosition();
+            PVector speed = tp.getSpeed();
             int id = tp.getID();
             messages[0].add(id);
             messages[k] = new OscMessage(messageType);
@@ -59,11 +60,11 @@ public class TuioServer {
             messages[k].add("set"); /* add an int to the osc message */
 
             messages[k].add(id);
-            messages[k].add(pos.x());
-            messages[k].add(pos.y());
+            messages[k].add(pos.x);
+            messages[k].add(pos.y);
 
-            messages[k].add(speed.x());
-            messages[k].add(speed.y());
+            messages[k].add(speed.x);
+            messages[k].add(speed.y);
             messages[k].add(0f);
 
             k++;
@@ -91,8 +92,8 @@ public class TuioServer {
 
         int k = 1;
         for (TouchPoint tp : touchs) {
-            Vec3D pos = tp.getPosition();
-            Vec3D speed = tp.getSpeed();
+            PVector pos = tp.getPosition();
+            PVector speed = tp.getSpeed();
             int id = tp.getID();
             messages[0].add(id);
             messages[k] = new OscMessage(messageType);
@@ -100,13 +101,13 @@ public class TuioServer {
             messages[k].add("set"); /* add an int to the osc message */
 
             messages[k].add(id);
-            messages[k].add(pos.x());
-            messages[k].add(pos.y());
-            messages[k].add(pos.z() / maxZ);
+            messages[k].add(pos.x);
+            messages[k].add(pos.y);
+            messages[k].add(pos.z / maxZ);
 
-            messages[k].add(speed.x());
-            messages[k].add(speed.y());
-            messages[k].add(speed.z() / maxZ);
+            messages[k].add(speed.x);
+            messages[k].add(speed.y);
+            messages[k].add(speed.z / maxZ);
             messages[k].add(0f);
 
             k++;
