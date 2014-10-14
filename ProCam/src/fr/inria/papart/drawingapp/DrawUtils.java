@@ -133,9 +133,9 @@ public class DrawUtils implements PConstants{
         pg3d.rectMode(PApplet.CENTER);
         pg3d.textFont(font, fontSize);
         pg3d.text(text, 0, 0, w, h);
-        pg3d.noFill();
-        pg3d.stroke(100);
-        pg3d.rect(0, 0, w, h);
+//        pg3d.noFill();
+//        pg3d.stroke(100);
+//        pg3d.rect(0, 0, w, h);
         pg3d.popMatrix();
         
         

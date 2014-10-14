@@ -8,6 +8,7 @@ import processing.opengl.PGraphicsOpenGL;
 import fr.inria.papart.drawingapp.Button;
 import fr.inria.papart.multitouch.Touch;
 import fr.inria.papart.multitouch.TouchInput;
+import fr.inria.papart.multitouch.TouchList;
 import java.util.ArrayList;
 import processing.core.PApplet;
 import processing.core.PVector;
@@ -15,7 +16,7 @@ import processing.core.PVector;
 public class PaperTouchScreen extends PaperScreen {
 
     // TODO: check -> never used. 
-    protected ArrayList<Touch> touchList = new ArrayList<Touch>();
+    protected TouchList touchList = new TouchList();
     protected TouchInput touchInput;
     protected ArrayList<Button> buttons = new ArrayList<Button>();
     public boolean isTranslated = false;
@@ -71,6 +72,8 @@ public class PaperTouchScreen extends PaperScreen {
 
         screen.computeScreenPosTransform();
         touchList = touchInput.projectTouchToScreen(screen, display);
+        touchList.sortAlongYAxis();
+        touchList.scaleBy(drawingSize);
         if (!buttons.isEmpty()) {
             updateButtons();
         }
@@ -83,8 +86,7 @@ public class PaperTouchScreen extends PaperScreen {
                     continue;
                 }
                 PVector p = t.position;
-                checkButtons(p.x * drawingSize.x,
-                        p.y * drawingSize.y);
+                checkButtons(p.x, p.y);
             }
         }
     }
@@ -97,49 +99,51 @@ public class PaperTouchScreen extends PaperScreen {
         }
     }
 
-    // Example Draw... to check ? Or put it as begin / end ...
+    protected void drawButtons() {
+        for (Button b : buttons) {
+            b.drawSelf(getGraphics());
+        }
+    }
+
+    // Example Draw.
     @Override
     public void draw() {
-
-        PGraphicsOpenGL g = screen.getGraphics();
-        g.beginDraw();
-
-        g.clear();
-        g.scale(resolution);
-        g.background(0, 200, 100);
-
-        drawTouch(g, 10);
-        g.endDraw();
+        beginDraw2D();
+        clear();
+        background(0, 200, 100);
+        drawTouch(10);
+        endDraw();
     }
 
     static private final int DEFAULT_TOUCH_SIZE = 10;
 
     protected void drawTouch() {
-        drawTouch(currentGraphics, DEFAULT_TOUCH_SIZE);
+        drawTouch(DEFAULT_TOUCH_SIZE);
     }
 
     protected void drawTouch(int ellipseSize) {
-        drawTouch(currentGraphics, ellipseSize);
-    }
-
-    protected void drawTouch(PGraphicsOpenGL g, int ellipseSize) {
-
-        if (!touchList.isEmpty()) {
-            for (Touch t : touchList) {
-                PVector p = t.position;
-                float x = p.x * drawingSize.x;
-                float y = p.y * drawingSize.y;
-                if (t.is3D) {
-                    g.fill(185, 142, 62);
-                } else {
-                    g.fill(58, 71, 198);
-                }
-                g.ellipse(x, y, ellipseSize, ellipseSize);
+        for (Touch t : touchList) {
+            if (t.is3D) {
+                fill(185, 142, 62);
+            } else {
+                fill(58, 71, 198);
             }
+            ellipse(t.position.x, t.position.y, ellipseSize, ellipseSize);
         }
     }
 
-    public ArrayList<Touch> getTouchList() {
+    protected void drawTouchSpeed() {
+        for (Touch t : touchList) {
+            if (t.is3D) {
+                fill(185, 142, 62);
+            } else {
+                fill(58, 71, 198);
+            }
+            ellipse(t.position.x, t.position.y, t.speed.x * 3, t.speed.y * 3);
+        }
+    }
+
+    public TouchList getTouchList() {
         return touchList;
     }
 

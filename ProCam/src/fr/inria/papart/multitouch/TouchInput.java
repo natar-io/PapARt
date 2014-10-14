@@ -8,6 +8,7 @@ import fr.inria.papart.procam.ARDisplay;
 import fr.inria.papart.procam.Screen;
 import fr.inria.papart.depthcam.Kinect;
 import fr.inria.papart.depthcam.KinectScreenCalibration;
+import fr.inria.papart.procam.Camera;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.procam.Projector;
 import fr.inria.papart.procam.camera.CameraOpenKinect;
@@ -93,9 +94,9 @@ public class TouchInput {
         }
     }
 
-    public ArrayList<Touch> projectTouchToScreen(Screen screen, ARDisplay display) {
+    public TouchList projectTouchToScreen(Screen screen, ARDisplay display) {
 
-        ArrayList<Touch> touchList = new ArrayList<Touch>();
+        TouchList touchList = new TouchList();
 
         try {
             touchPointSemaphore.acquire();
@@ -145,7 +146,7 @@ public class TouchInput {
     private ProjectiveDeviceP pdp;
     private boolean useRawDepth = false;
 
-    public void useRawDepth(CameraOpenKinect camera) {
+    public void useRawDepth(Camera camera) {
         this.useRawDepth = true;
         this.pdp = camera.getProjectiveDevice();
     }
@@ -162,6 +163,8 @@ public class TouchInput {
         PVector paperScreenCoord = project(screen, display,
                 p.x / pdp.getWidth(),
                 p.y / pdp.getHeight());
+
+        paperScreenCoord.z = tp.getPosition().z;
         touch.position = paperScreenCoord;
 
         // Speed
@@ -170,10 +173,12 @@ public class TouchInput {
             paperScreenCoord = project(screen, display,
                     p.x / pdp.getWidth(),
                     p.y / pdp.getHeight());
-            touch.speed = PVector.sub(paperScreenCoord, touch.position);
+
+            paperScreenCoord.z = tp.getPreviousPosition().z;
+            touch.setPrevPos(paperScreenCoord);
         } catch (Exception e) {
             // Speed is set to 0
-            touch.speed = new PVector();
+            touch.defaultPrevPos();
         }
     }
 
@@ -187,8 +192,9 @@ public class TouchInput {
         PVector paperScreenCoord = project(screen, display,
                 touchPositionNormalized.x,
                 touchPositionNormalized.y);
-        touch.position = paperScreenCoord;
 
+        paperScreenCoord.z = tp.getPosition().z;
+        touch.position = paperScreenCoord;
         // Speed
         try {
             float prevX = tp.getPreviousPosition().x;
@@ -196,10 +202,11 @@ public class TouchInput {
             paperScreenCoord = project(screen, display,
                     prevX,
                     prevY);
-            touch.speed = PVector.sub(paperScreenCoord, touch.position);
+            paperScreenCoord.z = tp.getPreviousPosition().z;
+            touch.setPrevPos(paperScreenCoord);
         } catch (Exception e) {
             // Speed is set to 0
-            touch.speed = new PVector();
+            touch.defaultPrevPos();
         }
     }
 

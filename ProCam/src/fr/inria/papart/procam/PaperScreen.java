@@ -36,7 +36,7 @@ public class PaperScreen {
     protected MarkerBoard markerBoard;
 
     protected PVector drawingSize
-            = new PVector(DEFAULT_DRAWING_SIZE, DEFAULT_DRAWING_SIZE);
+            = new PVector(DEFAULT_DRAWING_SIZE, DEFAULT_DRAWING_SIZE, 1);
     protected float resolution = DEFAULT_RESOLUTION;
 
     protected PGraphicsOpenGL currentGraphics;
@@ -163,7 +163,7 @@ public class PaperScreen {
         screen.setAutoUpdatePos(cameraTracking, markerBoard);
 
         // default filtering
-        markerBoard.setDrawingMode(cameraTracking, true, 10);
+        markerBoard.setDrawingMode(cameraTracking, true, 20);
         markerBoard.setFiltering(cameraTracking, 30, 4);
 
         isInitialized = true;
@@ -264,12 +264,13 @@ public class PaperScreen {
         return g;
     }
 
-    public PGraphicsOpenGL beginDraw3DProjected(PVector userPos) {
-        screen.setDrawing(true);
+    public PGraphicsOpenGL beginDraw3DProjected() {
+         screen.setDrawing(true);
         PGraphicsOpenGL g = screen.getGraphics();
+        this.currentGraphics = g;
         g.beginDraw();
+//        g.scale(resolution);
         this.isDrawingOnScreen = true;
-        screen.initDraw(userPos);
         return g;
     }
 
@@ -329,6 +330,7 @@ public class PaperScreen {
     }
 
     public void setLocation(float x, float y, float z) {
+        assert(isInitialized);
         screen.setTranslation(x, y, z);
     }
 

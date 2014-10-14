@@ -41,8 +41,24 @@ public class KinectProcessing extends Kinect {
         depthData.clear();
         validPointsPImage.loadPixels();
         // set a default color. 
-        Arrays.fill(validPointsPImage.pixels,  papplet.color(0, 0, 255));
+        Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 255));
         computeDepthAndDo(skip, new SetImageData());
+        validPointsPImage.updatePixels();
+        return validPointsPImage;
+    }
+
+    public PImage update(IplImage depth, IplImage color,
+            KinectScreenCalibration calib, int skip) {
+        updateRawDepth(depth);
+        updateRawColor(color);
+        depthData.clear();
+        validPointsPImage.loadPixels();
+        // set a default color. 
+        Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 255));
+        
+        depthData.calibration = calib;
+        computeDepthAndDo(skip, new Select2DPoint());
+        doForEachValidPoint(skip, new SetImageData());
         validPointsPImage.updatePixels();
         return validPointsPImage;
     }

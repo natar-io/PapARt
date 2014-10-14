@@ -4,6 +4,7 @@
  */
 package fr.inria.papart.procam;
 
+import fr.inria.papart.multitouch.OneEuroFilter;
 import org.bytedeco.javacpp.ARToolKitPlus;
 import org.bytedeco.javacpp.ARToolKitPlus.TrackerMultiMarker;
 import org.bytedeco.javacpp.opencv_core.IplImage;

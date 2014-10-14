@@ -191,6 +191,18 @@ public class Kinect {
             }
         }
     }
+    
+    protected void doForEachValidPoint(int precision, DepthPointManiplation manip) {
+        for (int y = 0; y < kinectCalibIR.getHeight(); y += precision) {
+            for (int x = 0; x < kinectCalibIR.getWidth(); x += precision) {
+                int offset = y * kinectCalibIR.getWidth() + x;
+                Vec3D pKinect = depthData.kinectPoints[offset];
+                if (pKinect != INVALID_POINT && depthData.validPointsMask[offset] == true) {
+                    manip.execute(pKinect, x, y, offset);
+                }
+            }
+        }
+    }
 
     protected void updateRawDepth(IplImage depthImage) {
         ByteBuffer depthBuff = depthImage.getByteBuffer();

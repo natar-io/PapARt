@@ -5,8 +5,6 @@
  */
 package fr.inria.papart.procam;
 
-import org.bytedeco.javacv.FrameGrabber;
-import org.bytedeco.javacv.OpenKinectFrameGrabber;
 import org.bytedeco.javacpp.freenect;
 import fr.inria.papart.drawingapp.Button;
 import fr.inria.papart.depthcam.Kinect;
@@ -70,6 +68,7 @@ public class Papart {
         PFont font = this.applet.loadFont(defaultFont);
         Button.setFont(font);
         Button.setFontSize(defaultFontSize);
+        // TODO: singleton -> Better implementation. 
         if (Papart.singleton == null) {
             Papart.singleton = this;
         }
@@ -203,8 +202,8 @@ public class Papart {
         touchInput = new TouchInput(this.applet,
                 (CameraOpenKinect) cameraTracking,
                 kinect, kinectScreenCalib);
-        touchInput.useRawDepth( (CameraOpenKinect) cameraTracking);
-        
+        touchInput.useRawDepth((CameraOpenKinect) cameraTracking);
+
         touchInput.setPrecision(touch2DPrecision, touch3DPrecision);
         touchInitialized = true;
     }
@@ -229,10 +228,15 @@ public class Papart {
                 kinectIRCalib,
                 kinectRGBCalib,
                 kinectFormat);
-        
+
         touchInput = new TouchInput(this.applet,
                 cameraOpenKinect,
                 kinect, kinectScreenCalib);
+
+        // TODO: use Raw depth for Touch also here
+        // Conversion Kinect -> Projector
+//        touchInput.useRawDepth(cameraTracking);
+
         touchInput.setPrecision(touch2DPrecision, touch3DPrecision);
 
         touchInitialized = true;
@@ -252,7 +256,8 @@ public class Papart {
                 System.out.println("Starting a PaperTouchScreen. " + klass.getName());
                 constructor.newInstance(this.appletClass.cast(this.applet));
             } catch (Exception ex) {
-                System.out.println("Error loading PapartTouchApp : " + klass.getName());
+                System.out.println("Error loading PapartTouchApp : " + klass.getName() + ex);
+                ex.printStackTrace();
             }
         }
 

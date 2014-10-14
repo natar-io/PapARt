@@ -238,12 +238,12 @@ public class Screen {
 //        homography.setPoint(false, 3, new PVector(0, 0));
     }
 
-    public PGraphicsOpenGL initDraw(PVector userPos) {
-        return initDraw(userPos, 40, 5000);
+    public void initDraw(PVector userPos) {
+        initDraw(userPos, 40, 5000);
     }
 
-    public PGraphicsOpenGL initDraw(PVector userPos, float nearPlane, float farPlane) {
-        return initDraw(userPos, nearPlane, farPlane, false, false, true);
+    public void initDraw(PVector userPos, float nearPlane, float farPlane) {
+        initDraw(userPos, nearPlane, farPlane, false, false, true);
     }
 //    public PGraphicsOpenGL initDraw(PVector userPos, float nearPlane, float farPlane, boolean isAnaglyph, boolean isLeft, boolean isOnly) {
 //        return initDraw(userPos, nearPlane, farPlane, isAnaglyph, isLeft, isOnly);
@@ -255,7 +255,7 @@ public class Screen {
 //    public PGraphicsOpenGL initDraw(PVector userPos, float nearPlane, float farPlane, boolean isAnaglyph, boolean isLeft, boolean isOnly) {
 //        return initDraw(userPos, nearPlane, farPlane, isAnaglyph, isLeft, isOnly);
 //    }
-    public PGraphicsOpenGL initDraw(PVector userPos, float nearPlane, float farPlane, boolean isAnaglyph, boolean isLeft, boolean isOnly) {
+    public void initDraw(PVector userPos, float nearPlane, float farPlane, boolean isAnaglyph, boolean isLeft, boolean isOnly) {
 
         PGraphicsOpenGL graphics = getGraphics();
 
@@ -403,7 +403,13 @@ public class Screen {
         if (posPMatrix.m03 == 0 && posPMatrix.m13 == 0 && posPMatrix.m23 == 0) {
             resetPos();
         }
-        return graphics;
+    }
+
+    public void endDrawPerspective() {
+        PGraphicsOpenGL graphics = getGraphics();
+        graphics.perspective();
+        graphics.camera();
+        graphics.projection.m11 = -graphics.projection.m11;
     }
 
     public void resetPos() {

@@ -12,6 +12,7 @@ import processing.core.PFont;
 import processing.opengl.PGraphicsOpenGL;
 import processing.core.PImage;
 
+// TODO: Button -> Center MODE || CORNER mode 
 public class Button extends InteractiveZone {
 
     static final int BUTTON_ERROR = 2;
@@ -116,8 +117,12 @@ public class Button extends InteractiveZone {
         return false;
     }
 
+    private PGraphicsOpenGL g;
+
     @Override
-    public void drawSelf(PGraphicsOpenGL pgraphics3d) {
+    public void drawSelf(PGraphicsOpenGL g) {
+
+        this.g = g;
 
         if (isHidden) {
             return;
@@ -125,53 +130,68 @@ public class Button extends InteractiveZone {
 
         checkCooldown();
 
-        // if(currentTP != null)
-        //     pgraphics3d.tint(0, 153, 204, 126); 
-        pgraphics3d.imageMode(PApplet.CENTER);
+        g.imageMode(PApplet.CENTER);
 
+        // TODO: remove this null check
         if (img != null) {
+            drawImage();
+        } else {
+            drawText();
+        }
+    }
 
-            if (isActive) {
+    private void drawText() {
+        int fontSize = this.currentButtonFontSize > 0 ? this.currentButtonFontSize : buttonFontSize;
 
-                if (imgSel != null) {
-//                    DrawUtils.drawImage(pgraphics3d, imgSel, (int) position.x, (int) position.y, (int) width, (int) height);
-                    pgraphics3d.image(imgSel, (int) position.x, (int) position.y, (int) width, (int) height);
-                } else {
+        if (isActive) {
+            drawTextActive(fontSize);
+        } else {
+            drawTextInactive(fontSize);
+        }
+    }
 
-                    pgraphics3d.tint(DrawUtils.applet.color(100, 255, 100));
-//                    DrawUtils.drawImage(pgraphics3d, img, (int) position.x, (int) position.y, (int) width, (int) height);
-                    pgraphics3d.image(img, (int) position.x, (int) position.y, (int) width, (int) height);
-                }
+    private void drawTextActive(int fontSize) {
+        g.fill(DrawUtils.applet.color(255));
 
-            } else {
+        if (nameSel != null) {
+            DrawUtils.drawText(g, nameSel, buttonFont, fontSize,
+                    (int) position.x, (int) position.y, (int) width, (int) height);
+        } else {
+            DrawUtils.drawText(g, name, buttonFont, fontSize,
+                    (int) position.x, (int) position.y, (int) width, (int) height);
+        }
+    }
 
-                if (imgSel == null) {
-                    pgraphics3d.tint(DrawUtils.applet.color(UNSELECTED));
-                }
-//                DrawUtils.drawImage(pgraphics3d, img, (int) position.x, (int) position.y, (int) width, (int) height);
-                pgraphics3d.image(img, (int) position.x, (int) position.y, (int) width, (int) height);
-            }
-            pgraphics3d.noTint();
+    private void drawTextInactive(int fontSize) {
+        g.fill(DrawUtils.applet.color(UNSELECTED));
+        DrawUtils.drawText(g, name, buttonFont, fontSize,
+                (int) position.x, (int) position.y, (int) width, (int) height);
+    }
+
+    private void drawImage() {
+        if (isActive) {
+            drawImageActive();
+        } else {
+            drawImageInactive();
+        }
+    }
+
+    private void drawImageInactive() {
+        if (imgSel == null) {
+            g.tint(DrawUtils.applet.color(UNSELECTED));
+        }
+        g.image(img, (int) position.x, (int) position.y, (int) width, (int) height);
+        g.noTint();
+    }
+
+    private void drawImageActive() {
+        if (imgSel != null) {
+            g.image(imgSel, (int) position.x, (int) position.y, (int) width, (int) height);
         } else {
 
-            int ftSize = this.currentButtonFontSize > 0 ? this.currentButtonFontSize : buttonFontSize;
-
-            if (isActive) {
-                pgraphics3d.fill(DrawUtils.applet.color(255));
-
-                if (nameSel != null) {
-                    DrawUtils.drawText(pgraphics3d, nameSel, buttonFont, ftSize,
-                            (int) position.x, (int) position.y, (int) width, (int) height);
-                } else {
-                    DrawUtils.drawText(pgraphics3d, name, buttonFont, ftSize,
-                            (int) position.x, (int) position.y, (int) width, (int) height);
-                }
-
-            } else {
-                pgraphics3d.fill(DrawUtils.applet.color(UNSELECTED));
-                DrawUtils.drawText(pgraphics3d, name, buttonFont, ftSize,
-                        (int) position.x, (int) position.y, (int) width, (int) height);
-            }
+            g.tint(DrawUtils.applet.color(100, 255, 100));
+            g.image(img, (int) position.x, (int) position.y, (int) width, (int) height);
+            g.noTint();
         }
     }
 
@@ -191,6 +211,14 @@ public class Button extends InteractiveZone {
         isCooldownDone = false;
     }
 
+    public void setActive() {
+        isActive = true;
+    }
+
+    public boolean isActive(){
+        return this.isActive;
+    }
+    
     public PImage getImage() {
         return img;
     }
@@ -205,6 +233,10 @@ public class Button extends InteractiveZone {
 
     static public void setFont(PFont font) {
         buttonFont = font;
+    }
+
+    static public PFont getFont() {
+        return buttonFont;
     }
 
     static public void setFontSize(int size) {
