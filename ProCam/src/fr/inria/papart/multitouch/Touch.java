@@ -19,11 +19,20 @@ public class Touch {
     public PVector pposition;
     public PVector speed;
     public TouchPoint touchPoint;
+    
+    public PVector size;
 
+    // TODO: implementation of this. 
+    public boolean isObject;
+    public int id;
+    
     public void setPosition(PVector v){
         setPosition(v.x, v.y, v.z);
     }
     public void setPosition(float x, float y, float z){
+        if(this.position == null){
+            this.position = new PVector();
+        }
         this.position.x = x;
         this.position.y = y;
         this.position.z = z;

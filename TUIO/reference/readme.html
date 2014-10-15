@@ -1,0 +1,152 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <title>TUIO Processing</title>
+  <link href="http://www.processing.org/css/style.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+<div class="content">
+<p>&nbsp;</p>
+
+<h1>TUIO Processing Client and Demo Sketches</h1>
+
+<p>
+Copyright (c) 2005-2009 <a href="http://modin.yuri.at/">Martin Kaltenbrunner</a>. 
+This software is part of <a target="new" href="http://reactivision.sourceforge.net/">reacTIVision</a>, an open source fiducial tracking and multi-touch framework based on 
+computer vision. For further information on the TUIO protocol and framework, please visit <a target="new" href="http://www.tuio.org/">TUIO.org</a>
+</p>
+
+<h2>Releases and Source Repository</h2>
+<p>
+You can download the release packages of this library from the <a target="new" href="http://reactivision.sourceforge.net/#files">reacTIVision</a> software page, 
+as well as retrieve its latest source code from its <a href="http://reactivision.cvs.sourceforge.net/viewvc/reactivision/TUIO/TUIO_Processing/">CVS repository</a>.
+</p>
+
+
+<h2>Demo Applications:</h2>
+
+<p>
+This package contains two demo sketches and a library which allows Processing to
+receive TUIO messages from any TUIO enabled tracker.
+The TuioDemo sketch graphically displays the object and cursor states on the screen. 
+You can use this demo as a starting point for the development of you own Processing sketch based on the TUIO framework. 
+Please refer to the source code of the example and the following section for further details on its usage.
+</p>
+<p>
+Keep in mind to make your graphics scalable for the varying
+screen and window resolutions. A reasonable TUIO application
+will run in fullscreen mode, although the windowed mode might
+be useful for debugging purposes or working with the TUIO Simulator.
+</p>
+
+<h2>Installation:</h2>
+<p>
+Copy the complete contents of this distribution to a folder named <b>TUIO</b> to the <b>libraries</b> folder of your Processing sketchbook.
+In order to use this library, you will need to provide the according import statement within the header of your Processing sketch:
+</p>
+<code>
+import TUIO.*;
+</code>
+
+
+<h2>Application Programming Interface:</h2>
+
+<p>
+First you need to create an instance of the <b>TuioProcessing</b> client, 
+providing the instance of your sketch to the constructor using the <b>this</b> argument.  
+The TuioProcessing client immediately starts listening to incoming TUIO messages 
+and generates higher level events based on the object and cursor movements.
+</p>
+<pre>
+TuioProcessing tuioClient = new TuioProcessing(this);
+</pre>
+
+<p>
+Therefore your sketch needs to implement the following methods 
+in order to be able to receive these TUIO events properly:
+
+<ul>
+<li><b>addTuioObject(TuioObject tobj)</b>
+this is called when an object becomes visible
+<li><b>removeTuioObject(TuioObject tobj)</b>
+an object was removed from the table
+<li><b>updateTuioObject(TuioObject tobj)</b>
+an object was moved on the table surface
+<li><b>addTuioCursor(TuioCursor tcur)</b>
+this is called when a new cursor is detected
+<li><b>removeTuioCursor(TuioCursor tcur)</b>
+a cursor was removed from the table
+<li><b>updateTuioCursor(TuioCursor tcur)</b>
+a cursor was moving on the table surface
+<li><b>refresh(TuioTime bundleTime)</b>
+this method is called after each bundle,<br />
+use it to repaint your screen for example
+</ul>
+</p>
+
+<p>
+Each <b>TuioObject</b> or <b>TuioCursor</b> is identified with a unique <b>SessionID</b>, which it maintains
+over its lifetime. Additionally each TuioObject carries a <b>SymbolID</b> that corresponds
+to its attached fiducial marker number. The <b>CursorID</b> of the TuioCursor is always
+a number in the range of all currently detected cursors. You can retrieve these ID numbers 
+with the according <b>getSessionID()</b>, <b>getSymbolID()</b> or <b>getCursorID()</b> methods.
+</p>
+<p>
+The TuioObject and TuioCursor references are updated automatically by the TuioProcessing client 
+and are always referencing the same instance over the object's or cursor's lifetime.
+All the TuioObject and TuioCursor attributes are encapsulated, and can be
+accessed with methods such as <b>getX()</b>, <b>getY()</b> and <b>getAngle()</b>. 
+There exist further methods for the retrieval of speed and acceleration values, please see the provided example sketches for a complete list.  
+TuioObject and TuioCursor also have some additional convenience methods
+for the calculation of distances and angles between objects. The <b>getPath()</b>
+method returns a Vector of TuioPoint representing the movement path of the object.
+Please refer to the <a href="http://www.tuio.org/?java">documentation</a> of the TUIO Java reference implementations for further details on all the available methods.
+</p>
+<p>
+Alternatively, the TuioProcessing class contains some methods for the polling
+of the current object and cursor states. There are methods which return
+either a list or individual TuioObject and TuioCursor objects.
+</p>
+
+<p>
+<ul>
+<li><b>getTuioObjects()</b> returns a Vector of all currently present TuioObjects
+<li><b>getTuioCursors()</b>  returns a Vector of all currently present TuioCursors
+<li><b>getTuioObject(long s_id)</b> returns a TuioObject or NULL depending on its presence
+<li><b>getTuioCursor(long s_id)</b> returns a TuioCursor or NULL depending on its presence
+</ul>
+</p>
+
+<h2>License:</h2>
+<p>
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+</p>
+<p>
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
+GNU General Public License for more details.
+</p>
+<p>
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA02111-1307USA
+</p>
+
+<h2>References:</h2>
+
+<p>
+This Processing library is based on the <a href="http://www.tuio.org/?java">TUIO Java</a> reference implementation, 
+which includes the <a href="http://www.mat.ucsb.edu/~c.ramakr/illposed/javaosc.html">JavaOSC</a> OpenSound Control library. 
+</p>
+<p>&nbsp;</p>
+</div>
+</div>
+</div>
+</body>
+</html>

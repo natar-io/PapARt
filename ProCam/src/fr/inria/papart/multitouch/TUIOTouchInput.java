@@ -1,0 +1,115 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package fr.inria.papart.multitouch;
+
+import fr.inria.papart.procam.BaseDisplay;
+import fr.inria.papart.procam.Screen;
+import TUIO.*;
+import processing.core.PApplet;
+import java.util.*;
+import processing.core.PVector;
+
+/**
+ *
+ * @author jiii
+ */
+public class TUIOTouchInput extends TouchInput {
+
+    private TuioProcessing tuioClient;
+
+    public TUIOTouchInput(PApplet parent, int port) {
+        tuioClient = new TuioProcessing(parent, this, port);
+    }
+
+    @Override
+    public void update() {
+    }
+
+    @Override
+    public TouchList projectTouchToScreen(Screen screen, BaseDisplay display) {
+        TouchList touchList = new TouchList();
+
+        Vector<TuioCursor> tuioCursorList = tuioClient.getTuioCursors();
+        for (TuioCursor tuioCursor : tuioCursorList) {
+            try {
+                Touch touch = createCursor(screen, display, tuioCursor);
+                touchList.add(touch);
+            } catch (Exception e) {
+                System.out.println("No Intersection" + e);
+            }
+        }
+
+        Vector<TuioObject> tuioObjectList = tuioClient.getTuioObjects();
+        for (TuioObject tuioObject : tuioObjectList){
+            try {
+                Touch touch = createObject(screen, display, tuioObject);
+                touchList.add(touch);
+            } catch (Exception e) {
+                System.out.println("No Intersection" + e);
+            }
+        }
+
+        return touchList;
+    }
+
+    private Touch createCursor(Screen screen, BaseDisplay display, TuioCursor tcur) throws Exception {
+        Touch touch = new Touch();
+        TuioPoint tuioPoint = tcur.getPosition();
+        PVector v = project(screen, display, tuioPoint.getX(), tuioPoint.getY());
+        touch.setPosition(v);
+        return touch;
+    }
+    
+    private Touch createObject(Screen screen, BaseDisplay display, TuioObject tobj) throws Exception {
+        Touch touch = new Touch();
+        TuioPoint tuioPoint = tobj.getPosition();
+        PVector v = project(screen, display, tuioPoint.getX(), tuioPoint.getY());
+        touch.setPosition(v);
+        touch.isObject = true;
+        touch.id = tobj.getSymbolID();
+        // TODO: implement this ?
+        touch.size = new PVector(10, 10);
+        return touch;
+    }
+
+// these callback methods are called whenever a TUIO event occurs
+// called when an object is added to the scene
+    void addTuioObject(TuioObject tobj) {
+        System.out.println("add object " + tobj.getSymbolID() + " (" + tobj.getSessionID() + ") " + tobj.getX() + " " + tobj.getY() + " " + tobj.getAngle());
+    }
+
+// called when an object is removed from the scene
+    void removeTuioObject(TuioObject tobj) {
+        System.out.println("remove object " + tobj.getSymbolID() + " (" + tobj.getSessionID() + ")");
+    }
+
+// called when an object is moved
+    void updateTuioObject(TuioObject tobj) {
+        System.out.println("update object " + tobj.getSymbolID() + " (" + tobj.getSessionID() + ") " + tobj.getX() + " " + tobj.getY() + " " + tobj.getAngle()
+                + " " + tobj.getMotionSpeed() + " " + tobj.getRotationSpeed() + " " + tobj.getMotionAccel() + " " + tobj.getRotationAccel());
+    }
+
+// called when a cursor is added to the scene
+    void addTuioCursor(TuioCursor tcur) {
+        System.out.println("add cursor " + tcur.getCursorID() + " (" + tcur.getSessionID() + ") " + tcur.getX() + " " + tcur.getY());
+    }
+
+// called when a cursor is moved
+    void updateTuioCursor(TuioCursor tcur) {
+        System.out.println("update cursor " + tcur.getCursorID() + " (" + tcur.getSessionID() + ") " + tcur.getX() + " " + tcur.getY()
+                + " " + tcur.getMotionSpeed() + " " + tcur.getMotionAccel());
+    }
+
+// called when a cursor is removed from the scene
+    void removeTuioCursor(TuioCursor tcur) {
+        System.out.println("remove cursor " + tcur.getCursorID() + " (" + tcur.getSessionID() + ")");
+    }
+
+// called after each message bundle
+// representing the end of an image frame
+    void refresh(TuioTime bundleTime) {
+    }
+}
