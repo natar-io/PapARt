@@ -23,20 +23,16 @@ import toxi.geom.Vec3D;
  *
  * @author jeremy
  */
-public class ARDisplay {
+public class ARDisplay extends BaseDisplay implements HasExtrinsics {
 
-    protected PApplet parent;
-    public PGraphicsOpenGL graphics;
 //    public PGraphicsOpenGL graphicsUndist;
-    public ArrayList<Screen> screens;
     private PImage mapImg;
     // Projector information
-    protected ProjectiveDevice proj;
-    protected PMatrix3D projIntrinsicsP3D, projExtrinsicsP3D, projExtrinsicsP3DInv;
-    protected boolean hasExtrinsics = false;
-    // Resolution
-    protected int frameWidth, frameHeight;
-    // OpenGL information
+    protected ProjectiveDevice projectiveDevice;
+    protected ProjectiveDeviceP projectiveDeviceP;
+    protected PMatrix3D intrinsics, extrinsics, extrinsicsInv;
+    protected boolean hasExtrinsics;
+// OpenGL information
     protected float[] projectionMatrixGL = new float[16];
     protected PMatrix3D projectionInit;
     // TODO...
@@ -44,107 +40,30 @@ public class ARDisplay {
     protected GL2 gl = null;
     protected PMatrix3D invProjModelView;
     protected ProjectiveDeviceP pdp;
-    protected float resolution = 1;
     private Camera camera = null;
-    protected boolean registered = false;
 
     protected float zNear = 20, zFar = 10000;
 
-    private int drawingSizeX, drawingSizeY;
     private boolean distort = false;
 
     public ARDisplay(PApplet parent, String calibrationYAML) {
+        super(parent);
         loadInternalParams(calibrationYAML);
-
-        this.parent = parent;
-        this.frameWidth = proj.imageWidth;
-        this.frameHeight = proj.imageHeight;
-        this.drawingSizeX = frameWidth;
-        this.drawingSizeY = frameHeight;
-        this.resolution = 1;
-        init();
     }
 
-    public ARDisplay(PApplet parent, String calibrationYAML,
-            int width, int height, float near, float far) {
-        this(parent, calibrationYAML, width, height, near, far, 1);
-    }
-
-    public ARDisplay(PApplet parent, Camera camera, float near, float far, float resolution) {
-
-        this.frameWidth = camera.width;
-        this.frameHeight = camera.height;
-        this.drawingSizeX = frameWidth;
-        this.drawingSizeY = frameHeight;
-        this.parent = parent;
-        this.zNear = near;
-        this.zFar = far;
-        this.resolution = resolution;
+    public ARDisplay(PApplet parent, Camera camera) {
+        super(parent);
         this.camera = camera;
-
         loadInternalParams(camera.getProjectiveDevice());
-        init();
     }
 
-    public ARDisplay(PApplet parent, String calibrationYAML, float near, float far, float resolution) {
-
-        this.parent = parent;
-        this.zNear = near;
-        this.zFar = far;
-        this.resolution = resolution;
-
-        loadInternalParams(calibrationYAML);
-        this.frameWidth = pdp.getWidth();
-        this.frameHeight = pdp.getHeight();
-        this.drawingSizeX = frameWidth;
-        this.drawingSizeY = frameHeight;
-        init();
-    }
-
-    public ARDisplay(PApplet parent, String calibrationYAML,
-            int width, int height, float near, float far, float resolution) {
-
-        frameWidth = width;
-        frameHeight = height;
-        this.parent = parent;
-        this.zNear = near;
-        this.zFar = far;
-
-        this.resolution = resolution;
-
-        loadInternalParams(calibrationYAML);
-        init();
-
-    }
-
-    private void init() {
-        this.graphics = (PGraphicsOpenGL) parent.createGraphics((int) (frameWidth * resolution),
-                (int) (frameHeight * resolution), PApplet.OPENGL);
+    @Override
+    public void init() {
+        this.graphics = (PGraphicsOpenGL) parent.createGraphics((int) (frameWidth * quality),
+                (int) (frameHeight * quality), PApplet.OPENGL);
         screens = new ArrayList<Screen>();
         initProjection();
         initDistortMap();
-        automaticMode();
-    }
-
-    public void automaticMode() {
-        registered = true;
-        // Before drawing. 
-        parent.registerMethod("pre", this);
-        // At the end of drawing.
-        parent.registerMethod("draw", this);
-    }
-
-    public void manualMode() {
-        registered = false;
-        parent.unregisterMethod("draw", this);
-        parent.unregisterMethod("pre", this);
-    }
-
-    public void registerAgain() {
-        if (!registered) {
-            return;
-        }
-        manualMode();
         automaticMode();
     }
 
@@ -163,13 +82,15 @@ public class ARDisplay {
         // Load the camera parameters.
 //            pdp = ProjectiveDeviceP.loadProjectiveDevice(calibrationYAML, 0);
 
-        projIntrinsicsP3D = pdp.getIntrinsics();
-        projExtrinsicsP3D = pdp.getExtrinsics();
-        if (projExtrinsicsP3D != null) {
-            projExtrinsicsP3DInv = projExtrinsicsP3D.get();
-            projExtrinsicsP3DInv.invert();
-        }
-        proj = pdp.getDevice();
+        this.setIntrinsics(pdp.getIntrinsics());
+        this.setExtrinsics(pdp.getExtrinsics());
+
+        this.projectiveDeviceP = pdp;
+        this.projectiveDevice = pdp.getDevice();
+        this.frameWidth = projectiveDevice.imageWidth;
+        this.frameHeight = projectiveDevice.imageHeight;
+        this.drawingSizeX = frameWidth;
+        this.drawingSizeY = frameHeight;
     }
 
     private void initProjection() {
@@ -179,12 +100,12 @@ public class ARDisplay {
         // Reusing the internal projective parameters for the scene rendering.
 //        PMatrix3D oldProj = this.graphics.projection.get();
         // Working params
-        p00 = 2 * projIntrinsicsP3D.m00 / frameWidth;
-        p11 = 2 * projIntrinsicsP3D.m11 / frameHeight;
+        p00 = 2 * intrinsics.m00 / frameWidth;
+        p11 = 2 * intrinsics.m11 / frameHeight;
 
         // Inverted because a camera is pointing towards a negative z...
-        p02 = -(projIntrinsicsP3D.m02 / frameWidth * 2 - 1);
-        p12 = -(projIntrinsicsP3D.m12 / frameHeight * 2 - 1);
+        p02 = -(intrinsics.m02 / frameWidth * 2 - 1);
+        p12 = -(intrinsics.m12 / frameHeight * 2 - 1);
 
         this.graphics.beginDraw();
 
@@ -205,15 +126,15 @@ public class ARDisplay {
         this.graphics.endDraw();
     }
 
-    /** 
-     * Called in automatic mode. 
+    /**
+     * Called in automatic mode.
      */
     public void pre() {
         this.clear();
     }
 
     /**
-     * Called in Automatic mode to display the image. 
+     * Called in Automatic mode to display the image.
      */
     public void draw() {
         drawScreensOver();
@@ -230,31 +151,56 @@ public class ARDisplay {
     }
 
     /**
-     * Draw an image.  
-     * @see  image()  from the Processing API. 
-     * @param g graphics context to draw on. 
+     * Draw an image.
+     *
+     * @see image() from the Processing API.
+     * @param g graphics context to draw on.
      * @param image Image to be drawn
      * @param x location x
      * @param y location y
-     * @param width 
-     * @param height 
+     * @param width
+     * @param height
      */
     public void drawImage(PGraphicsOpenGL g, PImage image,
             int x, int y,
             int width, int height) {
         DrawUtils.drawImage(g,
                 image,
-                x,y, width, height);
+                x, y, width, height);
+    }
+    
+    public void renderScreens() {
+
+        for (Screen screen : screens) {
+            if (!screen.isDrawing()) {
+                continue;
+            }
+            this.graphics.pushMatrix();
+
+            // Goto to the screen position
+            this.graphics.applyMatrix(screen.getPosition());
+            // Draw the screen image
+
+            // If it is openGL renderer, use the standard  (0, 0) is bottom left
+            if (screen.isOpenGL()) {
+                this.graphics.image(screen.getTexture(), 0, 0, screen.getSize().x, screen.getSize().y);
+            } else {
+                float w = screen.getSize().x;
+                float h = screen.getSize().y;
+
+                this.graphics.textureMode(PApplet.NORMAL);
+                this.graphics.beginShape(PApplet.QUADS);
+                this.graphics.texture(screen.getTexture());
+                this.graphics.vertex(0, 0, 0, 0, 1);
+                this.graphics.vertex(0, h, 0, 0, 0);
+                this.graphics.vertex(w, h, 0, 1, 0);
+                this.graphics.vertex(w, 0, 0, 1, 1);
+                this.graphics.endShape();
+            }
+            this.graphics.popMatrix();
+        }
     }
 
-    /**
-     * graphics.modelview.apply(projExtrinsicsP3D);
-     *
-     * @return
-     */
-    public PMatrix3D getExtrinsics() {
-        return projExtrinsicsP3D;
-    }
 
     /**
      * graphics.modelview.apply(projExtrinsicsP3D);
@@ -262,14 +208,14 @@ public class ARDisplay {
      * @return
      */
     public PMatrix3D getIntrinsics() {
-        return projIntrinsicsP3D;
+        return intrinsics;
     }
 
     /* *
      *  For hand-made calibration exercices. 
      */
     public void setIntrinsics(PMatrix3D intr) {
-        projIntrinsicsP3D = intr;
+        intrinsics = intr;
         initProjection();
     }
 
@@ -277,9 +223,21 @@ public class ARDisplay {
      *  For custom calibration. 
      */
     public void setExtrinsics(PMatrix3D extr) {
-        projExtrinsicsP3D = extr;
-        projExtrinsicsP3DInv = extr.get();
-        projExtrinsicsP3DInv.invert();
+        extrinsics = extr;
+        extrinsicsInv = extr.get();
+        extrinsicsInv.invert();
+        this.hasExtrinsics = true;
+    }
+
+    /**
+     * graphics.modelview.apply(projExtrinsicsP3D);
+     *
+     * @return
+     */
+    @Override
+    public PMatrix3D getExtrinsics() {
+        assert (hasExtrinsics());
+        return extrinsics;
     }
 
     /**
@@ -294,7 +252,7 @@ public class ARDisplay {
                 ARDisplay.class.getResource("distortVert.glsl").toString());
 
 //        mapImg = parent.createImage(graphics.width, graphics.height, PApplet.RGB);
-        mapImg = parent.createImage((int) (resolution * frameWidth), (int) (resolution * frameHeight), PApplet.RGB);
+        mapImg = parent.createImage((int) (quality * frameWidth), (int) (quality * frameHeight), PApplet.RGB);
 
         mapImg.loadPixels();
 
@@ -307,15 +265,15 @@ public class ARDisplay {
             for (int x = 0; x < mapImg.width; x++) {
 
                 // get the points without the scale
-                int x1 = (int) ((float) x / resolution);
-                int y1 = (int) ((float) y / resolution);
+                int x1 = (int) ((float) x / quality);
+                int y1 = (int) ((float) y / quality);
 
-                double[] out = proj.undistort(x1, y1);
+                double[] out = projectiveDevice.undistort(x1, y1);
 //                double[] out = proj.distort(x, y);
 
                 // get back at the rendering resolution
-                out[0] *= resolution;
-                out[1] *= resolution;
+                out[0] *= quality;
+                out[1] *= quality;
 
                 float r = ((float) out[0] - x) / mag + 0.5f;/// frameWidth; 
                 float g = ((float) out[1] - y) / mag + 0.5f;// / frameHeight; 
@@ -330,8 +288,8 @@ public class ARDisplay {
 
         lensFilter.set("mapTex", mapImg);
         lensFilter.set("texture", this.graphics);
-        lensFilter.set("resX", (int) (frameWidth * resolution));
-        lensFilter.set("resY", (int) (frameHeight * resolution));
+        lensFilter.set("resX", (int) (frameWidth * quality));
+        lensFilter.set("resY", (int) (frameHeight * quality));
         lensFilter.set("mag", mag);
     }
 
@@ -347,7 +305,7 @@ public class ARDisplay {
     }
 
     public ProjectiveDevice getProjectiveDevice() {
-        return this.proj;
+        return this.projectiveDevice;
     }
 
     public ProjectiveDeviceP getProjectiveDeviceP() {
@@ -375,24 +333,15 @@ public class ARDisplay {
         return this.graphics;
     }
 
-    public PGraphicsOpenGL beginDrawOnScreen(Screen screen){
-
-        // Get the markerboard viewed by the camera
-        PMatrix3D camBoard = screen.getPos();
+    @Override
+    public PGraphicsOpenGL beginDrawOnScreen(Screen screen) {
+        PMatrix3D screenPos = screen.getPosition();
 
         this.beginDraw();
-
-        if (this.hasExtrinsics) {
-            camBoard.preApply(getExtrinsics());
+        if (this.hasExtrinsics()) {
+            screenPos.preApply(getExtrinsics());
         }
-
-        this.graphics.applyMatrix(camBoard);
-
-//        // Place the projector to his projection respective to the origin (camera here)
-//        this.graphics.modelview.apply(getExtrinsics());
-//
-//        // Goto to the screen position
-//        this.graphics.modelview.apply(screen.getPos());
+        this.graphics.applyMatrix(screenPos);
         return this.graphics;
     }
 
@@ -404,7 +353,7 @@ public class ARDisplay {
         this.graphics.scale(1, 1, -1);
 
         // TODO: check !
-        this.graphics.scale(1f / resolution);
+        this.graphics.scale(1f / quality);
 
     }
 
@@ -447,40 +396,9 @@ public class ARDisplay {
         this.endDraw();
     }
 
-    public void renderScreens() {
-
-        for (Screen screen : screens) {
-            if (!screen.isDrawing()) {
-                continue;
-            }
-            this.graphics.pushMatrix();
-
-            // Goto to the screen position
-            this.graphics.applyMatrix(screen.getPos());
-            // Draw the screen image
-
-            // If it is openGL renderer, use the standard  (0, 0) is bottom left
-            if (screen.isOpenGL()) {
-                this.graphics.image(screen.getTexture(), 0, 0, screen.getSize().x, screen.getSize().y);
-            } else {
-                float w = screen.getSize().x;
-                float h = screen.getSize().y;
-
-                this.graphics.textureMode(PApplet.NORMAL);
-                this.graphics.beginShape(PApplet.QUADS);
-                this.graphics.texture(screen.getTexture());
-                this.graphics.vertex(0, 0, 0, 0, 1);
-                this.graphics.vertex(0, h, 0, 0, 0);
-                this.graphics.vertex(w, h, 0, 1, 0);
-                this.graphics.vertex(w, 0, 0, 1, 1);
-                this.graphics.endShape();
-            }
-            this.graphics.popMatrix();
-        }
-    }
-
     // We consider px and py are normalized screen or subScreen space... 
-    public PVector projectPointer(Screen screen, float px, float py) throws Exception{
+    @Override
+    public PVector projectPointer(Screen screen, float px, float py) throws Exception {
         float x = px * 2 - 1;
         float y = py * 2 - 1;
 
@@ -542,24 +460,14 @@ public class ARDisplay {
         return out;
     }
 
-    public PGraphicsOpenGL getGraphics() {
-        return this.graphics;
+    public void setZNearFar(float near, float far) {
+        this.zNear = near;
+        this.zFar = far;
     }
 
-    public int getWidth() {
-        return frameWidth;
+    @Override
+    public boolean hasExtrinsics() {
+        return this.hasExtrinsics;
     }
 
-    public int getHeight() {
-        return frameHeight;
-    }
-
-    public void setDrawingSize(int w, int h) {
-        this.drawingSizeX = w;
-        this.drawingSizeY = h;
-    }
-
-    public void addScreen(Screen s) {
-        screens.add(s);
-    }
 }

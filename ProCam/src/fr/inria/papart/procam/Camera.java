@@ -38,14 +38,14 @@ public abstract class Camera implements PConstants {
 
         OPENCV, PROCESSING, OPEN_KINECT
     }
-    
+
     public enum PixelFormat {
+
         RGB, BGR, ARGB, RGBA
     }
 
     protected PixelFormat format;
 
-    
     // Parameters
     // One or the other. 
     protected String cameraDescription = null;
@@ -90,6 +90,7 @@ public abstract class Camera implements PConstants {
             this.width = pdp.getWidth();
             this.height = pdp.getHeight();
         } catch (Exception e) {
+            e.printStackTrace();
             parent.die("Error reading the calibration file : " + calibrationYAML + " \n" + e);
         }
     }
@@ -238,7 +239,6 @@ public abstract class Camera implements PConstants {
 
     public abstract void grab();
 
-
     protected void updateCurrentImage(IplImage img) {
         if (undistort) {
             if (copyUndist == null) {
@@ -276,7 +276,6 @@ public abstract class Camera implements PConstants {
         return this.pdp;
     }
 
-    
     public abstract void close();
 
     protected void setClosing() {
@@ -287,8 +286,7 @@ public abstract class Camera implements PConstants {
     public boolean isClosing() {
         return isClosing;
     }
-    
-    
+
     public PixelFormat getPixelFormat() {
         return format;
     }
@@ -296,7 +294,6 @@ public abstract class Camera implements PConstants {
     public void setPixelFormat(PixelFormat format) {
         this.format = format;
     }
-    
 
     /**
      * To use instead of getCamViewpoint

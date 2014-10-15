@@ -280,16 +280,6 @@ public class MarkerBoard {
         return null;
     }
 
-    public PVector getBoardLocation(Camera camera, Projector projector) {
-        int id = cameras.indexOf(camera);
-
-        PVector v = getPositionVector(id);
-        PVector v2 = new PVector();
-        projector.getExtrinsics().mult(v, v2);
-        PVector px = projector.pdp.worldToPixel(v2, true);
-        return px;
-    }
-
     // We suppose that the ARDisplay is the one of the camera...
     public PVector getBoardLocation(Camera camera, ARDisplay display) {
         int id = cameras.indexOf(camera);

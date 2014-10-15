@@ -5,7 +5,7 @@
  */
 package fr.inria.papart.procam.camera;
 
-import fr.inria.papart.multitouch.TouchInput;
+import fr.inria.papart.multitouch.KinectTouchInput;
 import fr.inria.papart.procam.Camera;
 import fr.inria.papart.procam.Utils;
 import org.bytedeco.javacpp.freenect;
@@ -21,7 +21,7 @@ import processing.core.PImage;
  */
 public class CameraOpenKinect extends Camera {
 
-    private TouchInput touchInput;
+    private KinectTouchInput touchInput;
     private boolean isGrabbingDepth = false;
     private OpenKinectFrameGrabber grabber;
     private IplImage depthImage;
@@ -66,7 +66,7 @@ public class CameraOpenKinect extends Camera {
                 this.depthImage = dImage;
                 if (touchInput != null) {
                     touchInput.lock();
-                    touchInput.updateTouch(dImage);
+                    touchInput.update();
                     touchInput.getTouch2DColors(img);
                     touchInput.unlock();
                 }
@@ -106,7 +106,7 @@ public class CameraOpenKinect extends Camera {
 
     }
 
-    public void setTouch(TouchInput touchInput) {
+    public void setTouch(KinectTouchInput touchInput) {
         this.setGrabDepth(true);
         this.touchInput = touchInput;
     }

@@ -31,7 +31,7 @@ public class PaperScreen {
     protected PApplet parent;
 
     protected Screen screen;
-    protected ARDisplay display;
+    protected BaseDisplay display;
     protected Camera cameraTracking;
     protected MarkerBoard markerBoard;
 
@@ -44,6 +44,7 @@ public class PaperScreen {
     protected boolean isDrawingOnScreen;
     private boolean isInitialized = false;
     private boolean isRegistered = false;
+    protected boolean isWithoutCamera = false;
 
     /**
      * Create a new PaperScreen, a Papart object has to be created first.
@@ -57,20 +58,26 @@ public class PaperScreen {
         }
 
         this.parent = papart.getApplet();
-        this.cameraTracking = papart.getCameraTracking();
+        this.isWithoutCamera = papart.isWithoutCamera();
+        if (!this.isWithoutCamera) {
+            this.cameraTracking = papart.getCameraTracking();
+        }
         this.display = papart.getDisplay();
+
         // Default to projector graphics. 
         currentGraphics = this.display.getGraphics();
         register();
     }
 
-    public PaperScreen(Papart papart) {
-        this(papart.getCameraTracking(), papart.getDisplay());
-    }
-
-    public PaperScreen(Camera cam, ARDisplay proj) {
+    public PaperScreen(Camera cam, BaseDisplay proj) {
         this.cameraTracking = cam;
         this.display = proj;
+        currentGraphics = this.display.getGraphics();
+    }
+
+    public PaperScreen(BaseDisplay display) {
+        this.isWithoutCamera = true;
+        this.display = display;
         currentGraphics = this.display.getGraphics();
     }
 
@@ -158,18 +165,25 @@ public class PaperScreen {
         display.addScreen(screen);
 
         trackCurrentMarkerBoard();
-        
-        // automatic update of the paper screen, regarding the camera. 
-        screen.setAutoUpdatePos(cameraTracking, markerBoard);
 
-        // default filtering
-        markerBoard.setDrawingMode(cameraTracking, true, 20);
-        markerBoard.setFiltering(cameraTracking, 30, 4);
+        // If there is really a camera tracking. 
+        if (!isWithoutCamera) {
+            // automatic update of the paper screen, regarding the camera. 
+            screen.setAutoUpdatePos(cameraTracking, markerBoard);
+
+            // default filtering
+            markerBoard.setDrawingMode(cameraTracking, true, 20);
+            markerBoard.setFiltering(cameraTracking, 30, 4);
+        }
 
         isInitialized = true;
     }
 
     private void trackCurrentMarkerBoard() {
+        if (isWithoutCamera) {
+            return;
+        }
+
         if (!cameraTracking.tracks(markerBoard)) {
             cameraTracking.trackMarkerBoard(markerBoard);
         }
@@ -205,9 +219,16 @@ public class PaperScreen {
      */
     private void checkCorners() {
         //        // check if drawing is required... 
+
+        if (!(display instanceof ARDisplay)) {
+            return;
+        }
+
+        ARDisplay arDisplay = (ARDisplay) display;
+
         PVector[] corners = screen.getCornerPos();
-        PMatrix3D extr = display.getExtrinsics();
-        if (extr == null || display.getProjectiveDeviceP() == null) {
+        PMatrix3D extr = arDisplay.getExtrinsics();
+        if (extr == null || arDisplay.getProjectiveDeviceP() == null) {
 //            System.out.println("No extrinsics");
             return;
         }
@@ -217,10 +238,10 @@ public class PaperScreen {
             // Corners are on the camera Point of view. 
             PVector projC = new PVector();
             extr.mult(corner, projC);
-            PVector screenCoord = display.getProjectiveDeviceP().worldToPixelReal(projC);
+            PVector screenCoord = arDisplay.getProjectiveDeviceP().worldToPixelReal(projC);
 
-            if (screenCoord.x < 0 || screenCoord.x > display.frameWidth
-                    || screenCoord.y < 0 || screenCoord.y > display.frameHeight) {
+            if (screenCoord.x < 0 || screenCoord.x > arDisplay.frameWidth
+                    || screenCoord.y < 0 || screenCoord.y > arDisplay.frameHeight) {
                 nbOut++;
             }
             //   System.out.println("projector view " + screenCoord);
@@ -234,7 +255,12 @@ public class PaperScreen {
 
     // TODO: check this !
     public PVector getScreenPos() {
-        return markerBoard.getBoardLocation(cameraTracking, display);
+
+        if (this.isWithoutCamera) {
+            return screen.getCornerPos()[0];
+        } else {
+            return markerBoard.getBoardLocation(cameraTracking, (ARDisplay) display);
+        }
     }
 
     public void noDraw() {
@@ -260,12 +286,11 @@ public class PaperScreen {
         PGraphicsOpenGL g = display.beginDrawOnScreen(this.screen);
         this.isDrawingOnScreen = false;
         this.currentGraphics = g;
-//        this.screen.getPos().print();
         return g;
     }
 
     public PGraphicsOpenGL beginDraw3DProjected() {
-         screen.setDrawing(true);
+        screen.setDrawing(true);
         PGraphicsOpenGL g = screen.getGraphics();
         this.currentGraphics = g;
         g.beginDraw();
@@ -330,17 +355,17 @@ public class PaperScreen {
     }
 
     public void setLocation(float x, float y, float z) {
-        assert(isInitialized);
+        assert (isInitialized);
         screen.setTranslation(x, y, z);
     }
 
     public PVector getLocationVector() {
-        PMatrix3D p = screen.getPos();
+        PMatrix3D p = screen.getPosition();
         return new PVector(p.m03, p.m13, p.m23);
     }
 
     public PMatrix3D getLocation() {
-        return this.screen.getPos();
+        return this.screen.getPosition();
     }
 
     public MarkerBoard getBoard() {
@@ -355,7 +380,7 @@ public class PaperScreen {
         return cameraTracking;
     }
 
-    public ARDisplay getProjector() {
+    public BaseDisplay getDisplay() {
         return display;
     }
 

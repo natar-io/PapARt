@@ -6,8 +6,9 @@ package fr.inria.papart.procam;
 
 import processing.opengl.PGraphicsOpenGL;
 import fr.inria.papart.drawingapp.Button;
-import fr.inria.papart.multitouch.Touch;
 import fr.inria.papart.multitouch.TouchInput;
+import fr.inria.papart.multitouch.Touch;
+import fr.inria.papart.multitouch.KinectTouchInput;
 import fr.inria.papart.multitouch.TouchList;
 import java.util.ArrayList;
 import processing.core.PApplet;
@@ -36,7 +37,7 @@ public class PaperTouchScreen extends PaperScreen {
                 papart.getTouchInput());
     }
 
-    public PaperTouchScreen(Camera cam, ARDisplay proj, TouchInput touchinput) {
+    public PaperTouchScreen(Camera cam, BaseDisplay proj, TouchInput touchinput) {
         super(cam, proj);
 
         this.touchInput = touchinput;
@@ -69,11 +70,13 @@ public class PaperTouchScreen extends PaperScreen {
         if (!screen.isDrawing()) {
             return;
         }
-
         screen.computeScreenPosTransform();
         touchList = touchInput.projectTouchToScreen(screen, display);
         touchList.sortAlongYAxis();
-        touchList.scaleBy(drawingSize);
+        if (touchInput instanceof KinectTouchInput) {
+            touchList.scaleBy(drawingSize);
+        }
+        
         if (!buttons.isEmpty()) {
             updateButtons();
         }

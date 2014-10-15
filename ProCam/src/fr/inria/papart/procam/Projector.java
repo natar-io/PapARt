@@ -20,33 +20,6 @@ public class Projector extends ARDisplay {
         super(parent, calibrationYAML);
     }
     
-    /**
-     * Projector allows the use of a projector for Spatial Augmented reality
-     * setup. This class creates an OpenGL context which allows 3D projection.
-     *
-     * @param parent
-     * @param calibrationYAML calibration file : OpenCV format
-     * @param width resolution X
-     * @param height resolution Y
-     * @param near OpenGL near plane (in mm) or the units used for calibration.
-     * @param far OpenGL far plane (in mm) or the units used for calibration.
-     */
-    public Projector(PApplet parent, String calibrationYAML,
-            int width, int height,
-            float near, float far) {
-        this(parent, calibrationYAML, width, height, near, far, 1);
-    }
-
-    public Projector(PApplet parent, String calibrationYAML, 
-            float near, float far, float res){
-        super(parent, calibrationYAML, near, far, res);
-    }
-    
-    public Projector(PApplet parent, String calibrationYAML,
-            int width, int height, float near, float far, float res) {
-        super(parent, calibrationYAML, width, height, near, far, res);
-    }
-
     @Override
     protected void loadInternalParams(String calibrationYAML) {
         // Load the camera parameters.
@@ -54,11 +27,11 @@ public class Projector extends ARDisplay {
         try {
             pdp = ProjectiveDeviceP.loadProjectorDevice(calibrationYAML, 0);
 
-            projExtrinsicsP3D = pdp.getExtrinsics();
-            projIntrinsicsP3D = pdp.getIntrinsics();
-            projExtrinsicsP3DInv = projExtrinsicsP3D.get();
-            projExtrinsicsP3DInv.invert();
-            proj = pdp.getDevice();
+            extrinsics = pdp.getExtrinsics();
+            intrinsics = pdp.getIntrinsics();
+            extrinsicsInv = extrinsics.get();
+            extrinsicsInv.invert();
+            projectiveDevice = pdp.getDevice();
             this.hasExtrinsics = true;
 
         } catch (Exception e) {
@@ -152,7 +125,7 @@ public class Projector extends ARDisplay {
 
             // Goto to the screen position
 //            this.graphics.modelview.apply(screen.getPos());
-            this.graphics.applyMatrix(screen.getPos());
+            this.graphics.applyMatrix(screen.getPosition());
             // Draw the screen image
 
             this.graphics.image(screen.getTexture(), 0, 0, screen.getSize().x, screen.getSize().y);
@@ -173,7 +146,7 @@ public class Projector extends ARDisplay {
         PVector viewedPtP = pdp.pixelToWorldNormP((int) (px * frameWidth), (int) (py * frameHeight));
 
         // Pass it to the camera point of view (origin)
-        PMatrix3D extr = projExtrinsicsP3DInv;
+        PMatrix3D extr = extrinsicsInv;
         PVector originC = new PVector();
         PVector viewedPtC = new PVector();
         extr.mult(originP, originC);

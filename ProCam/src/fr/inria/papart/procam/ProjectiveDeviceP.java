@@ -26,7 +26,7 @@ import toxi.geom.Vec3D;
  *
  * @author jiii
  */
-public class ProjectiveDeviceP implements PConstants {
+public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
 
     private PMatrix3D intrinsics;
     private PMatrix3D extrinsics;
@@ -39,6 +39,7 @@ public class ProjectiveDeviceP implements PConstants {
     private float cx;
     private float cy;
     private CvMat intrinsicsMat;
+    private boolean hasExtrinsics = false;
 
     public ProjectiveDeviceP() {
     }
@@ -52,7 +53,9 @@ public class ProjectiveDeviceP implements PConstants {
         return this.intrinsics;
     }
 
+    @Override
     public PMatrix3D getExtrinsics() {
+        assert (this.hasExtrinsics());
         return this.extrinsics;
     }
 
@@ -172,7 +175,7 @@ public class ProjectiveDeviceP implements PConstants {
 
         return (int) (py * w + px);
     }
-    
+
     public PVector worldToPixelCoord(Vec3D pt) {
 
         // Reprojection 
@@ -345,16 +348,16 @@ public class ProjectiveDeviceP implements PConstants {
         p.cx = p.intrinsics.m02;
         p.cy = p.intrinsics.m12;
 
-        try {
-            double[] projR = dev.R.get();
-            double[] projT = dev.T.get();
+        double[] projR = dev.R.get();
+        double[] projT = dev.T.get();
+
+        p.hasExtrinsics = projR != null && projT != null;
+        if (p.hasExtrinsics()) {
+
             p.extrinsics = new PMatrix3D((float) projR[0], (float) projR[1], (float) projR[2], (float) projT[0],
                     (float) projR[3], (float) projR[4], (float) projR[5], (float) projT[1],
                     (float) projR[6], (float) projR[7], (float) projR[8], (float) projT[2],
                     0, 0, 0, 1);
-        } catch (NullPointerException npe) {
-            // TODO: Error handling, or no extrinsics handling ? !
-//           System.out.println("Loading Parameters, without extrinsics");
         }
 
     }
@@ -417,5 +420,10 @@ public class ProjectiveDeviceP implements PConstants {
         }
 
         return p;
+    }
+
+    @Override
+    public boolean hasExtrinsics() {
+        return this.hasExtrinsics;
     }
 }
