@@ -1,7 +1,20 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/* 
+ * Copyright (C) 2014 Jeremy Laviole <jeremy.laviole@inria.fr>.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301  USA
  */
 package fr.inria.papart.procam;
 
@@ -9,6 +22,8 @@ import org.bytedeco.javacpp.freenect;
 import fr.inria.papart.drawingapp.Button;
 import fr.inria.papart.depthcam.Kinect;
 import fr.inria.papart.multitouch.TouchInput;
+import fr.inria.papart.multitouch.TUIOTouchInput;
+import fr.inria.papart.multitouch.KinectTouchInput;
 import fr.inria.papart.procam.camera.CameraFactory;
 import fr.inria.papart.procam.camera.CameraOpenKinect;
 import java.lang.reflect.Constructor;
@@ -44,10 +59,14 @@ public class Papart {
     private boolean displayInitialized;
     private boolean cameraInitialized;
     private boolean touchInitialized;
-    private ARDisplay display;
+//    private ARDisplay display;
+    private BaseDisplay display;
+    private ARDisplay arDisplay;
     private Projector projector;
+    
     private Camera cameraTracking;
     private Kinect kinect;
+//    private TouchInput touchInput;
     private TouchInput touchInput;
     private PVector frameSize;
     private CameraOpenKinect cameraOpenKinect;
@@ -76,6 +95,13 @@ public class Papart {
 
     public static Papart getPapart() {
         return Papart.singleton;
+    }
+
+    private boolean isWithoutCamera = false;
+
+    public void initNoCamera(int quality) {
+        this.isWithoutCamera = true;
+        initNoCameraDisplay(quality);
     }
 
     public void initProjectorCamera(String cameraNo, Camera.Type cameraType) {
@@ -145,8 +171,12 @@ public class Papart {
 
     private void initProjectorDisplay(float quality) {
         // TODO: check if file exists !
-        projector = new Projector(this.applet, proCamCalib, zNear, zFar, quality);
+        projector = new Projector(this.applet, proCamCalib);
+        projector.setZNearFar(zNear, zFar);
+        projector.setQuality(quality);
+        arDisplay = projector;
         display = projector;
+        projector.init();
         displayInitialized = true;
         frameSize = new PVector(projector.getWidth(), projector.getHeight());
     }
@@ -154,9 +184,21 @@ public class Papart {
     private void initARDisplay(float quality) {
         assert (this.cameraTracking != null && this.applet != null);
 
-        display = new ARDisplay(this.applet, cameraTracking,
-                zNear, zFar, quality);
-        frameSize = new PVector(display.getWidth(), display.getHeight());
+        arDisplay = new ARDisplay(this.applet, cameraTracking);
+        arDisplay.setZNearFar(zNear, zFar);
+        arDisplay.setQuality(quality);
+        arDisplay.init();
+        this.display = arDisplay;
+        frameSize = new PVector(arDisplay.getWidth(), arDisplay.getHeight());
+        displayInitialized = true;
+    }
+
+    private void initNoCameraDisplay(float quality) {
+        display = new BaseDisplay();
+
+        display.setFrameSize(applet.width, applet.height);
+        display.setDrawingSize(applet.width, applet.height);
+        display.init();
         displayInitialized = true;
     }
 
@@ -199,12 +241,13 @@ public class Papart {
                 kinectRGBCalib,
                 kinectFormat);
 
-        touchInput = new TouchInput(this.applet,
+        KinectTouchInput kinectTouchInput = new KinectTouchInput(this.applet,
                 (CameraOpenKinect) cameraTracking,
                 kinect, kinectScreenCalib);
-        touchInput.useRawDepth((CameraOpenKinect) cameraTracking);
+        kinectTouchInput.useRawDepth((CameraOpenKinect) cameraTracking);
 
-        touchInput.setPrecision(touch2DPrecision, touch3DPrecision);
+        kinectTouchInput.setPrecision(touch2DPrecision, touch3DPrecision);
+        this.touchInput = kinectTouchInput;
         touchInitialized = true;
     }
 
@@ -229,17 +272,22 @@ public class Papart {
                 kinectRGBCalib,
                 kinectFormat);
 
-        touchInput = new TouchInput(this.applet,
+        KinectTouchInput kinectTouchInput = new KinectTouchInput(this.applet,
                 cameraOpenKinect,
                 kinect, kinectScreenCalib);
 
         // TODO: use Raw depth for Touch also here
         // Conversion Kinect -> Projector
 //        touchInput.useRawDepth(cameraTracking);
-
-        touchInput.setPrecision(touch2DPrecision, touch3DPrecision);
+        kinectTouchInput.setPrecision(touch2DPrecision, touch3DPrecision);
+        this.touchInput = kinectTouchInput;
 
         touchInitialized = true;
+    }
+
+    public void loadTouchInputTUIO() {
+        touchInput = new TUIOTouchInput(this.applet, 3333);
+        this.touchInitialized = true;
     }
 
     public void loadSketches() {
@@ -301,7 +349,7 @@ public class Papart {
 //        System.out.println("Cameras closed.");
     }
 
-    public ARDisplay getDisplay() {
+    public BaseDisplay getDisplay() {
         assert (displayInitialized);
         return this.display;
     }
@@ -319,6 +367,10 @@ public class Papart {
     public PVector getFrameSize() {
         assert (this.frameSize != null);
         return this.frameSize.get();
+    }
+
+    public boolean isWithoutCamera() {
+        return this.isWithoutCamera;
     }
 
     public PApplet getApplet() {

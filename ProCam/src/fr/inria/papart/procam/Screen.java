@@ -1,3 +1,21 @@
+/* 
+ * Copyright (C) 2014 Jeremy Laviole <jeremy.laviole@inria.fr>.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301  USA
+ */
 package fr.inria.papart.procam;
 
 import static fr.inria.papart.procam.Utils.toVec;
@@ -25,7 +43,7 @@ public class Screen {
     // Either one, or the other is unique to this object. 
     // The other one is unique to the camera/markerboard couple. 
     private float[] posFloat;
-    private PMatrix3D posPMatrix = new PMatrix3D(); // init to avoid nullPointerExceptions 
+    private PMatrix3D transformation = new PMatrix3D(); // init to avoid nullPointerExceptions 
 
     private boolean isFloatArrayUpdating;
 
@@ -74,7 +92,7 @@ public class Screen {
     }
 
     public void setPos(PMatrix3D position) {
-        posPMatrix = position.get();
+        position = position.get();
     }
 
     // The board must be registered with the camera. 
@@ -86,11 +104,11 @@ public class Screen {
         isFloatArrayUpdating = board.useFloatArray();
         if (this.isFloatArrayUpdating) {
             posFloat = board.getTransfo(camera);
-            posPMatrix = new PMatrix3D();
+            transformation = new PMatrix3D();
         } else {
 //            System.out.println("Getting the original transfo");
 
-            posPMatrix = board.getTransfoMat(camera);
+            transformation = board.getTransfoMat(camera);
             posFloat = new float[12];
         }
 
@@ -139,6 +157,7 @@ public class Screen {
         setTranslation(tr.x, tr.y, tr.z);
     }
 
+    // TODO: replace transfo == null
     public void setTranslation(float x, float y, float z) {
         if (transfo == null) {
             transfo = new PMatrix3D();
@@ -147,11 +166,12 @@ public class Screen {
         transfo.translate(x, y, z);
     }
 
-    public PMatrix3D getPos() {
+    // TODO clearer on this method
+    public PMatrix3D getPosition() {
         if (transfo == null) {
-            return posPMatrix;
+            return transformation;
         } else {
-            PMatrix3D tmp = posPMatrix.get();
+            PMatrix3D tmp = transformation.get();
             tmp.apply(transfo);
             return tmp;
         }
@@ -168,7 +188,7 @@ public class Screen {
 
 //        System.out.println("Screen: updatePos" + posPMatrix);
         if (this.isFloatArrayUpdating) {
-            posPMatrix.set(posFloat[0], posFloat[1], posFloat[2], posFloat[3],
+            transformation.set(posFloat[0], posFloat[1], posFloat[2], posFloat[3],
                     posFloat[4], posFloat[5], posFloat[6], posFloat[7],
                     posFloat[8], posFloat[9], posFloat[10], posFloat[11],
                     0, 0, 0, 1);
@@ -199,7 +219,7 @@ public class Screen {
     public void computeScreenPosTransform() {
 
         ///////////////////// PLANE COMPUTATION  //////////////////
-        PMatrix3D mat = this.getPos().get();
+        PMatrix3D mat = this.getPosition().get();
 
         paperPosCorners3D[0] = new PVector(mat.m03, mat.m13, mat.m23);
         mat.translate(size.x, 0, 0);
@@ -270,7 +290,7 @@ public class Screen {
             this.isOpenGL = true;
             // Transformation  Camera -> Marker
 
-            initPosM = this.getPos().get();
+            initPosM = this.getPosition().get();
             // No translation mode
 //            initPosM.m03 = 0;
 //            initPosM.m13 = 0;
@@ -295,7 +315,7 @@ public class Screen {
             // Now we have  Cam ->  new 3D origin
         }
 
-        PMatrix3D newPos = posPMatrix.get();
+        PMatrix3D newPos = transformation.get();
         // goto center...
 //        newPos.preApply(tr1);
 
@@ -322,7 +342,7 @@ public class Screen {
 
         newPos.mult(virtualPos, virtualPos);
 
-        PMatrix3D rotationPaper = this.getPos().get();
+        PMatrix3D rotationPaper = this.getPosition().get();
         rotationPaper.invert();
         rotationPaper.m03 = 0; // newPos.m03;
         rotationPaper.m13 = 0; // newPos.m13;
@@ -400,7 +420,7 @@ public class Screen {
         graphics.projection.m11 = -graphics.projection.m11;
 
         // No detection?
-        if (posPMatrix.m03 == 0 && posPMatrix.m13 == 0 && posPMatrix.m23 == 0) {
+        if (transformation.m03 == 0 && transformation.m13 == 0 && transformation.m23 == 0) {
             resetPos();
         }
     }
@@ -435,7 +455,7 @@ public class Screen {
         PMatrix3D projMat = projector.projectionInit.get();
         PMatrix3D modvw = projGraphics.modelview.get();
 
-        double[] mouseDist = projector.proj.undistort(mouseX, mouseY);
+        double[] mouseDist = projector.projectiveDevice.undistort(mouseX, mouseY);
         float x = 2 * (float) mouseDist[0] / (float) width - 1;
         float y = 2 * (float) mouseDist[1] / (float) height - 1;
 

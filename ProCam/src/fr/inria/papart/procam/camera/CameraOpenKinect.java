@@ -1,11 +1,24 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/* 
+ * Copyright (C) 2014 Jeremy Laviole <jeremy.laviole@inria.fr>.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301  USA
  */
 package fr.inria.papart.procam.camera;
 
-import fr.inria.papart.multitouch.TouchInput;
+import fr.inria.papart.multitouch.KinectTouchInput;
 import fr.inria.papart.procam.Camera;
 import fr.inria.papart.procam.Utils;
 import org.bytedeco.javacpp.freenect;
@@ -21,7 +34,7 @@ import processing.core.PImage;
  */
 public class CameraOpenKinect extends Camera {
 
-    private TouchInput touchInput;
+    private KinectTouchInput touchInput;
     private boolean isGrabbingDepth = false;
     private OpenKinectFrameGrabber grabber;
     private IplImage depthImage;
@@ -66,7 +79,7 @@ public class CameraOpenKinect extends Camera {
                 this.depthImage = dImage;
                 if (touchInput != null) {
                     touchInput.lock();
-                    touchInput.updateTouch(dImage);
+                    touchInput.update();
                     touchInput.getTouch2DColors(img);
                     touchInput.unlock();
                 }
@@ -106,7 +119,7 @@ public class CameraOpenKinect extends Camera {
 
     }
 
-    public void setTouch(TouchInput touchInput) {
+    public void setTouch(KinectTouchInput touchInput) {
         this.setGrabDepth(true);
         this.touchInput = touchInput;
     }

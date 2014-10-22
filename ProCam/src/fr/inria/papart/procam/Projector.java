@@ -1,3 +1,21 @@
+/* 
+ * Copyright (C) 2014 Jeremy Laviole <jeremy.laviole@inria.fr>.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301  USA
+ */
 package fr.inria.papart.procam;
 
 import org.bytedeco.javacv.ProjectiveDevice;
@@ -15,55 +33,29 @@ import toxi.geom.Vec3D;
 
 public class Projector extends ARDisplay {
 
-    
-    public Projector(PApplet parent, String calibrationYAML){
+    public Projector(PApplet parent, String calibrationYAML) {
         super(parent, calibrationYAML);
-    }
-    
-    /**
-     * Projector allows the use of a projector for Spatial Augmented reality
-     * setup. This class creates an OpenGL context which allows 3D projection.
-     *
-     * @param parent
-     * @param calibrationYAML calibration file : OpenCV format
-     * @param width resolution X
-     * @param height resolution Y
-     * @param near OpenGL near plane (in mm) or the units used for calibration.
-     * @param far OpenGL far plane (in mm) or the units used for calibration.
-     */
-    public Projector(PApplet parent, String calibrationYAML,
-            int width, int height,
-            float near, float far) {
-        this(parent, calibrationYAML, width, height, near, far, 1);
-    }
-
-    public Projector(PApplet parent, String calibrationYAML, 
-            float near, float far, float res){
-        super(parent, calibrationYAML, near, far, res);
-    }
-    
-    public Projector(PApplet parent, String calibrationYAML,
-            int width, int height, float near, float far, float res) {
-        super(parent, calibrationYAML, width, height, near, far, res);
     }
 
     @Override
     protected void loadInternalParams(String calibrationYAML) {
         // Load the camera parameters.
-
+        System.out.println("Load here ");
+        
         try {
             pdp = ProjectiveDeviceP.loadProjectorDevice(calibrationYAML, 0);
-
-            projExtrinsicsP3D = pdp.getExtrinsics();
-            projIntrinsicsP3D = pdp.getIntrinsics();
-            projExtrinsicsP3DInv = projExtrinsicsP3D.get();
-            projExtrinsicsP3DInv.invert();
-            proj = pdp.getDevice();
-            this.hasExtrinsics = true;
-
         } catch (Exception e) {
-            System.out.println("Error !!" + e);
+            e.printStackTrace();
+            System.out.println("Error loading the projector device." + e);
         }
+        loadInternalParams(pdp);
+
+        extrinsics = pdp.getExtrinsics();
+        intrinsics = pdp.getIntrinsics();
+        extrinsicsInv = extrinsics.get();
+        extrinsicsInv.invert();
+        projectiveDevice = pdp.getDevice();
+        this.hasExtrinsics = true;
 
     }
 
@@ -152,7 +144,7 @@ public class Projector extends ARDisplay {
 
             // Goto to the screen position
 //            this.graphics.modelview.apply(screen.getPos());
-            this.graphics.applyMatrix(screen.getPos());
+            this.graphics.applyMatrix(screen.getPosition());
             // Draw the screen image
 
             this.graphics.image(screen.getTexture(), 0, 0, screen.getSize().x, screen.getSize().y);
@@ -162,7 +154,7 @@ public class Projector extends ARDisplay {
     }
 
     // *** Projects the pixels viewed by the projector to the screen.
-    // px and py are normalized -> [0, 1] in screen space
+    // px and py are normalized -- [0, 1] in screen space
     @Override
     public PVector projectPointer(Screen screen, float px, float py) throws Exception {
 
@@ -173,7 +165,7 @@ public class Projector extends ARDisplay {
         PVector viewedPtP = pdp.pixelToWorldNormP((int) (px * frameWidth), (int) (py * frameHeight));
 
         // Pass it to the camera point of view (origin)
-        PMatrix3D extr = projExtrinsicsP3DInv;
+        PMatrix3D extr = extrinsicsInv;
         PVector originC = new PVector();
         PVector viewedPtC = new PVector();
         extr.mult(originP, originC);

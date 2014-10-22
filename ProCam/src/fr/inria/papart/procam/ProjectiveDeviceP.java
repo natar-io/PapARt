@@ -1,6 +1,20 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/* 
+ * Copyright (C) 2014 Jeremy Laviole <jeremy.laviole@inria.fr>.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301  USA
  */
 package fr.inria.papart.procam;
 
@@ -26,7 +40,7 @@ import toxi.geom.Vec3D;
  *
  * @author jiii
  */
-public class ProjectiveDeviceP implements PConstants {
+public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
 
     private PMatrix3D intrinsics;
     private PMatrix3D extrinsics;
@@ -39,6 +53,7 @@ public class ProjectiveDeviceP implements PConstants {
     private float cx;
     private float cy;
     private CvMat intrinsicsMat;
+    private boolean hasExtrinsics = false;
 
     public ProjectiveDeviceP() {
     }
@@ -52,7 +67,9 @@ public class ProjectiveDeviceP implements PConstants {
         return this.intrinsics;
     }
 
+    @Override
     public PMatrix3D getExtrinsics() {
+        assert (this.hasExtrinsics());
         return this.extrinsics;
     }
 
@@ -172,7 +189,7 @@ public class ProjectiveDeviceP implements PConstants {
 
         return (int) (py * w + px);
     }
-    
+
     public PVector worldToPixelCoord(Vec3D pt) {
 
         // Reprojection 
@@ -247,7 +264,7 @@ public class ProjectiveDeviceP implements PConstants {
 //        return null;
 //    }
     /**
-     * Broken with Bytedeco -> To update
+     * Broken with Bytedeco -- To update
      *
      * @param objectPoints
      * @param imagePoints
@@ -345,34 +362,30 @@ public class ProjectiveDeviceP implements PConstants {
         p.cx = p.intrinsics.m02;
         p.cy = p.intrinsics.m12;
 
-        try {
+        p.hasExtrinsics = dev.R != null && dev.T != null;
+
+        if (p.hasExtrinsics()) {
             double[] projR = dev.R.get();
             double[] projT = dev.T.get();
+
             p.extrinsics = new PMatrix3D((float) projR[0], (float) projR[1], (float) projR[2], (float) projT[0],
                     (float) projR[3], (float) projR[4], (float) projR[5], (float) projT[1],
                     (float) projR[6], (float) projR[7], (float) projR[8], (float) projT[2],
                     0, 0, 0, 1);
-        } catch (NullPointerException npe) {
-            // TODO: Error handling, or no extrinsics handling ? !
-//           System.out.println("Loading Parameters, without extrinsics");
         }
 
     }
 
     public static ProjectiveDeviceP loadCameraDevice(String filename, int id) throws Exception {
         ProjectiveDeviceP p = new ProjectiveDeviceP();
-        try {
-            CameraDevice[] camDev = CameraDevice.read(filename);
-            if (camDev.length <= id) {
-                throw new Exception("No camera device with the id " + id + " in the calibration file: " + filename);
-            }
-            CameraDevice cameraDevice = camDev[id];
-            p.device = cameraDevice;
-            loadParameters(cameraDevice, p);
 
-        } catch (Exception e) {
-            throw new Exception("Error reading the calibration file : " + filename + " \n" + e);
+        CameraDevice[] camDev = CameraDevice.read(filename);
+        if (camDev.length <= id) {
+            throw new Exception("No camera device with the id " + id + " in the calibration file: " + filename);
         }
+        CameraDevice cameraDevice = camDev[id];
+        p.device = cameraDevice;
+        loadParameters(cameraDevice, p);
 
         return p;
     }
@@ -417,5 +430,15 @@ public class ProjectiveDeviceP implements PConstants {
         }
 
         return p;
+    }
+
+    @Override
+    public boolean hasExtrinsics() {
+        return this.hasExtrinsics;
+    }
+
+    public String toString() {
+        return "intr " + intrinsics.toString() + " extr " + extrinsics.toString() + " "
+                + " width " + w + " height " + h;
     }
 }
