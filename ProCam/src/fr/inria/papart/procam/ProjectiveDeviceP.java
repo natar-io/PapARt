@@ -1,6 +1,20 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/* 
+ * Copyright (C) 2014 Jeremy Laviole <jeremy.laviole@inria.fr>.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301  USA
  */
 package fr.inria.papart.procam;
 
@@ -250,7 +264,7 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
 //        return null;
 //    }
     /**
-     * Broken with Bytedeco -> To update
+     * Broken with Bytedeco -- To update
      *
      * @param objectPoints
      * @param imagePoints
@@ -348,11 +362,11 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
         p.cx = p.intrinsics.m02;
         p.cy = p.intrinsics.m12;
 
-        double[] projR = dev.R.get();
-        double[] projT = dev.T.get();
+        p.hasExtrinsics = dev.R != null && dev.T != null;
 
-        p.hasExtrinsics = projR != null && projT != null;
         if (p.hasExtrinsics()) {
+            double[] projR = dev.R.get();
+            double[] projT = dev.T.get();
 
             p.extrinsics = new PMatrix3D((float) projR[0], (float) projR[1], (float) projR[2], (float) projT[0],
                     (float) projR[3], (float) projR[4], (float) projR[5], (float) projT[1],
@@ -364,18 +378,14 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
 
     public static ProjectiveDeviceP loadCameraDevice(String filename, int id) throws Exception {
         ProjectiveDeviceP p = new ProjectiveDeviceP();
-        try {
-            CameraDevice[] camDev = CameraDevice.read(filename);
-            if (camDev.length <= id) {
-                throw new Exception("No camera device with the id " + id + " in the calibration file: " + filename);
-            }
-            CameraDevice cameraDevice = camDev[id];
-            p.device = cameraDevice;
-            loadParameters(cameraDevice, p);
 
-        } catch (Exception e) {
-            throw new Exception("Error reading the calibration file : " + filename + " \n" + e);
+        CameraDevice[] camDev = CameraDevice.read(filename);
+        if (camDev.length <= id) {
+            throw new Exception("No camera device with the id " + id + " in the calibration file: " + filename);
         }
+        CameraDevice cameraDevice = camDev[id];
+        p.device = cameraDevice;
+        loadParameters(cameraDevice, p);
 
         return p;
     }
@@ -425,5 +435,10 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
     @Override
     public boolean hasExtrinsics() {
         return this.hasExtrinsics;
+    }
+
+    public String toString() {
+        return "intr " + intrinsics.toString() + " extr " + extrinsics.toString() + " "
+                + " width " + w + " height " + h;
     }
 }

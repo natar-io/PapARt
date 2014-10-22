@@ -1,6 +1,20 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/* 
+ * Copyright (C) 2014 Jeremy Laviole <jeremy.laviole@inria.fr>.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301  USA
  */
 package fr.inria.papart.procam;
 
@@ -227,30 +241,54 @@ public class PaperScreen {
         ARDisplay arDisplay = (ARDisplay) display;
 
         PVector[] corners = screen.getCornerPos();
-        PMatrix3D extr = arDisplay.getExtrinsics();
-        if (extr == null || arDisplay.getProjectiveDeviceP() == null) {
-//            System.out.println("No extrinsics");
+
+        if (arDisplay.getProjectiveDeviceP() == null) {
             return;
         }
+        PMatrix3D extr = arDisplay.getExtrinsics();
 
+        int nbOut = 0;
+        if (arDisplay.hasExtrinsics()) {
+            nbOut = checkCornerExtr(corners, arDisplay, extr);
+        } else {
+            nbOut = checkCorner(corners, arDisplay);
+        }
+
+        if (nbOut >= 3) {
+            screen.setDrawing(false);
+        } else {
+            screen.setDrawing(true);
+        }
+    }
+
+    private int checkCornerExtr(PVector[] corners,
+            ARDisplay arDisplay, PMatrix3D extr) {
         int nbOut = 0;
         for (PVector corner : corners) {
             // Corners are on the camera Point of view. 
             PVector projC = new PVector();
             extr.mult(corner, projC);
             PVector screenCoord = arDisplay.getProjectiveDeviceP().worldToPixelReal(projC);
-
             if (screenCoord.x < 0 || screenCoord.x > arDisplay.frameWidth
                     || screenCoord.y < 0 || screenCoord.y > arDisplay.frameHeight) {
                 nbOut++;
             }
-            //   System.out.println("projector view " + screenCoord);
         }
-        if (nbOut >= 3) {
-            screen.setDrawing(false);
-        } else {
-            screen.setDrawing(true);
+        return nbOut;
+    }
+
+    private int checkCorner(PVector[] corners,
+            ARDisplay arDisplay) {
+        int nbOut = 0;
+        for (PVector corner : corners) {
+            // Corners are on the camera Point of view. 
+            PVector screenCoord = arDisplay.getProjectiveDeviceP().worldToPixelReal(corner);
+            if (screenCoord.x < 0 || screenCoord.x > arDisplay.frameWidth
+                    || screenCoord.y < 0 || screenCoord.y > arDisplay.frameHeight) {
+                nbOut++;
+            }
         }
+        return nbOut;
     }
 
     // TODO: check this !

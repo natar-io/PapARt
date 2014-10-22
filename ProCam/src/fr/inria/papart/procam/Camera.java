@@ -1,6 +1,20 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/* 
+ * Copyright (C) 2014 Jeremy Laviole <jeremy.laviole@inria.fr>.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301  USA
  */
 package fr.inria.papart.procam;
 
@@ -8,6 +22,9 @@ package fr.inria.papart.procam;
  *
  * @author jeremylaviole
  */
+import fr.inria.papart.procam.camera.CamImage;
+import fr.inria.papart.procam.camera.CamImageColor;
+import fr.inria.papart.procam.camera.CamImageGray;
 import org.bytedeco.javacpp.opencv_core.CvMat;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 //import diewald_PS3.PS3;
@@ -36,12 +53,12 @@ public abstract class Camera implements PConstants {
 
     public enum Type {
 
-        OPENCV, PROCESSING, OPEN_KINECT
+        OPENCV, PROCESSING, OPEN_KINECT, FLY_CAPTURE
     }
 
     public enum PixelFormat {
 
-        RGB, BGR, ARGB, RGBA
+        RGB, BGR, ARGB, RGBA, GRAY
     }
 
     protected PixelFormat format;
@@ -91,7 +108,9 @@ public abstract class Camera implements PConstants {
             this.height = pdp.getHeight();
         } catch (Exception e) {
             e.printStackTrace();
-            parent.die("Error reading the calibration file : " + calibrationYAML + " \n" + e);
+
+            System.err.println("Camera: error reading the calibration " + pdp
+                    + "file" + calibrationYAML + " \n" + e);
         }
     }
 
@@ -264,8 +283,27 @@ public abstract class Camera implements PConstants {
 
     protected void checkCamImage() {
         if (camImage == null) {
-            camImage = new CamImage(parent, currentImage);
+
+            if (this.isPixelFormatGray()) {
+                camImage = new CamImageGray(parent, currentImage.width(), currentImage.height());
+            }
+            if (this.isPixelFormatColor()) {
+                camImage = new CamImageColor(parent, currentImage.width(), currentImage.height());
+            }
         }
+    }
+
+    protected boolean isPixelFormatGray() {
+        PixelFormat pixelFormat = getPixelFormat();
+        return pixelFormat == PixelFormat.GRAY;
+    }
+
+    protected boolean isPixelFormatColor() {
+        PixelFormat pixelFormat = getPixelFormat();
+        return pixelFormat == PixelFormat.ARGB
+                || pixelFormat == PixelFormat.BGR
+                || pixelFormat == PixelFormat.RGB
+                || pixelFormat == PixelFormat.RGBA;
     }
 
     public IplImage getIplImage() {
