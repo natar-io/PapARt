@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<java version="1.7.0_67" class="java.beans.XMLDecoder">
+ <object class="org.bytedeco.javacv.CameraSettings" id="CameraSettings0">
+  <void method="add">
+   <object class="org.bytedeco.javacv.CameraDevice$CalibrationSettings">
+    <void property="beanContext">
+     <object idref="CameraSettings0"/>
+    </void>
+    <void property="deviceNumber">
+     <int>0</int>
+    </void>
+    <void property="frameGrabber">
+     <class>org.bytedeco.javacv.OpenCVFrameGrabber</class>
+    </void>
+    <void property="imageHeight">
+     <int>480</int>
+    </void>
+    <void property="imageWidth">
+     <int>640</int>
+    </void>
+   </object>
+  </void>
+  <void property="frameGrabber">
+   <class>org.bytedeco.javacv.FFmpegFrameGrabber</class>
+  </void>
+ </object>
+ <object class="org.bytedeco.javacv.ProjectorSettings" id="ProjectorSettings0">
+  <void method="add">
+   <object class="org.bytedeco.javacv.ProjectorDevice$CalibrationSettings">
+    <void property="beanContext">
+     <object idref="ProjectorSettings0"/>
+    </void>
+    <void property="imageHeight">
+     <int>800</int>
+    </void>
+    <void property="imageWidth">
+     <int>1280</int>
+    </void>
+    <void property="screenNumber">
+     <int>2</int>
+    </void>
+   </object>
+  </void>
+ </object>
+ <object class="org.bytedeco.javacv.Marker$ArraySettings">
+  <void property="columns">
+   <int>8</int>
+  </void>
+  <void property="rows">
+   <int>5</int>
+  </void>
+  <void property="sizeX">
+   <double>35.0</double>
+  </void>
+  <void property="sizeY">
+   <double>35.0</double>
+  </void>
+  <void property="spacingX">
+   <double>52.5</double>
+  </void>
+  <void property="spacingY">
+   <double>52.5</double>
+  </void>
+ </object>
+ <object class="org.bytedeco.javacv.MarkerDetector$Settings"/>
+ <object class="org.bytedeco.procamcalib.CalibrationWorker$GeometricSettings"/>
+ <object class="org.bytedeco.procamcalib.CalibrationWorker$ColorSettings">
+  <void property="enabled">
+   <boolean>false</boolean>
+  </void>
+ </object>
+ <string>/home/jiii/sketchbook/libraries/ProCam/data/calibration/camera-projector.yaml</string>
+</java>
