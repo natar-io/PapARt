@@ -31,6 +31,8 @@ import toxi.math.MathUtils;
  */
 public class PlaneCalibration extends Calibration {
 
+    public static final float HEIGHT_NOT_SET = -1;
+    
     static final String PLANE_XML_NAME = "Plane";
     static final String PLANE_POS_XML_NAME = "Position";
     static final String PLANE_NORMAL_XML_NAME = "Normal";
@@ -39,41 +41,9 @@ public class PlaneCalibration extends Calibration {
     static final String Y_XML_NAME = "y";
     static final String Z_XML_NAME = "z";
 
-    private float planeHeight = 25.00f;
-
+    private float height = HEIGHT_NOT_SET;
     private Plane plane;
-    private Vec3D[] points;
-    private int currentPointPlane;
-    private boolean valid;
-
-    public PlaneCalibration(PApplet parent, String fileName) {
-        this.loadFrom(parent, fileName);
-    }
-
-    public PlaneCalibration() {
-        initPlane();
-    }
-
-    protected void initPlane() {
-        currentPointPlane = 0;
-        points = new Vec3D[3];
-        setValid(false);
-    }
-
-    public void addPoint(Vec3D point) {
-        points[currentPointPlane++] = point;
-        if (currentPointPlane == 3) {
-            computePlane();
-        }
-    }
-
-    private void computePlane() {
-        Triangle3D tri = new Triangle3D(points[0],
-                points[1],
-                points[2]);
-        this.setPlane(new Plane(tri));
-        setValid(true);
-    }
+    
 
     public boolean orientation(Vec3D point, float value) {
         return plane.classifyPoint(point, 0.05f) == Plane.Classifier.BACK;
@@ -90,11 +60,11 @@ public class PlaneCalibration extends Calibration {
     }
 
     public boolean hasGoodOrientationAndDistance(Vec3D point) {
-        return orientation(point) && plane.getDistanceToPoint(point) <= planeHeight;
+        return orientation(point) && plane.getDistanceToPoint(point) <= height;
     }
 
     public boolean hasGoodDistance(Vec3D point) {
-        return plane.getDistanceToPoint(point) <= planeHeight;
+        return plane.getDistanceToPoint(point) <= height;
     }
 
     public boolean hasGoodOrientation(Vec3D point) {
@@ -116,11 +86,11 @@ public class PlaneCalibration extends Calibration {
     }
 
     public float getPlaneHeight() {
-        return planeHeight;
+        return height;
     }
 
-    public void setPlaneHeight(float planeHeight) {
-        this.planeHeight = planeHeight;
+    public void setHeight(float planeHeight) {
+        this.height = planeHeight;
     }
 
     protected void setPlane(Plane plane) {
@@ -133,19 +103,16 @@ public class PlaneCalibration extends Calibration {
     }
 
     public boolean isValid() {
-        return valid;
+        return this.plane != null && this.height != HEIGHT_NOT_SET;
     }
 
-    protected void setValid(boolean valid) {
-        this.valid = valid;
-    }
 
     @Override
     public void replaceIn(XML xml) {
         XML planeNode = xml.getChild(PLANE_XML_NAME);
         setVectorIn(planeNode.getChild(PLANE_POS_XML_NAME), (Vec3D) plane);
         setVectorIn(planeNode.getChild(PLANE_NORMAL_XML_NAME), plane.normal);
-        planeNode.getChild(PLANE_HEIGHT_XML_NAME).setFloat(PLANE_HEIGHT_XML_NAME, planeHeight);
+        planeNode.getChild(PLANE_HEIGHT_XML_NAME).setFloat(PLANE_HEIGHT_XML_NAME, height);
     }
 
     @Override
@@ -154,7 +121,7 @@ public class PlaneCalibration extends Calibration {
         XML pos = createXML(PLANE_POS_XML_NAME, (Vec3D) plane);
         XML normal = createXML(PLANE_NORMAL_XML_NAME, plane.normal);
         XML height = new XML(PLANE_HEIGHT_XML_NAME);
-        height.setFloat(PLANE_HEIGHT_XML_NAME, planeHeight);
+        height.setFloat(PLANE_HEIGHT_XML_NAME, this.height);
 
         root.addChild(pos);
         root.addChild(normal);
@@ -192,18 +159,17 @@ public class PlaneCalibration extends Calibration {
 
         Vec3D position = getVectorFrom(posNode);
         Vec3D normal = getVectorFrom(normalNode);
-        float height = heightNode.getFloat(PLANE_HEIGHT_XML_NAME);
+        float h = heightNode.getFloat(PLANE_HEIGHT_XML_NAME);
 
         this.plane = new Plane();
         plane.set(position);
         plane.normal.set(normal);
-        setPlaneHeight(height);
-        this.setValid(true);
+        setHeight(h);
     }
     
     @Override
     public String toString(){
-        return this.plane.toString() + " " + this.planeHeight;
+        return this.plane.toString() + " " + this.height;
     }
 
 }

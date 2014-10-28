@@ -122,7 +122,7 @@ public class PlaneAndProjectionCalibration extends Calibration {
     }
 
     public void setPlaneHeight(float planeHeight) {
-        planeCalibration.setPlaneHeight(planeHeight);
+        planeCalibration.setHeight(planeHeight);
     }
 
     public Plane getPlane() {
