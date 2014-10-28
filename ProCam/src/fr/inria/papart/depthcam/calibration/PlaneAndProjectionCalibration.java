@@ -72,11 +72,11 @@ public class PlaneAndProjectionCalibration extends Calibration {
         return homographyCalibration;
     }
 
-    public void setPlaneCalibration(PlaneCalibration pc) {
+    public void setPlane(PlaneCalibration pc) {
         this.planeCalibration = pc;
     }
 
-    public void setHomographyCalibration(HomographyCalibration hc) {
+    public void setHomography(HomographyCalibration hc) {
         this.homographyCalibration = hc;
     }
 

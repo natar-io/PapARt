@@ -21,6 +21,7 @@ package fr.inria.papart.procam;
 import org.bytedeco.javacpp.freenect;
 import fr.inria.papart.drawingapp.Button;
 import fr.inria.papart.depthcam.Kinect;
+import fr.inria.papart.depthcam.calibration.PlaneAndProjectionCalibration;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.multitouch.TUIOTouchInput;
 import fr.inria.papart.multitouch.KinectTouchInput;
@@ -44,11 +45,10 @@ public class Papart {
     public static String camCalibARtoolkit = folder + "/data/calibration/camera-projector.cal";
     public static String kinectIRCalib = folder + "/data/calibration/calibration-kinect-IR.yaml";
     public static String kinectRGBCalib = folder + "/data/calibration/calibration-kinect-RGB.yaml";
-    
-    @Deprecated
-    public static String kinectScreenCalib = folder + "/data/calibration/KinectScreenCalibration.txt";
+
     public static String planeCalib = folder + "/data/calibration/PlaneCalibration.xml";
     public static String homographyCalib = folder + "/data/calibration/HomographyCalibration.xml";
+    public static String planeAndProjectionCalib = folder + "/data/calibration/PlaneProjectionCalibration.xml";
     public static String defaultFont = folder + "/data/Font/" + "GentiumBookBasic-48.vlw";
     public int defaultFontSize = 12;
 
@@ -67,7 +67,7 @@ public class Papart {
     private BaseDisplay display;
     private ARDisplay arDisplay;
     private ProjectorDisplay projector;
-    
+
     private Camera cameraTracking;
     private Kinect kinect;
 //    private TouchInput touchInput;
@@ -245,9 +245,12 @@ public class Papart {
                 kinectRGBCalib,
                 kinectFormat);
 
+        PlaneAndProjectionCalibration calibration = new PlaneAndProjectionCalibration();
+        calibration.loadFrom(this.applet, planeAndProjectionCalib);
+
         KinectTouchInput kinectTouchInput = new KinectTouchInput(this.applet,
                 (CameraOpenKinect) cameraTracking,
-                kinect, kinectScreenCalib);
+                kinect, calibration);
         kinectTouchInput.useRawDepth((CameraOpenKinect) cameraTracking);
 
         kinectTouchInput.setPrecision(touch2DPrecision, touch3DPrecision);
@@ -276,9 +279,12 @@ public class Papart {
                 kinectRGBCalib,
                 kinectFormat);
 
+        PlaneAndProjectionCalibration calibration = new PlaneAndProjectionCalibration();
+        calibration.loadFrom(this.applet, planeAndProjectionCalib);
+
         KinectTouchInput kinectTouchInput = new KinectTouchInput(this.applet,
                 cameraOpenKinect,
-                kinect, kinectScreenCalib);
+                kinect, calibration);
 
         // TODO: use Raw depth for Touch also here
         // Conversion Kinect -> Projector

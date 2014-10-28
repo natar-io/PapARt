@@ -24,7 +24,7 @@ import org.bytedeco.javacpp.opencv_core.IplImage;
 import fr.inria.papart.procam.ARDisplay;
 import fr.inria.papart.procam.Screen;
 import fr.inria.papart.depthcam.Kinect;
-import fr.inria.papart.depthcam.calibration.KinectScreenCalibration;
+import fr.inria.papart.depthcam.calibration.PlaneAndProjectionCalibration;
 import fr.inria.papart.procam.Camera;
 import fr.inria.papart.procam.BaseDisplay;
 import fr.inria.papart.procam.ProjectiveDeviceP;
@@ -67,20 +67,22 @@ public class KinectTouchInput extends TouchInput {
     static public final int forgetTime = 250;       // in ms
 
     // List of TouchPoints, given to the user
-    @Deprecated
-    private KinectScreenCalibration kinectCalibration;
     private final CameraOpenKinect kinectCamera;
+
+    private final PlaneAndProjectionCalibration calibration;
 
     // List of TouchPoints, given to the user
     ArrayList<TouchPoint> touchPoints2D = new ArrayList<TouchPoint>();
     ArrayList<TouchPoint> touchPoints3D = new ArrayList<TouchPoint>();
 
-    public KinectTouchInput(PApplet applet, CameraOpenKinect kinectCamera, Kinect kinect,
-            String calibration) {
+    public KinectTouchInput(PApplet applet,
+            CameraOpenKinect kinectCamera,
+            Kinect kinect,
+            PlaneAndProjectionCalibration calibration) {
         this.parent = applet;
         this.kinect = kinect;
-        this.setCalibration(calibration);
         this.kinectCamera = kinectCamera;
+        this.calibration = calibration;
         kinectCamera.setTouch(this);
     }
 
@@ -90,16 +92,16 @@ public class KinectTouchInput extends TouchInput {
             IplImage depthImage = kinectCamera.getDepthIplImage();
             depthDataSem.acquire();
             if (touch2DPrecision > 0 && touch3DPrecision > 0) {
-                kinect.updateMT(depthImage, kinectCalibration, touch2DPrecision, touch3DPrecision);
+                kinect.updateMT(depthImage, calibration, touch2DPrecision, touch3DPrecision);
                 findAndTrack2D();
                 findAndTrack3D();
             } else {
                 if (touch2DPrecision > 0) {
-                    kinect.updateMT2D(depthImage, kinectCalibration, touch2DPrecision);
+                    kinect.updateMT2D(depthImage, calibration, touch2DPrecision);
                     findAndTrack2D();
                 }
                 if (touch3DPrecision > 0) {
-                    kinect.updateMT3D(depthImage, kinectCalibration, touch3DPrecision);
+                    kinect.updateMT3D(depthImage, calibration, touch3DPrecision);
                     findAndTrack3D();
                 }
             }
@@ -366,18 +368,6 @@ public class KinectTouchInput extends TouchInput {
         }
     }
 
-    public void setCalibration(String calibrationFile) {
-        try {
-            kinectCalibration = new KinectScreenCalibration(this.parent, calibrationFile);
-        } catch (FileNotFoundException e) {
-            System.out.println("Calibration file error :" + calibrationFile + " \n" + e);
-        }
-    }
-
-    public KinectScreenCalibration getCalibration() {
-        return this.kinectCalibration;
-    }
-
     public void setPrecision(int precision2D, int precision3D) {
         setPrecision2D(precision2D);
         setPrecision3D(precision3D);
@@ -397,6 +387,10 @@ public class KinectTouchInput extends TouchInput {
 
     public ArrayList<TouchPoint> getTouchPoints3D() {
         return this.touchPoints3D;
+    }
+
+    public PlaneAndProjectionCalibration getCalibration() {
+        return calibration;
     }
 
     public void lock() {

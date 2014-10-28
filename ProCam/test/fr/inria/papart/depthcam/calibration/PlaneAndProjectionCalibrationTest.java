@@ -46,8 +46,8 @@ public class PlaneAndProjectionCalibrationTest {
         homographyCalibration.setMatrix(HomographyCalibrationTest.createDummyValues());
 
         PlaneAndProjectionCalibration papc = new PlaneAndProjectionCalibration();
-        papc.setHomographyCalibration(homographyCalibration);
-        papc.setPlaneCalibration(planeCalibration);
+        papc.setHomography(homographyCalibration);
+        papc.setPlane(planeCalibration);
 
         papc.saveTo(sketch, Common.currentPath + Common.PlaneProjectionCalibration);
     }

@@ -18,7 +18,6 @@
  */
 package fr.inria.papart.depthcam;
 
-import fr.inria.papart.depthcam.calibration.KinectScreenCalibration;
 import static fr.inria.papart.depthcam.Kinect.papplet;
 import fr.inria.papart.depthcam.calibration.HomographyCalibration;
 import fr.inria.papart.depthcam.calibration.PlaneAndProjectionCalibration;
@@ -64,22 +63,6 @@ public class KinectProcessing extends Kinect {
         return validPointsPImage;
     }
 
-    @Deprecated
-    public PImage update(IplImage depth, IplImage color,
-            KinectScreenCalibration calib, int skip) {
-        updateRawDepth(depth);
-        updateRawColor(color);
-        depthData.clear();
-        validPointsPImage.loadPixels();
-        // set a default color. 
-        Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 255));
-
-        depthData.calibration = calib;
-        computeDepthAndDo(skip, new Select2DPoint());
-        doForEachValidPoint(skip, new SetImageData());
-        validPointsPImage.updatePixels();
-        return validPointsPImage;
-    }
 
     public PImage update(IplImage depth, IplImage color,
             PlaneAndProjectionCalibration planeProjCalibration, int skip) {
@@ -91,7 +74,7 @@ public class KinectProcessing extends Kinect {
         Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 255));
 
         depthData.planeAndProjectionCalibration = planeProjCalibration;
-        computeDepthAndDo(skip, new Select2DPointCalibrated());
+        computeDepthAndDo(skip, new Select2DPointPlaneProjection());
         doForEachValidPoint(skip, new SetImageData());
         validPointsPImage.updatePixels();
         return validPointsPImage;

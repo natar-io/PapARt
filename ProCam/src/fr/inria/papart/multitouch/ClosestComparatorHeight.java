@@ -18,7 +18,7 @@
  */
 package fr.inria.papart.multitouch;
 
-import fr.inria.papart.depthcam.calibration.KinectScreenCalibration;
+import fr.inria.papart.depthcam.calibration.PlaneCalibration;
 import java.util.Comparator;
 import toxi.geom.Vec3D;
 
@@ -30,14 +30,15 @@ import toxi.geom.Vec3D;
 public class ClosestComparatorHeight implements Comparator{
 
   public Vec3D[] points;
-  KinectScreenCalibration calibration;
+  PlaneCalibration calibration;
   
   public ClosestComparatorHeight(Vec3D points[],
-          KinectScreenCalibration calib){
+            PlaneCalibration calib){
     this.points = points;
     this.calibration = calib;
   }
 
+  @Override
   public int compare(Object tp1, Object tp2){
 
     float d1 = calibration.getPlane().distanceTo(points[(Integer)tp1]);
