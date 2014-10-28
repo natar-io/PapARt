@@ -19,6 +19,7 @@
 package fr.inria.papart.procam.camera;
 
 import fr.inria.papart.procam.Camera;
+import fr.inria.papart.procam.Utils;
 import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacv.FlyCaptureFrameGrabber;
 import org.bytedeco.javacv.FrameGrabber;
@@ -49,16 +50,7 @@ public class CameraFlyCapture extends Camera {
 
     protected CameraFlyCapture(int cameraNo) {
         this.systemNumber = cameraNo;
-
-        busMgr = new BusManager();
-        int[] numCameras = new int[1];
-        error = busMgr.GetNumOfCameras(numCameras);
-        if (error.notEquals(PGRERROR_OK)) {
-            throw new RuntimeException("Impossible to get the number of Fly Capture cameras.");
-        }
-        System.out.println("Camera Fly Capture: Number of cameras detected: " + numCameras[0]);
-        nbCameras = numCameras[0];
-
+        this.setPixelFormat(PixelFormat.BGR);
     }
 
     static void PrintError(Error error) {
@@ -80,108 +72,26 @@ public class CameraFlyCapture extends Camera {
     @Override
     public void start() {
         try {
-
-            this.setPixelFormat(PixelFormat.ARGB);
-            System.out.println("init grabber");
             grabber = new FlyCapture2FrameGrabber(0);
-            System.out.println("init grabber OK. Start now ...");
             grabber.start();
-            System.out.println("Start OK .");
-
-           
-            
-//            if (this.nbCameras == 0) {
-//                throw new Exception("No camera found.");
-//            }
-//
-//            if (this.systemNumber >= this.nbCameras) {
-//                throw new Exception("The camera number is not valid.");
-//            }
-//            PGRGuid guid = new PGRGuid();
-//            error = busMgr.GetCameraFromIndex(this.systemNumber, guid);
-//            if (error.notEquals(PGRERROR_OK)) {
-//                throw new Exception("Impossible to get the camera. ");
-//            }
-//
-//            // Connect to a camera
-//            error = cam.Connect(guid);
-//            if (error.notEquals(PGRERROR_OK)) {
-//                throw new Exception("Impossible to connect to the camera.");
-//            }
-//
-//            // Get the camera information
-//            CameraInfo camInfo = new CameraInfo();
-//            error = cam.GetCameraInfo(camInfo);
-//            if (error.notEquals(PGRERROR_OK)) {
-//                throw new Exception("Impossible to get the camera Infos");
-//            }
-//            PrintCameraInfo(camInfo);
-//
-//            allocateIplImage();
-//            this.setResolution(camInfo);
-//            // TODO get the pixel format.
-//            this.setPixelFormat(Camera.PixelFormat.GRAY);
-//
-//            // Start capturing images
-//            error = cam.StartCapture();
-//            if (error.notEquals(PGRERROR_OK)) {
-//                throw new Exception("Impossible to start the camera.");
-//            }
         } catch (Exception e) {
             System.err.println("FlyCapture camera error: " + e);
         }
-
-    }
-
-    private void allocateIplImage() {
-        this.currentImage = opencv_core.cvCreateImage(
-                new opencv_core.CvSize(this.width * this.height),
-                opencv_core.IPL_DEPTH_8U, 1);
-        this.currentImage.width(this.width);
-        this.currentImage.height(this.height);
-    }
-
-    private void setCurrentImage(Image source) {
-        currentImage.imageData(source.GetData());
-        updateCurrentImage(currentImage);
-    }
-
-    private void setResolution(CameraInfo camInfo) {
-        String resolution = camInfo.sensorResolution().getString();
-        int delimiterX = camInfo.sensorResolution().getString().lastIndexOf("x");
-        this.width = Integer.parseInt(resolution.substring(0, delimiterX));
-        this.height = Integer.parseInt(resolution.substring(delimiterX + 1));
     }
 
     @Override
     public void grab() {
-
         if (this.isClosing()) {
             return;
         }
         try {
-
             opencv_core.IplImage img = grabber.grab();
             if (img != null) {
                 this.updateCurrentImage(img);
             }
-            
-//            error = cam.RetrieveBuffer(rawImage);
-//            if (error.notEquals(PGRERROR_OK)) {
-//                throw new Exception("Impossible to retreive an image.");
-//            }
-//            // Create a converted image
-//            Image convertedImage = new Image();
-//
-//            // Convert the raw image
-//            error = rawImage.Convert(PIXEL_FORMAT_MONO8, convertedImage);
-//            if (error.notEquals(PGRERROR_OK)) {
-//                throw new Exception("Conversion error");
-//            }
-//
-//            setCurrentImage(rawImage);
+
         } catch (Exception e) {
-            System.err.println("Camera: OpenCV Grab() Error ! " + e);
+            System.err.println("Camera: FlyCapture Grab() Error ! " + e);
         }
     }
 
@@ -193,7 +103,6 @@ public class CameraFlyCapture extends Camera {
     @Override
     public PImage getPImage() {
         // currentImage must be set ...
-
         if (currentImage != null) {
             this.checkCamImage();
             camImage.update(currentImage);
@@ -202,20 +111,17 @@ public class CameraFlyCapture extends Camera {
         return null;
     }
 
+
+    
     @Override
     public void close() {
         this.setClosing();
-
-        // Stop capturing images
-        error = cam.StopCapture();
-        if (error.notEquals(PGRERROR_OK)) {
-            PrintError(error);
-        }
-
-        // Disconnect the camera
-        error = cam.Disconnect();
-        if (error.notEquals(PGRERROR_OK)) {
-            PrintError(error);
+        if (grabber != null) {
+            try {
+                this.stopThread();
+                grabber.stop();
+            } catch (Exception e) {
+            }
         }
     }
 

@@ -20,7 +20,7 @@ package fr.inria.papart.multitouch;
 
 import fr.inria.papart.depthcam.DepthData;
 import fr.inria.papart.depthcam.Kinect;
-import fr.inria.papart.depthcam.KinectScreenCalibration;
+import fr.inria.papart.depthcam.calibration.KinectScreenCalibration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -65,9 +65,8 @@ public class TouchDetection {
             int recLevel) {
 
         // TODO: optimisations here ?
-        int x = currentPoint % Kinect.KINECT_WIDTH;
-        int y = currentPoint / Kinect.KINECT_WIDTH;
-
+        int x = currentPoint % Kinect.WIDTH;
+        int y = currentPoint / Kinect.WIDTH;
         ConnectedComponent neighbourList = new ConnectedComponent();
         ArrayList<Integer> visitNext = new ArrayList<Integer>();
 
@@ -75,15 +74,15 @@ public class TouchDetection {
             return neighbourList;
         }
 
-        int minX = PApplet.constrain(x - halfNeigh, 0, Kinect.KINECT_WIDTH - 1);
-        int maxX = PApplet.constrain(x + halfNeigh, 0, Kinect.KINECT_WIDTH - 1);
-        int minY = PApplet.constrain(y - halfNeigh, 0, Kinect.KINECT_HEIGHT - 1);
-        int maxY = PApplet.constrain(y + halfNeigh, 0, Kinect.KINECT_HEIGHT - 1);
+        int minX = PApplet.constrain(x - halfNeigh, 0, Kinect.WIDTH - 1);
+        int maxX = PApplet.constrain(x + halfNeigh, 0, Kinect.WIDTH - 1);
+        int minY = PApplet.constrain(y - halfNeigh, 0, Kinect.HEIGHT - 1);
+        int maxY = PApplet.constrain(y + halfNeigh, 0, Kinect.HEIGHT - 1);
 
         for (int j = minY; j <= maxY; j += precision) {
             for (int i = minX; i <= maxX; i += precision) {
 
-                int offset = j * Kinect.KINECT_WIDTH + i;
+                int offset = j * Kinect.WIDTH + i;
 
                 // Avoid getting ouside the limits
                 if (isValidNeighbour(offset, currentPoint)) {
@@ -139,7 +138,7 @@ public class TouchDetection {
             if (connectedComponent.size() < MINIMUM_COMPONENT_SIZE) {
                 continue;
             }
-            
+
             Vec3D meanProj = connectedComponent.getMean(depthData.projectedPoints);
             Vec3D meanKinect = connectedComponent.getMean(depthData.kinectPoints);
             TouchPoint tp = new TouchPoint();
@@ -147,7 +146,7 @@ public class TouchDetection {
             tp.setPositionKinect(meanKinect);
             tp.set3D(false);
             tp.setConfidence(connectedComponent.size() / MINIMUM_COMPONENT_SIZE);
-            
+
             touchPointFounds.add(tp);
         }
 

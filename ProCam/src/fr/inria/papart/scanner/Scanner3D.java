@@ -20,7 +20,7 @@ package fr.inria.papart.scanner;
 
 import fr.inria.papart.procam.Camera;
 import fr.inria.papart.procam.ProjectiveDeviceP;
-import fr.inria.papart.procam.Projector;
+import fr.inria.papart.procam.ProjectorDisplay;
 import processing.core.PConstants;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
@@ -39,16 +39,16 @@ public class Scanner3D implements PConstants {
     private final ProjectiveDeviceP projDev, camDev;
 
     private float cx, cy, fx, fy;
-    private final Projector projector;
+    private final ProjectorDisplay projector;
 
     private PVector lastError = new PVector();
 
-    public Scanner3D(Camera camera, Projector projector){
+    public Scanner3D(Camera camera, ProjectorDisplay projector){
         this(camera.getProjectiveDevice(), projector);
     }
     
     // We suppose that the camera is loaded, and running.
-    public Scanner3D(ProjectiveDeviceP camera, Projector projector) {
+    public Scanner3D(ProjectiveDeviceP camera, ProjectorDisplay projector) {
         this.projector = projector;
 
 //        backgroundRemover = new BackgroundRemover(

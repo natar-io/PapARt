@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2014 Jeremy Laviole <jeremy.laviole@inria.fr>.
  *
  * This library is free software; you can redistribute it and/or
@@ -16,34 +16,26 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package fr.inria.papart.multitouch;
 
-import fr.inria.papart.depthcam.calibration.KinectScreenCalibration;
-import java.util.Comparator;
-import toxi.geom.Vec3D;
+package fr.inria.papart.depthcam.calibration;
 
 /**
  *
- * @author jeremy
-*/
+ * @author Jeremy Laviole <jeremy.laviole@inria.fr>
+ */
 
-public class ClosestComparatorHeight implements Comparator{
+import processing.core.PApplet;
 
-  public Vec3D[] points;
-  KinectScreenCalibration calibration;
-  
-  public ClosestComparatorHeight(Vec3D points[],
-          KinectScreenCalibration calib){
-    this.points = points;
-    this.calibration = calib;
-  }
+public class Sketch extends PApplet {
 
-  public int compare(Object tp1, Object tp2){
+    @Override
+    public void setup() {
+        size(200, 200);
+        stroke(155, 0, 0);
+    }
 
-    float d1 = calibration.getPlane().distanceTo(points[(Integer)tp1]);
-    float d2 = calibration.getPlane().distanceTo(points[(Integer)tp2]);
-    if(d1 > d2)
-      return 1;
-    return -1;
-  }
+    @Override
+    public void draw() {
+        line(mouseX, mouseY, width / 2, height / 2);
+    }
 }

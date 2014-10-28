@@ -16,8 +16,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package fr.inria.papart.depthcam;
+package fr.inria.papart.depthcam.calibration;
 
+import fr.inria.papart.depthcam.Kinect;
 import java.net.NoRouteToHostException;
 import toxi.geom.Plane;
 import toxi.geom.Triangle3D;
@@ -30,12 +31,11 @@ import toxi.math.MathUtils;
  */
 public class PlaneThreshold {
 
-    protected float planeHeight = 25.00f;
+    protected float height = 25.00f;
+
     int currentPoint;
-    protected Plane plane;
-    Plane bigPlane;
-    Plane planeOver;
-    protected Vec3D[] points;
+    private Plane plane;
+    private Vec3D[] points;
 
     public PlaneThreshold(String fileName) {
         loadPlane(fileName);
@@ -47,7 +47,7 @@ public class PlaneThreshold {
 
     public PlaneThreshold(Vec3D pos, Vec3D normal, float height) {
         plane = new Plane(pos, normal);
-        this.planeHeight = height;
+        this.height = height;
     }
 
 //    public PlaneThreshold(XMLElement planeXML) {
@@ -87,7 +87,6 @@ public class PlaneThreshold {
     }
 
     public boolean computePlane() {
-        
         if(points[0] == null || points[1] == null || points[2] == null)
             return false;
         
@@ -95,31 +94,7 @@ public class PlaneThreshold {
                 points[1],
                 points[2]);
         plane = new Plane(tri);
-
-        // TODO: check that !
-        Vec3D bigPlanePos = new Vec3D(plane.x * 100, plane.y * 100, plane.z * 100);
-        bigPlane = new Plane(bigPlanePos, plane.normal);
         return true;
-    }
-
-    public void setHeight(float h){
-        this.planeHeight = h;
-    }
-    
-    public float getHeight(){
-        return this.planeHeight;
-    }
-    
-    public Plane getPlane(){
-        return this.plane;
-    }
-    
-    public Plane computePlaneOver(float distance) {
-        planeOver = new Plane(plane, plane.normal);
-        planeOver.x += distance * plane.normal.x;
-        planeOver.y += distance * plane.normal.y;
-        planeOver.z += distance * plane.normal.z;
-        return planeOver;
     }
 
     public boolean orientation(Vec3D point, float value) {
@@ -137,11 +112,11 @@ public class PlaneThreshold {
     }
     
     public boolean hasGoodOrientationAndDistance(Vec3D point) {
-        return orientation(point) && plane.getDistanceToPoint(point) <= planeHeight;
+        return orientation(point) && plane.getDistanceToPoint(point) <= height;
     }
  
     public boolean hasGoodDistance(Vec3D point) {
-        return plane.getDistanceToPoint(point) <= planeHeight;
+        return plane.getDistanceToPoint(point) <= height;
     }
 
     public boolean hasGoodOrientation(Vec3D point) {
@@ -170,34 +145,50 @@ public class PlaneThreshold {
         lines[3] = "" + plane.normal.x;
         lines[4] = "" + plane.normal.y;
         lines[5] = "" + plane.normal.z;
-        lines[6] = "" + planeHeight;
+        lines[6] = "" + height;
         Kinect.papplet.saveStrings(filename, lines);
         Kinect.papplet.println("Plane successfully saved");
     }
     
     @Override
     public String toString(){
-        return "Plane " + plane + " height " + planeHeight;
+        return "Plane " + plane + " height " + height;
     }
 
     public void loadPlane(String fileName) {
         String[] lines = Kinect.papplet.loadStrings(fileName);
         Vec3D pos = new Vec3D(Float.parseFloat(lines[0]), Float.parseFloat(lines[1]), Float.parseFloat(lines[2]));
         Vec3D norm = new Vec3D(Float.parseFloat(lines[3]), Float.parseFloat(lines[4]), Float.parseFloat(lines[5]));
-        planeHeight = Float.parseFloat(lines[6]);
+        height = Float.parseFloat(lines[6]);
 
         plane = new Plane(pos, norm);
         System.out.println("Plane " + fileName + " successfully loaded");
     }
-    static int nbPlanes = 0;
 
     public static Plane mergePlane(Plane p1, Plane p2) {
-        nbPlanes++;
         Plane res = new Plane();
         res.x = p1.x + p2.x;
         res.y = p1.y + p2.y;
         res.z = p1.z + p2.z;
         res.normal = p1.normal.add(p2.normal);
+        res.normal.normalize();
         return res;
+    }
+    
+    
+    public float getHeight() {
+        return height;
+    }
+
+    public void setHeight(float height) {
+        this.height = height;
+    }
+
+    public Plane getPlane() {
+        return plane;
+    }
+
+    public void setPlane(Plane plane) {
+        this.plane = plane;
     }
 }

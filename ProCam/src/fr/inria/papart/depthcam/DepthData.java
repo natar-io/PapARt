@@ -18,7 +18,11 @@
  */
 package fr.inria.papart.depthcam;
 
+import fr.inria.papart.depthcam.calibration.KinectScreenCalibration;
 import static fr.inria.papart.depthcam.Kinect.INVALID_POINT;
+import fr.inria.papart.depthcam.calibration.HomographyCalibration;
+import fr.inria.papart.depthcam.calibration.PlaneAndProjectionCalibration;
+import fr.inria.papart.depthcam.calibration.PlaneCalibration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import toxi.geom.Vec3D;
@@ -56,7 +60,12 @@ public class DepthData {
     public ArrayList<Integer> validPointsList;
     public ArrayList<Integer> validPointsList3D;
 
+    @Deprecated
     public KinectScreenCalibration calibration;
+    
+    public PlaneAndProjectionCalibration planeAndProjectionCalibration;
+    public HomographyCalibration homographyCalibration;
+    public PlaneCalibration planeCalibration;
 
     public DepthData(int size) {
         this(size, true);

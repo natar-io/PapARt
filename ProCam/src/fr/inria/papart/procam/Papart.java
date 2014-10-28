@@ -44,7 +44,11 @@ public class Papart {
     public static String camCalibARtoolkit = folder + "/data/calibration/camera-projector.cal";
     public static String kinectIRCalib = folder + "/data/calibration/calibration-kinect-IR.yaml";
     public static String kinectRGBCalib = folder + "/data/calibration/calibration-kinect-RGB.yaml";
+    
+    @Deprecated
     public static String kinectScreenCalib = folder + "/data/calibration/KinectScreenCalibration.txt";
+    public static String planeCalib = folder + "/data/calibration/PlaneCalibration.xml";
+    public static String homographyCalib = folder + "/data/calibration/HomographyCalibration.xml";
     public static String defaultFont = folder + "/data/Font/" + "GentiumBookBasic-48.vlw";
     public int defaultFontSize = 12;
 
@@ -62,7 +66,7 @@ public class Papart {
 //    private ARDisplay display;
     private BaseDisplay display;
     private ARDisplay arDisplay;
-    private Projector projector;
+    private ProjectorDisplay projector;
     
     private Camera cameraTracking;
     private Kinect kinect;
@@ -72,10 +76,10 @@ public class Papart {
     private CameraOpenKinect cameraOpenKinect;
 
     // TODO: find what to do with these...
-    private final int depthFormat = freenect.FREENECT_DEPTH_10BIT;
-    private final int kinectFormat = Kinect.KINECT_10BIT;
-//    private final int depthFormat = freenect.FREENECT_DEPTH_MM;
-//    private final int kinectFormat = Kinect.KINECT_MM;
+//    private final int depthFormat = freenect.FREENECT_DEPTH_10BIT;
+//    private final int kinectFormat = Kinect.KINECT_10BIT;
+    private final int depthFormat = freenect.FREENECT_DEPTH_MM;
+    private final int kinectFormat = Kinect.KINECT_MM;
 
     public Papart(Object applet) {
         this.displayInitialized = false;
@@ -171,7 +175,7 @@ public class Papart {
 
     private void initProjectorDisplay(float quality) {
         // TODO: check if file exists !
-        projector = new Projector(this.applet, proCamCalib);
+        projector = new ProjectorDisplay(this.applet, proCamCalib);
         projector.setZNearFar(zNear, zFar);
         projector.setQuality(quality);
         arDisplay = projector;

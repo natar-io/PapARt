@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package fr.inria.papart.depthcam;
+package fr.inria.papart.depthcam.calibration;
 
 import java.io.FileNotFoundException;
 import processing.core.PApplet;
@@ -43,8 +43,8 @@ public class KinectScreenCalibration {
     public void setHomography(Homography h) {
         this.homography = h;
     }
-
-    public void setPlaneThreshold(PlaneThreshold p) {
+ 
+   public void setPlaneThreshold(PlaneThreshold p) {
         this.planeThreshold = p;
     }
 
@@ -68,7 +68,7 @@ public class KinectScreenCalibration {
         planeThreshold = new PlaneThreshold(pos, norm, planeHeight);
     }
 
-    public PlaneThreshold plane() {
+    public PlaneThreshold getPlane() {
         return this.planeThreshold;
     }
 
@@ -77,10 +77,10 @@ public class KinectScreenCalibration {
     }
 
     public Vec3D project(Vec3D pt) {
-        Vec3D tr = transform.applyTo(planeThreshold.plane.getProjectedPoint(pt));
+        Vec3D tr = transform.applyTo(planeThreshold.getPlane().getProjectedPoint(pt));
         tr.x /= tr.z;
         tr.y /= tr.z;
-        tr.z = planeThreshold.plane.distanceTo(pt);
+        tr.z = planeThreshold.getPlane().distanceTo(pt);
         return tr; 
     }
 
@@ -92,8 +92,8 @@ public class KinectScreenCalibration {
             lines[i] = "" + transformArray[i];
         }
 
-        Plane plane = planeThreshold.plane;
-        float height = planeThreshold.planeHeight;
+        Plane plane = planeThreshold.getPlane();
+        float height = planeThreshold.getHeight();
 
         System.out.println("Saving plane " + plane);
         
@@ -117,8 +117,8 @@ public class KinectScreenCalibration {
             lines[i] = "" + transformArray[i];
         }
 
-        Plane plane = planeThreshold.plane;
-        float height = planeThreshold.planeHeight;
+        Plane plane = planeThreshold.getPlane();
+        float height = planeThreshold.getHeight();
 
 //        String[] lines = new String[7];
         lines[planeOffset + 0] = "" + plane.x;

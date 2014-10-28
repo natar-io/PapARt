@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2014 Jeremy Laviole <jeremy.laviole@inria.fr>.
  *
  * This library is free software; you can redistribute it and/or
@@ -16,34 +16,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package fr.inria.papart.multitouch;
-
-import fr.inria.papart.depthcam.calibration.KinectScreenCalibration;
-import java.util.Comparator;
-import toxi.geom.Vec3D;
+package fr.inria.papart.depthcam.calibration;
 
 /**
  *
- * @author jeremy
-*/
+ * @author Jeremy Laviole <jeremy.laviole@inria.fr>
+ */
+public class Common {
+    static final String currentPath = "test/fr/inria/papart/depthcam/calibration/";
+    static final String HomographyCalibration = "homographyCalibration1.xml";
+    static final String HomographyCalibrationCopy = "homographyCalibration1Copy.xml";
+    static final String PlaneCalibration = "planeCalibration1.xml";
+    static final String PlaneProjectionCalibration = "planeProjectionCalibration1.xml";
+    static final String PlaneCalibrationCopy = "planeCalibration1Copy.xml";
 
-public class ClosestComparatorHeight implements Comparator{
-
-  public Vec3D[] points;
-  KinectScreenCalibration calibration;
-  
-  public ClosestComparatorHeight(Vec3D points[],
-          KinectScreenCalibration calib){
-    this.points = points;
-    this.calibration = calib;
-  }
-
-  public int compare(Object tp1, Object tp2){
-
-    float d1 = calibration.getPlane().distanceTo(points[(Integer)tp1]);
-    float d2 = calibration.getPlane().distanceTo(points[(Integer)tp2]);
-    if(d1 > d2)
-      return 1;
-    return -1;
-  }
 }

@@ -254,22 +254,6 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
         return v;
     }
 
-//    public PMatrix3D estimateOrientation2(PVector[] objectPoints, PVector[] imagePoints) {
-//        ARMarkerInfo marker_info = new ARMarkerInfo();
-//        public native float arGetTransMat(ARMarkerInfo marker_info, float center[/*2*/],
-//                float width, @Cast("ARFloat(*)[4]") float conv[/*3][4*/]);
-//        public native float arGetTransMatCont(ARMarkerInfo marker_info,
-//                @Cast("ARFloat(*)[4]") float prev_conv[/*3][4*/],   float center[/*2*/],
-//                float width, @Cast("ARFloat(*)[4]") float conv[/*3][4*/]);
-//        return null;
-//    }
-    /**
-     * Broken with Bytedeco -- To update
-     *
-     * @param objectPoints
-     * @param imagePoints
-     * @return
-     */
     public PMatrix3D estimateOrientation(PVector[] objectPoints,
             PVector[] imagePoints) {
 
@@ -339,10 +323,8 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
             (float) rotMat.get(3), (float) rotMat.get(4), (float) rotMat.get(5), (float) translationCv.get(1),
             (float) rotMat.get(6), (float) rotMat.get(7), (float) rotMat.get(8), (float) translationCv.get(2),
             0, 0, 0, 1f};
-
         mat.set(RTMat);
         return mat;
-
     }
 
     private static void loadParameters(ProjectiveDevice dev, ProjectiveDeviceP p) {

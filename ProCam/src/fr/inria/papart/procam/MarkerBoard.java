@@ -310,7 +310,7 @@ public class MarkerBoard {
         return px;
     }
 
-    public boolean isSeenBy(Camera camera, Projector projector, float error) {
+    public boolean isSeenBy(Camera camera, ProjectorDisplay projector, float error) {
         PVector px = this.getBoardLocation(camera, projector);
         return !(px.x < (0 - error)
                 || px.x > projector.frameWidth

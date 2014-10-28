@@ -449,7 +449,7 @@ public class Screen {
      * @param height
      * @return
      */
-    public ReadonlyVec3D projectMouse(Projector projector, int mouseX, int mouseY, int width, int height) {
+    public ReadonlyVec3D projectMouse(ProjectorDisplay projector, int mouseX, int mouseY, int width, int height) {
 
         PGraphicsOpenGL projGraphics = projector.getGraphics();
         PMatrix3D projMat = projector.projectionInit.get();

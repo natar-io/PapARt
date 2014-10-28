@@ -31,9 +31,9 @@ import toxi.geom.Ray3D;
 import toxi.geom.ReadonlyVec3D;
 import toxi.geom.Vec3D;
 
-public class Projector extends ARDisplay {
+public class ProjectorDisplay extends ARDisplay {
 
-    public Projector(PApplet parent, String calibrationYAML) {
+    public ProjectorDisplay(PApplet parent, String calibrationYAML) {
         super(parent, calibrationYAML);
     }
 

@@ -21,15 +21,14 @@ package fr.inria.papart.multitouch;
 import fr.inria.papart.depthcam.DepthData;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 
-import fr.inria.papart.depthcam.Homography;
 import fr.inria.papart.procam.ARDisplay;
 import fr.inria.papart.procam.Screen;
 import fr.inria.papart.depthcam.Kinect;
-import fr.inria.papart.depthcam.KinectScreenCalibration;
+import fr.inria.papart.depthcam.calibration.KinectScreenCalibration;
 import fr.inria.papart.procam.Camera;
 import fr.inria.papart.procam.BaseDisplay;
 import fr.inria.papart.procam.ProjectiveDeviceP;
-import fr.inria.papart.procam.Projector;
+import fr.inria.papart.procam.ProjectorDisplay;
 import fr.inria.papart.procam.camera.CameraOpenKinect;
 import java.io.FileNotFoundException;
 import java.nio.ByteBuffer;
@@ -68,6 +67,7 @@ public class KinectTouchInput extends TouchInput {
     static public final int forgetTime = 250;       // in ms
 
     // List of TouchPoints, given to the user
+    @Deprecated
     private KinectScreenCalibration kinectCalibration;
     private final CameraOpenKinect kinectCamera;
 
@@ -231,7 +231,7 @@ public class KinectTouchInput extends TouchInput {
 
             ArrayList<Vec3D> projected = new ArrayList<Vec3D>();
             Vec3D[] projPoints = depthData.projectedPoints;
-            boolean isProjector = display instanceof Projector;
+            boolean isProjector = display instanceof ProjectorDisplay;
 
             for (int i = 0; i < projPoints.length; i++) {
                 Vec3D vec = projPoints[i];
@@ -240,7 +240,7 @@ public class KinectTouchInput extends TouchInput {
                 }
 
                 try {
-                    PVector screenPosition = (isProjector ? (Projector) display : display).projectPointer(screen, vec.x, vec.y);
+                    PVector screenPosition = (isProjector ? (ProjectorDisplay) display : display).projectPointer(screen, vec.x, vec.y);
                     screenPosition.z = vec.z;
                     projected.add(vec);
                 } catch (Exception e) {

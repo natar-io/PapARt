@@ -18,7 +18,11 @@
  */
 package fr.inria.papart.depthcam;
 
+import fr.inria.papart.depthcam.calibration.KinectScreenCalibration;
 import static fr.inria.papart.depthcam.Kinect.papplet;
+import fr.inria.papart.depthcam.calibration.HomographyCalibration;
+import fr.inria.papart.depthcam.calibration.PlaneAndProjectionCalibration;
+import fr.inria.papart.depthcam.calibration.PlaneCalibration;
 import java.util.Arrays;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import processing.core.PApplet;
@@ -60,6 +64,7 @@ public class KinectProcessing extends Kinect {
         return validPointsPImage;
     }
 
+    @Deprecated
     public PImage update(IplImage depth, IplImage color,
             KinectScreenCalibration calib, int skip) {
         updateRawDepth(depth);
@@ -68,9 +73,58 @@ public class KinectProcessing extends Kinect {
         validPointsPImage.loadPixels();
         // set a default color. 
         Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 255));
-        
+
         depthData.calibration = calib;
         computeDepthAndDo(skip, new Select2DPoint());
+        doForEachValidPoint(skip, new SetImageData());
+        validPointsPImage.updatePixels();
+        return validPointsPImage;
+    }
+
+    public PImage update(IplImage depth, IplImage color,
+            PlaneAndProjectionCalibration planeProjCalibration, int skip) {
+        updateRawDepth(depth);
+        updateRawColor(color);
+        depthData.clear();
+        validPointsPImage.loadPixels();
+        // set a default color. 
+        Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 255));
+
+        depthData.planeAndProjectionCalibration = planeProjCalibration;
+        computeDepthAndDo(skip, new Select2DPointCalibrated());
+        doForEachValidPoint(skip, new SetImageData());
+        validPointsPImage.updatePixels();
+        return validPointsPImage;
+    }
+
+    public PImage update(IplImage depth, IplImage color,
+            PlaneCalibration planeCalibration, int skip) {
+        updateRawDepth(depth);
+        updateRawColor(color);
+        depthData.clear();
+        validPointsPImage.loadPixels();
+        // set a default color. 
+        Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 255));
+
+        depthData.planeCalibration = planeCalibration;
+        computeDepthAndDo(skip, new Select2DPointOverPlane());
+
+        doForEachValidPoint(skip, new SetImageData());
+        validPointsPImage.updatePixels();
+        return validPointsPImage;
+    }
+
+    public PImage update(IplImage depth, IplImage color,
+            HomographyCalibration homographyCalibration, int skip) {
+        updateRawDepth(depth);
+        updateRawColor(color);
+        depthData.clear();
+        validPointsPImage.loadPixels();
+        // set a default color. 
+        Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 255));
+
+        depthData.homographyCalibration = homographyCalibration;
+        computeDepthAndDo(skip, new Select2DPointCalibratedHomography());
         doForEachValidPoint(skip, new SetImageData());
         validPointsPImage.updatePixels();
         return validPointsPImage;

@@ -114,6 +114,12 @@ public abstract class Camera implements PConstants {
         }
     }
 
+    public PImage getPImageCopy() {
+        PImage out = parent.createImage(this.width, this.height, RGB);
+        Utils.IplImageToPImage(currentImage, out);
+        return out;
+    }
+
     /**
      * Description of the cameara, the number if using OpenCV or OpenKinect, and
      * a name or file if using Processing.
@@ -177,7 +183,7 @@ public abstract class Camera implements PConstants {
         }
     }
 
-    // Legacy, use trackMarkerBoard now. 
+    //use trackMarkerBoard now. 
     public void initMarkerDetection(String calibrationARToolkit) {
         // Marker Detection and view
         this.calibrationARToolkit = calibrationARToolkit;
@@ -193,6 +199,8 @@ public abstract class Camera implements PConstants {
             sheetsSemaphore.release();
         } catch (InterruptedException ex) {
             Logger.getLogger(Camera.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NullPointerException e){
+            throw new RuntimeException("Marker detection not initialized.");
         }
 
     }
@@ -358,9 +366,9 @@ public abstract class Camera implements PConstants {
     }
     private CvMat internalParams = null;
 
+    @Deprecated
     public PMatrix3D estimateOrientation(PVector[] objectPoints,
             PVector[] imagePoints) {
-
         return pdp.estimateOrientation(objectPoints, imagePoints);
     }
 

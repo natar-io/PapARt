@@ -125,8 +125,8 @@ public class GrayCode implements PConstants, Serializable {
         this.displayId = 0;
     }
 
-    void displayGrayCode(PGraphicsOpenGL pg) {
-        displayGrayCode(pg, this.displayId);
+    void display(PGraphicsOpenGL pg) {
+        display(pg, this.displayId);
         this.displayId += 1;
         this.displayId = this.displayId % nbCodes;
     }
@@ -138,7 +138,7 @@ public class GrayCode implements PConstants, Serializable {
      * @param pg
      * @param id
      */
-    public void displayGrayCode(PGraphicsOpenGL pg, int id) {
+    public void display(PGraphicsOpenGL pg, int id) {
 
 //        assert(pg.width == this.width);
 //        assert(pg.height == this.height);
@@ -350,7 +350,7 @@ public class GrayCode implements PConstants, Serializable {
         if (refImage != null) {
             refImage.filter(GRAY);
             refImage.loadPixels();
-        } else {
+        } else { 
             refImage = grayCodesCaptures[0];
         }
         Arrays.fill(validMask, Boolean.FALSE);

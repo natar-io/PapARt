@@ -18,6 +18,9 @@
  */
 package fr.inria.papart.procam;
 
+import fr.inria.papart.depthcam.calibration.HomographyCalibration;
+import fr.inria.papart.depthcam.calibration.HomographyCreator;
+import fr.inria.papart.depthcam.calibration.PlaneCalibration;
 import org.bytedeco.javacpp.opencv_imgproc.*;
 
 import org.bytedeco.javacv.CameraDevice;
@@ -48,7 +51,7 @@ import toxi.geom.Vec3D;
 public class Utils {
 
     static public final String LibraryName = "ProCam";
-    
+
     static public String getSketchbookFolder() {
 
         String sketchbook = java.lang.System.getenv("SKETCHBOOK");
@@ -184,6 +187,40 @@ public class Utils {
                 Float.parseFloat(lines[8]), Float.parseFloat(lines[9]), Float.parseFloat(lines[10]), Float.parseFloat(lines[11]),
                 Float.parseFloat(lines[12]), Float.parseFloat(lines[13]), Float.parseFloat(lines[14]), Float.parseFloat(lines[15]));
         return mat;
+    }
+
+    public static HomographyCalibration CreateHomographyCalibrationFrom(PMatrix3D mat, PVector size) {
+
+        float step = 0.5f;
+        int nbPoints = (int) ((1 + 1f / step) * (1 + 1f / step));
+
+        HomographyCreator homographyCreator = new HomographyCreator(3, 2, nbPoints);
+
+        for (float i = 0; i <= 1.0; i += step) {
+            for (float j = 0; j <= 1.0; j += step) {
+                mat.translate(-i * size.x, -j * size.x);
+                homographyCreator.addPoint(new PVector(mat.m03, mat.m13, mat.m23),
+                        new PVector(i, j));
+                mat.translate(i * size.x, j * size.x);
+            }
+        }
+        assert (homographyCreator.isValid());
+
+        return homographyCreator.getHomography();
+    }
+
+    public static PlaneCalibration CreatePlaneCalibrationFrom(PMatrix3D mat, PVector size) {
+        PlaneCalibration planeCalibration = new PlaneCalibration();
+
+        planeCalibration.addPoint(new Vec3D(mat.m03, mat.m13, mat.m23));
+        mat.translate(size.x, 0, 0);
+        planeCalibration.addPoint(new Vec3D(mat.m03, mat.m13, mat.m23));
+        mat.translate(0, size.y, 0);
+        planeCalibration.addPoint(new Vec3D(mat.m03, mat.m13, mat.m23));
+
+        planeCalibration.moveAlongNormal(-8f);
+        assert (planeCalibration.isValid());
+        return planeCalibration;
     }
 
     static public IplImage createImageFrom(IplImage imgIn, PImage Pout) {
@@ -390,7 +427,6 @@ public class Utils {
 //        }
         assert (img.width() == ret.width);
         assert (img.height() == ret.height);
-        BufferedImage bimg;
         //= new BufferedImage();
 
         if (img.nChannels() == 3) {
@@ -479,11 +515,11 @@ public class Utils {
 //        buff = null;
         ret.updatePixels();
     }
-    
-    static public void byteBufferBRGtoARGB(ByteBuffer bgr, ByteBuffer argb){
+
+    static public void byteBufferBRGtoARGB(ByteBuffer bgr, ByteBuffer argb) {
         byte[] tmpArr = new byte[3];
-        
-        for(int i = 0; i < bgr.capacity(); i += 3){
+
+        for (int i = 0; i < bgr.capacity(); i += 3) {
             bgr.get(tmpArr);
 
             argb.put(tmpArr[2]);
@@ -493,8 +529,7 @@ public class Utils {
         }
         argb.rewind();
     }
-    
-    
+
     // TODO
     private static byte[] kinectByteArray = null;
 

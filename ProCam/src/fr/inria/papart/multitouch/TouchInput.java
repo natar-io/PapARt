@@ -20,7 +20,7 @@ package fr.inria.papart.multitouch;
 
 import fr.inria.papart.procam.ARDisplay;
 import fr.inria.papart.procam.BaseDisplay;
-import fr.inria.papart.procam.Projector;
+import fr.inria.papart.procam.ProjectorDisplay;
 import fr.inria.papart.procam.Screen;
 import java.util.ArrayList;
 import processing.core.PVector;
@@ -36,13 +36,13 @@ public abstract class TouchInput {
     abstract public TouchList projectTouchToScreen(Screen screen, BaseDisplay display);
 
     protected PVector project(Screen screen, BaseDisplay display, float x, float y) throws Exception {
-        boolean isProjector = display instanceof Projector;
+        boolean isProjector = display instanceof ProjectorDisplay;
         boolean isARDisplay = display instanceof ARDisplay;
 
         // check that the correct method is called !
         PVector paperScreenCoord;
         if (isProjector) {
-            paperScreenCoord = ((Projector) display).projectPointer(screen, x, y);
+             paperScreenCoord = ((ProjectorDisplay) display).projectPointer(screen, x, y);
         } else {
             if (isARDisplay) {
                 paperScreenCoord = ((ARDisplay) display).projectPointer(screen, x, y);

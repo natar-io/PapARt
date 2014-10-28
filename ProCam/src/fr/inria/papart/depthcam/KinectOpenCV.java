@@ -87,7 +87,12 @@ public class KinectOpenCV extends Kinect {
         }
     }
 
+    @Deprecated
     public IplImage getDepthColorIpl() {
+        return validPointsIpl;
+    }
+
+    public IplImage getColouredDepthImage() {
         return validPointsIpl;
     }
 
