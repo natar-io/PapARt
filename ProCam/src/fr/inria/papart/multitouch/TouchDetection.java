@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2014 Jeremy Laviole <jeremy.laviole@inria.fr>.
  *
  * This library is free software; you can redistribute it and/or
@@ -20,54 +20,112 @@ package fr.inria.papart.multitouch;
 
 import fr.inria.papart.depthcam.DepthData;
 import fr.inria.papart.depthcam.Kinect;
-import fr.inria.papart.depthcam.KinectScreenCalibration;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import processing.core.PApplet;
-import static processing.core.PConstants.EPSILON;
 import processing.core.PVector;
 import toxi.geom.Vec3D;
 
 /**
- * This class is detecting elements close to a predifined plane.
  *
- * @author jeremy
+ * @author Jeremy Laviole <jeremy.laviole@inria.fr>
  */
-public class TouchDetection {
+public abstract class TouchDetection {
 
-    public static float currentMaxDistance;
-    public static float maxDistance = 8f;    // in mm
-    public static float maxDistance3D = 20f;    // in mm
+    protected float maxDistance = 10f;    // in mm
+    protected float MINIMUM_COMPONENT_SIZE = 5;   // in px
+    protected int MAX_REC = 500;
 
-    public static float MINIMUM_COMPONENT_SIZE = 5;   // in px
-    public static float MINIMUM_COMPONENT_SIZE_3D = 50; // in px
+    protected boolean[] assignedPoints = null;
+    protected byte[] connectedComponentImage = null;
 
-    public static int MAX_REC = 500;
+    protected final byte NO_CONNECTED_COMPONENT = 0;
+    protected final byte STARTING_CONNECTED_COMPONENT = 1;
 
-    // created here
-    protected static boolean[] assignedPoints = null;
-    protected static byte[] connectedComponentImage = null;
-    protected static byte currentCompo = 1;
+    protected byte currentCompo = STARTING_CONNECTED_COMPONENT;
 
 // set by calling function
-    protected static boolean[] validPoints;
-    protected static DepthData depthData;
-    protected static int precision;
+    protected DepthData depthData;
+    protected int precision;
+    protected int searchDepth;
 
-    public static ConnectedComponent findNeighboursRec(
-            int currentPoint,
-            int halfNeigh,
-            Set<Integer> toVisit,
-            int recLevel) {
+    protected HashSet<Integer> toVisit;
+    protected PointValidityCondition currentPointValidityCondition;
+
+    public interface PointValidityCondition {
+
+        public boolean checkPoint(int offset, int currentPoint);
+    }
+
+    public TouchDetection(int size) {
+        allocateMemory(size);
+    }
+
+    public abstract ArrayList<TouchPoint> compute(DepthData dData, int skip);
+
+    protected void allocateMemory(int size) {
+        assignedPoints = new boolean[size];
+        connectedComponentImage = new byte[size];
+    }
+
+    protected void clearMemory() {
+        Arrays.fill(assignedPoints, false);
+        Arrays.fill(connectedComponentImage, NO_CONNECTED_COMPONENT);
+        currentCompo = STARTING_CONNECTED_COMPONENT;
+    }
+
+    protected boolean hasCCToFind() {
+        return !depthData.validPointsList.isEmpty();
+    }
+
+    protected ArrayList<ConnectedComponent> findConnectedComponents() {
+        clearMemory();
+        setSearchParameters();
+        ArrayList<ConnectedComponent> connectedComponents = computeAllConnectedComponents();
+        return connectedComponents;
+    }
+
+    protected abstract void setSearchParameters();
+
+    protected ArrayList<TouchPoint> createTouchPointsFrom(ArrayList<ConnectedComponent> connectedComponents) {
+        ArrayList<TouchPoint> touchPoints = new ArrayList<TouchPoint>();
+        for (ConnectedComponent connectedComponent : connectedComponents) {
+            if (connectedComponent.size() < MINIMUM_COMPONENT_SIZE) {
+                continue;
+            }
+            TouchPoint tp = createTouchPoint(connectedComponent);
+            touchPoints.add(tp);
+        }
+        return touchPoints;
+    }
+
+    protected ArrayList<ConnectedComponent> computeAllConnectedComponents() {
+
+        ArrayList<ConnectedComponent> connectedComponents = new ArrayList<ConnectedComponent>();
+
+        // recursive search for each component. 
+        while (toVisit.size() > 0) {
+            int startingPoint = toVisit.iterator().next();
+            ConnectedComponent cc = findConnectedComponent(startingPoint);
+            connectedComponents.add(cc);
+        }
+        return connectedComponents;
+    }
+
+    // TODO: chec if currentCompo ++ is relevent. 
+    protected ConnectedComponent findConnectedComponent(int startingPoint) {
+        ConnectedComponent cc = findNeighboursRec(startingPoint, 0);
+        cc.setId(currentCompo);
+        currentCompo++;
+        return cc;
+    }
+
+    public ConnectedComponent findNeighboursRec(int currentPoint, int recLevel) {
 
         // TODO: optimisations here ?
-        int x = currentPoint % Kinect.KINECT_WIDTH;
-        int y = currentPoint / Kinect.KINECT_WIDTH;
-
+        int x = currentPoint % Kinect.WIDTH;
+        int y = currentPoint / Kinect.WIDTH;
         ConnectedComponent neighbourList = new ConnectedComponent();
         ArrayList<Integer> visitNext = new ArrayList<Integer>();
 
@@ -75,169 +133,89 @@ public class TouchDetection {
             return neighbourList;
         }
 
-        int minX = PApplet.constrain(x - halfNeigh, 0, Kinect.KINECT_WIDTH - 1);
-        int maxX = PApplet.constrain(x + halfNeigh, 0, Kinect.KINECT_WIDTH - 1);
-        int minY = PApplet.constrain(y - halfNeigh, 0, Kinect.KINECT_HEIGHT - 1);
-        int maxY = PApplet.constrain(y + halfNeigh, 0, Kinect.KINECT_HEIGHT - 1);
+        int minX = PApplet.constrain(x - searchDepth, 0, Kinect.WIDTH - 1);
+        int maxX = PApplet.constrain(x + searchDepth, 0, Kinect.WIDTH - 1);
+        int minY = PApplet.constrain(y - searchDepth, 0, Kinect.HEIGHT - 1);
+        int maxY = PApplet.constrain(y + searchDepth, 0, Kinect.HEIGHT - 1);
 
         for (int j = minY; j <= maxY; j += precision) {
             for (int i = minX; i <= maxX; i += precision) {
-
-                int offset = j * Kinect.KINECT_WIDTH + i;
+                int offset = j * Kinect.WIDTH + i;
 
                 // Avoid getting ouside the limits
-                if (isValidNeighbour(offset, currentPoint)) {
+                if (currentPointValidityCondition.checkPoint(offset, currentPoint)) {
 
                     assignedPoints[offset] = true;
                     connectedComponentImage[offset] = currentCompo;
 
+                    // Remove If present -> it might not be the case often. 
                     toVisit.remove(offset);
                     neighbourList.add((Integer) offset);
-
-//                    // if is is on a border ??
-//                    if (i == minX || j == minX || i >= maxX - skip || j >= maxY - skip) {
                     visitNext.add(offset);
-//                    } // if it is a border
-
                 } // if is ValidPoint
-
             } // for j
         } // for i
 
         for (int offset : visitNext) {
-            neighbourList.addAll(findNeighboursRec(
-                    offset,
-                    halfNeigh,
-                    toVisit,
-                    recLevel + 1));
+            ConnectedComponent subNeighbours = findNeighboursRec(offset, recLevel + 1);
+            neighbourList.addAll(subNeighbours);
         }
 
         return neighbourList;
     }
 
-    protected static boolean isValidNeighbour(int offset, int currentPoint) {
-        float distanceToCurrent = depthData.kinectPoints[offset].distanceTo(depthData.kinectPoints[currentPoint]);
-
-        return !assignedPoints[offset] // not assigned  
-                && validPoints[offset] // valid point (in the research space)
-                && (depthData.kinectPoints[offset] != Kinect.INVALID_POINT) // invalid point (invalid depth)
-                && distanceToCurrent < maxDistance;
+    protected TouchPoint createTouchPoint(ConnectedComponent connectedComponent) {
+        Vec3D meanProj = connectedComponent.getMean(depthData.projectedPoints);
+        Vec3D meanKinect = connectedComponent.getMean(depthData.kinectPoints);
+        TouchPoint tp = new TouchPoint();
+        tp.setPosition(meanProj);
+        tp.setPositionKinect(meanKinect);
+        tp.setCreationTime(depthData.timeStamp);
+        tp.set3D(false);
+        tp.setConfidence(connectedComponent.size() / MINIMUM_COMPONENT_SIZE);
+        return tp;
     }
 
-    public static ArrayList<TouchPoint> findMultiTouch2D(DepthData dData, int skip) {
-        initWith(dData, skip);
+    public float ERROR_DISTANCE_MULTIPLIER = 1.3f;
+    public float NOISE_ESTIMATION = 1f; // in millimeter. 
 
-        validPoints = depthData.validPointsMask;
-        Set<Integer> toVisit = new HashSet<Integer>();
-        toVisit.addAll(depthData.validPointsList);
+    protected void setPrecisionFrom(int firstPoint) {
 
-        ArrayList<TouchPoint> touchPointFounds = new ArrayList<TouchPoint>();
-        ArrayList<ConnectedComponent> connectedComponents = findConnectedComponents(toVisit);
+        Vec3D currentPoint = depthData.kinectPoints[firstPoint];
+        PVector coordinates = depthData.projectiveDevice.getCoordinates(firstPoint);
 
-        for (ConnectedComponent connectedComponent : connectedComponents) {
+        // Find a point. 
+        int x = (int) coordinates.x;
+        int y = (int) coordinates.y;
+        int minX = PApplet.constrain(x - precision, 0, depthData.projectiveDevice.getWidth() - 1);
+        int maxX = PApplet.constrain(x + precision, 0, depthData.projectiveDevice.getWidth() - 1);
+        int minY = PApplet.constrain(y - precision, 0, depthData.projectiveDevice.getHeight() - 1);
+        int maxY = PApplet.constrain(y + precision, 0, depthData.projectiveDevice.getHeight() - 1);
 
-            if (connectedComponent.size() < MINIMUM_COMPONENT_SIZE) {
-                continue;
+        for (int j = minY; j <= maxY; j += precision) {
+            for (int i = minX; i <= maxX; i += precision) {
+                Vec3D nearbyPoint = depthData.projectiveDevice.pixelToWorld(i,
+                        j, currentPoint.z);
+
+                // Set the distance. 
+                setDistance(currentPoint.distanceTo(nearbyPoint));
+                return;
             }
-            
-            Vec3D meanProj = connectedComponent.getMean(depthData.projectedPoints);
-            Vec3D meanKinect = connectedComponent.getMean(depthData.kinectPoints);
-            TouchPoint tp = new TouchPoint();
-            tp.setPosition(meanProj);
-            tp.setPositionKinect(meanKinect);
-            tp.set3D(false);
-            tp.setConfidence(connectedComponent.size() / MINIMUM_COMPONENT_SIZE);
-            
-            touchPointFounds.add(tp);
-        }
-
-        return touchPointFounds;
+        } // for i
     }
 
-    public static ArrayList<TouchPoint> findMultiTouch3D(DepthData dData, int skip) {
-        initWith(dData, skip);
-
-        validPoints = depthData.validPointsMask3D;
-        Set<Integer> toVisit = new HashSet<Integer>();
-        toVisit.addAll(depthData.validPointsList3D);
-
-        ArrayList<ConnectedComponent> connectedComponents = findConnectedComponents(toVisit);
-        ArrayList<TouchPoint> touchPointFounds = new ArrayList<TouchPoint>();
-        ClosestComparatorY closestComparator = new ClosestComparatorY(depthData.projectedPoints);
-
-        for (ConnectedComponent connectedComponent : connectedComponents) {
-
-            if (connectedComponent.size() < MINIMUM_COMPONENT_SIZE_3D) {
-                continue;
-            }
-
-            // get a subset of the points.
-            Collections.sort(connectedComponent, closestComparator);
-
-            //  Get a sublist
-            List<Integer> subList = connectedComponent.subList(0, 10);
-            ConnectedComponent subCompo = new ConnectedComponent();
-            subCompo.addAll(subList);
-
-            Vec3D meanProj = subCompo.getMean(depthData.projectedPoints);
-            Vec3D meanKinect = subCompo.getMean(depthData.kinectPoints);
-            TouchPoint tp = new TouchPoint();
-            tp.setPosition(meanProj);
-            tp.setPositionKinect(meanKinect);
-            tp.set3D(true);
-            tp.setConfidence(connectedComponent.size() / MINIMUM_COMPONENT_SIZE_3D);
-            touchPointFounds.add(tp);
-        }
-
-        return touchPointFounds;
+    protected void setDistance(float distance) {
+        maxDistance = (distance + NOISE_ESTIMATION) * ERROR_DISTANCE_MULTIPLIER;
     }
 
-    protected static void initWith(DepthData dData, int skip) {
-        depthData = dData;
-        precision = skip;
-        int nbPoints = depthData.kinectPoints.length;
-        checkMemoryAllocation(nbPoints);
-    }
+    public float sideError = 0.2f;
 
-    protected static ArrayList<ConnectedComponent> findConnectedComponents(Set<Integer> toVisit) {
-        clearMemory();
-        currentCompo = 1;
-        ArrayList<ConnectedComponent> connectedComponents = new ArrayList<ConnectedComponent>();
-        int searchDepth = precision; // on each direction
-        // New method, recursive way. 
-        while (toVisit.size() > 0) {
-            int startingPoint = toVisit.iterator().next();
-            ConnectedComponent neighbours = findNeighboursRec(
-                    startingPoint,
-                    searchDepth,
-                    toVisit,
-                    0);
-
-            connectedComponents.add(neighbours);
-            currentCompo++;
-        }
-        return connectedComponents;
-    }
-
-    protected static void checkMemoryAllocation(int size) {
-        if (assignedPoints == null && connectedComponentImage == null) {
-            assignedPoints = new boolean[size];
-            connectedComponentImage = new byte[size];
-        }
-    }
-
-    protected static void clearMemory() {
-        Arrays.fill(assignedPoints, false);
-        Arrays.fill(connectedComponentImage, (byte) 0);
-    }
-
-    public static float sideError = 0.2f;
-
-    public static boolean isInside(Vec3D v, float min, float max) {
+    public boolean isInside(Vec3D v, float min, float max) {
         return v.x > min - sideError && v.x < max + sideError && v.y < max + sideError && v.y > min - sideError;
     }
 
-    public static boolean isInside(PVector v, float min, float max) {
+    public boolean isInside(PVector v, float min, float max) {
         return v.x > min - sideError && v.x < max + sideError && v.y < max + sideError && v.y > min - sideError;
     }
+
 }

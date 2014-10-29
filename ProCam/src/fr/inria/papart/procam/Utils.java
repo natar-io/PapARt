@@ -18,6 +18,10 @@
  */
 package fr.inria.papart.procam;
 
+import fr.inria.papart.depthcam.calibration.HomographyCalibration;
+import fr.inria.papart.depthcam.calibration.HomographyCreator;
+import fr.inria.papart.depthcam.calibration.PlaneCalibration;
+import fr.inria.papart.depthcam.calibration.PlaneCreator;
 import org.bytedeco.javacpp.opencv_imgproc.*;
 
 import org.bytedeco.javacv.CameraDevice;
@@ -48,7 +52,7 @@ import toxi.geom.Vec3D;
 public class Utils {
 
     static public final String LibraryName = "ProCam";
-    
+
     static public String getSketchbookFolder() {
 
         String sketchbook = java.lang.System.getenv("SKETCHBOOK");
@@ -185,6 +189,7 @@ public class Utils {
                 Float.parseFloat(lines[12]), Float.parseFloat(lines[13]), Float.parseFloat(lines[14]), Float.parseFloat(lines[15]));
         return mat;
     }
+
 
     static public IplImage createImageFrom(IplImage imgIn, PImage Pout) {
         // TODO: avoid this creation !!
@@ -390,7 +395,6 @@ public class Utils {
 //        }
         assert (img.width() == ret.width);
         assert (img.height() == ret.height);
-        BufferedImage bimg;
         //= new BufferedImage();
 
         if (img.nChannels() == 3) {
@@ -479,11 +483,11 @@ public class Utils {
 //        buff = null;
         ret.updatePixels();
     }
-    
-    static public void byteBufferBRGtoARGB(ByteBuffer bgr, ByteBuffer argb){
+
+    static public void byteBufferBRGtoARGB(ByteBuffer bgr, ByteBuffer argb) {
         byte[] tmpArr = new byte[3];
-        
-        for(int i = 0; i < bgr.capacity(); i += 3){
+
+        for (int i = 0; i < bgr.capacity(); i += 3) {
             bgr.get(tmpArr);
 
             argb.put(tmpArr[2]);
@@ -493,8 +497,7 @@ public class Utils {
         }
         argb.rewind();
     }
-    
-    
+
     // TODO
     private static byte[] kinectByteArray = null;
 

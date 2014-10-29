@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2014 Jeremy Laviole <jeremy.laviole@inria.fr>.
  *
  * This library is free software; you can redistribute it and/or
@@ -16,45 +16,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package fr.inria.papart.multitouch;
-
-import java.util.ArrayList;
-import toxi.geom.Vec3D;
+package fr.inria.papart.depthcam.calibration;
 
 /**
  *
- * @author jiii
+ * @author Jeremy Laviole <jeremy.laviole@inria.fr>
  */
-public class ConnectedComponent extends ArrayList<Integer> {
-
-    private int id;
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-    
-    public Vec3D getMean(Vec3D[] array) {
-        Vec3D mean = new Vec3D(0, 0, 0);
-        for (int offset : this) {
-            mean.addSelf(array[offset]);
-        }
-        mean.scaleSelf(1.0f / this.size());
-        return mean;
-    }
-
-    public float getMinZ(Vec3D[] array) {
-        float min = Float.MAX_VALUE;
-        for (int offset : this) {
-            float z = array[offset].z;
-            if (z < min) {
-                min = z;
-            }
-        }
-        return min;
-    }
+public class Common {
+    static final String currentPath = "test/fr/inria/papart/depthcam/calibration/";
+    static final String HomographyCalibration = "homographyCalibration1.xml";
+    static final String HomographyCalibrationCopy = "homographyCalibration1Copy.xml";
+    static final String PlaneCalibration = "planeCalibration1.xml";
+    static final String PlaneProjectionCalibration = "planeProjectionCalibration1.xml";
+    static final String PlaneCalibrationCopy = "planeCalibration1Copy.xml";
 
 }

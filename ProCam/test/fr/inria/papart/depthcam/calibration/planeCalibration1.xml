@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calibration>
+  <Plane>
+    <Position x="0.6666667" y="0.33333334" z="0.0"/>
+    <Normal x="-0.0" y="0.0" z="-1.0"/>
+    <Height Height="15.0"/>
+  </Plane>
+</Calibration>

@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2014 Jeremy Laviole <jeremy.laviole@inria.fr>.
  *
  * This library is free software; you can redistribute it and/or
@@ -16,45 +16,26 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package fr.inria.papart.multitouch;
 
-import java.util.ArrayList;
-import toxi.geom.Vec3D;
+package fr.inria.papart.depthcam.calibration;
 
 /**
  *
- * @author jiii
+ * @author Jeremy Laviole <jeremy.laviole@inria.fr>
  */
-public class ConnectedComponent extends ArrayList<Integer> {
 
-    private int id;
+import processing.core.PApplet;
 
-    public int getId() {
-        return id;
+public class Sketch extends PApplet {
+
+    @Override
+    public void setup() {
+        size(200, 200);
+        stroke(155, 0, 0);
     }
 
-    public void setId(int id) {
-        this.id = id;
+    @Override
+    public void draw() {
+        line(mouseX, mouseY, width / 2, height / 2);
     }
-    
-    public Vec3D getMean(Vec3D[] array) {
-        Vec3D mean = new Vec3D(0, 0, 0);
-        for (int offset : this) {
-            mean.addSelf(array[offset]);
-        }
-        mean.scaleSelf(1.0f / this.size());
-        return mean;
-    }
-
-    public float getMinZ(Vec3D[] array) {
-        float min = Float.MAX_VALUE;
-        for (int offset : this) {
-            float z = array[offset].z;
-            if (z < min) {
-                min = z;
-            }
-        }
-        return min;
-    }
-
 }

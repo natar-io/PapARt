@@ -18,12 +18,14 @@
  */
 package fr.inria.papart.depthcam;
 
+import fr.inria.papart.depthcam.calibration.PlaneAndProjectionCalibration;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import java.nio.ByteBuffer;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
+import toxi.geom.Plane;
 import toxi.geom.Vec3D;
 
 /**
@@ -37,7 +39,7 @@ import toxi.geom.Vec3D;
 public class Kinect {
 
 // TODO: check theses...
-    public float closeThreshold = 300f, farThreshold = 4000f;
+    private float closeThreshold = 300f, farThreshold = 4000f;
 
     // Configuration 
     public ProjectiveDeviceP kinectCalibIR, kinectCalibRGB;
@@ -53,9 +55,9 @@ public class Kinect {
     protected int[] connexity;  // TODO: check for Byte instead of int
     protected DepthData depthData;
 
-    public static final int KINECT_WIDTH = 640;
-    public static final int KINECT_HEIGHT = 480;
-    public static final int KINECT_SIZE = KINECT_WIDTH * KINECT_HEIGHT;
+    public static final int WIDTH = 640;
+    public static final int HEIGHT = 480;
+    public static final int SIZE = WIDTH * HEIGHT;
 
     public static PApplet papplet;
 
@@ -95,7 +97,7 @@ public class Kinect {
         translateCam.mult(vt, vt2);
         return kinectCalibRGB.worldToPixel(new Vec3D(vt2.x, vt2.y, vt2.z));
     }
-    
+
     public int findColorOffset(PVector v) {
         PVector vt = new PVector(v.x, v.y, v.z);
         PVector vt2 = new PVector();
@@ -109,7 +111,8 @@ public class Kinect {
     protected void init() {
         colorRaw = new byte[kinectCalibIR.getSize() * 3];
         depthRaw = new byte[kinectCalibIR.getSize() * 2];
-        depthData = new DepthData(KINECT_SIZE);
+        depthData = new DepthData(SIZE);
+        depthData.projectiveDevice = this.kinectCalibIR;
 
         if (depthLookUp == null) {
             depthLookUp = new float[2048];
@@ -137,29 +140,32 @@ public class Kinect {
         computeDepthAndDo(skip, new DoNothing());
     }
 
-    public void updateMT(IplImage depth, KinectScreenCalibration calib, int skip2D, int skip3D) {
+    public void updateMT(IplImage depth, PlaneAndProjectionCalibration calib, int skip2D, int skip3D) {
         updateRawDepth(depth);
         depthData.clear();
-        depthData.calibration = calib;
+        depthData.timeStamp = papplet.millis();
+        depthData.planeAndProjectionCalibration = calib;
         computeDepthAndDo(1, new DoNothing());
-        doForEachPoint(skip2D, new Select2DPoint());
-        doForEachPoint(skip3D, new Select3DPoint());
+        doForEachPoint(skip2D, new Select2DPointPlaneProjection());
+        doForEachPoint(skip3D, new Select3DPointPlaneProjection());
     }
 
-    public void updateMT2D(IplImage depth, KinectScreenCalibration calib, int skip) {
+    public void updateMT2D(IplImage depth, PlaneAndProjectionCalibration calib, int skip) {
         updateRawDepth(depth);
         depthData.clearDepth();
         depthData.clear2D();
-        depthData.calibration = calib;
-        computeDepthAndDo(skip, new Select2DPoint());
+        depthData.timeStamp = papplet.millis();
+        depthData.planeAndProjectionCalibration = calib;
+        computeDepthAndDo(skip, new Select2DPointPlaneProjection());
     }
 
-    public void updateMT3D(IplImage depth, KinectScreenCalibration calib, int skip) {
+    public void updateMT3D(IplImage depth, PlaneAndProjectionCalibration calib, int skip) {
         updateRawDepth(depth);
         depthData.clearDepth();
         depthData.clear3D();
-        depthData.calibration = calib;
-        computeDepthAndDo(skip, new Select3DPoint());
+        depthData.timeStamp = papplet.millis();
+        depthData.planeAndProjectionCalibration = calib;
+        computeDepthAndDo(skip, new Select3DPointPlaneProjection());
     }
 
     protected void computeDepthAndDo(int precision, DepthPointManiplation manip) {
@@ -205,7 +211,7 @@ public class Kinect {
             }
         }
     }
-    
+
     protected void doForEachValidPoint(int precision, DepthPointManiplation manip) {
         for (int y = 0; y < kinectCalibIR.getHeight(); y += precision) {
             for (int x = 0; x < kinectCalibIR.getWidth(); x += precision) {
@@ -231,7 +237,7 @@ public class Kinect {
     static protected final float INVALID_DEPTH = -1;
 
     /**
-     * @return the depth (float) or -1 if it failed.
+     * @return the depth (float) or INVALID_DEPTH if it failed.
      */
     protected float getDepth(int offset) {
         float d = (depthRaw[offset * 2] & 0xFF) << 8
@@ -257,24 +263,12 @@ public class Kinect {
         public void execute(Vec3D p, int x, int y, int offset);
     }
 
-    class ComputeCalibration implements DepthPointManiplation {
+    class Select2DPointPlaneProjection implements DepthPointManiplation {
 
         @Override
         public void execute(Vec3D p, int x, int y, int offset) {
-            if (depthData.calibration.plane().hasGoodOrientation(p)) {
-                Vec3D project = depthData.calibration.project(p);
-                depthData.kinectPoints[offset] = p;
-                depthData.projectedPoints[offset] = project;
-            }
-        }
-    }
-
-    class Select2DPoint implements DepthPointManiplation {
-
-        @Override
-        public void execute(Vec3D p, int x, int y, int offset) {
-            if (depthData.calibration.plane().hasGoodOrientationAndDistance(p)) {
-                Vec3D projected = depthData.calibration.project(p);
+            if (depthData.planeAndProjectionCalibration.hasGoodOrientationAndDistance(p)) {
+                Vec3D projected = depthData.planeAndProjectionCalibration.project(p);
                 depthData.projectedPoints[offset] = projected;
                 if (isInside(projected, 0.f, 1.f, 0.0f)) {
                     depthData.validPointsMask[offset] = true;
@@ -284,12 +278,65 @@ public class Kinect {
         }
     }
 
-    class Select3DPoint implements DepthPointManiplation {
+    class SelectPlaneTouchHand implements DepthPointManiplation {
 
         @Override
         public void execute(Vec3D p, int x, int y, int offset) {
-            if (depthData.calibration.plane().hasGoodOrientation(p)) {
-                Vec3D projected = depthData.calibration.project(p);
+
+            boolean overTouch = depthData.planeAndProjectionCalibration.hasGoodOrientation(p);
+            boolean underTouch = depthData.planeAndProjectionCalibration.isUnderPlane(p);
+            boolean touchSurface = depthData.planeAndProjectionCalibration.hasGoodOrientationAndDistance(p);
+
+            Vec3D projected = depthData.planeAndProjectionCalibration.project(p);
+
+            if (isInside(projected, 0.f, 1.f, 0.0f)) {
+
+                depthData.projectedPoints[offset] = projected;
+                depthData.touchAttributes[offset] = new TouchAttributes(touchSurface, underTouch, overTouch);
+                depthData.validPointsMask[offset] = touchSurface;
+
+                if (touchSurface) {
+                    depthData.validPointsList.add(offset);
+                }
+            }
+        }
+    }
+
+    class Select2DPointOverPlane implements DepthPointManiplation {
+
+        @Override
+        public void execute(Vec3D p, int x, int y, int offset) {
+            if (depthData.planeCalibration.hasGoodOrientation(p)) {
+                depthData.validPointsMask[offset] = true;
+                depthData.validPointsList.add(offset);
+            }
+        }
+    }
+
+    class Select2DPointCalibratedHomography implements DepthPointManiplation {
+
+        @Override
+        public void execute(Vec3D p, int x, int y, int offset) {
+
+            PVector projected = new PVector();
+            PVector init = new PVector(p.x, p.y, p.z);
+
+            depthData.homographyCalibration.getHomographyInv().mult(init, projected);
+
+            // TODO: Find how to select the points... 
+            if (projected.z > 10 && projected.x > 0 && projected.y > 0) {
+                depthData.validPointsMask[offset] = true;
+                depthData.validPointsList.add(offset);
+            }
+        }
+    }
+
+    class Select3DPointPlaneProjection implements DepthPointManiplation {
+
+        @Override
+        public void execute(Vec3D p, int x, int y, int offset) {
+            if (depthData.planeAndProjectionCalibration.hasGoodOrientation(p)) {
+                Vec3D projected = depthData.planeAndProjectionCalibration.project(p);
                 depthData.projectedPoints[offset] = projected;
                 if (isInside(projected, 0.f, 1.f, 0.2f)) {
                     depthData.validPointsMask3D[offset] = true;

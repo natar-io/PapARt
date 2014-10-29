@@ -22,6 +22,8 @@ import fr.inria.papart.depthcam.DepthPoint;
 import processing.core.PVector;
 import toxi.geom.Vec3D;
 
+// TODO: TrackedTouchPoint ...
+// TODO: Filtered TouchPoint ...
 /**
  * TouchPoint class for multi-touch tracking.
  *
@@ -43,13 +45,13 @@ public class TouchPoint extends DepthPoint {
     private boolean isCloseToPlane;
 
     // Tracking related variables
-    private static int globalID = 0;
-    protected int id;
-    protected int updateTime = 0;
-    protected int createTime = -1;
-    private boolean isNew;
-    private boolean toDelete = false;
+    private static final int NO_ID = 0;
+    private static int globalID = 1;
+    protected int id = NO_ID;
+    private int updateTime;
+    private int createTime = -1;
 
+    private boolean toDelete = false;
     public boolean isUpdated = false;
 
 // filtering 
@@ -60,8 +62,6 @@ public class TouchPoint extends DepthPoint {
     public static final int NO_TIME = -1;
 
     public TouchPoint() {
-        id = globalID++;
-        isNew = true;
         try {
             filters = new OneEuroFilter[3];
             for (int i = 0; i < 3; i++) {
@@ -75,13 +75,13 @@ public class TouchPoint extends DepthPoint {
     @Override
     public void setPosition(Vec3D pos) {
         super.setPosition(pos);
-        initPreviousPosition();
+        setPreviousPosition();
     }
 
     @Override
     public void setPosition(PVector pos) {
         super.setPosition(pos);
-        initPreviousPosition();
+        setPreviousPosition();
     }
 
     public float distanceTo(TouchPoint tp) {
@@ -101,17 +101,8 @@ public class TouchPoint extends DepthPoint {
         return this.previousPositionKinect;
     }
 
-    public Vec3D setPreviousPositionKinect() {
-        return this.previousPositionKinect;
-    }
-
-    private void initPreviousPosition() {
-        if (this.isNew) {
-            previousPosition = new PVector();
-            previousPosition.set(this.position);
-        } else {
-            throw new RuntimeException("TouchPoint: position can be set only once.");
-        }
+    private void setPreviousPosition() {
+        previousPosition.set(this.position);
     }
 
     public PVector getPreviousPosition() {
@@ -128,29 +119,32 @@ public class TouchPoint extends DepthPoint {
         }
     }
 
-    public boolean updateWith(TouchPoint tp, int currentTime) {
-
+    public boolean updateWith(TouchPoint tp) {
         if (isUpdated || tp.isUpdated) {
             return false;
         }
 
-        // these points are used for update
+        assert (this.createTime < tp.createTime);
+
+        // these points are used for update. They will not be used again.
         this.setUpdated(true);
         tp.setUpdated(true);
 
-        if (this.createTime == NO_TIME) {
-            this.createTime = currentTime;
-        }
-        tp.updateTime = currentTime;
-        this.updateTime = currentTime;
+        // mark the last update as the creation of the other point. 
+        this.updateTime = tp.createTime;
 
         // delete the updating point (keep the existing one)
+        // TODO: check this as it is obvious ?
         tp.toDelete = true;
 
         updatePosition(tp);
 
+        // The touchPoint gets an ID, it is a grown up now. 
+        if (this.id == NO_ID) {
+            this.id = globalID++;
+        }
+
         filter();
-        isNew = false;
         return true;
     }
 
@@ -171,10 +165,6 @@ public class TouchPoint extends DepthPoint {
         speed.sub(this.previousPosition);
     }
 
-    public PVector getSpeed() {
-        return this.speed;
-    }
-
     public boolean isObselete(int currentTime, int duration) {
         return (currentTime - updateTime) > duration;
     }
@@ -184,6 +174,7 @@ public class TouchPoint extends DepthPoint {
     }
 
     static final int SHORT_TIME_PERIOD = 200;  // in ms
+
     public boolean isYoung(int currentTime) {
         int age = getAge(currentTime);
         return age == NO_TIME || age < SHORT_TIME_PERIOD;
@@ -195,6 +186,15 @@ public class TouchPoint extends DepthPoint {
         } else {
             return currentTime - this.createTime;
         }
+    }
+
+    public void setCreationTime(int timeStamp) {
+        this.createTime = timeStamp;
+        this.updateTime = timeStamp;
+    }
+
+    public PVector getSpeed() {
+        return this.speed;
     }
 
     protected void setUpdated(boolean updated) {
@@ -235,6 +235,10 @@ public class TouchPoint extends DepthPoint {
 
     public boolean isToDelete() {
         return this.toDelete;
+    }
+
+    public int lastUpdate() {
+        return this.updateTime;
     }
 
     @Override

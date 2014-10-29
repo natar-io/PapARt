@@ -39,8 +39,8 @@ public class CameraOpenKinect extends Camera {
     private OpenKinectFrameGrabber grabber;
     private IplImage depthImage;
 
-    private int depthFormat = freenect.FREENECT_DEPTH_10BIT;
-    // other possibility freenect.FREENECT_DEPTH_MM;
+    private int depthFormat = freenect.FREENECT_DEPTH_MM;
+    // other possibility freenect.FREENECT_DEPTH_10_BIT -> Obselete;
 
     protected CameraOpenKinect(int cameraNo) {
         this.systemNumber = cameraNo;
