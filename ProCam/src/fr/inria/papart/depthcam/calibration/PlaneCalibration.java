@@ -19,6 +19,8 @@
 package fr.inria.papart.depthcam.calibration;
 
 import processing.core.PApplet;
+import processing.core.PMatrix3D;
+import processing.core.PVector;
 import processing.data.XML;
 import toxi.geom.Plane;
 import toxi.geom.Triangle3D;
@@ -32,7 +34,7 @@ import toxi.math.MathUtils;
 public class PlaneCalibration extends Calibration {
 
     public static final float HEIGHT_NOT_SET = -1;
-    
+
     static final String PLANE_XML_NAME = "Plane";
     static final String PLANE_POS_XML_NAME = "Position";
     static final String PLANE_NORMAL_XML_NAME = "Normal";
@@ -43,7 +45,6 @@ public class PlaneCalibration extends Calibration {
 
     private float height = HEIGHT_NOT_SET;
     private Plane plane;
-    
 
     public boolean orientation(Vec3D point, float value) {
         return plane.classifyPoint(point, 0.05f) == Plane.Classifier.BACK;
@@ -106,7 +107,6 @@ public class PlaneCalibration extends Calibration {
         return this.plane != null && this.height != HEIGHT_NOT_SET;
     }
 
-
     @Override
     public void replaceIn(XML xml) {
         XML planeNode = xml.getChild(PLANE_XML_NAME);
@@ -166,10 +166,28 @@ public class PlaneCalibration extends Calibration {
         plane.normal.set(normal);
         setHeight(h);
     }
-    
+
     @Override
-    public String toString(){
+    public String toString() {
         return this.plane.toString() + " " + this.height;
+    }
+
+    public static float DEFAULT_PLANE_SHIFT = -8f;
+
+    public static PlaneCalibration CreatePlaneCalibrationFrom(PMatrix3D mat, PVector size) {
+        PlaneCreator planeCreator = new PlaneCreator();
+
+        planeCreator.addPoint(new Vec3D(mat.m03, mat.m13, mat.m23));
+        mat.translate(size.x, 0, 0);
+        planeCreator.addPoint(new Vec3D(mat.m03, mat.m13, mat.m23));
+        mat.translate(0, size.y, 0);
+        planeCreator.addPoint(new Vec3D(mat.m03, mat.m13, mat.m23));
+
+        assert (planeCreator.isComputed());
+        PlaneCalibration planeCalibration = planeCreator.getPlaneCalibration();
+        planeCalibration.moveAlongNormal(DEFAULT_PLANE_SHIFT);
+        assert (planeCalibration.isValid());
+        return planeCalibration;
     }
 
 }

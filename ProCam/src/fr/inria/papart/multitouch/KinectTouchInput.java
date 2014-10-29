@@ -83,7 +83,6 @@ public class KinectTouchInput extends TouchInput {
         this.kinect = kinect;
         this.kinectCamera = kinectCamera;
         this.calibration = calibration;
-        kinectCamera.setTouch(this);
     }
 
     @Override
@@ -302,71 +301,19 @@ public class KinectTouchInput extends TouchInput {
         assert (touch2DPrecision != 0);
         ArrayList<TouchPoint> newList = TouchDetection.findMultiTouch2D(kinect.getDepthData(),
                 touch2DPrecision);
-        trackPoints(touchPoints2D, newList, trackNearDist);
+        TouchPointTracker.trackPoints(touchPoints2D, newList,
+                parent.millis(), trackNearDist);
     }
 
     protected void findAndTrack3D() {
         assert (touch3DPrecision != 0);
         ArrayList<TouchPoint> newList = TouchDetection.findMultiTouch3D(kinect.getDepthData(),
                 touch3DPrecision);
-        trackPoints(touchPoints3D, newList, trackNearDist3D);
+        TouchPointTracker.trackPoints(touchPoints3D, newList,
+                parent.millis(),
+                trackNearDist3D);
     }
-
-    private void trackPoints(ArrayList<TouchPoint> currentList,
-            ArrayList<TouchPoint> newPoints,
-            float trackDistance) {
-        if (newPoints != null) {
-            updatePoints(currentList, newPoints, trackDistance);
-            addNewPoints(currentList, newPoints);
-        }
-        deleteOldPoints(currentList);
-    }
-
-    private void updatePoints(ArrayList<TouchPoint> currentList, ArrayList<TouchPoint> newPoints, float trackDistance) {
-
-        // many previous points, try to find correspondances.
-        ArrayList<TouchPointTracker> tpt = new ArrayList<TouchPointTracker>();
-        for (TouchPoint newPoint : newPoints) {
-            for (TouchPoint oldPoint : currentList) {
-                tpt.add(new TouchPointTracker(oldPoint, newPoint));
-            }
-        }
-
-        // update the old touch points with the new informations. 
-        // to keep the informations coherent.
-        Collections.sort(tpt);
-        for (TouchPointTracker tpt1 : tpt) {
-            if (tpt1.distance < trackDistance) {
-                // new points are marked for deletion after update.
-                tpt1.update(parent.millis());
-            }
-        }
-    }
-
-    private void addNewPoints(ArrayList<TouchPoint> currentList, ArrayList<TouchPoint> newPoints) {
-        int currentTime = parent.millis();
-        // Add the new ones ?
-        for (TouchPoint tp : newPoints) {
-            if (!tp.isToDelete()) {
-                tp.updateTime = currentTime;
-                currentList.add(tp);
-            }
-        }
-    }
-
-    private void deleteOldPoints(ArrayList<TouchPoint> currentList) {
-        int currentTime = parent.millis();
-        // Clear the old ones 
-        for (Iterator<TouchPoint> it = currentList.iterator();
-                it.hasNext();) {
-            TouchPoint tp = it.next();
-            tp.setUpdated(false);
-            if (tp.isObselete(currentTime, forgetTime)) {
-                tp.setToDelete();
-                it.remove();
-            }
-        }
-    }
+    
 
     public void setPrecision(int precision2D, int precision3D) {
         setPrecision2D(precision2D);

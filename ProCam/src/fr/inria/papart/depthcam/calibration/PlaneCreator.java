@@ -53,6 +53,7 @@ public class PlaneCreator {
     }
 
     public PlaneCalibration getPlaneCalibration() {
+        assert (isComputed());
         PlaneCalibration planeCalibration = new PlaneCalibration();
         planeCalibration.setPlane(this.plane);
         planeCalibration.setHeight(height);

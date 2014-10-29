@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2014 Jeremy Laviole <jeremy.laviole@inria.fr>.
  *
  * This library is free software; you can redistribute it and/or
@@ -18,41 +18,69 @@
  */
 package fr.inria.papart.multitouch;
 
+import static fr.inria.papart.multitouch.KinectTouchInput.forgetTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+
 /**
  *
- * @author jeremy
+ * @author Jeremy Laviole <jeremy.laviole@inria.fr>
  */
-public class TouchPointTracker implements Comparable<TouchPointTracker> {
+public class TouchPointTracker {
 
-    TouchPoint oldTp;
-    TouchPoint newTp;
-    float distance;
+    public static void trackPoints(ArrayList<TouchPoint> currentList,
+            ArrayList<TouchPoint> newPoints, int currentTime,
+            float trackDistance) {
 
-    public TouchPointTracker(TouchPoint oldTp, TouchPoint newTp) {
-        this.oldTp = oldTp;
-        this.newTp = newTp;
-        
-        distance = oldTp.distanceTo(newTp);
+        updatePoints(currentList, newPoints, trackDistance);
+        addNewPoints(currentList, newPoints);
+
+        deleteOldPoints(currentList, currentTime);
     }
 
-    public TouchPoint getOld() {
-        return oldTp;
+    public static void updatePoints(ArrayList<TouchPoint> currentList, ArrayList<TouchPoint> newPoints, float trackDistance) {
+
+        // many previous points, try to find correspondances.
+        ArrayList<TouchPointComparison> tpt = new ArrayList<TouchPointComparison>();
+        for (TouchPoint newPoint : newPoints) {
+            for (TouchPoint oldPoint : currentList) {
+                tpt.add(new TouchPointComparison(oldPoint, newPoint));
+            }
+        }
+
+        // update the old touch points with the new informations. 
+        // to keep the informations coherent.
+        Collections.sort(tpt);
+
+        for (TouchPointComparison tpc : tpt) {
+            if (tpc.distance < trackDistance) {
+                // new points are marked for deletion after update.
+               tpc.update();
+            }
+        }
     }
 
-    public TouchPoint getNew() {
-        return newTp;
+    public static void addNewPoints(ArrayList<TouchPoint> currentList, ArrayList<TouchPoint> newPoints) {
+
+        // Add the new ones ?
+        for (TouchPoint tp : newPoints) {
+            if (!tp.isToDelete()) {
+                currentList.add(tp);
+            }
+        }
     }
 
-    public boolean update(int currentTime) {
-        return oldTp.updateWith(newTp, currentTime);
-    }
-
-    public int compareTo(TouchPointTracker tpt) {
-        return Float.compare(distance, tpt.distance);
-    }
-
-    @Override
-    public String toString() {
-        return "TouchPointTracker : \n " + getOld() + "\n" + getNew() + " \nDistance " + distance + " \n";
+    public static void deleteOldPoints(ArrayList<TouchPoint> currentList, int currentTime) {
+        // Clear the old ones 
+        for (Iterator<TouchPoint> it = currentList.iterator();
+                it.hasNext();) {
+            TouchPoint tp = it.next();
+            tp.setUpdated(false);
+            if (tp.isObselete(currentTime, forgetTime)) {
+                tp.setToDelete();
+                it.remove();
+            }
+        }
     }
 }

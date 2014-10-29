@@ -112,7 +112,8 @@ public class Kinect {
         colorRaw = new byte[kinectCalibIR.getSize() * 3];
         depthRaw = new byte[kinectCalibIR.getSize() * 2];
         depthData = new DepthData(SIZE);
-
+        depthData.projectiveDevice = this.kinectCalibIR;
+        
         if (depthLookUp == null) {
             depthLookUp = new float[2048];
             if (this.mode == KINECT_10BIT) {
@@ -142,6 +143,7 @@ public class Kinect {
     public void updateMT(IplImage depth, PlaneAndProjectionCalibration calib, int skip2D, int skip3D) {
         updateRawDepth(depth);
         depthData.clear();
+        depthData.timeStamp = papplet.millis();
         depthData.planeAndProjectionCalibration = calib;
         computeDepthAndDo(1, new DoNothing());
         doForEachPoint(skip2D, new Select2DPointPlaneProjection());
@@ -152,6 +154,7 @@ public class Kinect {
         updateRawDepth(depth);
         depthData.clearDepth();
         depthData.clear2D();
+        depthData.timeStamp = papplet.millis();
         depthData.planeAndProjectionCalibration = calib;
         computeDepthAndDo(skip, new Select2DPointPlaneProjection());
     }
@@ -160,6 +163,7 @@ public class Kinect {
         updateRawDepth(depth);
         depthData.clearDepth();
         depthData.clear3D();
+        depthData.timeStamp = papplet.millis();
         depthData.planeAndProjectionCalibration = calib;
         computeDepthAndDo(skip, new Select3DPointPlaneProjection());
     }
@@ -233,7 +237,7 @@ public class Kinect {
     static protected final float INVALID_DEPTH = -1;
 
     /**
-     * @return the depth (float) or -1 if it failed.
+     * @return the depth (float) or INVALID_DEPTH if it failed.
      */
     protected float getDepth(int offset) {
         float d = (depthRaw[offset * 2] & 0xFF) << 8
@@ -259,7 +263,6 @@ public class Kinect {
         public void execute(Vec3D p, int x, int y, int offset);
     }
 
-
     class Select2DPointPlaneProjection implements DepthPointManiplation {
 
         @Override
@@ -269,13 +272,14 @@ public class Kinect {
                 depthData.projectedPoints[offset] = projected;
                 if (isInside(projected, 0.f, 1.f, 0.0f)) {
                     depthData.validPointsMask[offset] = true;
-//                    depthData.validPointsList.add(offset);
+                    depthData.validPointsList.add(offset);
                 }
             }
         }
     }
 
     class Select2DPointOverPlane implements DepthPointManiplation {
+
         @Override
         public void execute(Vec3D p, int x, int y, int offset) {
             if (depthData.planeCalibration.hasGoodOrientation(p)) {

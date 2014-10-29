@@ -22,8 +22,11 @@ import static fr.inria.papart.depthcam.Kinect.INVALID_POINT;
 import fr.inria.papart.depthcam.calibration.HomographyCalibration;
 import fr.inria.papart.depthcam.calibration.PlaneAndProjectionCalibration;
 import fr.inria.papart.depthcam.calibration.PlaneCalibration;
+import fr.inria.papart.procam.Camera;
+import fr.inria.papart.procam.ProjectiveDeviceP;
 import java.util.ArrayList;
 import java.util.Arrays;
+import org.bytedeco.javacv.ProjectiveDevice;
 import toxi.geom.Vec3D;
 
 /**
@@ -59,10 +62,13 @@ public class DepthData {
     public ArrayList<Integer> validPointsList;
     public ArrayList<Integer> validPointsList3D;
 
+    public ProjectiveDeviceP projectiveDevice;
     public PlaneAndProjectionCalibration planeAndProjectionCalibration;
     public HomographyCalibration homographyCalibration;
     public PlaneCalibration planeCalibration;
 
+    public int timeStamp;
+    
     public DepthData(int size) {
         this(size, true);
     }

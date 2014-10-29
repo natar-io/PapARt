@@ -251,6 +251,8 @@ public class Papart {
         KinectTouchInput kinectTouchInput = new KinectTouchInput(this.applet,
                 (CameraOpenKinect) cameraTracking,
                 kinect, calibration);
+
+        ((CameraOpenKinect) cameraTracking).setTouch(kinectTouchInput);
         kinectTouchInput.useRawDepth((CameraOpenKinect) cameraTracking);
 
         kinectTouchInput.setPrecision(touch2DPrecision, touch3DPrecision);
@@ -290,6 +292,8 @@ public class Papart {
         // Conversion Kinect -> Projector
 //        touchInput.useRawDepth(cameraTracking);
         kinectTouchInput.setPrecision(touch2DPrecision, touch3DPrecision);
+        cameraOpenKinect.setTouch(kinectTouchInput);
+
         this.touchInput = kinectTouchInput;
 
         touchInitialized = true;

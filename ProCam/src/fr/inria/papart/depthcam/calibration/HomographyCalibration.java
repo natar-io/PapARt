@@ -152,4 +152,20 @@ public class HomographyCalibration extends Calibration {
         return this.mat.toString();
     }
 
+    public static HomographyCalibration CreateHomographyCalibrationFrom(PMatrix3D mat, PVector size) {
+        float step = 0.5f;
+        int nbPoints = (int) ((1 + 1f / step) * (1 + 1f / step));
+        HomographyCreator homographyCreator = new HomographyCreator(3, 2, nbPoints);
+        for (float i = 0; i <= 1.0; i += step) {
+            for (float j = 0; j <= 1.0; j += step) {
+                mat.translate(-i * size.x, -j * size.x);
+                homographyCreator.addPoint(new PVector(mat.m03, mat.m13, mat.m23),
+                        new PVector(i, j));
+                mat.translate(i * size.x, j * size.x);
+            }
+        }
+        assert (homographyCreator.isComputed());
+        return homographyCreator.getHomography();
+    }
+
 }

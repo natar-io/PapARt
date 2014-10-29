@@ -38,9 +38,9 @@ import toxi.geom.Vec3D;
  */
 public class TouchDetection {
 
-    public static float currentMaxDistance;
-    public static float maxDistance = 8f;    // in mm
-    public static float maxDistance3D = 20f;    // in mm
+    public static float maxDistance = 10f;    // in mm
+
+    public static float DEFAULT_MAX_DISTANCE = 10f;    // in mm
 
     public static float MINIMUM_COMPONENT_SIZE = 5;   // in px
     public static float MINIMUM_COMPONENT_SIZE_3D = 50; // in px
@@ -118,18 +118,28 @@ public class TouchDetection {
 
         return !assignedPoints[offset] // not assigned  
                 && validPoints[offset] // valid point (in the research space)
-                && (depthData.kinectPoints[offset] != Kinect.INVALID_POINT) // invalid point (invalid depth)
+                && (depthData.kinectPoints[offset] != Kinect.INVALID_POINT) // not invalid point (invalid depth)
                 && distanceToCurrent < maxDistance;
+    }
+
+    protected static boolean isValidPoint(int offset) {
+        return validPoints[offset] // valid point (in the research space)
+                && (depthData.kinectPoints[offset] != Kinect.INVALID_POINT); // not invalid point (invalid depth)
+
     }
 
     public static ArrayList<TouchPoint> findMultiTouch2D(DepthData dData, int skip) {
         initWith(dData, skip);
 
+        ArrayList<TouchPoint> touchPointFounds = new ArrayList<TouchPoint>();
         validPoints = depthData.validPointsMask;
-        Set<Integer> toVisit = new HashSet<Integer>();
+        HashSet<Integer> toVisit = new HashSet<Integer>();
         toVisit.addAll(depthData.validPointsList);
 
-        ArrayList<TouchPoint> touchPointFounds = new ArrayList<TouchPoint>();
+        if (toVisit.isEmpty()) {
+            return touchPointFounds;
+        }
+
         ArrayList<ConnectedComponent> connectedComponents = findConnectedComponents(toVisit);
 
         for (ConnectedComponent connectedComponent : connectedComponents) {
@@ -143,6 +153,7 @@ public class TouchDetection {
             TouchPoint tp = new TouchPoint();
             tp.setPosition(meanProj);
             tp.setPositionKinect(meanKinect);
+            tp.setCreationTime(depthData.timeStamp);
             tp.set3D(false);
             tp.setConfidence(connectedComponent.size() / MINIMUM_COMPONENT_SIZE);
 
@@ -180,6 +191,7 @@ public class TouchDetection {
             Vec3D meanProj = subCompo.getMean(depthData.projectedPoints);
             Vec3D meanKinect = subCompo.getMean(depthData.kinectPoints);
             TouchPoint tp = new TouchPoint();
+            tp.setCreationTime(depthData.timeStamp);
             tp.setPosition(meanProj);
             tp.setPositionKinect(meanKinect);
             tp.set3D(true);
@@ -201,7 +213,14 @@ public class TouchDetection {
         clearMemory();
         currentCompo = 1;
         ArrayList<ConnectedComponent> connectedComponents = new ArrayList<ConnectedComponent>();
-        int searchDepth = precision; // on each direction
+
+        int firstPoint = toVisit.iterator().next();
+
+        setPrecisionFrom(firstPoint);
+
+//        int searchDepth = precision; // on each direction
+        int searchDepth = precision * 5; // Can go up to 3 pixels around ?
+
         // New method, recursive way. 
         while (toVisit.size() > 0) {
             int startingPoint = toVisit.iterator().next();
@@ -215,6 +234,39 @@ public class TouchDetection {
             currentCompo++;
         }
         return connectedComponents;
+    }
+
+    public static float ERROR_DISTANCE_MULTIPLIER = 1.3f;
+    public static float NOISE_ESTIMATION = 1f; // in millimeter. 
+
+    private static void setPrecisionFrom(int firstPoint) {
+
+        Vec3D currentPoint = depthData.kinectPoints[firstPoint];
+        PVector coordinates = depthData.projectiveDevice.getCoordinates(firstPoint);
+
+        // Find a point. 
+        int x = (int) coordinates.x;
+        int y = (int) coordinates.y;
+        int minX = PApplet.constrain(x - precision, 0, depthData.projectiveDevice.getWidth() - 1);
+        int maxX = PApplet.constrain(x + precision, 0, depthData.projectiveDevice.getWidth() - 1);
+        int minY = PApplet.constrain(y - precision, 0, depthData.projectiveDevice.getHeight() - 1);
+        int maxY = PApplet.constrain(y + precision, 0, depthData.projectiveDevice.getHeight() - 1);
+
+        for (int j = minY; j <= maxY; j += precision) {
+            for (int i = minX; i <= maxX; i += precision) {
+                Vec3D nearbyPoint = depthData.projectiveDevice.pixelToWorld(i,
+                        j, currentPoint.z);
+
+                // Set the distance. 
+                setDistance(currentPoint.distanceTo(nearbyPoint));
+                return;
+            }
+        } // for i
+
+    }
+
+    private static void setDistance(float distance) {
+        TouchDetection.maxDistance = (distance + NOISE_ESTIMATION) * ERROR_DISTANCE_MULTIPLIER;
     }
 
     protected static void checkMemoryAllocation(int size) {

@@ -125,12 +125,12 @@ public class HomographyCreator {
         homographyCalibrationOutput.setMatrix(pmatrix);
     }
 
-    public boolean isValid() {
+    public boolean isComputed() {
         return this.homographyCalibrationOutput.isValid();
     }
 
     public HomographyCalibration getHomography() {
-        assert (isValid());
+        assert (isComputed());
         return this.homographyCalibrationOutput;
     }
 

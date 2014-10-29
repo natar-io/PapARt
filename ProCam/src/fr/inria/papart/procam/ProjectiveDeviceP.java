@@ -418,6 +418,10 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
     public boolean hasExtrinsics() {
         return this.hasExtrinsics;
     }
+    
+    public PVector getCoordinates(int offset){
+        return new PVector(offset % w, offset / w);
+    }
 
     public String toString() {
         return "intr " + intrinsics.toString() + " extr " + extrinsics.toString() + " "
