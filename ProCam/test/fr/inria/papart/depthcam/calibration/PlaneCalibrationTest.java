@@ -47,18 +47,10 @@ public class PlaneCalibrationTest {
 
     @Test
     public void checkCreation() {
-        instance = new PlaneCalibration();
-        assertFalse(instance.isValid());
-        initPlane(instance);
+        instance = createPlane();
         checkPlane(instance);
     }
 
-    public static PlaneCalibration createPlane(){
-        PlaneCalibration planeCalibration = new PlaneCalibration();
-        initPlane(planeCalibration);
-        return planeCalibration;
-    }
-    
     @Test
     public void checkSave() {
         createInstanceAndSketch();
@@ -96,19 +88,23 @@ public class PlaneCalibrationTest {
 
     private void createInstanceAndSketch() {
         sketch = new Sketch();
-        instance = new PlaneCalibration();
-        initPlane(instance);
+        instance = createPlane();
     }
 
-    private static void initPlane(PlaneCalibration planeCalibration) {
-        planeCalibration.addPoint(pt1);
-        assertFalse(planeCalibration.isValid());
-        planeCalibration.addPoint(pt2);
-        assertFalse(planeCalibration.isValid());
-        planeCalibration.addPoint(pt3);
-        assertTrue(planeCalibration.isValid());
-        assertNotNull(planeCalibration.getPlane());
-        planeCalibration.setPlaneHeight(DEFAULT_PLANE_HEIGHT);
+    public static PlaneCalibration createPlane() {
+        PlaneCreator planeCreator = new PlaneCreator();
+
+        planeCreator.addPoint(pt1);
+        assertFalse(planeCreator.isComputed());
+        planeCreator.addPoint(pt2);
+        assertFalse(planeCreator.isComputed());
+        planeCreator.addPoint(pt3);
+        assertFalse(planeCreator.isComputed());
+        planeCreator.setHeight(DEFAULT_PLANE_HEIGHT);
+        assertTrue(planeCreator.isComputed());
+
+        assertNotNull(planeCreator.getPlaneCalibration());
+        return planeCreator.getPlaneCalibration();
     }
 
     static public void checkPlane(PlaneCalibration planeCalibration) {
