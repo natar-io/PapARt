@@ -33,6 +33,7 @@ public class PlaneAndProjectionCalibration extends Calibration {
     private HomographyCalibration homographyCalibration = new HomographyCalibration();
     private PlaneCalibration planeCalibration = new PlaneCalibration();
 
+
     @Override
     public void loadFrom(PApplet parent, String fileName) {
         planeCalibration.loadFrom(parent, fileName);
@@ -95,6 +96,10 @@ public class PlaneAndProjectionCalibration extends Calibration {
 
     public boolean orientation(Vec3D p) {
         return planeCalibration.orientation(p);
+    }
+    
+    public boolean isUnderPlane(Vec3D point) {
+        return planeCalibration.isUnderPlane(point);
     }
 
     public boolean hasGoodOrientationAndDistance(Vec3D point) {

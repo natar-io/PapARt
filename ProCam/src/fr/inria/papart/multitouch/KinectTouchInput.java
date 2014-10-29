@@ -55,7 +55,6 @@ public class KinectTouchInput extends TouchInput {
     public static final int NO_TOUCH = -1;
     private int touch2DPrecision, touch3DPrecision;
     private Kinect kinect;
-
     private PApplet parent;
 
     private final Semaphore touchPointSemaphore = new Semaphore(1, true);
@@ -64,7 +63,6 @@ public class KinectTouchInput extends TouchInput {
 // Tracking parameters
     static public final float trackNearDist = 30f;  // in mm
     static public final float trackNearDist3D = 70f;  // in mm
-    static public final int forgetTime = 250;       // in ms
 
     // List of TouchPoints, given to the user
     private final CameraOpenKinect kinectCamera;
@@ -74,6 +72,8 @@ public class KinectTouchInput extends TouchInput {
     // List of TouchPoints, given to the user
     ArrayList<TouchPoint> touchPoints2D = new ArrayList<TouchPoint>();
     ArrayList<TouchPoint> touchPoints3D = new ArrayList<TouchPoint>();
+    private final TouchDetectionSimple2D touchDetection2D;
+    private final TouchDetectionSimple3D touchDetection3D;
 
     public KinectTouchInput(PApplet applet,
             CameraOpenKinect kinectCamera,
@@ -83,6 +83,8 @@ public class KinectTouchInput extends TouchInput {
         this.kinect = kinect;
         this.kinectCamera = kinectCamera;
         this.calibration = calibration;
+        this.touchDetection2D = new TouchDetectionSimple2D(Kinect.SIZE);
+        this.touchDetection3D = new TouchDetectionSimple3D(Kinect.SIZE);
     }
 
     @Override
@@ -289,17 +291,18 @@ public class KinectTouchInput extends TouchInput {
     // no updates, no tracking. 
     public ArrayList<TouchPoint> find2DTouchRaw(int skip) {
         assert (skip > 0);
-        return TouchDetection.findMultiTouch2D(kinect.getDepthData(), skip);
+        return touchDetection2D.compute(kinect.getDepthData(), skip);
     }
 
     public ArrayList<TouchPoint> find3DTouchRaw(int skip) {
         assert (skip > 0);
-        return TouchDetection.findMultiTouch3D(kinect.getDepthData(), skip);
+        return touchDetection3D.compute(kinect.getDepthData(), skip);
     }
 
     protected void findAndTrack2D() {
         assert (touch2DPrecision != 0);
-        ArrayList<TouchPoint> newList = TouchDetection.findMultiTouch2D(kinect.getDepthData(),
+        ArrayList<TouchPoint> newList = touchDetection2D.compute(
+                kinect.getDepthData(),
                 touch2DPrecision);
         TouchPointTracker.trackPoints(touchPoints2D, newList,
                 parent.millis(), trackNearDist);
@@ -307,13 +310,13 @@ public class KinectTouchInput extends TouchInput {
 
     protected void findAndTrack3D() {
         assert (touch3DPrecision != 0);
-        ArrayList<TouchPoint> newList = TouchDetection.findMultiTouch3D(kinect.getDepthData(),
+        ArrayList<TouchPoint> newList = touchDetection3D.compute(
+                kinect.getDepthData(),
                 touch3DPrecision);
         TouchPointTracker.trackPoints(touchPoints3D, newList,
                 parent.millis(),
                 trackNearDist3D);
     }
-    
 
     public void setPrecision(int precision2D, int precision3D) {
         setPrecision2D(precision2D);

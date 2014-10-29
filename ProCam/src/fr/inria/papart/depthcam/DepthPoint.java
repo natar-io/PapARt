@@ -30,7 +30,6 @@ public class DepthPoint{
     protected int colorPt;
     protected PVector position = new PVector();
 
-    
     public int getColor() {
         return colorPt;
     }

@@ -39,7 +39,7 @@ import toxi.geom.Vec3D;
 public class Kinect {
 
 // TODO: check theses...
-    public float closeThreshold = 300f, farThreshold = 4000f;
+    private float closeThreshold = 300f, farThreshold = 4000f;
 
     // Configuration 
     public ProjectiveDeviceP kinectCalibIR, kinectCalibRGB;
@@ -113,7 +113,7 @@ public class Kinect {
         depthRaw = new byte[kinectCalibIR.getSize() * 2];
         depthData = new DepthData(SIZE);
         depthData.projectiveDevice = this.kinectCalibIR;
-        
+
         if (depthLookUp == null) {
             depthLookUp = new float[2048];
             if (this.mode == KINECT_10BIT) {
@@ -272,6 +272,30 @@ public class Kinect {
                 depthData.projectedPoints[offset] = projected;
                 if (isInside(projected, 0.f, 1.f, 0.0f)) {
                     depthData.validPointsMask[offset] = true;
+                    depthData.validPointsList.add(offset);
+                }
+            }
+        }
+    }
+
+    class SelectPlaneTouchHand implements DepthPointManiplation {
+
+        @Override
+        public void execute(Vec3D p, int x, int y, int offset) {
+
+            boolean overTouch = depthData.planeAndProjectionCalibration.hasGoodOrientation(p);
+            boolean underTouch = depthData.planeAndProjectionCalibration.isUnderPlane(p);
+            boolean touchSurface = depthData.planeAndProjectionCalibration.hasGoodOrientationAndDistance(p);
+
+            Vec3D projected = depthData.planeAndProjectionCalibration.project(p);
+
+            if (isInside(projected, 0.f, 1.f, 0.0f)) {
+
+                depthData.projectedPoints[offset] = projected;
+                depthData.touchAttributes[offset] = new TouchAttributes(touchSurface, underTouch, overTouch);
+                depthData.validPointsMask[offset] = touchSurface;
+
+                if (touchSurface) {
                     depthData.validPointsList.add(offset);
                 }
             }

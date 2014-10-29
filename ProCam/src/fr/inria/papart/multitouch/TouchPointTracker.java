@@ -18,7 +18,6 @@
  */
 package fr.inria.papart.multitouch;
 
-import static fr.inria.papart.multitouch.KinectTouchInput.forgetTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -29,14 +28,18 @@ import java.util.Iterator;
  */
 public class TouchPointTracker {
 
+    static public final int forgetTime = 1000;       // in ms -- TODO: For debug
+//    static public final int forgetTime = 250;       // in ms
+
     public static void trackPoints(ArrayList<TouchPoint> currentList,
             ArrayList<TouchPoint> newPoints, int currentTime,
             float trackDistance) {
 
+        deleteOldPoints(currentList, currentTime);
+
         updatePoints(currentList, newPoints, trackDistance);
         addNewPoints(currentList, newPoints);
 
-        deleteOldPoints(currentList, currentTime);
     }
 
     public static void updatePoints(ArrayList<TouchPoint> currentList, ArrayList<TouchPoint> newPoints, float trackDistance) {
@@ -56,7 +59,7 @@ public class TouchPointTracker {
         for (TouchPointComparison tpc : tpt) {
             if (tpc.distance < trackDistance) {
                 // new points are marked for deletion after update.
-               tpc.update();
+                tpc.update();
             }
         }
     }

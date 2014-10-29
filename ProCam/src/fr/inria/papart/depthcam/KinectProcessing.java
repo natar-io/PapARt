@@ -65,31 +65,7 @@ public class KinectProcessing extends Kinect {
     }
 
 //    //////////// Default FUNCTION ///////////////
-//    public PImage update(IplImage depth, IplImage color,
-//            PlaneAndProjectionCalibration planeProjCalibration, int skip) {
-//        updateRawDepth(depth);
-//        updateRawColor(color);
-//        depthData.clear();
-//        depthData.timeStamp = papplet.millis();
-//        validPointsPImage.loadPixels();
-//        // set a default color. 
-//        Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 255));
-//
-//        depthData.planeAndProjectionCalibration = planeProjCalibration;
-//
-//        computeDepthAndDo(skip, new DoNothing());
-//        doForEachPoint(skip, new Select2DPointPlaneProjection());
-//        doForEachPoint(skip, new Select3DPointPlaneProjection());
-//
-////        computeDepthAndDo(skip, new Select2DPointPlaneProjection());
-//        doForEachValidPoint(skip, new SetImageData());
-//        validPointsPImage.updatePixels();
-//        return validPointsPImage;
-//    }
-    
-    
-    //////////// WORK IN PROGRESS FUNCTION ///////////////
-    public PImage update(IplImage depth, IplImage color,
+    public PImage updateTest(IplImage depth, IplImage color,
             PlaneAndProjectionCalibration planeProjCalibration, int skip) {
         updateRawDepth(depth);
         updateRawColor(color);
@@ -107,6 +83,27 @@ public class KinectProcessing extends Kinect {
 
 //        computeDepthAndDo(skip, new Select2DPointPlaneProjection());
         doForEachValidPoint(skip, new SetImageData());
+        validPointsPImage.updatePixels();
+        return validPointsPImage;
+    }
+    //////////// WORK IN PROGRESS FUNCTION ///////////////
+    public PImage update(IplImage depth, IplImage color,
+            PlaneAndProjectionCalibration planeProjCalibration, int skip) {
+        updateRawDepth(depth);
+        updateRawColor(color);
+        depthData.clear();
+        depthData.timeStamp = papplet.millis();
+        validPointsPImage.loadPixels();
+        // set a default color. 
+        Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 255));
+
+        depthData.planeAndProjectionCalibration = planeProjCalibration;
+
+        computeDepthAndDo(skip, new DoNothing());
+        doForEachPoint(skip, new SelectPlaneTouchHand());
+        doForEachPoint(skip, new SetTouchInformation());
+
+//        doForEachValidPoint(skip, new SetImageData());
         validPointsPImage.updatePixels();
         return validPointsPImage;
     }
@@ -146,6 +143,18 @@ public class KinectProcessing extends Kinect {
         return validPointsPImage;
     }
 
+    class SetTouchInformation implements DepthPointManiplation {
+
+        @Override
+        public void execute(Vec3D p, int x, int y, int offset) {
+//            depthData.validPointsMask[offset] = true;
+            int r = depthData.touchAttributes[offset].isInTouch() ? 100 : 0;
+            int g = depthData.touchAttributes[offset].isOverTouch()? 100 : 0;
+            int b = depthData.touchAttributes[offset].isUnderTouch() ? 100 : 0;
+            setFakeColor(offset, r, g, b);
+        }
+    }
+
     class SetImageData implements DepthPointManiplation {
 
         @Override
@@ -153,6 +162,13 @@ public class KinectProcessing extends Kinect {
             depthData.validPointsMask[offset] = true;
             setPixelColor(offset);
         }
+    }
+
+    private void setFakeColor(int offset, int r, int g, int b) {
+        int c = (r & 0xFF) << 16
+                | (g & 0xFF) << 8
+                | (b & 0xFF);
+        validPointsPImage.pixels[offset] = c;
     }
 
     private void setPixelColor(int offset) {

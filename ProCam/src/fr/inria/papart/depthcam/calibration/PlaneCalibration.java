@@ -64,6 +64,10 @@ public class PlaneCalibration extends Calibration {
         return orientation(point) && plane.getDistanceToPoint(point) <= height;
     }
 
+    public boolean isUnderPlane(Vec3D point) {
+        return !orientation(point) && plane.getDistanceToPoint(point) <= height;
+    }
+
     public boolean hasGoodDistance(Vec3D point) {
         return plane.getDistanceToPoint(point) <= height;
     }

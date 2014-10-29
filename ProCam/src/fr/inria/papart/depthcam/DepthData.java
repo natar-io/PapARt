@@ -46,6 +46,11 @@ public class DepthData {
     public Vec3D[] projectedPoints;
 
     /**
+     * Attributes of the 3D points
+     */
+    public TouchAttributes[] touchAttributes;
+
+    /**
      * Mask of valid Points
      */
     public boolean[] validPointsMask;
@@ -78,6 +83,7 @@ public class DepthData {
         projectedPoints = new Vec3D[size];
         validPointsMask = new boolean[size];
         colorPoints = new int[size];
+        touchAttributes = new TouchAttributes[size];
         validPointsList = new ArrayList();
         if (is3D) {
             validPointsMask3D = new boolean[size];
@@ -89,6 +95,7 @@ public class DepthData {
         clearDepth();
         clear2D();
         clear3D();
+        Arrays.fill(touchAttributes, TouchAttributes.NO_ATTRIBUTES);
     }
 
     void clearDepth() {

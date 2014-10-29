@@ -27,6 +27,16 @@ import toxi.geom.Vec3D;
  */
 public class ConnectedComponent extends ArrayList<Integer> {
 
+    private int id;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+    
     public Vec3D getMean(Vec3D[] array) {
         Vec3D mean = new Vec3D(0, 0, 0);
         for (int offset : this) {

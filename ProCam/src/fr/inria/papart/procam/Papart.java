@@ -230,12 +230,14 @@ public class Papart {
     public void loadTouchInputKinectOnly(int touch2DPrecision,
             int touch3DPrecision) {
 
-        if (this.cameraTracking == null) {
-            cameraTracking = CameraFactory.createCamera(Camera.Type.OPEN_KINECT, 0);
-            cameraTracking.setParent(applet);
-            cameraTracking.setCalibration(kinectRGBCalib);
-            cameraTracking.start();
-            cameraTracking.setThread();
+        if (this.cameraOpenKinect == null) {
+            cameraOpenKinect = (CameraOpenKinect) CameraFactory.createCamera(Camera.Type.OPEN_KINECT, 0);
+            cameraOpenKinect.setParent(applet);
+            cameraOpenKinect.setCalibration(kinectRGBCalib);
+            cameraOpenKinect.setDepthFormat(depthFormat);
+            cameraOpenKinect.start();
+            cameraOpenKinect.setThread();
+            cameraTracking = cameraOpenKinect;
             cameraInitialized = true;
             checkInitialization();
         }
@@ -248,12 +250,13 @@ public class Papart {
         PlaneAndProjectionCalibration calibration = new PlaneAndProjectionCalibration();
         calibration.loadFrom(this.applet, planeAndProjectionCalib);
 
-        KinectTouchInput kinectTouchInput = new KinectTouchInput(this.applet,
-                (CameraOpenKinect) cameraTracking,
-                kinect, calibration);
+        KinectTouchInput kinectTouchInput
+                = new KinectTouchInput(this.applet,
+                        cameraOpenKinect,
+                        kinect, calibration);
 
-        ((CameraOpenKinect) cameraTracking).setTouch(kinectTouchInput);
-        kinectTouchInput.useRawDepth((CameraOpenKinect) cameraTracking);
+        cameraOpenKinect.setTouch(kinectTouchInput);
+        kinectTouchInput.useRawDepth(cameraOpenKinect);
 
         kinectTouchInput.setPrecision(touch2DPrecision, touch3DPrecision);
         this.touchInput = kinectTouchInput;

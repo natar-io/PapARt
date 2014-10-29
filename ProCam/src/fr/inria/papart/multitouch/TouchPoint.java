@@ -124,8 +124,8 @@ public class TouchPoint extends DepthPoint {
             return false;
         }
 
-        assert(this.createTime < tp.createTime);
-        
+        assert (this.createTime < tp.createTime);
+
         // these points are used for update. They will not be used again.
         this.setUpdated(true);
         tp.setUpdated(true);
@@ -192,7 +192,7 @@ public class TouchPoint extends DepthPoint {
         this.createTime = timeStamp;
         this.updateTime = timeStamp;
     }
-    
+
     public PVector getSpeed() {
         return this.speed;
     }
@@ -237,10 +237,13 @@ public class TouchPoint extends DepthPoint {
         return this.toDelete;
     }
 
+    public int lastUpdate() {
+        return this.updateTime;
+    }
+
     @Override
     public String toString() {
         return "Touch Point, kinect: " + positionKinect + " , proj: " + position + "confidence " + confidence + " ,close to Plane : " + isCloseToPlane;
     }
-
 
 }
