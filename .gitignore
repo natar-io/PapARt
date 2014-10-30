@@ -16,3 +16,4 @@
 *.zip
 build
 libs
+/TUIO/nbproject/private/
