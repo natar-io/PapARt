@@ -18,6 +18,8 @@
  */
 package fr.inria.papart.procam;
 
+import fr.inria.papart.procam.display.BaseDisplay;
+import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.drawingapp.DrawUtils;
 import fr.inria.papart.exceptions.BoardNotDetectedException;
 import java.awt.Image;
@@ -269,8 +271,8 @@ public class PaperScreen {
             PVector projC = new PVector();
             extr.mult(corner, projC);
             PVector screenCoord = arDisplay.getProjectiveDeviceP().worldToPixelReal(projC);
-            if (screenCoord.x < 0 || screenCoord.x > arDisplay.frameWidth
-                    || screenCoord.y < 0 || screenCoord.y > arDisplay.frameHeight) {
+            if (screenCoord.x < 0 || screenCoord.x > arDisplay.getWidth()
+                    || screenCoord.y < 0 || screenCoord.y > arDisplay.getHeight()) {
                 nbOut++;
             }
         }
@@ -283,8 +285,8 @@ public class PaperScreen {
         for (PVector corner : corners) {
             // Corners are on the camera Point of view. 
             PVector screenCoord = arDisplay.getProjectiveDeviceP().worldToPixelReal(corner);
-            if (screenCoord.x < 0 || screenCoord.x > arDisplay.frameWidth
-                    || screenCoord.y < 0 || screenCoord.y > arDisplay.frameHeight) {
+            if (screenCoord.x < 0 || screenCoord.x > arDisplay.getWidth()
+                    || screenCoord.y < 0 || screenCoord.y > arDisplay.getHeight()) {
                 nbOut++;
             }
         }

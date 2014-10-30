@@ -16,9 +16,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package fr.inria.papart.procam;
+package fr.inria.papart.procam.display;
 
 import fr.inria.papart.drawingapp.DrawUtils;
+import fr.inria.papart.procam.Papart;
+import fr.inria.papart.procam.Screen;
 import java.util.ArrayList;
 import processing.core.PApplet;
 import processing.core.PImage;
@@ -37,7 +39,7 @@ public class BaseDisplay {
 
     protected PApplet parent;
     //    public PGraphicsOpenGL graphicsUndist;
-    
+
     protected static int DEFAULT_SIZE = 200;
     protected boolean registered = false;
     protected int frameWidth = DEFAULT_SIZE, frameHeight = DEFAULT_SIZE;
@@ -172,7 +174,7 @@ public class BaseDisplay {
         this.quality = quality;
     }
 
-    protected void setFrameSize(int width, int height) {
+    public void setFrameSize(int width, int height) {
         this.frameWidth = width;
         this.frameHeight = height;
     }
@@ -199,7 +201,7 @@ public class BaseDisplay {
         PMatrix3D screenMat = screen.getPosition().get();
         screenMat.invert();
         PVector transformed = new PVector();
-        screenMat.mult(new PVector(x *drawingSizeX, y * drawingSizeY), transformed);
+        screenMat.mult(new PVector(x * drawingSizeX, y * drawingSizeY), transformed);
         return transformed;
     }
 

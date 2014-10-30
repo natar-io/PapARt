@@ -16,12 +16,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package fr.inria.papart.procam;
+package fr.inria.papart.procam.display;
 
 import org.bytedeco.javacv.ProjectiveDevice;
 import org.bytedeco.javacv.ProjectorDevice;
 import fr.inria.papart.drawingapp.DrawUtils;
 import fr.inria.papart.multitouch.TouchPoint;
+import fr.inria.papart.procam.Camera;
+import fr.inria.papart.procam.MarkerBoard;
+import fr.inria.papart.procam.ProjectiveDeviceP;
+import fr.inria.papart.procam.Screen;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PMatrix3D;
@@ -183,7 +187,7 @@ public class ProjectorDisplay extends ARDisplay {
                                 viewedPtC.z));
 
         // Intersect ray with Plane 
-        ReadonlyVec3D inter = screen.plane.getIntersectionWithRay(ray);
+        ReadonlyVec3D inter = screen.getPlane().getIntersectionWithRay(ray);
 
         // It may not intersect.
         if (inter == null) {
@@ -197,7 +201,7 @@ public class ProjectorDisplay extends ARDisplay {
 //        System.out.println("Error " + px2.mag());
 
         // Get the normalized coordinates in Paper coordinates
-        Vec3D res = screen.transformationProjPaper.applyTo(inter);
+        Vec3D res = screen.getWorldToScreen().applyTo(inter);
 //        PVector out = new PVector(res.x(), res.y(), res.z());
         PVector out = new PVector(res.x() / res.z(),
                 res.y() / res.z(), 1);

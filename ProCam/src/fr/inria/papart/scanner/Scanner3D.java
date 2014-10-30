@@ -20,7 +20,7 @@ package fr.inria.papart.scanner;
 
 import fr.inria.papart.procam.Camera;
 import fr.inria.papart.procam.ProjectiveDeviceP;
-import fr.inria.papart.procam.ProjectorDisplay;
+import fr.inria.papart.procam.display.ProjectorDisplay;
 import processing.core.PConstants;
 import processing.core.PMatrix3D;
 import processing.core.PVector;

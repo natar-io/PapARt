@@ -18,10 +18,10 @@
  */
 package fr.inria.papart.multitouch;
 
-import fr.inria.papart.procam.ARDisplay;
-import fr.inria.papart.procam.BaseDisplay;
-import fr.inria.papart.procam.ProjectorDisplay;
+import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.procam.Screen;
+import fr.inria.papart.procam.display.BaseDisplay;
+import fr.inria.papart.procam.display.ProjectorDisplay;
 import java.util.ArrayList;
 import processing.core.PVector;
 

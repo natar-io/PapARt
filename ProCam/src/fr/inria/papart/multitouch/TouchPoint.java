@@ -31,6 +31,8 @@ import toxi.geom.Vec3D;
  */
 public class TouchPoint extends DepthPoint {
 
+    public static int count = 0;
+    
     // protected PVector position... in DepthPoint
     private PVector previousPosition = new PVector();
     private PVector speed = new PVector();
@@ -139,13 +141,20 @@ public class TouchPoint extends DepthPoint {
 
         updatePosition(tp);
 
-        // The touchPoint gets an ID, it is a grown up now. 
-        if (this.id == NO_ID) {
-            this.id = globalID++;
-        }
-
+        checkAndSetID();
         filter();
         return true;
+    }
+
+    private void checkAndSetID() {
+        // The touchPoint gets an ID, it is a grown up now. 
+        if (this.id == NO_ID) {
+            if(count == 0){
+                globalID = 0;
+            }
+            this.id = globalID++;
+            count++;
+        }
     }
 
     private void updatePosition(TouchPoint tp) {
@@ -231,6 +240,7 @@ public class TouchPoint extends DepthPoint {
 
     public void setToDelete() {
         this.toDelete = true;
+        TouchPoint.count--;
     }
 
     public boolean isToDelete() {

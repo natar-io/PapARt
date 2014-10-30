@@ -28,8 +28,8 @@ import java.util.Iterator;
  */
 public class TouchPointTracker {
 
-    static public final int forgetTime = 1000;       // in ms -- TODO: For debug
-//    static public final int forgetTime = 250;       // in ms
+//    static public final int forgetTime = 1000;       // in ms -- TODO: For debug
+    static public final int forgetTime = 250;       // in ms
 
     public static void trackPoints(ArrayList<TouchPoint> currentList,
             ArrayList<TouchPoint> newPoints, int currentTime,

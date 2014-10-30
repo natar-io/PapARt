@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import toxi.geom.Vec3D;
 
@@ -53,6 +54,11 @@ public class TouchDetectionSimple3D extends TouchDetection {
         ArrayList<TouchPoint> touchPoints = this.createTouchPointsFrom(connectedComponents);
 
         return touchPoints;
+    }
+    
+    @Override
+    public boolean hasCCToFind(){
+             return !depthData.validPointsList3D.isEmpty();
     }
 
     @Override

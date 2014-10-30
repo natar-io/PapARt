@@ -18,7 +18,7 @@
  */
 package fr.inria.papart.multitouch;
 
-import fr.inria.papart.procam.BaseDisplay;
+import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.Screen;
 import TUIO.*;
 import processing.core.PApplet;
@@ -56,7 +56,7 @@ public class TUIOTouchInput extends TouchInput {
         }
 
         Vector<TuioObject> tuioObjectList = tuioClient.getTuioObjects();
-        for (TuioObject tuioObject : tuioObjectList){
+        for (TuioObject tuioObject : tuioObjectList) {
             try {
                 Touch touch = createObject(screen, display, tuioObject);
                 touchList.add(touch);
@@ -75,7 +75,7 @@ public class TUIOTouchInput extends TouchInput {
         touch.setPosition(v);
         return touch;
     }
-    
+
     private Touch createObject(Screen screen, BaseDisplay display, TuioObject tobj) throws Exception {
         Touch touch = new Touch();
         TuioPoint tuioPoint = tobj.getPosition();
@@ -90,39 +90,39 @@ public class TUIOTouchInput extends TouchInput {
 
 // these callback methods are called whenever a TUIO event occurs
 // called when an object is added to the scene
-    void addTuioObject(TuioObject tobj) {
+    public void addTuioObject(TuioObject tobj) {
         System.out.println("add object " + tobj.getSymbolID() + " (" + tobj.getSessionID() + ") " + tobj.getX() + " " + tobj.getY() + " " + tobj.getAngle());
     }
 
 // called when an object is removed from the scene
-    void removeTuioObject(TuioObject tobj) {
+    public void removeTuioObject(TuioObject tobj) {
         System.out.println("remove object " + tobj.getSymbolID() + " (" + tobj.getSessionID() + ")");
     }
 
 // called when an object is moved
-    void updateTuioObject(TuioObject tobj) {
+    public void updateTuioObject(TuioObject tobj) {
         System.out.println("update object " + tobj.getSymbolID() + " (" + tobj.getSessionID() + ") " + tobj.getX() + " " + tobj.getY() + " " + tobj.getAngle()
                 + " " + tobj.getMotionSpeed() + " " + tobj.getRotationSpeed() + " " + tobj.getMotionAccel() + " " + tobj.getRotationAccel());
     }
 
 // called when a cursor is added to the scene
-    void addTuioCursor(TuioCursor tcur) {
+    public void addTuioCursor(TuioCursor tcur) {
         System.out.println("add cursor " + tcur.getCursorID() + " (" + tcur.getSessionID() + ") " + tcur.getX() + " " + tcur.getY());
     }
 
 // called when a cursor is moved
-    void updateTuioCursor(TuioCursor tcur) {
+    public void updateTuioCursor(TuioCursor tcur) {
         System.out.println("update cursor " + tcur.getCursorID() + " (" + tcur.getSessionID() + ") " + tcur.getX() + " " + tcur.getY()
                 + " " + tcur.getMotionSpeed() + " " + tcur.getMotionAccel());
     }
 
 // called when a cursor is removed from the scene
-    void removeTuioCursor(TuioCursor tcur) {
+    public void removeTuioCursor(TuioCursor tcur) {
         System.out.println("remove cursor " + tcur.getCursorID() + " (" + tcur.getSessionID() + ")");
     }
 
 // called after each message bundle
 // representing the end of an image frame
-    void refresh(TuioTime bundleTime) {
+    public void refresh(TuioTime bundleTime) {
     }
 }

@@ -21,14 +21,14 @@ package fr.inria.papart.multitouch;
 import fr.inria.papart.depthcam.DepthData;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 
-import fr.inria.papart.procam.ARDisplay;
+import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.procam.Screen;
 import fr.inria.papart.depthcam.Kinect;
 import fr.inria.papart.depthcam.calibration.PlaneAndProjectionCalibration;
 import fr.inria.papart.procam.Camera;
-import fr.inria.papart.procam.BaseDisplay;
+import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.ProjectiveDeviceP;
-import fr.inria.papart.procam.ProjectorDisplay;
+import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.procam.camera.CameraOpenKinect;
 import java.io.FileNotFoundException;
 import java.nio.ByteBuffer;

@@ -18,6 +18,8 @@
  */
 package fr.inria.papart.procam;
 
+import fr.inria.papart.procam.display.ProjectorDisplay;
+import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.multitouch.OneEuroFilter;
 import org.bytedeco.javacpp.ARToolKitPlus;
 import org.bytedeco.javacpp.ARToolKitPlus.TrackerMultiMarker;
@@ -306,16 +308,16 @@ public class MarkerBoard {
             extr.mult(v, v2);
             v = v2;
         }
-        PVector px = display.pdp.worldToPixel(v, true);
+        PVector px = display.getProjectiveDeviceP().worldToPixel(v, true);
         return px;
     }
 
     public boolean isSeenBy(Camera camera, ProjectorDisplay projector, float error) {
         PVector px = this.getBoardLocation(camera, projector);
         return !(px.x < (0 - error)
-                || px.x > projector.frameWidth
+                || px.x > projector.getWidth()
                 || px.y < (0 - error)
-                || px.y > (projector.frameHeight + error));
+                || px.y > (projector.getHeight() + error));
     }
 
     public synchronized void updatePosition(Camera camera, IplImage img) {

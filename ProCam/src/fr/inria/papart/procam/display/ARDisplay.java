@@ -16,12 +16,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package fr.inria.papart.procam;
+package fr.inria.papart.procam.display;
 
 import processing.opengl.PGraphicsOpenGL;
 import org.bytedeco.javacv.ProjectiveDevice;
 import fr.inria.papart.drawingapp.DrawUtils;
-import fr.inria.papart.exceptions.BoardNotDetectedException;
+import fr.inria.papart.procam.Camera;
+import fr.inria.papart.procam.HasExtrinsics;
+import fr.inria.papart.procam.ProjectiveDeviceP;
+import fr.inria.papart.procam.Screen;
+import fr.inria.papart.procam.Utils;
 import java.util.ArrayList;
 import javax.media.opengl.GL2;
 import processing.core.PApplet;
@@ -115,8 +119,6 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
 
         // ----------- OPENGL --------------
         // Reusing the internal projective parameters for the scene rendering.
-//        PMatrix3D oldProj = this.graphics.projection.get();
-        // Working params
         p00 = 2 * intrinsics.m00 / frameWidth;
         p11 = 2 * intrinsics.m11 / frameHeight;
 
@@ -135,17 +137,13 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
 
         // Save these good parameters
         projectionInit = this.graphics.projection.get();
-
-//        this.graphics.projection.transpose();
-//        this.graphics.projection.get(projectionMatrixGL);
-//
-//        this.graphics.projection.set(oldProj);
         this.graphics.endDraw();
     }
 
     /**
      * Called in automatic mode.
      */
+    @Override
     public void pre() {
         this.clear();
     }
@@ -153,9 +151,14 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
     /**
      * Called in Automatic mode to display the image.
      */
+    @Override
     public void draw() {
         drawScreensOver();
         parent.noStroke();
+        
+        
+        System.out.println("Drawing size " + this.drawingSizeX + " " + this.drawingSizeY);
+        
         if (camera != null && camera.getPImage() != null) {
             parent.image(camera.getPImage(), 0, 0, this.drawingSizeX, this.drawingSizeY);
 //            ((PGraphicsOpenGL) (parent.g)).image(camera.getPImage(), 0, 0, frameWidth, frameHeight);
@@ -186,6 +189,7 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
                 x, y, width, height);
     }
 
+    @Override
     public void renderScreens() {
 
         for (Screen screen : screens) {
@@ -441,7 +445,7 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
                 new Vec3D(out2.x, out2.y, out2.z));
 
         // 3D intersection with the screen plane. 
-        ReadonlyVec3D inter = screen.plane.getIntersectionWithRay(ray);
+        ReadonlyVec3D inter = screen.getPlane().getIntersectionWithRay(ray);
 //        dist = screen.plane.intersectRayDistance(ray);
 
         if (inter == null) {
@@ -449,7 +453,7 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         }
 
         // 3D -> 2D transformation
-        Vec3D res = screen.transformationProjPaper.applyTo(inter);
+        Vec3D res = screen.getWorldToScreen().applyTo(inter);
         PVector out = new PVector(res.x() / res.z(),
                 1f - (res.y() / res.z()), 1);
         return out;

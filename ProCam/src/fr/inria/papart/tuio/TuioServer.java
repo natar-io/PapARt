@@ -66,13 +66,16 @@ public class TuioServer {
         for (TouchPoint tp : touchs) {
             PVector pos = tp.getPosition();
             PVector speed = tp.getSpeed();
-            int id = tp.getID();
-            messages[0].add(id);
+           
+//            int id = tp.getID();
+//            System.out.println("Tuio OUt id " + id);
+            messages[0].add(k);
+            
             messages[k] = new OscMessage(messageType);
 
             messages[k].add("set"); /* add an int to the osc message */
 
-            messages[k].add(id);
+            messages[k].add(k);
             messages[k].add(pos.x);
             messages[k].add(pos.y);
 
@@ -107,13 +110,14 @@ public class TuioServer {
         for (TouchPoint tp : touchs) {
             PVector pos = tp.getPosition();
             PVector speed = tp.getSpeed();
-            int id = tp.getID();
-            messages[0].add(id);
+//            int id = tp.getID();
+//            messages[0].add(id);
+            messages[0].add(k);
             messages[k] = new OscMessage(messageType);
 
             messages[k].add("set"); /* add an int to the osc message */
 
-            messages[k].add(id);
+            messages[k].add(k);
             messages[k].add(pos.x);
             messages[k].add(pos.y);
             messages[k].add(pos.z / maxZ);

@@ -18,6 +18,9 @@
  */
 package fr.inria.papart.procam;
 
+import fr.inria.papart.procam.display.BaseDisplay;
+import fr.inria.papart.procam.display.ProjectorDisplay;
+import fr.inria.papart.procam.display.ARDisplay;
 import org.bytedeco.javacpp.freenect;
 import fr.inria.papart.drawingapp.Button;
 import fr.inria.papart.depthcam.Kinect;
@@ -141,7 +144,7 @@ public class Papart {
         cameraTracking.setParent(applet);
         cameraTracking.setCalibration(kinectRGBCalib);
         cameraTracking.start();
-
+        cameraOpenKinect = (CameraOpenKinect) cameraTracking;
         loadTracking(kinectRGBCalib);
         cameraTracking.setThread();
 

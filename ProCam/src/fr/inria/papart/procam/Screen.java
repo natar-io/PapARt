@@ -18,6 +18,7 @@
  */
 package fr.inria.papart.procam;
 
+import fr.inria.papart.procam.display.ProjectorDisplay;
 import static fr.inria.papart.procam.Utils.toVec;
 import fr.inria.papart.tools.Homography;
 import processing.core.PApplet;
@@ -51,10 +52,12 @@ public class Screen {
     private PVector size;
     private float scale;
     protected Plane plane = new Plane();
+
     private static final int nbPaperPosRender = 4;
     private final PVector[] paperPosCorners3D = new PVector[nbPaperPosRender];
     protected Homography homography;
-    protected Matrix4x4 transformationProjPaper;
+
+    protected Matrix4x4 worldToScreen;
     public float halfEyeDist = 10; // 2cm
     private boolean isDrawing = true;
     private boolean isOpenGL = false;
@@ -235,7 +238,7 @@ public class Screen {
             homography.setPoint(true, i, paperPosCorners3D[i]);
         }
         homography.compute();
-        transformationProjPaper = homography.getTransformation();
+        worldToScreen = homography.getTransformation();
     }
 
     public PVector[] getCornerPos() {
@@ -452,10 +455,10 @@ public class Screen {
     public ReadonlyVec3D projectMouse(ProjectorDisplay projector, int mouseX, int mouseY, int width, int height) {
 
         PGraphicsOpenGL projGraphics = projector.getGraphics();
-        PMatrix3D projMat = projector.projectionInit.get();
+        PMatrix3D projMat = projector.getProjectionInit().get();
         PMatrix3D modvw = projGraphics.modelview.get();
 
-        double[] mouseDist = projector.projectiveDevice.undistort(mouseX, mouseY);
+        double[] mouseDist = projector.getProjectiveDevice().undistort(mouseX, mouseY);
         float x = 2 * (float) mouseDist[0] / (float) width - 1;
         float y = 2 * (float) mouseDist[1] / (float) height - 1;
 
@@ -499,6 +502,14 @@ public class Screen {
 
     public void setHalfEyeDist(float halfEyeDist) {
         this.halfEyeDist = halfEyeDist;
+    }
+
+    public Plane getPlane() {
+        return plane;
+    }
+
+    public Matrix4x4 getWorldToScreen() {
+        return worldToScreen;
     }
 
 }
