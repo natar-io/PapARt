@@ -177,7 +177,7 @@ public abstract class TouchDetection {
     }
 
     public float ERROR_DISTANCE_MULTIPLIER = 1.3f;
-    public float NOISE_ESTIMATION = 1f; // in millimeter. 
+    public float NOISE_ESTIMATION = 1.5f; // in millimeter. 
 
     protected void setPrecisionFrom(int firstPoint) {
 

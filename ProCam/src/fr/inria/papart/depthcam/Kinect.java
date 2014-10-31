@@ -312,6 +312,17 @@ public class Kinect {
             }
         }
     }
+    
+    class Select2DPointOverPlaneDist implements DepthPointManiplation {
+
+        @Override
+        public void execute(Vec3D p, int x, int y, int offset) {
+            if (depthData.planeCalibration.hasGoodOrientationAndDistance(p)) {
+                depthData.validPointsMask[offset] = true;
+                depthData.validPointsList.add(offset);
+            }
+        }
+    }
 
     class Select2DPointCalibratedHomography implements DepthPointManiplation {
 

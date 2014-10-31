@@ -119,7 +119,8 @@ public class KinectProcessing extends Kinect {
         Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 255));
 
         depthData.planeCalibration = planeCalibration;
-        computeDepthAndDo(skip, new Select2DPointOverPlane());
+        computeDepthAndDo(skip, new Select2DPointOverPlaneDist());
+//        computeDepthAndDo(skip, new Select2DPointOverPlane());
 
         doForEachValidPoint(skip, new SetImageData());
         validPointsPImage.updatePixels();

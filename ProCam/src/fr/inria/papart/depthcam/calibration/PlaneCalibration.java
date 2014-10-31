@@ -90,7 +90,7 @@ public class PlaneCalibration extends Calibration {
         plane.z = plane.z + value * plane.normal.z;
     }
 
-    public float getPlaneHeight() {
+    public float getHeight() {
         return height;
     }
 
