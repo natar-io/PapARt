@@ -374,6 +374,16 @@ public class Papart {
         return this.display;
     }
 
+    public ProjectorDisplay getProjectorDisplay() {
+        assert (displayInitialized);
+        return this.projector;
+    }
+    
+    public ARDisplay getARDisplay() {
+        assert (displayInitialized);
+        return this.arDisplay;
+    }
+
     public Camera getCameraTracking() {
         assert (cameraInitialized);
         return this.cameraTracking;
