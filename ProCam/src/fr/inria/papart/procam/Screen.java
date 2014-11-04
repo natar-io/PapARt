@@ -55,7 +55,9 @@ public class Screen {
 
     private static final int nbPaperPosRender = 4;
     private final PVector[] paperPosCorners3D = new PVector[nbPaperPosRender];
-    protected Homography homography;
+    
+   // TODO: remove this
+    private Homography homography;
 
     protected Matrix4x4 worldToScreen;
     public float halfEyeDist = 10; // 2cm
