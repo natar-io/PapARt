@@ -30,6 +30,15 @@ public class DepthPoint{
     protected int colorPt;
     protected PVector position = new PVector();
 
+    public DepthPoint(){}
+    
+    public DepthPoint(float x, float y, float z, int col){
+        this.colorPt = col;
+        position.x = x;
+        position.y = y;
+        position.z = z;
+    }
+    
     public int getColor() {
         return colorPt;
     }

@@ -19,6 +19,7 @@
 package fr.inria.papart.multitouch;
 
 import fr.inria.papart.depthcam.DepthData;
+import fr.inria.papart.depthcam.DepthPoint;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 
 import fr.inria.papart.procam.display.ARDisplay;
@@ -91,18 +92,20 @@ public class KinectTouchInput extends TouchInput {
     public void update() {
         try {
             IplImage depthImage = kinectCamera.getDepthIplImage();
+            IplImage colImage = kinectCamera.getIplImage();
             depthDataSem.acquire();
+
             if (touch2DPrecision > 0 && touch3DPrecision > 0) {
-                kinect.updateMT(depthImage, calibration, touch2DPrecision, touch3DPrecision);
+                kinect.updateMT(depthImage, colImage, calibration, touch2DPrecision, touch3DPrecision);
                 findAndTrack2D();
                 findAndTrack3D();
             } else {
                 if (touch2DPrecision > 0) {
-                    kinect.updateMT2D(depthImage, calibration, touch2DPrecision);
+                    kinect.updateMT2D(depthImage, colImage, calibration, touch2DPrecision);
                     findAndTrack2D();
                 }
                 if (touch3DPrecision > 0) {
-                    kinect.updateMT3D(depthImage, calibration, touch3DPrecision);
+                    kinect.updateMT3D(depthImage, colImage, calibration, touch3DPrecision);
                     findAndTrack3D();
                 }
             }
@@ -111,6 +114,14 @@ public class KinectTouchInput extends TouchInput {
         } finally {
             depthDataSem.release();
         }
+    }
+
+    private void updateDepthOnly() {
+
+    }
+
+    private void updateColor() {
+
     }
 
     @Override
@@ -226,13 +237,13 @@ public class KinectTouchInput extends TouchInput {
         }
     }
 
-    public ArrayList<Vec3D> projectDepthData(ARDisplay display, Screen screen) {
+    public ArrayList<DepthPoint> projectDepthData(ARDisplay display, Screen screen) {
         try {
 
             depthDataSem.acquire();
             DepthData depthData = kinect.getDepthData();
 
-            ArrayList<Vec3D> projected = new ArrayList<Vec3D>();
+            ArrayList<DepthPoint> projected = new ArrayList<DepthPoint>();
             Vec3D[] projPoints = depthData.projectedPoints;
             boolean isProjector = display instanceof ProjectorDisplay;
 
@@ -245,7 +256,14 @@ public class KinectTouchInput extends TouchInput {
                 try {
                     PVector screenPosition = (isProjector ? (ProjectorDisplay) display : display).projectPointer(screen, vec.x, vec.y);
                     screenPosition.z = vec.z;
-                    projected.add(vec);
+
+                    int c = depthData.colorPoints[i];
+
+                    projected.add(new DepthPoint(screenPosition.x,
+                            screenPosition.y,
+                            vec.z,
+                            c));
+                    
                 } catch (Exception e) {
                 }
 
