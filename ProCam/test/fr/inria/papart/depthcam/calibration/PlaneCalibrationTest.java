@@ -118,7 +118,7 @@ public class PlaneCalibrationTest {
         assertEquals(expectedNorm.y, plane.normal.y, Double.MIN_VALUE);
         assertEquals(expectedNorm.z, plane.normal.z, Double.MIN_VALUE);
 
-        assertEquals(planeCalibration.getPlaneHeight(), DEFAULT_PLANE_HEIGHT, Double.MIN_VALUE);
+        assertEquals(planeCalibration.getHeight(), DEFAULT_PLANE_HEIGHT, Double.MIN_VALUE);
     }
 
 }

@@ -18,6 +18,7 @@
  */
 package fr.inria.papart.depthcam;
 
+import static fr.inria.papart.depthcam.Kinect.INVALID_COLOR;
 import static fr.inria.papart.depthcam.Kinect.INVALID_POINT;
 import fr.inria.papart.depthcam.calibration.HomographyCalibration;
 import fr.inria.papart.depthcam.calibration.PlaneAndProjectionCalibration;
@@ -91,11 +92,16 @@ public class DepthData {
         }
     }
 
-    void clear() {
+    public void clear() {
         clearDepth();
         clear2D();
         clear3D();
+        clearColor();
         Arrays.fill(touchAttributes, TouchAttributes.NO_ATTRIBUTES);
+    }
+    
+    void clearColor(){
+        Arrays.fill(this.colorPoints, INVALID_COLOR);
     }
 
     void clearDepth() {

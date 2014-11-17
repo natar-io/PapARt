@@ -62,7 +62,8 @@ public class Kinect {
     public static PApplet papplet;
 
     public static final Vec3D INVALID_POINT = new Vec3D();
-
+    public static final int INVALID_COLOR = -1;
+    
     ///// Modes
     public static final int KINECT_MM = 1;
     public static final int KINECT_10BIT = 0;
@@ -140,32 +141,41 @@ public class Kinect {
         computeDepthAndDo(skip, new DoNothing());
     }
 
-    public void updateMT(IplImage depth, PlaneAndProjectionCalibration calib, int skip2D, int skip3D) {
+    public void updateMT(IplImage depth, IplImage color, PlaneAndProjectionCalibration calib, int skip2D, int skip3D) {
         updateRawDepth(depth);
+        updateRawColor(color);
         depthData.clear();
         depthData.timeStamp = papplet.millis();
         depthData.planeAndProjectionCalibration = calib;
         computeDepthAndDo(1, new DoNothing());
         doForEachPoint(skip2D, new Select2DPointPlaneProjection());
         doForEachPoint(skip3D, new Select3DPointPlaneProjection());
+        doForEachValidPoint(skip2D, new SetImageData());
+        doForEachValid3DPoint(skip3D, new SetImageData());
     }
 
-    public void updateMT2D(IplImage depth, PlaneAndProjectionCalibration calib, int skip) {
+    public void updateMT2D(IplImage depth, IplImage color, PlaneAndProjectionCalibration calib, int skip) {
         updateRawDepth(depth);
+        updateRawColor(color);
         depthData.clearDepth();
         depthData.clear2D();
+        depthData.clearColor();
         depthData.timeStamp = papplet.millis();
         depthData.planeAndProjectionCalibration = calib;
         computeDepthAndDo(skip, new Select2DPointPlaneProjection());
+        doForEachValidPoint(skip, new SetImageData());
     }
 
-    public void updateMT3D(IplImage depth, PlaneAndProjectionCalibration calib, int skip) {
+    public void updateMT3D(IplImage depth, IplImage color, PlaneAndProjectionCalibration calib, int skip) {
         updateRawDepth(depth);
+        updateRawColor(color);
         depthData.clearDepth();
         depthData.clear3D();
+        depthData.clearColor();
         depthData.timeStamp = papplet.millis();
         depthData.planeAndProjectionCalibration = calib;
         computeDepthAndDo(skip, new Select3DPointPlaneProjection());
+         doForEachValidPoint(skip, new SetImageData());
     }
 
     protected void computeDepthAndDo(int precision, DepthPointManiplation manip) {
@@ -218,6 +228,18 @@ public class Kinect {
                 int offset = y * kinectCalibIR.getWidth() + x;
                 Vec3D pKinect = depthData.kinectPoints[offset];
                 if (pKinect != INVALID_POINT && depthData.validPointsMask[offset] == true) {
+                    manip.execute(pKinect, x, y, offset);
+                }
+            }
+        }
+    }
+    
+    protected void doForEachValid3DPoint(int precision, DepthPointManiplation manip) {
+        for (int y = 0; y < kinectCalibIR.getHeight(); y += precision) {
+            for (int x = 0; x < kinectCalibIR.getWidth(); x += precision) {
+                int offset = y * kinectCalibIR.getWidth() + x;
+                Vec3D pKinect = depthData.kinectPoints[offset];
+                if (pKinect != INVALID_POINT && depthData.validPointsMask3D[offset] == true) {
                     manip.execute(pKinect, x, y, offset);
                 }
             }
@@ -312,7 +334,7 @@ public class Kinect {
             }
         }
     }
-    
+
     class Select2DPointOverPlaneDist implements DepthPointManiplation {
 
         @Override
@@ -355,6 +377,22 @@ public class Kinect {
                 }
             }
         }
+    }
+
+    class SetImageData implements DepthPointManiplation {
+
+        @Override
+        public void execute(Vec3D p, int x, int y, int offset) {
+            depthData.colorPoints[offset] = getPixelColor(offset);
+        }
+    }
+
+    protected int getPixelColor(int offset) {
+        int colorOffset = this.findColorOffset(depthData.kinectPoints[offset]) * 3;
+        int c = (colorRaw[colorOffset + 2] & 0xFF) << 16
+                | (colorRaw[colorOffset + 1] & 0xFF) << 8
+                | (colorRaw[colorOffset + 0] & 0xFF);
+        return c;
     }
 
     class DoNothing implements DepthPointManiplation {
