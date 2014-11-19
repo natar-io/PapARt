@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Calibration>
   <Plane>
-    <Position x="-93.05146" y="28.204664" z="783.6802"/>
-    <Normal x="0.15177238" y="0.75997376" z="0.6319851"/>
+    <Position x="-151.38686" y="-55.08459" z="781.30566"/>
+    <Normal x="0.19539562" y="0.71671283" z="0.6694351"/>
     <Height Height="15.0"/>
   </Plane>
 </Calibration>
