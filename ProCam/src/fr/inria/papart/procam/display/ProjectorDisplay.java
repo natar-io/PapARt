@@ -18,16 +18,12 @@
  */
 package fr.inria.papart.procam.display;
 
-import org.bytedeco.javacv.ProjectiveDevice;
-import org.bytedeco.javacv.ProjectorDevice;
 import fr.inria.papart.drawingapp.DrawUtils;
-import fr.inria.papart.multitouch.TouchPoint;
 import fr.inria.papart.procam.Camera;
 import fr.inria.papart.procam.MarkerBoard;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.procam.Screen;
 import processing.core.PApplet;
-import processing.core.PConstants;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.opengl.PGraphicsOpenGL;

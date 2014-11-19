@@ -24,9 +24,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Set;
-import toxi.geom.Vec3D;
 
 /**
  *
@@ -35,6 +32,7 @@ import toxi.geom.Vec3D;
 public class TouchDetectionSimple3D extends TouchDetection {
 
     protected float MINIMUM_COMPONENT_SIZE_3D = 50;
+    protected int COMPONENT_SIZE_FOR_POSITION = 10;
 
     public TouchDetectionSimple3D(int size) {
         super(size);
@@ -82,7 +80,7 @@ public class TouchDetectionSimple3D extends TouchDetection {
         Collections.sort(connectedComponent, closestComparator);
 
         //  Get a sublist
-        List<Integer> subList = connectedComponent.subList(0, 10);
+        List<Integer> subList = connectedComponent.subList(0, COMPONENT_SIZE_FOR_POSITION);
         ConnectedComponent subCompo = new ConnectedComponent();
         subCompo.addAll(subList);
 

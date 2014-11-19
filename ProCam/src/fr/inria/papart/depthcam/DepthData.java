@@ -60,7 +60,7 @@ public class DepthData {
     /**
      * Not sure if used...
      */
-    public int[] colorPoints;
+    public int[] pointColors;
 
     /**
      * List of valid points
@@ -83,13 +83,25 @@ public class DepthData {
         kinectPoints = new Vec3D[size];
         projectedPoints = new Vec3D[size];
         validPointsMask = new boolean[size];
-        colorPoints = new int[size];
+        pointColors = new int[size];
         touchAttributes = new TouchAttributes[size];
         validPointsList = new ArrayList();
         if (is3D) {
             validPointsMask3D = new boolean[size];
             validPointsList3D = new ArrayList();
         }
+    }
+    
+    public DepthDataElement getElement(int i){
+        DepthDataElement dde = new DepthDataElement();
+        dde.pointColor = pointColors[i];
+        dde.kinectPoint = kinectPoints[i];
+        dde.projectedPoint = projectedPoints[i];
+        dde.touchAttribute = touchAttributes[i];
+        dde.validPoint = validPointsMask[i];
+        dde.validPoint3D = validPointsMask3D[i];
+        dde.offset = i;
+        return dde;
     }
 
     public void clear() {
@@ -101,7 +113,7 @@ public class DepthData {
     }
     
     void clearColor(){
-        Arrays.fill(this.colorPoints, INVALID_COLOR);
+        Arrays.fill(this.pointColors, INVALID_COLOR);
     }
 
     void clearDepth() {
