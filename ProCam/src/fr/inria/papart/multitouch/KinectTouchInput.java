@@ -95,6 +95,10 @@ public class KinectTouchInput extends TouchInput {
             IplImage colImage = kinectCamera.getIplImage();
             depthDataSem.acquire();
 
+            if (colImage == null || depthImage == null) {
+                return;
+            }
+
             if (touch2DPrecision > 0 && touch3DPrecision > 0) {
                 kinect.updateMT(depthImage, colImage, calibration, touch2DPrecision, touch3DPrecision);
                 findAndTrack2D();
@@ -222,6 +226,7 @@ public class KinectTouchInput extends TouchInput {
 
         paperScreenCoord.z = tp.getPosition().z;
         touch.position = paperScreenCoord;
+
         // Speed
         try {
             float prevX = tp.getPreviousPosition().x;
@@ -238,46 +243,52 @@ public class KinectTouchInput extends TouchInput {
     }
 
     public ArrayList<DepthPoint> projectDepthData(ARDisplay display, Screen screen) {
-        try {
+        ArrayList<DepthPoint> list = projectDepthData2D(display, screen);
+        list.addAll(projectDepthData3D(display, screen));
+        return list;
+    }
 
+    public ArrayList<DepthPoint> projectDepthData2D(ARDisplay display, Screen screen) {
+        return projectDepthDataXD(display, screen, true);
+    }
+
+    public ArrayList<DepthPoint> projectDepthData3D(ARDisplay display, Screen screen) {
+        return projectDepthDataXD(display, screen, false);
+    }
+
+    private ArrayList<DepthPoint> projectDepthDataXD(ARDisplay display, Screen screen, boolean is2D) {
+        try {
             depthDataSem.acquire();
             DepthData depthData = kinect.getDepthData();
-
             ArrayList<DepthPoint> projected = new ArrayList<DepthPoint>();
-            Vec3D[] projPoints = depthData.projectedPoints;
-            boolean isProjector = display instanceof ProjectorDisplay;
-
-            for (int i = 0; i < projPoints.length; i++) {
-                Vec3D vec = projPoints[i];
-                if (vec == Kinect.INVALID_POINT) {
-                    continue;
+            ArrayList<Integer> list = is2D ? depthData.validPointsList : depthData.validPointsList3D;
+            for (Integer i : list) {
+                DepthPoint depthPoint = tryCreateDepthPoint(display, screen, i);
+                if (depthPoint != null) {
+                    projected.add(depthPoint);
                 }
-
-                try {
-                    PVector screenPosition = (isProjector ? (ProjectorDisplay) display : display).projectPointer(screen, vec.x, vec.y);
-                    screenPosition.z = vec.z;
-
-                    int c = depthData.colorPoints[i];
-
-                    projected.add(new DepthPoint(screenPosition.x,
-                            screenPosition.y,
-                            vec.z,
-                            c));
-                    
-                } catch (Exception e) {
-                }
-
             }
             depthDataSem.release();
             return projected;
-//                    res = (isProjector ? (Projector)display : display ).projectPointer(screen, tp);
-
         } catch (InterruptedException ex) {
             Logger.getLogger(KinectTouchInput.class
                     .getName()).log(Level.SEVERE, null, ex);
-        }
 
-        return null;
+            return null;
+        }
+    }
+
+    private DepthPoint tryCreateDepthPoint(ARDisplay display, Screen screen, int offset) {
+        Vec3D vec = kinect.getDepthData().projectedPoints[offset];
+        PVector screenPosition;
+        try {
+            screenPosition = project(screen, display, vec.x, vec.y);
+            screenPosition.z = vec.z;
+            int c = kinect.getDepthData().pointColors[offset];
+            return new DepthPoint(screenPosition.x, screenPosition.y, vec.z, c);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public void getTouch2DColors(IplImage colorImage) {

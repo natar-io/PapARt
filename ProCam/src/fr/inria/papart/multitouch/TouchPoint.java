@@ -18,7 +18,10 @@
  */
 package fr.inria.papart.multitouch;
 
+import fr.inria.papart.depthcam.DepthData;
+import fr.inria.papart.depthcam.DepthDataElement;
 import fr.inria.papart.depthcam.DepthPoint;
+import java.util.ArrayList;
 import processing.core.PVector;
 import toxi.geom.Vec3D;
 
@@ -40,7 +43,9 @@ public class TouchPoint extends DepthPoint {
     private Vec3D positionKinect;
     private Vec3D previousPositionKinect;
 //    private PVector speedKinect = new PVector();
-
+    private ConnectedComponent connectedComponent=  new ConnectedComponent();
+    private ArrayList<DepthDataElement> depthDataElements = new ArrayList<DepthDataElement>();
+       
     private float confidence;
 //    public float size;
     private boolean is3D;
@@ -140,7 +145,10 @@ public class TouchPoint extends DepthPoint {
         tp.toDelete = true;
 
         updatePosition(tp);
-
+        
+        // TODO: check performance ?!
+        updateDepthPoints(tp);
+        
         checkAndSetID();
         filter();
         return true;
@@ -172,6 +180,10 @@ public class TouchPoint extends DepthPoint {
 
         speed.set(this.position);
         speed.sub(this.previousPosition);
+    }
+    
+    private void updateDepthPoints(TouchPoint tp){
+        this.depthDataElements = tp.getDepthDataElements();
     }
 
     public boolean isObselete(int currentTime, int duration) {
@@ -205,7 +217,29 @@ public class TouchPoint extends DepthPoint {
     public PVector getSpeed() {
         return this.speed;
     }
+   
 
+    // TODO: save the  DepthData elements ! 
+    
+    public ConnectedComponent getConnectedComponent() {
+        return connectedComponent;
+    }
+
+    public void setConnectedComponent(ConnectedComponent connectedComponent) {
+        this.connectedComponent = connectedComponent;
+    }
+    
+    public void setDepthDataElements(DepthData depthData, ConnectedComponent connectedComponent) {
+        depthDataElements.clear();
+        for(Integer i : connectedComponent){
+            depthDataElements.add(depthData.getElement(i));
+        }
+    }
+
+    public ArrayList<DepthDataElement> getDepthDataElements(){
+        return this.depthDataElements;
+    }
+    
     protected void setUpdated(boolean updated) {
         this.isUpdated = updated;
     }

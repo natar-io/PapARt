@@ -21,11 +21,7 @@ package fr.inria.papart.multitouch;
 import fr.inria.papart.depthcam.DepthData;
 import fr.inria.papart.depthcam.Kinect;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
-import processing.core.PApplet;
-import processing.core.PVector;
-import toxi.geom.Vec3D;
 
 /**
  *

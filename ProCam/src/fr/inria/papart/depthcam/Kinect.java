@@ -85,26 +85,25 @@ public class Kinect {
         init();
     }
 
-    private PMatrix3D translateCam = new PMatrix3D(1, 0, 0, 5,
+    public PMatrix3D KinectRGBIRCalibration = new PMatrix3D(1, 0, 0, 5,
             0, 1, 0, 0,
             0, 0, 1, 0,
             0, 0, 0, 1);
 
     public int findColorOffset(Vec3D v) {
-        PVector vt = new PVector(v.x, v.y, v.z);
-        PVector vt2 = new PVector();
-        //  Ideally use a calibration... 
-//        kinectCalibRGB.getExtrinsics().mult(vt, vt2);       
-        translateCam.mult(vt, vt2);
-        return kinectCalibRGB.worldToPixel(new Vec3D(vt2.x, vt2.y, vt2.z));
+       return findColorOffset(v.x, v.y, v.z);
     }
 
     public int findColorOffset(PVector v) {
-        PVector vt = new PVector(v.x, v.y, v.z);
+        return findColorOffset(v.x, v.y, v.z);
+    }
+    
+    public int findColorOffset(float x, float y, float z){
+        PVector vt = new PVector(x, y, z);
         PVector vt2 = new PVector();
         //  Ideally use a calibration... 
 //        kinectCalibRGB.getExtrinsics().mult(vt, vt2);       
-        translateCam.mult(vt, vt2);
+        KinectRGBIRCalibration.mult(vt, vt2);
         return kinectCalibRGB.worldToPixel(new Vec3D(vt2.x, vt2.y, vt2.z));
     }
 
@@ -150,6 +149,7 @@ public class Kinect {
         computeDepthAndDo(1, new DoNothing());
         doForEachPoint(skip2D, new Select2DPointPlaneProjection());
         doForEachPoint(skip3D, new Select3DPointPlaneProjection());
+//        doForEachPoint(skip2D, new SetImageData());
         doForEachValidPoint(skip2D, new SetImageData());
         doForEachValid3DPoint(skip3D, new SetImageData());
     }
@@ -383,7 +383,8 @@ public class Kinect {
 
         @Override
         public void execute(Vec3D p, int x, int y, int offset) {
-            depthData.colorPoints[offset] = getPixelColor(offset);
+            depthData.pointColors[offset] = getPixelColor(offset);
+          
         }
     }
 

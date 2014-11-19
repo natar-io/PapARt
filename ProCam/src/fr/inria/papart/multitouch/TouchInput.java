@@ -35,7 +35,7 @@ public abstract class TouchInput {
 
     abstract public TouchList projectTouchToScreen(Screen screen, BaseDisplay display);
 
-    protected PVector project(Screen screen, BaseDisplay display, float x, float y) throws Exception {
+    public PVector project(Screen screen, BaseDisplay display, float x, float y) throws Exception {
         boolean isProjector = display instanceof ProjectorDisplay;
         boolean isARDisplay = display instanceof ARDisplay;
 

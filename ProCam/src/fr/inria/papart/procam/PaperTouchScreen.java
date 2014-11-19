@@ -31,7 +31,6 @@ import processing.core.PVector;
 
 public class PaperTouchScreen extends PaperScreen {
 
-    // TODO: check -> never used. 
     protected TouchList touchList = new TouchList();
     protected TouchInput touchInput;
     protected ArrayList<Button> buttons = new ArrayList<Button>();

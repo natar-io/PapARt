@@ -164,6 +164,7 @@ public abstract class TouchDetection {
         return neighbourList;
     }
 
+    // TODO: use another type here ?
     protected TouchPoint createTouchPoint(ConnectedComponent connectedComponent) {
         Vec3D meanProj = connectedComponent.getMean(depthData.projectedPoints);
         Vec3D meanKinect = connectedComponent.getMean(depthData.kinectPoints);
@@ -172,7 +173,11 @@ public abstract class TouchDetection {
         tp.setPositionKinect(meanKinect);
         tp.setCreationTime(depthData.timeStamp);
         tp.set3D(false);
+        
         tp.setConfidence(connectedComponent.size() / MINIMUM_COMPONENT_SIZE);
+        tp.setConnectedComponent(connectedComponent);
+        tp.setDepthDataElements(depthData, connectedComponent);
+        // TODO: create Example using these DepthDataElements !
         return tp;
     }
 
