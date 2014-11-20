@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calibration>
+  <CamProjSync Capture="600" Delay="200" Display="1000" Type="1" Value="200"/>
+</Calibration>

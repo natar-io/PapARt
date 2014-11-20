@@ -16,19 +16,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package fr.inria.papart.depthcam.calibration;
+
+package fr.inria.papart.scanner;
+
+import processing.core.PImage;
 
 /**
  *
  * @author Jeremy Laviole <jeremy.laviole@inria.fr>
  */
-public class Common {
-    static final String currentPath = "test/fr/inria/papart/depthcam/calibration/";
-    static final String HomographyCalibration = "homographyCalibration1.xml";
-    static final String HomographyCalibrationCopy = "homographyCalibration1Copy.xml";
-    static final String PlaneCalibration = "planeCalibration1.xml";
-    static final String PlaneProjectionCalibration = "planeProjectionCalibration1.xml";
-    static final String PlaneCalibrationCopy = "planeCalibration1Copy.xml";
-    static final String CameraProjectorSync = "cameraProjectorSync.xml";
-
+public class Capture {
+    
+    PImage[] grayCodesCaptures;
+    
+    
 }

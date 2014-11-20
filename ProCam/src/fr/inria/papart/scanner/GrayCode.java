@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import processing.core.PApplet;
 import static processing.core.PApplet.ceil;
@@ -40,8 +41,12 @@ import processing.opengl.PGraphicsOpenGL;
  */
 public class GrayCode implements PConstants, Serializable {
 
+    public static final int DECODE_NOT_SET = 0;
+    public static final int DECODE_REF = 1;
+    public static final int DECODE_ABS = 2;
+
 //    static public float differenceThreshold = 120;
-    private PApplet pApplet;
+    private PApplet parent;
 
     // The user sets them
     private PImage[] grayCodesCaptures;
@@ -75,7 +80,7 @@ public class GrayCode implements PConstants, Serializable {
     private int displayId = 0;
 
     public GrayCode(PApplet applet, int width, int height, int downScale) {
-        this.pApplet = applet;
+        this.parent = applet;
         this.width = width / downScale;
         this.height = height / downScale;
         this.displayWidth = width;
@@ -194,16 +199,16 @@ public class GrayCode implements PConstants, Serializable {
         PImage[] grayCodeImages = new PImage[nbCodes];
 
         for (int i = 0; i < grayCodeImages.length; i++) {
-            grayCodeImages[i] = pApplet.createImage(width, height, RGB);
+            grayCodeImages[i] = parent.createImage(width, height, RGB);
         }
 
         // set the first image 
         {
-            grayCodeImages[0] = pApplet.createImage(width, height, RGB);
+            grayCodeImages[0] = parent.createImage(width, height, RGB);
             grayCodeImages[0].loadPixels();
             int[] px = grayCodeImages[0].pixels;
             for (int i = 0; i < px.length; i++) {
-                px[i] = pApplet.color(255);
+                px[i] = parent.color(255);
             }
             grayCodeImages[0].updatePixels();
         }
@@ -221,7 +226,7 @@ public class GrayCode implements PConstants, Serializable {
                 }
 
                 if (binary == 1) {
-                    binary = pApplet.color(255);
+                    binary = parent.color(255);
                 }
 
                 PImage img = grayCodeImages[i + 1];
@@ -247,7 +252,7 @@ public class GrayCode implements PConstants, Serializable {
                 }
 
                 if (binary == 1) {
-                    binary = pApplet.color(255);
+                    binary = parent.color(255);
                 }
 
                 PImage img = grayCodeImages[i + numCols + 1];
@@ -264,77 +269,146 @@ public class GrayCode implements PConstants, Serializable {
         return grayCodeImages;
     }
 
-    public void decodeAbs(int differenceThreshold) {
+    private int mode;
+    private int threshold;
 
-        if (isDecoded) {
-            System.err.println("Grey code already decoded. Reset to force it again");
-            return;
-        }
-        decodedX = new int[cameraResX * cameraResY];
-        decodedY = new int[cameraResX * cameraResY];
+    public void decode(int mode, int threshold) {
+        this.mode = mode;
+        this.threshold = threshold;
 
-        // Convert to grayscale
-        for (int i = 0; i < nbCodes; i++) {
-            grayCodesCaptures[i].filter(GRAY);
+        decodeImpl();
+    }
+
+    public PImage getImageDecoded(int imageId, int mode, int differenceThreshold) {
+
+        PImage out = parent.createImage(cameraResX, cameraResY, RGB);
+        out.loadPixels();
+        this.mode = mode;
+        this.threshold = differenceThreshold;
+
+        for (int y = 0; y < cameraResY; y += 1) {
+            for (int x = 0; x < cameraResX; x += 1) {
+                int offset = x + y * cameraResX;
+                boolean newValue = decodePixel(imageId, offset);
+                
+                // TODO: bug here ?!
+                if(mode == GrayCode.DECODE_REF)
+                    newValue = !newValue;
+                
+                out.pixels[offset] = newValue ? 255 : 0;
+            }
         }
 
-        for (int i = 0; i < grayCodesCaptures.length; i++) {
-            grayCodesCaptures[i].loadPixels();
-        }
-        Arrays.fill(validMask, Boolean.FALSE);
+        return out;
+
+    }
+
+    public void decodeImpl() {
+        convertImagesToGray();
+        prepareDecodeMemory();
 
         for (int y = 0; y < cameraResY; y += 1) {
             for (int x = 0; x < cameraResX; x += 1) {
 
-                // for(int y = halfSc; y < h; y+= sc) {
-                // 	for(int x = halfSc; x < w; x+= sc) {
-                boolean prevValue = false;
                 int offset = x + y * cameraResX;
 
                 validMask[offset] = false;
 
-                for (int i = 0; i < numCols; i++) {
-                    boolean newValue = pApplet.brightness(grayCodesCaptures[i + 1].pixels[offset]) > differenceThreshold;
-                    validMask[offset] |= newValue;
-                    newValue = newValue ^ prevValue;
-                    prevValue = newValue;
-                    if (newValue) {
-                        decodedX[offset] += pow(2f, (numCols - i - 1));
-                    }
-                }
-
-                prevValue = false;
-                for (int i = 0; i < numRows; i++) {
-                    boolean newValue = pApplet.brightness(grayCodesCaptures[i + numCols + 1].pixels[offset]) > differenceThreshold;
-                    validMask[offset] |= newValue;
-
-                    newValue = newValue ^ prevValue;
-                    prevValue = newValue;
-
-                    if (newValue) {
-                        decodedY[offset] += pow(2f, (numRows - i - 1));
-                    }
-                }
+                decodeColumns(offset);
+                decodeRows(offset);
 
                 decodedX[offset] = (decodedX[offset] - colShift) * downScale;
                 decodedY[offset] = (decodedY[offset] - rowShift) * downScale;
 
                 if (decodedX[offset] >= displayWidth || decodedY[offset] >= displayHeight) {
-//                        || (decodedX[offset] <= 5 && decodedY[offset] <= 5)) {
                     validMask[offset] = false;
                 }
-
             }
         }
         isDecoded = true;
 
     }
 
-    public void decodeRef(int differenceThreshold) {
-        if (isDecoded) {
-            System.err.println("Grey code already decoded. Reset to force it again");
-            return;
+    void decodeColumns(int offset) {
+
+        boolean prevValue = false;
+
+        for (int i = 0; i < numCols; i++) {
+            boolean newValue = decodePixel(i + 1, offset);
+
+            validMask[offset] |= newValue;
+            newValue = newValue ^ prevValue;
+            prevValue = newValue;
+            if (newValue) {
+                decodedX[offset] += pow(2f, (numCols - i - 1));
+            }
         }
+    }
+
+    void decodeRows(int offset) {
+
+        boolean prevValue = false;
+
+        for (int i = 0; i < numRows; i++) {
+            boolean newValue = decodePixel(i + numCols + 1, offset);
+
+            validMask[offset] |= newValue;
+            newValue = newValue ^ prevValue;
+            prevValue = newValue;
+
+            if (newValue) {
+                decodedY[offset] += pow(2f, (numRows - i - 1));
+            }
+        }
+    }
+
+    private boolean decodePixel(int imageId, int offset) {
+        if (mode == GrayCode.DECODE_ABS) {
+            return decodePixelAbs(imageId, offset);
+        } else {
+            if (mode == GrayCode.DECODE_REF) {
+                return decodePixelRef(imageId, offset);
+            } else {
+                // TODO: error !
+                assert (true);
+                return false;
+            }
+        }
+    }
+
+    private boolean decodePixelAbs(int imageId, int offset) {
+        return parent.brightness(grayCodesCaptures[imageId].pixels[offset]) > threshold;
+    }
+
+    private boolean decodePixelRef(int imageId, int offset) {
+        float referenceLight = parent.brightness(refImage.pixels[offset]);
+        float currentLight = parent.brightness(grayCodesCaptures[imageId].pixels[offset]);
+        return (Math.abs(currentLight - referenceLight) < threshold);
+    }
+
+    private void convertImagesToGray() {
+        for (int i = 0; i < nbCodes; i++) {
+            grayCodesCaptures[i].filter(GRAY);
+            grayCodesCaptures[i].loadPixels();
+        }
+
+        if (refImage != null) {
+            refImage.filter(GRAY);
+            refImage.loadPixels();
+        } else {
+            refImage = grayCodesCaptures[0];
+        }
+
+    }
+
+    private void prepareDecodeMemory() {
+        decodedX = new int[cameraResX * cameraResY];
+        decodedY = new int[cameraResX * cameraResY];
+        Arrays.fill(validMask, Boolean.FALSE);
+    }
+
+    public void decodeRef(int differenceThreshold) {
+
         decodedX = new int[cameraResX * cameraResY];
         decodedY = new int[cameraResX * cameraResY];
 
@@ -350,7 +424,7 @@ public class GrayCode implements PConstants, Serializable {
         if (refImage != null) {
             refImage.filter(GRAY);
             refImage.loadPixels();
-        } else { 
+        } else {
             refImage = grayCodesCaptures[0];
         }
         Arrays.fill(validMask, Boolean.FALSE);
@@ -365,25 +439,15 @@ public class GrayCode implements PConstants, Serializable {
 
                 validMask[offset] = false;
 
-                // TODO: Second method -> use the previous or / and reference lights
-//                float referenceLight = pApplet.brightness(grayCodesCaptures[0].pixels[offset]);
-                float referenceLight = pApplet.brightness(refImage.pixels[offset]);
-
-                float prevLight = referenceLight;
+                float referenceLight = parent.brightness(refImage.pixels[offset]);
 
                 for (int i = 0; i < numCols; i++) {
-
-                    float currentLight = pApplet.brightness(grayCodesCaptures[i + 1].pixels[offset]);
-
+                    float currentLight = parent.brightness(grayCodesCaptures[i + 1].pixels[offset]);
                     boolean newValue = Math.abs(currentLight - referenceLight) > differenceThreshold;
-                    // boolean newValue = Math.abs(currentLight - prevLight) < diffenceTheshold;
-                    // boolean newValue = pApplet.brightness(grayCodesCaptures[i + 1].pixels[offset]) > diffenceTheshold;
 
                     validMask[offset] |= newValue;
-
                     newValue = newValue ^ prevValue;
                     prevValue = newValue;
-
                     if (newValue) {
                         decodedX[offset] += pow(2f, (numCols - i - 1));
                     }
@@ -392,11 +456,9 @@ public class GrayCode implements PConstants, Serializable {
                 prevValue = false;
                 for (int i = 0; i < numRows; i++) {
 
-                    float currentLight = pApplet.brightness(grayCodesCaptures[i + numCols + 1].pixels[offset]);
-                    // boolean newValue = Math.abs(currentLight - prevLight) < diffenceTheshold;
-
+                    float currentLight = parent.brightness(grayCodesCaptures[i + numCols + 1].pixels[offset]);
                     boolean newValue = Math.abs(currentLight - referenceLight) > differenceThreshold;
-                    // boolean newValue = pApplet.brightness(grayCodesCaptures[i + numCols + 1].pixels[offset]) > diffenceTheshold;
+
                     validMask[offset] |= newValue;
 
                     newValue = newValue ^ prevValue;
@@ -406,34 +468,15 @@ public class GrayCode implements PConstants, Serializable {
                         decodedY[offset] += pow(2f, (numRows - i - 1));
                     }
                 }
-
-                // Consequently the error is AT LEAST of Downscale  !!!
                 decodedX[offset] = (decodedX[offset] - colShift) * downScale;
                 decodedY[offset] = (decodedY[offset] - rowShift) * downScale;
 
-                // if(myMask[offset]){
-                // 	println("Decoded " + decodedX[offset] + " " + decodedY[offset]);
-                // }
                 if (decodedX[offset] >= displayWidth || decodedY[offset] >= displayHeight) {
                     validMask[offset] = false;
                 }
             }
         }
         isDecoded = true;
-        // background(0);
-        // colorMode(RGB, frameSizeX, frameSizeY, 255);
-        // for(int y = 0 ; y < cameraY; y+= 1) {
-        // 	for(int x = 0; x < cameraX; x+= 1) {
-        // 	    int offset = x + y* cameraX;
-        // 	    if(!myMask[offset]){
-        // 		stroke(255, 255, 255);
-        // 		point(x,y);
-        // 		continue;
-        // 	    }
-        // 	    stroke(decodedX[offset], decodedY[offset], 100);
-        // 	    point(x,y);
-        // 	}
-        // }
     }
 
     // TODO: better than this.
@@ -456,7 +499,7 @@ public class GrayCode implements PConstants, Serializable {
         try {
             this.grayCodesCaptures = null;
             this.refImage = null;
-            this.pApplet = null;
+            this.parent = null;
             FileOutputStream fileOut = new FileOutputStream(path);
             ObjectOutputStream out = new ObjectOutputStream(fileOut);
             out.writeObject(this);
