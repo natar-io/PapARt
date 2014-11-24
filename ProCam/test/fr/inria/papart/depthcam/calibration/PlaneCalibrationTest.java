@@ -18,6 +18,7 @@
  */
 package fr.inria.papart.depthcam.calibration;
 
+import fr.inria.papart.Sketch;
 import static fr.inria.papart.depthcam.calibration.HomographyCalibrationTest.DIMS;
 import org.junit.Test;
 import static org.junit.Assert.*;

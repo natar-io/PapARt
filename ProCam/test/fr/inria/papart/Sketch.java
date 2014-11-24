@@ -17,7 +17,7 @@
  * MA 02110-1301  USA
  */
 
-package fr.inria.papart.depthcam.calibration;
+package fr.inria.papart;
 
 /**
  *

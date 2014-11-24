@@ -18,6 +18,7 @@
  */
 package fr.inria.papart.depthcam.calibration;
 
+import fr.inria.papart.Sketch;
 import fr.inria.papart.scanner.GrayCode;
 import org.junit.Test;
 import static org.junit.Assert.*;
