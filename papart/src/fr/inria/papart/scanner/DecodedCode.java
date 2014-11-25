@@ -18,18 +18,13 @@
  */
 package fr.inria.papart.scanner;
 
-import com.thoughtworks.xstream.XStream;
 import java.io.Serializable;
-import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
-import java.util.Arrays;
-import org.jdom2.internal.ArrayCopy;
 import processing.core.PApplet;
 import static processing.core.PConstants.RGB;
 import processing.core.PImage;
-import processing.data.XML;
 
 /**
  *
