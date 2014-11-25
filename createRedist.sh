@@ -1,8 +1,8 @@
 #!/bin/bash 
 
-SKETCHBOOK=../sketchbook
+SKETCHBOOK=sketches
 TMP=tmp
-NAME=ProCam
+NAME=PapARt
 
 ## NAME must match 
 ## fr.inria.papart.procam.Utils.LibraryName = "ProCam";
@@ -16,13 +16,14 @@ mkdir $TMP/$NAME/examples/examples
 mkdir $TMP/$NAME/examples/calib
 mkdir $TMP/$NAME/examples/apps
 
+echo "Cleaning sketches"
+
+sh $SKETCHBOOK/clean.sh
+
 echo "Copy Library"
-
 # Library
-cp ProCam/dist/ProCam.jar $TMP/$NAME/library/$NAME.jar
-#cp -R ProCam/dist/lib $NAME/library/
+cp papart/target/papart-*.jar $TMP/$NAME/library/$NAME.jar
 
-tar -zcf libs.tgz ProCam/dist/lib
 
 # echo "Copy JavaCV, OpenCV and friends"
 # libs are  javaCV and javaCV cppjars
@@ -31,13 +32,15 @@ tar -zcf libs.tgz ProCam/dist/lib
 
 echo "Copy the sources" 
 # copy the source also
-cp -R ProCam/src $TMP/$NAME/
+cp -R papart/src $TMP/$NAME/
+
+cp -R papart/test $TMP/$NAME/
 
 echo "Copy the JavaDoc" 
-cp -R ProCam/dist/javadoc $TMP/$NAME/
+cp -R papart/target/site/apidocs $TMP/$NAME/
 
 echo "Copy the Data" 
-cp -R ProCam/data $TMP/$NAME/
+cp -R papart/data $TMP/$NAME/
 
 
 echo "Copy Examples, Calibration & Apps" 
@@ -58,6 +61,10 @@ tar -zcf $NAME.tgz $NAME
 
 mv $NAME.tgz  .. 
 cd .. 
+
+
+echo "Create archive of depedencies"
+tar -zcf libs.tgz libraries
 
 echo "Clean " 
 rm -rf $TMP
