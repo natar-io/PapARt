@@ -24,7 +24,6 @@ import processing.opengl.PGraphicsOpenGL;
 import processing.core.PImage;
 
 import processing.opengl.*;
-import javax.media.opengl.*;
 import processing.core.PConstants;
 import static processing.core.PConstants.QUADS;
 

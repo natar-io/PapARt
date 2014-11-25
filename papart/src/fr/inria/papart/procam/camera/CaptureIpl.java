@@ -24,6 +24,7 @@ import java.nio.ByteBuffer;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.video.Capture;
+import org.gstreamer.Buffer;
 
 /**
  *

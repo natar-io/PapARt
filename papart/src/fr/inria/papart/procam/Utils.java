@@ -51,7 +51,7 @@ import toxi.geom.Vec3D;
  */
 public class Utils {
 
-    static public final String LibraryName = "ProCam";
+    static public final String LibraryName = "PapARt";
 
     static public String getSketchbookFolder() {
 
