@@ -35,24 +35,24 @@ public class TouchList extends ArrayList<Touch> {
             touch.scaleBy(scales);
         }
     }
-    
-    public void sortAlongYAxis(){
-          Collections.sort(this, new TouchComparator());
+
+    public void sortAlongYAxis() {
+        Collections.sort(this, new TouchComparator());
     }
-    
-    public void removeYoungOnes(int currentTime){
+
+    public void removeYoungOnes(int currentTime) {
         for (Iterator<Touch> it = this.iterator(); it.hasNext();) {
             Touch touch = it.next();
-            if(touch.touchPoint.isYoung(currentTime)){
+            if (touch.touchPoint.isYoung(currentTime)) {
                 it.remove();
             }
         }
     }
-    
-    public TouchList getOldOnes(int currentTime){
+
+    public TouchList getOldOnes(int currentTime) {
         TouchList old = new TouchList();
         for (Touch touch : this) {
-            if(!touch.touchPoint.isYoung(currentTime)){
+            if (!touch.touchPoint.isYoung(currentTime)) {
                 old.add(touch);
             }
         }
@@ -85,4 +85,13 @@ public class TouchList extends ArrayList<Touch> {
         }
         return selectedTouch;
     }
+
+    public void invertY(PVector drawingSize) {
+        for (Touch touch : this) {
+            touch.position.y = drawingSize.y - touch.position.y;
+            touch.pposition.y = drawingSize.y - touch.pposition.y;
+            touch.speed.y = -touch.speed.y;
+        }
+    }
+    
 }

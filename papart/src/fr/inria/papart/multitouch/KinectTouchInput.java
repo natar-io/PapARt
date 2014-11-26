@@ -40,6 +40,8 @@ import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import processing.core.PApplet;
+import processing.core.PMatrix;
+import processing.core.PMatrix3D;
 import processing.core.PVector;
 import toxi.geom.Matrix4x4;
 import toxi.geom.Vec3D;
@@ -144,6 +146,7 @@ public class KinectTouchInput extends TouchInput {
                 Touch touch = createTouch(screen, display, tp);
                 touchList.add(touch);
             } catch (Exception e) {
+                System.err.println("Intersection fail." + e);
             }
         }
 
@@ -152,6 +155,7 @@ public class KinectTouchInput extends TouchInput {
                 Touch touch = createTouch(screen, display, tp);
                 touchList.add(touch);
             } catch (Exception e) {
+                System.err.println("Intersection fail. " + e);
             }
         }
 
@@ -161,13 +165,7 @@ public class KinectTouchInput extends TouchInput {
 
     private Touch createTouch(Screen screen, BaseDisplay display, TouchPoint tp) throws Exception {
         Touch touch = new Touch();
-
-        if (useRawDepth) {
-            projectPositionAndSpeedRaw(screen, display, touch, tp);
-        } else {
-            projectPositionAndSpeed(screen, display, touch, tp);
-        }
-
+        projectPositionAndSpeed(screen, display, touch, tp);
         touch.is3D = tp.is3D();
         touch.touchPoint = tp;
         return touch;
@@ -182,59 +180,34 @@ public class KinectTouchInput extends TouchInput {
         this.pdp = camera.getProjectiveDevice();
     }
 
-    private void projectPositionAndSpeedRaw(Screen screen,
-            BaseDisplay display,
-            Touch touch, TouchPoint tp) throws Exception {
-
-        Vec3D touchPosition = tp.getPositionKinect();
-
-        PVector p = pdp.worldToPixelCoord(touchPosition);
-
-        // Current point 
-        PVector paperScreenCoord = project(screen, display,
-                p.x / pdp.getWidth(),
-                p.y / pdp.getHeight());
-
-        paperScreenCoord.z = tp.getPosition().z;
-        touch.position = paperScreenCoord;
-
-        // Speed
-        try {
-            p = pdp.worldToPixelCoord(tp.getPreviousPositionKinect());
-            paperScreenCoord = project(screen, display,
-                    p.x / pdp.getWidth(),
-                    p.y / pdp.getHeight());
-
-            paperScreenCoord.z = tp.getPreviousPosition().z;
-            touch.setPrevPos(paperScreenCoord);
-        } catch (Exception e) {
-            // Speed is set to 0
-            touch.defaultPrevPos();
-        }
-    }
-
     private void projectPositionAndSpeed(Screen screen,
             BaseDisplay display,
             Touch touch, TouchPoint tp) throws Exception {
+        projectPosition(screen, display, touch, tp);
+        projectSpeed(screen, display, touch, tp);
+    }
 
-        PVector touchPositionNormalized = tp.getPosition();
+    private void projectPosition(Screen screen,
+            BaseDisplay display,
+            Touch touch, TouchPoint tp) throws Exception {
 
-        // Current point 
-        PVector paperScreenCoord = project(screen, display,
-                touchPositionNormalized.x,
-                touchPositionNormalized.y);
+        PVector paperScreenCoord = projectPointToScreen(screen,
+                display,
+                tp.getPositionKinect(),
+                tp.getPosition());
 
-        paperScreenCoord.z = tp.getPosition().z;
-        touch.position = paperScreenCoord;
+        touch.setPosition(paperScreenCoord);
+    }
 
-        // Speed
+    private void projectSpeed(Screen screen,
+            BaseDisplay display,
+            Touch touch, TouchPoint tp) {
         try {
-            float prevX = tp.getPreviousPosition().x;
-            float prevY = tp.getPreviousPosition().y;
-            paperScreenCoord = project(screen, display,
-                    prevX,
-                    prevY);
-            paperScreenCoord.z = tp.getPreviousPosition().z;
+            PVector paperScreenCoord = projectPointToScreen(screen,
+                    display,
+                    tp.getPreviousPositionKinect(),
+                    tp.getPreviousPosition());
+
             touch.setPrevPos(paperScreenCoord);
         } catch (Exception e) {
             // Speed is set to 0
@@ -270,6 +243,7 @@ public class KinectTouchInput extends TouchInput {
             }
             depthDataSem.release();
             return projected;
+
         } catch (InterruptedException ex) {
             Logger.getLogger(KinectTouchInput.class
                     .getName()).log(Level.SEVERE, null, ex);
@@ -280,15 +254,47 @@ public class KinectTouchInput extends TouchInput {
 
     private DepthPoint tryCreateDepthPoint(ARDisplay display, Screen screen, int offset) {
         Vec3D vec = kinect.getDepthData().projectedPoints[offset];
-        PVector screenPosition;
+        PVector projectedPt = new PVector(vec.x, vec.y, vec.z);
+
         try {
-            screenPosition = project(screen, display, vec.x, vec.y);
-            screenPosition.z = vec.z;
+            PVector screenPosition = projectPointToScreen(screen, display,
+                    kinect.getDepthData().kinectPoints[offset],
+                    projectedPt);
+
             int c = kinect.getDepthData().pointColors[offset];
-            return new DepthPoint(screenPosition.x, screenPosition.y, vec.z, c);
+            return new DepthPoint(screenPosition.x, screenPosition.y, screenPosition.z, c);
         } catch (Exception e) {
+//            System.out.println("tryCreateDepthPoint: Point creation exception : " + e);
+//            e.printStackTrace();
             return null;
         }
+    }
+
+    private PVector projectPointToScreen(Screen screen,
+            BaseDisplay display, Vec3D pKinect, PVector pNorm) throws Exception {
+
+        PVector paperScreenCoord;
+        if (useRawDepth) {
+
+            // Method 1  -> Loose information of Depth !
+            // Stays here, might be used later.
+//            PVector p = pdp.worldToPixelCoord(pKinect);
+//            paperScreenCoord = project(screen, display,
+//                    p.x / (float) pdp.getWidth(),
+//                    p.y / (float) pdp.getHeight());
+            paperScreenCoord = new PVector();
+            PVector pKinectP = new PVector(pKinect.x, pKinect.y, pKinect.z);
+
+            PMatrix3D transfo = screen.getPosition().get();
+            transfo.invert();
+            transfo.mult(pKinectP, paperScreenCoord);
+        } else {
+            paperScreenCoord = project(screen, display,
+                    pNorm.x,
+                    pNorm.y);
+            paperScreenCoord.z = pNorm.z;
+        }
+        return paperScreenCoord;
     }
 
     public void getTouch2DColors(IplImage colorImage) {
@@ -301,10 +307,8 @@ public class KinectTouchInput extends TouchInput {
         if (touchPointList.isEmpty()) {
             return;
         }
-
         ByteBuffer cBuff = colorImage.getByteBuffer();
 
-//        System.out.println("Searching for point color");
         for (TouchPoint tp : touchPointList) {
             int offset = 3 * kinect.findColorOffset(tp.getPositionKinect());
 
@@ -313,7 +317,6 @@ public class KinectTouchInput extends TouchInput {
                     | (cBuff.get(offset + 1) & 0xFF) << 8
                     | (cBuff.get(offset) & 0xFF));
         }
-
     }
 
     // Raw versions of the algorithm are providing each points at each time. 
@@ -370,6 +373,10 @@ public class KinectTouchInput extends TouchInput {
 
     public PlaneAndProjectionCalibration getCalibration() {
         return calibration;
+    }
+
+    public boolean useRawDepth() {
+        return useRawDepth;
     }
 
     public void lock() {

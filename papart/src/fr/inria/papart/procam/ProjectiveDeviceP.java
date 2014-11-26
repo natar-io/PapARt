@@ -200,6 +200,17 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
 
         return new PVector(px, py);
     }
+    
+    public PVector worldToPixelCoord(PVector pt) {
+
+        // Reprojection 
+        float invZ = 1.0f / pt.z;
+
+        int px = PApplet.constrain(PApplet.round((pt.x * invZ * fx) + cx), 0, w - 1);
+        int py = PApplet.constrain(PApplet.round((pt.y * invZ * fy) + cy), 0, h - 1);
+
+        return new PVector(px, py);
+    }
 
     public int worldToPixel(PVector pt) {
 

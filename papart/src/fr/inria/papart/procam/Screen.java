@@ -69,18 +69,10 @@ public class Screen {
     }
 
     public Screen(PApplet parent, PVector size, float scale, boolean useAA, int AAValue) {
-        // AA not available anymore
-        // Now it is loading when use, to save memory (for PaperScreens)
-//        thisGraphics = (PGraphicsOpenGL) parent.createGraphics((int) (size.x * scale), (int) (size.y * scale), PApplet.OPENGL);
-
-//        thisGraphics = new PGraphicsOpenGL(); 
-//        thisGraphics.setPrimary(false);
-//        thisGraphics.setSize((int) (size.x * scale), (int) (size.y * scale));
         this.size = size.get();
         this.scale = scale;
         this.parent = parent;
         initHomography();
-//        initImageGetter();
     }
 
     // Get the texture to display...
@@ -201,26 +193,7 @@ public class Screen {
 
     }
 
-    // Never Used  ?
-    // Never Used ?
-//    @Deprecated
-//    public void updatePos(Camera camera, MarkerBoard board) {
-//
-//        posFloat = board.getTransfo(camera);
-//
-//        if (posPMatrix == null) {
-//            posPMatrix = new PMatrix3D(posFloat[0], posFloat[1], posFloat[2], posFloat[3],
-//                    posFloat[4], posFloat[5], posFloat[6], posFloat[7],
-//                    posFloat[8], posFloat[9], posFloat[10], posFloat[11],
-//                    0, 0, 0, 1);
-//        }
-//
-//        posPMatrix.set(posFloat[0], posFloat[1], posFloat[2], posFloat[3],
-//                posFloat[4], posFloat[5], posFloat[6], posFloat[7],
-//                posFloat[8], posFloat[9], posFloat[10], posFloat[11],
-//                0, 0, 0, 1);
-//
-//    }
+
     public void computeScreenPosTransform() {
 
         ///////////////////// PLANE COMPUTATION  //////////////////
@@ -256,11 +229,6 @@ public class Screen {
         homography.setPoint(false, 1, new PVector(1, 0));
         homography.setPoint(false, 2, new PVector(1, 1));
         homography.setPoint(false, 3, new PVector(0, 1));
-
-//        homography.setPoint(false, 0, new PVector(0, 1));
-//        homography.setPoint(false, 1, new PVector(1, 1));
-//        homography.setPoint(false, 2, new PVector(1, 0));
-//        homography.setPoint(false, 3, new PVector(0, 0));
     }
 
     public void initDraw(PVector userPos) {
@@ -270,16 +238,9 @@ public class Screen {
     public void initDraw(PVector userPos, float nearPlane, float farPlane) {
         initDraw(userPos, nearPlane, farPlane, false, false, true);
     }
-//    public PGraphicsOpenGL initDraw(PVector userPos, float nearPlane, float farPlane, boolean isAnaglyph, boolean isLeft, boolean isOnly) {
-//        return initDraw(userPos, nearPlane, farPlane, isAnaglyph, isLeft, isOnly);
-//    }
     // TODO: optionnal args.
     private PVector userPosCam = null;
 
-    // TODO:remettre ça...
-//    public PGraphicsOpenGL initDraw(PVector userPos, float nearPlane, float farPlane, boolean isAnaglyph, boolean isLeft, boolean isOnly) {
-//        return initDraw(userPos, nearPlane, farPlane, isAnaglyph, isLeft, isOnly);
-//    }
     public void initDraw(PVector userPos, float nearPlane, float farPlane, boolean isAnaglyph, boolean isLeft, boolean isOnly) {
 
         PGraphicsOpenGL graphics = getGraphics();
@@ -478,24 +439,6 @@ public class Screen {
 
         ReadonlyVec3D res = plane.getIntersectionWithRay(ray);
         return res;
-    }
-
-    public PVector getZMinMax() {
-
-        float znear = 300000;
-        float zfar = 0;
-
-        for (int i = 0; i < 4; i++) {
-
-            if (paperPosCorners3D[i].z < znear) {
-                znear = paperPosCorners3D[i].z;
-            }
-            if (paperPosCorners3D[i].z > zfar) {
-                zfar = paperPosCorners3D[i].z;
-            }
-
-        }
-        return new PVector(znear, zfar);
     }
 
     public float getHalfEyeDist() {
