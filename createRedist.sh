@@ -33,6 +33,8 @@ cp papart/target/papart-*.jar $TMP/$NAME/library/$NAME.jar
 echo "Copy the sources" 
 # copy the source also
 cp -R papart/src $TMP/$NAME/
+cp -R papart/pom.xml $TMP/$NAME/
+cp -R papart/deps $TMP/$NAME/
 
 cp -R papart/test $TMP/$NAME/
 
@@ -54,6 +56,8 @@ cp -R $SKETCHBOOK/papartCalibration/* $TMP/$NAME/examples/calib/
 cp -R $SKETCHBOOK/papartApps/* $TMP/$NAME/examples/apps/
 
 
+
+
 echo "Create the archive..." 
 cd $TMP
 
@@ -62,6 +66,8 @@ tar -zcf $NAME.tgz $NAME
 mv $NAME.tgz  .. 
 cd .. 
 
+
+cp -r $TMP/$NAME libraries/
 
 echo "Create archive of depedencies"
 tar -zcf libs.tgz libraries
