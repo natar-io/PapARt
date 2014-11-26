@@ -1,3 +1,5 @@
+# -*- mode: gitignore; -*-
+*~
 /Homography/build/
 /Kinect/build/
 /GSVideo/nbproject/private/
@@ -14,7 +16,15 @@
 /diewald_PS3/build/
 /diewald_PS3/dist/
 *.zip
+\#*\#
+.\#*
 build
 libs
 /TUIO/nbproject/private/
 /toxiclibs/nbproject/private/
+/guiModes/nbproject/private/
+/guiModes/dist/
+/TUIOPapart/target/
+/papart/target/
+/guiModes/target/
+/libraries/

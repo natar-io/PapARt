@@ -247,10 +247,10 @@ public class PaperScreen {
         if (arDisplay.getProjectiveDeviceP() == null) {
             return;
         }
-        PMatrix3D extr = arDisplay.getExtrinsics();
 
         int nbOut = 0;
         if (arDisplay.hasExtrinsics()) {
+            PMatrix3D extr = arDisplay.getExtrinsics();
             nbOut = checkCornerExtr(corners, arDisplay, extr);
         } else {
             nbOut = checkCorner(corners, arDisplay);

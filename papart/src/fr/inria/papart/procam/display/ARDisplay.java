@@ -57,7 +57,6 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
     protected PShader lensFilter;
     protected GL2 gl = null;
     protected PMatrix3D invProjModelView;
-    protected ProjectiveDeviceP pdp;
     private Camera camera = null;
 
     protected float zNear = 20, zFar = 10000;
@@ -73,6 +72,7 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         super(parent);
         this.camera = camera;
         loadInternalParams(camera.getProjectiveDevice());
+        System.out.println("ARDisplay Created");
     }
 
     @Override
@@ -90,8 +90,8 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
 // Load the camera parameters.
         try {
 //            pdp = ProjectiveDeviceP.loadProjectiveDevice(calibrationYAML, 0);
-            pdp = ProjectiveDeviceP.loadCameraDevice(calibrationYAML, 0);
-            loadInternalParams(pdp);
+            projectiveDeviceP = ProjectiveDeviceP.loadCameraDevice(calibrationYAML, 0);
+            loadInternalParams(projectiveDeviceP);
         } catch (Exception e) {
             System.out.println("ARDisplay, Error at loading internals !!" + e);
         }
@@ -105,7 +105,6 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         if (pdp.hasExtrinsics()) {
             this.setExtrinsics(pdp.getExtrinsics());
         }
-
         this.projectiveDeviceP = pdp;
         this.projectiveDevice = pdp.getDevice();
         this.frameWidth = projectiveDevice.imageWidth;
@@ -155,7 +154,7 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
     public void draw() {
         drawScreensOver();
         parent.noStroke();
-        
+
         if (camera != null && camera.getPImage() != null) {
             parent.image(camera.getPImage(), 0, 0, this.drawingSizeX, this.drawingSizeY);
 //            ((PGraphicsOpenGL) (parent.g)).image(camera.getPImage(), 0, 0, frameWidth, frameHeight);
@@ -325,7 +324,7 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
     }
 
     public ProjectiveDeviceP getProjectiveDeviceP() {
-        return this.pdp;
+        return this.projectiveDeviceP;
     }
 
     public void clear() {
@@ -415,31 +414,22 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
     // We consider px and py are normalized screen or subScreen space... 
     @Override
     public PVector projectPointer(Screen screen, float px, float py) throws Exception {
-        float x = px * 2 - 1;
-        float y = py * 2 - 1;
-
 //        double[] undist = proj.undistort(px * getWidth(), py * getHeight());
 //
 //        // go from screen coordinates to normalized coordinates  (-1, 1) 
 //        float x = (float) undist[0] / getWidth() * 2 - 1;
 //        float y = (float) undist[1] / getHeight() * 2 - 1;
-        // Not the cleaniest method...
-        PMatrix3D invProjModelView1 = createProjection(screen.getZMinMax());
-        invProjModelView1.scale(1, 1, -1);
-        invProjModelView1.invert();
 
-        // Ray from Origin..
-        PVector p1 = new PVector(x, y, -1f);
-        PVector p2 = new PVector(x, y, 1f);
-        PVector out1 = new PVector();
-        PVector out2 = new PVector();
+        PVector originP = new PVector(0, 0, 0);
+        PVector viewedPtP = projectiveDeviceP.pixelToWorldNormP((int) (px * frameWidth), (int) (py * frameHeight));
 
-        // view of the point from the display.
-        Utils.mult(invProjModelView1, p1, out1);
-        Utils.mult(invProjModelView1, p2, out2);
-
-        Ray3D ray = new Ray3D(new Vec3D(out1.x, out1.y, out1.z),
-                new Vec3D(out2.x, out2.y, out2.z));
+        Ray3D ray
+                = new Ray3D(new Vec3D(originP.x,
+                                originP.y,
+                                originP.z),
+                        new Vec3D(viewedPtP.x,
+                                viewedPtP.y,
+                                viewedPtP.z));
 
         // 3D intersection with the screen plane. 
         ReadonlyVec3D inter = screen.getPlane().getIntersectionWithRay(ray);

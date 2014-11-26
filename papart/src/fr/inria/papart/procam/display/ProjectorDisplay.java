@@ -43,18 +43,18 @@ public class ProjectorDisplay extends ARDisplay {
         System.out.println("Load here ");
         
         try {
-            pdp = ProjectiveDeviceP.loadProjectorDevice(calibrationYAML, 0);
+            projectiveDeviceP = ProjectiveDeviceP.loadProjectorDevice(calibrationYAML, 0);
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Error loading the projector device." + e);
         }
-        loadInternalParams(pdp);
+        loadInternalParams(projectiveDeviceP);
 
-        extrinsics = pdp.getExtrinsics();
-        intrinsics = pdp.getIntrinsics();
+        extrinsics = projectiveDeviceP.getExtrinsics();
+        intrinsics = projectiveDeviceP.getIntrinsics();
         extrinsicsInv = extrinsics.get();
         extrinsicsInv.invert();
-        projectiveDevice = pdp.getDevice();
+        projectiveDevice = projectiveDeviceP.getDevice();
         this.hasExtrinsics = true;
 
     }
@@ -162,7 +162,7 @@ public class ProjectorDisplay extends ARDisplay {
         // Intersect this ray with the piece of paper. 
         // Compute the Two points for the ray          
         PVector originP = new PVector(0, 0, 0);
-        PVector viewedPtP = pdp.pixelToWorldNormP((int) (px * frameWidth), (int) (py * frameHeight));
+        PVector viewedPtP = projectiveDeviceP.pixelToWorldNormP((int) (px * frameWidth), (int) (py * frameHeight));
 
         // Pass it to the camera point of view (origin)
         PMatrix3D extr = extrinsicsInv;
@@ -192,7 +192,7 @@ public class ProjectorDisplay extends ARDisplay {
         // Check the error of the ray casting -- Debug only  
 //        PVector inter1P = new PVector();
 //        projExtrinsicsP3D.mult(interP, inter1P);
-//        PVector px2 = pdp.worldToPixel(inter1P, false);
+//        PVector px2 = projectiveDeviceP.worldToPixel(inter1P, false);
 //        px2.sub(px * frameWidth, py * frameHeight, 0);
 //        System.out.println("Error " + px2.mag());
 

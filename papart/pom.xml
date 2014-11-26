@@ -189,7 +189,18 @@
             </plugin>
             
         </plugins>
-
+        
+        <resources>
+            
+            <resource>
+                <directory>src</directory>
+                <includes>
+                    <include>**/*.vert</include>
+                    <include>**/*.frag</include>
+                    <include>**/*.glsl</include>
+                </includes>
+            </resource>
+        </resources>
     </build>
     
     <!-- Windows -->

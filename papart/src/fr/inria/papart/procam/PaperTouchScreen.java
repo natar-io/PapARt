@@ -18,6 +18,7 @@
  */
 package fr.inria.papart.procam;
 
+import com.sun.jna.platform.win32.WinError;
 import fr.inria.papart.procam.display.BaseDisplay;
 import processing.opengl.PGraphicsOpenGL;
 import fr.inria.papart.drawingapp.Button;
@@ -87,10 +88,15 @@ public class PaperTouchScreen extends PaperScreen {
         screen.computeScreenPosTransform();
         touchList = touchInput.projectTouchToScreen(screen, display);
         touchList.sortAlongYAxis();
+
         if (touchInput instanceof KinectTouchInput) {
-            touchList.scaleBy(drawingSize);
+            if (((KinectTouchInput) (touchInput)).useRawDepth()) {
+                touchList.invertY(drawingSize);
+            } else {
+                touchList.scaleBy(drawingSize);
+            }
         }
-        
+
         if (!buttons.isEmpty()) {
             updateButtons();
         }
@@ -132,7 +138,7 @@ public class PaperTouchScreen extends PaperScreen {
         endDraw();
     }
 
-    static private final int DEFAULT_TOUCH_SIZE = 10;
+    static private final int DEFAULT_TOUCH_SIZE = 50;
 
     protected void drawTouch() {
         drawTouch(DEFAULT_TOUCH_SIZE);
@@ -146,6 +152,29 @@ public class PaperTouchScreen extends PaperScreen {
                 fill(58, 71, 198);
             }
             ellipse(t.position.x, t.position.y, ellipseSize, ellipseSize);
+
+//            ellipse(t.pposition.x, t.pposition.y, ellipseSize /2 , ellipseSize /2);
+//            pushMatrix();
+//            translate(t.position.x, t.position.y);
+//            ellipse(0, 0, ellipseSize, ellipseSize);
+//            line(0, 0, t.speed.x * 4, t.speed.y *4);
+//            popMatrix();
+        }
+    }
+    
+    protected void drawFullTouch(int ellipseSize) {
+        for (Touch t : touchList) {
+            if (t.is3D) {
+                fill(185, 142, 62);
+            } else {
+                fill(58, 71, 198);
+            }
+            ellipse(t.pposition.x, t.pposition.y, ellipseSize /2 , ellipseSize /2);
+            pushMatrix();
+            translate(t.position.x, t.position.y);
+            ellipse(0, 0, ellipseSize, ellipseSize);
+            line(0, 0, t.speed.x * 4, t.speed.y *4);
+            popMatrix();
         }
     }
 
