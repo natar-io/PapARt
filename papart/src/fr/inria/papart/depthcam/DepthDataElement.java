@@ -40,6 +40,11 @@ public class DepthDataElement {
     public boolean validPoint3D;
     public int pointColor;
 
+    public Vec3D normal;
+
+    public byte neighbourSum;
+    public byte neighbours;
+
 
     // Not sure if it will be used !
 //    public ProjectiveDeviceP projectiveDevice;

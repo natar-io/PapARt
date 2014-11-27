@@ -156,7 +156,7 @@ public class PointCloud {
         loadVerticesToNative();
     }
 
-    private void addPoint(PointCloudElement pce) {
+    private void addPoint(DepthPoint pce) {
 
         if (pce == null || pce.position == null) {
             return;

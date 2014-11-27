@@ -63,7 +63,7 @@ public class Kinect {
 
     public static final Vec3D INVALID_POINT = new Vec3D();
     public static final int INVALID_COLOR = -1;
-    
+
     ///// Modes
     public static final int KINECT_MM = 1;
     public static final int KINECT_10BIT = 0;
@@ -91,14 +91,14 @@ public class Kinect {
             0, 0, 0, 1);
 
     public int findColorOffset(Vec3D v) {
-       return findColorOffset(v.x, v.y, v.z);
+        return findColorOffset(v.x, v.y, v.z);
     }
 
     public int findColorOffset(PVector v) {
         return findColorOffset(v.x, v.y, v.z);
     }
-    
-    public int findColorOffset(float x, float y, float z){
+
+    public int findColorOffset(float x, float y, float z) {
         PVector vt = new PVector(x, y, z);
         PVector vt2 = new PVector();
         //  Ideally use a calibration... 
@@ -111,7 +111,7 @@ public class Kinect {
     protected void init() {
         colorRaw = new byte[kinectCalibIR.getSize() * 3];
         depthRaw = new byte[kinectCalibIR.getSize() * 2];
-        depthData = new DepthData(SIZE);
+        depthData = new DepthData(WIDTH, HEIGHT);
         depthData.projectiveDevice = this.kinectCalibIR;
 
         if (depthLookUp == null) {
@@ -149,6 +149,12 @@ public class Kinect {
         computeDepthAndDo(1, new DoNothing());
         doForEachPoint(skip2D, new Select2DPointPlaneProjection());
         doForEachPoint(skip3D, new Select3DPointPlaneProjection());
+
+        depthData.connexity.setPrecision(skip3D);
+        doForEachValid3DPoint(skip3D, new ComputeNormal());
+
+//        depthData.connexity.computeAll();
+//        doForEachPoint(1, new ComputeNormal());
 //        doForEachPoint(skip2D, new SetImageData());
         doForEachValidPoint(skip2D, new SetImageData());
         doForEachValid3DPoint(skip3D, new SetImageData());
@@ -175,7 +181,7 @@ public class Kinect {
         depthData.timeStamp = papplet.millis();
         depthData.planeAndProjectionCalibration = calib;
         computeDepthAndDo(skip, new Select3DPointPlaneProjection());
-         doForEachValidPoint(skip, new SetImageData());
+        doForEachValidPoint(skip, new SetImageData());
     }
 
     protected void computeDepthAndDo(int precision, DepthPointManiplation manip) {
@@ -233,7 +239,7 @@ public class Kinect {
             }
         }
     }
-    
+
     protected void doForEachValid3DPoint(int precision, DepthPointManiplation manip) {
         for (int y = 0; y < kinectCalibIR.getHeight(); y += precision) {
             for (int x = 0; x < kinectCalibIR.getWidth(); x += precision) {
@@ -259,6 +265,7 @@ public class Kinect {
     static protected final float INVALID_DEPTH = -1;
 
     /**
+     * @param offset
      * @return the depth (float) or INVALID_DEPTH if it failed.
      */
     protected float getDepth(int offset) {
@@ -384,7 +391,7 @@ public class Kinect {
         @Override
         public void execute(Vec3D p, int x, int y, int offset) {
             depthData.pointColors[offset] = getPixelColor(offset);
-          
+
         }
     }
 
@@ -394,6 +401,124 @@ public class Kinect {
                 | (colorRaw[colorOffset + 1] & 0xFF) << 8
                 | (colorRaw[colorOffset + 0] & 0xFF);
         return c;
+    }
+
+    class ComputeNormal implements DepthPointManiplation {
+
+        @Override
+        public void execute(Vec3D p, int x, int y, int offset) {
+
+            depthData.connexity.compute(x, y);
+            Vec3D normal = computeNormalImpl(depthData.kinectPoints[offset], offset, x, y);
+            depthData.kinectNormals[offset] = normal;
+        }
+    }
+
+    private Vec3D computeNormalImpl(Vec3D point, int offset, int x, int y) {
+
+        Vec3D[] neighbours = depthData.connexity.getNeighbourList(x, y);
+        if (depthData.connexity.connexitySum[offset] < 2) {
+            return null;
+        }
+
+//        Vec3D normal = computeNormal(point, neighbours[0], neighbours[1]);
+        Vec3D normal = new Vec3D();
+
+        // BIG  square around the point. 
+        if (neighbours[Connexity.TOPLEFT] != null
+                && neighbours[Connexity.TOPRIGHT] != null
+                && neighbours[Connexity.BOTLEFT] != null
+                && neighbours[Connexity.BOTRIGHT] != null) {
+
+            Vec3D n1 = computeNormal(
+                    neighbours[Connexity.TOPLEFT],
+                    neighbours[Connexity.TOPRIGHT],
+                    neighbours[Connexity.BOTLEFT]);
+
+            Vec3D n2 = computeNormal(
+                    neighbours[Connexity.BOTLEFT],
+                    neighbours[Connexity.TOPRIGHT],
+                    neighbours[Connexity.BOTRIGHT]);
+            normal = n1.add(n2);
+
+        } else {
+
+            // small square around the point
+            if (neighbours[Connexity.LEFT] != null
+                    && neighbours[Connexity.TOP] != null
+                    && neighbours[Connexity.RIGHT] != null
+                    && neighbours[Connexity.BOT] != null) {
+
+                Vec3D n1 = computeNormal(
+                        neighbours[Connexity.LEFT],
+                        neighbours[Connexity.TOP],
+                        neighbours[Connexity.RIGHT]);
+
+                Vec3D n2 = computeNormal(
+                        neighbours[Connexity.LEFT],
+                        neighbours[Connexity.RIGHT],
+                        neighbours[Connexity.BOT]);
+                normal = n1.add(n2);
+
+            } else {
+
+                // One triangle only. 
+                // Left. 
+                if (neighbours[Connexity.LEFT] != null) {
+                    if (neighbours[Connexity.TOP] != null) {
+                        normal = computeNormal(
+                                neighbours[Connexity.LEFT],
+                                neighbours[Connexity.TOP],
+                                point);
+                    } else {
+                        if (neighbours[Connexity.BOT] != null) {
+                            normal = computeNormal(
+                                    neighbours[Connexity.LEFT],
+                                    point,
+                                    neighbours[Connexity.BOT]);
+                        }
+                    }
+                } else {
+
+                    if (neighbours[Connexity.RIGHT] != null) {
+                        if (neighbours[Connexity.TOP] != null) {
+                            normal = computeNormal(
+                                    neighbours[Connexity.TOP],
+                                    neighbours[Connexity.RIGHT],
+                                    point);
+                        } else {
+                            if (neighbours[Connexity.BOT] != null) {
+                                normal = computeNormal(
+                                        neighbours[Connexity.RIGHT],
+                                        neighbours[Connexity.BOT],
+                                        point);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        normal.normalize();
+
+        return normal;
+    }
+
+    // https://www.opengl.org/wiki/Calculating_a_Surface_Normal
+    public Vec3D computeNormal(Vec3D a, Vec3D b, Vec3D c) {
+
+        Vec3D U = b.sub(a);
+        Vec3D V = c.sub(a);
+        float x = U.y * V.z - U.z * V.y;
+        float y = U.z * V.x - U.x * V.z;
+        float z = U.x * V.y - U.y * V.x;
+        return new Vec3D(x, y, z);
+    }
+
+// Toxiclibs
+    public Vec3D computeNormal2(Vec3D a, Vec3D b, Vec3D c) {
+        Vec3D normal = a.sub(c).crossSelf(a.sub(b)); // .normalize();
+        return normal;
     }
 
     class DoNothing implements DepthPointManiplation {

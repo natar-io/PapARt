@@ -19,12 +19,14 @@
 package fr.inria.papart.multitouch;
 
 import fr.inria.papart.depthcam.DepthData;
+import fr.inria.papart.depthcam.DepthDataElement;
 import fr.inria.papart.depthcam.DepthPoint;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 
 import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.procam.Screen;
 import fr.inria.papart.depthcam.Kinect;
+import fr.inria.papart.depthcam.PointCloudElement;
 import fr.inria.papart.depthcam.calibration.PlaneAndProjectionCalibration;
 import fr.inria.papart.procam.Camera;
 import fr.inria.papart.procam.display.BaseDisplay;
@@ -215,6 +217,27 @@ public class KinectTouchInput extends TouchInput {
         }
     }
 
+    public ArrayList<DepthDataElement> getDepthData() {
+        try {
+            depthDataSem.acquire();
+            DepthData depthData = kinect.getDepthData();
+            ArrayList<DepthDataElement> output = new ArrayList<>();
+            ArrayList<Integer> list = depthData.validPointsList3D;
+            for (Integer i : list) {
+                output.add(depthData.getElement(i));
+            }
+            depthDataSem.release();
+            return output;
+
+        } catch (InterruptedException ex) {
+            Logger.getLogger(KinectTouchInput.class
+                    .getName()).log(Level.SEVERE, null, ex);
+
+            return null;
+        }
+    }
+
+    // TODO: Do the same with DepthDataElement  instead of  DepthPoint ?
     public ArrayList<DepthPoint> projectDepthData(ARDisplay display, Screen screen) {
         ArrayList<DepthPoint> list = projectDepthData2D(display, screen);
         list.addAll(projectDepthData3D(display, screen));
