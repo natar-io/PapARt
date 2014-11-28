@@ -196,7 +196,7 @@ public class BaseDisplay {
         screens.add(s);
     }
 
-    public PVector projectPointer(Screen screen, float x, float y) throws Exception {
+    public PVector projectPointer(Screen screen, float x, float y) {
 
         PMatrix3D screenMat = screen.getPosition().get();
         screenMat.invert();

@@ -423,8 +423,28 @@ public class Kinect {
 
 //        Vec3D normal = computeNormal(point, neighbours[0], neighbours[1]);
         Vec3D normal = new Vec3D();
-
         // BIG  square around the point. 
+
+        boolean large = tryComputeLarge(neighbours, normal);
+        if (!large) {
+            boolean medium = tryComputeMediumSquare(neighbours, normal);
+            if (!medium) {
+                boolean small = tryComputeOneTriangle(neighbours, point, normal);
+                if (!small) {
+                    return null;
+                }
+            }
+        }
+   
+//        tryComputeMediumSquare(neighbours, normal);
+       // tryComputeOneTriangle(neighbours, point, normal);
+
+        
+        normal.normalize();
+        return normal;
+    }
+
+    private boolean tryComputeLarge(Vec3D[] neighbours, Vec3D normal) {
         if (neighbours[Connexity.TOPLEFT] != null
                 && neighbours[Connexity.TOPRIGHT] != null
                 && neighbours[Connexity.BOTLEFT] != null
@@ -439,69 +459,74 @@ public class Kinect {
                     neighbours[Connexity.BOTLEFT],
                     neighbours[Connexity.TOPRIGHT],
                     neighbours[Connexity.BOTRIGHT]);
-            normal = n1.add(n2);
+            normal.set(n1.add(n2));
+            return true;
+        }
+        return false;
+    }
 
-        } else {
+    private boolean tryComputeMediumSquare(Vec3D[] neighbours, Vec3D normal) {
+        // small square around the point
+        if (neighbours[Connexity.LEFT] != null
+                && neighbours[Connexity.TOP] != null
+                && neighbours[Connexity.RIGHT] != null
+                && neighbours[Connexity.BOT] != null) {
 
-            // small square around the point
-            if (neighbours[Connexity.LEFT] != null
-                    && neighbours[Connexity.TOP] != null
-                    && neighbours[Connexity.RIGHT] != null
-                    && neighbours[Connexity.BOT] != null) {
+            Vec3D n1 = computeNormal(
+                    neighbours[Connexity.LEFT],
+                    neighbours[Connexity.TOP],
+                    neighbours[Connexity.RIGHT]);
 
-                Vec3D n1 = computeNormal(
+            Vec3D n2 = computeNormal(
+                    neighbours[Connexity.LEFT],
+                    neighbours[Connexity.RIGHT],
+                    neighbours[Connexity.BOT]);
+            normal.set(n1.add(n2));
+            return true;
+        }
+        return false;
+    }
+
+    private boolean tryComputeOneTriangle(Vec3D[] neighbours, Vec3D point, Vec3D normal) {
+        // One triangle only. 
+        // Left. 
+        if (neighbours[Connexity.LEFT] != null) {
+            if (neighbours[Connexity.TOP] != null) {
+                normal.set(computeNormal(
                         neighbours[Connexity.LEFT],
                         neighbours[Connexity.TOP],
-                        neighbours[Connexity.RIGHT]);
-
-                Vec3D n2 = computeNormal(
-                        neighbours[Connexity.LEFT],
-                        neighbours[Connexity.RIGHT],
-                        neighbours[Connexity.BOT]);
-                normal = n1.add(n2);
-
+                        point));
+                return true;
             } else {
+                if (neighbours[Connexity.BOT] != null) {
+                    normal.set(computeNormal(
+                            neighbours[Connexity.LEFT],
+                            point,
+                            neighbours[Connexity.BOT]));
+                    return true;
+                }
+            }
+        } else {
 
-                // One triangle only. 
-                // Left. 
-                if (neighbours[Connexity.LEFT] != null) {
-                    if (neighbours[Connexity.TOP] != null) {
-                        normal = computeNormal(
-                                neighbours[Connexity.LEFT],
-                                neighbours[Connexity.TOP],
-                                point);
-                    } else {
-                        if (neighbours[Connexity.BOT] != null) {
-                            normal = computeNormal(
-                                    neighbours[Connexity.LEFT],
-                                    point,
-                                    neighbours[Connexity.BOT]);
-                        }
-                    }
+            if (neighbours[Connexity.RIGHT] != null) {
+                if (neighbours[Connexity.TOP] != null) {
+                    normal.set(computeNormal(
+                            neighbours[Connexity.TOP],
+                            neighbours[Connexity.RIGHT],
+                            point));
+                    return true;
                 } else {
-
-                    if (neighbours[Connexity.RIGHT] != null) {
-                        if (neighbours[Connexity.TOP] != null) {
-                            normal = computeNormal(
-                                    neighbours[Connexity.TOP],
-                                    neighbours[Connexity.RIGHT],
-                                    point);
-                        } else {
-                            if (neighbours[Connexity.BOT] != null) {
-                                normal = computeNormal(
-                                        neighbours[Connexity.RIGHT],
-                                        neighbours[Connexity.BOT],
-                                        point);
-                            }
-                        }
+                    if (neighbours[Connexity.BOT] != null) {
+                        normal.set(computeNormal(
+                                neighbours[Connexity.RIGHT],
+                                neighbours[Connexity.BOT],
+                                point));
+                        return true;
                     }
                 }
             }
         }
-
-        normal.normalize();
-
-        return normal;
+        return false;
     }
 
     // https://www.opengl.org/wiki/Calculating_a_Surface_Normal
@@ -608,6 +633,10 @@ public class Kinect {
     }
 
     public static boolean isInside(Vec3D v, float min, float max, float sideError) {
+        return v.x > min - sideError && v.x < max + sideError && v.y < max + sideError && v.y > min - sideError;
+    }
+
+    static public boolean isInside(PVector v, float min, float max, float sideError) {
         return v.x > min - sideError && v.x < max + sideError && v.y < max + sideError && v.y > min - sideError;
     }
 }

@@ -26,7 +26,7 @@ public void init() {
 
 void setup(){
 
-    useProjector = false;
+    useProjector = true;
     int frameSizeX = 1280;
     int frameSizeY = 800;
 

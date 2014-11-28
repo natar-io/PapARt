@@ -35,71 +35,77 @@ void setup(){
 }
 
 
+float radius1 = 100f;
+
 void draw(){
 
     background(100);
 
-    // colorMode(RGB, 1.0);
-    // ArrayList<DepthDataElement> depthPoints =  touchInput.getDepthData();
-    // for(DepthDataElement p : depthPoints){
-
-    // 	noStroke();
-
-    // 	Vec3D pos = p.projectedPoint;
-    // 	Vec3D normal = p.normal;
-	
-    // 	if(normal != null){
-    // 	fill(normal.x, normal.y, normal.z);
-    // 	} else {
-    // 	    fill(0, 1, 0);
-    // 	}
-    // 	ellipse(pos.x * frameSizeX,
-    // 		pos.y * frameSizeY, 5, 5);
-    // }
-
-
-    // Get a copy, as the arrayList is constantly modified
-    // ArrayList<TouchPoint> touchs2D = new ArrayList<TouchPoint>(touchInput.getTouchPoints2D());
-    // for(TouchPoint tp : touchs2D){
-
-    // 	ArrayList<DepthDataElement> depthDataElements = tp.getDepthDataElements();
-    // 	for(DepthDataElement dde : depthDataElements){
-    // 	    Vec3D v = dde.projectedPoint;
-    // 	    noStroke();
-    // 	    colorMode(RGB, 1.0);
-    // 	    setColor(dde.pointColor, 255);
-    // 	    ellipse(v.x * frameSizeX,
-    // 		    v.y * frameSizeY,
-    // 		    10, 10);
-    // 	}
-
-    // 	fill(50, 50, 255);
-    // 	PVector pos = tp.getPosition();
-    // 	ellipse(pos.x * frameSizeX,
-    // 		pos.y * frameSizeY, 20, 20);
-    // }
-	
     fill(255, 0, 0);
     ArrayList<TouchPoint> touchs3D = new ArrayList<TouchPoint>(touchInput.getTouchPoints3D());
-    for(TouchPoint tp : touchs3D){
+
+    //     for(TouchPoint tp : touchs3D){
+
+    if(touchs3D.isEmpty())
+	return;
+
+	TouchPoint tp = touchs3D.get(0);
 
     	ArrayList<DepthDataElement> depthDataElements = tp.getDepthDataElements();
-	
+
+	// First point is the most forward. 
+	Vec3D center1 = depthDataElements.get(0).projectedPoint;
+
+	center1.x *= frameSizeX;
+	center1.y *= frameSizeY;
+	//	center1.y -= radius1;
+
+	fill(200, 0, 0);
+	ellipse(center1.x, center1.y, 12, 12);
+
+	center1.y -= radius1;
+	ellipse(center1.x, center1.y, 12, 12);
+
     	for(DepthDataElement dde : depthDataElements){
     	    Vec3D v = dde.projectedPoint;
     	    noStroke();
-    	    //	    setColor(dde.pointColor, 100);
 
-	    setNormalColor(dde.normal);
+	    if(dde.normal == null)
+		continue;
+
+	    Vec3D normal = dde.normal.invert().scaleSelf(radius1 );
+
+
+	    Vec3D center2 = new Vec3D(normal.x + v.x * frameSizeX, 
+				      normal.y + v.y * frameSizeY, 
+				      normal.z + v.z);
+				      
+	       
+    	    //	    setColor(dde.pointColor, 100);
+	    // setNormalColor(dde.normal);
+	    float dist = center1.distanceTo(center2);
+
+	    if(dist > 300) 
+		return;
+
+	    fill(0, dist, 0);
+    	    ellipse(v.x * frameSizeX + normal.x,
+    	    	    v.y * frameSizeY + normal.y,
+    	    	    4, 4);
+
+	    fill(0, 0, 200);
     	    ellipse(v.x * frameSizeX,
     		    v.y * frameSizeY,
     		    4, 4);
+
+
     	}
 
-    	PVector pos = tp.getPosition();
-    	ellipse(pos.x * frameSizeX,
-    		pos.y * frameSizeY, 40, 40);
-    }
+
+    	// PVector pos = tp.getPosition();
+    	// ellipse(pos.x * frameSizeX,
+    	// 	pos.y * frameSizeY, 40, 40);
+	// //    }
 
 
 

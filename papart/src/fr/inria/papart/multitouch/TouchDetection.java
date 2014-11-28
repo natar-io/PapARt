@@ -175,9 +175,11 @@ public abstract class TouchDetection {
         tp.set3D(false);
         
         tp.setConfidence(connectedComponent.size() / MINIMUM_COMPONENT_SIZE);
-        tp.setConnectedComponent(connectedComponent);
+        
+        // TODO: re-enable this one day ?
+//        tp.setConnectedComponent(connectedComponent);
+        
         tp.setDepthDataElements(depthData, connectedComponent);
-        // TODO: create Example using these DepthDataElements !
         return tp;
     }
 

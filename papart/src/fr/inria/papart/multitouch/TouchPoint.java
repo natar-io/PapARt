@@ -43,7 +43,6 @@ public class TouchPoint extends DepthPoint {
     private Vec3D positionKinect;
     private Vec3D previousPositionKinect;
 //    private PVector speedKinect = new PVector();
-    private ConnectedComponent connectedComponent=  new ConnectedComponent();
     private ArrayList<DepthDataElement> depthDataElements = new ArrayList<DepthDataElement>();
        
     private float confidence;
@@ -114,6 +113,10 @@ public class TouchPoint extends DepthPoint {
 
     public PVector getPreviousPosition() {
         return this.previousPosition;
+    }
+
+    public Vec3D getPreviousPositionVec3D() {
+       return new Vec3D(previousPosition.x, previousPosition.y, previousPosition.z); 
     }
 
     public void filter() {
@@ -218,17 +221,6 @@ public class TouchPoint extends DepthPoint {
         return this.speed;
     }
    
-
-    // TODO: save the  DepthData elements ! 
-    
-    public ConnectedComponent getConnectedComponent() {
-        return connectedComponent;
-    }
-
-    public void setConnectedComponent(ConnectedComponent connectedComponent) {
-        this.connectedComponent = connectedComponent;
-    }
-    
     public void setDepthDataElements(DepthData depthData, ConnectedComponent connectedComponent) {
         depthDataElements.clear();
         for(Integer i : connectedComponent){

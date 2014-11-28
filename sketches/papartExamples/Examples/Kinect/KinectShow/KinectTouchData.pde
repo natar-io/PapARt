@@ -30,13 +30,14 @@ public class MyApp extends PaperTouchScreen {
 	    			      pos.y,
 				      pos.z);
 
+
 	    if(p1.x < 0 
 	       || p1.x >= drawingSize.x
 	       || p1.y < 0 
 	       || p1.y >= drawingSize.y)
 	    	continue;
 
-	    float ellipseSize = 10;
+	    float ellipseSize = 3;
 	    int c = depthPoint.getColor();
 	    if(c == Kinect.INVALID_COLOR){
 	    	fill(0, 0, 200);

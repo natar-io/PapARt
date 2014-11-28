@@ -19,6 +19,7 @@
 package fr.inria.papart.procam.display;
 
 import fr.inria.papart.drawingapp.DrawUtils;
+import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.procam.Camera;
 import fr.inria.papart.procam.MarkerBoard;
 import fr.inria.papart.procam.ProjectiveDeviceP;
@@ -156,7 +157,7 @@ public class ProjectorDisplay extends ARDisplay {
     // *** Projects the pixels viewed by the projector to the screen.
     // px and py are normalized -- [0, 1] in screen space
     @Override
-    public PVector projectPointer(Screen screen, float px, float py) throws Exception {
+    public PVector projectPointer(Screen screen, float px, float py)  {
 
         // Create ray from the projector (origin / viewed pixel)
         // Intersect this ray with the piece of paper. 
@@ -187,7 +188,7 @@ public class ProjectorDisplay extends ARDisplay {
 
         // It may not intersect.
         if (inter == null) {
-            throw new Exception("No intersection");
+            return TouchInput.NO_INTERSECTION;
         }
         // Check the error of the ray casting -- Debug only  
 //        PVector inter1P = new PVector();

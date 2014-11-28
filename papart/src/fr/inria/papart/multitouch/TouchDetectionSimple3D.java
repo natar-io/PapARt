@@ -85,6 +85,9 @@ public class TouchDetectionSimple3D extends TouchDetection {
         subCompo.addAll(subList);
 
         TouchPoint tp = super.createTouchPoint(subCompo);
+        
+        // TODO: use this, add another with only the ones of the touch ?!
+        tp.setDepthDataElements(depthData, connectedComponent);
         tp.set3D(true);
         return tp;
     }

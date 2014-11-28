@@ -96,6 +96,7 @@ public class DepthData {
             validPointsList3D = new ArrayList();
         }
         connexity = new Connexity(kinectPoints, width, height);
+//        connexity = new Connexity(projectedPoints, width, height);
     }
     
     public DepthDataElement getElement(int i){
