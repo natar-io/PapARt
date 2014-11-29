@@ -10,6 +10,7 @@ import org.jbox2d.dynamics.contacts.*;
 // A reference to our box2d world
 Box2DProcessing box2d;
 ArrayList<Missile> missiles;
+ArrayList<Wall> walls;
 
 void initPhysics(){
 
@@ -24,7 +25,7 @@ void initPhysics(){
 
   // Create the empty list
   missiles = new ArrayList<Missile>();
-
+  walls = new ArrayList<Wall>();
 }
 
 // Step is done in Game.pde

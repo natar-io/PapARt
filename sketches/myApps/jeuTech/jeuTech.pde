@@ -47,18 +47,17 @@ void setup(){
 	papart.loadTouchInput(2, 5);
     } else {
 	papart.initKinectCamera(2f);
-	papart.loadTouchInputKinectOnly(2, 5);
+	papart.loadTouchInputKinectOnly(2, 7);
 	BaseDisplay display = papart.getDisplay();
 	display.setDrawingSize(width, height);
     }
-
-    papart.loadSketches();
-    papart.startTracking();
 
 
     // see Physics.pde 
     initPhysics();
 
+    papart.loadSketches();
+    papart.startTracking();
 }
 
 

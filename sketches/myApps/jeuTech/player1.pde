@@ -1,13 +1,20 @@
+float paperOffsetX = -20;
+float paperOffsetY = -7;
 
 Player1 player1;
 
 // GREEN
 public class Player1  extends PaperTouchScreen {
    
-    PVector castleLocation = new PVector(120 , 85); 
+    int castleSize = 55;
+    int castleX = 120;
+    int castleY = 85;
     Castle castle;
+
     Player1 ennemi = null;
     int playerColor;
+
+    boolean needReset = true;
 
     void setup(){
 	setDrawingSize( (int) playerBoardSize.x, (int)playerBoardSize.y);
@@ -15,12 +22,15 @@ public class Player1  extends PaperTouchScreen {
 			playerBoardSize.x, playerBoardSize.y);
 
 	player1 = this;
-
-	castle = new Castle(castleLocation.x, castleLocation.y);
-
 	playerColor = color(159, 168, 143);
     }
- 
+
+    
+    public void reset(){
+	castle = new Castle(this);	
+	needReset = false;
+    }
+
     public void checkEnnemi(){
 	if(this == player1)
 	    ennemi = player2;
@@ -30,35 +40,41 @@ public class Player1  extends PaperTouchScreen {
 
 
     public void updateInternals(){
+	if(needReset) 
+	    reset();
 	checkEnnemi();
+	castle.update();
     }
 
     public void draw(){
 
 	updateInternals();
-	
+
+	if(castle.hp <= 0){
+	    background(ennemi.playerColor);
+	    return;
+	}
+
 	beginDraw2D();
 	clear();
 
-	setLocation(-20, -7, 0);
+	//	setLocation(-20, -7, 0);
 
-	drawCastle();
 	checkTouch();
-
 	endDraw();
     }
     
-    void drawCastle(){
-	fill(playerColor);
-	ellipseMode(CORNER);
-	ellipse( castleLocation.x,
-		 castleLocation.y,
-		  55, 55);
+    void drawCastle(PGraphicsOpenGL g){
+	if(castle == null) 
+	    return;
+	castle.display(g);
     }
 
 
     float ellipseSize = 5;
     void checkTouch(){
+
+	boolean created = false;
 	for (Touch t : touchList) {
             if (t.is3D) {
                 fill(185, 142, 62);
@@ -71,27 +87,29 @@ public class Player1  extends PaperTouchScreen {
 		    ellipseSize,
 		    ellipseSize);
 	    
-	    if(!t.is3D && t.touchPoint.isUpdated == false){
+	    if(!t.is3D){
 		t.invertY(drawingSize.y);
-		createMissile(t.position);
+
+		if(canCreateMissile()){
+		    createMissile(t.position);
+		    created = true;
+		}
 	    }
+	}
+
+	if(created) {
+	    lastCreation = millis();
 	}
     }
 
     int lastCreation = 0;
-    int creationTimeout = 500;
+    int creationTimeout = 200;
     
     public boolean canCreateMissile(){
 	return lastCreation + creationTimeout < millis();
     }
     
     public void createMissile(PVector localPos){
-	if(!canCreateMissile())
-	    return;
-
-	println("Missile creation");
-
-	lastCreation = millis();
 	PVector posFromGame = gameCoord(localPos);
 	Missile missile = new Missile(this, ennemi, posFromGame);
 
@@ -104,12 +122,10 @@ public class Player1  extends PaperTouchScreen {
 	return game.getCoordFrom(this, v);
     }
 
-	
-
     // TODO: get a list of targets. 
     // Get a target for aiming...
     public PVector getTargetLocation(){
-	return gameCoord(this.castleLocation);
+	return castle.getPos();
     }
 
 }

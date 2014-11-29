@@ -19,28 +19,48 @@ class CustomListener implements ContactListener {
 
 	println("Contact");
 
-    // 	// Get both fixtures
-    // 	Fixture f1 = cp.getFixtureA();
-    // 	Fixture f2 = cp.getFixtureB();
-    // 	// Get both bodies
-    // 	Body b1 = f1.getBody();
-    // 	Body b2 = f2.getBody();
-    // 	// Get our objects that reference these bodies
-    // 	Object o1 = b1.getUserData();
-    // 	Object o2 = b2.getUserData();
+    	// Get both fixtures
+    	Fixture f1 = cp.getFixtureA();
+    	Fixture f2 = cp.getFixtureB();
+    	// Get both bodies
+    	Body b1 = f1.getBody();
+    	Body b2 = f2.getBody();
+    	// Get our objects that reference these bodies
+    	Object o1 = b1.getUserData();
+    	Object o2 = b2.getUserData();
+
+
+	boolean missile1 = o1.getClass() == Missile.class;
+	boolean missile2 = o2.getClass() == Missile.class;
+
+	boolean castle1 = o1.getClass() == Castle.class;
+	boolean castle2 = o2.getClass() == Castle.class;
        
-    // 	// If object 1 is a Box, then object 2 must be a particle
-    // 	// Note we are ignoring particle on particle collisions
-    // 	if (o1.getClass() == Box.class) {
-    // 	    Particle p = (Particle) o2;
-    // 	    p.change();
-    // 	} 
-    // 	// If object 2 is a Box, then object 1 must be a particle
-    // 	else if (o2.getClass() == Box.class) {
-    // 	    Particle p = (Particle) o1;
-    // 	    p.change();
-    // 	}
+
+	if(missile1 && missile2 || !castle1 && !castle2)
+	    return;
+
+	if(missile1 || missile2){
+	    if(missile1) {
+		hit(o2, o1);
+	    }	else {
+		hit(o1, o2);
+	    }
+	}
+
+    	// If object 1 is a Box, then object 2 must be a particle
+    	// Note we are ignoring particle on particle collisions
+
     }
+
+    void hit(Object castleO, Object missileO){
+	Castle castle = (Castle) castleO;
+	Missile missile = (Missile) missileO;
+
+	castle.isHit();
+	missile.die();
+    }
+
      
     void endContact(Contact contact) {
 	// TODO Auto-generated method stub

@@ -5,7 +5,7 @@
 
 // A circular particle
 
-class Missile {
+class Missile extends DyingObject{
 
     // We need to keep track of a Body and a radius
     Body body;
@@ -15,18 +15,18 @@ class Missile {
     Player1 ennemi;
 
     float size = 3;
-    int MAX_LIFETIME = 6000;
-    int creationTime;
 
     Missile(Player1 faction, Player1 ennemi, PVector startPos){
+	super();
+	lifeTime = 6000;
+
 	this.faction = faction;
 	this.ennemi = ennemi;
-	creationTime = millis();
 
 	// // This function puts the particle in the Box2d world
 	makeBody(startPos.x, startPos.y, size);
 	body.setUserData(this);
-	col = color(175);
+	col = faction.playerColor;
     }
 
     // This function removes the particle from the box2d world
@@ -41,6 +41,7 @@ class Missile {
     
     void setGoal(PVector goal, float speed){
 	Vec2 pos = box2d.getBodyPixelCoord(body);
+
 	Vec2 dir = new Vec2(goal.x - pos.x, goal.y - pos.y);
 	dir.normalize();
 	dir.mulLocal(speed);
@@ -58,31 +59,34 @@ class Missile {
 	body.applyForceToCenter(new Vec2(direction.x, direction.y));
     }
 
-  // Is the particle ready for deletion?
-  boolean done(PVector destination) {
-    // Let's find the screen position of the particle
-    Vec2 pos = box2d.getBodyPixelCoord(body);
-
-    PVector p = new PVector(pos.x, pos.y);
-    float distance = p.dist(destination);
-    
-    if(distance < 30){
+    void die(){
 	killBody();
-	return true;
+	missiles.remove(this);
+	println("Missile dead");
     }
 
+  // Is the particle ready for deletion?
+  boolean done() {
+    // // Let's find the screen position of the particle
+    // Vec2 pos = box2d.getBodyPixelCoord(body);
+    // PVector p = new PVector(pos.x, pos.y);
+    // PVector destination = ennemi.getTargetLocation();
+
+    // float distance = p.dist(destination);
+    // if(distance < ennemi.getCastleSize()){
+    // 	killBody();
+    // 	ennemi.hit();
+    // 	return true;
+    // }
 
     if(isTooOld()){
-	println("Removing old missile");
+	killBody();
 	return true;
     }
     return false;
 
   }
 
-    boolean isTooOld(){
-	return creationTime + MAX_LIFETIME < millis();
-    }
 
 
   // 

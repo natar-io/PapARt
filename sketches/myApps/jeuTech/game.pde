@@ -1,12 +1,17 @@
+import fr.inria.papart.depthcam.*;
+
 Game game;
 
 // GREEN
 public class Game  extends PaperTouchScreen {
 
+    KinectTouchInput kTouchInput;
+
     void setup(){
 	setDrawingSize( (int) playerBoardSize.x, (int)playerBoardSize.y);
 	loadMarkerBoard(sketchPath + "/data/markers/game.cfg",
 			playerBoardSize.x, playerBoardSize.y);
+
 
 	game = this;
     }
@@ -37,6 +42,9 @@ public class Game  extends PaperTouchScreen {
 	rect(40, 10, 20, 10);
 	popMatrix();
 
+	player1.drawCastle(currentGraphics);
+	player2.drawCastle(currentGraphics);
+
 	PVector v1 = getCoordFrom(player1, new PVector(50, 10));
 
 	if(v1 != INVALID_VECTOR){
@@ -59,18 +67,62 @@ public class Game  extends PaperTouchScreen {
 	//	Look at all missiles
 	for (int i = missiles.size()-1; i >= 0; i--) {
 	    Missile m = missiles.get(i);
-	    
 	    m.display(currentGraphics);
-
 	    m.update();
 		
 	    // Missiles that leave the screen, we delete them
 	    // (note they have to be deleted from both the box2d world and our list
-	    if (m.done(INVALID_VECTOR)) {
+	    if (m.done()) {
 		missiles.remove(i);
 	    }
 	}
+
+
+
+	//	Look at all Walls
+	for (int i = walls.size()-1; i >= 0; i--) {
+	    Wall w = walls.get(i);
+	    w.display(currentGraphics);
+	    // w.update();
+	    // TODO: find a way to remove them...
+	    if (w.done()) {
+		walls.remove(i);
+	    }
+	}
+
 	
+
+	kTouchInput = (KinectTouchInput) touchInput;
+	kTouchInput.computeOutsiders(true);
+	noStroke();
+	for (Touch t : touchList) {
+            if (t.is3D) {
+                fill(185, 142, 62);
+            }
+
+            ellipse(t.position.x,
+		    t.position.y,
+		    10, 10);
+
+	    TouchPoint tp = t.touchPoint;
+	    ArrayList<DepthDataElement> depthDataElements = tp.getDepthDataElements();
+
+	    for(DepthDataElement dde :  depthDataElements){
+
+		PVector v = kTouchInput.projectPointToScreen(screen, display, dde);
+		if(v != null && random(1) < 0.1f ){
+		    if(v.x > 0 && v.x < 200){
+			ellipse(v.x, v.y, 15, 15);
+			Wall wall = new Wall(v.x, v.y, 10);
+			walls.add(wall);
+		    }
+
+		}
+	    }
+
+	}
+	//	kTouchInput.computeOutsiders(false);
+
 	endDraw();
     }
 
