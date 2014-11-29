@@ -7,30 +7,37 @@
 
 class Missile {
 
-  // We need to keep track of a Body and a radius
-  Body body;
-  float r;
+    // We need to keep track of a Body and a radius
+    Body body;
+    color col;
+    
+    Player1 faction;
+    Player1 ennemi;
 
-  color col;
+    float size = 3;
+    int MAX_LIFETIME = 6000;
+    int creationTime;
 
+    Missile(Player1 faction, Player1 ennemi, PVector startPos){
+	this.faction = faction;
+	this.ennemi = ennemi;
+	creationTime = millis();
 
-  Missile(float x, float y, float r_) {
-    r = r_;
-    // This function puts the particle in the Box2d world
-    makeBody(x, y, r);
-    body.setUserData(this);
-    col = color(175);
-  }
+	// // This function puts the particle in the Box2d world
+	makeBody(startPos.x, startPos.y, size);
+	body.setUserData(this);
+	col = color(175);
+    }
 
-  // This function removes the particle from the box2d world
-  void killBody() {
-    box2d.destroyBody(body);
-  }
-
-  // Change color when hit
-  void change() {
-    col = color(255, 0, 0);
-  }
+    // This function removes the particle from the box2d world
+    void killBody() {
+	box2d.destroyBody(body);
+    }
+    
+    // Change color when hit
+    void change() {
+	col = color(255, 0, 0);
+    }
     
     void setGoal(PVector goal, float speed){
 	Vec2 pos = box2d.getBodyPixelCoord(body);
@@ -43,6 +50,10 @@ class Missile {
 	body.applyForceToCenter(dir);
     }
 
+    void update(){
+	setGoal(ennemi.getTargetLocation(), 5);
+    }
+
     void setDirection(PVector direction){
 	body.applyForceToCenter(new Vec2(direction.x, direction.y));
     }
@@ -52,18 +63,26 @@ class Missile {
     // Let's find the screen position of the particle
     Vec2 pos = box2d.getBodyPixelCoord(body);
 
-    println("Pos " + pos);
     PVector p = new PVector(pos.x, pos.y);
-
     float distance = p.dist(destination);
     
     if(distance < 30){
 	killBody();
 	return true;
     }
+
+
+    if(isTooOld()){
+	println("Removing old missile");
+	return true;
+    }
     return false;
 
   }
+
+    boolean isTooOld(){
+	return creationTime + MAX_LIFETIME < millis();
+    }
 
 
   // 
@@ -74,13 +93,12 @@ class Missile {
     float a = body.getAngle();
     g.pushMatrix();
     g.translate(pos.x, pos.y);
-    g.rotate(a);
+    //    g.rotate(a);
     g.fill(col);
-    g.stroke(0);
-    g.strokeWeight(1);
-    g.ellipse(0, 0, r*2, r*2);
+    //    g.stroke(0);
+    //    g.strokeWeight(1);
+    g.ellipse(0, 0, size*2, size*2);
     // Let's add a line so we can see the rotation
-    g.line(0, 0, r, 0);
     g.popMatrix();
   }
 

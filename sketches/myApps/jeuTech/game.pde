@@ -41,38 +41,34 @@ public class Game  extends PaperTouchScreen {
 
 	if(v1 != INVALID_VECTOR){
 
-	    println("v1 " + v1);
 	    fill(0, 200, 0);
 	    ellipse((int) v1.x, (int) v1.y, 30, 30);
+	    // stroke(255);
+	    // strokeWeight(2);
+	    // line(100, 100, v1.x, v1.y);
 
-	    stroke(255);
-	    strokeWeight(2);
-	    line(100, 100, v1.x, v1.y);
-
-	    if (random(1) < 0.05) {
-		float sz = random(2,4);
-		Missile p = new Missile(100, 100,sz);
-		p.setGoal(v1, 30);
-		missiles.add(p);
-	    }
+	    // if (random(1) < 0.05) {
+	    // 	float sz = random(2,4);
+	    // 	Missile p = new Missile(100, 100,sz);
+	    // 	p.setGoal(v1, 30);
+	    // 	missiles.add(p);
+	    // }
 
 	}
 
-	// Look at all missiles
+	//	Look at all missiles
 	for (int i = missiles.size()-1; i >= 0; i--) {
-	    Missile p = missiles.get(i);
-
-	    p.display(currentGraphics);
-
-	if(v1 != INVALID_VECTOR){
-	    p.setGoal(v1, 2);
+	    Missile m = missiles.get(i);
 	    
+	    m.display(currentGraphics);
+
+	    m.update();
+		
 	    // Missiles that leave the screen, we delete them
 	    // (note they have to be deleted from both the box2d world and our list
-	    if (p.done(v1)) {
+	    if (m.done(INVALID_VECTOR)) {
 		missiles.remove(i);
 	    }
-	}
 	}
 	
 	endDraw();

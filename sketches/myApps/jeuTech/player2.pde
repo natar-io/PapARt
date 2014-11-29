@@ -9,24 +9,17 @@ public class Player2  extends Player1 {
 			playerBoardSize.x, playerBoardSize.y);
 
 	player2 = this;
+	playerColor = color(143, 162, 186);
     }
  
 
-    // Todo check if this is useful 
-    public void resetPos(){
-	screen.resetPos();
-    }
-
-    public void draw(){
-
-	beginDraw2D();
-	clear();
-
-	setLocation(-20, -7, 0);
-	fill(143, 162, 186);
-	rect(120, 85, 55, 55);
-
-	endDraw();
-    }
+    // public void draw(){
+    // 	updateInternals();
+    // 	beginDraw2D();
+    // 	clear();
+    // 	setLocation(-20, -7, 0);
+    // 	drawCastle();
+    // 	endDraw();
+    // }
 
 }
