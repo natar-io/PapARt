@@ -120,6 +120,11 @@ public abstract class Camera implements PConstants {
         return out;
     }
 
+    public PImage getPImageCopyTo(PImage out) {
+        Utils.IplImageToPImage(currentImage, this.format, out);
+        return out;
+    }
+
     /**
      * Description of the cameara, the number if using OpenCV or OpenKinect, and
      * a name or file if using Processing.
@@ -199,7 +204,7 @@ public abstract class Camera implements PConstants {
             sheetsSemaphore.release();
         } catch (InterruptedException ex) {
             Logger.getLogger(Camera.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (NullPointerException e){
+        } catch (NullPointerException e) {
             throw new RuntimeException("Marker detection not initialized.");
         }
 

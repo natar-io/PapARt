@@ -5,7 +5,7 @@ public class Player2  extends Player1 {
 
     void setup(){
 	setDrawingSize( (int) playerBoardSize.x, (int)playerBoardSize.y);
-	loadMarkerBoard(sketchPath + "/data/markers/player2.cfg",
+	loadMarkerBoard(sketchPath + "/data/markers/player2-big.cfg",
 			playerBoardSize.x, playerBoardSize.y);
 
 	player2 = this;

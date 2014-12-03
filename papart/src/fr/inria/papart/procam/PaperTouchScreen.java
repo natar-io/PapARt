@@ -26,8 +26,13 @@ import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.multitouch.Touch;
 import fr.inria.papart.multitouch.KinectTouchInput;
 import fr.inria.papart.multitouch.TouchList;
+import fr.inria.papart.multitouch.TouchPoint;
+import fr.inria.papart.procam.display.ProjectorDisplay;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import org.bytedeco.javacpp.opencv_core.IplImage;
 import processing.core.PApplet;
+import processing.core.PImage;
 import processing.core.PVector;
 
 public class PaperTouchScreen extends PaperScreen {
@@ -86,6 +91,13 @@ public class PaperTouchScreen extends PaperScreen {
             return;
         }
         screen.computeScreenPosTransform();
+
+        // Warning TODO: Hack.. V_V 
+        // Touch in 2D  mode has boundaries. 
+        // Touch in 3D mode has no boundaries. 
+        touchInput.computeOutsiders(!this.isDraw2D());
+
+        // 
         touchList = touchInput.projectTouchToScreen(screen, display);
         touchList.sortAlongYAxis();
 
@@ -93,7 +105,12 @@ public class PaperTouchScreen extends PaperScreen {
             if (((KinectTouchInput) (touchInput)).useRawDepth()) {
                 touchList.invertY(drawingSize);
             } else {
-                touchList.scaleBy(drawingSize);
+
+                if (this.isDraw2D()) {
+                    touchList.invertY(drawingSize);
+                }
+
+//                touchList.scaleBy(drawingSize);
             }
         }
 
@@ -161,7 +178,7 @@ public class PaperTouchScreen extends PaperScreen {
 //            popMatrix();
         }
     }
-    
+
     protected void drawFullTouch(int ellipseSize) {
         for (Touch t : touchList) {
             if (t.is3D) {
@@ -169,11 +186,11 @@ public class PaperTouchScreen extends PaperScreen {
             } else {
                 fill(58, 71, 198);
             }
-            ellipse(t.pposition.x, t.pposition.y, ellipseSize /2 , ellipseSize /2);
+            ellipse(t.pposition.x, t.pposition.y, ellipseSize / 2, ellipseSize / 2);
             pushMatrix();
             translate(t.position.x, t.position.y);
             ellipse(0, 0, ellipseSize, ellipseSize);
-            line(0, 0, t.speed.x * 4, t.speed.y *4);
+            line(0, 0, t.speed.x * 4, t.speed.y * 4);
             popMatrix();
         }
     }
@@ -204,4 +221,134 @@ public class PaperTouchScreen extends PaperScreen {
     public boolean isIsTranslated() {
         return isTranslated;
     }
+
+    /**
+     * Unsafe do not use unless you are sure.
+     */
+    public PVector getCameraViewOf(Touch t) {
+        ProjectorDisplay projector = (ProjectorDisplay) display;
+
+        TouchPoint tp = t.touchPoint;
+        PVector screenPos = tp.getPosition();
+        PVector tablePos = projector.projectPointer3D(screen, screenPos.x, screenPos.y);
+        ProjectiveDeviceP pdp = cameraTracking.getProjectiveDevice();
+        PVector coord = pdp.worldToPixelCoord(tablePos);
+        return coord;
+    }
+
+    // TODO:  find a class for this ?!
+    /**
+     * Unsafe do not use unless you are sure.
+     */
+    public PImage getImageFrom(PVector coord, PImage src, PImage dst, int radius) {
+        int x = (int) coord.x;
+        int y = (int) coord.y;
+        int minX = PApplet.constrain(x - radius, 0, cameraTracking.width() - 1);
+        int maxX = PApplet.constrain(x + radius, 0, cameraTracking.width() - 1);
+        int minY = PApplet.constrain(y - radius, 0, cameraTracking.height() - 1);
+        int maxY = PApplet.constrain(y + radius, 0, cameraTracking.height() - 1);
+
+        dst.copy(src,
+                minX, minY,
+                2 * radius,
+                2 * radius,
+                0, 0,
+                2 * radius,
+                2 * radius);
+        return dst;
+    }
+
+    /**
+     * Unsafe do not use unless you are sure.
+     */
+    public int getColorOccurencesFrom(PVector coord, PImage cameraImage, int radius, int col, int threshold) {
+        int x = (int) coord.x;
+        int y = (int) coord.y;
+        int minX = PApplet.constrain(x - radius, 0, cameraTracking.width() - 1);
+        int maxX = PApplet.constrain(x + radius, 0, cameraTracking.width() - 1);
+        int minY = PApplet.constrain(y - radius, 0, cameraTracking.height() - 1);
+        int maxY = PApplet.constrain(y + radius, 0, cameraTracking.height() - 1);
+        int k = 0;
+        for (int j = minY; j <= maxY; j++) {
+            for (int i = minX; i <= maxX; i++) {
+                int offset = i + j * cameraTracking.width();
+                int pxCol = cameraImage.pixels[offset];
+                if (colorDist(col, pxCol) < threshold) {
+                    k++;
+                }
+            }
+        }
+        return k;
+    }
+    /**
+     * Unsafe do not use unless you are sure.
+     */
+    public int getColorOccurencesFrom(PVector coord, int radius, int col, int threshold) {
+        int x = (int) coord.x;
+        int y = (int) coord.y;
+        int minX = PApplet.constrain(x - radius, 0, cameraTracking.width() - 1);
+        int maxX = PApplet.constrain(x + radius, 0, cameraTracking.width() - 1);
+        int minY = PApplet.constrain(y - radius, 0, cameraTracking.height() - 1);
+        int maxY = PApplet.constrain(y + radius, 0, cameraTracking.height() - 1);
+
+        ByteBuffer buff = cameraTracking.getIplImage().getByteBuffer();
+
+        int k = 0;
+        for (int j = minY; j <= maxY; j++) {
+            for (int i = minX; i <= maxX; i++) {
+                int offset = i + j * cameraTracking.width();
+                int pxCol = getColor(buff, offset);
+                if (colorDist(col, pxCol) < threshold) {
+                    k++;
+                }
+            }
+        }
+        return k;
+    }
+
+    private int getColor(ByteBuffer buff, int offset) {
+        offset = offset * 3;
+        return (buff.get(offset + 2) & 0xFF) << 16
+                | (buff.get(offset + 1) & 0xFF) << 8
+                | (buff.get(offset) & 0xFF);
+    }
+
+    // TODO: move this to image analysis module
+    private int colorDist(int c1, int c2) {
+        int r1 = c1 >> 16 & 0xFF;
+        int g1 = c1 >> 8 & 0xFF;
+        int b1 = c1 >> 0 & 0xFF;
+
+        int r2 = c2 >> 16 & 0xFF;
+        int g2 = c2 >> 8 & 0xFF;    
+        int b2 = c2 >> 0 & 0xFF;
+
+        int dr = PApplet.abs(r1 - r2);
+        int dg = PApplet.abs(g1 - g2);
+        int db = PApplet.abs(b1 - b2);
+        return dr + dg + db;
+    }
+
+    /**
+     * Unsafe do not use unless you are sure.
+     */
+    public int[] getPixelsFrom(PVector coord, PImage cameraImage, int radius) {
+        int[] px = new int[radius * radius];
+        int x = (int) coord.x;
+        int y = (int) coord.y;
+        int minX = PApplet.constrain(x - radius, 0, cameraTracking.width() - 1);
+        int maxX = PApplet.constrain(x + radius, 0, cameraTracking.width() - 1);
+        int minY = PApplet.constrain(y - radius, 0, cameraTracking.height() - 1);
+        int maxY = PApplet.constrain(y + radius, 0, cameraTracking.height() - 1);
+
+        int k = 0;
+        for (int j = minY; j <= maxY; j++) {
+            for (int i = minX; i <= maxX; i++) {
+                int offset = i + j * cameraTracking.width();
+                px[k++] = cameraImage.pixels[offset];
+            }
+        }
+        return px;
+    }
+
 }

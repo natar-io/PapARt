@@ -17,7 +17,7 @@ class CustomListener implements ContactListener {
     // This function is called when a new collision occurs
     void beginContact(Contact cp) {
 
-	println("Contact");
+	//	println("Contact");
 
     	// Get both fixtures
     	Fixture f1 = cp.getFixtureA();
@@ -57,8 +57,8 @@ class CustomListener implements ContactListener {
 	Castle castle = (Castle) castleO;
 	Missile missile = (Missile) missileO;
 
-	castle.isHit();
-	missile.die();
+	// castle.isHit();
+	// missile.die();
     }
 
      

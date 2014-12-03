@@ -36,6 +36,7 @@ public abstract class TouchDetection {
     protected float maxDistance = 10f;    // in mm
     protected float MINIMUM_COMPONENT_SIZE = 5;   // in px
     protected int MAX_REC = 500;
+    public static int MINIMUM_HEIGHT = 2; // mm
 
     protected boolean[] assignedPoints = null;
     protected byte[] connectedComponentImage = null;
@@ -91,9 +92,14 @@ public abstract class TouchDetection {
     protected ArrayList<TouchPoint> createTouchPointsFrom(ArrayList<ConnectedComponent> connectedComponents) {
         ArrayList<TouchPoint> touchPoints = new ArrayList<TouchPoint>();
         for (ConnectedComponent connectedComponent : connectedComponents) {
-            if (connectedComponent.size() < MINIMUM_COMPONENT_SIZE) {
+
+            float height = connectedComponent.getHeight(depthData.projectedPoints);
+            if (connectedComponent.size() < MINIMUM_COMPONENT_SIZE
+                    || height < MINIMUM_HEIGHT) {
+
                 continue;
             }
+
             TouchPoint tp = createTouchPoint(connectedComponent);
             touchPoints.add(tp);
         }
@@ -173,12 +179,11 @@ public abstract class TouchDetection {
         tp.setPositionKinect(meanKinect);
         tp.setCreationTime(depthData.timeStamp);
         tp.set3D(false);
-        
+
         tp.setConfidence(connectedComponent.size() / MINIMUM_COMPONENT_SIZE);
-        
+
         // TODO: re-enable this one day ?
 //        tp.setConnectedComponent(connectedComponent);
-        
         tp.setDepthDataElements(depthData, connectedComponent);
         return tp;
     }

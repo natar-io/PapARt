@@ -42,7 +42,7 @@ public class ProjectorDisplay extends ARDisplay {
     protected void loadInternalParams(String calibrationYAML) {
         // Load the camera parameters.
         System.out.println("Load here ");
-        
+
         try {
             projectiveDeviceP = ProjectiveDeviceP.loadProjectorDevice(calibrationYAML, 0);
         } catch (Exception e) {
@@ -57,7 +57,7 @@ public class ProjectorDisplay extends ARDisplay {
         extrinsicsInv.invert();
         projectiveDevice = projectiveDeviceP.getDevice();
         this.hasExtrinsics = true;
-
+        this.setDistort(true);
     }
 
     @Override
@@ -154,11 +154,7 @@ public class ProjectorDisplay extends ARDisplay {
         }
     }
 
-    // *** Projects the pixels viewed by the projector to the screen.
-    // px and py are normalized -- [0, 1] in screen space
-    @Override
-    public PVector projectPointer(Screen screen, float px, float py)  {
-
+    protected ReadonlyVec3D projectPointer3DVec3D(Screen screen, float px, float py) {
         // Create ray from the projector (origin / viewed pixel)
         // Intersect this ray with the piece of paper. 
         // Compute the Two points for the ray          
@@ -188,7 +184,9 @@ public class ProjectorDisplay extends ARDisplay {
 
         // It may not intersect.
         if (inter == null) {
-            return TouchInput.NO_INTERSECTION;
+            return null;
+        } else {
+            return inter;
         }
         // Check the error of the ray casting -- Debug only  
 //        PVector inter1P = new PVector();
@@ -196,6 +194,27 @@ public class ProjectorDisplay extends ARDisplay {
 //        PVector px2 = projectiveDeviceP.worldToPixel(inter1P, false);
 //        px2.sub(px * frameWidth, py * frameHeight, 0);
 //        System.out.println("Error " + px2.mag());
+    }
+
+    public PVector projectPointer3D(Screen screen, float px, float py) {
+        ReadonlyVec3D inter = projectPointer3DVec3D(screen, px, py);
+        if (inter == null) {
+            return TouchInput.NO_INTERSECTION;
+        } else {
+            return new PVector(inter.x(), inter.y(), inter.z());
+        }
+    }
+
+    // *** Projects the pixels viewed by the projector to the screen.
+    // px and py are normalized -- [0, 1] in screen space
+    @Override
+    public PVector projectPointer(Screen screen, float px, float py) {
+
+        ReadonlyVec3D inter = projectPointer3DVec3D(screen, px, py);
+        // It may not intersect.
+        if (inter == null) {
+            return TouchInput.NO_INTERSECTION;
+        }
 
         // Get the normalized coordinates in Paper coordinates
         Vec3D res = screen.getWorldToScreen().applyTo(inter);

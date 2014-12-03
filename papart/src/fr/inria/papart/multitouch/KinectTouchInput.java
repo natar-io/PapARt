@@ -311,7 +311,6 @@ public class KinectTouchInput extends TouchInput {
                 dde.kinectPoint,
                 dde.projectedPoint);
         return out;
-
     }
 
     private PVector projectPointToScreen(Screen screen,
@@ -347,7 +346,10 @@ public class KinectTouchInput extends TouchInput {
             paperScreenCoord.y = (1f - paperScreenCoord.y) * screen.getSize().y;
         }
 
-        // TODO: not sure about this ?!
+  
+        if(computeOutsiders)
+            return paperScreenCoord;
+        
         if (paperScreenCoord.x == PApplet.constrain(paperScreenCoord.x, 0, screen.getSize().x)
                 && paperScreenCoord.y == PApplet.constrain(paperScreenCoord.y, 0, screen.getSize().y)) {
             return paperScreenCoord;

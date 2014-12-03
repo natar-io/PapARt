@@ -88,9 +88,7 @@ public class TouchList extends ArrayList<Touch> {
 
     public void invertY(PVector drawingSize) {
         for (Touch touch : this) {
-            touch.position.y = drawingSize.y - touch.position.y;
-            touch.pposition.y = drawingSize.y - touch.pposition.y;
-            touch.speed.y = -touch.speed.y;
+            touch.invertY(drawingSize.y);
         }
     }
     

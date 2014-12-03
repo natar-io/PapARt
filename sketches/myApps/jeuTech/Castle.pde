@@ -1,8 +1,8 @@
 class Castle {
 
     float size = 55 /2f;
-    float castleX = 120;
-    float castleY = 85;
+    float castleX = 120 + size;
+    float castleY = 20 + size;
 
     PVector pos;
 
@@ -57,10 +57,7 @@ class Castle {
     g.translate(pos.x, pos.y);
     //    g.rotate(a);
     g.fill(col);
-    //    g.stroke(0);
-    //    g.strokeWeight(1);
     g.ellipse(0, 0, size*2, size*2);
-    // Let's add a line so we can see the rotation
     g.popMatrix();
   }
 

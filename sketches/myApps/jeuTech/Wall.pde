@@ -51,13 +51,16 @@ class Wall extends DyingObject{
     // Get its angle of rotation
     float a = body.getAngle();
 
-    g.rectMode(CENTER);
     g.pushMatrix();
+    g.rectMode(CENTER);
     g.translate(pos.x, pos.y);
     g.rotate(-a);
     g.fill(175);
     g.stroke(0);
+
     g.rect(0, 0, w, h);
+
+    g.rectMode(CORNER);
     g.popMatrix();
   }
 

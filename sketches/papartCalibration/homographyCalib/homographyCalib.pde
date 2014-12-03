@@ -35,7 +35,7 @@ int currentPoint = 0;
 
 void setup(){
     
-    size(Kinect.WIDTH, Kinect.HEIGHT, OPENGL); 
+    size(Kinect.WIDTH *2 , Kinect.HEIGHT *2, OPENGL); 
     
     int depthFormat = freenect.FREENECT_DEPTH_MM;
     int kinectFormat = Kinect.KINECT_MM;
@@ -119,11 +119,12 @@ void draw3DPointCloud(){
 
 void draw2DSelection(){
     cam.beginHUD();
-    kinect.update(kinectImgDepth, kinectImg, planeCalibration, precision);
+    //    kinect.update(kinectImgDepth, kinectImg, planeCalibration, precision);
+    kinect.update(kinectImgDepth, kinectImg, precision);
     //    kinect.update(kinectImgDepth, kinectImg);
     depthPoints = kinect.getDepthPoints();
     PImage goodDepthImg = kinect.getColouredDepthImage();
-    image(goodDepthImg, 0, 0);
+    image(goodDepthImg, 0, 0, width, height);
     cam.endHUD();
 }
 
@@ -181,7 +182,7 @@ void mousePressed(){
     }
 
 
-   int offset = (int) mouseY * camera.width() +(int) mouseX;
+    int offset = (int) (mouseY /2)  * camera.width() +(int) (mouseX /2);
 
     if(depthPoints[offset] != null){
 	Vec3D depth = depthPoints[offset];

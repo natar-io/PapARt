@@ -59,6 +59,8 @@ public class TouchPoint extends DepthPoint {
 
     private boolean toDelete = false;
     public boolean isUpdated = false;
+    
+    public int attachedValue = -1;
 
 // filtering 
     private OneEuroFilter[] filters;

@@ -33,25 +33,26 @@ public class Touch {
     public PVector pposition;
     public PVector speed;
     public TouchPoint touchPoint;
-    
+
     public PVector size;
 
     // TODO: implementation of this. 
     public boolean isObject;
     public int id;
-    
-    public void setPosition(PVector v){
+
+    public void setPosition(PVector v) {
         setPosition(v.x, v.y, v.z);
     }
-    public void setPosition(float x, float y, float z){
-        if(this.position == null){
+
+    public void setPosition(float x, float y, float z) {
+        if (this.position == null) {
             this.position = new PVector();
         }
         this.position.x = x;
         this.position.y = y;
         this.position.z = z;
     }
-    
+
     @Override
     public String toString() {
         return "Position " + position + " Speed " + speed + " Touch info " + touchPoint;
@@ -59,9 +60,9 @@ public class Touch {
 
     public void setPrevPos(PVector prevPosition) {
         pposition = prevPosition;
-        speed = PVector.sub(prevPosition,position);
+        speed = PVector.sub(prevPosition, position);
     }
-    
+
     public void defaultPrevPos() {
         pposition = position.get();
         speed = new PVector();
@@ -79,5 +80,11 @@ public class Touch {
         speed.x *= scales.x;
         speed.y *= scales.y;
         speed.z *= scales.z;
+    }
+
+    public void invertY(float sizeY) {
+        position.y = sizeY - position.y;
+        pposition.y = sizeY - pposition.y;
+        speed.y = -speed.y;
     }
 }

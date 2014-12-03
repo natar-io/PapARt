@@ -47,7 +47,7 @@ void setup(){
 	papart.loadTouchInput(2, 5);
     } else {
 	papart.initKinectCamera(2f);
-	papart.loadTouchInputKinectOnly(2, 7);
+	papart.loadTouchInputKinectOnly(1, 7);
 	BaseDisplay display = papart.getDisplay();
 	display.setDrawingSize(width, height);
     }
@@ -65,11 +65,26 @@ void setup(){
 void draw(){
 }
 
+boolean fixCastles = false;
+int trackingFixDuration = 2000;
+boolean test = false;
+
 void keyPressed() {
+
+
 
   // Placed here, bug if it is placed in setup().
   if(key == ' ')
     frame.setLocation(framePosX, framePosY);
+
+  if(key == 'c'){
+      fixCastles = !fixCastles;
+  }
+
+  if(key == 't'){
+      test = !test;
+  }
+
 }
 
 
