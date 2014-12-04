@@ -15,14 +15,14 @@ int framePosX = 0;
 int framePosY = 200;
 
 boolean useProjector;
-float planetScale = 1f / 20000f;
+ 
 
 // Undecorated frame 
 public void init() {
-  frame.removeNotify(); 
-  frame.setUndecorated(true); 
-  frame.addNotify(); 
-  super.init();
+    frame.removeNotify(); 
+    frame.setUndecorated(true); 
+    frame.addNotify(); 
+    super.init();
 }
 
 PVector boardSize = new PVector(297, 210);   //  21 * 29.7 cm
@@ -53,6 +53,9 @@ void setup(){
     }
 
 
+    // MarkerBoard miniTeegiVision; 
+    // this.markerBoard = new MarkerBoard(configFile, width, height);
+
     papart.loadSketches();
     papart.startTracking();
 }
@@ -67,14 +70,24 @@ boolean test = false;
 void keyPressed() {
 
 
+    // Placed here, bug if it is placed in setup().
+    if(key == ' ')
+	frame.setLocation(framePosX, framePosY);
 
-  // Placed here, bug if it is placed in setup().
-  if(key == ' ')
-    frame.setLocation(framePosX, framePosY);
+    if(key == 't'){
+	test = !test;
+    }
 
-  if(key == 't'){
-      test = !test;
-  }
+    if(key == '1'){
+	Mode.set("raw");
+    }
+    if(key == '2'){
+	Mode.set("relax");
+    }
+
+    if(key == '3'){
+	Mode.set("vision");
+    }
 
 }
 

@@ -1,4 +1,4 @@
-import fr.inria.papart.depthcam.*;
+ import fr.inria.papart.depthcam.*;
 
 Game game;
 
