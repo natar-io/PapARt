@@ -26,7 +26,7 @@ public class Game  extends PaperTouchScreen {
 	game = this;
     }
 
-    public int getObjectColor(int id){
+    public int getObjectColor(int id){ 
 	return colorDetections[id].getColor();
     }
  

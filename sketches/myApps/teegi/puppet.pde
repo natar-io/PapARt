@@ -1,4 +1,3 @@
-import fr.inria.guimodes.*;
 
 public class MyApp  extends PaperScreen {
 
@@ -16,6 +15,8 @@ public class MyApp  extends PaperScreen {
     int relaxColor1 = #5323DB;
     int relaxColor2 = #A5D3F0;
 
+
+      
     void setup(){
 	setDrawingSize(297, 210);
 	loadMarkerBoard(sketchPath + "/data/A3-small1.cfg", 297, 210);
@@ -25,11 +26,6 @@ public class MyApp  extends PaperScreen {
 
 	loadImages();
 	loadShaders();
-	
-	Mode.add("vision");
-	Mode.add("relax");
-	Mode.add("raw");
-	Mode.set("raw");
     }
 
 
@@ -39,15 +35,15 @@ public class MyApp  extends PaperScreen {
 
 	beginDraw3D();
 
-	updateTexture();
+	// updateTexture();
 
-	drawTeegi();
+	// drawTeegi();
 	
 	endDraw();
     }
 
     void drawTeegi(){
-
+ 
 	pushMatrix();
 	shader(capShader);
 	translate(drawingSize.x /2,

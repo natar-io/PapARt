@@ -174,42 +174,6 @@ public class TrackedView {
             screenP[i] = camera.pdp.worldToPixel(cornerPos[i], true);
         }
     }
-//    protected void computeCorners() {
-//
-//        if (camera == null) {
-//            System.err.println("TrackedView : Error, you must set a camera, or use computeCorners(ImageWithTags itw.");
-//            return;
-//        }
-//
-//        // TODO: test if .get() is necessary ? 
-//        pos = board.getTransfoMat(camera).get();
-//
-//        cornerPos[0].x = pos.m03;
-//        cornerPos[0].y = pos.m13;
-//        cornerPos[0].z = pos.m23;
-//
-//        PMatrix3D tmp = new PMatrix3D();
-//        tmp.apply(pos);
-//
-//        tmp.translate(board.width, 0, 0);
-//        cornerPos[1].x = tmp.m03;
-//        cornerPos[1].y = tmp.m13;
-//        cornerPos[1].z = tmp.m23;
-//
-//        tmp.translate(0, board.height, 0);
-//        cornerPos[2].x = tmp.m03;
-//        cornerPos[2].y = tmp.m13;
-//        cornerPos[2].z = tmp.m23;
-//
-//        tmp.translate(-board.width, 0, 0);
-//        cornerPos[3].x = tmp.m03;
-//        cornerPos[3].y = tmp.m13;
-//        cornerPos[3].z = tmp.m23;
-//
-//        for (int i = 0; i < 4; i++) {
-//            screenP[i] = camera.getCamViewPoint(cornerPos[i]);
-//        }
-//    }
 
     protected IplImage getImageIpl(IplImage iplImg) {
         if (tmpImg == null) {

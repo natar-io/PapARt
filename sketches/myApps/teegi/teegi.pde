@@ -7,6 +7,7 @@ import org.reflections.*;
 import TUIO.*;
 import toxi.geom.*;
 
+import fr.inria.guimodes.*;
 
 Papart papart;
 

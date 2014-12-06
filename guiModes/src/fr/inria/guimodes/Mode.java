@@ -75,6 +75,14 @@ public class Mode {
         return this.name;
     }
 
+    public static Mode getCurrent() {
+        return currentMode;
+    }
+
+    public static String getCurrentName() {
+        return currentMode.name();
+    }
+
     public static int size() {
         return modes.size();
     }
