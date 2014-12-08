@@ -36,6 +36,7 @@ public class ModeSelection  extends PaperScreen {
     void draw(){
 	beginDraw2D();
 
+	resetShader();
 	background(0);
 
 

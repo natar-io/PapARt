@@ -35,9 +35,9 @@ public class MyApp  extends PaperScreen {
 
 	beginDraw3D();
 
-	// updateTexture();
+	updateTexture();
 
-	// drawTeegi();
+	 drawTeegi();
 	
 	endDraw();
     }
