@@ -66,8 +66,8 @@ public class KinectTouchInput extends TouchInput {
     private final Semaphore depthDataSem = new Semaphore(1);
 
 // Tracking parameters
-    static public final float trackNearDist = 30f;  // in mm
-    static public final float trackNearDist3D = 70f;  // in mm
+    static public float trackNearDist = 30f;  // in mm
+    static public float trackNearDist3D = 70f;  // in mm
 
     // List of TouchPoints, given to the user
     private final CameraOpenKinect kinectCamera;

@@ -21,34 +21,34 @@ package fr.inria.papart.depthcam;
 import processing.core.PVector;
 
 /**
- * 
+ *  TODO: check this class for removal. 
  * @author jiii
  */
 public class PointCloudElement extends DepthPoint{
 
     public PVector error;
 
-    public static void filterConnexity(PointCloudElement[] PointCloud,
-            int w,
-            int h,
-            float dist, 
-            int nbNeighbours) {
-        
-        Connexity connexity = new Connexity(PointCloud, w, h);
-        connexity.setConnexityDist(dist);
-        connexity.computeAll();
-        byte[] connexSum = connexity.getSum();
-
-        for (int i = 0; i < PointCloud.length; i++) {
-            if (PointCloud[i] == null
-                    || PointCloud[i].position == null) {
-                continue;
-            }
-
-            if (connexSum[i] < nbNeighbours) {
-                PointCloud[i] = null;
-            }
-        }
-    }
+//    public static void filterConnexity(PointCloudElement[] PointCloud,
+//            int w,
+//            int h,
+//            float dist, 
+//            int nbNeighbours) {
+//        
+//        Connexity connexity = new Connexity(PointCloud, w, h);
+//        connexity.setConnexityDist(dist);
+//        connexity.computeAll();
+//        byte[] connexSum = connexity.getSum();
+//
+//        for (int i = 0; i < PointCloud.length; i++) {
+//            if (PointCloud[i] == null
+//                    || PointCloud[i].position == null) {
+//                continue;
+//            }
+//
+//            if (connexSum[i] < nbNeighbours) {
+//                PointCloud[i] = null;
+//            }
+//        }
+//    }
 
 }

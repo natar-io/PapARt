@@ -21,12 +21,6 @@
     <repositories>
         
         <repository>
-            <id>sonatype-nexus-staging</id>
-            <name>Sonatype Nexus Staging</name>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    
-        <repository>
             <id>clojars.org</id>
             <url>http://clojars.org/repo</url>
         </repository>
