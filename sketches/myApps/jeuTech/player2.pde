@@ -10,6 +10,7 @@ public class Player2  extends Player1 {
 
 	player2 = this;
 	playerColor = color(143, 162, 186);
+	prepare();
     }
 
      public void reset(){

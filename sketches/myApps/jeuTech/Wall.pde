@@ -56,8 +56,7 @@ class Wall extends DyingObject{
     g.translate(pos.x, pos.y);
     g.rotate(-a);
     g.fill(175);
-    g.stroke(0);
-
+    g.noStroke();
     g.rect(0, 0, w, h);
 
     g.rectMode(CORNER);

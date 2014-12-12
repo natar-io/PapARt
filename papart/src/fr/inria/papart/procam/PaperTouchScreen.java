@@ -243,18 +243,15 @@ public class PaperTouchScreen extends PaperScreen {
     public PImage getImageFrom(PVector coord, PImage src, PImage dst, int radius) {
         int x = (int) coord.x;
         int y = (int) coord.y;
-        int minX = PApplet.constrain(x - radius, 0, cameraTracking.width() - 1);
-        int maxX = PApplet.constrain(x + radius, 0, cameraTracking.width() - 1);
-        int minY = PApplet.constrain(y - radius, 0, cameraTracking.height() - 1);
-        int maxY = PApplet.constrain(y + radius, 0, cameraTracking.height() - 1);
 
         dst.copy(src,
-                minX, minY,
-                2 * radius,
-                2 * radius,
+                x - radius / 2 ,
+                y - radius / 2,
+                radius,
+                radius,
                 0, 0,
-                2 * radius,
-                2 * radius);
+                radius,
+                radius);
         return dst;
     }
 
@@ -280,6 +277,7 @@ public class PaperTouchScreen extends PaperScreen {
         }
         return k;
     }
+
     /**
      * Unsafe do not use unless you are sure.
      */
@@ -298,7 +296,7 @@ public class PaperTouchScreen extends PaperScreen {
             for (int i = minX; i <= maxX; i++) {
                 int offset = i + j * cameraTracking.width();
                 int pxCol = getColor(buff, offset);
-                if (colorDist(col, pxCol) < threshold) {
+                if (Utils.colorDist(col, pxCol, threshold)) {
                     k++;
                 }
             }
@@ -320,14 +318,17 @@ public class PaperTouchScreen extends PaperScreen {
         int b1 = c1 >> 0 & 0xFF;
 
         int r2 = c2 >> 16 & 0xFF;
-        int g2 = c2 >> 8 & 0xFF;    
+        int g2 = c2 >> 8 & 0xFF;
         int b2 = c2 >> 0 & 0xFF;
 
         int dr = PApplet.abs(r1 - r2);
         int dg = PApplet.abs(g1 - g2);
         int db = PApplet.abs(b1 - b2);
+
         return dr + dg + db;
     }
+
+   
 
     /**
      * Unsafe do not use unless you are sure.

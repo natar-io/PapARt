@@ -75,8 +75,8 @@ public class KinectTouchInput extends TouchInput {
     private final PlaneAndProjectionCalibration calibration;
 
     // List of TouchPoints, given to the user
-    ArrayList<TouchPoint> touchPoints2D = new ArrayList<TouchPoint>();
-    ArrayList<TouchPoint> touchPoints3D = new ArrayList<TouchPoint>();
+    private final ArrayList<TouchPoint> touchPoints2D = new ArrayList<>();
+    private final ArrayList<TouchPoint> touchPoints3D = new ArrayList<>();
     private final TouchDetectionSimple2D touchDetection2D;
     private final TouchDetectionSimple3D touchDetection3D;
 
@@ -124,7 +124,6 @@ public class KinectTouchInput extends TouchInput {
         }
     }
 
-
     private static final Touch INVALID_TOUCH = new Touch();
 
     @Override
@@ -166,6 +165,7 @@ public class KinectTouchInput extends TouchInput {
         if (!hasProjectedPos) {
             return INVALID_TOUCH;
         }
+        touch.isGhost = tp.isToDelete();
         touch.is3D = tp.is3D();
         touch.touchPoint = tp;
         return touch;
@@ -346,10 +346,10 @@ public class KinectTouchInput extends TouchInput {
             paperScreenCoord.y = (1f - paperScreenCoord.y) * screen.getSize().y;
         }
 
-  
-        if(computeOutsiders)
+        if (computeOutsiders) {
             return paperScreenCoord;
-        
+        }
+
         if (paperScreenCoord.x == PApplet.constrain(paperScreenCoord.x, 0, screen.getSize().x)
                 && paperScreenCoord.y == PApplet.constrain(paperScreenCoord.y, 0, screen.getSize().y)) {
             return paperScreenCoord;
@@ -397,7 +397,7 @@ public class KinectTouchInput extends TouchInput {
         ArrayList<TouchPoint> newList = touchDetection2D.compute(
                 kinect.getDepthData(),
                 touch2DPrecision);
-        TouchPointTracker.trackPoints(touchPoints2D, newList,
+       TouchPointTracker.trackPoints(touchPoints2D, newList,
                 parent.millis(), trackNearDist);
     }
 
@@ -406,7 +406,8 @@ public class KinectTouchInput extends TouchInput {
         ArrayList<TouchPoint> newList = touchDetection3D.compute(
                 kinect.getDepthData(),
                 touch3DPrecision);
-        TouchPointTracker.trackPoints(touchPoints3D, newList,
+        TouchPointTracker.trackPoints(touchPoints3D,
+                newList,
                 parent.millis(),
                 trackNearDist3D);
     }

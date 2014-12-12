@@ -1,4 +1,6 @@
- import fr.inria.papart.depthcam.*;
+import fr.inria.papart.depthcam.*;
+import fr.inria.papart.procam.ColorDetection;
+import fr.inria.papart.procam.Utils;
 
 Game game;
 
@@ -6,24 +8,88 @@ PVector gameBoardSize = new PVector(297, 90);
 float gameOffsetX = -17;
 float gameOffsetY = -20;
 
+
+PImage cameraImage;
+
+int colorDistDrawing = 10;
+int colorDistObject = 10;
+int colorNbObject = 5;
+
 // GREEN
 public class Game  extends PaperTouchScreen {
 
     KinectTouchInput kTouchInput;
 
-    ColorDetection[] colorDetections = new ColorDetection[4];
+    ColorDetection[] colorDetections = new ColorDetection[3];
+    ColorDetection colorDrawingDetection;
+    ColorDetection drawingDetection;
+
+    PVector offset = new PVector(gameOffsetX, gameOffsetY);
+    Border topBorder;
+    Border botBorder;
+
+    // DEBUG values 
+    int miniatureSize = 20;
+    PImage miniature;
 
     void setup(){
 	setDrawingSize( (int) playerBoardSize.x, (int)playerBoardSize.y);
 	loadMarkerBoard(sketchPath + "/data/markers/game.cfg",
 			playerBoardSize.x, playerBoardSize.y);
+	
+	PFont font = loadFont("AccanthisADFStd-Bold-48.vlw");
+	Button.setFont(font);
+	Button.setFontSize(20);
 
-	colorDetections[0] = new ColorDetection(new PVector(70, 55));
-	colorDetections[1] = new ColorDetection(new PVector(70 + 30, 55));
-	colorDetections[2] = new ColorDetection(new PVector(70 + 100, 55));
-	colorDetections[3] = new ColorDetection(new PVector(70 + 100 + 30, 55));
+	createCaptures();
 
+	if(DEBUG_TOUCH){
+	    cameraImage = createImage((int) cameraTracking.width(),
+				      (int) cameraTracking.height(), RGB);
+	    miniature = createImage(miniatureSize, miniatureSize, RGB);
+	}
+	topBorder = new Border(0, 0, 800, 3);
+	botBorder = new Border(0, -350, 800, 3);
 	game = this;
+    }
+
+    float drawingCaptureWidth = 200;
+    float drawingCaptureHeight = 305;
+    int outputCaptureWidth = 64; 
+    int outputCaptureHeight = 128; 
+
+    void createCaptures(){
+	colorDetections[0] = new ColorDetection(this, new PVector(80, 60));
+	colorDetections[0].setCaptureOffset(offset);
+	colorDetections[0].initialize();
+
+	colorDetections[1] = new ColorDetection(this, new PVector(120, 60));
+	colorDetections[1].setCaptureOffset(offset);
+	colorDetections[1].initialize();
+
+	colorDetections[2] = new ColorDetection(this, new PVector(160, 60));
+	colorDetections[2].setCaptureOffset(offset);
+	colorDetections[2].initialize();
+
+	// colorDetections[3] = new ColorDetection(this, new PVector(160, 40));
+	// colorDetections[3].setCaptureOffset(offset);
+	// colorDetections[3].initialize();
+
+	colorDrawingDetection = new ColorDetection(this, new PVector(200, 60));
+	colorDrawingDetection.setCaptureOffset(offset);
+	colorDrawingDetection.initialize();
+
+	drawingDetection = new ColorDetection(this, new PVector(0, -drawingCaptureHeight));
+	drawingDetection.setCaptureOffset(offset);
+	drawingDetection.setCaptureSize(drawingCaptureWidth, drawingCaptureHeight);
+	drawingDetection.setPicSize(outputCaptureWidth,  outputCaptureHeight);  // pixels 
+	drawingDetection.initialize();
+
+    }
+    
+
+    public boolean checkBounds(PVector v){
+	return (v.x < - 300 || v.x > 550);
     }
 
     public int getObjectColor(int id){ 
@@ -36,13 +102,11 @@ public class Game  extends PaperTouchScreen {
 	screen.resetPos();
     }
 
-    // void updateCameraImage(){
-    // 	cameraTracking.getPImageCopyTo(cameraImage);
-    // }
 
     public void draw(){
-	
-	//	updateCameraImage();
+	if(DEBUG_TOUCH){
+	    cameraTracking.getPImageCopyTo(cameraImage);
+	}
 
 	if(fixCastles){
 	    markerBoard.blockUpdate(cameraTracking, trackingFixDuration);
@@ -56,30 +120,150 @@ public class Game  extends PaperTouchScreen {
 
 	clear();
 
+
 	player1.drawCastle(currentGraphics);
 	player2.drawCastle(currentGraphics);
+	
+	touchList.removeGhosts();
 
+	drawColorDetection();
+	findTouchColors();
 
-	// if(!fixCastles){
-	//     fill(100);
-	//     stroke(120);
-	//     rect(50, 0, 200, 1000);
-	// }
-
+	updateAttractors();
+	//	updateSpeedUps();
 	updateMissiles();
-	drawRectColors();
-	 updateWalls();
 
+	// WWALLS DISABLED
+	//	updateWalls();
+
+        drawColorAnalysis();
+	
+	drawPlayerInfos();
+	displayBorders();
+	noStroke();
 	endDraw();
     }
 
 
-    void drawRectColors(){
+    void updateSpeedUps(){
+	pushMatrix();
+	colorMode(RGB, 255);
+	translate(0, 0, -3);
+	for (Touch t : touchList) {
+	    if(isSpeedUp(t)){
+		
+		for(Missile m: missiles){
+		    float dist = m.getScreenPos().dist(t.position);
+		    fill(0, 255, 0, 200);
+		    ellipse(t.position.x, t.position.y, attractorDistance *2, attractorDistance*2);
+		    if(dist < attractorDistance){
+			speedUp(t, m);
+		    }
+		}
+	    }
+	}
+	popMatrix();
+    }
 
-	for(ColorDetection colorDetection : colorDetections){
-	    colorDetection.drawSelf();
+
+    void updateAttractors(){
+	pushMatrix();
+	colorMode(RGB, 255);
+	translate(0, 0, -3);
+	for (Touch t : touchList) {
+	    if(isAttractor(t)){
+		for(Missile m: missiles){
+		    float dist = m.getScreenPos().dist(t.position);
+
+		    fill(0, 0, 255, 200);
+		    ellipse(t.position.x, t.position.y, attractorDistance *2, attractorDistance *2);
+
+		    fill(0, 0, 0);
+		    ellipse(t.position.x, t.position.y, attractorDistance / 2 , attractorDistance /2);
+
+		    if(dist < attractorDistance && dist > attractorDistance / 2){
+			attract(t, m);
+		    }
+		}
+	    }
+	}
+	popMatrix();
+    }
+    
+
+    void findTouchColors(){
+	for (Touch t : touchList) {
+            if (t.is3D) {
+		continue;
+            } 
+	    if(t.position.y > 0) 
+		continue;
+	    TouchPoint tp = t.touchPoint; 
+
+	    if(DEBUG_TOUCH){
+		PVector imCoord = getCameraViewOf(t);
+		PImage im = getImageFrom(imCoord, cameraImage, miniature, miniatureSize);
+		pushMatrix();
+		translate(t.position.x, t.position.y);
+		image(im, 40, 40, miniatureSize, miniatureSize);
+		popMatrix();
+	    }
+
+	    if(tp.attachedValue == -1){
+		checkTypeOfTouch(t);
+	    }
+	    if(t.position.x > 0 && t.position.x <= 300){
+		int v = tp.attachedValue;
+		if(v>= 0){
+		    float size = 10;
+		    fill(colorDetections[v].getColor());
+		    ellipse(t.position.x, t.position.y, size, size);
+		}
+	    }
 	}
     }
+    
+
+    
+    // TODO: update with all the new detections ?!
+    // TODO: tweak these values online with sliders.
+    void checkTypeOfTouch(Touch t){
+	TouchPoint tp = t.touchPoint; 
+
+	// check only young ones. 
+	if(tp.getAge(millis()) < 2000){
+
+	    int[] scores = new int[colorDetections.length];
+	    int c = 0;
+
+	    for(ColorDetection colorDetection : colorDetections){
+		int col = colorDetection.getColor();
+		PVector imCoord = getCameraViewOf(t);
+		int k = getColorOccurencesFrom(imCoord, miniatureSize, col, colorDistObject);
+		scores[c] = k;
+		c++;
+	    }
+
+	    int maxIndex = maxIndexOf(scores);
+	    if(scores[maxIndex] >= colorNbObject){
+		tp.attachedValue = maxIndex;
+	    }
+	}
+    }
+
+    int maxIndexOf(int[] array){
+	int maxIndex = 0;
+	int maxValue = 0;
+	for(int i = 0; i < array.length; i++){
+	    int value = array[i];
+	    if(value > maxValue){
+		maxValue = value;
+		maxIndex = i;
+	    }
+	}
+	return maxIndex;
+    }
+
 
     void updateMissiles(){
 	for (int i = missiles.size()-1; i >= 0; i--) {
@@ -95,7 +279,18 @@ public class Game  extends PaperTouchScreen {
 	}
     }
 
+
+
+
     void updateWalls(){
+
+	for (Touch t : touchList) {
+	    if(isSpeedUp(t)){
+		Wall wall = new Wall(t.position.x, t.position.y, 15);
+		walls.add(wall);
+	    }
+	}
+
 	//	Look at all Walls
 	for (int i = walls.size()-1; i >= 0; i--) {
 	    Wall w = walls.get(i);
@@ -106,135 +301,127 @@ public class Game  extends PaperTouchScreen {
 		walls.remove(i);
 	    }
 	}
-
 	// kTouchInput = (KinectTouchInput) touchInput;
 	// kTouchInput.computeOutsiders(true);
 	// noStroke();
 	// for (Touch t : touchList) {
-	//     if (t.is3D) {
-	// 	fill(185, 142, 62);
-	//     }
-	//     ellipse(t.position.x,
-	// 	    t.position.y,
-	// 	    10, 10);
+	//     if (!t.is3D) {
 	//     TouchPoint tp = t.touchPoint;
 	//     ArrayList<DepthDataElement> depthDataElements = tp.getDepthDataElements();
 	//     for(DepthDataElement dde :  depthDataElements){
 	// 	PVector v = kTouchInput.projectPointToScreen(screen, display, dde);
-	// 	if(v != null && random(1) < 0.1f ){
-	// 	    if(v.x > 50 && v.x < 200){
+	// 	if(v != null && random(1) < 0.05f ){
+	// 	    if(v.x > 50 && v.x < 200 && v.y  < 0){
 	// 		ellipse(v.x, v.y, 15, 15);
 	// 		Wall wall = new Wall(v.x, v.y, 10);
 	// 		walls.add(wall);
 	// 	    }
-		    
 	// 	}
+
+	//     }	
 	//     }
 	// }
-	//		kTouchInput.computeOutsiders(false);
-
+	// 		kTouchInput.computeOutsiders(false);
     }
 
 
-    class ColorDetection {
+    void drawPlayerInfos(){
+	pushMatrix();
+	translate(-74, 10, 0);
+	drawRectangle(1);
+	translate(305 + 85, 00, 0);
+	drawRectangle(2);
+	popMatrix();
+    }
+
+    void drawRectangle(int id){
+	noFill();
+	strokeWeight(3);
+	stroke(255);
+
+	pushMatrix();
+	rect(0, 0, 61, 76);
 	
-	PVector size = new PVector(10, 10);
-	PVector pos;
-	int picSize = 8; // Works better with power  of 2
-	int pxNb = picSize * picSize;
-	TrackedView boardView;
-	int col;
+	stroke(colorDetections[id].getColor());
+	translate(2.5f, 2.5f);
+	strokeWeight(7);
+	rect(0, 0, 56, 71);
+
+	translate(2.5f, 2.5f);
+	stroke(255);
+	strokeWeight(3);
+	rect(0, 0, 51, 66);
+	popMatrix();
+    }
+
+    void drawColorDetection(){
+
+	pushMatrix();
+	noStroke();	
+	translate(120, 12, 0);
+	for(int i = 0; i < colorDetections.length; i++){
+	    colorDetections[i].computeColor();
+	    int c =colorDetections[i].getColor();
+	    fill(c);
+	    rect(0, 0, 10, 10);
+	    translate(10, 0, 0);
+	}
+
+	colorDrawingDetection.computeColor();
+	int c = colorDrawingDetection.getColor();
+	fill(c);
+	rect(0, 0, 10, 10);
+	translate(10, 0, 0);
+
+	popMatrix();
 	
-	public ColorDetection(PVector pos){
-	    this.pos = pos;
-	    
-	    boardView = new TrackedView(markerBoard, 
-					new PVector(pos.x + gameOffsetX, 
-						    pos.y + gameOffsetY),
-					size,
-					picSize, picSize);
-	    cameraTracking.addTrackedView(boardView);
+	for(ColorDetection colorDetection : colorDetections){
+	    // colorDetection.drawSelf();
+	    colorDetection.drawCaptureZone();
 	}
-
-	public void update(){
-	    computeColor();
-	}
-
-	public void drawSelf(){
-	    computeColor();
-
-	    pushMatrix();
-	    translate(pos.x,
-		      pos.y, 1);
-	    
-	    drawCaptureZone();
-	    drawCapturedColor();
-	    //	    drawCapturedImage();
-	    popMatrix();
-	}
-
-	private void drawCapturedImage(){
-	    PImage out = cameraTracking.getPView(boardView);
-	    if(out != null){
-	    	image(out, 0, -picSize -5, picSize, picSize);
-	    }
-	}
-
-	private void drawCapturedColor(){
-	    fill(this.col);
-	    noStroke();
-	    ellipse(0, -picSize -5, picSize , picSize);
-	}
-
-	private void drawCaptureZone(){
-	    strokeWeight(4);
-	    noFill();
-	    stroke(80);
-	    rect(0, 0, size.x, size.y);
-	}
-
-	private void computeColor(){
-	    PImage out = cameraTracking.getPView(boardView);
-	    if(out == null)
-		return;
-
-	    out.loadPixels();
-	    int avgRed = 0;
-	    int avgGreen = 0;
-	    int avgBlue = 0;
-	    for(int k = 0; k < pxNb ; k++){
-		int c = out.pixels[k];
-		avgRed   += c >> 16 & 0xFF;
-		avgGreen += c >> 8 & 0xFF;
-		avgBlue  += c >> 0 & 0xFF;
-	    }
-
-	    avgRed = (avgRed / pxNb) << 16;
-	    avgGreen =  (avgGreen / pxNb) << 8;
-	    avgBlue /= pxNb;
-	    this.col = 255 << 24 | avgRed | avgGreen | avgBlue;
-	}
-	public int getColor(){
-	    return this.col;
-	}
-
-	
+	colorDrawingDetection.drawCaptureZone();
     }
 
 
+    void drawColorAnalysis(){
+
+    	PImage battleZone = drawingDetection.getImage();
+    	if(battleZone != null){
+    	    battleZone.loadPixels();
+    	    int[] px=  battleZone.pixels;
+
+	    int colorToFind = colorDrawingDetection.getColor();
+
+    	    for(int y = 0; y < outputCaptureHeight; y++){
+    		for(int x = 0; x < outputCaptureWidth; x++){
+
+    		    int offset = y * outputCaptureWidth + x;
+		    
+    		    if(Utils.colorDist(px[offset], colorToFind, colorDistDrawing)){
+			PVector p = pxToMM(x, y);
+			//			println("color " + p);
+			
+			fill(20);
+			rect(p.x, p.y, 5, 5);
+		    }
+    		}
+    	    }
+	}
+    }
+
+    PVector pxToMM(int x, int y){
+	float outX = (float) x / (float) outputCaptureWidth * drawingCaptureWidth;
+	float outY = (1f - ((float) y / (float) outputCaptureHeight)) * drawingCaptureHeight - drawingCaptureHeight;
+	return new PVector(outX, outY);
+    }
+
+    void displayBorders(){
+	topBorder.display(getGraphics());
+	botBorder.display(getGraphics());
+    }
 
 }
 
 
 
 
-
-	// for(int x = 0; x < playerBoardSize.x; x += 50){
-	//     for(int y = 0; y < playerBoardSize.y; y += 50){
-	// 	PVector v = getCoordFrom(player1, new PVector(x, y));
-	// 	if(v != INVALID_VECTOR){
-	// 	    line(0, 0, v.x, v.y);
-	// 	    //		    ellipse((int) v.x, (int) v.y, 2, 2);
-	// 	}
-	//     }
-	// }

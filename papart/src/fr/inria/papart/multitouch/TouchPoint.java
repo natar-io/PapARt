@@ -35,7 +35,7 @@ import toxi.geom.Vec3D;
 public class TouchPoint extends DepthPoint {
 
     public static int count = 0;
-    
+
     // protected PVector position... in DepthPoint
     private PVector previousPosition = new PVector();
     private PVector speed = new PVector();
@@ -44,7 +44,7 @@ public class TouchPoint extends DepthPoint {
     private Vec3D previousPositionKinect;
 //    private PVector speedKinect = new PVector();
     private ArrayList<DepthDataElement> depthDataElements = new ArrayList<DepthDataElement>();
-       
+
     private float confidence;
 //    public float size;
     private boolean is3D;
@@ -54,13 +54,18 @@ public class TouchPoint extends DepthPoint {
     private static final int NO_ID = 0;
     private static int globalID = 1;
     protected int id = NO_ID;
+
+    // time management
     private int updateTime;
+    private int deletionTime;
     private int createTime = -1;
 
     private boolean toDelete = false;
+    private boolean isGhost = false;
     public boolean isUpdated = false;
-    
+
     public int attachedValue = -1;
+    public Object attachedObject;
 
 // filtering 
     private OneEuroFilter[] filters;
@@ -68,11 +73,12 @@ public class TouchPoint extends DepthPoint {
     public static float filterCut = 0.2f;
     public static float filterBeta = 8.000f;
     public static final int NO_TIME = -1;
+    private int NUMBER_OF_FILTERS = 3;
 
     public TouchPoint() {
         try {
-            filters = new OneEuroFilter[3];
-            for (int i = 0; i < 3; i++) {
+            filters = new OneEuroFilter[NUMBER_OF_FILTERS];
+            for (int i = 0; i < NUMBER_OF_FILTERS; i++) {
                 filters[i] = new OneEuroFilter(filterFreq, filterCut, filterBeta);
             }
         } catch (Exception e) {
@@ -118,7 +124,7 @@ public class TouchPoint extends DepthPoint {
     }
 
     public Vec3D getPreviousPositionVec3D() {
-       return new Vec3D(previousPosition.x, previousPosition.y, previousPosition.z); 
+        return new Vec3D(previousPosition.x, previousPosition.y, previousPosition.z);
     }
 
     public void filter() {
@@ -132,7 +138,7 @@ public class TouchPoint extends DepthPoint {
     }
 
     public boolean updateWith(TouchPoint tp) {
-        if (isUpdated || tp.isUpdated) {
+        if (isUpdated || tp.isUpdated || this.isGhost || tp.isGhost) {
             return false;
         }
 
@@ -144,16 +150,17 @@ public class TouchPoint extends DepthPoint {
 
         // mark the last update as the creation of the other point. 
         this.updateTime = tp.createTime;
+        // not deleted soon, TODO: -> need better way
+        this.deletionTime = tp.createTime;
 
         // delete the updating point (keep the existing one)
-        // TODO: check this as it is obvious ?
         tp.toDelete = true;
 
         updatePosition(tp);
-        
+
         // TODO: check performance ?!
         updateDepthPoints(tp);
-        
+
         checkAndSetID();
         filter();
         return true;
@@ -162,7 +169,7 @@ public class TouchPoint extends DepthPoint {
     private void checkAndSetID() {
         // The touchPoint gets an ID, it is a grown up now. 
         if (this.id == NO_ID) {
-            if(count == 0){
+            if (count == 0) {
                 globalID = 0;
             }
             this.id = globalID++;
@@ -186,13 +193,17 @@ public class TouchPoint extends DepthPoint {
         speed.set(this.position);
         speed.sub(this.previousPosition);
     }
-    
-    private void updateDepthPoints(TouchPoint tp){
+
+    private void updateDepthPoints(TouchPoint tp) {
         this.depthDataElements = tp.getDepthDataElements();
     }
 
     public boolean isObselete(int currentTime, int duration) {
         return (currentTime - updateTime) > duration;
+    }
+
+    public boolean isToRemove(int currentTime, int duration) {
+        return (currentTime - deletionTime) > duration;
     }
 
     public int getID() {
@@ -222,18 +233,18 @@ public class TouchPoint extends DepthPoint {
     public PVector getSpeed() {
         return this.speed;
     }
-   
+
     public void setDepthDataElements(DepthData depthData, ConnectedComponent connectedComponent) {
         depthDataElements.clear();
-        for(Integer i : connectedComponent){
+        for (Integer i : connectedComponent) {
             depthDataElements.add(depthData.getElement(i));
         }
     }
 
-    public ArrayList<DepthDataElement> getDepthDataElements(){
+    public ArrayList<DepthDataElement> getDepthDataElements() {
         return this.depthDataElements;
     }
-    
+
     protected void setUpdated(boolean updated) {
         this.isUpdated = updated;
     }
@@ -266,9 +277,18 @@ public class TouchPoint extends DepthPoint {
         this.isCloseToPlane = isCloseToPlane;
     }
 
-    public void setToDelete() {
+    public void setToDelete(int time) {
         this.toDelete = true;
         TouchPoint.count--;
+        this.deletionTime = time;
+        this.isGhost = true;
+
+    }
+
+    public void delete() {
+        if (this.attachedObject != null) {
+            ((TouchPointEventHandler) this.attachedObject).delete();
+        }
     }
 
     public boolean isToDelete() {

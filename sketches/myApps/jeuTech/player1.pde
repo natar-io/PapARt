@@ -1,3 +1,5 @@
+ // import java.util.*;
+
 float paperOffsetX = -22;
 float paperOffsetY = -30;
 // float paperOffsetX = -0;
@@ -5,6 +7,9 @@ float paperOffsetY = -30;
 
 PVector playerBoardSize = new PVector(297, 210); // A4 landscape. 
 Player1 player1;
+
+PVector playerPaperOffset = new PVector(paperOffsetX, paperOffsetY);
+
 
 // GREEN
 public class Player1  extends PaperTouchScreen {
@@ -14,12 +19,22 @@ public class Player1  extends PaperTouchScreen {
     int castleY = 85;
     Castle castle;
 
+    int maxMissiles = 4;
+    int nbMissiles = 0;
+
     Player1 ennemi = null;
     int playerColor;
 
     boolean needReset = true;
+    int picSize = 24;
 
-    PImage view = createImage(100, 100, RGB);
+   public ArrayList<PVector> look = new ArrayList<PVector>();
+
+
+    ColorDetection shootLookColorDetection;
+    
+
+    //    HashMap<TouchPoint, Missile> touchMissileMap = new HashMap<TouchPoint, Missile>();
 
     void setup(){
 	setDrawingSize( (int) playerBoardSize.x, (int)playerBoardSize.y);
@@ -28,7 +43,18 @@ public class Player1  extends PaperTouchScreen {
 
 	player1 = this;
 	playerColor = color(159, 168, 143);
+	prepare();
+    }
 
+
+
+    void prepare(){
+	// shootLookColorDetection = new ColorDetection(this, new PVector(300, 130 + 75));
+	// shootLookColorDetection.setCaptureOffset(playerPaperOffset);
+	// shootLookColorDetection.setInvY(true);
+	// shootLookColorDetection.setCaptureSize(75, 75); // millimeters
+	// shootLookColorDetection.setPicSize(picSize, picSize);  // pixels 
+	// shootLookColorDetection.initialize();
     }
 
     
@@ -60,8 +86,9 @@ public class Player1  extends PaperTouchScreen {
 	}
 
 	if(castle.hp <= 0){
-	    background(ennemi.playerColor);
-	    return;
+	    castle.hp = MAX_HP;
+	    // background(ennemi.playerColor);
+	    // return;
 	}
 
 	beginDraw2D();
@@ -70,16 +97,40 @@ public class Player1  extends PaperTouchScreen {
 
 	setLocation(paperOffsetX, paperOffsetY, 0);
 
-	pushMatrix();
-	fill(0, 150, 0, 100);
-	translate(120  + 55 / 2, playerBoardSize.y - 20 - 55 /2 , 0);
-	ellipseMode(CENTER);
-	ellipse(0, 0, 55, 55);
-	popMatrix();
-
 	checkTouch();
+	drawButtons();
+
 	endDraw();
     }
+
+ 
+    // void updateMissileShape(){
+    // 	look.clear();
+    // 	float sizeMult = 4.9;
+    // 	PImage shootLook = shootLookColorDetection.getImage();
+    // 	if(shootLook != null){
+    // 	    shootLook.loadPixels();
+    // 	    int[] px=  shootLook.pixels;
+    // 	    for(int y = 0; y < picSize; y++){
+    // 		for(int x = 0; x < picSize; x++){
+    // 		    int offset = y * picSize + x;
+    // 		    if(brightness(px[offset]) < 104){
+    // 			px[offset] = color(255);
+    // 			look.add(new PVector((float) x / picSize * sizeMult, sizeMult * (float)y / picSize));
+    // 		    } else {
+    // 			px[offset] = color(0);
+    // 		    }
+    // 		}
+    // 	    }
+    // 	    shootLook.updatePixels();
+    // 	    // DEBUG COMMENTED
+    // 	    image(shootLook, 100, 100, 50, 50);
+    // 	}
+    // 	if(look.isEmpty()){
+    // 	    look.add(new PVector(picSize /2, picSize /2));
+    // 	}
+    // }
+
     
     void drawCastle(PGraphicsOpenGL g){
 	if(castle == null) 
@@ -87,15 +138,11 @@ public class Player1  extends PaperTouchScreen {
 	castle.display(g);
     }
 
+    Touch aimTouch;
+    float ellipseSize = 15;
 
-    int redThing = 10;
-    int nothing = 10;
 
-    float ellipseSize = 5;
     void checkTouch(){
-
-	boolean created = false;
-
 	KinectTouchInput kTouchInput = (KinectTouchInput) touchInput;
 	ProjectorDisplay projector = (ProjectorDisplay) display;
 
@@ -103,86 +150,64 @@ public class Player1  extends PaperTouchScreen {
 	// cameraImage.loadPixels();
 	// cameraImage.updatePixels();
 
+	noFill();
+	strokeWeight(2);
+
+	aimTouch = null;
+	for (Touch t : touchList) {
+	    if(isGoalTower(t.touchPoint)){
+		aimTouch = t;
+	    }
+	}
 
 	for (Touch t : touchList) {
             if (t.is3D) {
-                fill(185, 142, 62);
 		continue;
             } 
 	    
 	    TouchPoint tp = t.touchPoint; 
+
 	    if(isMissileTower(tp)){
-		created = missileTowerAction(t);
+		missileTowerAction(t);
 	    } else {
-		checkTypeOfTouch(t);
-	    }
-		
-	    fill(255);
+
+	    stroke(100, 100, 100);
 	    ellipse(t.position.x,
 		    t.position.y,
-		    ellipseSize,
-		    ellipseSize);
-	}
-	
-	if(created) {
-	    lastCreation = millis();
-	}
-    }
+		    2, 2);
 
-    private boolean isMissileTower(TouchPoint tp){
-	return tp.attachedValue == redThing;
-    }
-
-    private boolean missileTowerAction(Touch t){
-	boolean created = false;
-	noFill();
-	//  	t.invertY(drawingSize.y);
-	if(canCreateMissile()){
-	    createMissile(t.position);
-	    created = true;
-	}
-	
-	stroke(255);
-	ellipse(t.position.x,
-		t.position.y,
-		40,
-		40);
-	return created;
-    }
-
-
-    private void checkTypeOfTouch(Touch t){
-
-	TouchPoint tp = t.touchPoint; 
-	if(tp.getAge(millis()) < 2000){
-
-	    // TODO: color adjustment, saving & loading ?
-	    // Red object. 
-	    int col = game.getObjectColor(0);
-	    PVector imCoord = getCameraViewOf(t);
-	    int k = getColorOccurencesFrom(imCoord, 15, col, 40);
-	    
-	    if(k >= 10){
-		tp.attachedValue = redThing;
 	    }
 	}
+
     }
 
 
-    int lastCreation = 0;
-    int creationTimeout = 1000;
-    
-    public boolean canCreateMissile(){
-	return lastCreation + creationTimeout < millis();
+
+    private boolean isMissileTower(TouchPoint tp){
+	return tp.attachedValue == TOWER;
+    }
+
+    private boolean isGoalTower(TouchPoint tp){
+	return tp.attachedValue == GOAL;
     }
     
-    public void createMissile(PVector localPos){
-	PVector posFromGame = gameCoord(localPos);
-	Missile missile = new Missile(this, ennemi, posFromGame);
+    private void missileTowerAction(Touch t){
+	// Nothing with too young touches....
+	if(t.touchPoint.getAge(millis()) < 500){
+	    return;
+	}
 
-	PVector ennemiCastle = ennemi.getTargetLocation();
-	missile.setGoal(ennemiCastle, random(30, 60));
-	missiles.add(missile);
+	MissileLauncher launcher;
+	if(t.touchPoint.attachedObject == null){
+	    launcher = new MissileLauncher(this, t);
+	    t.touchPoint.attachedObject = launcher;
+	}  else {
+	    launcher = (MissileLauncher) (t.touchPoint.attachedObject);
+	}
+
+	launcher.checkButtons(t);
+	launcher.tryLaunch(t);
+	launcher.drawSelf(getGraphics());
     }
 
     public PVector gameCoord(PVector v){
@@ -192,7 +217,7 @@ public class Player1  extends PaperTouchScreen {
     // TODO: get a list of targets. 
     // Get a target for aiming...
     public PVector getTargetLocation(){
-	return castle.getPos();
+	return castle.getPosPxGame();
     }
 
 }

@@ -17,8 +17,6 @@ class CustomListener implements ContactListener {
     // This function is called when a new collision occurs
     void beginContact(Contact cp) {
 
-	//	println("Contact");
-
     	// Get both fixtures
     	Fixture f1 = cp.getFixtureA();
     	Fixture f2 = cp.getFixtureB();
@@ -37,28 +35,43 @@ class CustomListener implements ContactListener {
 	boolean castle2 = o2.getClass() == Castle.class;
        
 
-	if(missile1 && missile2 || !castle1 && !castle2)
-	    return;
-
-	if(missile1 || missile2){
-	    if(missile1) {
-		hit(o2, o1);
-	    }	else {
-		hit(o1, o2);
-	    }
+	if(missile2 && castle1){
+	    hit(o1, o2);
 	}
+
+	// if(missile1 && missile2){
+	//     explode(o1, o2);
+	// }
+
+
+	// if(missile1 && castle2){
+	//     hit(o2, o1);
+	// }
 
     	// If object 1 is a Box, then object 2 must be a particle
     	// Note we are ignoring particle on particle collisions
 
     }
 
+    void explode(Object missileO1, Object missileO2){
+
+	Missile missile0 = (Missile) missileO1;
+	Missile missile1 = (Missile) missileO2;
+
+	if(missile0.faction == missile1.faction)
+	    return;
+
+	missile0.hit();
+	missile1.hit();
+    }
+
+
     void hit(Object castleO, Object missileO){
 	Castle castle = (Castle) castleO;
 	Missile missile = (Missile) missileO;
 
-	// castle.isHit();
-	// missile.die();
+	missile.hit();
+	castle.isHit();
     }
 
      

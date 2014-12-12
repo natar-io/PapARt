@@ -110,6 +110,21 @@ public class Utils {
     static public Vec3D toVec(PVector p) {
         return new Vec3D(p.x, p.y, p.z);
     }
+    
+    static public boolean colorDist(int c1, int c2, int threshold) {
+        int r1 = c1 >> 16 & 0xFF;
+        int g1 = c1 >> 8 & 0xFF;
+        int b1 = c1 >> 0 & 0xFF;
+
+        int r2 = c2 >> 16 & 0xFF;
+        int g2 = c2 >> 8 & 0xFF;
+        int b2 = c2 >> 0 & 0xFF;
+
+        int dr = PApplet.abs(r1 - r2);
+        int dg = PApplet.abs(g1 - g2);
+        int db = PApplet.abs(b1 - b2);
+        return dr < threshold && dg < threshold && db < threshold;
+    }
 
     // TODO:  throws ...
     public static void savePMatrix3D(PApplet pa, PMatrix3D mat, String filename) {

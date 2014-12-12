@@ -1,10 +1,13 @@
+
+float MAX_HP = 5;
+
 class Castle {
 
     float size = 55 /2f;
     float castleX = 120 + size;
     float castleY = 20 + size;
 
-    PVector pos;
+    PVector posPxGame;
 
     // We need to keep track of a Body and a radius
     Body body;
@@ -16,9 +19,9 @@ class Castle {
 	this.faction = faction;
 
 	col = faction.playerColor;
-	pos = faction.gameCoord(new PVector(castleX, castleY));
+	posPxGame = faction.gameCoord(new PVector(castleX, castleY));
 
-	makeBody(pos.x, pos.y, size);
+	makeBody(posPxGame.x, posPxGame.y, size);
 	body.setUserData(this);
     }
 
@@ -27,23 +30,25 @@ class Castle {
 	box2d.destroyBody(body);
     }
 
-    public PVector getPos(){
-	return pos;
+    public PVector getPosPxGame(){
+	return posPxGame;
     }
 
     public void update(){
-	pos = faction.gameCoord(new PVector(castleX, castleY));
-	Vec2 vPhys = box2d.coordPixelsToWorld(pos.x, pos.y);
+	// TODO: no more allocation here...
+	posPxGame = faction.gameCoord(new PVector(castleX, castleY));
+	Vec2 vPhys = box2d.coordPixelsToWorld(posPxGame.x, posPxGame.y);
 	body.setTransform(vPhys, 0);
     }
     
-    float hp = 100;
+
+    float hp = MAX_HP;
     public void isHit(){
 	hp -= 1;
     }
 
     // public float getCastleSize(){
-    // 	float s = hp / 100 * castleSize;
+    // 	float s = hp / MAX_HP * castleSize;
     // 	if(s < 10) 
     // 	    s = 10;
     // 	return s;
@@ -56,8 +61,13 @@ class Castle {
     g.pushMatrix();
     g.translate(pos.x, pos.y);
     //    g.rotate(a);
-    g.fill(col);
-    g.ellipse(0, 0, size*2, size*2);
+    //    g.fill(col);
+    g.fill(255);
+
+    float size2 = size * 2 * (hp /MAX_HP);
+
+    //    g.ellipse(0, 0, size*2, size*2);
+    g.ellipse(0, 0, size2, size2);
     g.popMatrix();
   }
 

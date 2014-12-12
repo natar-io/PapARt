@@ -48,6 +48,15 @@ public class TouchList extends ArrayList<Touch> {
             }
         }
     }
+    
+    public void removeGhosts(){
+        for (Iterator<Touch> it = this.iterator(); it.hasNext();) {
+            Touch touch = it.next();
+            if (touch.isGhost) {
+                it.remove();
+            }
+        }
+    }
 
     public TouchList getOldOnes(int currentTime) {
         TouchList old = new TouchList();

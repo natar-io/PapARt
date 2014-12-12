@@ -29,6 +29,8 @@ import processing.core.PVector;
 public class Touch {
 
     public boolean is3D;
+    public boolean isGhost;
+
     public PVector position;
     public PVector pposition;
     public PVector speed;

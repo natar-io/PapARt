@@ -7,7 +7,6 @@ import org.reflections.*;
 import TUIO.*;
 import toxi.geom.*;
 
-
 Papart papart;
 
 // Frame location. 
@@ -60,8 +59,6 @@ void setup(){
     papart.startTracking();
 }
 
-
-
 void draw(){
 }
 
@@ -69,9 +66,9 @@ boolean fixCastles = false;
 int trackingFixDuration = 2000;
 boolean test = false;
 
+boolean DEBUG_TOUCH = false;
+
 void keyPressed() {
-
-
 
   // Placed here, bug if it is placed in setup().
   if(key == ' ')
@@ -84,6 +81,8 @@ void keyPressed() {
   if(key == 't'){
       test = !test;
   }
+
+  println("Test " + test);
 
 }
 
