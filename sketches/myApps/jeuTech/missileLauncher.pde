@@ -82,9 +82,7 @@ class MissileLauncher implements TouchPointEventHandler{
 
 	int nb1 = 5 + colorDetection2.computeOccurencesOfColor(game.getObjectColor(1), towerPowerUpThreshold);
 
-	println("nb1 " + nb1);
 	level =  (int) (nb1 / levelPixelRatio);
-	println("Level " + level);
 	if(level >= 3)
 	    level = 3;
 
