@@ -1,3 +1,4 @@
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -38,13 +39,86 @@
     <properties>
         <javacv.version>0.9</javacv.version>
         <javacpp.version>0.9</javacpp.version>
-        <arch.type>linux</arch.type>
+        <arch.type>windows</arch.type>
         <arch.precision>x86_64</arch.precision>
     </properties>
     
-    <dependencies>
-        
+<!--     PROFILES NOT WORKING ????-->
+      <!-- Windows -->
+    <profiles> 
+        <profile>
+            <id>win32-x86</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                    <arch>x86</arch>
+                </os>
+            </activation>
+            <properties>
+                <arch.type>windows</arch.type>
+                <arch.precision>x86</arch.precision>
+            </properties>
+        </profile>
 
+        <profile>
+            <id>win32-x86_64</id>
+            <activation>
+                <os>
+                    <family>Windows</family>
+                    <arch>x86_64</arch>
+                </os>
+            </activation>
+            <properties>
+                <arch.type>windows</arch.type>
+                <arch.precision>x86_64</arch.precision>
+            </properties>
+        </profile>
+    
+    <profile>
+            <id>linux-x86</id>
+            <activation>
+                <os>
+                    <family>Linux</family>
+                    <arch>x86</arch>
+                </os>
+            </activation>
+            <properties>
+                <arch.type>linux</arch.type>
+                <arch.precision>x86</arch.precision>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>linux-x86_64</id>
+            <activation>
+                <os>
+                    <family>Linux</family>
+                    <arch>x86_64</arch>
+                </os>
+            </activation>
+            <properties>
+                <arch.type>linux</arch.type>
+                <arch.precision>x86_64</arch.precision>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>macosx</id>
+            <activation>
+                <os>
+                    <name>mac os x</name>
+                    <arch>x86_64</arch>
+                </os>
+            </activation>
+            <properties>
+                <arch.type>macosx</arch.type>
+                <arch.precision>x86_64</arch.precision>
+            </properties>
+        </profile>
+    </profiles>
+  
+    
+    <dependencies>
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacpp</artifactId>
@@ -160,28 +234,6 @@
                     <target>1.7</target>
                 </configuration>
             </plugin>
-            
-            <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>1.6</version>
-                <executions>
-                    <execution>
-                        <id>default-deploy</id>
-                        <phase>deploy</phase>
-                        <goals>
-                            <goal>deploy</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <extensions>true</extensions>
-                <configuration>
-                    <serverId>sonatype-nexus-staging</serverId>
-                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                    <skipStagingRepositoryClose>true</skipStagingRepositoryClose>
-                </configuration>
-            </plugin>
-            
         </plugins>
         
         <resources>
@@ -197,79 +249,6 @@
         </resources>
     </build>
     
-    <!-- Windows -->
-    <profiles> 
-        <profile>
-            <id>win32-x86</id>
-            <activation>
-                <os>
-                    <family>Windows</family>
-                    <arch>x86</arch>
-                </os>
-            </activation>
-            <properties>
-                <arch.type>windows</arch.type>
-                <arch.precision>x86</arch.precision>
-            </properties>
-        </profile>
-
-        <profile>
-            <id>win32-x86_64</id>
-            <activation>
-                <os>
-                    <family>Windows</family>
-                    <arch>x86_64</arch>
-                </os>
-            </activation>
-            <properties>
-                <arch.type>windows</arch.type>
-                <arch.precision>x86_64</arch.precision>
-            </properties>
-        </profile>
-        <profile>
-            <id>linux-x86</id>
-            <activation>
-                <os>
-                    <family>Linux</family>
-                    <arch>x86</arch>
-                </os>
-            </activation>
-            <properties>
-                <arch.type>linux</arch.type>
-                <arch.precision>x86</arch.precision>
-            </properties>
-        </profile>
-
-        <profile>
-            <id>linux-x86_64</id>
-            <activation>
-                <os>
-                    <family>Linux</family>
-                    <arch>x86_64</arch>
-                </os>
-            </activation>
-            <properties>
-                <arch.type>linux</arch.type>
-                <arch.precision>x86_64</arch.precision>
-            </properties>
-        </profile>
-
-        <profile>
-            <id>macosx</id>
-            <activation>
-                <os>
-                    <name>mac os x</name>
-                    <arch>x86_64</arch>
-                </os>
-            </activation>
-            <properties>
-                <arch.type>macosx</arch.type>
-                <arch.precision>x86_64</arch.precision>
-            </properties>
-        </profile>
-
-        
-    </profiles>
   
 
 </project>

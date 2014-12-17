@@ -44,4 +44,28 @@ public class ModeTest {
         assertTrue(Mode.size() == 0);
     }
 
+    @Test
+    public void testSecond() {
+
+        assertTrue(SecondMode.size() == 0);
+        SecondMode.add("test1");
+
+        assertTrue(SecondMode.size() == 1);
+        SecondMode.add("test2");
+
+        assertTrue(SecondMode.size() == 2);
+        assertTrue(Mode.size() == 0);
+        SecondMode.set("test1");
+
+        SecondMode.set("test1");
+        assertTrue(SecondMode.is("test1"));
+        assertFalse(SecondMode.is("test2"));
+
+        SecondMode.set("test2");
+        assertTrue(SecondMode.is("test2"));
+        assertFalse(SecondMode.is("test1"));
+
+        SecondMode.clear();
+        assertTrue(SecondMode.size() == 0);
+    }
 }

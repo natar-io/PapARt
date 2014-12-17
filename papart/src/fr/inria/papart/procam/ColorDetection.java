@@ -129,6 +129,12 @@ public class ColorDetection {
     }
 
     public void computeColor() {
+        
+        // HACK -> TODO error management. 
+        if(paperScreen.cameraTracking == null){
+            return;
+        }
+        
         PImage out = paperScreen.cameraTracking.getPView(boardView);
         if (out == null) {
             return;

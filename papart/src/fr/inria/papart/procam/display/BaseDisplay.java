@@ -36,10 +36,8 @@ public class BaseDisplay {
 
     public PGraphicsOpenGL graphics;
     public ArrayList<Screen> screens = new ArrayList<Screen>();
-
     protected PApplet parent;
     //    public PGraphicsOpenGL graphicsUndist;
-
     protected static int DEFAULT_SIZE = 200;
     protected boolean registered = false;
     protected int frameWidth = DEFAULT_SIZE, frameHeight = DEFAULT_SIZE;
@@ -108,7 +106,6 @@ public class BaseDisplay {
     public PGraphicsOpenGL beginDrawOnScreen(Screen screen) {
         // Get the markerboard viewed by the camera
         PMatrix3D screenPos = screen.getPosition();
-        screenPos.print();
         this.beginDraw();
         this.graphics.applyMatrix(screenPos);
         return this.graphics;
@@ -204,5 +201,4 @@ public class BaseDisplay {
         screenMat.mult(new PVector(x * drawingSizeX, y * drawingSizeY), transformed);
         return transformed;
     }
-
 }
