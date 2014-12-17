@@ -401,8 +401,8 @@ public class Game  extends PaperTouchScreen {
 			PVector p = pxToMM(x, y);
 			//			println("color " + p);
 			
-			fill(20);
-			rect(p.x, p.y, 5, 5);
+	//		fill(20);
+	//		rect(p.x, p.y, 5, 5);
 		    }
     		}
     	    }
@@ -421,7 +421,3 @@ public class Game  extends PaperTouchScreen {
     }
 
 }
-
-
-
-

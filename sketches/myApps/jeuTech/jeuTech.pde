@@ -42,11 +42,11 @@ void setup(){
     papart = new Papart(this);
 
     if(useProjector){
-	papart.initProjectorCamera("0", Camera.Type.OPENCV);
-	papart.loadTouchInput(2, 5);
+	papart.initProjectorCamera("1", Camera.Type.OPENCV);
+	papart.loadTouchInput(2, 0);
     } else {
 	papart.initKinectCamera(2f);
-	papart.loadTouchInputKinectOnly(1, 7);
+	papart.loadTouchInputKinectOnly(2, 7);
 	BaseDisplay display = papart.getDisplay();
 	display.setDrawingSize(width, height);
     }
@@ -60,6 +60,7 @@ void setup(){
 }
 
 void draw(){
+  println("FRAMERATE " + frameRate);
 }
 
 boolean fixCastles = false;
@@ -76,7 +77,8 @@ void keyPressed() {
 
   if(key == 'c'){
       fixCastles = !fixCastles;
-  }
+      papart.getCameraTracking().trackSheets(!fixCastles);
+     }
 
   if(key == 't'){
       test = !test;
@@ -85,5 +87,3 @@ void keyPressed() {
   println("Test " + test);
 
 }
-
-

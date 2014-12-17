@@ -142,22 +142,27 @@ public class Kinect {
 
     public void updateMT(IplImage depth, IplImage color, PlaneAndProjectionCalibration calib, int skip2D, int skip3D) {
         updateRawDepth(depth);
-        updateRawColor(color);
+	// optimisation no Color. 
+	//        updateRawColor(color);
         depthData.clear();
         depthData.timeStamp = papplet.millis();
         depthData.planeAndProjectionCalibration = calib;
-        computeDepthAndDo(1, new DoNothing());
+        computeDepthAndDo(skip2D, new DoNothing());
         doForEachPoint(skip2D, new Select2DPointPlaneProjection());
         doForEachPoint(skip3D, new Select3DPointPlaneProjection());
 
-        depthData.connexity.setPrecision(skip3D);
-        doForEachValid3DPoint(skip3D, new ComputeNormal());
+	// Optimisations -- for demos
+	//        depthData.connexity.setPrecision(skip3D);
+	//        doForEachValid3DPoint(skip3D, new ComputeNormal());
+
 
 //        depthData.connexity.computeAll();
 //        doForEachPoint(1, new ComputeNormal());
 //        doForEachPoint(skip2D, new SetImageData());
-        doForEachValidPoint(skip2D, new SetImageData());
-        doForEachValid3DPoint(skip3D, new SetImageData());
+
+        // Optimisation no Color
+        // doForEachValidPoint(skip2D, new SetImageData());
+        // doForEachValid3DPoint(skip3D, new SetImageData());
     }
 
     public void updateMT2D(IplImage depth, IplImage color, PlaneAndProjectionCalibration calib, int skip) {

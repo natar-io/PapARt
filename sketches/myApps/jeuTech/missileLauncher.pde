@@ -7,7 +7,7 @@ float levelPixelRatio = 15;
 class MissileLauncher implements TouchPointEventHandler{
 
     int lastCreation = 0;
-    float creationTimeout = 1000;
+    float creationTimeout = 3000;
     float power = 700;
     float size = 1.5f;
 
