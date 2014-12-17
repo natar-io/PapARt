@@ -66,7 +66,7 @@ public class MyApp  extends PaperScreen {
     // fill the array to send. 
     loc.get(matrixValues);
 
-    System.arrayCopy(matrixValues, 0, valuesToSend, 0, matrixSize);
+    System.arraycopy(matrixValues, 0, valuesToSend, 0, matrixSize);
     valuesToSend[matrixSize] = Mode.asInt();
     valuesToSend[matrixSize + 1] = SecondMode.asInt();
 
