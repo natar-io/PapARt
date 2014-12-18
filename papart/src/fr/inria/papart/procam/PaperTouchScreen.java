@@ -25,6 +25,7 @@ import fr.inria.papart.drawingapp.Button;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.multitouch.Touch;
 import fr.inria.papart.multitouch.KinectTouchInput;
+import fr.inria.papart.multitouch.TUIOTouchInput;
 import fr.inria.papart.multitouch.TouchList;
 import fr.inria.papart.multitouch.TouchPoint;
 import fr.inria.papart.procam.display.ProjectorDisplay;
@@ -87,8 +88,10 @@ public class PaperTouchScreen extends PaperScreen {
     }
 
     public void updateTouch() {
-        if (!screen.isDrawing()) {
-            return;
+        if (!(touchInput instanceof TUIOTouchInput)) {
+            if (!screen.isDrawing()) {
+                return;
+            }
         }
         screen.computeScreenPosTransform();
 
@@ -97,7 +100,10 @@ public class PaperTouchScreen extends PaperScreen {
         // Touch in 3D mode has no boundaries. 
         touchInput.computeOutsiders(!this.isDraw2D());
 
-        // 
+        if (touchInput instanceof TUIOTouchInput) {
+            touchInput.computeOutsiders(true);
+        }
+
         touchList = touchInput.projectTouchToScreen(screen, display);
         touchList.sortAlongYAxis();
 
@@ -109,7 +115,6 @@ public class PaperTouchScreen extends PaperScreen {
                 if (this.isDraw2D()) {
                     touchList.invertY(drawingSize);
                 }
-
 //                touchList.scaleBy(drawingSize);
             }
         }
@@ -245,7 +250,7 @@ public class PaperTouchScreen extends PaperScreen {
         int y = (int) coord.y;
 
         dst.copy(src,
-                x - radius / 2 ,
+                x - radius / 2,
                 y - radius / 2,
                 radius,
                 radius,
@@ -327,8 +332,6 @@ public class PaperTouchScreen extends PaperScreen {
 
         return dr + dg + db;
     }
-
-   
 
     /**
      * Unsafe do not use unless you are sure.

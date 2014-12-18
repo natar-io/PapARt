@@ -298,7 +298,7 @@ public class TouchPoint extends DepthPoint {
     public int lastUpdate() {
         return this.updateTime;
     }
-
+    
     @Override
     public String toString() {
         return "Touch Point, kinect: " + positionKinect + " , proj: " + position + "confidence " + confidence + " ,close to Plane : " + isCloseToPlane;

@@ -66,7 +66,11 @@ public class ColorDetection {
                     picWidth, picHeight);
         }
 
-        paperScreen.cameraTracking.addTrackedView(boardView);
+        // TODO: HACK for NoCameraMode
+        if (paperScreen.cameraTracking != null) {
+            paperScreen.cameraTracking.addTrackedView(boardView);
+        }
+
     }
 
     public void update() {
@@ -124,17 +128,22 @@ public class ColorDetection {
     }
 
     public PImage getImage() {
+        
+        // TODO: NoCamera HACK
+        if(paperScreen.cameraTracking == null)
+            return null;
+        
         PImage out = paperScreen.cameraTracking.getPView(boardView);
         return out;
     }
 
     public void computeColor() {
-        
+
         // HACK -> TODO error management. 
-        if(paperScreen.cameraTracking == null){
+        if (paperScreen.cameraTracking == null) {
             return;
         }
-        
+
         PImage out = paperScreen.cameraTracking.getPView(boardView);
         if (out == null) {
             return;
@@ -158,6 +167,12 @@ public class ColorDetection {
     }
 
     public int computeOccurencesOfColor(int c, int threshold) {
+        
+        // TODO: Hack for noCamera, better to be done. 
+        if(paperScreen.cameraTracking == null){
+            return 0;
+        }
+        
         PImage out = paperScreen.cameraTracking.getPView(boardView);
         if (out == null) {
             return 0;

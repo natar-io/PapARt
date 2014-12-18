@@ -349,6 +349,10 @@ public class Papart {
     }
 
     public void startTracking() {
+        if(this.cameraTracking == null){
+            System.err.println("Start Tracking requires a Camera...");
+            return;
+        }
         this.cameraTracking.trackSheets(true);
     }
 

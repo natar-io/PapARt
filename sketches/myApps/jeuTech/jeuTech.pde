@@ -15,6 +15,7 @@ int framePosY = 200;
 
 boolean useProjector;
 float planetScale = 1f / 20000f;
+boolean noCameraMode = true;
 
 // Undecorated frame 
 public void init() {
@@ -41,14 +42,27 @@ void setup(){
     size(frameSizeX, frameSizeY, OPENGL);
     papart = new Papart(this);
 
-    if(useProjector){
-	papart.initProjectorCamera("0", Camera.Type.OPENCV);
-	papart.loadTouchInput(2, 0);
+    if(noCameraMode){
+	frameSizeX = 1400;
+	frameSizeY = 800;
+    }
+
+
+    if (noCameraMode) {
+	papart.initNoCamera(1);
+	papart.loadTouchInputTUIO();
+
+	papart.getTouchInput().computeOutsiders(true);
     } else {
-	papart.initKinectCamera(2f);
-	papart.loadTouchInputKinectOnly(2, 7);
-	BaseDisplay display = papart.getDisplay();
-	display.setDrawingSize(width, height);
+	if(useProjector){
+	    papart.initProjectorCamera("0", Camera.Type.OPENCV);
+	    papart.loadTouchInput(2, 0);
+	} else {
+	    papart.initKinectCamera(2f);
+	    papart.loadTouchInputKinectOnly(2, 7);
+	    BaseDisplay display = papart.getDisplay();
+	    display.setDrawingSize(width, height);
+	}
     }
 
 

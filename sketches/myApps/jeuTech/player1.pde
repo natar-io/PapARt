@@ -34,8 +34,6 @@ public class Player1  extends PaperTouchScreen {
     ColorDetection shootLookColorDetection;
     
 
-    //    HashMap<TouchPoint, Missile> touchMissileMap = new HashMap<TouchPoint, Missile>();
-
     void setup(){
 	setDrawingSize( (int) playerBoardSize.x, (int)playerBoardSize.y);
 	loadMarkerBoard(sketchPath + "/data/markers/player1-big.cfg",
@@ -55,6 +53,7 @@ public class Player1  extends PaperTouchScreen {
 	// shootLookColorDetection.setCaptureSize(75, 75); // millimeters
 	// shootLookColorDetection.setPicSize(picSize, picSize);  // pixels 
 	// shootLookColorDetection.initialize();
+
     }
 
     
@@ -79,7 +78,6 @@ public class Player1  extends PaperTouchScreen {
     }
 
     public void draw(){
-
 	updateInternals();
 	if(fixCastles){
 	    markerBoard.blockUpdate(cameraTracking, trackingFixDuration);
@@ -96,9 +94,16 @@ public class Player1  extends PaperTouchScreen {
 
 	beginDraw2D();
 	clear();
-	//	background(100);
 
 	setLocation(paperOffsetX, paperOffsetY, 0);
+
+        if(noCameraMode){
+         //background(100);
+         if(this == player1)
+             setLocation(100, height/2 - 80, 0); 
+             else 
+             setLocation(800, height/2 - 80, 0);   
+        }
 
 	checkTouch();
 	drawButtons();
@@ -146,8 +151,6 @@ public class Player1  extends PaperTouchScreen {
 
 
     void checkTouch(){
-	KinectTouchInput kTouchInput = (KinectTouchInput) touchInput;
-	ProjectorDisplay projector = (ProjectorDisplay) display;
 
 	// PImage cameraImage = cameraTracking.getPImage();
 	// cameraImage.loadPixels();
@@ -156,48 +159,43 @@ public class Player1  extends PaperTouchScreen {
 	noFill();
 	strokeWeight(2);
 
-	aimTouch = null;
-	for (Touch t : touchList) {
-	    if(isGoalTower(t.touchPoint)){
-		aimTouch = t;
-	    }
-	}
-
 	for (Touch t : touchList) {
             if (t.is3D) {
 		continue;
             } 
-	    
-	    TouchPoint tp = t.touchPoint; 
 
+	    TouchPoint tp = t.touchPoint; 
+	    if(tp == null)
+		continue;
+	    
 	    if(isMissileTower(tp)){
 		missileTowerAction(t);
 	    } else {
-
-	    stroke(100, 100, 100);
-	    ellipse(t.position.x,
-		    t.position.y,
-		    2, 2);
-
+		stroke(100, 100, 100);
+		ellipse(t.position.x,
+			t.position.y,
+			2, 2);
+		
 	    }
 	}
 
     }
 
-
-
     private boolean isMissileTower(TouchPoint tp){
 	return tp.attachedValue == TOWER;
     }
-
-    private boolean isGoalTower(TouchPoint tp){
-	return tp.attachedValue == GOAL;
-    }
     
+
+    // TODO: action without TouchPoint... 
+    // Or with a fake one ?
     private void missileTowerAction(Touch t){
-	// Nothing with too young touches....
-	if(t.touchPoint.getAge(millis()) < 500){
-	    return;
+
+	if(!noCameraMode){
+
+	    // Nothing with too young touches....
+	    if(t.touchPoint.getAge(millis()) < 500){
+		return;
+	    }
 	}
 
 	MissileLauncher launcher;

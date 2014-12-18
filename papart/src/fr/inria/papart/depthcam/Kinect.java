@@ -77,7 +77,7 @@ public class Kinect {
         Kinect.papplet = parent;
         this.mode = mode;
         try {
-            kinectCalibRGB = ProjectiveDeviceP.loadCameraDevice(calibRGB, 0);
+            kinectCalibRGB = ProjectiveDeviceP.loadCameraDevice(calibRGB, 0); 
             kinectCalibIR = ProjectiveDeviceP.loadCameraDevice(calibIR, 0);
         } catch (Exception e) {
             System.out.println("Kinect init exception." + e);

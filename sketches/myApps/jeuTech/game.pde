@@ -18,7 +18,7 @@ int colorNbObject = 5;
 // GREEN
 public class Game  extends PaperTouchScreen {
 
-    KinectTouchInput kTouchInput;
+
 
     ColorDetection[] colorDetections = new ColorDetection[3];
     ColorDetection colorDrawingDetection;
@@ -51,6 +51,7 @@ public class Game  extends PaperTouchScreen {
 	topBorder = new Border(0, 0, 800, 3);
 	botBorder = new Border(0, -350, 800, 3);
 	game = this;
+
     }
 
     float drawingCaptureWidth = 300;
@@ -114,16 +115,22 @@ public class Game  extends PaperTouchScreen {
 
 	setLocation(gameOffsetX, gameOffsetY, 0);
 
+        if(noCameraMode){
+	    setLocation(width/2, height - 200, 0); 
+        }
+
 	// We must always step through time!
 	box2d.step();
-	beginDraw3D();
 
+	beginDraw3D();
+       
 	clear();
 
 	player1.drawCastle(currentGraphics);
 	player2.drawCastle(currentGraphics);
-	
-	touchList.removeGhosts();
+
+	if(!noCameraMode)
+	    touchList.removeGhosts();
 
 	drawColorDetection();
 	findTouchColors();
@@ -131,12 +138,12 @@ public class Game  extends PaperTouchScreen {
 	updateAttractors();
 	updateMissiles();
 
-	// WWALLS DISABLED
-	updateWalls();
+	if(!noCameraMode){
+	    updateWalls();
+	    doColorAnalysis();
+	    drawColorAnalysis();
+	}
 
-	doColorAnalysis();
-        drawColorAnalysis();
-	
 	drawPlayerInfos();
 	displayBorders();
 	noStroke();
@@ -213,7 +220,10 @@ public class Game  extends PaperTouchScreen {
 	    if(isAttractor(t) && isInMiddle(t.position)){
 
 		noFill();
-		stroke(getObjectColor(t.touchPoint.attachedValue));
+
+		if(!noCameraMode)
+		    stroke(getObjectColor(t.touchPoint.attachedValue));
+
 		strokeWeight(2);
 		ellipse(t.position.x, t.position.y, attractorDistance *2, attractorDistance*2);
 
@@ -243,12 +253,19 @@ public class Game  extends PaperTouchScreen {
 
     void findTouchColors(){
 	for (Touch t : touchList) {
+
             if (t.is3D) {
 		continue;
             } 
-	    if(t.position.y > 0) 
+
+	    if(!noCameraMode && t.position.y > 0)
 		continue;
 	    TouchPoint tp = t.touchPoint; 
+
+	    if(tp == null){
+		println("Null tp in game " );
+		continue;
+	    }
 
 	    if(DEBUG_TOUCH){
 		PVector imCoord = getCameraViewOf(t);
@@ -282,25 +299,41 @@ public class Game  extends PaperTouchScreen {
     // TODO: update with all the new detections ?!
     // TODO: tweak these values online with sliders.
     void checkTypeOfTouch(Touch t){
-	TouchPoint tp = t.touchPoint; 
 
-	// check only young ones. 
-	if(tp.getAge(millis()) < 2000){
+	if(noCameraMode){  
+	    TouchPoint tp = t.touchPoint; 
+	    int id = tp.getID();
 
-	    int[] scores = new int[colorDetections.length];
-	    int c = 0;
+	    if(id < 8) 
+		tp.attachedValue =  TOWER;
+	    else 
+		if(id < 15) 
+		    tp.attachedValue =  PUSH_UP;
+		else 
+		    if(id < 22) 
+			tp.attachedValue =  PUSH_DOWN;
 
-	    for(ColorDetection colorDetection : colorDetections){
-		int col = colorDetection.getColor();
-		PVector imCoord = getCameraViewOf(t);
-		int k = getColorOccurencesFrom(imCoord, miniatureSize, col, colorDistObject);
-		scores[c] = k;
-		c++;
-	    }
+	} else {
+	    TouchPoint tp = t.touchPoint; 
 
-	    int maxIndex = maxIndexOf(scores);
-	    if(scores[maxIndex] >= colorNbObject){
-		tp.attachedValue = maxIndex;
+	    // check only young ones. 
+	    if(tp.getAge(millis()) < 2000){
+
+		int[] scores = new int[colorDetections.length];
+		int c = 0;
+
+		for(ColorDetection colorDetection : colorDetections){
+		    int col = colorDetection.getColor();
+		    PVector imCoord = getCameraViewOf(t);
+		    int k = getColorOccurencesFrom(imCoord, miniatureSize, col, colorDistObject);
+		    scores[c] = k;
+		    c++;
+		}
+
+		int maxIndex = maxIndexOf(scores);
+		if(scores[maxIndex] >= colorNbObject){
+		    tp.attachedValue = maxIndex;
+		}
 	    }
 	}
     }
@@ -363,31 +396,35 @@ public class Game  extends PaperTouchScreen {
 	    }
 	}
 	
-	if(canCreateWalls()){
-	    kTouchInput = (KinectTouchInput) touchInput;
+	// TODO: create something for the NoCameraMode...
+	if(canCreateWalls() && !noCameraMode){
+	    KinectTouchInput kTouchInput = (KinectTouchInput) touchInput;
 	    kTouchInput.computeOutsiders(true);
 	    noStroke();
 	    for (Touch t : touchList) {
 		if (!t.is3D) {
 		    if(isAttractor(t)){
-			TouchPoint tp = t.touchPoint;
-			ArrayList<DepthDataElement> depthDataElements = tp.getDepthDataElements();
-			for(DepthDataElement dde :  depthDataElements){
-			    PVector v = kTouchInput.projectPointToScreen(screen, display, dde);
-			    
-			    if(v != null) {//  && random(1) < 0.01f ){
-				//				if(v.x > 50 && v.x < 200 && v.y  < 0){
-				    
-				    if( PVector.dist(v, t.position) < 20){
+
+			if(noCameraMode){  
+			    // TODO: no camera mode...
+			} else { 
+
+
+			    TouchPoint tp = t.touchPoint;
+			    ArrayList<DepthDataElement> depthDataElements = tp.getDepthDataElements();
+			    for(DepthDataElement dde :  depthDataElements){
+				PVector v = kTouchInput.projectPointToScreen(screen, display, dde);
 					
-					// ellipse(v.x, v.y, 15, 15);
+				if(v != null) {
+				    if( PVector.dist(v, t.position) < 20){
 					Wall wall = new Wall(v.x, v.y, 4);
 					walls.add(wall);
 				    }
-				    //}   
+				}
 			    }
 			}
-		    }	
+		    }
+	
 		}
 	    }
 	    kTouchInput.computeOutsiders(false);

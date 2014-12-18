@@ -47,7 +47,7 @@ int MISSILE_LAUNCHER = 10;
 int PUSH_UP = 1;
 int PUSH_DOWN = 2;
 int POWERUP = 3;
-int GOAL = 3;
+
 
 public float drawingDistance;
 public float attractorDistance;
@@ -74,7 +74,11 @@ public boolean isPushUp(Touch t){
 public void push(Touch t, Missile m){
     float G = attractorPower;
 
-    boolean up = t.touchPoint.attachedValue == PUSH_DOWN;
+    boolean up = false;
+    if(noCameraMode)
+	; // TODO: do something...
+    else
+	up = t.touchPoint.attachedValue == PUSH_DOWN;
 
     // Stronger missiles are less pushed
     G = G * m.level * 1.5f;
@@ -182,12 +186,6 @@ public class ControlFrame extends PApplet {
     cp5.addSlider("towerPowerUpThreshold").plugTo(parent,"towerPowerUpThreshold")
 	.setRange(5, 150)
 	.setValue(75)
-	.setPosition(20, y);
-
-    y+= 20;
-    cp5.addSlider("levelPixelRatio").plugTo(parent,"levelPixelRatio")
-	.setRange(0, 30)
-	.setValue(17.80f)
 	.setPosition(20, y);
 
     y+= 20;

@@ -18,6 +18,7 @@
  */
 package fr.inria.papart.multitouch;
 
+import TUIO.TuioCursor;
 import java.util.ArrayList;
 import processing.core.PVector;
 
@@ -34,8 +35,13 @@ public class Touch {
     public PVector position;
     public PVector pposition;
     public PVector speed;
+    
+    // TODO: find a solution for this !
+    // ForTouchPoint ... 
     public TouchPoint touchPoint;
 
+    public TuioCursor tuioCursor;
+    
     public PVector size;
 
     // TODO: implementation of this. 

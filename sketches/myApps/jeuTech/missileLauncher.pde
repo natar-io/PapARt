@@ -17,7 +17,6 @@ class MissileLauncher implements TouchPointEventHandler{
     float maxLaunchAmount;
     float minLaunchAmount = 5;
 
-    TouchPoint touchPoint;
     Player1 player;
     float drawingSizeY;
 
@@ -28,7 +27,6 @@ class MissileLauncher implements TouchPointEventHandler{
 
 
     MissileLauncher(Player1 player, Touch touch){
-	this.touchPoint = touch.touchPoint;
 	this.player = player;
 	this.position = touch.position.get();
 	
@@ -90,10 +88,14 @@ class MissileLauncher implements TouchPointEventHandler{
     }
     
     Missile createMissile(Touch touch){
-	touch.invertY(drawingSizeY);
+
+	if(!noCameraMode)
+	    touch.invertY(drawingSizeY);
 	PVector localPos = touch.position;
 	PVector posFromGame = player.gameCoord(localPos);
-	touch.invertY(drawingSizeY);
+
+	if(!noCameraMode)
+	    touch.invertY(drawingSizeY);
 
 	Missile missile = new Missile(player, player.ennemi, posFromGame, this.level);
 	missile.setCreationPos(touch.position);
