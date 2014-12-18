@@ -79,7 +79,7 @@ public class AmbientFeedback  extends PaperScreen {
   void updateNetwork() {
     double[][] data = myClient.read();
     if (data == null) {
-    //  println("Waiting for data...");
+      //  println("Waiting for data...");
     }
     // nice output to stdout
     else {
@@ -90,8 +90,8 @@ public class AmbientFeedback  extends PaperScreen {
       for (int i=0; i < nbChans; i++) {
         for (int j=0; j < chunkSize; j++) {
           print(data[i][j] + "\t");
-        // Do something with this data !!!!  
-        //  like ?    SecondMode.set("...");
+          // Do something with this data !!!!  
+          //  like ?    SecondMode.set("...");
         }
         println();
       }
@@ -116,6 +116,7 @@ public class AmbientFeedback  extends PaperScreen {
 
       if (SecondMode.is("noise")) {
         feedback.filter(white_noise);
+        feedback.filter(pixelize);
       }
     }
 
@@ -125,8 +126,8 @@ public class AmbientFeedback  extends PaperScreen {
   void drawScene() {
     // moving shape in the foreground
     scene.beginDraw();
-    scene.background(128, 12, 128);
-    scene.rect(30, 40, 100, 150);
+    scene.background(0, 0, 0);
+    scene.rect(23, 40, 100, 150);
     // the waves will show up on everything that's placed before (even white colors)
     scene.image(feedback, 0, 0);
     scene.ellipse(mouseX, mouseY, 100, 100);

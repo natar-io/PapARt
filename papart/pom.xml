@@ -39,7 +39,7 @@
     <properties>
         <javacv.version>0.9</javacv.version>
         <javacpp.version>0.9</javacpp.version>
-        <arch.type>windows</arch.type>
+        <arch.type>linux</arch.type>
         <arch.precision>x86_64</arch.precision>
     </properties>
     

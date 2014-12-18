@@ -36,7 +36,7 @@ public class MiniTeegi extends PaperScreen {
   void draw() {
 
     if (noCameraMode) {
-      setLocation(5, 7, 0 );
+      setLocation(26, 0, 0 );
     }
     beginDraw2D();
 
@@ -56,17 +56,17 @@ public class MiniTeegi extends PaperScreen {
     int rawColor = rawDetection.getColor();
     int currentColor = currentModeDetection.getColor();
 
-    if (sameColors(meditationColor, currentColor)) {
-      Mode.set("relax");
-    }
+    // if (sameColors(meditationColor, currentColor)) {
+    //   Mode.set("relax");
+    // }
 
-    if (sameColors(visionColor, currentColor)) {
-      Mode.set("vision");
-    }
+    // if (sameColors(visionColor, currentColor)) {
+    //   Mode.set("vision");
+    // }
 
-    if (sameColors(rawColor, currentColor)) {
-      Mode.set("raw");
-    }
+    // if (sameColors(rawColor, currentColor)) {
+    //   Mode.set("raw");
+    // }
 
 
     fill(255);

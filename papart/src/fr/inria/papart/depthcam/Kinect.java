@@ -85,7 +85,8 @@ public class Kinect {
         init();
     }
 
-    public PMatrix3D KinectRGBIRCalibration = new PMatrix3D(1, 0, 0, 5,
+    // TODO: Put this in a file,  or make it easy to tweak...
+    public PMatrix3D KinectRGBIRCalibration = new PMatrix3D(1, 0, 0, 15,
             0, 1, 0, 0,
             0, 0, 1, 0,
             0, 0, 0, 1);

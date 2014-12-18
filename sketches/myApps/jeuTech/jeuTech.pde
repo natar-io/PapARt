@@ -42,7 +42,7 @@ void setup(){
     papart = new Papart(this);
 
     if(useProjector){
-	papart.initProjectorCamera("1", Camera.Type.OPENCV);
+	papart.initProjectorCamera("0", Camera.Type.OPENCV);
 	papart.loadTouchInput(2, 0);
     } else {
 	papart.initKinectCamera(2f);
@@ -60,7 +60,7 @@ void setup(){
 }
 
 void draw(){
-  println("FRAMERATE " + frameRate);
+    // println("FRAMERATE " + frameRate);
 }
 
 boolean fixCastles = false;

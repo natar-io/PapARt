@@ -66,6 +66,12 @@ IplImage kinectImgDepth;
 void draw(){
     background(0);
 
+    kinect.KinectRGBIRCalibration = new PMatrix3D(1, 0, 0, 5,
+						  0, 1, 0, 0,
+						  0, 0, 1, 0,
+						  0, 0, 0, 1);
+
+
     camera.grab();
     kinectImg = camera.getIplImage();
     kinectImgDepth = camera.getDepthIplImage();

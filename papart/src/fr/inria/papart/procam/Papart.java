@@ -73,6 +73,7 @@ public class Papart {
 
     private Camera cameraTracking;
     private Kinect kinect;
+
 //    private TouchInput touchInput;
     private TouchInput touchInput;
     private PVector frameSize;
@@ -403,6 +404,10 @@ public class Papart {
         return this.isWithoutCamera;
     }
 
+    public Kinect getKinect() {
+        return kinect;
+    }
+    
     public PApplet getApplet() {
         return applet;
     }

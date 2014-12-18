@@ -87,6 +87,9 @@ public class Player1  extends PaperTouchScreen {
 
 	if(castle.hp <= 0){
 	    castle.hp = MAX_HP;
+	    castle.hpChanged = true;
+	    game.deleteMissiles();
+
 	    // background(ennemi.playerColor);
 	    // return;
 	}
@@ -205,7 +208,6 @@ public class Player1  extends PaperTouchScreen {
 	    launcher = (MissileLauncher) (t.touchPoint.attachedObject);
 	}
 
-	launcher.checkButtons(t);
 	launcher.tryLaunch(t);
 	launcher.drawSelf(getGraphics());
     }

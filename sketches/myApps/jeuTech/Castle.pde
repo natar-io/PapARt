@@ -22,7 +22,7 @@ class Castle {
 	posPxGame = faction.gameCoord(new PVector(castleX, castleY));
 
 	makeBody(posPxGame.x, posPxGame.y, size);
-	body.setUserData(this);
+
     }
 
     // This function removes the particle from the box2d world
@@ -35,6 +35,13 @@ class Castle {
     }
 
     public void update(){
+
+	if(hpChanged){
+	    killBody();
+	    float size2 = size * (hp /MAX_HP);
+	    makeBody(posPxGame.x, posPxGame.y, size2);
+	}
+
 	// TODO: no more allocation here...
 	posPxGame = faction.gameCoord(new PVector(castleX, castleY));
 	Vec2 vPhys = box2d.coordPixelsToWorld(posPxGame.x, posPxGame.y);
@@ -43,8 +50,11 @@ class Castle {
     
 
     float hp = MAX_HP;
+    boolean hpChanged  = true;
     public void isHit(){
 	hp -= 1;
+	hpChanged = true;
+	println("hit");
     }
 
     // public float getCastleSize(){
@@ -71,6 +81,7 @@ class Castle {
     g.popMatrix();
   }
 
+
   // Here's our function that adds the particle to the Box2D world
   void makeBody(float x, float y, float r) {
     // Define a body
@@ -83,15 +94,11 @@ class Castle {
     // Make the body's shape a circle
     CircleShape cs = new CircleShape();
     cs.m_radius = box2d.scalarPixelsToWorld(r);
-
+    
     FixtureDef fd = new FixtureDef();
     fd.shape = cs;
-    // Parameters that affect physics
-    fd.density = 1;
-    fd.friction = 0.01;
-    fd.restitution = 0.3;
-
-    // Attach fixture to body
     body.createFixture(fd);
+    body.setUserData(this);
   }
+
 }

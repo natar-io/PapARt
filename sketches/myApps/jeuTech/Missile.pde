@@ -91,7 +91,10 @@ class Missile extends DyingObject{
     // TODO: Explosion Animation. 
     boolean expolsion = false;
     void hit(){
-	expolsion = true;
+
+	level =  level -1;
+	if(level == 0)
+	    expolsion = true;
     }
 
     boolean hasExploded(){
@@ -110,6 +113,11 @@ class Missile extends DyingObject{
 	    return true;
 	}
 	return false;
+    }
+
+    void forceDeath(){
+	faction.nbMissiles--;
+	killBody();
     }
 
 
@@ -150,9 +158,6 @@ class Missile extends DyingObject{
 	bd.type = BodyType.DYNAMIC;
 	body = box2d.createBody(bd);
 
-	if(level == 0){
-	    missileLevel0();
-	}
 	if(level == 1){
 	    missileLevel1();
 	}
@@ -162,8 +167,11 @@ class Missile extends DyingObject{
 	if(level == 3){
 	    missileLevel3();
 	}
+	if(level == 4){
+	    missileLevel4();
+	}
 
-	body.setAngularVelocity(0);
+	body.setAngularVelocity(random(-5, 5));
     }
 
 
@@ -171,27 +179,43 @@ class Missile extends DyingObject{
     PVector middle= new PVector(0,0);
     PVector left= new PVector(-size / 10, 0);
     PVector right= new PVector(size / 10, 0);
+    float bulletSizePx = size / 10;
 
-    void missileLevel0(){
+    void missileLevel1(){
+	PVector middle= new PVector(0,0);
 	addCircle(middle);
     }
 
-    void missileLevel1(){
+    void missileLevel2(){
+	PVector left= new PVector(0, -bulletSizePx);
+	PVector right= new PVector(0, bulletSizePx);
+    	addCircle(left);
+	addCircle(right);
+    }
+
+    void missileLevel3(){
+	PVector middle= new PVector(0, bulletSizePx );
+	PVector left= new PVector( bulletSizePx,  -bulletSizePx);
+	PVector right= new PVector(-bulletSizePx, -bulletSizePx);
+	addCircle(middle);
 	addCircle(left);
 	addCircle(right);
     }
 
-    void missileLevel2(){
-	missileLevel1();
-    }
+    void missileLevel4(){
 
-    void missileLevel3(){
-	missileLevel1();
+	for(int i = 0; i < 2; i++){
+	    PVector rand = new PVector(random(- bulletSizePx * 2, bulletSizePx * 2), 
+					random(- bulletSizePx *2, bulletSizePx * 2));
+	    addCircle(rand);
+	    rand.mult(-1);
+	    addCircle(rand);
+	}
     }
 
     void addCircle(PVector pos){
 
-	look.add(pos);
+	look.add(pos.get());
 
 	// Make the body's shape a circle
 	CircleShape cs = new CircleShape();

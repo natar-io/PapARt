@@ -23,14 +23,14 @@ public class MyApp  extends PaperScreen {
   PShader texlightShader;
   PShader capShader;
 
-  int visionColor1 = #4EF540;
-  int visionColor2 = #224314;
-
+  int visionColor1 = #FF2C2C;
+  int visionColor2 = #213DE8;
+    
   int rawColor1 = #FF2C2C;
   int rawColor2 = #213DE8;
 
-  int relaxColor1 = #5323DB;
-  int relaxColor2 = #A5D3F0;
+  int relaxColor1 = #EFF01B;
+  int relaxColor2 = #32F01B;
 
   void setup() {
     setDrawingSize(298, 210);
@@ -42,6 +42,7 @@ public class MyApp  extends PaperScreen {
     loadImages();
     createWhiteMask();
     loadShaders();
+    initNetwork();
   }
 
   void initNetwork() {
@@ -79,8 +80,8 @@ public class MyApp  extends PaperScreen {
     shader(capShader);
 
     translate(drawingSize.x /2, 
-    drawingSize.y /2, 
-    170f);
+	      drawingSize.y /2, 
+	      170f);
     // 11 cm 
     scale(105f / 2f);
 
@@ -143,6 +144,7 @@ public class MyApp  extends PaperScreen {
     colorMode(RGB, 1.0);
 
     capShader.set("isRaw", false);
+    capShader.set("isWhiteMiddle", true);
     capShader.set("mask", visionMask);
     capShader.set("color1", red(visionColor1), green(visionColor1), blue(visionColor1));
     capShader.set("color2", red(visionColor2), green(visionColor2), blue(visionColor2));
@@ -152,6 +154,7 @@ public class MyApp  extends PaperScreen {
     colorMode(RGB, 1.0);
 
     capShader.set("isRaw", false);
+    capShader.set("isWhiteMiddle", false);
     capShader.set("mask", relaxMask);
     capShader.set("color1", red(relaxColor1), green(relaxColor1), blue(relaxColor1));
     capShader.set("color2", red(relaxColor2), green(relaxColor2), blue(relaxColor2));
@@ -161,6 +164,7 @@ public class MyApp  extends PaperScreen {
     colorMode(RGB, 1.0);
 
     capShader.set("isRaw", true);
+    capShader.set("isWhiteMiddle", true);
     capShader.set("mask", whiteMask);
     capShader.set("color1", red(rawColor1), green(rawColor1), blue(rawColor1));
     capShader.set("color2", red(rawColor2), green(rawColor2), blue(rawColor2));
