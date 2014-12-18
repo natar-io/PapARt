@@ -16,7 +16,7 @@ int framePosX = 0;
 int framePosY = 200;
 
 boolean useProjector;
-boolean noCameraMode = true;
+boolean noCameraMode = false;
 
 // Undecorated frame 
 public void init() {
@@ -52,7 +52,7 @@ void setup() {
     papart.initNoCamera(1);
   } else {
     if (useProjector) {
-      //	papart.initProjectorCamera("0", Camera.Type.OPENCV);
+      papart.initProjectorCamera("0", Camera.Type.OPENCV);
     } else {
       papart.initCamera("0", Camera.Type.OPEN_KINECT);
 

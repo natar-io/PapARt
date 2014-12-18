@@ -31,6 +31,16 @@ public class MiniTeegi extends PaperScreen {
     visionDetection=  new ColorDetection(this, new PVector(61, colorOnPaperY));
     rawDetection =  new ColorDetection(this, new PVector(100, colorOnPaperY));
     currentModeDetection = new ColorDetection(this, new PVector(180, 70));
+
+    try{
+    meditationDetection.initialize(); 
+    visionDetection.initialize(); 
+    rawDetection.initialize(); 
+    currentModeDetection.initialize(); 
+    }catch(Exception e){
+	println("e");
+	e.printStackTrace();
+    }
   }
 
   void draw() {
@@ -56,18 +66,20 @@ public class MiniTeegi extends PaperScreen {
     int rawColor = rawDetection.getColor();
     int currentColor = currentModeDetection.getColor();
 
-    // if (sameColors(meditationColor, currentColor)) {
-    //   Mode.set("relax");
-    // }
 
-    // if (sameColors(visionColor, currentColor)) {
-    //   Mode.set("vision");
-    // }
-
-    // if (sameColors(rawColor, currentColor)) {
-    //   Mode.set("raw");
-    // }
-
+    if(!noCameraMode){
+	if (sameColors(meditationColor, currentColor)) {
+	    Mode.set("relax");
+	}
+	
+	if (sameColors(visionColor, currentColor)) {
+	    Mode.set("vision");
+	}
+	
+	if (sameColors(rawColor, currentColor)) {
+	    Mode.set("raw");
+	}
+    }
 
     fill(255);
     textFont(myFont, 25);

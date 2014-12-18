@@ -64,7 +64,7 @@ public class AmbientFeedback  extends PaperScreen {
       setLocation(50, 300, 0 );
     }
 
-    updateNetwork();
+  //  updateNetwork();
 
     beginDraw3D();
     updateShaders();
