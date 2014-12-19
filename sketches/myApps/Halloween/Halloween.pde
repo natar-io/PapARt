@@ -23,9 +23,9 @@ public void init() {
 KinectTouchInput touchInput;
 
 int framePosX = 0;
-int framePosY = 120;
-int frameSizeX = 1920;
-int frameSizeY = 1080;
+int framePosY = 200;
+int frameSizeX = 1280;
+int frameSizeY = 800;
 
 PFont font;
 PGraphicsOpenGL bloodGraphics;

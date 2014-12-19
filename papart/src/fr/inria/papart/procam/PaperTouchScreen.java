@@ -160,7 +160,7 @@ public class PaperTouchScreen extends PaperScreen {
         endDraw();
     }
 
-    static private final int DEFAULT_TOUCH_SIZE = 50;
+    static private final int DEFAULT_TOUCH_SIZE = 15;
 
     protected void drawTouch() {
         drawTouch(DEFAULT_TOUCH_SIZE);

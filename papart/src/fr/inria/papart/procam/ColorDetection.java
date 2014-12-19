@@ -49,6 +49,7 @@ public class ColorDetection {
         this.invY = false;
         this.pos = pos.get();
         this.paperScreen = paperScreen;
+        setCaptureOffset(new PVector());
     }
 
     public void initialize() {
@@ -128,11 +129,12 @@ public class ColorDetection {
     }
 
     public PImage getImage() {
-        
+
         // TODO: NoCamera HACK
-        if(paperScreen.cameraTracking == null)
+        if (paperScreen.cameraTracking == null) {
             return null;
-        
+        }
+
         PImage out = paperScreen.cameraTracking.getPView(boardView);
         return out;
     }
@@ -167,12 +169,12 @@ public class ColorDetection {
     }
 
     public int computeOccurencesOfColor(int c, int threshold) {
-        
+
         // TODO: Hack for noCamera, better to be done. 
-        if(paperScreen.cameraTracking == null){
+        if (paperScreen.cameraTracking == null) {
             return 0;
         }
-        
+
         PImage out = paperScreen.cameraTracking.getPView(boardView);
         if (out == null) {
             return 0;

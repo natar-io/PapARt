@@ -31,7 +31,7 @@ void main(void) {
   // get what's underneath
   vec4 col = texture2D(texture, vertTexCoord.xy);
   // apply the (weaken) noise
-  col = col-fuzz/2.;
+  col = col + fuzz/2.;
   gl_FragColor = col;
 }
 

@@ -48,8 +48,8 @@ public class Game  extends PaperTouchScreen {
 				      (int) cameraTracking.height(), RGB);
 	    miniature = createImage(miniatureSize, miniatureSize, RGB);
 	}
-	topBorder = new Border(0, 0, 800, 3);
-	botBorder = new Border(0, -350, 800, 3);
+	topBorder = new Border(-400, 0, 2000, 3);
+	botBorder = new Border(-400, -350, 2000, 3);
 	game = this;
 
     }
@@ -144,7 +144,7 @@ public class Game  extends PaperTouchScreen {
 	    drawColorAnalysis();
 	}
 
-	drawPlayerInfos();
+	//	drawPlayerInfos();
 	displayBorders();
 	noStroke();
 	endDraw();

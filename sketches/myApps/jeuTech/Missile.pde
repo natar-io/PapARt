@@ -131,6 +131,8 @@ class Missile extends DyingObject{
 	g.translate(pos.x, pos.y);
 	g.rotate(-a);
 	g.fill(col);
+	g.noStroke();
+	
 
 	float physicsScale = box2d.scaleFactor;
 

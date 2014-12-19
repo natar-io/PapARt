@@ -1,6 +1,3 @@
-import fr.inria.papart.exceptions.BoardNotDetectedException;
-
-
 PVector sunLocation = new PVector();
 PMatrix3D sunLoc = new PMatrix3D();
 

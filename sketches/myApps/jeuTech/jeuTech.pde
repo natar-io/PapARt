@@ -15,7 +15,7 @@ int framePosY = 200;
 
 boolean useProjector;
 float planetScale = 1f / 20000f;
-boolean noCameraMode = true;
+boolean noCameraMode = false;
 
 // Undecorated frame 
 public void init() {

@@ -30,7 +30,7 @@ float boardResolution = 1;  // 3 pixels / mm
 
 void setup(){
 
-    useProjector = false;
+    useProjector = true;
     int frameSizeX = 1280;
     int frameSizeY = 800;
 
@@ -46,8 +46,12 @@ void setup(){
 	papart.initProjectorCamera("0", Camera.Type.OPENCV);
 	papart.loadTouchInput(2, 5);
     } else {
-	papart.initKinectCamera(2f);
-	papart.loadTouchInputKinectOnly(2, 5);
+  //      papart.initCamera("0", Camera.Type.OPENCV);
+//	papart.loadTouchInput(2, 5);
+
+      papart.initKinectCamera(2f);
+      papart.loadTouchInputKinectOnly(2, 5);
+
 	BaseDisplay display = papart.getDisplay();
 	display.setDrawingSize(width, height);
     }

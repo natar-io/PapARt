@@ -10,14 +10,15 @@ precision mediump int;
 uniform sampler2D texture;
 
 uniform float iGlobalTime;
+uniform float rings;
+uniform float velocity;
+
 
 varying vec4 vertColor;
 varying vec4 vertTexCoord;
 
 uniform vec2 iResolution;
 
-const float rings = 5.0;        //exactly the number of complete white rings at any moment.
-const float velocity=4.;        
 
 void main()
 {

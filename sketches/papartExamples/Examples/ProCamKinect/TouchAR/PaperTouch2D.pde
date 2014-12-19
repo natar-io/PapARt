@@ -7,11 +7,10 @@ public class MyApp  extends PaperTouchScreen {
 
   void draw() {
     beginDraw2D();
-    background(100, 0, 0);
+    background(200, 200, 200);
     fill(200, 100, 20); 
     rect(10, 10, 100, 30);
     drawTouch();
     endDraw();
   }
 }
-

@@ -9,7 +9,7 @@ public class Player2  extends Player1 {
 			playerBoardSize.x, playerBoardSize.y);
 
 	player2 = this;
-	playerColor = color(143, 162, 186);
+	playerColor = #2C42FF; // color(143, 162, 186);
 	prepare();
     }
 

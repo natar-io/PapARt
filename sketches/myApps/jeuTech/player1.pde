@@ -40,7 +40,7 @@ public class Player1  extends PaperTouchScreen {
 			playerBoardSize.x, playerBoardSize.y);
 
 	player1 = this;
-	playerColor = color(159, 168, 143);
+	playerColor = #FA1414; //color(159, 168, 143);
 	prepare();
     }
 

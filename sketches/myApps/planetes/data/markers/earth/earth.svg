@@ -34,8 +34,8 @@
      units="mm"
      inkscape:window-width="1007"
      inkscape:window-height="718"
-     inkscape:window-x="2568"
-     inkscape:window-y="153"
+     inkscape:window-x="2365"
+     inkscape:window-y="184"
      inkscape:window-maximized="0" />
   <metadata
      id="metadata7">
@@ -79,17 +79,7 @@
            height="18.182745"
            x="389.91888"
            y="801.84436" /></flowRegion><flowPara
-         id="flowPara3045" /></flowRoot>    <path
-       sodipodi:type="arc"
-       style="fill:#000080;fill-opacity:0.35294116;fill-rule:nonzero;stroke:#218181;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
-       id="path3051"
-       sodipodi:cx="597.00018"
-       sodipodi:cy="829.11847"
-       sodipodi:rx="132.32999"
-       sodipodi:ry="122.22845"
-       d="m 729.33017,829.11847 c 0,67.50491 -59.24615,122.22845 -132.32999,122.22845 -73.08383,0 -132.32998,-54.72354 -132.32998,-122.22845 0,-67.50491 59.24615,-122.22845 132.32998,-122.22845 73.08384,0 132.32999,54.72354 132.32999,122.22845 z"
-       transform="translate(-61.619334,35.355224)" />
-    <text
+         id="flowPara3045" /></flowRoot>    <text
        xml:space="preserve"
        style="font-size:39.98912048px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Serif;-inkscape-font-specification:Serif"
        x="370.06815"
@@ -100,7 +90,7 @@
          sodipodi:role="line"
          id="tspan2999"
          x="370.06815"
-         y="638.36664">La terre</tspan></text>
+         y="638.36664"> Earth</tspan></text>
     <image
        y="751.18097"
        x="53.149605"
