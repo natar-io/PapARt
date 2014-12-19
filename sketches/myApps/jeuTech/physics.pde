@@ -142,8 +142,8 @@ public class ControlFrame extends PApplet {
     cp5 = new ControlP5(this);
 
     cp5.addSlider("attractorPower").plugTo(parent,"attractorPower")
-	.setRange(0, 200)
-	.setValue(40)
+	.setRange(0, 10)
+	.setValue(3)
 	.setPosition(20,20);
 
     cp5.addSlider("attractorDistance").plugTo(parent,"attractorDistance")
