@@ -32,10 +32,11 @@ PVector[] screenPoints;
 int nbPoints;
 int currentPoint = 0;
 
+int scale = 1;
 
 void setup(){
     
-    size(Kinect.WIDTH *2 , Kinect.HEIGHT *2, OPENGL); 
+    size(Kinect.WIDTH * scale , Kinect.HEIGHT * scale, OPENGL); 
     
     int depthFormat = freenect.FREENECT_DEPTH_MM;
     int kinectFormat = Kinect.KINECT_MM;
@@ -182,7 +183,7 @@ void mousePressed(){
     }
 
 
-    int offset = (int) (mouseY /2)  * camera.width() +(int) (mouseX /2);
+    int offset = (int) (mouseY / scale)  * camera.width() +(int) (mouseX /scale);
 
     if(depthPoints[offset] != null){
 	Vec3D depth = depthPoints[offset];
@@ -199,5 +200,3 @@ void mousePressed(){
 
     }
 }
-
-

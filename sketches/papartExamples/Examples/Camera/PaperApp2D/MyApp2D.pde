@@ -13,4 +13,3 @@ public class MyApp  extends PaperScreen {
     endDraw();
   }
 }
-

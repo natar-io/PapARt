@@ -10,7 +10,7 @@ class MissileLauncher implements TouchPointEventHandler{
 
     int lastCreation = 0;
     float creationTimeout = DEFAULT_CREATION_TIMEOUT;
-    float power = 700;
+    float power = 900;
     float size = 1.5f;
 
     float launchAmount = 0;
@@ -23,20 +23,20 @@ class MissileLauncher implements TouchPointEventHandler{
     int level = 1;
 
     PVector position;
-    ColorDetection colorDetection2;
+    //    ColorDetection colorDetection2;
 
 
     MissileLauncher(Player1 player, Touch touch){
 	this.player = player;
 	this.position = touch.position.get();
 	
-	colorDetection2 = new ColorDetection(player, 
-					    new PVector((int) position.x + 20, 
-							(int) position.y + 40));
-	colorDetection2.setCaptureOffset(playerPaperOffset);
-	colorDetection2.setInvY(true);
-	colorDetection2.setCaptureSize(65, 5);
-	colorDetection2.initialize();
+	// colorDetection2 = new ColorDetection(player, 
+	// 				    new PVector((int) position.x + 20, 
+	// 						(int) position.y + 40));
+	// colorDetection2.setCaptureOffset(playerPaperOffset);
+	// colorDetection2.setInvY(true);
+	// colorDetection2.setCaptureSize(65, 5);
+	// colorDetection2.initialize();
 
 
 	drawingSizeY = player.getDrawingSize().y;
@@ -47,15 +47,15 @@ class MissileLauncher implements TouchPointEventHandler{
     void tryLaunch(Touch startTouch){
 	updatePos(startTouch);
 
-	speedUp = colorDetection2.computeOccurencesOfColor(game.getObjectColor(2), towerPowerUpThreshold) * towerRateRatio;
-	speedUp = constrain(speedUp, 0, DEFAULT_CREATION_TIMEOUT - 300);
-	creationTimeout = DEFAULT_CREATION_TIMEOUT - speedUp;
+	//	speedUp = colorDetection2.computeOccurencesOfColor(game.getObjectColor(2), towerPowerUpThreshold) * towerRateRatio;
+	//	speedUp = constrain(speedUp, 0, DEFAULT_CREATION_TIMEOUT - 300);
+	//	creationTimeout = DEFAULT_CREATION_TIMEOUT - speedUp;
 
-	int nb1 = 5 + colorDetection2.computeOccurencesOfColor(game.getObjectColor(1), towerPowerUpThreshold);
+	//	int nb1 = 5 + colorDetection2.computeOccurencesOfColor(game.getObjectColor(1), towerPowerUpThreshold);
 
-	level =  1 + (int) (nb1 / levelPixelRatio);
-	if(level >= 4)
-	    level = 4;
+	level = 1 ; // (int) ((millis() / 12000.)  % 3);
+
+	//	level =  1 + (int) (nb1 / levelPixelRatio);
 
 	if(!canCreateMissile())
 	    return;
@@ -114,7 +114,13 @@ class MissileLauncher implements TouchPointEventHandler{
 	PVector localPos = touch.position;
 
 	// Forward direction
-	localPos.add(new PVector(0, 200));
+
+	if(noCameraMode){
+	    localPos.add(new PVector(2000, 0));
+	} else {
+	    localPos.add(new PVector(0, 200));
+	}
+
 	PVector posFromGame = player.gameCoord(localPos);
 	touch.invertY(drawingSizeY);
 
@@ -135,7 +141,7 @@ class MissileLauncher implements TouchPointEventHandler{
 
 	g.pushMatrix(); 
 	g.translate(0,-10);
-	colorDetection2.drawCaptureZone();
+	//	colorDetection2.drawCaptureZone();
 	g.popMatrix();
 
 	// DEBUG

@@ -61,7 +61,6 @@ public class TouchPoint extends DepthPoint {
     private int createTime = -1;
 
     private boolean toDelete = false;
-    private boolean isGhost = false;
     public boolean isUpdated = false;
 
     public int attachedValue = -1;
@@ -138,7 +137,7 @@ public class TouchPoint extends DepthPoint {
     }
 
     public boolean updateWith(TouchPoint tp) {
-        if (isUpdated || tp.isUpdated || this.isGhost || tp.isGhost) {
+        if (isUpdated || tp.isUpdated) {
             return false;
         }
 
@@ -277,17 +276,14 @@ public class TouchPoint extends DepthPoint {
         this.isCloseToPlane = isCloseToPlane;
     }
 
-    public void setToDelete(int time) {
+    public void delete(int time) {
         this.toDelete = true;
         TouchPoint.count--;
         this.deletionTime = time;
-        this.isGhost = true;
-
-    }
-
-    public void delete() {
         if (this.attachedObject != null) {
-            ((TouchPointEventHandler) this.attachedObject).delete();
+            if (this.attachedObject instanceof TouchPointEventHandler) {
+                ((TouchPointEventHandler) this.attachedObject).delete();
+            }
         }
     }
 
@@ -298,7 +294,7 @@ public class TouchPoint extends DepthPoint {
     public int lastUpdate() {
         return this.updateTime;
     }
-    
+
     @Override
     public String toString() {
         return "Touch Point, kinect: " + positionKinect + " , proj: " + position + "confidence " + confidence + " ,close to Plane : " + isCloseToPlane;

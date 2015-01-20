@@ -1,4 +1,4 @@
- import fr.inria.papart.procam.*;
+import fr.inria.papart.procam.*;
 import fr.inria.papart.tools.*;
 import fr.inria.papart.depthcam.*;
 import fr.inria.papart.multitouch.*;

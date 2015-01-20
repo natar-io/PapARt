@@ -30,13 +30,14 @@ void setup(){
     Papart papart = new Papart(this);
 
     // arguments are 2D and 3D precision.
-    papart.loadTouchInputKinectOnly(2, 2);
+    papart.loadTouchInputKinectOnly(4, 0);
     touchInput = (KinectTouchInput) papart.getTouchInput();
 }
 
 
 void draw(){
 
+    println("Framerate "+ frameRate);
     background(100);
 
     fill(50, 50, 255);
@@ -44,18 +45,7 @@ void draw(){
     // Get a copy, as the arrayList is constantly modified
     ArrayList<TouchPoint> touchs2D = new ArrayList<TouchPoint>(touchInput.getTouchPoints2D());
     for(TouchPoint tp : touchs2D){
-	// color argb = color(tp.getColor());
-	// int a = (argb >> 24) & 0xFF;
-	// int r = (argb >> 16) & 0xFF;  // Faster way of getting red(argb)
-	// int g = (argb >> 8) & 0xFF;   // Faster way of getting green(argb)
-	// int b = argb & 0xFF;          // Faster way of getting blue(argb)
-	// fill(r, g, b, 255);
-	//	    fill(tp.getColor());      
-
 	fill(50, 50, 255);
-	if(tp.isCloseToPlane()){
-	    fill(50, 50, 255);
-	} 
 	PVector pos = tp.getPosition();
 	ellipse(pos.x * frameSizeX,
 		pos.y * frameSizeY, 20, 20);

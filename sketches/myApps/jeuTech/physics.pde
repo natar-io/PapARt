@@ -44,6 +44,7 @@ void initPhysics(){
 
 int TOWER = 0;
 int MISSILE_LAUNCHER = 10;
+int ENNEMI = 11;
 int PUSH_UP = 1;
 int PUSH_DOWN = 2;
 int POWERUP = 3;
@@ -66,8 +67,16 @@ public boolean isAttractor(Touch t){
     return t.touchPoint.attachedValue == PUSH_DOWN || t.touchPoint.attachedValue == PUSH_UP;
 }
 
+public boolean isTower(Touch t){
+    return t.touchPoint.attachedValue == TOWER;
+}
+
 public boolean isPushUp(Touch t){
     return t.touchPoint.attachedValue == PUSH_UP;
+}
+
+public boolean isEnnemi(Touch t){
+    return t.touchPoint.attachedValue == ENNEMI;
 }
 
 
@@ -86,6 +95,17 @@ public void push(Touch t, Missile m){
     Vec2 force = new Vec2(0, up ? G : -G);
     m.applyForce(force);
 }
+
+public void pushUpDown(Missile m, boolean up){
+    float G = attractorPower;
+
+    // Stronger missiles are less pushed
+    G = G * m.level * 1.5f;
+
+    Vec2 force = new Vec2(0, up ? G : -G);
+    m.applyForce(force);
+}
+
 
 
 public void attract(Touch t, Missile m){
@@ -143,7 +163,7 @@ public class ControlFrame extends PApplet {
 
     cp5.addSlider("attractorPower").plugTo(parent,"attractorPower")
 	.setRange(0, 10)
-	.setValue(3)
+	.setValue(8)
 	.setPosition(20,20);
 
     cp5.addSlider("attractorDistance").plugTo(parent,"attractorDistance")

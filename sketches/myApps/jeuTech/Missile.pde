@@ -29,7 +29,7 @@ class Missile extends DyingObject{
 	// // This function puts the particle in the Box2d world
 	makeBody(startPos.x, startPos.y, size);
 	body.setUserData(this);
-	col = faction.playerColor;
+	col = #4BE0B2;
     }
     
     PVector creationPos;

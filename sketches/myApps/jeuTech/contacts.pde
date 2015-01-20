@@ -31,13 +31,14 @@ class CustomListener implements ContactListener {
 	boolean missile1 = o1.getClass() == Missile.class;
 	boolean missile2 = o2.getClass() == Missile.class;
 
-	boolean castle1 = o1.getClass() == Castle.class;
-	boolean castle2 = o2.getClass() == Castle.class;
-       
+	//boolean castle1 = o1.getClass() == Castle.class;
+	//boolean castle2 = o2.getClass() == Castle.class;
 
-	if(missile2 && castle1){
-	    hit(o1, o2);
-	}
+	
+	// TODO: hit ?
+	// if(missile2 && castle1){
+	    //	    hit(o1, o2);
+	// }
 
 	if(missile1 && missile2){
 	    explode(o1, o2);
@@ -72,13 +73,13 @@ class CustomListener implements ContactListener {
     }
 
 
-    void hit(Object castleO, Object missileO){
-	Castle castle = (Castle) castleO;
-	Missile missile = (Missile) missileO;
-
-	missile.hit();
-	castle.isHit();
-    }
+//  void hit(Object castleO, Object missileO){
+//	Castle castle = (Castle) castleO;
+//	Missile missile = (Missile) missileO;
+//
+//	missile.hit();
+//	castle.isHit();
+//    }
 
      
     void endContact(Contact contact) {

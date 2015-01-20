@@ -21,6 +21,8 @@ public class Mode {
     protected String name;
     protected int number;
     private static int NB_MODES = 0;
+    private static int minimumModeDuration = 200;
+    private static boolean timeFiltering = false;
 
     public static void init(PApplet papplet) {
         parent = papplet;
@@ -57,7 +59,7 @@ public class Mode {
         modes.put(modeName, mode);
         return mode;
     }
-    
+
     public static boolean is(String modeName) {
         return currentMode == modes.get(modeName);
     }
@@ -78,9 +80,30 @@ public class Mode {
         setCurrentMode(mode);
     }
 
+    /**
+     *
+     * @param duration in millisecond
+     */
+    public static void setMinimumModeDuration(int duration) {
+        Mode.minimumModeDuration = duration;
+        setTimeFiltering(true);
+    }
+
+
+    public static void setTimeFiltering(boolean filtering) {
+        timeFiltering = filtering;
+    }
+
     private static void setCurrentMode(Mode mode) {
         if (parent != null) {
-            changeTime = parent.millis();
+            int currentTime = parent.millis();
+
+            if (timeFiltering
+                    && currentTime < changeTime + minimumModeDuration) {
+                System.err.println("ModeChange failed. The previous mode did not last long enough.");
+                return;
+            }
+            changeTime = currentTime;
         }
         currentMode = mode;
     }

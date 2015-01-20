@@ -168,26 +168,31 @@ public class Kinect {
 
     public void updateMT2D(IplImage depth, IplImage color, PlaneAndProjectionCalibration calib, int skip) {
         updateRawDepth(depth);
-        updateRawColor(color);
+    
+    // TechFest Hacks
+//        updateRawColor(color);
         depthData.clearDepth();
         depthData.clear2D();
-        depthData.clearColor();
+//        depthData.clearColor();
         depthData.timeStamp = papplet.millis();
         depthData.planeAndProjectionCalibration = calib;
         computeDepthAndDo(skip, new Select2DPointPlaneProjection());
-        doForEachValidPoint(skip, new SetImageData());
+        
+        // TechFest Hacks
+//        doForEachValidPoint(skip, new SetImageData());
     }
 
     public void updateMT3D(IplImage depth, IplImage color, PlaneAndProjectionCalibration calib, int skip) {
         updateRawDepth(depth);
-        updateRawColor(color);
+        // TechFest Hack
+//        updateRawColor(color);
         depthData.clearDepth();
         depthData.clear3D();
-        depthData.clearColor();
+//        depthData.clearColor();
         depthData.timeStamp = papplet.millis();
         depthData.planeAndProjectionCalibration = calib;
         computeDepthAndDo(skip, new Select3DPointPlaneProjection());
-        doForEachValidPoint(skip, new SetImageData());
+//        doForEachValidPoint(skip, new SetImageData());
     }
 
     protected void computeDepthAndDo(int precision, DepthPointManiplation manip) {

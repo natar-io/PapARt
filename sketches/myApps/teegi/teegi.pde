@@ -52,7 +52,7 @@ void setup() {
     papart.initNoCamera(1);
   } else {
     if (useProjector) {
-      papart.initProjectorCamera("0", Camera.Type.OPENCV);
+      papart.initProjectorCamera("1", Camera.Type.OPENCV);
     } else {
       papart.initCamera("0", Camera.Type.OPEN_KINECT);
 
