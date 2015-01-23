@@ -49,12 +49,18 @@
     </properties>
     
     <dependencies>
-        
 
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacpp</artifactId>
             <version>${javacpp.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>opencv</artifactId>
+            <version>2.4.9-${javacpp.version}</version>
+            <!--<classifier>${arch.type}-${arch.precision}</classifier>-->
         </dependency>
 
         <dependency>
@@ -157,8 +163,8 @@
         <sourceDirectory>src</sourceDirectory>
         <testSourceDirectory>test</testSourceDirectory>
         <outputDirectory>target/classes</outputDirectory>
-        <plugins>
-            <plugin>
+        <plugins>    
+        <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.3.2</version>
@@ -205,7 +211,7 @@
     </build>
     
     <!-- Windows -->
-    <profiles> 
+<!--    <profiles> 
         <profile>
             <id>win32-x86</id>
             <activation>
@@ -276,7 +282,7 @@
         </profile>
 
         
-    </profiles>
+    </profiles>-->
   
 
 </project>
