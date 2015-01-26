@@ -1,4 +1,3 @@
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -22,6 +21,12 @@
     <repositories>
         
         <repository>
+            <id>sonatype-nexus-staging</id>
+            <name>Sonatype Nexus Staging</name>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    
+        <repository>
             <id>clojars.org</id>
             <url>http://clojars.org/repo</url>
         </repository>
@@ -43,82 +48,8 @@
         <arch.precision>x86_64</arch.precision>
     </properties>
     
-<!--     PROFILES NOT WORKING ????-->
-      <!-- Windows -->
-    <profiles> 
-        <profile>
-            <id>win32-x86</id>
-            <activation>
-                <os>
-                    <family>windows</family>
-                    <arch>x86</arch>
-                </os>
-            </activation>
-            <properties>
-                <arch.type>windows</arch.type>
-                <arch.precision>x86</arch.precision>
-            </properties>
-        </profile>
-
-        <profile>
-            <id>win32-x86_64</id>
-            <activation>
-                <os>
-                    <family>Windows</family>
-                    <arch>x86_64</arch>
-                </os>
-            </activation>
-            <properties>
-                <arch.type>windows</arch.type>
-                <arch.precision>x86_64</arch.precision>
-            </properties>
-        </profile>
-    
-    <profile>
-            <id>linux-x86</id>
-            <activation>
-                <os>
-                    <family>Linux</family>
-                    <arch>x86</arch>
-                </os>
-            </activation>
-            <properties>
-                <arch.type>linux</arch.type>
-                <arch.precision>x86</arch.precision>
-            </properties>
-        </profile>
-
-        <profile>
-            <id>linux-x86_64</id>
-            <activation>
-                <os>
-                    <family>Linux</family>
-                    <arch>x86_64</arch>
-                </os>
-            </activation>
-            <properties>
-                <arch.type>linux</arch.type>
-                <arch.precision>x86_64</arch.precision>
-            </properties>
-        </profile>
-
-        <profile>
-            <id>macosx</id>
-            <activation>
-                <os>
-                    <name>mac os x</name>
-                    <arch>x86_64</arch>
-                </os>
-            </activation>
-            <properties>
-                <arch.type>macosx</arch.type>
-                <arch.precision>x86_64</arch.precision>
-            </properties>
-        </profile>
-    </profiles>
-  
-    
     <dependencies>
+
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacpp</artifactId>
@@ -129,7 +60,15 @@
             <groupId>org.bytedeco.javacpp-presets</groupId>
             <artifactId>opencv</artifactId>
             <version>2.4.9-${javacpp.version}</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>opencv</artifactId>
+            <version>2.4.9-${javacpp.version}</version>
             <classifier>${arch.type}-${arch.precision}</classifier>
+            <scope>test</scope>
         </dependency>
         
         <dependency>
@@ -224,7 +163,25 @@
     <build>
         <sourceDirectory>src</sourceDirectory>
         <testSourceDirectory>test</testSourceDirectory>
-        <plugins>
+        <outputDirectory>target/classes</outputDirectory>
+        
+        <plugins> 
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.3</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
+                            <stripVersion>true</stripVersion>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
