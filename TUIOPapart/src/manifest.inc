@@ -1,1 +1,0 @@
-Class-Path: libTUIO.jar
