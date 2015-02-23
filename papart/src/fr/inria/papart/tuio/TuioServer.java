@@ -33,8 +33,8 @@ import toxi.geom.Vec3D;
  */
 public class TuioServer {
 
-    private int outPort = 3333;
-    private int inPort = 3333;
+    private int outPort;
+    private int inPort;
 
     private OscP5 oscP5;
     private NetAddress myRemoteLocation;
@@ -56,7 +56,6 @@ public class TuioServer {
     public void send2D(ArrayList<TouchPoint> touchs) {
 
         OscMessage[] messages = new OscMessage[touchs.size() + 2];
-
         String messageType = "/tuio/2Dcur";
 
         messages[0] = new OscMessage(messageType);

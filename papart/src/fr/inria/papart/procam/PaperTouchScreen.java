@@ -18,7 +18,6 @@
  */
 package fr.inria.papart.procam;
 
-import com.sun.jna.platform.win32.WinError;
 import fr.inria.papart.procam.display.BaseDisplay;
 import processing.opengl.PGraphicsOpenGL;
 import fr.inria.papart.drawingapp.Button;

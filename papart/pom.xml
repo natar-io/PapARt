@@ -18,21 +18,6 @@
         </license>
     </licenses>
     
-    <repositories>
-        
-        <repository>
-            <id>sonatype-nexus-staging</id>
-            <name>Sonatype Nexus Staging</name>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    
-        <repository>
-            <id>clojars.org</id>
-            <url>http://clojars.org/repo</url>
-        </repository>
-  
-    </repositories>
-    
     <developers>
         <developer>
             <name>Jeremy Laviole</name>
@@ -108,16 +93,15 @@
             <version>${javacv.version}</version>
         </dependency>
         
-        
-        <dependency>
-            <groupId>processing</groupId>
-            <artifactId>core</artifactId>
-            <version>2.2.1</version>
-        </dependency>
-        
         <dependency>
             <groupId>processing</groupId>
             <artifactId>video</artifactId>
+            <version>2.2.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.processing</groupId>
+            <artifactId>core</artifactId>
             <version>2.2.1</version>
         </dependency>
 
@@ -159,6 +143,18 @@
             <version>1.5</version>
         </dependency>
     </dependencies>
+    
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.10.1</version>
+                <configuration>
+                </configuration>
+            </plugin>
+        </plugins>
+    </reporting>
     
     <build>
         <sourceDirectory>src</sourceDirectory>
