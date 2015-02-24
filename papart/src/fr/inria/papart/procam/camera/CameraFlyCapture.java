@@ -19,38 +19,39 @@
 package fr.inria.papart.procam.camera;
 
 import fr.inria.papart.procam.Camera;
+import org.bytedeco.javacpp.FlyCapture2;
 import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_core.IplImage;
+import org.bytedeco.javacv.FlyCapture2FrameGrabber;
 import org.bytedeco.javacv.FrameGrabber;
-import org.bytedeco.javacv.OpenCVFrameGrabber;
 import processing.core.PImage;
 
 /**
  *
  * @author jiii
  */
-public class CameraOpenCV extends Camera {
+public class CameraFlyCapture extends Camera {
 
     private FrameGrabber grabber;
 
-    protected CameraOpenCV(int cameraNo) {
+    protected CameraFlyCapture(int cameraNo) {
         this.systemNumber = cameraNo;
         this.setPixelFormat(PixelFormat.BGR);
     }
 
     @Override
     public void start() {
-        OpenCVFrameGrabber grabberCV = new OpenCVFrameGrabber(this.systemNumber);
-        grabberCV.setImageWidth(width());
-        grabberCV.setImageHeight(height());
-        grabberCV.setImageMode(FrameGrabber.ImageMode.COLOR);
-
         try {
-            grabberCV.start();
+            FlyCapture2FrameGrabber grabberFly = new FlyCapture2FrameGrabber(this.systemNumber);
+            grabberFly.setImageWidth(width());
+            grabberFly.setImageHeight(height());
+            grabberFly.setImageMode(FrameGrabber.ImageMode.COLOR);
+
+            this.grabber = grabberFly;
+            grabberFly.start();
         } catch (Exception e) {
-            System.err.println("Could not start frameGrabber... " + e);
+            System.err.println("Could not start FlyCapture frameGrabber... " + e);
         }
-        this.grabber = grabberCV;
     }
 
     @Override
