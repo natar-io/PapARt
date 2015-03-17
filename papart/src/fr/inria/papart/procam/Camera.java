@@ -52,7 +52,6 @@ public abstract class Camera implements PConstants {
     protected PImage depthPImage = null;
 
     public enum Type {
-
         OPENCV, PROCESSING, OPEN_KINECT, FLY_CAPTURE
     }
 

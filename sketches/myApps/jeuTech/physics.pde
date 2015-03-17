@@ -8,7 +8,11 @@ import org.jbox2d.common.*;
 import org.jbox2d.dynamics.*;
 import org.jbox2d.dynamics.contacts.*;
 
-import controlP5.*;
+
+import fr.inria.controlP5.*;
+import fr.inria.controlP5.events.*;
+import fr.inria.controlP5.gui.controllers.*;
+
 private ControlP5 cp5;
 ControlFrame cf;
 

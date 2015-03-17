@@ -48,7 +48,7 @@ public class TouchList extends ArrayList<Touch> {
             }
         }
     }
-    
+
     public TouchList getOldOnes(int currentTime) {
         TouchList old = new TouchList();
         for (Touch touch : this) {
@@ -59,12 +59,39 @@ public class TouchList extends ArrayList<Touch> {
         return old;
     }
 
+    public Touch getTouchWithId(int id) {
+        for (Touch touch : this) {
+            if (touch.id == id) {
+                return touch;
+            }
+        }
+        return Touch.INVALID;
+    }
+
+    public boolean containsTouchWithId(int id) {
+        for (Touch touch : this) {
+            if (touch.id == id) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public ArrayList<Integer> getIds(){
+        ArrayList<Integer> ids = new ArrayList<>();
+        for(Touch t : this){
+            ids.add(t.id);
+        }
+        
+        return ids;
+    }
+
     public TouchList get2DTouchs() {
         return filterByType(false);
     }
 
     public TouchList get3DTouchs() {
-        return filterByType(false);
+        return filterByType(true);
     }
 
     private TouchList filterByType(boolean get3D) {
@@ -91,5 +118,5 @@ public class TouchList extends ArrayList<Touch> {
             touch.invertY(drawingSize.y);
         }
     }
-    
+
 }

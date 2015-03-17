@@ -160,7 +160,7 @@ public class KinectTouchInput extends TouchInput {
     }
 
     private Touch createTouch(Screen screen, BaseDisplay display, TouchPoint tp) {
-        Touch touch = new Touch();
+        Touch touch = tp.getTouch();
         boolean hasProjectedPos = projectPositionAndSpeed(screen, display, touch, tp);
         if (!hasProjectedPos) {
             return INVALID_TOUCH;
