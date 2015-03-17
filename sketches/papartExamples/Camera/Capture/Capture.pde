@@ -30,7 +30,6 @@ public void setup(){
 
     cameraTracking = papart.getCameraTracking();
 
-
     MarkerBoard markerBoard = new MarkerBoard
 	(sketchPath + "/data/A3-small1.cfg", (int) boardSize.x, (int) boardSize.y);
 

@@ -6,28 +6,34 @@ import org.reflections.*;
 import TUIO.*;
 import toxi.geom.*;
 
+import processing.video.*;
 
 
 Camera camera;
-int resX = 1280;
-int resY = 720;
 
 public void setup() {
 
 
-  size(resX, resY, OPENGL);
+    int resX = 640;
+    int resY = 480;
 
-  if (frame != null) {
-    frame.setResizable(true);
-  }
+    size(resX, resY, OPENGL);
+    
+    if (frame != null) {
+	frame.setResizable(true);
+    }
+    
 
-  camera = CameraFactory.createCamera(Camera.Type.FLY_CAPTURE, 0);
-  camera.setParent(this);
-  camera.setSize(resX, resY);
-  ((CameraFlyCapture) camera).setBayerDecode(true);
-  camera.start();
-  camera.setThread();
-
+    camera = CameraFactory.createCamera(Camera.Type.OPENCV, "0");    
+    //  camera = CameraFactory.createCamera(Camera.Type.PROCESSING, "/dev/video0");
+    //  camera = CameraFactory.createCamera(Camera.Type.FLY_CAPTURE, 0);
+    
+    camera.setParent(this);
+    camera.setSize(resX, resY);
+    //    ((CameraFlyCapture) camera).setBayerDecode(true);
+    camera.start();
+    camera.setThread();
+    
 }
 
 void draw() {
