@@ -59,8 +59,13 @@ public class CameraFlyCapture extends Camera {
             }
             this.grabber = grabberFly;
             grabberFly.start();
+            this.isConnected = true;
+            
         } catch (Exception e) {
             System.err.println("Could not start FlyCapture frameGrabber... " + e);
+            System.err.println("Camera ID " + this.systemNumber + " could not start.");
+            System.err.println("Check cable connection, ID and resolution asked.");
+
         }
     }
 

@@ -129,6 +129,12 @@ public class CaptureIpl extends Capture implements PConstants {
         available = false;
         newFrame = true;
     }
+    
+    @Override
+    public void stop(){
+        super.stop();
+        iplImage.release();
+    }
 
     public IplImage getIplImage() {
         return this.iplImage;

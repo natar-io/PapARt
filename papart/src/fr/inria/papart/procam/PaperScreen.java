@@ -21,7 +21,6 @@ package fr.inria.papart.procam;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.drawingapp.DrawUtils;
-import fr.inria.papart.exceptions.BoardNotDetectedException;
 import java.awt.Image;
 import processing.opengl.PGraphicsOpenGL;
 import processing.core.PApplet;

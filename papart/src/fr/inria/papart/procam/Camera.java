@@ -71,7 +71,8 @@ public abstract class Camera implements PConstants {
     protected int frameRate;
     protected boolean trackSheets = false;
     private boolean isClosing = false;
-
+    protected boolean isConnected = false;
+    
     private boolean undistort = false;
 
     // Properties
@@ -334,7 +335,7 @@ public abstract class Camera implements PConstants {
     }
 
     public boolean isClosing() {
-        return isClosing;
+        return isClosing || !isConnected;
     }
 
     public PixelFormat getPixelFormat() {
