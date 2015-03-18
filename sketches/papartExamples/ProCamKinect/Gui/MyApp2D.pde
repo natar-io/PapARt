@@ -29,6 +29,7 @@ public class MyApp  extends PaperTouchScreen {
 
 	cp5.getMousePointer().disable();
 	cp5.setAutoDraw(false);
+
 	cp5.addSlider("hello", 0, 100, 50, 40, 40, 100, 20);
 	
 
@@ -74,7 +75,8 @@ public class MyApp  extends PaperTouchScreen {
 		    cp5.updatePointer(t.id, (int) p.x, (int) p.y);
 		}
 
-	    ellipse(p.x, p.y, 10, 10);
+		cp5.updatePointerPress(t.id, true);
+		ellipse(p.x, p.y, 10, 10);
 	    }
 
 	    //	    println("Setting Pointer " + p);
