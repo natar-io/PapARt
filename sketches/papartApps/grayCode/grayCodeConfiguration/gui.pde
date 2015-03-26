@@ -1,8 +1,9 @@
 
 import fr.inria.papart.depthcam.calibration.*;
 
-import controlP5.*;
-import controlP5.Slider;
+import fr.inria.controlP5.*;
+import fr.inria.controlP5.gui.controllers.*;
+
 
 ControlP5 cp5;
 
@@ -27,19 +28,19 @@ void initGui(){
     // to variable 'sliderValue' 
     cp5.addSlider("displayTime")
 	.setPosition(frameSizeX + 10, 20)
-	.setRange(30,500)
+	.setRange(30,1200)
 	.setValue(displayTime)
 	;
     
     cp5.addSlider("captureTime")
 	.setPosition(frameSizeX + 10, 40)
-	.setRange(30, 500)
+	.setRange(30, 1200)
 	.setValue(captureTime)
 	;
     
     cp5.addSlider("delay")
 	.setPosition(frameSizeX + 10, 60)
-	.setRange(0, 150)
+	.setRange(0, 300)
 	.setValue(delay)
 	;
     

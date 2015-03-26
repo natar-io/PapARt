@@ -64,7 +64,7 @@ public class HomographyCreator {
         cvMat = cvCreateMat(3, 3, CV_32FC1);
         homographyCalibrationOutput = new HomographyCalibration();
     }
-
+    
     public boolean addPoint(PVector src, PVector dst) {
         addPointCvMat(srcPoints, src);
         addPointCvMat(dstPoints, dst);
