@@ -52,7 +52,6 @@ public abstract class Camera implements PConstants {
     protected PImage depthPImage = null;
 
     public enum Type {
-
         OPENCV, PROCESSING, OPEN_KINECT, FLY_CAPTURE
     }
 
@@ -72,7 +71,8 @@ public abstract class Camera implements PConstants {
     protected int frameRate;
     protected boolean trackSheets = false;
     private boolean isClosing = false;
-
+    protected boolean isConnected = false;
+    
     private boolean undistort = false;
 
     // Properties
@@ -117,6 +117,11 @@ public abstract class Camera implements PConstants {
     public PImage getPImageCopy() {
         PImage out = parent.createImage(this.width, this.height, RGB);
         Utils.IplImageToPImage(currentImage, out);
+        return out;
+    }
+
+    public PImage getPImageCopyTo(PImage out) {
+        Utils.IplImageToPImage(currentImage, this.format, out);
         return out;
     }
 
@@ -199,7 +204,7 @@ public abstract class Camera implements PConstants {
             sheetsSemaphore.release();
         } catch (InterruptedException ex) {
             Logger.getLogger(Camera.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (NullPointerException e){
+        } catch (NullPointerException e) {
             throw new RuntimeException("Marker detection not initialized.");
         }
 
@@ -330,7 +335,7 @@ public abstract class Camera implements PConstants {
     }
 
     public boolean isClosing() {
-        return isClosing;
+        return isClosing || !isConnected;
     }
 
     public PixelFormat getPixelFormat() {

@@ -132,14 +132,14 @@ public class MarkerBoard {
             //  - works with luminance (gray) images
             //  - can load a maximum of 0 non-binary pattern
             //  - can detect a maximum of 8 patterns in one image
-            TrackerMultiMarker tracker = new ARToolKitPlus.TrackerMultiMarker(camera.width(), camera.height(), 10, 6, 6, 6, 0);
+            TrackerMultiMarker tracker = new ARToolKitPlus.TrackerMultiMarker(camera.width(), camera.height(), 20, 6, 6, 6, 5);
 
             int pixfmt = 0;
-            switch(camera.getPixelFormat()){
-                case BGR: 
+            switch (camera.getPixelFormat()) {
+                case BGR:
                     pixfmt = ARToolKitPlus.PIXEL_FORMAT_BGR;
                     break;
-                case RGB: 
+                case RGB:
                     pixfmt = ARToolKitPlus.PIXEL_FORMAT_RGB;
                     break;
                 case ARGB: // closest, not the same.
@@ -147,18 +147,20 @@ public class MarkerBoard {
                     break;
                 case RGBA:
                     pixfmt = ARToolKitPlus.PIXEL_FORMAT_RGBA;
-                default: 
+                default:
                     throw new RuntimeException("ARtoolkit : Camera pixel format unknown");
             }
 
             tracker.setPixelFormat(pixfmt);
             tracker.setBorderWidth(0.125f);
             tracker.activateAutoThreshold(true);
-            tracker.setUndistortionMode(ARToolKitPlus.UNDIST_NONE);
+//            tracker.setUndistortionMode(ARToolKitPlus.UNDIST_NONE);
             tracker.setPoseEstimator(ARToolKitPlus.POSE_ESTIMATOR_RPP);
+
+//            tracker.setPoseEstimator(ARToolKitPlus.POSE_ESTIMATOR_ORIGINAL_CONT);
             tracker.setMarkerMode(ARToolKitPlus.MARKER_ID_BCH);
-            tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_FULL_RES);
-//            tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_HALF_RES);
+//            tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_FULL_RES);
+            tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_HALF_RES);
             tracker.setUseDetectLite(false);
 //            tracker.setUseDetectLite(true);
 
@@ -185,7 +187,7 @@ public class MarkerBoard {
             settings.setObjectImage(imgToFind);
             settings.setUseFLANN(true);
             settings.setRansacReprojThreshold(5);
-           settings.setMatchesMin(16);
+            settings.setMatchesMin(16);
             ObjectFinder finder = new ObjectFinder(settings);
 
             this.trackers.add(finder);
@@ -392,12 +394,22 @@ public class MarkerBoard {
             // Find the markers
             tracker.calc(img.imageData());
 
-            if (tracker.getNumDetectedMarkers() <= 0) {
+            // Minimum 2 markers !
+            if (tracker.getNumDetectedMarkers() <= 1) {
                 return;
             }
 
             ARToolKitPlus.ARMultiMarkerInfoT multiMarkerConfig = tracker.getMultiMarkerConfig();
 
+            PVector currentPos = new PVector((float) multiMarkerConfig.trans().get(3),
+                    (float) multiMarkerConfig.trans().get(7),
+                    (float) multiMarkerConfig.trans().get(11));
+
+            // Cannot detect elements as close as closer than 10cm
+            if(currentPos.z < 10){
+                return;
+            }
+                               
             // if the update is forced 
             if (mode == FORCE_UPDATE && currentTime < endTime) {
                 update(multiMarkerConfig, id);
@@ -409,9 +421,6 @@ public class MarkerBoard {
                 updateStatus.set(id, NORMAL);
             }
 
-            PVector currentPos = new PVector((float) multiMarkerConfig.trans().get(3),
-                    (float) multiMarkerConfig.trans().get(7),
-                    (float) multiMarkerConfig.trans().get(11));
             float distance = currentPos.dist(lastPos.get(id));
 
             // if it is a drawing mode
@@ -539,7 +548,7 @@ public class MarkerBoard {
         }
         if (this.type == MarkerType.OPENCV_SURF) {
             PMatrix3D mat = (PMatrix3D) this.transfos.get(cameras.indexOf(camera));
-            
+
             float[] tmp = new float[12];
             mat.get(tmp);
             return tmp;
@@ -556,7 +565,7 @@ public class MarkerBoard {
                     0, 0, 0, 1);
         }
         if (this.type == MarkerType.OPENCV_SURF) {
-            
+
             PMatrix3D transfo = (PMatrix3D) this.transfos.get(cameras.indexOf(camera));
             return transfo;
 //            return (PMatrix3D) this.transfos.get(cameras.indexOf(camera));
@@ -573,14 +582,14 @@ public class MarkerBoard {
         return tr2;
     }
 
-    public boolean usePMatrix(){
+    public boolean usePMatrix() {
         return this.type == MarkerType.OPENCV_SURF;
     }
-    
-    public boolean useFloatArray(){
+
+    public boolean useFloatArray() {
         return this.type == MarkerType.ARTOOLKITPLUS;
     }
-    
+
     public String getFileName() {
         return fileName;
     }

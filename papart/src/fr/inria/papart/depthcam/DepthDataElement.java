@@ -18,12 +18,6 @@
  */
 
 package fr.inria.papart.depthcam;
-
-import fr.inria.papart.depthcam.calibration.HomographyCalibration;
-import fr.inria.papart.depthcam.calibration.PlaneAndProjectionCalibration;
-import fr.inria.papart.depthcam.calibration.PlaneCalibration;
-import fr.inria.papart.procam.ProjectiveDeviceP;
-import java.util.ArrayList;
 import toxi.geom.Vec3D;
 
 /**
@@ -40,11 +34,9 @@ public class DepthDataElement {
     public boolean validPoint3D;
     public int pointColor;
 
+    public Vec3D normal;
 
-    // Not sure if it will be used !
-//    public ProjectiveDeviceP projectiveDevice;
-//    public PlaneAndProjectionCalibration planeAndProjectionCalibration;
-//    public HomographyCalibration homographyCalibration;
-//    public PlaneCalibration planeCalibration;
-    
+    public byte neighbourSum;
+    public byte neighbours;
+
 }

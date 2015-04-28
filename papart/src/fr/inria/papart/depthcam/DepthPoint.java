@@ -29,7 +29,20 @@ public class DepthPoint{
     // name is colorPt -- because of processing color function to avoid problems.
     protected int colorPt;
     protected PVector position = new PVector();
+    protected PVector normal = new PVector();
 
+    public PVector getNormal() {
+        return normal;
+    }
+
+    public void setNormal(Vec3D normal) {
+        if(normal == null)
+            return;
+        this.normal.x = normal.x;
+        this.normal.y = normal.y;
+        this.normal.z = normal.z;
+    }
+    
     public DepthPoint(){}
     
     public DepthPoint(float x, float y, float z, int col){

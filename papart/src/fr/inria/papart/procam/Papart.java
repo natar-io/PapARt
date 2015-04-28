@@ -66,13 +66,14 @@ public class Papart {
     private boolean displayInitialized;
     private boolean cameraInitialized;
     private boolean touchInitialized;
-//    private ARDisplay display;
+
     private BaseDisplay display;
     private ARDisplay arDisplay;
     private ProjectorDisplay projector;
 
     private Camera cameraTracking;
     private Kinect kinect;
+
 //    private TouchInput touchInput;
     private TouchInput touchInput;
     private PVector frameSize;
@@ -348,6 +349,10 @@ public class Papart {
     }
 
     public void startTracking() {
+        if(this.cameraTracking == null){
+            System.err.println("Start Tracking requires a Camera...");
+            return;
+        }
         this.cameraTracking.trackSheets(true);
     }
 
@@ -403,6 +408,10 @@ public class Papart {
         return this.isWithoutCamera;
     }
 
+    public Kinect getKinect() {
+        return kinect;
+    }
+    
     public PApplet getApplet() {
         return applet;
     }

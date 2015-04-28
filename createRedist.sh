@@ -16,8 +16,14 @@ mkdir $TMP/$NAME/examples/examples
 mkdir $TMP/$NAME/examples/calib
 mkdir $TMP/$NAME/examples/apps
 
-echo "Cleaning sketches"
 
+echo "Cleaning previous versions"
+rm -rf libraries/$NAME 
+echo "Create archive of depedencies"
+tar -zcf libs.tgz libraries
+
+
+echo "Cleaning sketches"
 sh $SKETCHBOOK/clean.sh
 
 echo "Copy Library"
@@ -56,8 +62,6 @@ cp -R $SKETCHBOOK/papartCalibration/* $TMP/$NAME/examples/calib/
 cp -R $SKETCHBOOK/papartApps/* $TMP/$NAME/examples/apps/
 
 
-
-
 echo "Create the archive..." 
 cd $TMP
 
@@ -67,10 +71,11 @@ mv $NAME.tgz  ..
 cd .. 
 
 
+
 cp -r $TMP/$NAME libraries/
 
-echo "Create archive of depedencies"
-tar -zcf libs.tgz libraries
+echo "Create full archive : Papart & Deps"
+tar -zcf papart-complete.tgz libraries
 
 echo "Clean " 
 rm -rf $TMP

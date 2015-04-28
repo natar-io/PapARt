@@ -56,5 +56,20 @@ public class ConnectedComponent extends ArrayList<Integer> {
         }
         return min;
     }
+    
+    public float getHeight(Vec3D[] array) {
+        float min = Float.MAX_VALUE;
+        float max = 0;
+        for (int offset : this) {
+            float z = array[offset].z;
+            if (z < min) {
+                min = z;
+            }
+            if (z > max) {
+                max = z;
+            }
+        }
+        return max - min;
+    }
 
 }

@@ -144,8 +144,6 @@ public class Button extends InteractiveZone {
 
         checkCooldown();
 
-        g.imageMode(PApplet.CENTER);
-
         // TODO: remove this null check
         if (img != null) {
             drawImage();
@@ -156,7 +154,7 @@ public class Button extends InteractiveZone {
 
     private void drawText() {
         int fontSize = this.currentButtonFontSize > 0 ? this.currentButtonFontSize : buttonFontSize;
-
+        g.rectMode(CENTER);
         if (isActive) {
             drawTextActive(fontSize);
         } else {
@@ -165,14 +163,20 @@ public class Button extends InteractiveZone {
     }
 
     private void drawTextActive(int fontSize) {
-        g.fill(DrawUtils.applet.color(255));
-
         if (nameSel != null) {
             DrawUtils.drawText(g, nameSel, buttonFont, fontSize,
                     (int) position.x, (int) position.y, (int) width, (int) height);
         } else {
-            DrawUtils.drawText(g, name, buttonFont, fontSize,
-                    (int) position.x, (int) position.y, (int) width, (int) height);
+            g.fill(isSelected ? 255 : 0, isActive ? 255 : 0, 0);
+            
+            g.textFont(buttonFont, fontSize);
+            g.text(name, (int) position.x, (int) position.y, (int) width, (int) height);
+            
+            g.noFill();
+            g.stroke(180);
+            g.strokeWeight(2);
+            g.rect((int) position.x, (int) position.y, (int) width, (int) height);
+            g.fill(255);
         }
     }
 
@@ -183,6 +187,7 @@ public class Button extends InteractiveZone {
     }
 
     private void drawImage() {
+        g.imageMode(PApplet.CENTER);
         if (isActive) {
             drawImageActive();
         } else {
@@ -229,10 +234,10 @@ public class Button extends InteractiveZone {
         isActive = true;
     }
 
-    public boolean isActive(){
+    public boolean isActive() {
         return this.isActive;
     }
-    
+
     public PImage getImage() {
         return img;
     }

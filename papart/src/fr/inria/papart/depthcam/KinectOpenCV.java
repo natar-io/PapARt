@@ -39,6 +39,7 @@ public class KinectOpenCV extends Kinect {
         super(parent, calibIR, calibRGB, mode);
     }
 
+    @Override
     protected void init() {
         super.init();
         validPointsIpl = IplImage.create(cvSize(

@@ -18,26 +18,11 @@
  */
 package fr.inria.papart.procam.camera;
 
-import fr.inria.papart.procam.Utils;
 import java.awt.Image;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.IntBuffer;
 import org.bytedeco.javacpp.opencv_core.IplImage;
-
-// To remove :::
-//import org.gstreamer.Pipeline;
-//import org.gstreamer.elements.BufferDataAppSink;
-//import org.gstreamer.elements.RGBDataAppSink;
 import processing.core.PApplet;
-
-import static processing.core.PConstants.ARGB;
-import static processing.core.PConstants.RGB;
 import processing.core.PImage;
-import processing.opengl.PGraphicsOpenGL;
-import processing.opengl.Texture;
 
 /**
  *

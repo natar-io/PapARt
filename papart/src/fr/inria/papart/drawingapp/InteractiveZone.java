@@ -20,10 +20,11 @@ package fr.inria.papart.drawingapp;
 
 import fr.inria.papart.multitouch.TouchPoint;
 import processing.core.PApplet;
+import processing.core.PConstants;
 import processing.core.PVector;
 import processing.opengl.PGraphicsOpenGL;
 
-public class InteractiveZone implements Drawable {
+public class InteractiveZone implements Drawable, PConstants {
 
     static final int INTERACTIVE_COOLDOWN = 100;
     protected float width = 40;
@@ -108,11 +109,23 @@ public class InteractiveZone implements Drawable {
         position.x = pos.x;
         position.y = pos.y;
     }
+    public void setPosition(float x , float y ) {
+        position.x = x;
+        position.y = y;
+    }
 
     public PVector getPosition() {
         return position;
     }
+    
+    public float getWidth(){
+        return this.width;
+    }
 
+    public float getHeight(){
+        return this.height;
+    }
+    
     @Override
     public void show() {
         isHidden = false;

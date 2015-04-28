@@ -29,5 +29,6 @@ public class Common {
     static final String PlaneCalibration = "planeCalibration1.xml";
     static final String PlaneProjectionCalibration = "planeProjectionCalibration1.xml";
     static final String PlaneCalibrationCopy = "planeCalibration1Copy.xml";
+    static final String CameraProjectorSync = "cameraProjectorSync.xml";
 
 }

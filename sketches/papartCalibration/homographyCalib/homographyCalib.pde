@@ -32,10 +32,11 @@ PVector[] screenPoints;
 int nbPoints;
 int currentPoint = 0;
 
+int scale = 1;
 
 void setup(){
     
-    size(Kinect.WIDTH, Kinect.HEIGHT, OPENGL); 
+    size(Kinect.WIDTH * scale , Kinect.HEIGHT * scale, OPENGL); 
     
     int depthFormat = freenect.FREENECT_DEPTH_MM;
     int kinectFormat = Kinect.KINECT_MM;
@@ -119,11 +120,12 @@ void draw3DPointCloud(){
 
 void draw2DSelection(){
     cam.beginHUD();
-    kinect.update(kinectImgDepth, kinectImg, planeCalibration, precision);
+    //    kinect.update(kinectImgDepth, kinectImg, planeCalibration, precision);
+    kinect.update(kinectImgDepth, kinectImg, precision);
     //    kinect.update(kinectImgDepth, kinectImg);
     depthPoints = kinect.getDepthPoints();
     PImage goodDepthImg = kinect.getColouredDepthImage();
-    image(goodDepthImg, 0, 0);
+    image(goodDepthImg, 0, 0, width, height);
     cam.endHUD();
 }
 
@@ -181,7 +183,7 @@ void mousePressed(){
     }
 
 
-   int offset = (int) mouseY * camera.width() +(int) mouseX;
+    int offset = (int) (mouseY / scale)  * camera.width() +(int) (mouseX /scale);
 
     if(depthPoints[offset] != null){
 	Vec3D depth = depthPoints[offset];
@@ -198,5 +200,3 @@ void mousePressed(){
 
     }
 }
-
-

@@ -46,6 +46,9 @@ public class CameraFactory {
             case OPEN_KINECT:
                 camera = new CameraOpenKinect(cameraNo);
                 break;
+            case FLY_CAPTURE:
+                camera = new CameraFlyCapture(cameraNo);
+                break;
             default:
                 throw new RuntimeException("ProCam, Camera: Unspported camera Type");
         }

@@ -59,12 +59,39 @@ public class TouchList extends ArrayList<Touch> {
         return old;
     }
 
+    public Touch getTouchWithId(int id) {
+        for (Touch touch : this) {
+            if (touch.id == id) {
+                return touch;
+            }
+        }
+        return Touch.INVALID;
+    }
+
+    public boolean containsTouchWithId(int id) {
+        for (Touch touch : this) {
+            if (touch.id == id) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public ArrayList<Integer> getIds(){
+        ArrayList<Integer> ids = new ArrayList<>();
+        for(Touch t : this){
+            ids.add(t.id);
+        }
+        
+        return ids;
+    }
+
     public TouchList get2DTouchs() {
         return filterByType(false);
     }
 
     public TouchList get3DTouchs() {
-        return filterByType(false);
+        return filterByType(true);
     }
 
     private TouchList filterByType(boolean get3D) {
@@ -88,10 +115,12 @@ public class TouchList extends ArrayList<Touch> {
 
     public void invertY(PVector drawingSize) {
         for (Touch touch : this) {
-            touch.position.y = drawingSize.y - touch.position.y;
-            touch.pposition.y = drawingSize.y - touch.pposition.y;
-            touch.speed.y = -touch.speed.y;
+            touch.invertY(drawingSize.y);
         }
     }
     
+    public String toString(){
+        return super.toString();
+    }
+
 }

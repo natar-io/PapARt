@@ -21,7 +21,6 @@ package fr.inria.papart.procam;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.drawingapp.DrawUtils;
-import fr.inria.papart.exceptions.BoardNotDetectedException;
 import java.awt.Image;
 import processing.opengl.PGraphicsOpenGL;
 import processing.core.PApplet;
@@ -338,6 +337,10 @@ public class PaperScreen {
         this.isDrawingOnScreen = true;
         return g;
     }
+    
+    public boolean isDraw2D(){
+        return currentGraphics != this.display.getGraphics();
+    }
 
     /**
      * Method to override in your class. Default implementation is a blue
@@ -358,12 +361,12 @@ public class PaperScreen {
      * *
      * Works only in 3D mode with beginDraw3D().
      *
-     * @param ps PaperScreen to go to.
+     * @param paperScreen PaperScreen to go to.
      */
-    public void goTo(PaperScreen ps) {
+    public void goTo(PaperScreen paperScreen) {
 
         if (this.isDrawingOnScreen == true) {
-            throw new RuntimeException("Impossible to draw on another board. You need to drawi using beginDraw3D() to do so.");
+            throw new RuntimeException("Impossible to draw on another board. You need to draw using beginDraw3D() to do so.");
         }
 
 //        if (this.currentGraphics != graphics) {
@@ -372,12 +375,53 @@ public class PaperScreen {
         // get the location of this board...
         PMatrix3D loc = this.getLocation().get();
         loc.invert();
-        loc.apply(ps.getLocation());
+        loc.apply(paperScreen.getLocation());
 
-        // Sun POV
         applyMatrix(loc);
     }
 
+    public static final PVector INVALID_VECTOR = new PVector();
+    
+    public PVector getCoordFrom(PaperScreen paperScreen, PVector point) {
+
+        // get a copy
+        PMatrix3D thisLocationInv = this.getLocation().get();
+        thisLocationInv.invert();
+
+        PMatrix3D otherLocation = paperScreen.getLocation();
+        PVector cameraViewOfPoint = new PVector();
+        otherLocation.mult(point, cameraViewOfPoint);
+
+        PVector thisViewOfPoint = new PVector();
+        thisLocationInv.mult(cameraViewOfPoint, thisViewOfPoint);
+
+        if(Float.isNaN(thisViewOfPoint.x)){
+            return  INVALID_VECTOR;
+        }
+        
+        return thisViewOfPoint;
+    }
+    
+    
+//  public PVector getCoordOf(PaperScreen paperScreen, PVector point) {
+// 
+//        PMatrix3D thisLocation = this.getLocation();
+//        PVector cameraViewOfPoint = new PVector();
+//        thisLocation.mult(point, cameraViewOfPoint);
+//
+//        PMatrix3D otherLocationInv = paperScreen.getLocation().get();
+//        otherLocationInv.invert();
+//        
+//        PVector otherViewOfPoint = new PVector();
+//        otherLocationInv.mult(cameraViewOfPoint, otherViewOfPoint);
+//
+//        if(Float.isNaN(otherViewOfPoint.x)){
+//            return  INVALID_VECTOR;
+//        }
+//        
+//        return otherViewOfPoint;
+//    }
+    
     public PGraphicsOpenGL getGraphics() {
         return currentGraphics;
     }
@@ -394,6 +438,7 @@ public class PaperScreen {
         setLocation(v.x, v.y, v.z);
     }
 
+     // TODO: Bug here, without this call, the rendering is different. 
     public void setLocation(float x, float y, float z) {
         assert (isInitialized);
         screen.setTranslation(x, y, z);

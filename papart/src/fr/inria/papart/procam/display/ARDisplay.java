@@ -21,6 +21,7 @@ package fr.inria.papart.procam.display;
 import processing.opengl.PGraphicsOpenGL;
 import org.bytedeco.javacv.ProjectiveDevice;
 import fr.inria.papart.drawingapp.DrawUtils;
+import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.procam.Camera;
 import fr.inria.papart.procam.HasExtrinsics;
 import fr.inria.papart.procam.ProjectiveDeviceP;
@@ -413,7 +414,7 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
 
     // We consider px and py are normalized screen or subScreen space... 
     @Override
-    public PVector projectPointer(Screen screen, float px, float py) throws Exception {
+    public PVector projectPointer(Screen screen, float px, float py) {
 //        double[] undist = proj.undistort(px * getWidth(), py * getHeight());
 //
 //        // go from screen coordinates to normalized coordinates  (-1, 1) 
@@ -436,7 +437,7 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
 //        dist = screen.plane.intersectRayDistance(ray);
 
         if (inter == null) {
-            throw new Exception("No Intersection");
+            return TouchInput.NO_INTERSECTION;
         }
 
         // 3D -> 2D transformation

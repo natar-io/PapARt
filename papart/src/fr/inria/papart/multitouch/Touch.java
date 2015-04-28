@@ -18,6 +18,7 @@
  */
 package fr.inria.papart.multitouch;
 
+import TUIO.TuioCursor;
 import java.util.ArrayList;
 import processing.core.PVector;
 
@@ -28,30 +29,37 @@ import processing.core.PVector;
  */
 public class Touch {
 
-    public boolean is3D;
-    public PVector position;
-    public PVector pposition;
-    public PVector speed;
-    public TouchPoint touchPoint;
+    public static final Touch INVALID = new Touch();
     
+    public boolean is3D;
+    public boolean isGhost;
+
+    public PVector position = new PVector();
+    public PVector pposition = new PVector();
+    public PVector speed = new PVector();
+    
+    // TODO: find a solution for this !
+    // Always has a TouchPoint linked ? Not clean. 
+    public TouchPoint touchPoint;
+
     public PVector size;
 
     // TODO: implementation of this. 
     public boolean isObject;
     public int id;
-    
-    public void setPosition(PVector v){
+
+    public void setPosition(PVector v) {
         setPosition(v.x, v.y, v.z);
     }
-    public void setPosition(float x, float y, float z){
-        if(this.position == null){
-            this.position = new PVector();
-        }
+
+    public void setPosition(float x, float y, float z) {
+        this.pposition.set(this.position);
         this.position.x = x;
         this.position.y = y;
         this.position.z = z;
+        this.speed.set(PVector.sub(this.position, this.pposition));
     }
-    
+
     @Override
     public String toString() {
         return "Position " + position + " Speed " + speed + " Touch info " + touchPoint;
@@ -59,9 +67,9 @@ public class Touch {
 
     public void setPrevPos(PVector prevPosition) {
         pposition = prevPosition;
-        speed = PVector.sub(prevPosition,position);
+        speed = PVector.sub(prevPosition, position);
     }
-    
+
     public void defaultPrevPos() {
         pposition = position.get();
         speed = new PVector();
@@ -79,5 +87,11 @@ public class Touch {
         speed.x *= scales.x;
         speed.y *= scales.y;
         speed.z *= scales.z;
+    }
+
+    public void invertY(float sizeY) {
+        position.y = sizeY - position.y;
+        pposition.y = sizeY - pposition.y;
+        speed.y = -speed.y;
     }
 }

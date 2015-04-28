@@ -140,32 +140,8 @@ public class DrawUtils implements PConstants{
 //        pg3d.popMatrix();
     }
 
-    static public void drawText(PGraphicsOpenGL pg3d, String text, PFont font, int fontSize, int x, int y, int w, int h) {
-        pg3d.pushMatrix();
-        pg3d.translate(x, y);
-        pg3d.rectMode(PApplet.CENTER);
-        pg3d.textFont(font, fontSize);
-        pg3d.text(text, 0, 0, w, h);
-//        pg3d.noFill();
-//        pg3d.stroke(100);
-//        pg3d.rect(0, 0, w, h);
-        pg3d.popMatrix();
-        
-        
-//        pg3d.pushMatrix();
-//        pg3d.translate(x, y);
-//        pg3d.scale(-1, 1, 1);
-//        pg3d.rotate(PApplet.PI);
-////        pg3d.textMode(PApplet.MODEL);
-//        pg3d.rectMode(PApplet.CENTER);
-//
-//        pg3d.textFont(font, fontSize);
-//        pg3d.text(text, 0, 0, w, h);
-//
-//        pg3d.noFill();
-//        pg3d.stroke(100);
-//        pg3d.rect(0, 0, w, h);
-//
-//        pg3d.popMatrix();
+    static public void drawText(PGraphicsOpenGL g, String text, PFont font, int fontSize, int x, int y, int w, int h) {
+        g.textFont(font, fontSize);
+        g.text(text, x, y, w, h);
     }
 }

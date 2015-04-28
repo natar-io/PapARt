@@ -2,18 +2,14 @@
 require 'ruby-processing' 
 
 Processing::App::SKETCH_PATH = __FILE__
-
-Processing::App::load_library  :ProCam
-
+Processing::App::load_library :PapARt, :javacv, :toxiclibscore
 
 module Papartlib
   include_package 'fr.inria.papart.procam'
 end
 
-
 class Sketch < Processing::App
 
-#  load_library :bytedeco, :ProCam
 
   attr_reader :camera_tracking, :display, :papart, :moon
 
@@ -30,9 +26,9 @@ class Sketch < Processing::App
     if @useProjector
       size(frameSizeX, frameSizeY, OPENGL)
       @papart = Papartlib::Papart.new self
-      @papart.initProjectorCamera(1, "0",
+      @papart.initProjectorCamera("0",
                                   Papartlib::Camera::Type::OPENCV);
-      @papart.loadTouchInput(2, 5);
+      @papart.loadTouchInput(2, 5)
     else 
       size(@camera_x, @camera_y, OPENGL)
       @papart = Papartlib::Papart.new self
@@ -63,7 +59,7 @@ class Moon < Papartlib::PaperTouchScreen
   def draw
     setLocation(0, 0, 0)
     pg = beginDraw2D
-    pg.background 20, 200, 200
+    pg.background 40, 200, 200
     pg.endDraw
   end
 end

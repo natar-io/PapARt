@@ -97,17 +97,11 @@
          sodipodi:role="line"
          id="tspan3049"
          x="350.26337"
-         y="668.59949">La lune </tspan></text>
-    <path
-       sodipodi:type="arc"
-       style="fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:#218181;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
-       id="path3051"
-       sodipodi:cx="597.00018"
-       sodipodi:cy="829.11847"
-       sodipodi:rx="132.32999"
-       sodipodi:ry="122.22845"
-       d="m 729.33017,829.11847 c 0,67.50491 -59.24615,122.22845 -132.32999,122.22845 -73.08383,0 -132.32998,-54.72354 -132.32998,-122.22845 0,-67.50491 59.24615,-122.22845 132.32998,-122.22845 73.08384,0 132.32999,54.72354 132.32999,122.22845 z"
-       transform="translate(-61.619334,35.355224)" />
+         y="668.59949">Moon</tspan><tspan
+         sodipodi:role="line"
+         x="350.26337"
+         y="727.90778"
+         id="tspan2998" /></text>
     <image
        y="449.99985"
        x="53.149605"

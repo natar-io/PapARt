@@ -57,21 +57,42 @@ public class BackgroundRemover implements PConstants {
 
         this.state = BackgroundState.NO_BACKGROUND;
     }
-    
+
+    public void close() {
+        projZone.release();
+        output.release();
+        diff.release();
+        releaseBackground();
+        releaseProjZone();
+    }
+
+    private void releaseBackground() {
+        if (background != null) {
+            background.release();
+        }
+    }
+    private void releaseProjZone() {
+        if (background != null) {
+            background.release();
+        }
+    }
+
     /**
-     * Please wait for a few frames ~5 or 10 before calling 
+     * Please wait for a few frames ~5 or 10 before calling
+     *
      * @param rawImage background image to store.
      */
     public void setBackground(IplImage rawImage) {
         this.background = rawImage.clone();
         this.state = BackgroundState.FULL_IMAGE;
+        
     }
-    
-    public IplImage getProjZone(){
+
+    public IplImage getProjZone() {
         return this.projZone;
     }
-    
-    public IplImage getBackground(){
+
+    public IplImage getBackground() {
         return this.background;
     }
 
@@ -88,12 +109,12 @@ public class BackgroundRemover implements PConstants {
         this.state = BackgroundState.PROJ_ZONE;
     }
 
-    public void reset(){
+    public void reset() {
         this.state = BackgroundState.NO_BACKGROUND;
     }
-    
+
     public boolean isBackgroundSet() {
-        return this.state != BackgroundState.NO_BACKGROUND ;
+        return this.state != BackgroundState.NO_BACKGROUND;
     }
 
     public boolean isProjSet() {
@@ -101,9 +122,9 @@ public class BackgroundRemover implements PConstants {
     }
 
     public PVector findSinglePixel(IplImage rawImage) {
-         return findPos(applyTo(rawImage));
+        return findPos(applyTo(rawImage));
     }
-    
+
     /**
      * Not used ?
      *
@@ -119,19 +140,17 @@ public class BackgroundRemover implements PConstants {
         return this.applyTo(rawImage, 0);
     }
 
-    
     /**
      * Remove the background, and search within the proj zone. With noise
      * reduction.
      *
      * @param rawImage
-     * @param filterPower 0  no filtering, 1 or more  1 pixel or more
-     * closing.
+     * @param filterPower 0 no filtering, 1 or more 1 pixel or more closing.
      * @return
      */
     public IplImage applyTo(IplImage rawImage, int filterPower) {
-        assert(this.state != BackgroundState.NO_BACKGROUND);
-        
+        assert (this.state != BackgroundState.NO_BACKGROUND);
+
         // cvCvtColor(rawImage, hsvImage, CV_BGR2HSV); 
         // cvSplit(hsvImage, null, pict, null, null);
         //	cvSplit(hsvImage, picts, null, null, null);

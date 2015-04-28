@@ -40,6 +40,7 @@ public class DepthData {
      * 3D points viewed by the kinects
      */
     public Vec3D[] kinectPoints;
+    public Vec3D[] kinectNormals;
 
     /**
      * Normalized version of the 3D points
@@ -58,10 +59,12 @@ public class DepthData {
     public boolean[] validPointsMask3D;
 
     /**
-     * Not sure if used...
+     * Color...
      */
     public int[] pointColors;
 
+    public Connexity connexity;
+    
     /**
      * List of valid points
      */
@@ -75,12 +78,14 @@ public class DepthData {
 
     public int timeStamp;
     
-    public DepthData(int size) {
-        this(size, true);
+    public DepthData(int width, int height) {
+        this(width, height, true);
     }
 
-    public DepthData(int size, boolean is3D) {
+    public DepthData(int width, int height, boolean is3D) {
+        int size = width * height;
         kinectPoints = new Vec3D[size];
+        kinectNormals = new Vec3D[size];
         projectedPoints = new Vec3D[size];
         validPointsMask = new boolean[size];
         pointColors = new int[size];
@@ -90,6 +95,8 @@ public class DepthData {
             validPointsMask3D = new boolean[size];
             validPointsList3D = new ArrayList();
         }
+        connexity = new Connexity(kinectPoints, width, height);
+//        connexity = new Connexity(projectedPoints, width, height);
     }
     
     public DepthDataElement getElement(int i){
@@ -100,6 +107,9 @@ public class DepthData {
         dde.touchAttribute = touchAttributes[i];
         dde.validPoint = validPointsMask[i];
         dde.validPoint3D = validPointsMask3D[i];
+        dde.neighbourSum = connexity.connexitySum[i];
+        dde.neighbours = connexity.connexity[i];
+        dde.normal = kinectNormals[i];
         dde.offset = i;
         return dde;
     }
@@ -109,6 +119,7 @@ public class DepthData {
         clear2D();
         clear3D();
         clearColor();
+        connexity.reset();
         Arrays.fill(touchAttributes, TouchAttributes.NO_ATTRIBUTES);
     }
     

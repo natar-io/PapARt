@@ -22,6 +22,7 @@ import fr.inria.papart.depthcam.calibration.HomographyCalibration;
 import fr.inria.papart.depthcam.calibration.HomographyCreator;
 import fr.inria.papart.depthcam.calibration.PlaneCalibration;
 import fr.inria.papart.depthcam.calibration.PlaneCreator;
+import fr.inria.papart.procam.Camera.PixelFormat;
 import org.bytedeco.javacpp.opencv_imgproc.*;
 
 import org.bytedeco.javacv.CameraDevice;
@@ -109,6 +110,21 @@ public class Utils {
     static public Vec3D toVec(PVector p) {
         return new Vec3D(p.x, p.y, p.z);
     }
+    
+    static public boolean colorDist(int c1, int c2, int threshold) {
+        int r1 = c1 >> 16 & 0xFF;
+        int g1 = c1 >> 8 & 0xFF;
+        int b1 = c1 >> 0 & 0xFF;
+
+        int r2 = c2 >> 16 & 0xFF;
+        int g2 = c2 >> 8 & 0xFF;
+        int b2 = c2 >> 0 & 0xFF;
+
+        int dr = PApplet.abs(r1 - r2);
+        int dg = PApplet.abs(g1 - g2);
+        int db = PApplet.abs(b1 - b2);
+        return dr < threshold && dg < threshold && db < threshold;
+    }
 
     // TODO:  throws ...
     public static void savePMatrix3D(PApplet pa, PMatrix3D mat, String filename) {
@@ -189,7 +205,6 @@ public class Utils {
                 Float.parseFloat(lines[12]), Float.parseFloat(lines[13]), Float.parseFloat(lines[14]), Float.parseFloat(lines[15]));
         return mat;
     }
-
 
     static public IplImage createImageFrom(IplImage imgIn, PImage Pout) {
         // TODO: avoid this creation !!
@@ -378,8 +393,18 @@ public class Utils {
         return 0;
     }
 
+    // TODO: clean all this !
     static public void IplImageToPImage(IplImage img, PApplet applet, boolean RGB, PImage ret) {
         IplImageToPImage(img, RGB, ret);
+    }
+
+    static public void IplImageToPImage(IplImage img, PixelFormat format, PImage ret) {
+        if (format == PixelFormat.RGB) {
+            IplImageToPImage(img, true, ret);
+        }
+        if (format == PixelFormat.BGR) {
+            IplImageToPImage(img, false, ret);
+        }
     }
 
     static public void IplImageToPImage(IplImage img, PImage ret) {
@@ -398,7 +423,6 @@ public class Utils {
         //= new BufferedImage();
 
         if (img.nChannels() == 3) {
-
             ByteBuffer buff = img.getByteBuffer();
 
             //  PImage ret = new PImage(img.width(), img.height(), PApplet.RGB);
@@ -406,8 +430,6 @@ public class Utils {
             if (RGB) {
                 for (int i = 0; i < img.width() * img.height(); i++) {
                     int offset = i * 3;
-//            ret.pixels[i] = applet.color(buff.get(offset + 0) & 0xff, buff.get(offset + 1) & 0xFF, buff.get(offset + 2) & 0xff);
-
                     ret.pixels[i] = (buff.get(offset) & 0xFF) << 16
                             | (buff.get(offset + 1) & 0xFF) << 8
                             | (buff.get(offset + 2) & 0xFF);
@@ -416,14 +438,11 @@ public class Utils {
             } else {
                 for (int i = 0; i < img.width() * img.height(); i++) {
                     int offset = i * 3;
-//            ret.pixels[i] = applet.color(buff.get(offset + 0) & 0xff, buff.get(offset + 1) & 0xFF, buff.get(offset + 2) & 0xff);
-
                     ret.pixels[i] = (buff.get(offset + 2) & 0xFF) << 16
                             | (buff.get(offset + 1) & 0xFF) << 8
                             | (buff.get(offset) & 0xFF);
 
                 }
-
             }
         }
 
@@ -444,43 +463,17 @@ public class Utils {
         }
 
         if (img.nChannels() == 1) {
-
             // TODO: no more allocations. 
             ByteBuffer buff = img.getByteBuffer();
             byte[] arr = new byte[img.width() * img.height()];
             buff.get(arr);
 
             for (int i = 0; i < img.width() * img.height(); i++) {
-
                 int d = (arr[i] & 0xFF);
-
                 ret.pixels[i] = d;
-//                    ret.pixels[i] =
-//                            (buff.get(i) & 0xFF) << 16
-//                            | (buff.get(i) & 0xFF) << 8
-//                            | (buff.get(i) & 0xFF);
             }
 
-            ////////////// Kinect Depth //////////////
-            //                // TODO: no more allocations. 
-//                ByteBuffer buff = img.getByteBuffer();
-//                byte[] arr = new byte[2 * img.width() * img.height()];
-//                buff.get(arr);
-//
-//                for (int i = 0; i < img.width() * img.height() * 2; i += 2) {
-//                    
-//                    int d = (arr[i] & 0xFF) << 8 
-//                            | (arr[i+1] & 0xFF);
-//                    
-//                    ret.pixels[i / 2] = d;
-////                    ret.pixels[i] =
-////                            (buff.get(i) & 0xFF) << 16
-////                            | (buff.get(i) & 0xFF) << 8
-////                            | (buff.get(i) & 0xFF);
-//                }
         }
-
-//        buff = null;
         ret.updatePixels();
     }
 

@@ -18,7 +18,9 @@
  */
 package fr.inria.papart.depthcam;
 
+import java.util.Arrays;
 import processing.core.PVector;
+import toxi.geom.Vec3D;
 
 /**
  *
@@ -26,27 +28,33 @@ import processing.core.PVector;
  */
 public class Connexity {
 
-    public static final int TOPLEFT = 1;
-    public static final int TOP = 1 << 1;
-    public static final int TOPRIGHT = 1 << 2;
-    public static final int LEFT = 1 << 3;
-    public static final int RIGHT = 1 << 4;
-    public static final int BOTLEFT = 1 << 5;
-    public static final int BOT = 1 << 6;
-    public static final int BOTRIGHT = 1 << 7;
-    //    public static enum ConnexityType {
-//        TOPLEFT, TOP, TOPRIGHT, LEFT, RIGHT, BOTLEFT, BOT, BOTRIGHT;
-//        public int getFlagValue() {
-//            return 1 << this.ordinal();
-//        }
-//    }
+    // Byte description. 
+    public static final int TOPLEFT = 0;
+    public static final int TOP = 1;
+    public static final int TOPRIGHT = 2;
+    public static final int LEFT = 3;
+    public static final int RIGHT = 4;
+    public static final int BOTLEFT = 5;
+    public static final int BOT = 6;
+    public static final int BOTRIGHT = 7;
+
+//    public static final int TOPLEFT = 1;
+//    public static final int TOP = 1 << 1;
+//    public static final int TOPRIGHT = 1 << 2;
+//    public static final int LEFT = 1 << 3;
+//    public static final int RIGHT = 1 << 4;
+//    public static final int BOTLEFT = 1 << 5;
+//    public static final int BOT = 1 << 6;
+//    public static final int BOTRIGHT = 1 << 7;
     private final int width, height;
     private float connexityDist = 10;
+    public float DEFAULT_CONNEXITY_DIST = 10;
     public byte[] connexity;  // TODO: check for Byte instead of int
     public byte[] connexitySum;  // TODO: check for Byte instead of int
-    private final PointCloudElement[] points;
+    private Vec3D[] points;
+    private int precision;
 
-    public Connexity(PointCloudElement[] points, int w, int h) {
+    public Connexity(Vec3D[] points, int w, int h) {
         this.width = w;
         this.height = h;
         this.points = points;
@@ -54,8 +62,13 @@ public class Connexity {
         connexitySum = new byte[w * h];
     }
 
-    public void setConnexityDist(float dist) {
-        this.connexityDist = dist;
+    public void setPoints(Vec3D[] points) {
+        this.points = points;
+    }
+
+    public void reset() {
+        Arrays.fill(connexity, (byte) 0);
+        Arrays.fill(connexitySum, (byte) 0);
     }
 
     public byte[] get() {
@@ -64,6 +77,46 @@ public class Connexity {
 
     public byte[] getSum() {
         return this.connexitySum;
+    }
+
+    public Vec3D[] getNeighbourList(int x, int y) {
+        int offset = y * width + x;
+        int nbNeighbours = connexitySum[offset];
+        if (nbNeighbours == 0) {
+            return new Vec3D[0];
+        }
+
+        byte c = connexity[offset];
+//        Vec3D[] output = new Vec3D[nbNeighbours];
+        Vec3D[] output = new Vec3D[8];
+
+        int k = 0;
+        byte connNo = 0;
+//        for (int y1 = y - 1; y1 <= y + 1; y1 = y1 + 1) {
+//            for (int x1 = x - 1; x1 <= x + 1; x1 = x1 + 1) {
+         for (int y1 = y - precision; y1 <= y + precision; y1 = y1 + precision) {
+            for (int x1 = x - precision; x1 <= x + precision; x1 = x1 + precision) {
+                if (x1 == x && y1 == y) {
+                    continue;
+                }
+
+                int direction = 1 << connNo;
+                boolean valid = (c & direction) > 0;
+
+                if (valid) {
+                    int neighbourOffset = y1 * width + x1;
+                    output[connNo] = points[neighbourOffset];
+
+                }
+                connNo++;
+            }
+        }
+
+        // TEST
+//        for (int i = 0; i < nbNeighbours; i++) {
+//            assert (output[i] != null);
+//        }
+        return output;
     }
 
     void computeAll() {
@@ -75,7 +128,6 @@ public class Connexity {
     }
 
     void compute(int x, int y) {
-
         // Connexity map 
         //  0 1 2 
         //  3 x 4
@@ -84,7 +136,7 @@ public class Connexity {
         int currentOffset = y * width + x;
 
         if (points[currentOffset] == null
-                || points[currentOffset].position == null) {
+                || points[currentOffset] == Kinect.INVALID_POINT) {
             connexity[currentOffset] = 0;
             connexitySum[currentOffset] = 0;
             return;
@@ -93,11 +145,9 @@ public class Connexity {
         byte sum = 0;
         byte type = 0;
 
-//        for (int y1 = y - skip, connNo = 0; y1 <= y + skip; y1 = y1 + skip) {
-//            for (int x1 = x - skip; x1 <= x + skip; x1 = x1 + skip) {
         byte connNo = 0;
-        for (int y1 = y - 1; y1 <= y + 1; y1 = y1 + 1) {
-            for (int x1 = x - 1; x1 <= x + 1; x1 = x1 + 1) {
+        for (int y1 = y - precision; y1 <= y + precision; y1 = y1 + precision) {
+            for (int x1 = x - precision; x1 <= x + precision; x1 = x1 + precision) {
 
                 // Do not try the current point
                 if (x1 == x && y1 == y) {
@@ -115,9 +165,8 @@ public class Connexity {
 //                    type = type | (1 << connNo);
 //                }
                 if (points[offset] != null
-                        && points[offset].position != null
-                        && PVector.dist(points[currentOffset].position,
-                                points[offset].position) < connexityDist) {
+                        && points[offset] != Kinect.INVALID_POINT
+                        && points[currentOffset].distanceTo(points[offset]) < connexityDist) {
                     type = (byte) (type | 1 << connNo);
                     sum++;
                 }
@@ -128,6 +177,19 @@ public class Connexity {
 
         connexity[currentOffset] = type;
         connexitySum[currentOffset] = sum;
+    }
+
+    public int getPrecision() {
+        return precision;
+    }
+
+    public void setPrecision(int precision) {
+        this.precision = precision;
+        this.connexityDist = DEFAULT_CONNEXITY_DIST * precision;
+    }
+
+    public void setConnexityDist(float dist) {
+        this.connexityDist = dist;
     }
 
 }

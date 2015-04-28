@@ -130,33 +130,33 @@ public class PointCloud {
         loadVerticesToNative();
     }
 
-    public void updateCheck(PointCloudElement[] pce, int w, int h) {
-        nbVertices = 0;
-        nbColors = 0;
+//    public void updateCheck(PointCloudElement[] pce, int w, int h) {
+//        nbVertices = 0;
+//        nbColors = 0;
+//
+//        System.out.println("Compute connexity...");
+//        Connexity connexity = new Connexity(pce, w, h);
+//        connexity.computeAll();
+//
+//        System.out.println("Compute connexity OK");
+//        byte[] connexSum = connexity.getSum();
+//
+//        assert (pce.length <= nbPoints);
+//
+//        for (int i = 0; i < pce.length; i++) {
+//            // TODO: parallel ?
+//            if (pce[i] == null
+//                    || pce[i].position == null
+//                    || connexSum[i] < 3) {
+//                continue;
+//            }
+//
+//            addPoint(pce[i]);
+//        }
+//        loadVerticesToNative();
+//    }
 
-        System.out.println("Compute connexity...");
-        Connexity connexity = new Connexity(pce, w, h);
-        connexity.computeAll();
-
-        System.out.println("Compute connexity OK");
-        byte[] connexSum = connexity.getSum();
-
-        assert (pce.length <= nbPoints);
-
-        for (int i = 0; i < pce.length; i++) {
-            // TODO: parallel ?
-            if (pce[i] == null
-                    || pce[i].position == null
-                    || connexSum[i] < 3) {
-                continue;
-            }
-
-            addPoint(pce[i]);
-        }
-        loadVerticesToNative();
-    }
-
-    private void addPoint(PointCloudElement pce) {
+    private void addPoint(DepthPoint pce) {
 
         if (pce == null || pce.position == null) {
             return;

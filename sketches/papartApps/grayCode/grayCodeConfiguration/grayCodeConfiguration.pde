@@ -37,10 +37,10 @@ PImage projectorView = null;
 Camera cameraTracking;
 ProjectorDisplay projector;
 
-int frameSizeX = 1280;
-int frameSizeY = 800;
+int frameSizeX = 1920;
+int frameSizeY = 1080;
 int framePosX = 0;
-int framePosY = 200;
+int framePosY = 0;
 int cameraX; 
 int cameraY;
 
@@ -51,12 +51,12 @@ PGraphics decodedImage;
 
 
 public void setup(){
-    size(frameSizeX + 200, frameSizeY, OPENGL);
+    size(frameSizeX + 400, frameSizeY, OPENGL);
   
     initGui();
 
     Papart papart = new Papart(this);
-    papart.initProjectorCamera("0", Camera.Type.OPENCV);
+    papart.initProjectorCamera("0", Camera.Type.FLY_CAPTURE);
     
     cameraTracking = papart.getCameraTracking();
     cameraX = cameraTracking.width();
@@ -212,6 +212,8 @@ void startCapture(){
     Mode.set("code");
 
     grayCode = new GrayCode(this, frameSizeX, frameSizeY, sc);
+    grayCode.setBlackWhiteColors(0, 110);
+
     nbCodes = grayCode.nbCodes();
     grayCodesCaptures = new PImage[nbCodes];
 
