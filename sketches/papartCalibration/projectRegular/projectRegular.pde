@@ -11,9 +11,9 @@ public void init() {
 
 
 int framePosX = 0;
-int framePosY = 120;
-int frameSizeX = 1280;
-int frameSizeY = 800;
+int framePosY = 200;
+int frameSizeX = 1920;
+int frameSizeY = 1080;
 
 void setup(){
     size(frameSizeX, frameSizeY, OPENGL);

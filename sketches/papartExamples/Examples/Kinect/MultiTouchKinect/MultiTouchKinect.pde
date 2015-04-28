@@ -21,8 +21,8 @@ public void init() {
 
 KinectTouchInput touchInput;
 
-int frameSizeX = 1280;
-int frameSizeY = 800;
+int frameSizeX = 1920;
+int frameSizeY = 1080;
 
 void setup(){
     size(frameSizeX, frameSizeY, OPENGL);
