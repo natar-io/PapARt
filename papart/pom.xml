@@ -127,9 +127,14 @@
             <version>2.1.4</version>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>TUIOPapart</artifactId>
-            <version>${project.version}</version>
+            <groupId>fr.inria</groupId>
+            <artifactId>ProcessingTUIO</artifactId>
+            <version>0.5</version>
+        </dependency>
+        <dependency>
+            <groupId>processing</groupId>
+            <artifactId>libTUIO</artifactId>
+            <version>1.1</version>
         </dependency>
         <dependency>
             <groupId>com.googlecode.gstreamer-java</groupId>

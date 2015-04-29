@@ -66,7 +66,7 @@ public class Papart {
     private boolean displayInitialized;
     private boolean cameraInitialized;
     private boolean touchInitialized;
-//    private ARDisplay display;
+
     private BaseDisplay display;
     private ARDisplay arDisplay;
     private ProjectorDisplay projector;

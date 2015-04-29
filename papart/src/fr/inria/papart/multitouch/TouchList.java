@@ -118,5 +118,9 @@ public class TouchList extends ArrayList<Touch> {
             touch.invertY(drawingSize.y);
         }
     }
+    
+    public String toString(){
+        return super.toString();
+    }
 
 }
