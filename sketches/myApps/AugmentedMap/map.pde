@@ -1,9 +1,12 @@
 import java.util.Vector;
+import java.util.Arrays;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Stack; 
 import org.bytedeco.javacpp.ARToolKitPlus;
 import org.bytedeco.javacpp.ARToolKitPlus.TrackerMultiMarker;
-import de.fhpotsdam.unfolding.mapdisplay.*;
+/*import de.fhpotsdam.unfolding.mapdisplay.*;
 import de.fhpotsdam.unfolding.utils.*;
 import de.fhpotsdam.unfolding.marker.*;
 import de.fhpotsdam.unfolding.tiles.*;
@@ -15,26 +18,32 @@ import de.fhpotsdam.unfolding.mapdisplay.shaders.*;
 import de.fhpotsdam.unfolding.data.*;
 import de.fhpotsdam.unfolding.geo.*;
 import de.fhpotsdam.unfolding.texture.*;
-import de.fhpotsdam.unfolding.events.*;
+import de.fhpotsdam.unfolding.events.*;*/
 import de.fhpotsdam.utils.*;
 import de.fhpotsdam.unfolding.providers.*;
 
 public class DrawingMap extends PaperTouchScreen {
 
-    //Images for the different filters
-    PImage map1;
-    PImage map2;
-    PImage map3;
-
-    //Images for the different objects
-    PImage wine;
+    //For the position
+    PVector magicalLocation = new PVector(62, 46, 0);
 
     //Precision thresholds
     int timeStep = 500000;
     int spaceStep = 300;
 
+    //Palette
+    color cText = color(208, 0, 73);
+    color cSelection = color(62, 22, 29);
+    color cPointer = color(0, 228, 255);
+    color cPointerEffect = color(12, 103, 215);
+    color cNo = color(243, 2, 98);
+    color cYes = color(141, 215, 12);
+
+    //For the touch
+    PVector currentTouch = new PVector(-1, -1);
+
     //Added objects
-    Vector<PVector> positions = new Vector<PVector>();
+    Vector<PVector> positions = new Vector<PVector>();// TODO check if those are still useful
     Vector<Integer> timers = new Vector<Integer>();
 
     //Position of the sheet of paper
@@ -55,85 +64,125 @@ public class DrawingMap extends PaperTouchScreen {
     String mode = "displayFilter";
 
     //Buttons
-    Button captButton;
+    //Button captButton;
 
     //Menu
-    int menuWidth = 20;
+    //int menuWidth = 20;
 
     //Maps
-    UnfoldingMap currentMap;
-    UnfoldingMap umap1;
-    UnfoldingMap umap2;
-    UnfoldingMap umap3;
-    PGraphics mapOuter1;
-    PGraphics mapOuter2;
-    PGraphics mapOuter3;
-    //MapTiles map = new MapTiles();
+    MapFactory umaps;
+ 
     Screen curScreen;
 
     //Informations for capture
     TrackedView boardView;
     // 5cm  ->  50 x 50 pixels 
-    PVector captureSize = new PVector(A4BoardSize.x - menuWidth, A4BoardSize.y);
-    PVector origin = new PVector(0, 0);
+    PVector captureSize = new PVector(A4BoardSize.x, A4BoardSize.y);
+    PVector origin = magicalLocation;
     //int picSizeX = (int) A4BoardSize.x - menuWidth; // Works better with power  of 2 (initially 64)
     //int picSizeY = (int) A4BoardSize.y; // Works better with power  of 2 (initially 64)
-    int picSizeX = 288;
+    int picSizeX = 312;
     int picSizeY = 224;
     //For capture
     boolean captured = false;
-    int timeCounter = 0;
+    //int timeCounter = 0;
+    int startingTime = -1;
     PImage lastCapture = null;
+    PImage modifiedCapture = null;
 
     //For locations
+    int placeSize = 13;
     Vector<Place> places = new Vector<Place>();
     int currentPlace;
     boolean curPlaceChanged = false;
     int currentPlaceSelection = 0;
-    int currentPlaceSelectionCounter = 15;
+    int currentPlaceSelectionStartingTime = -1;
 
-    //For the touch
-    PVector currentTouch = new PVector(-1, -1);
+
+    //User drawings
+    Vector<UserDrawing> userDrawings = new Vector<UserDrawing>();
+    
+    public static final int resolution = 3;
+    public static final int zoomLevelOut = 12;
+    public static final int zoomLevelIn = 16;
+    public static final float maxPanningDistance = 5; // in km
+
+    ScaleMenu scaleMenu = new ScaleMenu();
+
+    //Decision buttons
+    YButton yesButton;
+    YButton noButton;
+    public static final int NOT_ASKED = -2;
+    public static final int ASKED = -1;
+    public static final int ANSWERED_NO = 0;
+    public static final int ANSWERED_YES = 1;
+    int decisionState = NOT_ASKED;
 
 
 /**************************************************************************************************************/
     void setup(){
+	setResolution(resolution);
 	setDrawingSize((int) A4BoardSize.x, (int) A4BoardSize.y);
-	loadMarkerBoard(sketchPath + "/data/markers/drawing.cfg",
-		    (int) A4BoardSize.x, (int) A4BoardSize.y);
+	//loadMarkerBoard(sketchPath + "/data/markers/drawing.cfg",
+	//		 (int) A4BoardSize.x, (int) A4BoardSize.y);
+	loadMarkerBoard(sketchPath + "/data/markers/frame4.png",
+			420, 297);
 
-	//Initialize images
-	//map1 = loadImage(sketchPath + "/data/images/bordeauxmap.png");
-	//map2 = loadImage(sketchPath + "/data/images/bordeauxsat.png");
-	//map3 = loadImage(sketchPath + "/data/images/bordeauxtram.png");
-	//wine = loadImage(sketchPath + "/data/images/wine.jpg");
-	//background(0);
-	//image(map, 0, 0, drawingSize.x, drawingSize.y);
 
-	//Initialize maps
-	//umap1 = new UnfoldingMap(parent);
-	umap1 = new UnfoldingMap(parent, 0, 0, A4BoardSize.x, A4BoardSize.y, new Google.GoogleMapProvider());
-	//umap1 = new UnfoldingMap(parent, 0, 0, A4BoardSize.x, A4BoardSize.y, new Microsoft.RoadProvider());
-	//umap1 = new UnfoldingMap(parent, 0, 0, A4BoardSize.x, A4BoardSize.y, new OpenStreetMap.OpenStreetMapProvider());
-	umap2 = new UnfoldingMap(parent, 0, 0, A4BoardSize.x, A4BoardSize.y, new Microsoft.AerialProvider());
-	umap3 = new UnfoldingMap(parent, 0, 0, A4BoardSize.x, A4BoardSize.y, new StamenMapProvider.WaterColor());
-	//map4 = new UnfoldingMap(this, new Yahoo.HybridProvider());
 
+	initPlaces();
+	initButtons();
+
+	umaps = new MapFactory(resolution, parent);
+
+	Location bordeauxLoc = places.elementAt(0).getLocation();
+	currentPlace = 0;
+	umaps.zoomAndPanTo(bordeauxLoc, zoomLevelOut);
+	umaps.setPanningRestriction(bordeauxLoc, maxPanningDistance);
+
+	//Add view for the tracking
+	boardView = new TrackedView(markerBoard, origin, captureSize, picSizeX, picSizeY);
+
+	// Register this view with the camera.
+	cameraTracking.addTrackedView(boardView);
+
+	//Initialize buttons
+	/*captButton = new Button("", 
+				(int) A4BoardSize.x - 10, 15, 
+				16, 16);
+
+	captButton.addListener(new ButtonListener() {
+		public void ButtonPressed(){
+		    mode = "Capture";
+		}
+		public void ButtonReleased(){
+		    mode = "displayFilter";
+		}
+	    });
+	captButton.setButtonFontSize(5);
+
+	buttons.add(captButton);*/
+
+	addDrawingsFromFile();
+    }
+
+/**************************************************************************************************************/
+    private void initButtons(){
+	PImage yesImage = loadImage(sketchPath + "/data/images/yes.png");
+	PVector yesCenter = new PVector(111, 187.5, 0);
+	yesButton = new YButton(yesImage, yesCenter, 25, 25);
+	yesButton.setVisible(false);
+	PImage noImage = loadImage(sketchPath + "/data/images/no.png");
+	PVector noCenter = new PVector(186, 187.5, 0);
+	noButton = new YButton(noImage, noCenter, 25, 25);
+	noButton.setVisible(false);
+    }
+
+/**************************************************************************************************************/
+    private void initPlaces(){
 	Location bordeauxLoc = new Location(44.840362f, -0.581678f);// Hotel de ville
 	Place bordeauxPlace = new Place(bordeauxLoc, "Bordeaux", loadImage(sketchPath + "/data/images/bordeaux.jpg"));
 	places.add(bordeauxPlace);
-	currentPlace = 0;
-	umap1.zoomAndPanTo(bordeauxLoc, 12);
-	umap2.zoomAndPanTo(bordeauxLoc, 12);
-	umap3.zoomAndPanTo(bordeauxLoc, 12);
-	//map4.zoomAndPanTo(bordeauxLocation, 12);
-	float maxPanningDistance = 5; // in km
-	umap1.setPanningRestriction(bordeauxLoc, maxPanningDistance);
-	umap2.setPanningRestriction(bordeauxLoc, maxPanningDistance);
-	umap3.setPanningRestriction(bordeauxLoc, maxPanningDistance);
-	//map4.setPanningRestriction(bordeauxLocation, maxPanningDistance);
-
-	//Initialize places
 	Location capSciencesLoc = new Location(44.859749, -0.554376);
 	Place capSciencesPlace = new Place(capSciencesLoc, "Cap Sciences", loadImage(sketchPath + "/data/images/capsciences.jpg"));
 	places.add(capSciencesPlace);
@@ -155,57 +204,16 @@ public class DrawingMap extends PaperTouchScreen {
 	Location jardinPublicLoc = new Location(44.849063, -0.578172);
 	Place jardinPublicPlace = new Place(jardinPublicLoc, "Jardin Public", loadImage(sketchPath + "/data/images/jardinpublic.jpg"));
 	places.add(jardinPublicPlace);
-    
-	//currentMap = umap1;
-	//MapUtils.createDefaultEventDispatcher(parent, umap1);
-	MapUtils.createDefaultEventDispatcher(parent, umap1, umap2, umap3);
-
-	//umap1 = new UnfoldingMap(parent);
-
-	//Add view for the tracking
-	boardView = new TrackedView(markerBoard, 
-				    origin,
-				    captureSize,
-				    picSizeX, picSizeY);
-
-	// Register this view with the camera.
-	cameraTracking.addTrackedView(boardView);
-
-	//Initialize buttons
-	captButton = new Button("", 
-				(int) A4BoardSize.x - 10, 15, 
-				16, 16);
-	/*PImage captImage = loadImage(sketchPath + "/data/images/capt.png");
-	  captButton = new Button(wine, (int) A4BoardSize.x - 8, 8);*/
-
-	captButton.addListener(new ButtonListener() {
-		public void ButtonPressed(){
-		    mode = "Capture";
-		}
-		public void ButtonReleased(){
-		    mode = "displayFilter";
-		}
-	    });
-	captButton.setButtonFontSize(5);
-
-	buttons.add(captButton);
     }
 
 /**************************************************************************************************************/
     public void draw(){
+	setLocation(magicalLocation.x, magicalLocation.y, magicalLocation.z);
 	findCurrentTouch();
-	umap1.draw();
-	OpenGLMapDisplay curMapDisplay = (OpenGLMapDisplay) umap1.mapDisplay;
-	mapOuter1 = curMapDisplay.getOuterPG();
-	umap2.draw();
-	curMapDisplay = (OpenGLMapDisplay) umap2.mapDisplay;
-	mapOuter2 = curMapDisplay.getOuterPG();
-	umap3.draw();
-	curMapDisplay = (OpenGLMapDisplay) umap3.mapDisplay;
-	mapOuter3 = curMapDisplay.getOuterPG();
+	umaps.draw();
 
 	beginDraw2D();
-	if(!refInit){
+	if(!refInit){// TODO put this in a method
 	    //Initialize screen
 	    curScreen = getScreen();
 	    //Initialize maps
@@ -219,23 +227,12 @@ public class DrawingMap extends PaperTouchScreen {
 	    refInit = true;
 	}
 
+	checkYButtons();
 	background(0);
-
-
-	//umap1.resize(A4BoardSize.x, A4BoardSize.y);
-	//OpenGLMapDisplay mapDisplay1 = (OpenGLMapDisplay) umap1.mapDisplay;
-	//System.out.println(mapDisplay1.getHeight());
-	//System.out.println(mapDisplay1.getWidth());
-	//PGraphics inner =  mapDisplay1.getInnerPG();
-	//PGraphics outer = mapDisplay1.getOuterPG();
-	
-	//umap1.draw();
-	//image(outer, 0, 0, A4BoardSize.x, A4BoardSize.y);
 
 	PMatrix3D transform = new PMatrix3D();
 	
 	//Get the current position of the sheet of paper
-	//Screen curScreen = getScreen();
 	PVector[] cornersPos = curScreen.getCornerPos();
 	curCenter = cornersPos[0];
 	curCenter.add(cornersPos[2]);
@@ -243,69 +240,91 @@ public class DrawingMap extends PaperTouchScreen {
 	
 	if(mode == "displayFilter"){
 	    dispFilters();
-	    drawCurrentTouch(color(255, 0, 105));
-	    if(currentPlace == 0){
+	    if(scaleMenu.getStateChanged()){
+		//umaps.zoomAndPanTo(umaps.getLocation(scaleMenu.getZoomCenter(), resolution), scaleMenu.getZoomLevel());
+		umaps.zoomAndPanTo(umaps.getCenter(), scaleMenu.getZoomLevel());
+	    }
+	    //dispMainFilter();
+	    /*if(currentPlace == 0){
 		if(curPlaceChanged){
 		    Location curLocation = places.elementAt(0).getLocation();
-		    umap1.zoomAndPanTo(curLocation, 12);
-		    umap2.zoomAndPanTo(curLocation, 12);
-		    umap3.zoomAndPanTo(curLocation, 12);
-		    //map4.zoomAndPanTo(bordeauxLocation, 12);
-		    float maxPanningDistance = 5; // in km
-		    umap1.setPanningRestriction(curLocation, maxPanningDistance);
-		    umap2.setPanningRestriction(curLocation, maxPanningDistance);
-		    umap3.setPanningRestriction(curLocation, maxPanningDistance);
+		    umaps.zoomAndPanTo(curLocation, zoomLevelOut);
+		    umaps.setPanningRestriction(curLocation, maxPanningDistance);
 		    curPlaceChanged = false;
 		}
-		dispPlaces();
+		//dispPlaces();
 	    }
 	    if((currentPlace != 0) && (curPlaceChanged)){
 		Location curLocation = places.elementAt(currentPlace).getLocation();
-		umap1.zoomAndPanTo(curLocation, 15);
-		umap2.zoomAndPanTo(curLocation, 15);
-		umap3.zoomAndPanTo(curLocation, 15);
-		//map4.zoomAndPanTo(bordeauxLocation, 12);
-		float maxPanningDistance = 5; // in km
-		umap1.setPanningRestriction(curLocation, maxPanningDistance);
-		umap2.setPanningRestriction(curLocation, maxPanningDistance);
-		umap3.setPanningRestriction(curLocation, maxPanningDistance);
+		umaps.zoomAndPanTo(curLocation, zoomLevelIn);
+		umaps.setPanningRestriction(curLocation, maxPanningDistance);
 		curPlaceChanged = false;
-	    }
-	    selectPlace();
+		}*/
+	    /*if(lastCapture != null){
+		//image(modifiedCapture, 0,  A4BoardSize.y -  A4BoardSize.y/10, A4BoardSize.x/10, A4BoardSize.y/10);
+		image(modifiedCapture, 0, 0, A4BoardSize.x - menuWidth, A4BoardSize.y);
+	    }*/
+	    drawUserDrawings();
+
+	    fill(cText);
+	    //textSize(18);
+	    textFont(mainFont);
+	    textSize(18);
+	    textAlign(LEFT);
+	    text(places.elementAt(currentPlace).getName(), 10, 15);
+	    //drawMenu();
+	    drawCurrentTouch(cPointer);
+	    //selectPlace();
 	    //singleTouch();
 	}
 	if(mode == "Capture"){
-	    timeCounter++;
-	    if((!captured) && (timeCounter == 10)){
+	    if(startingTime < 0){
+		startingTime = millis();
+	    }
+	    if((!captured) && (millis() - startingTime >= 500)){
 		lastCapture = capture();
-		//System.out.println("Capture");
-		//System.out.println(lastCapture.width);
-		//System.out.println(lastCapture.height);
 		captured = true;
 	    }
-	    if(timeCounter == 20){
-		mode = "displayFilter";
-		captured = false;
-		timeCounter = 0;
+	    if(millis() - startingTime >= 1000){
 		//captButton.setNotTouched();
-		captButton.reset();
+		//captButton.reset();
 		//System.out.println("Back to filtering");
-		lastCapture = detectPostIts(lastCapture);// TODO remove this
-		//detectLines(lastCapture); // TO REMOVE
-		lastCapture = getConnectedComponents(lastCapture);
+		if(decisionState == NOT_ASKED){
+		    yesButton.setVisible(true);
+		    noButton.setVisible(true);
+		    modifiedCapture = detectPostIts(lastCapture);// TODO remove this
+		    //detectLines(lastCapture); // TO REMOVE
+		    modifiedCapture = getConnectedComponents(modifiedCapture);
+		    modifiedCapture = removeBackground(lastCapture, modifiedCapture);
+		}
+		updateDecisionButtons();
+		dispFilters();
+		decisionState = ASKED;
+		//System.out.println("Gonna draw the last drawing");
+		drawLastUserDrawing();
+		//System.out.println("Gonna draw the decision message");
+		drawDecisionMessage();
+		drawCurrentTouch(cPointer);
+		System.out.println(decisionState);
+		if(decisionState >= ANSWERED_NO){
+		    if(decisionState == ANSWERED_YES){
+			System.out.println("Addind user's drawing");
+			addNewDrawing();
+		    }
+		    mode = "displayFilter";
+		    decisionState = NOT_ASKED;
+		    yesButton.setVisible(false);
+		    noButton.setVisible(false);
+		    captured = false;
+		    startingTime = -1;
+		}
 	    }
 	}
-
-
-	//Display an indicator for the reference position
-	/*color refColor = color(2*refPos.x, 2*refPos.y, refPos.z);
-	fill(refColor);
-	rect(0,0,15,15);*/
 	
 
 	/*drawTouch(touchBuffer, color(255, 255, 0));
 	Vector<PVector> centroids = clusterTouch();*/
-	touchBuffer.removeAllElements();
+	touchBuffer.removeAllElements(); // TODO see if this touch buffer thingy is useful
 	//System.out.println(centroids.size());
 	//drawTouch(centroids, color(0, 255, 0)):
 	noStroke();
@@ -313,8 +332,20 @@ public class DrawingMap extends PaperTouchScreen {
 	//rect(20,20,5,5);
 	//rect(30,30,3,3);
 	stroke(0, 0, 0);
-	drawMenu();
+	//drawMenu();
+	handleKeyPressed();
+	drawScale();
 	endDraw();
+    }
+
+/**************************************************************************************************************/
+    void checkYButtons(){
+	//Capture
+	if(yButtons.elementAt(CAPTURE).getVisible()){
+	    if(yButtons.elementAt(CAPTURE).getPressed()){
+		mode = "Capture";
+	    }
+	}
     }
 
 /**************************************************************************************************************/
@@ -355,7 +386,23 @@ public class DrawingMap extends PaperTouchScreen {
     }
 
 /**************************************************************************************************************/
-    void drawMenu(){
+
+    void drawScale(){
+	if(!touchList.get2DTouchs().isEmpty()){
+	    scaleMenu.update(currentTouch);
+	    PImage scaleImage = scaleMenu.getImage();
+	    float scaleSize = scaleMenu.getSize();
+	    PVector scalePosition = scaleMenu.getPosition();
+	    image(scaleImage, scalePosition.x, scalePosition.y, scaleSize * scaleImage.width, scaleSize *  scaleImage.height);
+	}
+	else{
+	    scaleMenu.update(true);
+	}
+    }
+
+
+/**************************************************************************************************************/
+    /*void drawMenu(){
 	tint(255, 255);
 	fill(255, 255, 255);
 	noStroke();
@@ -370,10 +417,142 @@ public class DrawingMap extends PaperTouchScreen {
 	    Place mainPlace = places.elementAt(0);
 	    image(mainPlace.getImage(), A4BoardSize.x - 18, 28, 16, 16);
 	}
+	}*/
+
+/**************************************************************************************************************/
+    void updateDecisionButtons(){
+	if(yesButton.getVisible()){
+	    if(touchList.get2DTouchs().isEmpty()){
+		yesButton.reset();
+	    }
+	    else{
+		yesButton.update(currentTouch);
+	    }
+	}
+
+	if(noButton.getVisible()){
+	    if(touchList.get2DTouchs().isEmpty()){
+		noButton.reset();
+	    }
+	    else{
+		noButton.update(currentTouch);
+	    }
+	}
     }
 
 /**************************************************************************************************************/
+    void drawDecisionMessage(){
+	rectMode(CENTER);
+	tint(255, 255);
+	fill(cText);
+	noStroke();
+	textFont(mainFont);
+	textSize(15);
+	textAlign(CENTER);
+	strokeWeight(2);
+	//textSize(18);
+	text("Êtes-vous satisfait de votre dessin ?", 148, 15);
   
+	//Yes Button
+	//yesButton.setVisible(true);
+	//yesButton.update(currentTouch);
+	//Draw the button
+	if(yesButton.getPressed()){
+	    stroke(cSelection);
+	    decisionState = ANSWERED_YES;
+	    System.out.println("Yes");
+	}
+	else if(yesButton.isTouched()){
+	    stroke(cText);
+	}
+	else{
+	    noStroke();
+	}
+	PImage yesImage = yesButton.getImage();
+	PVector yesCenter = yesButton.getCenter();
+	int yesWidth = yesButton.getWidth();
+	int yesHeight = yesButton.getHeight();
+	rect(yesCenter.x, yesCenter.y, yesWidth, yesHeight);
+	image(yesImage, yesCenter.x - yesWidth / 2.0, yesCenter.y - yesHeight / 2.0, yesWidth, yesHeight);
+	
+	//No Button
+	//noButton.setVisible(true);
+	//noButton.update(currentTouch);
+	//Draw the button	
+	if(noButton.getPressed()){
+	    stroke(cSelection);
+	    System.out.println("No");
+	    decisionState = ANSWERED_NO;
+	}
+	else if(noButton.isTouched()){
+	    stroke(cText);
+	}
+	else{
+	    noStroke();
+	}
+	PImage noImage = noButton.getImage();
+	PVector noCenter = noButton.getCenter();
+	int noWidth = noButton.getWidth();
+	int noHeight = noButton.getHeight();
+	rect(noCenter.x, noCenter.y, noWidth, noHeight);
+	image(noImage, noCenter.x - noWidth / 2.0, noCenter.y - noHeight / 2.0, noWidth, noHeight);
+
+	/*rectMode(CORNER);
+	fill(cYes);
+	rect(98.5, (210 - 10 - 25), 25, 25);*/
+	// Next commented lines are for selection
+	/*fill(cSelection);
+	  rect(2 * (98.5 + 25 + 50 - 2), 2 * (210 - 10 - 25 - 2), 2 * (25 + 4), 2 * (25 + 4));*/
+	/*fill(cNo);
+	rect((98.5 + 25 + 50), (210 - 10 - 25), 25, 25);*/
+  
+	noStroke();
+
+	fill(cText);
+	textAlign(RIGHT);
+	text("Oui", (98.5 - 5), (210 - 10 - 25 / 2));  
+	textAlign(LEFT);
+	text("Non", (98.5 + 25 + 50 + 25 + 5), (210 - 10 - 25 / 2));
+	rectMode(CORNER);
+
+    }
+
+/**************************************************************************************************************/
+    void drawUserDrawings(){
+	imageMode(CENTER);
+	for(int ud = 0; ud < userDrawings.size(); ud++){
+	    UserDrawing curUsrDrwg = userDrawings.elementAt(ud);
+	    if(umaps.getZoomLevel() ==  curUsrDrwg.getZoomLevel()){
+		ScreenPosition screenPos = curUsrDrwg.getScreenPosition(umaps, resolution);
+		//umap1.getScreenPosition(curUsrDrwg.getLocation());
+		image(curUsrDrwg.getDrawing(), screenPos.x, screenPos.y, A4BoardSize.x, A4BoardSize.y);
+	    }
+	    //userDrawings.elementAt(ud).draw(umap1);
+	}
+	imageMode(CORNER);
+    }
+
+/**************************************************************************************************************/
+    void drawLastUserDrawing(){
+	if(modifiedCapture != null){
+	    imageMode(CENTER);
+	    Location curLoc = umaps.getCenter();
+	    int curZoomLevel = umaps.getZoomLevel();
+	    UserDrawing lastUsrDrwg = new UserDrawing(modifiedCapture, curLoc, curZoomLevel);
+	    ScreenPosition screenPos = lastUsrDrwg.getScreenPosition(umaps, resolution);
+	    image(lastUsrDrwg.getDrawing(), screenPos.x, screenPos.y, A4BoardSize.x, A4BoardSize.y);
+	    imageMode(CORNER);
+	}
+    }
+
+/**************************************************************************************************************/
+    void dispMainFilter(){
+	//Display default map
+	tint(255, 255);
+	image(umaps.getMapOuter1(), 0, 0, drawingSize.x, drawingSize.y);
+    }
+
+/**************************************************************************************************************/
     void dispFilters(){
 	//Get the displacement for the reference position
 	PVector displacement = curCenter.get();
@@ -383,7 +562,7 @@ public class DrawingMap extends PaperTouchScreen {
 	tint(255, 255);
 	//currentMap.draw();
 	//image(map1, 0, 0, drawingSize.x, drawingSize.y);
-	image(mapOuter1, 0, 0, drawingSize.x, drawingSize.y);
+	image(umaps.getMapOuter1(), 0, 0, drawingSize.x, drawingSize.y);
 
 	//Normalize the displacement
 	float dispNorm = displacement.y;
@@ -408,24 +587,16 @@ public class DrawingMap extends PaperTouchScreen {
 	    tint(255, (int) opacity);
 	    //currentMap = umap2;
 	    //image(map2, 0, 0, drawingSize.x, drawingSize.y);
-	    image(mapOuter2, 0, 0, drawingSize.x, drawingSize.y);
+	    image(umaps.getMapOuter2(), 0, 0, drawingSize.x, drawingSize.y);
 	}
 	else if (displacement.x > threshMax){
 	    tint(255, (int) opacity);
 	    //currentMap = umap3;
 	    //image(map3, 0, 0, drawingSize.x, drawingSize.y);
-	    image(mapOuter3, 0, 0, drawingSize.x, drawingSize.y);
+	    image(umaps.getMapOuter3(), 0, 0, drawingSize.x, drawingSize.y);
 	}
 
-	if(lastCapture != null){
-	    //image(lastCapture, 0, 0, A4BoardSize.x/10, A4BoardSize.y/10);
-	    image(lastCapture, 0, 0, A4BoardSize.x - menuWidth, A4BoardSize.y);
-	}
-
-	fill(155, 45, 107);
-	textSize(18);
-	textAlign(LEFT);
-	text(places.elementAt(currentPlace).getName(), 10, 15);
+	tint(255, 255);
     }
 
 /**************************************************************************************************************/
@@ -433,15 +604,16 @@ public class DrawingMap extends PaperTouchScreen {
 	tint(255,255);
 	textSize(5);
 	textAlign(CENTER);
-	fill(155, 45, 107);
+	fill(cSelection);
 	imageMode(CENTER);
 	rectMode(CENTER);
 	noStroke();
 	for(int curPlaceIdx = 1; curPlaceIdx < places.size(); curPlaceIdx++){
+	    //System.out.println("Place");
 	    Place curPlace = places.elementAt(curPlaceIdx);
-	    ScreenPosition curScreenPos = curPlace.getScreenPosition(umap1);
-	    rect(curScreenPos.x, curScreenPos.y, 18, 18);
-	    image(curPlace.getImage(), curScreenPos.x, curScreenPos.y, 15, 15);
+	    ScreenPosition curScreenPos = curPlace.getScreenPosition(umaps, resolution);
+	    rect(curScreenPos.x, curScreenPos.y, placeSize + 2, placeSize + 2);
+	    image(curPlace.getImage(), curScreenPos.x, curScreenPos.y, placeSize, placeSize);
 	}
 	/*for(int curPlaceIdx = 1; curPlaceIdx < places.size(); curPlaceIdx++){
 	    Place curPlace = places.elementAt(curPlaceIdx);
@@ -454,48 +626,100 @@ public class DrawingMap extends PaperTouchScreen {
 
 /**************************************************************************************************************/
     void selectPlace(){
-	if(touchList.get2DTouchs().isEmpty()){
-	    return;
-	}
 	if(currentPlace != 0){
-	    PVector buttonPosition = new PVector(A4BoardSize.x - 10, 36);
-	    buttonPosition.sub(currentTouch);
-	    if(buttonPosition.mag() < 15){
+	    if(yButtons.elementAt(HOME).getPressed()){
+		System.out.println("Pressed");
 		currentPlace = 0;
 		curPlaceChanged = true;
+		yButtons.elementAt(HOME).setVisible(false);
 	    }
+	    /*PVector buttonPosition = new PVector(A4BoardSize.x - 10, 36);
+	    buttonPosition.sub(currentTouch);
+	    if(buttonPosition.mag() < placeSize){
+		currentPlace = 0;
+		curPlaceChanged = true;
+	    }*/
+	    return;
+	}
+	if(touchList.get2DTouchs().isEmpty()){
 	    return;
 	}
 	boolean found = false;
 	int foundPlace = 0;
+	//int currentPlaceSelectionCounter = (int) ((20000 - (millis() + 1 - currentPlaceSelectionStartingTime)) / 2000.0);
+	int currentPlaceSelectionCounter = (int) ((1000 - (millis() + 1 - currentPlaceSelectionStartingTime)));
+	if(currentPlaceSelectionStartingTime <= 0){
+	    currentPlaceSelectionCounter = 10;
+	}
+	/*System.out.println(millis());
+	System.out.println(currentPlaceSelectionStartingTime);
+	System.out.println(currentPlaceSelectionCounter);*/
 	for(int placeIdx = 1; (placeIdx < places.size()) && (!found); placeIdx++){
 	    Place curPlace = places.elementAt(placeIdx);
-	    ScreenPosition curScreenPosition = curPlace.getScreenPosition(umap1);
+	    ScreenPosition curScreenPosition = curPlace.getScreenPosition(umaps, resolution);
 	    curScreenPosition.sub(currentTouch);
-	    if(curScreenPosition.mag() < 15){//TODO put the parameter somewhere
-		fill(105, 0, 255);
-		ellipse(currentTouch.x, currentTouch.y, currentPlaceSelectionCounter, currentPlaceSelectionCounter);
+	    if(curScreenPosition.mag() < placeSize){//TODO put the parameter somewhere
+		fill(cPointerEffect);
+		ellipse(currentTouch.x, currentTouch.y, currentPlaceSelectionCounter / 200, currentPlaceSelectionCounter / 200);
 		foundPlace = placeIdx;
 		found = true;
-		if(currentPlaceSelection == 0){
+		/*if(currentPlaceSelection == 0){
 		    currentPlaceSelection = placeIdx;
-		}
+		    }*/
 		//System.out.println("Selected a place");
 	    }
 	    //TODO complete that
 	}
-	if(foundPlace == currentPlaceSelection){
-	    currentPlaceSelectionCounter--;
-	}
-	else{
+	if((found) && (foundPlace != currentPlaceSelection)){
 	    currentPlaceSelection = foundPlace;
-	    currentPlaceSelectionCounter = 15;
+	    currentPlaceSelectionStartingTime = millis();
 	}
-	if(currentPlaceSelectionCounter == 0){
+	if((found) && (currentPlaceSelectionCounter <= 0)){
+	    System.out.println("New cur place: " + foundPlace);
 	    currentPlace = foundPlace;
 	    curPlaceChanged = true;
 	    currentPlaceSelection = 0;
-	    currentPlaceSelectionCounter = 15;
+	    currentPlaceSelectionStartingTime = -1;
+	    yButtons.elementAt(HOME).setVisible(true);
+	}
+    }
+
+/**************************************************************************************************************/
+    boolean previousKeyPressed = false;
+
+    void handleKeyPressed(){//TODO replace that by buttons
+	if(!keyPressed){
+	    previousKeyPressed = false;
+	    return;
+	}
+	if((key == 115) && !previousKeyPressed){
+	    previousKeyPressed = true;
+	    addNewDrawing();
+	}
+    }
+
+/**************************************************************************************************************/
+    void addDrawingsFromFile(){
+	String[] lines = loadStrings("captures/captures.txt");
+	for(int l = 0; l < lines.length; l++){
+	    userDrawings.add(new UserDrawing(lines[l]));
+	}
+    }
+	
+/**************************************************************************************************************/
+    void addNewDrawing(){
+	System.out.println("Saving the last captured image");
+	if(lastCapture != null){
+	    String captureName = "" + day() + month() + year() + hour() + minute() + second();
+	    modifiedCapture.save("captures/capture" + captureName + ".png");
+	    String[] lines = loadStrings("captures/captures.txt");
+	    String[] newLines = Arrays.copyOf(lines, lines.length + 1);
+	    Location curLoc = umaps.getCenter();
+	    int curZoomLevel = umaps.getZoomLevel();
+	    newLines[lines.length] = captureName + "\t" + Float.toString(curLoc.getLat()) + "\t" + Float.toString(curLoc.getLon()) + "\t" + Integer.toString(curZoomLevel);
+	    System.out.println("Printing things! yay!");
+	    saveStrings("captures/captures.txt", newLines); 
+	    userDrawings.add(new UserDrawing(modifiedCapture, curLoc, curZoomLevel));
 	}
     }
 
@@ -515,7 +739,7 @@ public class DrawingMap extends PaperTouchScreen {
 	    }
 	}
 	   
-	if((!empty) && (minYVector.x < A4BoardSize.x - menuWidth)){//If there is at least one touch store its position (if it's not too close (in time or space) from the last recorded one)
+	if((!empty) && (minYVector.x < A4BoardSize.x)){//If there is at least one touch store its position (if it's not too close (in time or space) from the last recorded one)
 	    if(positions.isEmpty() && timers.isEmpty()){
 		positions.add(minYVector);
 		timers.add(millis());
@@ -631,7 +855,7 @@ public class DrawingMap extends PaperTouchScreen {
 		color curPixel = toAnalyze.get(w, h);
 		for(int cIdx = 0; (cIdx < colorsInTheImage.size()) && (!found); cIdx++){
 		    Color curColor = colorsInTheImage.elementAt(cIdx);
-		    if(curColor.dist(curPixel) < 70){
+		    if(curColor.dist(curPixel) < 80){
 			found = true;
 			result.set(w, h, colorsForDisplay.elementAt(cIdx).getColor());
 		    }
@@ -674,7 +898,7 @@ public class DrawingMap extends PaperTouchScreen {
 	int sizeNbhd = 5;//5 pixels in every direction => 11*11 neighbourhood
 	int imW = toAnalyze.width;
 	int imH = toAnalyze.height;
-	PImage result = createImage(imW, imH, RGB);
+	PImage result = createImage(imW, imH, ARGB);
 	boolean checkedPixels[][] = new boolean[imW][imH];
 	//Initialize array
 	for(int x = 0; x < toAnalyze.width; x++){
@@ -737,7 +961,7 @@ public class DrawingMap extends PaperTouchScreen {
 		if(!checkedPixels[imX][imY]){
 		    checkedPixels[imX][imY] = true;
 		    if(colorDistance(backgroundColor, toAnalyze.get(imX, imY)) < 2){//If the pixel is part of the background
-			result.set(imX, imY, color(255));
+			result.set(imX, imY, color(255, 0));
 		    }
 		    else{//We found a new component
 			//Define a color for this new component
@@ -766,7 +990,7 @@ public class DrawingMap extends PaperTouchScreen {
 				    if(!checkedPixels[nbhdX][nbhdY]){
 					if(colorDistance(backgroundColor, toAnalyze.get(nbhdX, nbhdY)) < 2){//If it's of the color of the background
 					    checkedPixels[nbhdX][nbhdY] = true;
-					    result.set(nbhdX, nbhdY, color(255));
+					    result.set(nbhdX, nbhdY, color(255, 0));
 					}
 					else{
 					    //else if(colorDistance(componentColor, toAnalyze.get(nbhdX, nbhdY)) < 2){//If it's of the color of the current connected component
@@ -786,6 +1010,26 @@ public class DrawingMap extends PaperTouchScreen {
 	}
 
 	return result;
+    }
+
+/**************************************************************************************************************/
+    PImage removeBackground(PImage capture, PImage backgroundInfo){
+	int imW = capture.width;
+	int imH = capture.height;
+	PImage result = createImage(imW, imH, ARGB);
+	//Initialize array
+	for(int x = 0; x < imW; x++){
+	    for(int y = 0; y < imH; y++){
+		if(colorDistance(color(255), backgroundInfo.get(x, y)) < 2){
+		    result.set(x, y, color(255, 0));
+		}
+		else{
+		    result.set(x, y, capture.get(x, y));
+		}
+	    }
+	}
+
+        return result;
     }
 
 /**************************************************************************************************************/
@@ -871,16 +1115,13 @@ public class DrawingMap extends PaperTouchScreen {
 	    for(int imY = 0; imY < imH; imY++){
 		color curColor = toAnalyze.get(imX, imY);
 		if((colorDistance(curColor, color(255)) > 2) && (!checkedPixels[imX][imY])){//We found a new path
-		    
+		    //TODO finish this
 		}
 	    }
 	}
 
 	return paths;
     }
-
-/**************************************************************************************************************/
- 
 
 /**************************************************************************************************************/
     color randomColor(){
@@ -901,84 +1142,6 @@ public class DrawingMap extends PaperTouchScreen {
 
 }
 
-/**************************************************************************************************************/
-public class Color{
-    float cRed;
-    float cGreen;
-    float cBlue;
-
-    Color(){
-	cRed = 0;
-	cGreen = 0;
-	cBlue = 0;
-    }
-    Color(color _color){
-        cRed = red(_color);
-	cGreen = green(_color);
-	cBlue = blue(_color);
-    }
-    public float getRed(){
-	return cRed;
-    }
-    public float getGreen(){
-	return cGreen;
-    }
-    public float getBlue(){
-	return cBlue;
-    }
-    public color getColor(){
-	return color(cRed, cGreen, cBlue);
-    }
-    public float dist(color _color){
-	float res = sq(cRed - red(_color));
-	res += sq(cGreen - green(_color));
-	res += sq(cBlue - blue(_color));
-	res = sqrt(res);
-	return res;
-    }
-    public float dist(Color _color){
-	return dist(_color.getColor());
-    }
-
-    public void add(Color _color){
-	cRed += _color.getRed();
-	cGreen += _color.getGreen();
-	cBlue += _color.getBlue();
-    }
-}
-
-/**************************************************************************************************************/
-
-public class Place{
-    Location loc;
-    String name;
-    PImage img;
-
-    Place(){
-    }
-
-    Place(Location _loc, String _name, PImage _img){
-	loc = _loc;
-	name = _name;
-	img = _img;
-    }
-
-    public PImage getImage(){
-	return img;
-    }
-
-    public Location getLocation(){
-	return loc;
-    }
-
-    public String getName(){
-	return name;
-    }
-
-    public ScreenPosition getScreenPosition(UnfoldingMap umap){
-	return umap.getScreenPosition(loc);
-    }
-}
 
 
 /**************************************************************************************************************/

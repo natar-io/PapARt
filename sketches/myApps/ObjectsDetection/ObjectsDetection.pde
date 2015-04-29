@@ -24,10 +24,10 @@ boolean useProjector;
 
 PFont mainFont = createFont("Arial", 20);
 
-//Buttons for the menu
-final int CAPTURE = 0;
-final int HOME = 1;
-Vector<YButton> yButtons = new Vector<YButton>();
+//Colors
+Vector<Color> colors = new Vector<Color>();
+int patchSize = 30;//Size of a patch
+int patchSpace = 10;//Space between two patches
  
 // Undecorated frame 
 public void init() {
