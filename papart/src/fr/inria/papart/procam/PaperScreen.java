@@ -184,7 +184,7 @@ public class PaperScreen {
         // If there is really a camera tracking. 
         if (!isWithoutCamera) {
             // automatic update of the paper screen, regarding the camera. 
-            screen.setAutoUpdatePos(cameraTracking, markerBoard);
+//            screen.setAutoUpdatePos(cameraTracking, markerBoard);
 
             // default filtering
             markerBoard.setDrawingMode(cameraTracking, true, 20);
@@ -225,7 +225,7 @@ public class PaperScreen {
             init();
         }
         assert (isInitialized);
-        screen.updatePos();
+        screen.updatePos(cameraTracking, markerBoard);
         checkCorners();
     }
 
