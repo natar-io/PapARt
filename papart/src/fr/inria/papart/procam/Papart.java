@@ -285,7 +285,6 @@ public class Papart {
                         kinect, calibration);
 
         cameraOpenKinect.setTouch(kinectTouchInput);
-        kinectTouchInput.useRawDepth(cameraOpenKinect);
 
         kinectTouchInput.setPrecision(touch2DPrecision, touch3DPrecision);
         this.touchInput = kinectTouchInput;
