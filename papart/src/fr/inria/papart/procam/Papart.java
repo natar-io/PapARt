@@ -18,6 +18,7 @@
  */
 package fr.inria.papart.procam;
 
+import fr.inria.papart.calibration.ComputerConfiguration;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
@@ -34,6 +35,7 @@ import java.lang.reflect.Constructor;
 import java.util.Set;
 import org.reflections.Reflections;
 import processing.core.PApplet;
+import processing.core.PConstants;
 import processing.core.PFont;
 import processing.core.PVector;
 
@@ -49,6 +51,7 @@ public class Papart {
     public static String kinectIRCalib = folder + "/data/calibration/calibration-kinect-IR.yaml";
     public static String kinectRGBCalib = folder + "/data/calibration/calibration-kinect-RGB.yaml";
 
+    public static String computerConfig = folder + "/data/calibration/ComputerConfiguration.xml";
     public static String planeCalib = folder + "/data/calibration/PlaneCalibration.xml";
     public static String homographyCalib = folder + "/data/calibration/HomographyCalibration.xml";
     public static String planeAndProjectionCalib = folder + "/data/calibration/PlaneProjectionCalibration.xml";
@@ -78,6 +81,7 @@ public class Papart {
     private PVector frameSize;
     private CameraOpenKinect cameraOpenKinect;
 
+    private ComputerConfiguration computerConfiguration;
     // TODO: find what to do with these...
 //    private final int depthFormat = freenect.FREENECT_DEPTH_10BIT;
 //    private final int kinectFormat = Kinect.KINECT_10BIT;
@@ -90,6 +94,9 @@ public class Papart {
         this.touchInitialized = false;
         this.applet = (PApplet) applet;
 
+        computerConfiguration = new ComputerConfiguration();
+        computerConfiguration.loadFrom(this.applet, computerConfig);
+
         this.appletClass = applet.getClass();
         PFont font = this.applet.loadFont(defaultFont);
         Button.setFont(font);
@@ -98,6 +105,46 @@ public class Papart {
         if (Papart.singleton == null) {
             Papart.singleton = this;
         }
+    }
+
+    public static Papart projection(PApplet applet) {
+        ComputerConfiguration computerConfiguration = new ComputerConfiguration();
+        computerConfiguration.loadFrom(applet, computerConfig);
+
+        applet.size(computerConfiguration.getProjectionScreenWidth(),
+                computerConfiguration.getProjectionScreenHeight(),
+                PConstants.OPENGL);
+
+        Papart papart = new Papart(applet);
+
+        papart.initProjectorCamera();
+
+        return papart;
+    }
+
+    public static Papart seeThrough(PApplet applet) {
+        ComputerConfiguration computerConfiguration = new ComputerConfiguration();
+        computerConfiguration.loadFrom(applet, computerConfig);
+
+        Camera cameraTracking = CameraFactory.createCamera(computerConfiguration.getCameraType(),
+                computerConfiguration.getCameraName());
+        cameraTracking.setParent(applet);
+        cameraTracking.setCalibration(proCamCalib);
+
+        applet.size(cameraTracking.width(),
+                cameraTracking.height(),
+                PConstants.OPENGL);
+
+        Papart papart = new Papart(applet);
+
+        papart.initCamera();
+
+        return papart;
+    }
+
+    public void defaultFrameLocation() {
+        this.applet.frame.setLocation(computerConfiguration.getProjectionScreenOffsetX(),
+                computerConfiguration.getProjectionScreenOffsetY());
     }
 
     public static Papart getPapart() {
@@ -109,6 +156,10 @@ public class Papart {
     public void initNoCamera(int quality) {
         this.isWithoutCamera = true;
         initNoCameraDisplay(quality);
+    }
+
+    public void initProjectorCamera() {
+        initProjectorCamera(computerConfiguration.getCameraName(), computerConfiguration.getCameraType(), 1);
     }
 
     public void initProjectorCamera(String cameraNo, Camera.Type cameraType) {
@@ -151,6 +202,15 @@ public class Papart {
         initARDisplay(quality);
 
         checkInitialization();
+    }
+
+    /**
+     * Initialize the default camera for object tracking.
+     * 
+     * @see initCamera(String, int, float)
+     */
+    public void initCamera() {
+        initCamera(computerConfiguration.getCameraName(), computerConfiguration.getCameraType(), 1);
     }
 
     /**

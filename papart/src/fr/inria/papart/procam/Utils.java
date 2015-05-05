@@ -86,11 +86,42 @@ public class Utils {
     }
 
     static public String getLibraryFolder(String libname) {
-        return getSketchbookFolder() + "/libraries/" + libname;
+        return getLibrariesFolder() + "/libraries/" + libname;
+    }
+
+    static public String getLibrariesFolder() {
+        URL main = Matrix4x4.class.getResource("Matrix4x4.class");
+        String tmp = main.getPath();
+
+        tmp = tmp.substring(0, tmp.indexOf('!'));
+        tmp = tmp.replace("file:", "");
+//        tmp = tmp.replace("file:/", "");  TODO: OS check ?
+
+        File f = new File(tmp);
+        if (!f.exists()) {
+            System.err.println("Error in loading the Sketchbook folder.");
+        }
+
+        // if the file is within a library/lib folder
+        if (f.getParentFile().getAbsolutePath().endsWith(("/lib"))) {
+            //             pathToSketchbook/libraries/myLib/library/lib/myLib.jar
+            f = f.getParentFile().getParentFile().getParentFile().getParentFile();
+        } else {
+            //             pathToSketchbook/libraries/myLib/library/myLib.jar
+            f = f.getParentFile().getParentFile().getParentFile();
+        }
+
+        return f.getAbsolutePath();
     }
 
     static public String getPapartFolder() {
-        return getSketchbookFolder() + "/libraries/" + LibraryName;
+
+        String sketchbook = java.lang.System.getenv("SKETCHBOOK");
+        if (sketchbook != null) {
+            return sketchbook + "/libraries/" + LibraryName;
+        }
+
+        return getLibrariesFolder() + LibraryName;
     }
 
     static public PVector mult(PMatrix3D mat, PVector source, PVector target) {
@@ -110,7 +141,7 @@ public class Utils {
     static public Vec3D toVec(PVector p) {
         return new Vec3D(p.x, p.y, p.z);
     }
-    
+
     static public boolean colorDist(int c1, int c2, int threshold) {
         int r1 = c1 >> 16 & 0xFF;
         int g1 = c1 >> 8 & 0xFF;
