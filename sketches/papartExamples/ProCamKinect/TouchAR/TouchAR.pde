@@ -33,7 +33,7 @@ void setup(){
     Papart papart = new Papart(this);
 
     if(useProjector){
-	papart.initProjectorCamera("2", Camera.Type.OPENCV);
+	papart.initProjectorCamera("1", Camera.Type.OPENCV);
 	papart.loadTouchInput(2, 5);
     } else {
 	papart.initKinectCamera(2);
