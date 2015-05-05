@@ -1,7 +1,3 @@
-import fr.inria.papart.exceptions.BoardNotDetectedException;
-
-
-// Public is very important :] 
 public class Moon  extends PaperTouchScreen {
 
     PShape moonModel;

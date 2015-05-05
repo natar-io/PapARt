@@ -14,11 +14,6 @@ PVector playerPaperOffset = new PVector(paperOffsetX, paperOffsetY);
 // GREEN
 public class Player1  extends PaperTouchScreen {
    
-    int castleSize = 55;
-    int castleX = 120;
-    int castleY = 85;
-    Castle castle;
-
     int maxMissiles = 4;
     int nbMissiles = 0;
 
@@ -34,40 +29,31 @@ public class Player1  extends PaperTouchScreen {
     ColorDetection shootLookColorDetection;
     
 
-    //    HashMap<TouchPoint, Missile> touchMissileMap = new HashMap<TouchPoint, Missile>();
-
     void setup(){
 	setDrawingSize( (int) playerBoardSize.x, (int)playerBoardSize.y);
 	loadMarkerBoard(sketchPath + "/data/markers/player1-big.cfg",
 			playerBoardSize.x, playerBoardSize.y);
 
 	player1 = this;
-	playerColor = color(159, 168, 143);
+	playerColor = #FA1414; //color(159, 168, 143);
 	prepare();
     }
 
 
 
     void prepare(){
-	// shootLookColorDetection = new ColorDetection(this, new PVector(300, 130 + 75));
-	// shootLookColorDetection.setCaptureOffset(playerPaperOffset);
-	// shootLookColorDetection.setInvY(true);
-	// shootLookColorDetection.setCaptureSize(75, 75); // millimeters
-	// shootLookColorDetection.setPicSize(picSize, picSize);  // pixels 
-	// shootLookColorDetection.initialize();
     }
 
     
     public void reset(){
-	castle = new Castle(this);	
 	needReset = false;
     }
 
     public void checkEnnemi(){
-	if(this == player1)
-	    ennemi = player2;
-	if(this == player2)
-	    ennemi = player1;
+	// if(this == player1)
+	//     ennemi = player2;
+	// if(this == player2)
+	//     ennemi = player1;
     }
 
 
@@ -75,27 +61,32 @@ public class Player1  extends PaperTouchScreen {
 	if(needReset)  
 	    reset();
 	checkEnnemi();
-	castle.update();
     }
 
     public void draw(){
-
 	updateInternals();
-	if(fixCastles){
-	    markerBoard.blockUpdate(cameraTracking, trackingFixDuration);
-	}
 
-	if(castle.hp <= 0){
-	    castle.hp = MAX_HP;
-	    // background(ennemi.playerColor);
-	    // return;
+	if(fixBoards){
+	    markerBoard.blockUpdate(cameraTracking, trackingFixDuration);
 	}
 
 	beginDraw2D();
 	clear();
-	//	background(100);
 
 	setLocation(paperOffsetX, paperOffsetY, 0);
+	
+	// stroke(255);
+	// noFill();
+	// rect(drawingSize.x /2 - 20 , drawingSize.y / 2,
+	//      20, 30);
+
+        if(noCameraMode){	
+	    noFill();
+	    stroke(120);
+	    strokeWeight(1);
+	    rect(0, 0, drawingSize.x, drawingSize.y);
+	    setLocation(20, height/2 - 120, 0); 
+        }
 
 	checkTouch();
 	drawButtons();
@@ -103,98 +94,60 @@ public class Player1  extends PaperTouchScreen {
 	endDraw();
     }
 
- 
-    // void updateMissileShape(){
-    // 	look.clear();
-    // 	float sizeMult = 4.9;
-    // 	PImage shootLook = shootLookColorDetection.getImage();
-    // 	if(shootLook != null){
-    // 	    shootLook.loadPixels();
-    // 	    int[] px=  shootLook.pixels;
-    // 	    for(int y = 0; y < picSize; y++){
-    // 		for(int x = 0; x < picSize; x++){
-    // 		    int offset = y * picSize + x;
-    // 		    if(brightness(px[offset]) < 104){
-    // 			px[offset] = color(255);
-    // 			look.add(new PVector((float) x / picSize * sizeMult, sizeMult * (float)y / picSize));
-    // 		    } else {
-    // 			px[offset] = color(0);
-    // 		    }
-    // 		}
-    // 	    }
-    // 	    shootLook.updatePixels();
-    // 	    // DEBUG COMMENTED
-    // 	    image(shootLook, 100, 100, 50, 50);
-    // 	}
-    // 	if(look.isEmpty()){
-    // 	    look.add(new PVector(picSize /2, picSize /2));
-    // 	}
-    // }
-
     
-    void drawCastle(PGraphicsOpenGL g){
-	if(castle == null) 
-	    return;
-	castle.display(g);
-    }
+ //   void drawCastle(PGraphicsOpenGL g){
+//	if(castle == null) 
+//	    return;
+  //	g.fill(playerColor);
+ //       castle.display(g);
+//    }
 
     Touch aimTouch;
     float ellipseSize = 15;
 
 
     void checkTouch(){
-	KinectTouchInput kTouchInput = (KinectTouchInput) touchInput;
-	ProjectorDisplay projector = (ProjectorDisplay) display;
-
-	// PImage cameraImage = cameraTracking.getPImage();
-	// cameraImage.loadPixels();
-	// cameraImage.updatePixels();
 
 	noFill();
 	strokeWeight(2);
-
-	aimTouch = null;
-	for (Touch t : touchList) {
-	    if(isGoalTower(t.touchPoint)){
-		aimTouch = t;
-	    }
-	}
 
 	for (Touch t : touchList) {
             if (t.is3D) {
 		continue;
             } 
-	    
-	    TouchPoint tp = t.touchPoint; 
 
+	    TouchPoint tp = t.touchPoint; 
+	    if(tp == null)
+		continue;
+    
 	    if(isMissileTower(tp)){
 		missileTowerAction(t);
 	    } else {
-
-	    stroke(100, 100, 100);
-	    ellipse(t.position.x,
-		    t.position.y,
-		    2, 2);
-
+		stroke(200, 100, 100);
+		ellipse(t.position.x,
+			t.position.y,
+			15, 15);
+		
 	    }
 	}
 
     }
 
-
-
     private boolean isMissileTower(TouchPoint tp){
 	return tp.attachedValue == TOWER;
     }
-
-    private boolean isGoalTower(TouchPoint tp){
-	return tp.attachedValue == GOAL;
-    }
     
+
+    // TODO: action without TouchPoint... 
+    // Or with a fake one ?
     private void missileTowerAction(Touch t){
-	// Nothing with too young touches....
-	if(t.touchPoint.getAge(millis()) < 500){
-	    return;
+
+	if(!noCameraMode){
+
+	    // Nothing with too young touches....
+	    if(t.touchPoint.getAge(millis()) < 500){
+		return;
+	    }
 	}
 
 	MissileLauncher launcher;
@@ -205,7 +158,6 @@ public class Player1  extends PaperTouchScreen {
 	    launcher = (MissileLauncher) (t.touchPoint.attachedObject);
 	}
 
-	launcher.checkButtons(t);
 	launcher.tryLaunch(t);
 	launcher.drawSelf(getGraphics());
     }
@@ -216,8 +168,8 @@ public class Player1  extends PaperTouchScreen {
 
     // TODO: get a list of targets. 
     // Get a target for aiming...
-    public PVector getTargetLocation(){
-	return castle.getPosPxGame();
-    }
+//    public PVector getTargetLocation(){
+//	return castle.getPosPxGame();
+//    }
 
 }

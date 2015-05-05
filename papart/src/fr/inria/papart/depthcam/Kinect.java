@@ -18,7 +18,8 @@
  */
 package fr.inria.papart.depthcam;
 
-import fr.inria.papart.depthcam.calibration.PlaneAndProjectionCalibration;
+import fr.inria.papart.calibration.HomographyCalibration;
+import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import java.nio.ByteBuffer;
@@ -68,6 +69,14 @@ public class Kinect {
     public static final int KINECT_MM = 1;
     public static final int KINECT_10BIT = 0;
     private int mode;
+    
+    /**
+     * Do not modify directly, will go private in a future release. 
+     */
+    public PMatrix3D KinectRGBIRCalibration = new PMatrix3D(1, 0, 0, 15,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1);
 
     public Kinect(PApplet parent, String calibIR, String calibRGB) {
         this(parent, calibIR, calibRGB, KINECT_10BIT);
@@ -85,10 +94,15 @@ public class Kinect {
         init();
     }
 
-    public PMatrix3D KinectRGBIRCalibration = new PMatrix3D(1, 0, 0, 5,
-            0, 1, 0, 0,
-            0, 0, 1, 0,
-            0, 0, 0, 1);
+    public void setStereoCalibration(String fileName) {
+        HomographyCalibration calib = new HomographyCalibration();
+        calib.loadFrom(papplet, fileName);
+        setStereoCalibration(calib.getHomography());
+    }
+
+    public void setStereoCalibration(PMatrix3D matrix) {
+        KinectRGBIRCalibration.set(matrix);
+    }
 
     public int findColorOffset(Vec3D v) {
         return findColorOffset(v.x, v.y, v.z);
@@ -142,46 +156,53 @@ public class Kinect {
 
     public void updateMT(IplImage depth, IplImage color, PlaneAndProjectionCalibration calib, int skip2D, int skip3D) {
         updateRawDepth(depth);
-        updateRawColor(color);
+	// optimisation no Color. 
+        //        updateRawColor(color);
         depthData.clear();
         depthData.timeStamp = papplet.millis();
         depthData.planeAndProjectionCalibration = calib;
-        computeDepthAndDo(1, new DoNothing());
+        computeDepthAndDo(skip2D, new DoNothing());
         doForEachPoint(skip2D, new Select2DPointPlaneProjection());
         doForEachPoint(skip3D, new Select3DPointPlaneProjection());
 
-        depthData.connexity.setPrecision(skip3D);
-        doForEachValid3DPoint(skip3D, new ComputeNormal());
-
+	// Optimisations -- for demos
+        //        depthData.connexity.setPrecision(skip3D);
+        //        doForEachValid3DPoint(skip3D, new ComputeNormal());
 //        depthData.connexity.computeAll();
 //        doForEachPoint(1, new ComputeNormal());
 //        doForEachPoint(skip2D, new SetImageData());
-        doForEachValidPoint(skip2D, new SetImageData());
-        doForEachValid3DPoint(skip3D, new SetImageData());
+        // Optimisation no Color
+        // doForEachValidPoint(skip2D, new SetImageData());
+        // doForEachValid3DPoint(skip3D, new SetImageData());
     }
 
     public void updateMT2D(IplImage depth, IplImage color, PlaneAndProjectionCalibration calib, int skip) {
         updateRawDepth(depth);
-        updateRawColor(color);
+
+        // TechFest Hacks
+//        updateRawColor(color);
         depthData.clearDepth();
         depthData.clear2D();
-        depthData.clearColor();
+//        depthData.clearColor();
         depthData.timeStamp = papplet.millis();
         depthData.planeAndProjectionCalibration = calib;
         computeDepthAndDo(skip, new Select2DPointPlaneProjection());
-        doForEachValidPoint(skip, new SetImageData());
+
+        // TechFest Hacks
+//        doForEachValidPoint(skip, new SetImageData());
     }
 
     public void updateMT3D(IplImage depth, IplImage color, PlaneAndProjectionCalibration calib, int skip) {
         updateRawDepth(depth);
-        updateRawColor(color);
+        // TechFest Hack
+//        updateRawColor(color);
         depthData.clearDepth();
         depthData.clear3D();
-        depthData.clearColor();
+//        depthData.clearColor();
         depthData.timeStamp = papplet.millis();
         depthData.planeAndProjectionCalibration = calib;
         computeDepthAndDo(skip, new Select3DPointPlaneProjection());
-        doForEachValidPoint(skip, new SetImageData());
+//        doForEachValidPoint(skip, new SetImageData());
     }
 
     protected void computeDepthAndDo(int precision, DepthPointManiplation manip) {
@@ -435,11 +456,9 @@ public class Kinect {
                 }
             }
         }
-   
-//        tryComputeMediumSquare(neighbours, normal);
-       // tryComputeOneTriangle(neighbours, point, normal);
 
-        
+//        tryComputeMediumSquare(neighbours, normal);
+        // tryComputeOneTriangle(neighbours, point, normal);
         normal.normalize();
         return normal;
     }

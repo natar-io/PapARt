@@ -31,17 +31,18 @@ class CustomListener implements ContactListener {
 	boolean missile1 = o1.getClass() == Missile.class;
 	boolean missile2 = o2.getClass() == Missile.class;
 
-	boolean castle1 = o1.getClass() == Castle.class;
-	boolean castle2 = o2.getClass() == Castle.class;
-       
+	//boolean castle1 = o1.getClass() == Castle.class;
+	//boolean castle2 = o2.getClass() == Castle.class;
 
-	if(missile2 && castle1){
-	    hit(o1, o2);
-	}
-
-	// if(missile1 && missile2){
-	//     explode(o1, o2);
+	
+	// TODO: hit ?
+	// if(missile2 && castle1){
+	    //	    hit(o1, o2);
 	// }
+
+	if(missile1 && missile2){
+	    explode(o1, o2);
+	}
 
 
 	// if(missile1 && castle2){
@@ -58,21 +59,27 @@ class CustomListener implements ContactListener {
 	Missile missile0 = (Missile) missileO1;
 	Missile missile1 = (Missile) missileO2;
 
-	if(missile0.faction == missile1.faction)
-	    return;
+	// if(missile0.faction == missile1.faction)
+	//     return;
 
-	missile0.hit();
-	missile1.hit();
+	if(missile1.level > missile0.level){
+	    missile0.hit();
+	} else {
+	    if(missile1.level < missile0.level){
+		missile1.hit();
+	    }
+	}
+	
     }
 
 
-    void hit(Object castleO, Object missileO){
-	Castle castle = (Castle) castleO;
-	Missile missile = (Missile) missileO;
-
-	missile.hit();
-	castle.isHit();
-    }
+//  void hit(Object castleO, Object missileO){
+//	Castle castle = (Castle) castleO;
+//	Missile missile = (Missile) missileO;
+//
+//	missile.hit();
+//	castle.isHit();
+//    }
 
      
     void endContact(Contact contact) {

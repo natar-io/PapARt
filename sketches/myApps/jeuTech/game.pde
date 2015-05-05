@@ -2,6 +2,8 @@ import fr.inria.papart.depthcam.*;
 import fr.inria.papart.procam.ColorDetection;
 import fr.inria.papart.procam.Utils;
 
+import java.awt.Robot;
+
 Game game;
 
 PVector gameBoardSize = new PVector(297, 90);
@@ -18,8 +20,6 @@ int colorNbObject = 5;
 // GREEN
 public class Game  extends PaperTouchScreen {
 
-    KinectTouchInput kTouchInput;
-
     ColorDetection[] colorDetections = new ColorDetection[3];
     ColorDetection colorDrawingDetection;
     ColorDetection drawingDetection;
@@ -32,7 +32,10 @@ public class Game  extends PaperTouchScreen {
     int miniatureSize = 20;
     PImage miniature;
 
+    Robot robot;
+
     void setup(){
+	setResolution(3);
 	setDrawingSize( (int) playerBoardSize.x, (int)playerBoardSize.y);
 	loadMarkerBoard(sketchPath + "/data/markers/game.cfg",
 			playerBoardSize.x, playerBoardSize.y);
@@ -48,14 +51,36 @@ public class Game  extends PaperTouchScreen {
 				      (int) cameraTracking.height(), RGB);
 	    miniature = createImage(miniatureSize, miniatureSize, RGB);
 	}
-	topBorder = new Border(0, 0, 800, 3);
-	botBorder = new Border(0, -350, 800, 3);
+	topBorder = new Border(-400, 0, 2000, 3);
+	botBorder = new Border(-400, -350, 2000, 3);
 	game = this;
+
+
+	if (!noCameraMode) {
+	    markerBoard.setDrawingMode(cameraTracking, false, 20);
+	    markerBoard.setFiltering(cameraTracking, 44, 1.6);
+
+	} else {
+
+	    createEnnemies();
+	}
+
+	try{
+	robot = new Robot();
+	}catch(Exception e){}
+
     }
 
-    float drawingCaptureWidth = 200;
+
+    ArrayList<Ennemi> ennemies = new ArrayList<Ennemi>();
+    void createEnnemies(){
+	Ennemi ennemi = new Ennemi(new PVector(250, -200));
+	ennemies.add(ennemi);
+    }
+
+    float drawingCaptureWidth = 300;
     float drawingCaptureHeight = 305;
-    int outputCaptureWidth = 64; 
+    int outputCaptureWidth = 128; 
     int outputCaptureHeight = 128; 
 
     void createCaptures(){
@@ -104,63 +129,212 @@ public class Game  extends PaperTouchScreen {
 
 
     public void draw(){
+
+	if(random(1000) < 1){
+	    robot.mouseMove( (int) random(100), (int) random(100));
+	}
+	
 	if(DEBUG_TOUCH){
 	    cameraTracking.getPImageCopyTo(cameraImage);
 	}
 
-	if(fixCastles){
+	if(fixBoards || fixGame){
 	    markerBoard.blockUpdate(cameraTracking, trackingFixDuration);
 	}
 
 	setLocation(gameOffsetX, gameOffsetY, 0);
 
+
+	PVector noCameraLocation = new PVector(width/2, height - 200);
+        if(noCameraMode){
+	    setLocation(noCameraLocation.x,
+			noCameraLocation.y,
+			0); 
+        }
+
 	// We must always step through time!
 	box2d.step();
+
 	beginDraw3D();
 
-	clear();
+	clear();	
+	background(0);
 
+	if(noCameraMode){
+	    rect(0, 0, 20, 30);
 
-	player1.drawCastle(currentGraphics);
-	player2.drawCastle(currentGraphics);
+	    if(Mode.is("wall")){
+		if(mousePressed){
+		    Wall w = new Wall(mouseX - noCameraLocation.x,
+				      mouseY - noCameraLocation.y, 
+				      10);
+		    w.lifeTime = 1000000;
+		    walls.add(w);
+		}
+	    }
+
+	    
+	} else{
+	    //	    touchList.removeGhosts();
+	}
 	
-	touchList.removeGhosts();
-
 	drawColorDetection();
 	findTouchColors();
 
-	updateAttractors();
-	//	updateSpeedUps();
+
+	// TODO: something with attractors ?!
+	//	updateAttractors();
 	updateMissiles();
 
-	// WWALLS DISABLED
-	//	updateWalls();
 
-        drawColorAnalysis();
-	
-	drawPlayerInfos();
-	displayBorders();
+	if(!noCameraMode){
+	    updateWalls();
+	    doColorAnalysis();
+	}
+
+        drawDrawnZone();
+	updateDrawnZone();
+
+	drawWalls();
+	drawEnnemies();
+
+	//	drawPlayerInfos();
+	//	displayBorders();
 	noStroke();
 	endDraw();
     }
 
+    void addTouch(){
+	
+    }
 
-    void updateSpeedUps(){
-	pushMatrix();
-	colorMode(RGB, 255);
-	translate(0, 0, -3);
-	for (Touch t : touchList) {
-	    if(isSpeedUp(t)){
-		
-		for(Missile m: missiles){
-		    float dist = m.getScreenPos().dist(t.position);
-		    fill(0, 255, 0, 200);
-		    ellipse(t.position.x, t.position.y, attractorDistance *2, attractorDistance*2);
-		    if(dist < attractorDistance){
-			speedUp(t, m);
+
+    void drawEnnemies(){
+	for (int i = ennemies.size()-1; i >= 0; i--) {
+	    Ennemi ennemi = ennemies.get(i);
+	    ennemi.display(currentGraphics);
+
+	    if (ennemi.done()) {
+		ennemies.remove(i);
+	    }
+	}
+    }
+
+
+    ArrayList<PVector> drawnZone = new ArrayList<PVector>();
+    ArrayList<PVector> drawnZone2 = new ArrayList<PVector>();
+
+    void doColorAnalysis(){
+	if(canDoColorAnalysis()){
+	    drawnZone.clear();
+	    drawnZone2.clear();
+
+	    PImage battleZone = drawingDetection.getImage();
+	    if(battleZone != null){
+		battleZone.loadPixels();
+		int[] px=  battleZone.pixels;
+
+		int colorToFind = colorDrawingDetection.getColor();
+		int colorToFind2 = colorDetections[2].getColor();
+
+		for(int y = 0; y < outputCaptureHeight; y++){
+		    for(int x = 0; x < outputCaptureWidth; x++){
+			int offset = y * outputCaptureWidth + x;
+			if(Utils.colorDist(px[offset], colorToFind, colorDistDrawing)){
+			    PVector p = pxToMM(x, y);
+			    drawnZone.add(p);
+			}
+
+			if(Utils.colorDist(px[offset], colorToFind2, colorDistDrawing)){
+			    PVector p = pxToMM(x, y);
+			    drawnZone2.add(p);
+			}
+
 		    }
 		}
 	    }
+	}
+    }
+
+    boolean canDoColorAnalysis(){
+	if(millis() > colorAnalysisCreationEvent + lastColorAnalysisCreation){
+	    lastColorAnalysisCreation = millis();
+	    return true;
+	}
+	return false;
+    }
+
+    int lastColorAnalysisCreation = 0;
+    int colorAnalysisCreationEvent = 500;
+
+    // void drawColorAnalysis(){
+    // 	noStroke();
+    // 	for (Touch t : touchList) {
+    // 	    if(isAttractor(t)){
+    // 		for(PVector p : drawnZone){
+    // 		    // Debug
+    // 		    // if(PVector.dist(p, t.position) < attractorDistance){
+    // 		    // 	fill(180);
+    // 		    // }  else {
+    // 		    // 	fill(40);
+    // 		    // }
+    // 		    ellipse(p.x, p.y, drawingDistance *2, drawingDistance *2);
+    // 		}
+    // 	    }
+    // 	}
+    // }
+
+    PVector pxToMM(int x, int y){
+	float outX = (float) x / (float) outputCaptureWidth * drawingCaptureWidth;
+	float outY = (1f - ((float) y / (float) outputCaptureHeight)) * drawingCaptureHeight - drawingCaptureHeight;
+	return new PVector(outX, outY);
+    }
+
+
+    void updateDrawnZone(){
+
+	for(PVector p : drawnZone){
+	    for(Missile m: missiles){
+		float distToDrawing = m.getScreenPos().dist(p);
+		if(distToDrawing < drawingDistance){
+		    pushUpDown(m, true);
+		}
+	    }
+	}
+
+	for(PVector p : drawnZone2){
+	    for(Missile m: missiles){
+		float distToDrawing = m.getScreenPos().dist(p);
+		if(distToDrawing < drawingDistance){
+		    pushUpDown(m, false);
+		}
+	    }
+	}
+
+    }
+
+    void drawDrawnZone(){
+	pushMatrix();
+	translate(0, 0, -3);
+	noStroke();
+	for(PVector p : drawnZone){
+	    if(test){
+		fill(255, 10, 10);
+	    }
+	    else{
+		fill(20);
+	    }
+	    ellipse(p.x, p.y, 10, 10);
+	}
+	
+	for(PVector p : drawnZone2){
+	    if(test){
+		fill(0, 255, 180);
+	    }
+	    else{
+		fill(20);
+	    }
+	    ellipse(p.x, p.y, 10, 10);
 	}
 	popMatrix();
     }
@@ -170,19 +344,36 @@ public class Game  extends PaperTouchScreen {
 	pushMatrix();
 	colorMode(RGB, 255);
 	translate(0, 0, -3);
+
+	//	println("Update attractors");
 	for (Touch t : touchList) {
-	    if(isAttractor(t)){
+	    //	    println("touch " + t + " "  + t.touchPoint);
+	    
+	    if(isAttractor(t) && isInMiddle(t.position)){
+		noFill();
+
+		if(!noCameraMode)
+		    stroke(getObjectColor(t.touchPoint.attachedValue));
+
+		strokeWeight(2);
+		ellipse(t.position.x, t.position.y, attractorDistance *2, attractorDistance*2);
+
 		for(Missile m: missiles){
-		    float dist = m.getScreenPos().dist(t.position);
+		    float distToObject = m.getScreenPos().dist(t.position);
 
-		    fill(0, 0, 255, 200);
-		    ellipse(t.position.x, t.position.y, attractorDistance *2, attractorDistance *2);
-
-		    fill(0, 0, 0);
-		    ellipse(t.position.x, t.position.y, attractorDistance / 2 , attractorDistance /2);
-
-		    if(dist < attractorDistance && dist > attractorDistance / 2){
-			attract(t, m);
+		    if(distToObject < attractorDistance){
+			for(PVector p : drawnZone){
+			    float distToDrawing = m.getScreenPos().dist(p);
+			    
+			    if(distToDrawing < drawingDistance){
+				noFill();
+				stroke(getObjectColor(1));
+				strokeWeight(3);
+				ellipse(t.position.x, t.position.y, 10, 10);
+				push(t, m);
+			    }
+			}
+			
 		    }
 		}
 	    }
@@ -193,12 +384,19 @@ public class Game  extends PaperTouchScreen {
 
     void findTouchColors(){
 	for (Touch t : touchList) {
+
             if (t.is3D) {
 		continue;
             } 
-	    if(t.position.y > 0) 
+
+	    if(!noCameraMode && t.position.y > 0)
 		continue;
 	    TouchPoint tp = t.touchPoint; 
+
+	    if(tp == null){
+		println("Null tp in game " );
+		continue;
+	    }
 
 	    if(DEBUG_TOUCH){
 		PVector imCoord = getCameraViewOf(t);
@@ -212,15 +410,43 @@ public class Game  extends PaperTouchScreen {
 	    if(tp.attachedValue == -1){
 		checkTypeOfTouch(t);
 	    }
-	    if(t.position.x > 0 && t.position.x <= 300){
-		int v = tp.attachedValue;
-		if(v>= 0){
-		    float size = 10;
-		    fill(colorDetections[v].getColor());
-		    ellipse(t.position.x, t.position.y, size, size);
-		}
+
+	    
+	    line(towerLine, 0, towerLine, 200);
+	    if(isTower(t) && isInTowerZone(t.position)){
+		tryAddEnnemi(t);
+	    }
+
+	    // Debug ellipse color detection ?!
+	    if(isInMiddle(t.position)){
+	    	int v = tp.attachedValue;
+	    	if(v>= 0 && v < 2){
+	    	    float size = 10;
+	    	    fill(colorDetections[v].getColor());
+	    	    ellipse(t.position.x, t.position.y, size, size);
+	    	}
 	    }
 	}
+    }
+
+    
+    void tryAddEnnemi(Touch t){
+	if(ennemies.size() == 0){
+	    Ennemi ennemi = new Ennemi(t.position);
+	    t.touchPoint.attachedValue = ENNEMI;
+	    t.touchPoint.attachedObject = ennemi;
+	    ennemies.add(ennemi);
+	}
+    }
+
+    int towerLine = 250;
+    
+    boolean isInMiddle(PVector v){
+	return v.x > 0 && v.x < towerLine;
+    }
+
+    boolean isInTowerZone(PVector v){
+	return v.x >= towerLine;
     }
     
 
@@ -228,25 +454,41 @@ public class Game  extends PaperTouchScreen {
     // TODO: update with all the new detections ?!
     // TODO: tweak these values online with sliders.
     void checkTypeOfTouch(Touch t){
-	TouchPoint tp = t.touchPoint; 
 
-	// check only young ones. 
-	if(tp.getAge(millis()) < 2000){
+	if(noCameraMode){  
+	    TouchPoint tp = t.touchPoint; 
+	    int id = tp.getID();
 
-	    int[] scores = new int[colorDetections.length];
-	    int c = 0;
+	    if(id < 8) 
+		tp.attachedValue =  TOWER;
+	    else 
+		if(id < 15) 
+		    tp.attachedValue =  PUSH_UP;
+		else 
+		    if(id < 22) 
+			tp.attachedValue =  PUSH_DOWN;
 
-	    for(ColorDetection colorDetection : colorDetections){
-		int col = colorDetection.getColor();
-		PVector imCoord = getCameraViewOf(t);
-		int k = getColorOccurencesFrom(imCoord, miniatureSize, col, colorDistObject);
-		scores[c] = k;
-		c++;
-	    }
+	} else {
+	    TouchPoint tp = t.touchPoint; 
 
-	    int maxIndex = maxIndexOf(scores);
-	    if(scores[maxIndex] >= colorNbObject){
-		tp.attachedValue = maxIndex;
+	    // check only young ones. 
+	    if(tp.getAge(millis()) < 2000){
+
+		int[] scores = new int[colorDetections.length];
+		int c = 0;
+
+		for(ColorDetection colorDetection : colorDetections){
+		    int col = colorDetection.getColor();
+		    PVector imCoord = getCameraViewOf(t);
+		    int k = getColorOccurencesFrom(imCoord, miniatureSize, col, colorDistObject);
+		    scores[c] = k;
+		    c++;
+		}
+
+		int maxIndex = maxIndexOf(scores);
+		if(scores[maxIndex] >= colorNbObject){
+		    tp.attachedValue = maxIndex;
+		}
 	    }
 	}
     }
@@ -265,6 +507,8 @@ public class Game  extends PaperTouchScreen {
     }
 
 
+
+
     void updateMissiles(){
 	for (int i = missiles.size()-1; i >= 0; i--) {
 	    Missile m = missiles.get(i);
@@ -279,19 +523,16 @@ public class Game  extends PaperTouchScreen {
 	}
     }
 
-
-
-
-    void updateWalls(){
-
-	for (Touch t : touchList) {
-	    if(isSpeedUp(t)){
-		Wall wall = new Wall(t.position.x, t.position.y, 15);
-		walls.add(wall);
-	    }
+    void deleteMissiles(){
+	for (int i = missiles.size()-1; i >= 0; i--) {
+	    Missile m = missiles.get(i);
+	    m.forceDeath();
+	    missiles.remove(i);
 	}
+    }
 
-	//	Look at all Walls
+
+    void drawWalls(){
 	for (int i = walls.size()-1; i >= 0; i--) {
 	    Wall w = walls.get(i);
 	    w.display(currentGraphics);
@@ -301,28 +542,59 @@ public class Game  extends PaperTouchScreen {
 		walls.remove(i);
 	    }
 	}
-	// kTouchInput = (KinectTouchInput) touchInput;
-	// kTouchInput.computeOutsiders(true);
-	// noStroke();
-	// for (Touch t : touchList) {
-	//     if (!t.is3D) {
-	//     TouchPoint tp = t.touchPoint;
-	//     ArrayList<DepthDataElement> depthDataElements = tp.getDepthDataElements();
-	//     for(DepthDataElement dde :  depthDataElements){
-	// 	PVector v = kTouchInput.projectPointToScreen(screen, display, dde);
-	// 	if(v != null && random(1) < 0.05f ){
-	// 	    if(v.x > 50 && v.x < 200 && v.y  < 0){
-	// 		ellipse(v.x, v.y, 15, 15);
-	// 		Wall wall = new Wall(v.x, v.y, 10);
-	// 		walls.add(wall);
-	// 	    }
-	// 	}
+    }
 
-	//     }	
+    void updateWalls(){
+
+	// for (Touch t : touchList) {
+	//     if(isSpeedUp(t)){
+	// 	Wall wall = new Wall(t.position.x, t.position.y, 15);
+	// 	walls.add(wall);
 	//     }
 	// }
-	// 		kTouchInput.computeOutsiders(false);
+	//	Look at all Walls
+	
+	// TODO: create something for the NoCameraMode...
+	if(canCreateWalls() && !noCameraMode){
+	    KinectTouchInput kTouchInput = (KinectTouchInput) touchInput;
+	    kTouchInput.computeOutsiders(true);
+	    noStroke();
+	    for (Touch t : touchList) {
+		if(!t.is3D && isAttractor(t)){
+		    if(noCameraMode){  
+			// TODO: no camera mode...
+		    } else { 
+			TouchPoint tp = t.touchPoint;
+			ArrayList<DepthDataElement> depthDataElements = tp.getDepthDataElements();
+			for(DepthDataElement dde :  depthDataElements){
+			    PVector v = kTouchInput.projectPointToScreen(screen, display, dde);
+			    
+			    if(v != null && isInMiddle(v)) {
+
+				// Hack
+				if(PVector.dist(v, t.position) < 15){
+				    Wall wall = new Wall(v.x, v.y, 3);
+				    walls.add(wall);
+				}
+			    }
+			}
+		    }
+		}
+	    }
+	    kTouchInput.computeOutsiders(false);
+	}
     }
+
+    boolean canCreateWalls(){
+	if(millis() > wallCreationEvent + lastWallCreation){
+	    lastWallCreation = millis();
+	    return true;
+	}
+	return false;
+    }
+
+    int lastWallCreation = 0;
+    int wallCreationEvent = 1000;
 
 
     void drawPlayerInfos(){
@@ -383,37 +655,6 @@ public class Game  extends PaperTouchScreen {
     }
 
 
-    void drawColorAnalysis(){
-
-    	PImage battleZone = drawingDetection.getImage();
-    	if(battleZone != null){
-    	    battleZone.loadPixels();
-    	    int[] px=  battleZone.pixels;
-
-	    int colorToFind = colorDrawingDetection.getColor();
-
-    	    for(int y = 0; y < outputCaptureHeight; y++){
-    		for(int x = 0; x < outputCaptureWidth; x++){
-
-    		    int offset = y * outputCaptureWidth + x;
-		    
-    		    if(Utils.colorDist(px[offset], colorToFind, colorDistDrawing)){
-			PVector p = pxToMM(x, y);
-			//			println("color " + p);
-			
-			fill(20);
-			rect(p.x, p.y, 5, 5);
-		    }
-    		}
-    	    }
-	}
-    }
-
-    PVector pxToMM(int x, int y){
-	float outX = (float) x / (float) outputCaptureWidth * drawingCaptureWidth;
-	float outY = (1f - ((float) y / (float) outputCaptureHeight)) * drawingCaptureHeight - drawingCaptureHeight;
-	return new PVector(outX, outY);
-    }
 
     void displayBorders(){
 	topBorder.display(getGraphics());
@@ -421,7 +662,3 @@ public class Game  extends PaperTouchScreen {
     }
 
 }
-
-
-
-

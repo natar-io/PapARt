@@ -6,85 +6,56 @@ float levelPixelRatio = 15;
 
 class MissileLauncher implements TouchPointEventHandler{
 
+    float DEFAULT_CREATION_TIMEOUT = 3000;
+
     int lastCreation = 0;
-    float creationTimeout = 1000;
-    float power = 700;
+    float creationTimeout = DEFAULT_CREATION_TIMEOUT;
+    float power = 900;
     float size = 1.5f;
 
     float launchAmount = 0;
     float maxLaunchAmount;
     float minLaunchAmount = 5;
 
-    TouchPoint touchPoint;
     Player1 player;
     float drawingSizeY;
 
-    int level = 0;
-    //    Button powerButton, sizeButton, launchButton;
-
+    int level = 1;
 
     PVector position;
-
-    //    ColorDetection[] colorDetections = new ColorDetection[4];
-    ColorDetection colorDetection, colorDetection2;
+    //    ColorDetection colorDetection2;
 
 
     MissileLauncher(Player1 player, Touch touch){
-	this.touchPoint = touch.touchPoint;
 	this.player = player;
 	this.position = touch.position.get();
 	
-	// powerButton = new Button("power", 
-	// 		      (int) position.x, 
-	// 		      (int) position.y + 40 ,
-	// 		      40, 20);
-	// sizeButton = new Button("size", 
-	// 		      (int) position.x, 
-	// 		      (int) position.y + 80 ,
-	// 		      40, 20);
-
-	// launchButton = new Button("launch", 
-	// 		      (int) position.x, 
-	// 		      (int) position.y + 100 ,
-	// 		      40, 20);
-
-	// player.getButtons().add(powerButton);
-	// player.getButtons().add(sizeButton);
-	// player.getButtons().add(launchButton);
-
-
-
-	// colorDetection = new ColorDetection(player, 
-	// 				    new PVector((int) position.x + 60, 
+	// colorDetection2 = new ColorDetection(player, 
+	// 				    new PVector((int) position.x + 20, 
 	// 						(int) position.y + 40));
-
-	// colorDetection.setCaptureOffset(playerPaperOffset);
-	// colorDetection.setInvY(true);
-	// colorDetection.initialize();
-
-	colorDetection2 = new ColorDetection(player, 
-					    new PVector((int) position.x + 20, 
-							(int) position.y + 40));
-	colorDetection2.setCaptureOffset(playerPaperOffset);
-	colorDetection2.setInvY(true);
-	colorDetection2.setCaptureSize(80, 10);
-	colorDetection2.initialize();
+	// colorDetection2.setCaptureOffset(playerPaperOffset);
+	// colorDetection2.setInvY(true);
+	// colorDetection2.setCaptureSize(65, 5);
+	// colorDetection2.initialize();
 
 
 	drawingSizeY = player.getDrawingSize().y;
     }
 
+    float speedUp;
 
     void tryLaunch(Touch startTouch){
+	updatePos(startTouch);
 
-	power += colorDetection2.computeOccurencesOfColor(game.getObjectColor(2), towerPowerUpThreshold) / 10;
-	creationTimeout -= colorDetection2.computeOccurencesOfColor(game.getObjectColor(1), towerPowerUpThreshold) / 1000;
+	//	speedUp = colorDetection2.computeOccurencesOfColor(game.getObjectColor(2), towerPowerUpThreshold) * towerRateRatio;
+	//	speedUp = constrain(speedUp, 0, DEFAULT_CREATION_TIMEOUT - 300);
+	//	creationTimeout = DEFAULT_CREATION_TIMEOUT - speedUp;
 
-	int nb1 = 5 + colorDetection2.computeOccurencesOfColor(game.getObjectColor(1), towerPowerUpThreshold);
+	//	int nb1 = 5 + colorDetection2.computeOccurencesOfColor(game.getObjectColor(1), towerPowerUpThreshold);
 
-	level =  (int) (nb1 / levelPixelRatio);
-	if(level >= 3)
-	    level = 3;
+	level = 1 ; // (int) ((millis() / 12000.)  % 3);
+
+	//	level =  1 + (int) (nb1 / levelPixelRatio);
 
 	if(!canCreateMissile())
 	    return;
@@ -94,25 +65,8 @@ class MissileLauncher implements TouchPointEventHandler{
 	lastCreation = millis();
     }
 
-    void checkButtons(Touch touch){
-	// this.position.set(touch.position);
-	// powerButton.setPosition(touch.position.x, 
-	// 			touch.position.y + 40);
-	// sizeButton.setPosition(touch.position.x, 
-	// 		       touch.position.y + 80);
-	// launchButton.setPosition(touch.position.x, 
-	// 			 touch.position.y + 100);
-	// if(powerButton.isTouched()){
-	//     power += 2;
-	// }
-	// if(sizeButton.isTouched()){
-	//     size += 0.2;
-	// }
-	// if(launchButton.isTouched()){
-	//     launchAmount += 0.5;
-	// }
-	// updateMaxLaunchAmount();
-	// 	updateMinLaunchAmount();
+    void updatePos(Touch touch){
+	this.position = touch.position.get();
     }
 
     void updateMaxLaunchAmount(){
@@ -124,7 +78,7 @@ class MissileLauncher implements TouchPointEventHandler{
     }
 
     private boolean canCreateMissile(){
-	//	boolean hasMissileLeft = player.nbMissiles < player.maxMissiles;
+	boolean hasMissileLeft = player.nbMissiles < player.maxMissiles;
 	boolean isTimeOK = lastCreation + creationTimeout < millis();
 	//	boolean hasEnough = launchAmount >= minLaunchAmount;
 
@@ -134,10 +88,14 @@ class MissileLauncher implements TouchPointEventHandler{
     }
     
     Missile createMissile(Touch touch){
-	touch.invertY(drawingSizeY);
+
+	if(!noCameraMode)
+	    touch.invertY(drawingSizeY);
 	PVector localPos = touch.position;
 	PVector posFromGame = player.gameCoord(localPos);
-	touch.invertY(drawingSizeY);
+
+	if(!noCameraMode)
+	    touch.invertY(drawingSizeY);
 
 	Missile missile = new Missile(player, player.ennemi, posFromGame, this.level);
 	missile.setCreationPos(touch.position);
@@ -154,13 +112,19 @@ class MissileLauncher implements TouchPointEventHandler{
     void launchForward(Missile missile, Touch touch){
 	touch.invertY(drawingSizeY);
 	PVector localPos = touch.position;
-	localPos.add(new PVector(0, 20));
+
+	// Forward direction
+
+	if(noCameraMode){
+	    localPos.add(new PVector(2000, 0));
+	} else {
+	    localPos.add(new PVector(0, 200));
+	}
+
 	PVector posFromGame = player.gameCoord(localPos);
 	touch.invertY(drawingSizeY);
 
-	// TODO: Set power...
-//	missile.setGoal(posFromGame, power);
-	missile.setGoal(posFromGame, power);  
+	missile.setGoal(posFromGame, power * level);  
   }
 
     void launch(Missile missile, Touch touch){
@@ -175,10 +139,9 @@ class MissileLauncher implements TouchPointEventHandler{
 
     void drawSelf(PGraphicsOpenGL g){
 
-	
 	g.pushMatrix(); 
 	g.translate(0,-10);
-	colorDetection2.drawCaptureZone();
+	//	colorDetection2.drawCaptureZone();
 	g.popMatrix();
 
 	// DEBUG
@@ -193,32 +156,33 @@ class MissileLauncher implements TouchPointEventHandler{
 
 	int size =  10 + level * 5;
 
-	if(level == 0){
+	g.strokeWeight(level + 2);
+
+	if(level == 1){
 	    g.stroke(#17CB60);
 	}
-	if(level == 1){
+	if(level == 2){
 	    g.stroke(#585BE0);
 	}
-	if(level == 2){
+	if(level == 3){
 	    g.stroke(#9361EA);
 	}
-	if(level == 3){
+	if(level == 4){
 	    g.stroke(#ED9851);
 	}
 	if(level >= 4){
 	    g.stroke(#F932FA);
 	}
 
+	g.ellipseMode(CENTER);
 	g.ellipse(position.x,
 		  position.y,
-		  size, size);
+		  size, size + speedUp / 60f);
 
 
     }
 
     public void delete(){
- 	// player.getButtons().remove(powerButton);
-	// player.getButtons().remove(sizeButton);
-	// player.getButtons().remove(launchButton);
+
    }
 }

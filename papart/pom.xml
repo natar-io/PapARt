@@ -3,12 +3,19 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fr.inria</groupId>
     <artifactId>papart</artifactId>
-    <version>0.5</version>
+    <version>0.5-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>PapARt</name>
     <description>Paper Augmented Reality Toolkit</description>
     <url>http://papart.gforge.inria.fr</url>
+    
+    <repositories>
+        <repository>
+            <id>clojars.org</id>
+            <url>http://clojars.org/repo</url>
+        </repository>
+    </repositories>
     
     <licenses>
         <license>
@@ -17,15 +24,6 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
-    
-    <repositories>
-        
-        <repository>
-            <id>clojars.org</id>
-            <url>http://clojars.org/repo</url>
-        </repository>
-  
-    </repositories>
     
     <developers>
         <developer>
@@ -36,82 +34,85 @@
     
     
     <properties>
-        <javacv.version>0.9</javacv.version>
-        <javacpp.version>0.9</javacpp.version>
-        <arch.type>linux</arch.type>
-        <arch.precision>x86_64</arch.precision>
+        <platform>${os.name}-${os.arch}</platform> <!-- For Android: -Dplatform=android-arm                                        -->
     </properties>
     
     <dependencies>
-        
 
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacpp</artifactId>
-            <version>${javacpp.version}</version>
+            <version>0.10</version>
         </dependency>
 
         <dependency>
             <groupId>org.bytedeco.javacpp-presets</groupId>
             <artifactId>opencv</artifactId>
-            <version>2.4.9-${javacpp.version}</version>
-            <classifier>${arch.type}-${arch.precision}</classifier>
+            <version>2.4.10-0.10</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>opencv</artifactId>
+            <version>2.4.10-0.10</version>
+            <classifier>${platform}</classifier>
+            <scope>test</scope>
         </dependency>
         
         <dependency>
             <groupId>org.bytedeco.javacpp-presets</groupId>
             <artifactId>ffmpeg</artifactId>
-            <version>2.3-${javacpp.version}</version>
+            <version>2.5.1-0.10</version>
         </dependency>
         <dependency>
             <groupId>org.bytedeco.javacpp-presets</groupId>
             <artifactId>flycapture</artifactId>
-            <version>2.6.3.4-${javacpp.version}</version>
+            <version>2.7.3.13-0.10</version>
         </dependency>
         <dependency>
             <groupId>org.bytedeco.javacpp-presets</groupId>
             <artifactId>libdc1394</artifactId>
-            <version>2.2.2-${javacpp.version}</version>
+            <version>2.2.2-0.10</version>
         </dependency>
         <dependency>
             <groupId>org.bytedeco.javacpp-presets</groupId>
             <artifactId>libfreenect</artifactId>
-            <version>0.5-${javacpp.version}</version>
+            <version>0.5.1-0.10</version>
         </dependency>
         <dependency>
             <groupId>org.bytedeco.javacpp-presets</groupId>
             <artifactId>videoinput</artifactId>
-            <version>0.200-${javacpp.version}</version>
+            <version>0.200-0.10</version>
         </dependency>
         <dependency>
             <groupId>org.bytedeco.javacpp-presets</groupId>
             <artifactId>artoolkitplus</artifactId>
-            <version>2.3.0-${javacpp.version}</version>
+            <version>2.3.1-0.10</version>
         </dependency>
 
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacv</artifactId>
-            <version>${javacv.version}</version>
+            <version>0.10</version>
         </dependency>
         
-        
         <dependency>
-            <groupId>processing</groupId>
-            <artifactId>core</artifactId>
+            <groupId>org.processing</groupId>
+            <artifactId>video</artifactId>
             <version>2.2.1</version>
         </dependency>
-        
+
         <dependency>
-            <groupId>processing</groupId>
-            <artifactId>video</artifactId>
+            <groupId>org.processing</groupId>
+            <artifactId>core</artifactId>
             <version>2.2.1</version>
         </dependency>
 
         <dependency>
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
-            <version>0.9.9-RC2</version>
+            <version>0.9.9</version>
         </dependency>
         
         <dependency>
@@ -121,36 +122,71 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.clojars.hozumi</groupId>
-            <artifactId>toxiclibscore</artifactId>
-            <version>0022</version>
-        </dependency>
-        <dependency>
             <groupId>org.jogamp.jogl</groupId>
             <artifactId>jogl-all</artifactId>
             <version>2.1.4</version>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>TUIOPapart</artifactId>
-            <version>${project.version}</version>
+            <groupId>fr.inria</groupId>
+            <artifactId>processingTUIO</artifactId>
+            <version>0.5</version>
         </dependency>
         <dependency>
-            <groupId>de.sojamo</groupId>
-            <artifactId>oscp5</artifactId>
-            <version>0.9.8</version>
+            <groupId>processing</groupId>
+            <artifactId>libTUIO</artifactId>
+            <version>1.1</version>
         </dependency>
         <dependency>
             <groupId>com.googlecode.gstreamer-java</groupId>
             <artifactId>gstreamer-java</artifactId>
             <version>1.5</version>
         </dependency>
+        <dependency>
+            <groupId>org.clojars.frederikdb</groupId>
+            <artifactId>oscp5</artifactId>
+            <version>0.9.8-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.clojars.hozumi</groupId>
+            <artifactId>toxiclibscore</artifactId>
+            <version>0022</version>
+        </dependency>
     </dependencies>
+    
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.10.1</version>
+                <configuration>
+                </configuration>
+            </plugin>
+        </plugins>
+    </reporting>
     
     <build>
         <sourceDirectory>src</sourceDirectory>
         <testSourceDirectory>test</testSourceDirectory>
-        <plugins>
+        <outputDirectory>target/classes</outputDirectory>
+        
+        <plugins> 
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.3</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
+                            <stripVersion>true</stripVersion>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -160,28 +196,6 @@
                     <target>1.7</target>
                 </configuration>
             </plugin>
-            
-            <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>1.6</version>
-                <executions>
-                    <execution>
-                        <id>default-deploy</id>
-                        <phase>deploy</phase>
-                        <goals>
-                            <goal>deploy</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <extensions>true</extensions>
-                <configuration>
-                    <serverId>sonatype-nexus-staging</serverId>
-                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                    <skipStagingRepositoryClose>true</skipStagingRepositoryClose>
-                </configuration>
-            </plugin>
-            
         </plugins>
         
         <resources>
@@ -197,79 +211,112 @@
         </resources>
     </build>
     
-    <!-- Windows -->
-    <profiles> 
+  
+    <profiles>
+    
+        <!-- If someone knows a better way to do this, please do let me know! -->
+        <!--From JavaCPP presets-->
         <profile>
-            <id>win32-x86</id>
+            <id>linux</id>
             <activation>
                 <os>
-                    <family>Windows</family>
-                    <arch>x86</arch>
+                    <name>linux</name>
                 </os>
             </activation>
             <properties>
-                <arch.type>windows</arch.type>
-                <arch.precision>x86</arch.precision>
+                <os.name>linux</os.name>
             </properties>
         </profile>
-
-        <profile>
-            <id>win32-x86_64</id>
-            <activation>
-                <os>
-                    <family>Windows</family>
-                    <arch>x86_64</arch>
-                </os>
-            </activation>
-            <properties>
-                <arch.type>windows</arch.type>
-                <arch.precision>x86_64</arch.precision>
-            </properties>
-        </profile>
-        <profile>
-            <id>linux-x86</id>
-            <activation>
-                <os>
-                    <family>Linux</family>
-                    <arch>x86</arch>
-                </os>
-            </activation>
-            <properties>
-                <arch.type>linux</arch.type>
-                <arch.precision>x86</arch.precision>
-            </properties>
-        </profile>
-
-        <profile>
-            <id>linux-x86_64</id>
-            <activation>
-                <os>
-                    <family>Linux</family>
-                    <arch>x86_64</arch>
-                </os>
-            </activation>
-            <properties>
-                <arch.type>linux</arch.type>
-                <arch.precision>x86_64</arch.precision>
-            </properties>
-        </profile>
-
         <profile>
             <id>macosx</id>
             <activation>
                 <os>
                     <name>mac os x</name>
-                    <arch>x86_64</arch>
                 </os>
             </activation>
             <properties>
-                <arch.type>macosx</arch.type>
-                <arch.precision>x86_64</arch.precision>
+                <os.name>macosx</os.name>
             </properties>
         </profile>
-
-        
+        <profile>
+            <id>windows</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                </os>
+            </activation>
+            <properties>
+                <os.name>windows</os.name>
+            </properties>
+        </profile>
+        <profile>
+            <id>i386</id>
+            <activation>
+                <os>
+                    <arch>i386</arch>
+                </os>
+            </activation>
+            <properties>
+                <os.arch>x86</os.arch>
+            </properties>
+        </profile>
+        <profile>
+            <id>i486</id>
+            <activation>
+                <os>
+                    <arch>i486</arch>
+                </os>
+            </activation>
+            <properties>
+                <os.arch>x86</os.arch>
+            </properties>
+        </profile>
+        <profile>
+            <id>i586</id>
+            <activation>
+                <os>
+                    <arch>i586</arch>
+                </os>
+            </activation>
+            <properties>
+                <os.arch>x86</os.arch>
+            </properties>
+        </profile>
+        <profile>
+            <id>i686</id>
+            <activation>
+                <os>
+                    <arch>i686</arch>
+                </os>
+            </activation>
+            <properties>
+                <os.arch>x86</os.arch>
+            </properties>
+        </profile>
+        <profile>
+            <id>amd64</id>
+            <activation>
+                <os>
+                    <arch>amd64</arch>
+                </os>
+            </activation>
+            <properties>
+                <os.arch>x86_64</os.arch>
+            </properties>
+        </profile>
+        <profile>
+            <id>x86-64</id>
+            <activation>
+                <os>
+                    <arch>x86-64</arch>
+                </os>
+            </activation>
+            <properties>
+                <os.arch>x86_64</os.arch>
+            </properties>
+        </profile>
     </profiles>
-  
+
+
 
 </project>

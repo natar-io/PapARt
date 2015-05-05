@@ -72,16 +72,16 @@ public class DecodedCode implements Serializable {
         refImage.loadPixels();
 
         int imSize = width * height;
-        for (int i = 0; i <  imSize; i++) {
+        for (int i = 0; i < imSize; i++) {
             if (validMask[i]) {
                 int x = decodedX[i];
                 int y = decodedY[i];
-                
-                int offset = y * width + x;
+
+                int offset = y * projWidth + x;
                 projectorImage.pixels[offset] = refImage.pixels[i];
             }
         }
-        
+
         projectorImage.updatePixels();
         return projectorImage;
     }

@@ -6,7 +6,7 @@ import org.reflections.*;
 import TUIO.*;
 import toxi.geom.*;
 
-// import processing.video.*;
+import processing.video.*;
 
 
 Camera camera;
@@ -39,13 +39,10 @@ public void setup() {
 }
 
 void draw() {
-    try{
-	PImage im = camera.getPImage();
+    PImage im = camera.getPImage();
     if(im != null)
 	image(im, 0, 0, width, height);
-    }catch(Exception e){
-	e.printStackTrace();
-    }
+
 }
 
 

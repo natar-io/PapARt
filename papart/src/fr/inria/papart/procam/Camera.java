@@ -46,13 +46,13 @@ import processing.core.PVector;
 
 public abstract class Camera implements PConstants {
 
+    // Images
     protected IplImage currentImage, copyUndist;
 
     protected CamImage camImage = null;
     protected PImage depthPImage = null;
 
     public enum Type {
-
         OPENCV, PROCESSING, OPEN_KINECT, FLY_CAPTURE
     }
 
@@ -72,12 +72,18 @@ public abstract class Camera implements PConstants {
     protected int frameRate;
     protected boolean trackSheets = false;
     private boolean isClosing = false;
-
+    protected boolean isConnected = false;
+    
     private boolean undistort = false;
 
-    // Properties
+    // Properties files
+    private String calibrationFile;
+    
+    // Properties (instanciated)
     protected ProjectiveDeviceP pdp = null;
     protected PMatrix3D camIntrinsicsP3D;
+
+    // Instance variables
     protected PApplet parent = null;
     private ArrayList<TrackedView> trackedViews;
     private List<MarkerBoard> sheets = null;
@@ -102,6 +108,8 @@ public abstract class Camera implements PConstants {
 
     public void setCalibration(String calibrationYAML) {
         try {
+            this.calibrationFile = calibrationYAML;
+            
             pdp = ProjectiveDeviceP.loadCameraDevice(calibrationYAML, 0);
             camIntrinsicsP3D = pdp.getIntrinsics();
             this.width = pdp.getWidth();
@@ -180,6 +188,9 @@ public abstract class Camera implements PConstants {
     abstract public void start();
 
     // Legacy, use the two next functions.
+    /**
+     * @deprecated 
+     */
     public void initMarkerDetection(PApplet applet, String calibrationARToolkit, MarkerBoard[] paperSheets) {
         initMarkerDetection(calibrationARToolkit);
 
@@ -335,7 +346,7 @@ public abstract class Camera implements PConstants {
     }
 
     public boolean isClosing() {
-        return isClosing;
+        return isClosing || !isConnected;
     }
 
     public PixelFormat getPixelFormat() {

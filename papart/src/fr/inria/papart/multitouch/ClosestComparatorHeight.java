@@ -18,7 +18,7 @@
  */
 package fr.inria.papart.multitouch;
 
-import fr.inria.papart.depthcam.calibration.PlaneCalibration;
+import fr.inria.papart.calibration.PlaneCalibration;
 import java.util.Comparator;
 import toxi.geom.Vec3D;
 

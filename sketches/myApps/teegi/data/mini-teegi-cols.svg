@@ -14,7 +14,7 @@
    id="svg3037"
    version="1.1"
    inkscape:version="0.48.4 r9939"
-   sodipodi:docname="Nouveau document 2">
+   sodipodi:docname="mini-teegi-cols.svg">
   <defs
      id="defs3039" />
   <sodipodi:namedview
@@ -24,16 +24,16 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.35"
-     inkscape:cx="475"
-     inkscape:cy="557.14286"
+     inkscape:zoom="0.49497475"
+     inkscape:cx="528.62871"
+     inkscape:cy="586.58596"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1007"
-     inkscape:window-height="608"
-     inkscape:window-x="574"
-     inkscape:window-y="250"
+     inkscape:window-width="1280"
+     inkscape:window-height="777"
+     inkscape:window-x="2229"
+     inkscape:window-y="280"
      inkscape:window-maximized="0" />
   <metadata
      id="metadata3042">
@@ -43,7 +43,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -52,18 +52,32 @@
      inkscape:groupmode="layer"
      id="layer1">
     <rect
-       style="fill:#3b8c9b;fill-opacity:1;fill-rule:nonzero;stroke:none"
-       id="rect3151"
+       style="fill:#fea20f;fill-opacity:1;fill-rule:nonzero;stroke:none"
+       id="rect3151-0"
        width="124.01575"
        height="124.01575"
-       x="124.29738"
-       y="302.29984" />
+       x="240.95998"
+       y="210.60107" />
     <rect
-       style="fill:#5b21cc;fill-opacity:1;fill-rule:nonzero;stroke:none"
-       id="rect3153"
+       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
+       id="rect3153-5"
        width="124.01575"
        height="124.01575"
-       x="289.28568"
-       y="301.48926" />
+       x="389.97571"
+       y="210.60107" />
+    <rect
+       style="fill:#216ccc;fill-opacity:1;fill-rule:nonzero;stroke:none"
+       id="rect3153-7-6"
+       width="124.01575"
+       height="124.01575"
+       x="389.97571"
+       y="359.61682" />
+    <rect
+       style="fill:#54d32c;fill-opacity:1;fill-rule:nonzero;stroke:none"
+       id="rect3153-7"
+       width="124.01575"
+       height="124.01575"
+       x="240.95998"
+       y="359.61682" />
   </g>
 </svg>

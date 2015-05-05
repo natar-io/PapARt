@@ -34,19 +34,17 @@ public class LapinApp extends PaperTouchScreen{
         //   screen.setDrawing(true);
 	//	updateTouch();
 	
-	if(isLightMode()){
+	// if(isLightMode()){
 	    updateLightPos();
-	}
+	// }
 
 	if(isLockMode()){
 
 	}
 
-	if(isRotateMode()){
-	    rst.update(touchList, millis());	    
-	}
-
-
+	//	if(isRotateMode()){
+	//rst.update(touchList, millis());	    
+	//	}
 
 
 	beginDraw3DProjected();
@@ -59,15 +57,29 @@ public class LapinApp extends PaperTouchScreen{
 	  drawTouch(3);
 	  drawButtons();
 
-
-
 	if(b.isTouched()){
 	    resetPos();
 	}
 	popMatrix();
 
+	drawMono();
+	/////////////// Analglyph ////////////////////
 
+	screen.endDrawPerspective();
+	endDraw();
+    }
 
+    void drawMono(){
+	pushMatrix();
+	screen.initDraw(userPos, 20, 5000, false, false, true);
+	pointLight(255, 255, 255, 
+		      lightPos.x, lightPos.y, lightPos.z);
+
+	drawScene();
+	popMatrix();
+    }
+
+    void drawAnaglyph(){
 	/////////////// Analglyph ////////////////////
 	pushMatrix();
 	screen.initDraw(userPos, 20, 5000, true, false, false);
@@ -92,10 +104,7 @@ public class LapinApp extends PaperTouchScreen{
 	// Put the color mask back to normal. 
 	pgl.colorMask(true, true, true, true);
 	// // /////////////// Analglyph -- END ////////////////////
-
 	popMatrix();
-	screen.endDrawPerspective();
-	endDraw();
     }
 
     protected void drawScene(){

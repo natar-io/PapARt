@@ -21,7 +21,6 @@ package fr.inria.papart.procam;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.drawingapp.DrawUtils;
-import fr.inria.papart.exceptions.BoardNotDetectedException;
 import java.awt.Image;
 import processing.opengl.PGraphicsOpenGL;
 import processing.core.PApplet;
@@ -185,7 +184,7 @@ public class PaperScreen {
         // If there is really a camera tracking. 
         if (!isWithoutCamera) {
             // automatic update of the paper screen, regarding the camera. 
-            screen.setAutoUpdatePos(cameraTracking, markerBoard);
+//            screen.setAutoUpdatePos(cameraTracking, markerBoard);
 
             // default filtering
             markerBoard.setDrawingMode(cameraTracking, true, 20);
@@ -226,8 +225,10 @@ public class PaperScreen {
             init();
         }
         assert (isInitialized);
-        screen.updatePos();
-        checkCorners();
+        if (!this.isWithoutCamera) {
+            screen.updatePos(cameraTracking, markerBoard);
+            checkCorners();
+        }
     }
 
     /**
@@ -338,8 +339,8 @@ public class PaperScreen {
         this.isDrawingOnScreen = true;
         return g;
     }
-    
-    public boolean isDraw2D(){
+
+    public boolean isDraw2D() {
         return currentGraphics != this.display.getGraphics();
     }
 
@@ -382,7 +383,7 @@ public class PaperScreen {
     }
 
     public static final PVector INVALID_VECTOR = new PVector();
-    
+
     public PVector getCoordFrom(PaperScreen paperScreen, PVector point) {
 
         // get a copy
@@ -396,14 +397,13 @@ public class PaperScreen {
         PVector thisViewOfPoint = new PVector();
         thisLocationInv.mult(cameraViewOfPoint, thisViewOfPoint);
 
-        if(Float.isNaN(thisViewOfPoint.x)){
-            return  INVALID_VECTOR;
+        if (Float.isNaN(thisViewOfPoint.x)) {
+            return INVALID_VECTOR;
         }
-        
+
         return thisViewOfPoint;
     }
-    
-    
+
 //  public PVector getCoordOf(PaperScreen paperScreen, PVector point) {
 // 
 //        PMatrix3D thisLocation = this.getLocation();
@@ -422,7 +422,6 @@ public class PaperScreen {
 //        
 //        return otherViewOfPoint;
 //    }
-    
     public PGraphicsOpenGL getGraphics() {
         return currentGraphics;
     }
@@ -439,7 +438,7 @@ public class PaperScreen {
         setLocation(v.x, v.y, v.z);
     }
 
-     // TODO: Bug here, without this call, the rendering is different. 
+    // TODO: Bug here, without this call, the rendering is different. 
     public void setLocation(float x, float y, float z) {
         assert (isInitialized);
         screen.setTranslation(x, y, z);

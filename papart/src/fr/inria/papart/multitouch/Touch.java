@@ -18,6 +18,7 @@
  */
 package fr.inria.papart.multitouch;
 
+import TUIO.TuioCursor;
 import java.util.ArrayList;
 import processing.core.PVector;
 
@@ -28,12 +29,17 @@ import processing.core.PVector;
  */
 public class Touch {
 
+    public static final Touch INVALID = new Touch();
+    
     public boolean is3D;
     public boolean isGhost;
 
-    public PVector position;
-    public PVector pposition;
-    public PVector speed;
+    public PVector position = new PVector();
+    public PVector pposition = new PVector();
+    public PVector speed = new PVector();
+    
+    // TODO: find a solution for this !
+    // Always has a TouchPoint linked ? Not clean. 
     public TouchPoint touchPoint;
 
     public PVector size;
@@ -47,12 +53,11 @@ public class Touch {
     }
 
     public void setPosition(float x, float y, float z) {
-        if (this.position == null) {
-            this.position = new PVector();
-        }
+        this.pposition.set(this.position);
         this.position.x = x;
         this.position.y = y;
         this.position.z = z;
+        this.speed.set(PVector.sub(this.position, this.pposition));
     }
 
     @Override

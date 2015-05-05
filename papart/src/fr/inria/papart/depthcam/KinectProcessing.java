@@ -19,9 +19,9 @@
 package fr.inria.papart.depthcam;
 
 import static fr.inria.papart.depthcam.Kinect.papplet;
-import fr.inria.papart.depthcam.calibration.HomographyCalibration;
-import fr.inria.papart.depthcam.calibration.PlaneAndProjectionCalibration;
-import fr.inria.papart.depthcam.calibration.PlaneCalibration;
+import fr.inria.papart.calibration.HomographyCalibration;
+import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
+import fr.inria.papart.calibration.PlaneCalibration;
 import java.util.Arrays;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import processing.core.PApplet;

@@ -5,10 +5,7 @@
  */
 package fr.inria.guimodes;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import processing.core.PApplet;
 
 /**
@@ -21,17 +18,30 @@ public class Mode {
     private static final HashMap<String, Mode> modes = new HashMap<String, Mode>();
     private static int changeTime;
     private static PApplet parent = null;
-
-    private String name;
+    protected String name;
+    protected int number;
+    private static int NB_MODES = 0;
+    private static int minimumModeDuration = 200;
+    private static boolean timeFiltering = false;
 
     public static void init(PApplet papplet) {
         parent = papplet;
     }
 
-    private static Mode create(String name) {
+    protected static Mode create(String name) {
+        int id = NB_MODES++;
+        return create(name, id);
+    }
+
+    protected static Mode create(String name, int id) {
         Mode mode = new Mode();
         mode.name = name;
+        mode.number = id;
         return mode;
+    }
+
+    public static int asInt() {
+        return currentMode.number;
     }
 
     public static void clear() {
@@ -40,6 +50,12 @@ public class Mode {
 
     public static Mode add(String modeName) {
         Mode mode = Mode.create(modeName);
+        modes.put(modeName, mode);
+        return mode;
+    }
+
+    public static Mode add(String modeName, int id) {
+        Mode mode = Mode.create(modeName, id);
         modes.put(modeName, mode);
         return mode;
     }
@@ -64,9 +80,30 @@ public class Mode {
         setCurrentMode(mode);
     }
 
+    /**
+     *
+     * @param duration in millisecond
+     */
+    public static void setMinimumModeDuration(int duration) {
+        Mode.minimumModeDuration = duration;
+        setTimeFiltering(true);
+    }
+
+
+    public static void setTimeFiltering(boolean filtering) {
+        timeFiltering = filtering;
+    }
+
     private static void setCurrentMode(Mode mode) {
         if (parent != null) {
-            changeTime = parent.millis();
+            int currentTime = parent.millis();
+
+            if (timeFiltering
+                    && currentTime < changeTime + minimumModeDuration) {
+                System.err.println("ModeChange failed. The previous mode did not last long enough.");
+                return;
+            }
+            changeTime = currentTime;
         }
         currentMode = mode;
     }
@@ -106,5 +143,4 @@ public class Mode {
         }
         return changeTime;
     }
-
 }

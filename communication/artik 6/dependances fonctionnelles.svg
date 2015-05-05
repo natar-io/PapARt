@@ -1,0 +1,1454 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="1920"
+   height="1080"
+   viewBox="296 389 1071.0333 601.80278"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.4 r9939"
+   sodipodi:docname="dependances fonctionnelles.svg">
+  <metadata
+     id="metadata512">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs510" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1305"
+     inkscape:window-height="813"
+     id="namedview508"
+     showgrid="false"
+     width="1920px"
+     inkscape:zoom="0.30978811"
+     inkscape:cx="550.51047"
+     inkscape:cy="621.08609"
+     inkscape:window-x="0"
+     inkscape:window-y="29"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg2" />
+  <g
+     id="g4"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <rect
+       style="fill:#b7d8f2"
+       x="1381.99"
+       y="669.35602"
+       width="179.276"
+       height="250.58501"
+       id="rect6" />
+    <rect
+       style="fill:none;stroke:#000000"
+       x="1381.99"
+       y="669.35602"
+       width="179.276"
+       height="250.58501"
+       id="rect8" />
+  </g>
+  <g
+     id="g10"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <rect
+       style="fill:#bbdeac"
+       x="1391.3101"
+       y="784.98602"
+       width="156.397"
+       height="124.598"
+       id="rect12" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="1391.3101"
+       y="784.98602"
+       width="156.397"
+       height="124.598"
+       id="rect14" />
+  </g>
+  <g
+     id="g16"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <rect
+       style="fill:#b7d8f2"
+       x="887.50403"
+       y="541.72998"
+       width="404.254"
+       height="166.284"
+       id="rect18" />
+    <rect
+       style="fill:none;stroke:#000000"
+       x="887.50403"
+       y="541.72998"
+       width="404.254"
+       height="166.284"
+       id="rect20" />
+  </g>
+  <g
+     id="g22"
+     transform="matrix(0.69548511,0,0,0.58245731,209.35445,242.6345)">
+    <rect
+       style="fill:#bbdeac"
+       x="542.66803"
+       y="888.97198"
+       width="492.97"
+       height="348.48901"
+       id="rect24" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="542.66803"
+       y="888.97198"
+       width="492.97"
+       height="348.48901"
+       id="rect26" />
+  </g>
+  <text
+     font-size="14.382"
+     style="font-size:10.00246716px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:sans-serif"
+     x="797.66669"
+     y="776.97845"
+     id="text28">
+    <tspan
+       x="797.66669"
+       y="776.97845"
+       id="tspan30">Bibliothèques Processing</tspan>
+  </text>
+  <g
+     id="g32"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <rect
+       style="fill:#bbdeac"
+       x="1189.8"
+       y="642.02802"
+       width="96.989098"
+       height="59.363701"
+       id="rect34" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="1189.8"
+       y="642.02802"
+       width="96.989098"
+       height="59.363701"
+       id="rect36" />
+  </g>
+  <g
+     id="g38"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <rect
+       style="fill:#b7d8f2"
+       x="296.82401"
+       y="389.61401"
+       width="203.672"
+       height="291.79999"
+       id="rect40" />
+    <rect
+       style="fill:none;stroke:#000000"
+       x="296.82401"
+       y="389.61401"
+       width="203.672"
+       height="291.79999"
+       id="rect42" />
+  </g>
+  <text
+     font-size="14.382"
+     style="font-size:10.00246716px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:sans-serif"
+     x="463.21213"
+     y="431.56992"
+     id="text44">
+    <tspan
+       x="463.21213"
+       y="431.56992"
+       id="tspan46">Analyse d'Image</tspan>
+    <tspan
+       x="463.21213"
+       y="444.07336"
+       id="tspan48" />
+  </text>
+  <g
+     id="g50"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <rect
+       style="fill:#ffffff"
+       x="1133.01"
+       y="984.992"
+       width="262.26001"
+       height="155.31"
+       id="rect52" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="1133.01"
+       y="984.992"
+       width="262.26001"
+       height="155.31"
+       id="rect54" />
+    <rect
+       style="fill:#ffffff"
+       x="1133.01"
+       y="964.992"
+       width="81"
+       height="20"
+       id="rect56" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="1133.01"
+       y="964.992"
+       width="81"
+       height="20"
+       id="rect58" />
+    <text
+       font-size="12.7998"
+       style="font-size:12.79979992px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:monospace"
+       x="1135.01"
+       y="979.992"
+       id="text60">Processing</text>
+  </g>
+  <text
+     font-size="12.8"
+     style="font-size:8.90220928px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:sans-serif"
+     x="1038.1349"
+     y="843.12952"
+     id="text62">
+    <tspan
+       x="1038.1349"
+       y="843.12952"
+       id="tspan64" />
+  </text>
+  <g
+     id="g66"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <rect
+       style="fill:#ffffff"
+       x="542.66803"
+       y="700.18799"
+       width="254.071"
+       height="77.220001"
+       id="rect68" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="542.66803"
+       y="700.18799"
+       width="254.071"
+       height="77.220001"
+       id="rect70" />
+    <rect
+       style="fill:#ffffff"
+       x="542.66803"
+       y="680.18799"
+       width="50.200001"
+       height="20"
+       id="rect72" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="542.66803"
+       y="680.18799"
+       width="50.200001"
+       height="20"
+       id="rect74" />
+    <text
+       font-size="12.7998"
+       style="font-size:12.79979992px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:monospace"
+       x="544.66803"
+       y="695.18799"
+       id="text76">JavaCV</text>
+  </g>
+  <g
+     id="g78"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <rect
+       style="fill:#ffffff"
+       x="518.10999"
+       y="536.896"
+       width="303.616"
+       height="97.887901"
+       id="rect80" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="518.10999"
+       y="536.896"
+       width="303.616"
+       height="97.887901"
+       id="rect82" />
+    <rect
+       style="fill:#ffffff"
+       x="518.10999"
+       y="516.896"
+       width="50.200001"
+       height="20"
+       id="rect84" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="518.10999"
+       y="516.896"
+       width="50.200001"
+       height="20"
+       id="rect86" />
+    <text
+       font-size="12.7998"
+       style="font-size:12.79979992px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:monospace"
+       x="520.10999"
+       y="531.896"
+       id="text88">OpenCV</text>
+  </g>
+  <g
+     id="g90"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <rect
+       style="fill:#ffffff"
+       x="899.57202"
+       y="667.974"
+       width="89"
+       height="28"
+       id="rect92" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="899.57202"
+       y="667.974"
+       width="89"
+       height="28"
+       id="rect94" />
+    <rect
+       style="fill:#ffffff"
+       x="899.57202"
+       y="649.974"
+       width="30"
+       height="18"
+       id="rect96" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="899.57202"
+       y="649.974"
+       width="30"
+       height="18"
+       id="rect98" />
+    <text
+       font-size="12.8"
+       style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:monospace"
+       x="905.57202"
+       y="685.87402"
+       id="text100">
+      <tspan
+         x="905.57202"
+         y="685.87402"
+         id="tspan102">FlyCapture</tspan>
+    </text>
+  </g>
+  <g
+     id="g104"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <rect
+       style="fill:#ffffff"
+       x="899.57202"
+       y="572.45599"
+       width="112.1"
+       height="28"
+       id="rect106" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="899.57202"
+       y="572.45599"
+       width="112.1"
+       height="28"
+       id="rect108" />
+    <rect
+       style="fill:#ffffff"
+       x="899.57202"
+       y="554.45599"
+       width="30"
+       height="18"
+       id="rect110" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="899.57202"
+       y="554.45599"
+       width="30"
+       height="18"
+       id="rect112" />
+    <text
+       font-size="12.8"
+       style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:monospace"
+       x="905.57202"
+       y="590.35602"
+       id="text114">
+      <tspan
+         x="905.57202"
+         y="590.35602"
+         id="tspan116">Video 4 linux</tspan>
+    </text>
+  </g>
+  <g
+     id="g118"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <rect
+       style="fill:#ffffff"
+       x="311.37601"
+       y="639.42603"
+       width="112.1"
+       height="28"
+       id="rect120" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="311.37601"
+       y="639.42603"
+       width="112.1"
+       height="28"
+       id="rect122" />
+    <rect
+       style="fill:#ffffff"
+       x="311.37601"
+       y="621.42603"
+       width="30"
+       height="18"
+       id="rect124" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="311.37601"
+       y="621.42603"
+       width="30"
+       height="18"
+       id="rect126" />
+    <text
+       font-size="12.8"
+       style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:monospace"
+       x="317.37601"
+       y="657.32599"
+       id="text128">
+      <tspan
+         x="317.37601"
+         y="657.32599"
+         id="tspan130">ARToolKitPlus</tspan>
+    </text>
+  </g>
+  <g
+     id="g132"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <rect
+       style="fill:#ffffff"
+       x="566.26398"
+       y="940.40198"
+       width="224.644"
+       height="67.116501"
+       id="rect134" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="566.26398"
+       y="940.40198"
+       width="224.644"
+       height="67.116501"
+       id="rect136" />
+    <rect
+       style="fill:#ffffff"
+       x="566.26398"
+       y="920.40198"
+       width="50.200001"
+       height="20"
+       id="rect138" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="566.26398"
+       y="920.40198"
+       width="50.200001"
+       height="20"
+       id="rect140" />
+    <text
+       font-size="12.7998"
+       style="font-size:12.79979992px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:monospace"
+       x="568.26398"
+       y="935.40198"
+       id="text142">PapARt</text>
+  </g>
+  <g
+     id="g144"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2;stroke-dasharray:8"
+       points="678.586,919.395 678.586,852.907 669.704,852.907 669.704,785.123 "
+       id="polyline146" />
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2"
+       points="674.704,797.77 669.704,781.77 664.704,797.77 "
+       id="polyline148" />
+  </g>
+  <g
+     id="g150"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <rect
+       style="fill:#ffffff"
+       x="1196.38"
+       y="667.974"
+       width="81.300003"
+       height="28"
+       id="rect152" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="1196.38"
+       y="667.974"
+       width="81.300003"
+       height="28"
+       id="rect154" />
+    <rect
+       style="fill:#ffffff"
+       x="1196.38"
+       y="649.974"
+       width="30"
+       height="18"
+       id="rect156" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="1196.38"
+       y="649.974"
+       width="30"
+       height="18"
+       id="rect158" />
+    <text
+       font-size="12.8"
+       style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:monospace"
+       x="1202.38"
+       y="685.87402"
+       id="text160">
+      <tspan
+         x="1202.38"
+         y="685.87402"
+         id="tspan162">Gstreamer</tspan>
+    </text>
+  </g>
+  <g
+     id="g164"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <rect
+       style="fill:#ffffff"
+       x="1124.1899"
+       y="667.974"
+       width="58.200001"
+       height="28"
+       id="rect166" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="1124.1899"
+       y="667.974"
+       width="58.200001"
+       height="28"
+       id="rect168" />
+    <rect
+       style="fill:#ffffff"
+       x="1124.1899"
+       y="649.974"
+       width="30"
+       height="18"
+       id="rect170" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="1124.1899"
+       y="649.974"
+       width="30"
+       height="18"
+       id="rect172" />
+    <text
+       font-size="12.8"
+       style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:monospace"
+       x="1130.1899"
+       y="685.87402"
+       id="text174">
+      <tspan
+         x="1130.1899"
+         y="685.87402"
+         id="tspan176">FFMPEG</tspan>
+    </text>
+  </g>
+  <g
+     id="g178"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <rect
+       style="fill:#ffffff"
+       x="1018.35"
+       y="667.974"
+       width="89"
+       height="28"
+       id="rect180" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="1018.35"
+       y="667.974"
+       width="89"
+       height="28"
+       id="rect182" />
+    <rect
+       style="fill:#ffffff"
+       x="1018.35"
+       y="649.974"
+       width="30"
+       height="18"
+       id="rect184" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="1018.35"
+       y="649.974"
+       width="30"
+       height="18"
+       id="rect186" />
+    <text
+       font-size="12.8"
+       style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:monospace"
+       x="1024.35"
+       y="685.87402"
+       id="text188">
+      <tspan
+         x="1024.35"
+         y="685.87402"
+         id="tspan190">VideoInput</tspan>
+    </text>
+  </g>
+  <g
+     id="g192"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2;stroke-dasharray:8"
+       points="822.736,585.84 856.65,585.84 856.65,586.456 891.86,586.456 "
+       id="polyline194" />
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2"
+       points="879.212,591.456 895.212,586.456 879.212,581.456 "
+       id="polyline196" />
+  </g>
+  <text
+     font-size="12.8"
+     style="font-size:8.90220928px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:sans-serif"
+     x="961.49945"
+     y="558.85132"
+     id="text198">
+    <tspan
+       x="961.49945"
+       y="558.85132"
+       id="tspan200" />
+  </text>
+  <text
+     font-size="12.8"
+     style="font-size:8.90220928px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:sans-serif"
+     x="961.49945"
+     y="558.85132"
+     id="text202">
+    <tspan
+       x="961.49945"
+       y="558.85132"
+       id="tspan204" />
+  </text>
+  <text
+     font-size="14.382"
+     style="font-size:10.00246716px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:sans-serif"
+     x="987.4563"
+     y="544.69202"
+     id="text206">
+    <tspan
+       x="987.4563"
+       y="544.69202"
+       id="tspan208">Entrée Vidéo Caméra</tspan>
+  </text>
+  <g
+     id="g210"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <rect
+       style="fill:#ffffff"
+       x="311.37601"
+       y="460.27399"
+       width="150.60001"
+       height="44"
+       id="rect212" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="311.37601"
+       y="460.27399"
+       width="150.60001"
+       height="44"
+       id="rect214" />
+    <rect
+       style="fill:#ffffff"
+       x="311.37601"
+       y="442.27399"
+       width="30"
+       height="18"
+       id="rect216" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="311.37601"
+       y="442.27399"
+       width="30"
+       height="18"
+       id="rect218" />
+    <text
+       font-size="12.8"
+       style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:monospace"
+       x="317.37601"
+       y="478.17401"
+       id="text220">
+      <tspan
+         x="317.37601"
+         y="478.17401"
+         id="tspan222">Feature Detectors</tspan>
+      <tspan
+         x="317.37601"
+         y="494.17401"
+         id="tspan224">SURF, FAST etc...</tspan>
+    </text>
+  </g>
+  <text
+     font-size="14.382"
+     style="font-size:10.00246716px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:sans-serif"
+     x="1180.6543"
+     y="624.75769"
+     id="text226">
+    <tspan
+       x="1180.6543"
+       y="624.75769"
+       id="tspan228">Entrée Vidéo Logiciel</tspan>
+  </text>
+  <g
+     id="g230"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <rect
+       style="fill:#ffffff"
+       x="1397.34"
+       y="748.12799"
+       width="119.8"
+       height="28"
+       id="rect232" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="1397.34"
+       y="748.12799"
+       width="119.8"
+       height="28"
+       id="rect234" />
+    <rect
+       style="fill:#ffffff"
+       x="1397.34"
+       y="730.12799"
+       width="30"
+       height="18"
+       id="rect236" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="1397.34"
+       y="730.12799"
+       width="30"
+       height="18"
+       id="rect238" />
+    <text
+       font-size="12.8"
+       style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:monospace"
+       x="1403.34"
+       y="766.02802"
+       id="text240">
+      <tspan
+         x="1403.34"
+         y="766.02802"
+         id="tspan242">FFMPEG (Linux)</tspan>
+    </text>
+  </g>
+  <g
+     id="g244"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <rect
+       style="fill:#ffffff"
+       x="1397.34"
+       y="872.62201"
+       width="104.4"
+       height="28"
+       id="rect246" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="1397.34"
+       y="872.62201"
+       width="104.4"
+       height="28"
+       id="rect248" />
+    <rect
+       style="fill:#ffffff"
+       x="1397.34"
+       y="854.62201"
+       width="30"
+       height="18"
+       id="rect250" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="1397.34"
+       y="854.62201"
+       width="30"
+       height="18"
+       id="rect252" />
+    <text
+       font-size="12.8"
+       style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:monospace"
+       x="1403.34"
+       y="890.52197"
+       id="text254">
+      <tspan
+         x="1403.34"
+         y="890.52197"
+         id="tspan256">Syphon (OSX)</tspan>
+    </text>
+  </g>
+  <g
+     id="g258"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <rect
+       style="fill:#ffffff"
+       x="1397.34"
+       y="811.672"
+       width="127.5"
+       height="28"
+       id="rect260" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="1397.34"
+       y="811.672"
+       width="127.5"
+       height="28"
+       id="rect262" />
+    <rect
+       style="fill:#ffffff"
+       x="1397.34"
+       y="793.672"
+       width="30"
+       height="18"
+       id="rect264" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="1397.34"
+       y="793.672"
+       width="30"
+       height="18"
+       id="rect266" />
+    <text
+       font-size="12.8"
+       style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:monospace"
+       x="1403.34"
+       y="829.57202"
+       id="text268">
+      <tspan
+         x="1403.34"
+         y="829.57202"
+         id="tspan270">Spout (Windows)</tspan>
+    </text>
+  </g>
+  <g
+     id="g272"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <rect
+       style="fill:#ffffff"
+       x="542.66803"
+       y="812.65002"
+       width="96.699997"
+       height="28"
+       id="rect274" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="542.66803"
+       y="812.65002"
+       width="96.699997"
+       height="28"
+       id="rect276" />
+    <rect
+       style="fill:#ffffff"
+       x="542.66803"
+       y="794.65002"
+       width="30"
+       height="18"
+       id="rect278" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="542.66803"
+       y="794.65002"
+       width="30"
+       height="18"
+       id="rect280" />
+    <text
+       font-size="12.8"
+       style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:monospace"
+       x="548.66803"
+       y="830.54999"
+       id="text282">
+      <tspan
+         x="548.66803"
+         y="830.54999"
+         id="tspan284">ProCamCalib</tspan>
+    </text>
+  </g>
+  <g
+     id="g286"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2;stroke-dasharray:8"
+       points="678.586,919.395 678.586,884.526 591.018,884.526 591.018,848.363 "
+       id="polyline288" />
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2"
+       points="596.018,861.01 591.018,845.01 586.018,861.01 "
+       id="polyline290" />
+  </g>
+  <g
+     id="g292"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <rect
+       style="fill:#ffffff"
+       x="933.40601"
+       y="1078.09"
+       width="73.599998"
+       height="28"
+       id="rect294" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="933.40601"
+       y="1078.09"
+       width="73.599998"
+       height="28"
+       id="rect296" />
+    <rect
+       style="fill:#ffffff"
+       x="933.40601"
+       y="1060.09"
+       width="30"
+       height="18"
+       id="rect298" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="933.40601"
+       y="1060.09"
+       width="30"
+       height="18"
+       id="rect300" />
+    <text
+       font-size="12.8"
+       style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:monospace"
+       x="939.40601"
+       y="1095.99"
+       id="text302">
+      <tspan
+         x="939.40601"
+         y="1095.99"
+         id="tspan304">PeasyCam</tspan>
+    </text>
+  </g>
+  <g
+     id="g306"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <rect
+       style="fill:#ffffff"
+       x="602.43799"
+       y="1146.51"
+       width="58.200001"
+       height="28"
+       id="rect308" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="602.43799"
+       y="1146.51"
+       width="58.200001"
+       height="28"
+       id="rect310" />
+    <rect
+       style="fill:#ffffff"
+       x="602.43799"
+       y="1128.51"
+       width="30"
+       height="18"
+       id="rect312" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="602.43799"
+       y="1128.51"
+       width="30"
+       height="18"
+       id="rect314" />
+    <text
+       font-size="12.8"
+       style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:monospace"
+       x="608.43799"
+       y="1164.41"
+       id="text316">
+      <tspan
+         x="608.43799"
+         y="1164.41"
+         id="tspan318">OSCP5</tspan>
+    </text>
+  </g>
+  <g
+     id="g320"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <rect
+       style="fill:#ffffff"
+       x="567.78601"
+       y="1078.09"
+       width="127.5"
+       height="28"
+       id="rect322" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="567.78601"
+       y="1078.09"
+       width="127.5"
+       height="28"
+       id="rect324" />
+    <rect
+       style="fill:#ffffff"
+       x="567.78601"
+       y="1060.09"
+       width="30"
+       height="18"
+       id="rect326" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="567.78601"
+       y="1060.09"
+       width="30"
+       height="18"
+       id="rect328" />
+    <text
+       font-size="12.8"
+       style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:monospace"
+       x="573.78601"
+       y="1095.99"
+       id="text330">
+      <tspan
+         x="573.78601"
+         y="1095.99"
+         id="tspan332">TUIO Processing</tspan>
+    </text>
+  </g>
+  <g
+     id="g334"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2;stroke-dasharray:8"
+       points="678.586,1008.53 678.586,1029.81 631.536,1029.81 631.536,1052.38 "
+       id="polyline336" />
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2"
+       points="626.536,1039.73 631.536,1055.73 636.536,1039.73 "
+       id="polyline338" />
+  </g>
+  <g
+     id="g340"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2;stroke-dasharray:8"
+       points="631.536,1106.09 631.536,1122.3 631.538,1122.3 631.538,1139.81 "
+       id="polyline342" />
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2"
+       points="626.538,1127.16 631.538,1143.16 636.538,1127.16 "
+       id="polyline344" />
+  </g>
+  <g
+     id="g346"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <rect
+       style="fill:#ffffff"
+       x="709.01599"
+       y="1078.09"
+       width="81.300003"
+       height="28"
+       id="rect348" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="709.01599"
+       y="1078.09"
+       width="81.300003"
+       height="28"
+       id="rect350" />
+    <rect
+       style="fill:#ffffff"
+       x="709.01599"
+       y="1060.09"
+       width="30"
+       height="18"
+       id="rect352" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="709.01599"
+       y="1060.09"
+       width="30"
+       height="18"
+       id="rect354" />
+    <text
+       font-size="12.8"
+       style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:monospace"
+       x="715.01599"
+       y="1095.99"
+       id="text356">
+      <tspan
+         x="715.01599"
+         y="1095.99"
+         id="tspan358">ToxicLibs</tspan>
+    </text>
+  </g>
+  <g
+     id="g360"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2;stroke-dasharray:8"
+       points="678.586,1008.53 678.586,1029.81 749.666,1029.81 749.666,1052.38 "
+       id="polyline362" />
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2"
+       points="744.666,1039.73 749.666,1055.73 754.666,1039.73 "
+       id="polyline364" />
+  </g>
+  <g
+     id="g366"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <rect
+       style="fill:#ffffff"
+       x="837.93201"
+       y="1078.09"
+       width="81.300003"
+       height="28"
+       id="rect368" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="837.93201"
+       y="1078.09"
+       width="81.300003"
+       height="28"
+       id="rect370" />
+    <rect
+       style="fill:#ffffff"
+       x="837.93201"
+       y="1060.09"
+       width="30"
+       height="18"
+       id="rect372" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="837.93201"
+       y="1060.09"
+       width="30"
+       height="18"
+       id="rect374" />
+    <text
+       font-size="12.8"
+       style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:monospace"
+       x="843.93201"
+       y="1095.99"
+       id="text376">
+      <tspan
+         x="843.93201"
+         y="1095.99"
+         id="tspan378">ControlP5</tspan>
+    </text>
+  </g>
+  <g
+     id="g380"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <rect
+       style="fill:#ffffff"
+       x="836.104"
+       y="958.96002"
+       width="127.5"
+       height="28"
+       id="rect382" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="836.104"
+       y="958.96002"
+       width="127.5"
+       height="28"
+       id="rect384" />
+    <rect
+       style="fill:#ffffff"
+       x="836.104"
+       y="940.96002"
+       width="30"
+       height="18"
+       id="rect386" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="836.104"
+       y="940.96002"
+       width="30"
+       height="18"
+       id="rect388" />
+    <text
+       font-size="12.8"
+       style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:monospace"
+       x="842.104"
+       y="976.85999"
+       id="text390">
+      <tspan
+         x="842.104"
+         y="976.85999"
+         id="tspan392">PapARt Examples</tspan>
+    </text>
+  </g>
+  <g
+     id="g394"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2;stroke-dasharray:8"
+       points="899.854,987.967 899.854,1019.53 878.582,1019.53 878.582,1052.38 "
+       id="polyline396" />
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2"
+       points="873.582,1039.73 878.582,1055.73 883.582,1039.73 "
+       id="polyline398" />
+  </g>
+  <g
+     id="g400"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2;stroke-dasharray:8"
+       points="899.854,987.967 899.854,1019.53 970.206,1019.53 970.206,1052.38 "
+       id="polyline402" />
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2"
+       points="965.206,1039.73 970.206,1055.73 975.206,1039.73 "
+       id="polyline404" />
+  </g>
+  <g
+     id="g406"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2;stroke-dasharray:8"
+       points="1036.65,1063.22 1080.33,1063.22 1080.33,1062.65 1125.3,1062.65 "
+       id="polyline408" />
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2"
+       points="1112.65,1067.65 1128.65,1062.65 1112.65,1057.65 "
+       id="polyline410" />
+  </g>
+  <g
+     id="g412"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2;stroke-dasharray:8"
+       points="835.096,972.96 817.505,972.96 817.505,973.96 798.62,973.96 "
+       id="polyline414" />
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2"
+       points="811.267,968.96 795.267,973.96 811.267,978.96 "
+       id="polyline416" />
+  </g>
+  <text
+     font-size="12.8"
+     style="font-size:8.90220928px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:sans-serif"
+     x="442.70654"
+     y="773.35284"
+     id="text418">
+    <tspan
+       x="442.70654"
+       y="773.35284"
+       id="tspan420" />
+  </text>
+  <g
+     id="g422"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <rect
+       style="fill:#ffffff"
+       x="365.496"
+       y="958.96002"
+       width="96.699997"
+       height="28"
+       id="rect424" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="365.496"
+       y="958.96002"
+       width="96.699997"
+       height="28"
+       id="rect426" />
+    <rect
+       style="fill:#ffffff"
+       x="365.496"
+       y="940.96002"
+       width="30"
+       height="18"
+       id="rect428" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="365.496"
+       y="940.96002"
+       width="30"
+       height="18"
+       id="rect430" />
+    <text
+       font-size="12.8"
+       style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:monospace"
+       x="371.496"
+       y="976.85999"
+       id="text432">
+      <tspan
+         x="371.496"
+         y="976.85999"
+         id="tspan434">Reflections</tspan>
+    </text>
+  </g>
+  <g
+     id="g436"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2;stroke-dasharray:8"
+       points="565.257,973.96 518.23,973.96 518.23,972.96 469.907,972.96 "
+       id="polyline438" />
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2"
+       points="482.555,967.96 466.555,972.96 482.555,977.96 "
+       id="polyline440" />
+  </g>
+  <g
+     id="g442"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2;stroke-dasharray:8"
+       points="640.374,826.65 669.704,826.65 669.704,785.123 "
+       id="polyline444" />
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2"
+       points="674.704,797.77 669.704,781.77 664.704,797.77 "
+       id="polyline446" />
+  </g>
+  <g
+     id="g448"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2;stroke-dasharray:8"
+       points="669.704,679.181 669.704,661.485 669.918,661.485 669.918,642.495 "
+       id="polyline450" />
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2"
+       points="674.918,655.143 669.918,639.143 664.918,655.143 "
+       id="polyline452" />
+  </g>
+  <g
+     id="g454"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2;stroke-dasharray:8"
+       points="797.747,738.798 944.072,738.798 944.072,702.679 "
+       id="polyline456" />
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2"
+       points="949.072,715.327 944.072,699.327 939.072,715.327 "
+       id="polyline458" />
+  </g>
+  <g
+     id="g460"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2;stroke-dasharray:8"
+       points="797.747,738.798 1062.85,738.798 1062.85,702.679 "
+       id="polyline462" />
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2"
+       points="1067.85,715.327 1062.85,699.327 1057.85,715.327 "
+       id="polyline464" />
+  </g>
+  <g
+     id="g466"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2;stroke-dasharray:8"
+       points="797.747,738.798 1153.29,738.798 1153.29,702.679 "
+       id="polyline468" />
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2"
+       points="1158.29,715.327 1153.29,699.327 1148.29,715.327 "
+       id="polyline470" />
+  </g>
+  <g
+     id="g472"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2;stroke-dasharray:8"
+       points="797.747,738.798 1093.54,738.798 1093.54,762.128 1390.63,762.128 "
+       id="polyline474" />
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2"
+       points="1377.99,767.128 1393.99,762.128 1377.99,757.128 "
+       id="polyline476" />
+  </g>
+  <g
+     id="g478"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2;stroke-dasharray:8"
+       points="542.668,738.798 367.426,738.798 367.426,674.131 "
+       id="polyline480" />
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2"
+       points="372.426,686.779 367.426,670.779 362.426,686.779 "
+       id="polyline482" />
+  </g>
+  <g
+     id="g484"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2;stroke-dasharray:8"
+       points="669.918,536.896 669.918,482.274 468.681,482.274 "
+       id="polyline486" />
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:2"
+       points="481.329,477.274 465.329,482.274 481.329,487.274 "
+       id="polyline488" />
+  </g>
+  <g
+     id="g490"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <rect
+       style="fill:#bbdeac"
+       x="312.92999"
+       y="522.16998"
+       width="180.50999"
+       height="77.5867"
+       id="rect492" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="312.92999"
+       y="522.16998"
+       width="180.50999"
+       height="77.5867"
+       id="rect494" />
+  </g>
+  <g
+     id="g496"
+     transform="matrix(0.69548511,0,0,0.69548511,209.35445,142.26898)">
+    <polygon
+       style="fill:#ffffff"
+       points="463.45,546.62 475.45,558.62 475.45,580.62 326.55,580.62 326.55,546.62 "
+       id="polygon498" />
+    <polygon
+       style="fill:none;stroke:#000000;stroke-width:2"
+       points="463.45,546.62 475.45,558.62 475.45,580.62 326.55,580.62 326.55,546.62 "
+       id="polygon500" />
+    <polyline
+       style="fill:none;stroke:#000000;stroke-width:1"
+       points="463.45,546.62 463.45,558.62 475.45,558.62 "
+       id="polyline502" />
+    <text
+       font-size="12.8"
+       style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:monospace"
+       x="333.54999"
+       y="571.52002"
+       id="text504">
+      <tspan
+         x="333.54999"
+         y="571.52002"
+         id="tspan506">+ Processing Libs</tspan>
+    </text>
+  </g>
+</svg>

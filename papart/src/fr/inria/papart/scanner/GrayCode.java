@@ -75,6 +75,8 @@ public class GrayCode implements PConstants {
     // TODO: rename
     private final int downScale;
 
+    private int blackColor = 0, whiteColor = 255;
+
     public GrayCode(PApplet applet, int width, int height, int downScale) {
         this.parent = applet;
         this.width = width / downScale;
@@ -91,6 +93,11 @@ public class GrayCode implements PConstants {
 
         nbCodes = nbCols + nbRows + 2;
         grayCodesCaptures = new PImage[nbCodes];
+    }
+
+    public void setBlackWhiteColors(int black, int white) {
+        this.blackColor = black;
+        this.whiteColor = white;
     }
 
     public int nbCodes() {
@@ -124,7 +131,6 @@ public class GrayCode implements PConstants {
 //        this.displayId += 1;
 //        this.displayId = this.displayId % nbCodes;
 //    }
-
     /**
      * *
      * Render the gray code in the graphics pg.
@@ -136,7 +142,7 @@ public class GrayCode implements PConstants {
 
 //        assert(pg.width == this.width);
 //        assert(pg.height == this.height);
-        pg.fill(0);
+        pg.fill(blackColor);
         pg.noStroke();
         pg.rectMode(CORNER);
 //        pg.rect(0, 0, displayWidth, displayHeight);
@@ -147,17 +153,17 @@ public class GrayCode implements PConstants {
         }
 
         id -= nbCols;
-        
+
         if (id < nbRows) {
             drawRows(pg, id);
             return;
         }
-        
+
         id -= nbRows;
 
         System.out.println("NbCols " + nbCols + " nbRows " + nbRows + " id " + id);
-        if (id == 0 ) {
-            pg.fill(0);
+        if (id == 0) {
+            pg.fill(blackColor);
             pg.noStroke();
             pg.rectMode(CORNER);
             pg.rect(0, 0, displayWidth, displayHeight);
@@ -172,7 +178,7 @@ public class GrayCode implements PConstants {
             } else {
                 binary = (((c + colShift) >> (nbCols - i - 1)) & 1);
             }
-            pg.fill(binary == 0 ? 0 : 255);
+            pg.fill(binary == 0 ? blackColor : whiteColor);
             pg.rect(c * downScale, 0, c * downScale + downScale, displayHeight);
         }
     }
@@ -186,7 +192,7 @@ public class GrayCode implements PConstants {
             } else {
                 binary = (((r + rowShift) >> (nbRows - i - 1)) & 1);
             }
-            pg.fill(binary == 0 ? 0 : 255);
+            pg.fill(binary == 0 ? blackColor : whiteColor);
 //                pg.rect(0, r, width, r + 1);
             pg.rect(0, r * downScale, displayWidth, r * downScale + downScale);
         }

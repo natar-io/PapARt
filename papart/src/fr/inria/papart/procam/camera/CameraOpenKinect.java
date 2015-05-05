@@ -57,9 +57,12 @@ public class CameraOpenKinect extends Camera {
             grabber.start();
             grabber.setVideoFormat(freenect.FREENECT_VIDEO_RGB);
             grabber.setDepthFormat(depthFormat);
-
+            this.isConnected = true;
         } catch (Exception e) {
             System.err.println("Could not Kinect start frameGrabber... " + e);
+            System.err.println("Kinect ID " + this.systemNumber + " could not start.");
+            System.err.println("Check cable connection and ID.");
+            
         }
     }
 
@@ -125,7 +128,7 @@ public class CameraOpenKinect extends Camera {
     }
 
     public IplImage getDepthIplImage() {
-        if(!this.isGrabbingDepth){
+        if (!this.isGrabbingDepth) {
             throw new RuntimeException("Cannot grab depth, setGrabdepth to true to enable it.");
         }
         return depthImage;

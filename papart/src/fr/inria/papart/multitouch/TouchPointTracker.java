@@ -89,16 +89,8 @@ public class TouchPointTracker {
             tp.setUpdated(false);
 
             if (tp.isObselete(currentTime, forgetTime)) {
-
-                if (tp.isToDelete()) {
-                    if (tp.isToRemove(currentTime, deleteDelay)) {
-                        it.remove();
-                        tp.delete();
-                    }
-                } else {
-                    tp.setToDelete(currentTime);
-                }
-
+                tp.delete(currentTime);
+                it.remove();
             }
 
         }

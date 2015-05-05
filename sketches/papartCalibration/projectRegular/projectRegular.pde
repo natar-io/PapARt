@@ -11,9 +11,9 @@ public void init() {
 
 
 int framePosX = 0;
-int framePosY = 120;
-int frameSizeX = 1280;
-int frameSizeY = 800;
+int framePosY = 200;
+int frameSizeX = 1920;
+int frameSizeY = 1080;
 
 void setup(){
     size(frameSizeX, frameSizeY, OPENGL);
@@ -32,6 +32,7 @@ void draw(){
     int k = 0;
     for (float i = 0; i <= 1.0; i += step) {
 	for (float j = 0; j <= 1.0; j += step, k++) {
+	    fill(i * 150 + 100, j * 150 +  100, 100);
 	    ellipse(i * width, j * height, ellipseSize, ellipseSize);
 	}
     }

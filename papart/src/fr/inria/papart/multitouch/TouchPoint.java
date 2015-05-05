@@ -32,7 +32,7 @@ import toxi.geom.Vec3D;
  *
  * @author jeremy
  */
-public class TouchPoint extends DepthPoint {
+public class TouchPoint extends DepthPoint implements TouchProvider {
 
     public static int count = 0;
 
@@ -51,7 +51,7 @@ public class TouchPoint extends DepthPoint {
     private boolean isCloseToPlane;
 
     // Tracking related variables
-    private static final int NO_ID = 0;
+    public static final int NO_ID = -10;
     private static int globalID = 1;
     protected int id = NO_ID;
 
@@ -61,7 +61,6 @@ public class TouchPoint extends DepthPoint {
     private int createTime = -1;
 
     private boolean toDelete = false;
-    private boolean isGhost = false;
     public boolean isUpdated = false;
 
     public int attachedValue = -1;
@@ -74,6 +73,11 @@ public class TouchPoint extends DepthPoint {
     public static float filterBeta = 8.000f;
     public static final int NO_TIME = -1;
     private int NUMBER_OF_FILTERS = 3;
+
+    public TouchPoint(int id) {
+        this();
+        this.id = id;
+    }
 
     public TouchPoint() {
         try {
@@ -138,7 +142,7 @@ public class TouchPoint extends DepthPoint {
     }
 
     public boolean updateWith(TouchPoint tp) {
-        if (isUpdated || tp.isUpdated || this.isGhost || tp.isGhost) {
+        if (isUpdated || tp.isUpdated) {
             return false;
         }
 
@@ -277,17 +281,14 @@ public class TouchPoint extends DepthPoint {
         this.isCloseToPlane = isCloseToPlane;
     }
 
-    public void setToDelete(int time) {
+    public void delete(int time) {
         this.toDelete = true;
         TouchPoint.count--;
         this.deletionTime = time;
-        this.isGhost = true;
-
-    }
-
-    public void delete() {
         if (this.attachedObject != null) {
-            ((TouchPointEventHandler) this.attachedObject).delete();
+            if (this.attachedObject instanceof TouchPointEventHandler) {
+                ((TouchPointEventHandler) this.attachedObject).delete();
+            }
         }
     }
 
@@ -302,6 +303,33 @@ public class TouchPoint extends DepthPoint {
     @Override
     public String toString() {
         return "Touch Point, kinect: " + positionKinect + " , proj: " + position + "confidence " + confidence + " ,close to Plane : " + isCloseToPlane;
+    }
+
+    Touch touch;
+
+    @Override
+    public boolean hasTouch() {
+        return touch != null;
+    }
+
+    @Override
+    public void createTouch() {
+        touch = new Touch();
+        touch.id = this.id;
+    }
+
+    @Override
+    public Touch getTouch() {
+        if (touch == null) {
+            createTouch();
+        }
+        touch.id = this.id;
+        return touch;
+    }
+
+    @Override
+    public void deleteTouch() {
+        touch = null;
     }
 
 }

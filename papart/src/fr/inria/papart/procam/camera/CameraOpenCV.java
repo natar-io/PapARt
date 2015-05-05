@@ -47,10 +47,18 @@ public class CameraOpenCV extends Camera {
 
         try {
             grabberCV.start();
+            this.grabber = grabberCV;
+            this.isConnected = true;
         } catch (Exception e) {
             System.err.println("Could not start frameGrabber... " + e);
+
+            System.err.println("Could not camera start frameGrabber... " + e);
+            System.err.println("Camera ID " + this.systemNumber + " could not start.");
+            System.err.println("Check cable connection, ID and resolution asked.");
+
+            this.grabber = null;
         }
-        this.grabber = grabberCV;
+
     }
 
     @Override

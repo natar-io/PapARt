@@ -2,7 +2,7 @@ import fr.inria.papart.procam.*;
 import fr.inria.papart.procam.camera.*;
 import fr.inria.papart.multitouch.*;
 import fr.inria.papart.depthcam.*;
-import fr.inria.papart.depthcam.calibration.*;
+import fr.inria.papart.calibration.*;
 
 import toxi.geom.*;
 import org.bytedeco.javacpp.opencv_core.IplImage;
@@ -47,7 +47,9 @@ void setup(){
 				  Papart.kinectIRCalib,
 				  Papart.kinectRGBCalib,
 				  kinectFormat);
-    
+
+    kinect.setStereoCalibration(Papart.kinectStereoCalib);
+
   pointCloud = new PointCloudKinect(this, precision);
 
   // Set the virtual camera
@@ -65,6 +67,12 @@ IplImage kinectImgDepth;
   
 void draw(){
     background(0);
+
+    kinect.KinectRGBIRCalibration = new PMatrix3D(1, 0, 0, 5,
+						  0, 1, 0, 0,
+						  0, 0, 1, 0,
+						  0, 0, 0, 1);
+
 
     camera.grab();
     kinectImg = camera.getIplImage();

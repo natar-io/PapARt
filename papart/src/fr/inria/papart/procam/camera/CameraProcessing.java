@@ -50,8 +50,10 @@ public class CameraProcessing extends Camera {
         }
 
         this.captureIpl.start();
+        this.isConnected = true;
     }
 
+    @Override
     public void grab() {
         if (this.isClosing()) {
             return;
