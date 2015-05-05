@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package fr.inria.papart.depthcam.calibration;
+package fr.inria.papart.calibration;
 
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
@@ -150,6 +150,18 @@ public class HomographyCalibration extends Calibration {
     @Override
     public String toString() {
         return this.mat.toString();
+    }
+
+    public static void saveMatTo(PApplet applet, PMatrix3D mat, String fileName) {
+        HomographyCalibration hc = new HomographyCalibration();
+        hc.setMatrix(mat);
+        hc.saveTo(applet, fileName);
+    }
+
+    public static PMatrix3D getMatFrom(PApplet applet, String fileName) {
+        HomographyCalibration hc = new HomographyCalibration();
+        hc.loadFrom(applet, fileName);
+        return hc.getHomography();
     }
 
     public static HomographyCalibration CreateHomographyCalibrationFrom(PMatrix3D mat, PVector size) {

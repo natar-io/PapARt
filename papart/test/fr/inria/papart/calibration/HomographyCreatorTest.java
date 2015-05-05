@@ -1,3 +1,5 @@
+package fr.inria.papart.calibration;
+
 ///*
 // * Copyright (C) 2014 Jeremy Laviole <jeremy.laviole@inria.fr>.
 // *
