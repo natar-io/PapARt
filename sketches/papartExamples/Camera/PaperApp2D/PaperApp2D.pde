@@ -5,8 +5,9 @@ import org.reflections.*;
 import TUIO.*;
 import toxi.geom.*;
 
+import processing.video.*;
 
-boolean useProjector = true;
+boolean useProjector = false;
 
 // Undecorated frame 
 public void init() {
