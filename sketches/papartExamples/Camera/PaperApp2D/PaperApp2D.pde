@@ -21,6 +21,9 @@ public void init() {
   super.init();
 }
 
+Papart papart;
+
+
 public void setup() {
 
   if (useProjector) {
@@ -34,9 +37,9 @@ public void setup() {
   }
 
 
-  Papart papart = new Papart(this);
+  papart = new Papart(this);
 
-  String cameraNo = "2";
+  String cameraNo = "1";
   if (useProjector) {
     papart.initProjectorCamera(cameraNo, Camera.Type.OPENCV);
   } else {
@@ -51,7 +54,25 @@ void draw() {
 }
 
 
+boolean manual = true;
+
 void keyPressed() {
+
+
+    if(key == 's'){
+	papart.setTablePosition(app);
+	println("Position saved");
+    }
+
+    // go to table
+    if(key == 'l'){
+	papart.moveToTablePosition(app);
+    }
+
+    // Move again
+    if(key == 'm'){
+	app.useManualLocation(false);
+    }
 
   // Placed here, bug if it is placed in setup().
   if (key == ' ')
