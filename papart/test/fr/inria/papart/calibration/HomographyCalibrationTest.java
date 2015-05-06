@@ -40,6 +40,14 @@ public class HomographyCalibrationTest {
     PApplet sketch;
 
     @Test
+    public void CreateValues() {
+        sketch = new Sketch();
+        instance = new HomographyCalibration();
+        instance.setMatrix(createDummyValues());
+        instance.saveTo(sketch, Common.currentPath + Common.HomographyCalibration);
+    }
+    
+    @Test
     public void checkLoadAndSave() {
         sketch = new Sketch();
         instance = new HomographyCalibration();

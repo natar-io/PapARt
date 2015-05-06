@@ -196,7 +196,7 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
             this.graphics.pushMatrix();
 
             // Goto to the screen position
-            this.graphics.applyMatrix(screen.getPosition());
+            this.graphics.applyMatrix(screen.getLocation());
             // Draw the screen image
 
             // If it is openGL renderer, use the standard  (0, 0) is bottom left
@@ -351,7 +351,7 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
 
     @Override
     public PGraphicsOpenGL beginDrawOnScreen(Screen screen) {
-        PMatrix3D screenPos = screen.getPosition();
+        PMatrix3D screenPos = screen.getLocation();
 
         this.beginDraw();
         if (this.hasExtrinsics()) {

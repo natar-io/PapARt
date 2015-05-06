@@ -137,14 +137,15 @@ public class Screen {
     }
 
     /**
-     * Set the main position (override tracking system).
+     * Set the main position (override tracking system). Use only after the 
+     * call of paperScreen.useManualLocation(false);
      *
      * @param position
      */
-    public void setPos(PMatrix3D position) {
+    public void setMainLocation(PMatrix3D position) {
         transformation.set(position);
     }
-
+    
     /**
      * Set a second transformation applied after tracking transform.
      *
@@ -158,11 +159,21 @@ public class Screen {
         }
     }
 
+    /**
+     * Set an additional translation (replace the second transformation)
+     * 
+     * @param tr 
+     */
     public void setTranslation(PVector tr) {
         setTranslation(tr.x, tr.y, tr.z);
     }
 
-    // TODO: replace transfo == null
+   /**
+    *  Set an additional translation (replace the second transformation)
+    * @param x
+    * @param y
+    * @param z 
+    */
     public void setTranslation(float x, float y, float z) {
         if (secondTransformation == null) {
             secondTransformation = new PMatrix3D();
@@ -172,11 +183,19 @@ public class Screen {
     }
 
     /**
+     * @deprecated
+     * @return 
+     */
+      public PMatrix3D getPosition() {
+       return getLocation();
+      }
+    
+    /**
      * Get the overall transform (after tracking and second transform)
      *
      * @return
      */
-    public PMatrix3D getPosition() {
+    public PMatrix3D getLocation() {
         if (secondTransformation == null) {
             return transformation;
         } else {
@@ -200,7 +219,7 @@ public class Screen {
     public void computeScreenPosTransform() {
 
         ///////////////////// PLANE COMPUTATION  //////////////////
-        PMatrix3D mat = this.getPosition().get();
+        PMatrix3D mat = this.getLocation().get();
 
         paperPosCorners3D[0] = new PVector(mat.m03, mat.m13, mat.m23);
         mat.translate(size.x, 0, 0);
@@ -259,7 +278,7 @@ public class Screen {
             this.isOpenGL = true;
             // Transformation  Camera -> Marker
 
-            initPosM = this.getPosition().get();
+            initPosM = this.getLocation().get();
             // No translation mode
 //            initPosM.m03 = 0;
 //            initPosM.m13 = 0;
@@ -311,7 +330,7 @@ public class Screen {
 
         newPos.mult(virtualPos, virtualPos);
 
-        PMatrix3D rotationPaper = this.getPosition().get();
+        PMatrix3D rotationPaper = this.getLocation().get();
         rotationPaper.invert();
         rotationPaper.m03 = 0; // newPos.m03;
         rotationPaper.m13 = 0; // newPos.m13;

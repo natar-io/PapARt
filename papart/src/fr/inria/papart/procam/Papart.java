@@ -119,7 +119,7 @@ public class Papart {
 
     public void moveToTablePosition(PaperScreen paperScreen) {
         paperScreen.useManualLocation(true);
-        paperScreen.screen.setPos(HomographyCalibration.getMatFrom(applet, tablePosition));
+        paperScreen.screen.setMainLocation(HomographyCalibration.getMatFrom(applet, tablePosition));
     }
 
     private boolean isWithoutCamera = false;

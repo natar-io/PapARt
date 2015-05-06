@@ -18,9 +18,11 @@
  */
 package fr.inria.papart.procam;
 
+import fr.inria.papart.calibration.HomographyCalibration;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.drawingapp.DrawUtils;
+import static fr.inria.papart.procam.Papart.tablePosition;
 import java.awt.Image;
 import processing.opengl.PGraphicsOpenGL;
 import processing.core.PApplet;
@@ -231,8 +233,8 @@ public class PaperScreen {
             checkCorners();
         }
     }
-    
-    public void useManualLocation(boolean manual){
+
+    public void useManualLocation(boolean manual) {
         this.useManualLocation = manual;
     }
 
@@ -439,6 +441,10 @@ public class PaperScreen {
         return markerBoard.isMoving(cameraTracking);
     }
 
+    public void setMainLocation(PMatrix3D location) {
+        screen.setMainLocation(location);
+    }
+
     public void setLocation(PVector v) {
         setLocation(v.x, v.y, v.z);
     }
@@ -449,13 +455,31 @@ public class PaperScreen {
         screen.setTranslation(x, y, z);
     }
 
+// TODO: Bug here, without this call, the rendering is different. 
+    public void setLocation(PMatrix3D matrix) {
+        assert (isInitialized);
+        screen.setTransformation(matrix);
+    }
+
     public PVector getLocationVector() {
-        PMatrix3D p = screen.getPosition();
+        PMatrix3D p = screen.getLocation();
         return new PVector(p.m03, p.m13, p.m23);
     }
 
     public PMatrix3D getLocation() {
-        return this.screen.getPosition();
+        return this.screen.getLocation();
+    }
+
+    public void saveLocationTo(String filename) {
+        HomographyCalibration.saveMatTo(
+                Papart.getPapart().getApplet(),
+                screen.getLocation(),
+                filename);
+    }
+
+    public void loadLocationFrom(String filename) {
+        this.useManualLocation(true);
+        setMainLocation(HomographyCalibration.getMatFrom(Papart.getPapart().getApplet(), filename));
     }
 
     public MarkerBoard getBoard() {

@@ -145,7 +145,7 @@ public class ProjectorDisplay extends ARDisplay {
 
             // Goto to the screen position
 //            this.graphics.modelview.apply(screen.getPos());
-            this.graphics.applyMatrix(screen.getPosition());
+            this.graphics.applyMatrix(screen.getLocation());
             // Draw the screen image
 
             this.graphics.image(screen.getTexture(), 0, 0, screen.getSize().x, screen.getSize().y);
