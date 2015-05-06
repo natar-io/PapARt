@@ -230,6 +230,8 @@ public class DrawingMap extends PaperTouchScreen {
 	checkYButtons();
 	background(0);
 
+	System.out.println(curCenter.get().y);
+
 	PMatrix3D transform = new PMatrix3D();
 	
 	//Get the current position of the sheet of paper
@@ -240,9 +242,17 @@ public class DrawingMap extends PaperTouchScreen {
 	
 	if(mode == "displayFilter"){
 	    dispFilters();
-	    if(scaleMenu.getStateChanged()){
+	    if(zoomType == TANGIBLE){
+		umaps.zoomAndPanTo(umaps.getCenter(), physicalZoomLevel);
+	    }
+	    else if(zoomType == TACTILE){
+		if(scaleMenu.getStateChanged()){
 		//umaps.zoomAndPanTo(umaps.getLocation(scaleMenu.getZoomCenter(), resolution), scaleMenu.getZoomLevel());
 		umaps.zoomAndPanTo(umaps.getCenter(), scaleMenu.getZoomLevel());
+		}
+	    }
+	    else if(zoomType == MOVEMENT){
+		
 	    }
 	    //dispMainFilter();
 	    /*if(currentPlace == 0){
@@ -281,11 +291,11 @@ public class DrawingMap extends PaperTouchScreen {
 	    if(startingTime < 0){
 		startingTime = millis();
 	    }
-	    if((!captured) && (millis() - startingTime >= 500)){
+	    if((!captured) && (millis() - startingTime >= 1000)){
 		lastCapture = capture();
 		captured = true;
 	    }
-	    if(millis() - startingTime >= 1000){
+	    if(millis() - startingTime >= 2000){
 		//captButton.setNotTouched();
 		//captButton.reset();
 		//System.out.println("Back to filtering");
@@ -334,7 +344,9 @@ public class DrawingMap extends PaperTouchScreen {
 	stroke(0, 0, 0);
 	//drawMenu();
 	handleKeyPressed();
-	drawScale();
+	if(zoomType == TACTILE){
+	    drawScale();
+	}
 	endDraw();
     }
 

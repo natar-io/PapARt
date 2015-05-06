@@ -41,7 +41,25 @@ void draw() {
 }
 
 
+boolean manual = true;
+
 void keyPressed() {
+
+
+    if(key == 's'){
+	papart.setTablePosition(app);
+	println("Position saved");
+    }
+
+    // go to table
+    if(key == 'l'){
+	papart.moveToTablePosition(app);
+    }
+
+    // Move again
+    if(key == 'm'){
+	app.useManualLocation(false);
+    }
 
   // Placed here, bug if it is placed in setup().
   if (key == ' ')

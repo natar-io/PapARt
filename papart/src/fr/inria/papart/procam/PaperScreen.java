@@ -60,6 +60,7 @@ public class PaperScreen {
     private boolean isInitialized = false;
     private boolean isRegistered = false;
     protected boolean isWithoutCamera = false;
+    protected boolean useManualLocation = false;
 
     /**
      * Create a new PaperScreen, a Papart object has to be created first.
@@ -225,10 +226,14 @@ public class PaperScreen {
             init();
         }
         assert (isInitialized);
-        if (!this.isWithoutCamera) {
+        if (!this.isWithoutCamera && !useManualLocation) {
             screen.updatePos(cameraTracking, markerBoard);
             checkCorners();
         }
+    }
+    
+    public void useManualLocation(boolean manual){
+        this.useManualLocation = manual;
     }
 
     /**

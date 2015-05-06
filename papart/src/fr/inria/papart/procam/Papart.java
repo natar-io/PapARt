@@ -18,6 +18,7 @@
  */
 package fr.inria.papart.procam;
 
+import fr.inria.papart.calibration.HomographyCalibration;
 import fr.inria.papart.calibration.ComputerConfiguration;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ProjectorDisplay;
@@ -37,6 +38,7 @@ import org.reflections.Reflections;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PFont;
+import processing.core.PMatrix3D;
 import processing.core.PVector;
 
 /**
@@ -53,6 +55,7 @@ public class Papart {
     public static String kinectStereoCalib = folder + "/data/calibration/calibration-kinect-Stereo.yaml";
 
     public static String computerConfig = folder + "/data/calibration/ComputerConfiguration.xml";
+    public static String tablePosition = folder + "/data/calibration/tablePosition.xml";
     public static String planeCalib = folder + "/data/calibration/PlaneCalibration.xml";
     public static String homographyCalib = folder + "/data/calibration/HomographyCalibration.xml";
     public static String planeAndProjectionCalib = folder + "/data/calibration/PlaneProjectionCalibration.xml";
@@ -151,6 +154,19 @@ public class Papart {
 
     public static Papart getPapart() {
         return Papart.singleton;
+    }
+
+    public void setTablePosition(PaperScreen paperScreen) {
+        HomographyCalibration.saveMatTo(applet, paperScreen.getLocation(), tablePosition);
+    }
+
+    public PMatrix3D getTablePosition() {
+        return HomographyCalibration.getMatFrom(applet, tablePosition);
+    }
+
+    public void moveToTablePosition(PaperScreen paperScreen) {
+        paperScreen.useManualLocation(true);
+        paperScreen.screen.setPos(HomographyCalibration.getMatFrom(applet, tablePosition));
     }
 
     private boolean isWithoutCamera = false;

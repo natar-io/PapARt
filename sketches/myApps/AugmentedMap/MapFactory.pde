@@ -35,7 +35,8 @@ public class MapFactory{
     public void setupFactory(int resolution, PApplet parent){
 	umap1 = new UnfoldingMap(parent, 0, 0, resolution * A4BoardSize.x, resolution * A4BoardSize.y, new Google.GoogleMapProvider());
 	umap2 = new UnfoldingMap(parent, 0, 0, resolution * A4BoardSize.x, resolution * A4BoardSize.y, new Microsoft.AerialProvider());
-	umap3 = new UnfoldingMap(parent, 0, 0, resolution * A4BoardSize.x, resolution * A4BoardSize.y, new StamenMapProvider.WaterColor());
+	umap3 = new UnfoldingMap(parent, 0, 0, resolution * A4BoardSize.x, resolution * A4BoardSize.y, new StamenMapProvider.WaterColor());	
+	//umap3 = new UnfoldingMap(parent, 0, 0, resolution * A4BoardSize.x, resolution * A4BoardSize.y, new Microsoft.AerialProvider());
 	createDefaultEventDispatcher(parent);
     }
 
