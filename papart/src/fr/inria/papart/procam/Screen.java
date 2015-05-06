@@ -45,6 +45,7 @@ public class Screen {
     // The other one is unique to the camera/markerboard couple. 
     private float[] posFloat;
     private PMatrix3D transformation = new PMatrix3D(); // init to avoid nullPointerExceptions 
+    private PMatrix3D secondTransformation = null;
 
     private boolean isFloatArrayUpdating;
 
@@ -55,8 +56,8 @@ public class Screen {
 
     private static final int nbPaperPosRender = 4;
     private final PVector[] paperPosCorners3D = new PVector[nbPaperPosRender];
-    
-   // TODO: remove this
+
+    // TODO: remove this
     private Homography homography;
 
     protected Matrix4x4 worldToScreen;
@@ -88,14 +89,11 @@ public class Screen {
         return thisGraphics;
     }
 
-    public void setPos(PMatrix3D position) {
-       position = position.get();
-    }
-
     // The board must be registered with the camera. 
-    /****
+    /**
+     * **
      * @deprecated
-     * 
+     *
      */
     public void setAutoUpdatePos(Camera camera, MarkerBoard board) {
         if (!camera.tracks(board)) {
@@ -113,7 +111,6 @@ public class Screen {
             posFloat = new float[12];
         }
     }
-    
 
     public boolean isOpenGL() {
         return isOpenGL;
@@ -139,10 +136,17 @@ public class Screen {
         return (int) (size.y * scale);
     }
 
-    private PMatrix3D secondTransformation = null;
+    /**
+     * Set the main position (override tracking system).
+     *
+     * @param position
+     */
+    public void setPos(PMatrix3D position) {
+        transformation.set(position);
+    }
 
     /**
-     * Set an additional transformation to the current location.
+     * Set a second transformation applied after tracking transform.
      *
      * @param tr
      */
@@ -167,11 +171,15 @@ public class Screen {
         secondTransformation.translate(x, y, z);
     }
 
-    // TODO clearer on this method
+    /**
+     * Get the overall transform (after tracking and second transform)
+     *
+     * @return
+     */
     public PMatrix3D getPosition() {
         if (secondTransformation == null) {
             return transformation;
-        } else { 
+        } else {
             PMatrix3D combinedTransfos = transformation.get();
             combinedTransfos.apply(secondTransformation);
             return combinedTransfos;
@@ -188,7 +196,6 @@ public class Screen {
     public void updatePos(Camera camera, MarkerBoard board) {
         transformation.set(board.getTransfoMat(camera));
     }
-
 
     public void computeScreenPosTransform() {
 
