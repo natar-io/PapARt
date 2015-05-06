@@ -16,26 +16,19 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-
-package fr.inria.papart.depthcam.calibration;
+package fr.inria.papart.calibration;
 
 /**
  *
  * @author Jeremy Laviole <jeremy.laviole@inria.fr>
  */
+public class Common {
+    public static final String currentPath = "test/fr/inria/papart/calibration/";
+    public static final String HomographyCalibration = "homographyCalibration1.xml";
+    public static final String HomographyCalibrationCopy = "homographyCalibration1Copy.xml";
+    public static final String PlaneCalibration = "planeCalibration1.xml";
+    public static final String PlaneProjectionCalibration = "planeProjectionCalibration1.xml";
+    public static final String PlaneCalibrationCopy = "planeCalibration1Copy.xml";
+    public static final String CameraProjectorSync = "cameraProjectorSync.xml";
 
-import processing.core.PApplet;
-
-public class Sketch extends PApplet {
-
-    @Override
-    public void setup() {
-        size(200, 200);
-        stroke(155, 0, 0);
-    }
-
-    @Override
-    public void draw() {
-        line(mouseX, mouseY, width / 2, height / 2);
-    }
 }

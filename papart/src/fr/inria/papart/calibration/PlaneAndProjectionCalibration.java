@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package fr.inria.papart.depthcam.calibration;
+package fr.inria.papart.calibration;
 
 import processing.core.PApplet;
 import processing.core.PMatrix3D;

@@ -46,6 +46,7 @@ import processing.core.PVector;
 
 public abstract class Camera implements PConstants {
 
+    // Images
     protected IplImage currentImage, copyUndist;
 
     protected CamImage camImage = null;
@@ -75,9 +76,14 @@ public abstract class Camera implements PConstants {
     
     private boolean undistort = false;
 
-    // Properties
+    // Properties files
+    private String calibrationFile;
+    
+    // Properties (instanciated)
     protected ProjectiveDeviceP pdp = null;
     protected PMatrix3D camIntrinsicsP3D;
+
+    // Instance variables
     protected PApplet parent = null;
     private ArrayList<TrackedView> trackedViews;
     private List<MarkerBoard> sheets = null;
@@ -102,6 +108,8 @@ public abstract class Camera implements PConstants {
 
     public void setCalibration(String calibrationYAML) {
         try {
+            this.calibrationFile = calibrationYAML;
+            
             pdp = ProjectiveDeviceP.loadCameraDevice(calibrationYAML, 0);
             camIntrinsicsP3D = pdp.getIntrinsics();
             this.width = pdp.getWidth();
@@ -180,6 +188,9 @@ public abstract class Camera implements PConstants {
     abstract public void start();
 
     // Legacy, use the two next functions.
+    /**
+     * @deprecated 
+     */
     public void initMarkerDetection(PApplet applet, String calibrationARToolkit, MarkerBoard[] paperSheets) {
         initMarkerDetection(calibrationARToolkit);
 

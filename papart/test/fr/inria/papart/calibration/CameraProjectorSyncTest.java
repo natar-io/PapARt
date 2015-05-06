@@ -16,8 +16,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package fr.inria.papart.depthcam.calibration;
+package fr.inria.papart.calibration;
 
+import fr.inria.papart.calibration.CameraProjectorSync;
+import fr.inria.papart.calibration.Common;
 import fr.inria.papart.Sketch;
 import fr.inria.papart.scanner.GrayCode;
 import org.junit.Test;

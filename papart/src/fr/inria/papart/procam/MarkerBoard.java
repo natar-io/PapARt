@@ -126,72 +126,10 @@ public class MarkerBoard {
         this.applet = applet;
 
         if (type == MarkerType.ARTOOLKITPLUS) {
-            // create a tracker that does:
-            //  - 6x6 sized marker images (required for binary markers)
-            //  - samples at a maximum of 6x6 
-            //  - works with luminance (gray) images
-            //  - can load a maximum of 0 non-binary pattern
-            //  - can detect a maximum of 8 patterns in one image
-            TrackerMultiMarker tracker = new ARToolKitPlus.TrackerMultiMarker(camera.width(), camera.height(), 20, 6, 6, 6, 5);
-
-            int pixfmt = 0;
-            switch (camera.getPixelFormat()) {
-                case BGR:
-                    pixfmt = ARToolKitPlus.PIXEL_FORMAT_BGR;
-                    break;
-                case RGB:
-                    pixfmt = ARToolKitPlus.PIXEL_FORMAT_RGB;
-                    break;
-                case ARGB: // closest, not the same.
-                    pixfmt = ARToolKitPlus.PIXEL_FORMAT_ABGR;
-                    break;
-                case RGBA:
-                    pixfmt = ARToolKitPlus.PIXEL_FORMAT_RGBA;
-                default:
-                    throw new RuntimeException("ARtoolkit : Camera pixel format unknown");
-            }
-
-            tracker.setPixelFormat(pixfmt);
-            tracker.setBorderWidth(0.125f);
-            tracker.activateAutoThreshold(true);
-//            tracker.setUndistortionMode(ARToolKitPlus.UNDIST_NONE);
-            tracker.setPoseEstimator(ARToolKitPlus.POSE_ESTIMATOR_RPP);
-
-//            tracker.setPoseEstimator(ARToolKitPlus.POSE_ESTIMATOR_ORIGINAL_CONT);
-            tracker.setMarkerMode(ARToolKitPlus.MARKER_ID_BCH);
-//            tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_FULL_RES);
-            tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_HALF_RES);
-            tracker.setUseDetectLite(false);
-//            tracker.setUseDetectLite(true);
-
-            // Initialize the tracker, with camera parameters and marker config. 
-            if (!tracker.init(camera.calibrationARToolkit, this.getFileName(), 1.0f, 1000.f)) {
-                System.err.println("Init ARTOOLKIT Error " + camera.calibrationARToolkit + " " + this.getFileName());
-            }
-
-            float[] transfo = new float[16];
-            for (int i = 0; i < 3; i++) {
-                transfo[12 + i] = 0;
-            }
-            transfo[15] = 0;
-            this.trackers.add(tracker);
-            this.transfos.add(transfo);
+            addARtoolkitPlusTracker(camera);
         }
         if (this.type == MarkerType.OPENCV_SURF) {
-
-            ObjectFinder.Settings settings = new ObjectFinder.Settings();
-
-            IplImage imgToFind = cvLoadImage(this.fileName);
-
-            // TODO: tweak these.
-            settings.setObjectImage(imgToFind);
-            settings.setUseFLANN(true);
-            settings.setRansacReprojThreshold(5);
-            settings.setMatchesMin(16);
-            ObjectFinder finder = new ObjectFinder(settings);
-
-            this.trackers.add(finder);
-            this.transfos.add(new PMatrix3D());
+            addSurfTracker();
         }
 
         this.cameras.add(camera);
@@ -204,6 +142,77 @@ public class MarkerBoard {
 
         OneEuroFilter[] filter = null;
         this.filters.add(filter);
+    }
+
+    private void addARtoolkitPlusTracker(Camera camera) {
+
+        // create a tracker that does:
+        //  - 6x6 sized marker images (required for binary markers)
+        //  - samples at a maximum of 6x6 
+        //  - works with luminance (gray) images
+        //  - can load a maximum of 0 non-binary pattern
+        //  - can detect a maximum of 8 patterns in one image
+        TrackerMultiMarker tracker = new ARToolKitPlus.TrackerMultiMarker(camera.width(), camera.height(), 20, 6, 6, 6, 5);
+
+        int pixfmt = 0;
+        switch (camera.getPixelFormat()) {
+            case BGR:
+                pixfmt = ARToolKitPlus.PIXEL_FORMAT_BGR;
+                break;
+            case RGB:
+                pixfmt = ARToolKitPlus.PIXEL_FORMAT_RGB;
+                break;
+            case ARGB: // closest, not the same.
+                pixfmt = ARToolKitPlus.PIXEL_FORMAT_ABGR;
+                break;
+            case RGBA:
+                pixfmt = ARToolKitPlus.PIXEL_FORMAT_RGBA;
+            default:
+                throw new RuntimeException("ARtoolkit : Camera pixel format unknown");
+        }
+
+        tracker.setPixelFormat(pixfmt);
+        tracker.setBorderWidth(0.125f);
+        tracker.activateAutoThreshold(true);
+//            tracker.setUndistortionMode(ARToolKitPlus.UNDIST_NONE);
+        tracker.setPoseEstimator(ARToolKitPlus.POSE_ESTIMATOR_RPP);
+
+//            tracker.setPoseEstimator(ARToolKitPlus.POSE_ESTIMATOR_ORIGINAL_CONT);
+        tracker.setMarkerMode(ARToolKitPlus.MARKER_ID_BCH);
+//            tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_FULL_RES);
+        tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_HALF_RES);
+        tracker.setUseDetectLite(false);
+//            tracker.setUseDetectLite(true);
+
+        // Initialize the tracker, with camera parameters and marker config. 
+        if (!tracker.init(camera.calibrationARToolkit, this.getFileName(), 1.0f, 1000.f)) {
+            System.err.println("Init ARTOOLKIT Error " + camera.calibrationARToolkit + " " + this.getFileName());
+        }
+
+        float[] transfo = new float[16];
+        for (int i = 0; i < 3; i++) {
+            transfo[12 + i] = 0;
+        }
+        transfo[15] = 0;
+        this.trackers.add(tracker);
+        this.transfos.add(transfo);
+    }
+
+    private void addSurfTracker() {
+        ObjectFinder.Settings settings = new ObjectFinder.Settings();
+
+        IplImage imgToFind = cvLoadImage(this.fileName);
+
+        // TODO: tweak these.
+        settings.setObjectImage(imgToFind);
+        settings.setUseFLANN(true);
+        settings.setRansacReprojThreshold(5);
+        settings.setMatchesMin(16);
+        ObjectFinder finder = new ObjectFinder(settings);
+
+        this.trackers.add(finder);
+        this.transfos.add(new PMatrix3D());
+
     }
 
     private int getId(Camera camera) {
@@ -341,105 +350,112 @@ public class MarkerBoard {
 
         ///////////// SURF UPDATE ////////////////////
         if (type == MarkerType.OPENCV_SURF) {
-
-            ObjectFinder finder = (ObjectFinder) trackers.get(id);
-
-            // Find the markers
-            double[] corners = finder.find(img);
-
-            if (corners == null) {
-                return;
-            }
-
-            PMatrix3D newPos = compute3DPos(corners, camera);
-
-            // if the update is forced 
-            if (mode == FORCE_UPDATE && currentTime < endTime) {
-                update(newPos, id);
-                return;
-            }
-
-            // the force and block updates are finished, revert back to normal
-            if (mode == FORCE_UPDATE || mode == BLOCK_UPDATE && currentTime > endTime) {
-                updateStatus.set(id, NORMAL);
-            }
-
-            PVector currentPos = new PVector(newPos.m03, newPos.m13, newPos.m23);
-//        System.out.println("Current Pos " + currentPos);
-//        System.out.println("Distance " + currentPos.dist(lastPos.get(id)));
-            float distance = currentPos.dist(lastPos.get(id));
-
-            // if it is a drawing mode
-            if (drawingMode.get(id)) {
-
-                if (distance > this.minDistanceDrawingMode.get(id)) {
-                    update(newPos, id);
-
-                    lastPos.set(id, currentPos);
-                    updateStatus.set(id, FORCE_UPDATE);
-                    nextTimeEvent.set(id, applet.millis() + MarkerBoard.updateTime);
-//                    System.out.println("Next Update for x seconds");
-                }
-
-            } else {
-                update(newPos, id);
-            }
+            updateSURFPosition(id, currentTime, endTime, mode, camera, img);
         }
 
         ///////////// ARTOOLKITPLUS UPDATE ////////////////////
         if (type == MarkerType.ARTOOLKITPLUS) {
+            updateArtoolkitPosition(id, currentTime, endTime, mode, camera, img);
 
-            TrackerMultiMarker tracker = (TrackerMultiMarker) trackers.get(id);
-
-            // Find the markers
-            tracker.calc(img.imageData());
-
-            // Minimum 2 markers !
-            if (tracker.getNumDetectedMarkers() <= 1) {
-                return;
-            }
-
-            ARToolKitPlus.ARMultiMarkerInfoT multiMarkerConfig = tracker.getMultiMarkerConfig();
-
-            PVector currentPos = new PVector((float) multiMarkerConfig.trans().get(3),
-                    (float) multiMarkerConfig.trans().get(7),
-                    (float) multiMarkerConfig.trans().get(11));
-
-            // Cannot detect elements as close as closer than 10cm
-            if(currentPos.z < 10){
-                return;
-            }
-                               
-            // if the update is forced 
-            if (mode == FORCE_UPDATE && currentTime < endTime) {
-                update(multiMarkerConfig, id);
-                return;
-            }
-
-            // the force and block updates are finished, revert back to normal
-            if (mode == FORCE_UPDATE || mode == BLOCK_UPDATE && currentTime > endTime) {
-                updateStatus.set(id, NORMAL);
-            }
-
-            float distance = currentPos.dist(lastPos.get(id));
-
-            // if it is a drawing mode
-            if (drawingMode.get(id)) {
-
-                if (distance > this.minDistanceDrawingMode.get(id)) {
-                    update(multiMarkerConfig, id);
-
-                    lastPos.set(id, currentPos);
-                    updateStatus.set(id, FORCE_UPDATE);
-                    nextTimeEvent.set(id, applet.millis() + MarkerBoard.updateTime);
-//                    System.out.println("Next Update for x seconds");
-                }
-
-            } else {
-                update(multiMarkerConfig, id);
-            }
         }
 
+    }
+
+    private void updateSURFPosition(int id, int currentTime, int endTime, int mode, Camera camera, IplImage img) {
+
+        ObjectFinder finder = (ObjectFinder) trackers.get(id);
+
+        // Find the markers
+        double[] corners = finder.find(img);
+
+        if (corners == null) {
+            return;
+        }
+
+        PMatrix3D newPos = compute3DPos(corners, camera);
+
+        // if the update is forced 
+        if (mode == FORCE_UPDATE && currentTime < endTime) {
+            update(newPos, id);
+            return;
+        }
+
+        // the force and block updates are finished, revert back to normal
+        if (mode == FORCE_UPDATE || mode == BLOCK_UPDATE && currentTime > endTime) {
+            updateStatus.set(id, NORMAL);
+        }
+
+        PVector currentPos = new PVector(newPos.m03, newPos.m13, newPos.m23);
+        float distance = currentPos.dist(lastPos.get(id));
+
+        // if it is a drawing mode
+        if (drawingMode.get(id)) {
+
+            if (distance > this.minDistanceDrawingMode.get(id)) {
+                update(newPos, id);
+
+                lastPos.set(id, currentPos);
+                updateStatus.set(id, FORCE_UPDATE);
+                nextTimeEvent.set(id, applet.millis() + MarkerBoard.updateTime);
+//                    System.out.println("Next Update for x seconds");
+            }
+
+        } else {
+            update(newPos, id);
+        }
+
+    }
+
+    private void updateArtoolkitPosition(int id, int currentTime, int endTime, int mode, Camera camera, IplImage img) {
+        TrackerMultiMarker tracker = (TrackerMultiMarker) trackers.get(id);
+
+        // Find the markers
+        tracker.calc(img.imageData());
+
+        // Minimum 2 markers !
+        if (tracker.getNumDetectedMarkers() <= 1) {
+            return;
+        }
+
+        ARToolKitPlus.ARMultiMarkerInfoT multiMarkerConfig = tracker.getMultiMarkerConfig();
+
+        PVector currentPos = new PVector((float) multiMarkerConfig.trans().get(3),
+                (float) multiMarkerConfig.trans().get(7),
+                (float) multiMarkerConfig.trans().get(11));
+
+        // Cannot detect elements as close as closer than 10cm
+        if (currentPos.z < 10) {
+            return;
+        }
+
+        // if the update is forced 
+        if (mode == FORCE_UPDATE && currentTime < endTime) {
+            update(multiMarkerConfig, id);
+            return;
+        }
+
+        // the force and block updates are finished, revert back to normal
+        if (mode == FORCE_UPDATE || mode == BLOCK_UPDATE && currentTime > endTime) {
+            updateStatus.set(id, NORMAL);
+        }
+
+        float distance = currentPos.dist(lastPos.get(id));
+
+        // if it is a drawing mode
+        if (drawingMode.get(id)) {
+
+            if (distance > this.minDistanceDrawingMode.get(id)) {
+                update(multiMarkerConfig, id);
+
+                lastPos.set(id, currentPos);
+                updateStatus.set(id, FORCE_UPDATE);
+                nextTimeEvent.set(id, applet.millis() + MarkerBoard.updateTime);
+//                    System.out.println("Next Update for x seconds");
+            }
+
+        } else {
+            update(multiMarkerConfig, id);
+        }
     }
 
     private PMatrix3D compute3DPos(double[] corners, Camera camera) {

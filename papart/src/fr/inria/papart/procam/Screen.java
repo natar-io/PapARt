@@ -45,6 +45,7 @@ public class Screen {
     // The other one is unique to the camera/markerboard couple. 
     private float[] posFloat;
     private PMatrix3D transformation = new PMatrix3D(); // init to avoid nullPointerExceptions 
+    private PMatrix3D secondTransformation = null;
 
     private boolean isFloatArrayUpdating;
 
@@ -55,8 +56,8 @@ public class Screen {
 
     private static final int nbPaperPosRender = 4;
     private final PVector[] paperPosCorners3D = new PVector[nbPaperPosRender];
-    
-   // TODO: remove this
+
+    // TODO: remove this
     private Homography homography;
 
     protected Matrix4x4 worldToScreen;
@@ -88,11 +89,12 @@ public class Screen {
         return thisGraphics;
     }
 
-    public void setPos(PMatrix3D position) {
-        position = position.get();
-    }
-
     // The board must be registered with the camera. 
+    /**
+     * **
+     * @deprecated
+     *
+     */
     public void setAutoUpdatePos(Camera camera, MarkerBoard board) {
         if (!camera.tracks(board)) {
             camera.trackMarkerBoard(board);
@@ -108,7 +110,6 @@ public class Screen {
             transformation = board.getTransfoMat(camera);
             posFloat = new float[12];
         }
-
     }
 
     public boolean isOpenGL() {
@@ -135,18 +136,25 @@ public class Screen {
         return (int) (size.y * scale);
     }
 
-    private PMatrix3D transfo = null;
+    /**
+     * Set the main position (override tracking system).
+     *
+     * @param position
+     */
+    public void setPos(PMatrix3D position) {
+        transformation.set(position);
+    }
 
     /**
-     * Set an additional transformation to the current location.
+     * Set a second transformation applied after tracking transform.
      *
      * @param tr
      */
     public void setTransformation(PMatrix3D tr) {
-        if (transfo == null) {
-            this.transfo = new PMatrix3D(tr);
+        if (secondTransformation == null) {
+            this.secondTransformation = new PMatrix3D(tr);
         } else {
-            this.transfo.set(tr);
+            this.secondTransformation.set(tr);
         }
     }
 
@@ -156,21 +164,25 @@ public class Screen {
 
     // TODO: replace transfo == null
     public void setTranslation(float x, float y, float z) {
-        if (transfo == null) {
-            transfo = new PMatrix3D();
+        if (secondTransformation == null) {
+            secondTransformation = new PMatrix3D();
         }
-        transfo.reset();
-        transfo.translate(x, y, z);
+        secondTransformation.reset();
+        secondTransformation.translate(x, y, z);
     }
 
-    // TODO clearer on this method
+    /**
+     * Get the overall transform (after tracking and second transform)
+     *
+     * @return
+     */
     public PMatrix3D getPosition() {
-        if (transfo == null) {
+        if (secondTransformation == null) {
             return transformation;
         } else {
-            PMatrix3D tmp = transformation.get();
-            tmp.apply(transfo);
-            return tmp;
+            PMatrix3D combinedTransfos = transformation.get();
+            combinedTransfos.apply(secondTransformation);
+            return combinedTransfos;
         }
     }
 
@@ -181,18 +193,9 @@ public class Screen {
     /**
      * update the internals of the screen to match the tracking.
      */
-    public void updatePos() {
-
-//        System.out.println("Screen: updatePos" + posPMatrix);
-        if (this.isFloatArrayUpdating) {
-            transformation.set(posFloat[0], posFloat[1], posFloat[2], posFloat[3],
-                    posFloat[4], posFloat[5], posFloat[6], posFloat[7],
-                    posFloat[8], posFloat[9], posFloat[10], posFloat[11],
-                    0, 0, 0, 1);
-        }
-
+    public void updatePos(Camera camera, MarkerBoard board) {
+        transformation.set(board.getTransfoMat(camera));
     }
-
 
     public void computeScreenPosTransform() {
 

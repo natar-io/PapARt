@@ -18,10 +18,10 @@
  */
 package fr.inria.papart.procam;
 
-import fr.inria.papart.depthcam.calibration.HomographyCalibration;
-import fr.inria.papart.depthcam.calibration.HomographyCreator;
-import fr.inria.papart.depthcam.calibration.PlaneCalibration;
-import fr.inria.papart.depthcam.calibration.PlaneCreator;
+import fr.inria.papart.calibration.HomographyCalibration;
+import fr.inria.papart.calibration.HomographyCreator;
+import fr.inria.papart.calibration.PlaneCalibration;
+import fr.inria.papart.calibration.PlaneCreator;
 import fr.inria.papart.procam.Camera.PixelFormat;
 import org.bytedeco.javacpp.opencv_imgproc.*;
 

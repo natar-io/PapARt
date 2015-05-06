@@ -27,7 +27,7 @@ import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.procam.Screen;
 import fr.inria.papart.depthcam.Kinect;
 import fr.inria.papart.depthcam.PointCloudElement;
-import fr.inria.papart.depthcam.calibration.PlaneAndProjectionCalibration;
+import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
 import fr.inria.papart.procam.Camera;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.ProjectiveDeviceP;
