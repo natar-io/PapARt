@@ -23,7 +23,7 @@ public class Menu extends PaperTouchScreen {
     void setup(){
 	setDrawingSize((int) MenuSize.x, (int) MenuSize.y);
 	loadMarkerBoard(sketchPath + "/data/markers/menu.cfg",
-			(int) MenuSize.x, (int) MenuSize.y);
+			(int) MenuSize.x, (int) MenuSize.y);//TODO change this size to put the size of an A5 paper
 	//loadMarkerBoard(sketchPath + "/data/markers/menu2.png",
 	  //(int) MenuSize.x, (int) MenuSize.y);
 	

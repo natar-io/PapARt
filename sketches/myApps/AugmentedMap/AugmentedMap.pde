@@ -11,14 +11,22 @@ import toxi.geom.*;
 import java.util.Vector;
 
 
+final int TANGIBLE = 0;
+final int TACTILE = 1;
+final int MOVEMENT = 2;
+
 PVector boardSize = new PVector(297, 210);   //  21 * 29.7 cm
 PVector A4BoardSize = new PVector(297, 210);   //  21 * 29.7 cm
 PVector MenuSize = new PVector(130, 130);
+PVector ZoomSize = new PVector(120, 210);
 float boardResolution = 3;  // 3 pixels / 
 
 // Frame location. 
 int framePosX = 0;
 int framePosY = 200;
+
+int physicalZoomLevel;
+int zoomType = TANGIBLE;
 
 boolean useProjector;
 
@@ -39,6 +47,7 @@ public void init() {
 
 
 void setup(){
+    physicalZoomLevel = 12;
     useProjector = true;
     int frameSizeX = 1280;
     int frameSizeY = 800;
