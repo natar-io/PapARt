@@ -121,7 +121,7 @@ public class Utils {
             return sketchbook + "/libraries/" + LibraryName;
         }
 
-        return getLibrariesFolder() + LibraryName;
+        return getLibrariesFolder() + "/" +LibraryName;
     }
 
     static public PVector mult(PMatrix3D mat, PVector source, PVector target) {
