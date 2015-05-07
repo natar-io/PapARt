@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calibration>
+  <Plane>
+    <Position x="0.6666667" y="0.33333334" z="0.0"/>
+    <Normal x="-0.0" y="0.0" z="-1.0"/>
+    <Height Height="15.0"/>
+  </Plane>
+  <Homography m00="1.0" m01="2.0" m02="3.0" m03="4.0" m10="5.0" m11="6.0" m12="7.0" m13="8.0" m20="9.0" m21="10.0" m22="11.0" m23="12.0" m30="13.0" m31="14.0" m32="15.0" m33="16.0"/>
+</Calibration>
