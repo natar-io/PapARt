@@ -328,7 +328,7 @@ public class KinectTouchInput extends TouchInput {
             paperScreenCoord = new PVector();
             PVector pKinectP = new PVector(pKinect.x, pKinect.y, pKinect.z);
 
-            PMatrix3D transfo = screen.getPosition().get();
+            PMatrix3D transfo = screen.getLocation().get();
             transfo.invert();
             transfo.mult(pKinectP, paperScreenCoord);
 

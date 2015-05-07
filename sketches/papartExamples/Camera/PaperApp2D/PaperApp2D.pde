@@ -47,13 +47,17 @@ void keyPressed() {
 
 
     if(key == 's'){
-	papart.setTablePosition(app);
+
+	app.saveLocationTo("loc.xml");
+
+	//	papart.setTablePosition(app);
 	println("Position saved");
     }
 
     // go to table
     if(key == 'l'){
-	papart.moveToTablePosition(app);
+	app.loadLocationFrom("loc.xml");
+	//	papart.moveToTablePosition(app);
     }
 
     // Move again

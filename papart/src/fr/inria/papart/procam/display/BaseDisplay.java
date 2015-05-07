@@ -105,7 +105,7 @@ public class BaseDisplay {
 
     public PGraphicsOpenGL beginDrawOnScreen(Screen screen) {
         // Get the markerboard viewed by the camera
-        PMatrix3D screenPos = screen.getPosition();
+        PMatrix3D screenPos = screen.getLocation();
         this.beginDraw();
         this.graphics.applyMatrix(screenPos);
         return this.graphics;
@@ -149,7 +149,7 @@ public class BaseDisplay {
                 continue;
             }
             this.graphics.pushMatrix();
-            this.graphics.applyMatrix(screen.getPosition());
+            this.graphics.applyMatrix(screen.getLocation());
             this.graphics.image(screen.getTexture(), 0, 0, screen.getSize().x, screen.getSize().y);
             this.graphics.popMatrix();
         }
@@ -195,7 +195,7 @@ public class BaseDisplay {
 
     public PVector projectPointer(Screen screen, float x, float y) {
 
-        PMatrix3D screenMat = screen.getPosition().get();
+        PMatrix3D screenMat = screen.getLocation().get();
         screenMat.invert();
         PVector transformed = new PVector();
         screenMat.mult(new PVector(x * drawingSizeX, y * drawingSizeY), transformed);
