@@ -85,7 +85,7 @@ void initCameraUI(){
 	.addItem("OpenKinect", 2)
 	.addItem("FlyCapture", 3)
 	.setColorLabel(color(255))
-	.activate(0)
+	.activate(cc.getCameraType().ordinal())
 	;
 
     cameraIdText = cp5.addTextfield("CameraId")

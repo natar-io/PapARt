@@ -31,11 +31,9 @@ PImage backgroundImage;
 void setup(){
 
 
-    cc = new ComputerConfiguration();
-
     // Here camera, test it with defaultCameraTest
-    cc.setCameraName("1");
-    cc.setCameraType(Camera.Type.OPENCV);
+    // cc.setCameraName("1");
+    // cc.setCameraType(Camera.Type.OPENCV);
     
     // Camera.Type.OPENCV, "2"    
     // Camera.Type.PROCESSING, "/dev/video1"
@@ -44,17 +42,20 @@ void setup(){
     // TODO: sesizable & movable. Save Size and location !
 
     // Here Screen resolution
-    cc.setProjectionScreenWidth(1280);
-    cc.setProjectionScreenHeight(800);
+    // cc.setProjectionScreenWidth(1280);
+    // cc.setProjectionScreenHeight(800);
     
     // Screen offset, where is the projection screen, relative to the main screen. 
-    cc.setProjectionScreenOffsetX(0);
-    cc.setProjectionScreenOffsetY(200);    
+    // cc.setProjectionScreenOffsetX(0);
+    // cc.setProjectionScreenOffsetY(200);    
 
 
     // Do not modify anything further. 
     size(800, 600, P3D);
-    
+
+    cc = new ComputerConfiguration();
+    cc.loadFrom(this, Papart.computerConfig);
+    println("Load from  " + Papart.computerConfig);
 
     initUI();
     backgroundImage = loadImage("data/background.png");
@@ -125,7 +126,6 @@ void draw(){
 
 
 
-
 void keyPressed() {
 
   // Placed here, bug if it is placed in setup().
@@ -138,7 +138,14 @@ void keyPressed() {
 }
 
 void save(){
-    cc.setCameraName(cameraIdText.getText());
+    try{
+	cc.setCameraName(cameraIdText.getText());
+	cc.setProjectionScreenOffsetX(Integer.parseInt(posXText.getText()));
+	cc.setProjectionScreenOffsetY(Integer.parseInt(posYText.getText()));
+    }catch(java.lang.NumberFormatException e){
+	println("Invalid Position");
+    }
+
     cc.saveTo(this, Papart.computerConfig);
     
     println("Saved to " + Papart.computerConfig);

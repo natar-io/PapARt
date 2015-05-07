@@ -6,7 +6,7 @@ int ellipseSize = 40;
 void setup(){
     Papart.projection2D(this);
 
-    background(0);
+    background(100);
     float step = 0.5f;
     //    nbPoints = (int) ((1 + 1f / step) * (1 + 1f / step));
     
