@@ -127,14 +127,9 @@
             <version>2.1.4</version>
         </dependency>
         <dependency>
-            <groupId>fr.inria</groupId>
-            <artifactId>processingTUIO</artifactId>
-            <version>0.5</version>
-        </dependency>
-        <dependency>
-            <groupId>processing</groupId>
-            <artifactId>libTUIO</artifactId>
-            <version>1.1</version>
+            <groupId>fr.inria.potioc</groupId>
+            <artifactId>ProcessingTUIO</artifactId>
+            <version>1.1.0</version>
         </dependency>
         <dependency>
             <groupId>com.googlecode.gstreamer-java</groupId>
