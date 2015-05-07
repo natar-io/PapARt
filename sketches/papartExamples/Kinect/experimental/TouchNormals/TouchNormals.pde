@@ -8,26 +8,11 @@ import toxi.geom.*;
 import peasy.*;
 
 
-int framePosX = 0;
-int framePosY = 200;
-
-// Undecorated frame 
-public void init() {
-  frame.removeNotify(); 
-  frame.setUndecorated(true); 
-  frame.addNotify(); 
-  super.init();
-}
-
 KinectTouchInput touchInput;
 
-int frameSizeX = 1280;
-int frameSizeY = 800;
 
 void setup(){
-    size(frameSizeX, frameSizeY, OPENGL);
-
-    Papart papart = new Papart(this);
+    Papart papart = Papart.projection2D(this);
 
     // arguments are 2D and 3D precision.
     papart.loadTouchInputKinectOnly(2, 2);
@@ -53,8 +38,8 @@ void draw(){
     // 	} else {
     // 	    fill(0, 1, 0);
     // 	}
-    // 	ellipse(pos.x * frameSizeX,
-    // 		pos.y * frameSizeY, 5, 5);
+    // 	ellipse(pos.x * width,
+    // 		pos.y * height, 5, 5);
     // }
 
 
@@ -68,15 +53,15 @@ void draw(){
     // 	    noStroke();
     // 	    colorMode(RGB, 1.0);
     // 	    setColor(dde.pointColor, 255);
-    // 	    ellipse(v.x * frameSizeX,
-    // 		    v.y * frameSizeY,
+    // 	    ellipse(v.x * width,
+    // 		    v.y * height,
     // 		    10, 10);
     // 	}
 
     // 	fill(50, 50, 255);
     // 	PVector pos = tp.getPosition();
-    // 	ellipse(pos.x * frameSizeX,
-    // 		pos.y * frameSizeY, 20, 20);
+    // 	ellipse(pos.x * width,
+    // 		pos.y * height, 20, 20);
     // }
 	
     fill(255, 0, 0);
@@ -91,14 +76,14 @@ void draw(){
     	    //	    setColor(dde.pointColor, 100);
 
 	    setNormalColor(dde.normal);
-    	    ellipse(v.x * frameSizeX,
-    		    v.y * frameSizeY,
+    	    ellipse(v.x * width,
+    		    v.y * height,
     		    4, 4);
     	}
 
     	PVector pos = tp.getPosition();
-    	ellipse(pos.x * frameSizeX,
-    		pos.y * frameSizeY, 40, 40);
+    	ellipse(pos.x * width,
+    		pos.y * height, 40, 40);
     }
 
 
@@ -122,12 +107,6 @@ void setColor(int rgb, float intens){
     fill(r, g, b, intens);
 }
 
-void keyPressed() {
-
-  // Placed here, bug if it is placed in setup().
-  if(key == ' ')
-    frame.setLocation(framePosX, framePosY);
-}
 
 
 

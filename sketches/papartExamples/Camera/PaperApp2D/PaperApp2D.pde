@@ -5,72 +5,36 @@ import org.reflections.*;
 import TUIO.*;
 import toxi.geom.*;
 
+import processing.video.*;
 
-int framePosX = 0;
-int framePosY = 0;
-int frameSizeX = 640;
-int frameSizeY = 480;
-boolean useProjector = false;
-
-
-// Undecorated frame 
-public void init() {
-  frame.removeNotify(); 
-  frame.setUndecorated(true); 
-  frame.addNotify(); 
-  super.init();
-}
+boolean useProjector = true;
 
 Papart papart;
 
-
 public void setup() {
 
-  if (useProjector) {
-    size(frameSizeX, frameSizeY, OPENGL);
-  } else {
-    size(640, 480, OPENGL);
-  }
+    if(useProjector)
+	papart = Papart.projection(this);
+    else 
+	papart = Papart.seeThrough(this);
 
-  if (frame != null) {
-    frame.setResizable(true);
-  }
-
-
-  papart = new Papart(this);
-
-  String cameraNo = "1";
-  if (useProjector) {
-    papart.initProjectorCamera(cameraNo, Camera.Type.OPENCV);
-  } else {
-    papart.initCamera(cameraNo, Camera.Type.OPENCV);
-  }
-  papart.loadSketches();
-  papart.startTracking();
-  frameRate(200);
+    papart.loadSketches();
+    papart.startTracking();
 }
 
 void draw() {
 }
 
 
-boolean manual = true;
-
 void keyPressed() {
 
-
     if(key == 's'){
-
 	app.saveLocationTo("loc.xml");
-
-	//	papart.setTablePosition(app);
 	println("Position saved");
     }
 
-    // go to table
     if(key == 'l'){
 	app.loadLocationFrom("loc.xml");
-	//	papart.moveToTablePosition(app);
     }
 
     // Move again
@@ -78,7 +42,4 @@ void keyPressed() {
 	app.useManualLocation(false);
     }
 
-  // Placed here, bug if it is placed in setup().
-  if (key == ' ')
-    frame.setLocation(framePosX, framePosY);
 }

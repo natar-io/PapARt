@@ -24,7 +24,8 @@ public void setup() {
     }
     
 
-    camera = CameraFactory.createCamera(Camera.Type.OPENCV, "2");    
+    // camera = CameraFactory.createCamera(Camera.Type.OPEN_KINECT, "0");    
+    // camera = CameraFactory.createCamera(Camera.Type.OPENCV, "1");    
     // camera = CameraFactory.createCamera(Camera.Type.PROCESSING, "/dev/video1");
     // camera = CameraFactory.createCamera(Camera.Type.FLY_CAPTURE, 0);
 

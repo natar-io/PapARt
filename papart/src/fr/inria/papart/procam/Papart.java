@@ -19,6 +19,7 @@
 package fr.inria.papart.procam;
 
 import fr.inria.papart.calibration.HomographyCalibration;
+import fr.inria.papart.calibration.ComputerConfiguration;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
@@ -35,6 +36,7 @@ import java.lang.reflect.Constructor;
 import java.util.Set;
 import org.reflections.Reflections;
 import processing.core.PApplet;
+import processing.core.PConstants;
 import processing.core.PFont;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
@@ -52,6 +54,7 @@ public class Papart {
     public static String kinectRGBCalib = folder + "/data/calibration/calibration-kinect-RGB.yaml";
     public static String kinectStereoCalib = folder + "/data/calibration/calibration-kinect-Stereo.yaml";
 
+    public static String computerConfig = folder + "/data/calibration/ComputerConfiguration.xml";
     public static String tablePosition = folder + "/data/calibration/tablePosition.xml";
     public static String planeCalib = folder + "/data/calibration/PlaneCalibration.xml";
     public static String homographyCalib = folder + "/data/calibration/HomographyCalibration.xml";
@@ -82,18 +85,28 @@ public class Papart {
     private TouchInput touchInput;
     private PVector frameSize;
     private CameraOpenKinect cameraOpenKinect;
+    private boolean isWithoutCamera = false;
 
+    private ComputerConfiguration computerConfiguration;
     // TODO: find what to do with these...
 //    private final int depthFormat = freenect.FREENECT_DEPTH_10BIT;
 //    private final int kinectFormat = Kinect.KINECT_10BIT;
     private final int depthFormat = freenect.FREENECT_DEPTH_MM;
     private final int kinectFormat = Kinect.KINECT_MM;
 
+    /**
+     * Create the main PapARt object, look at the examples for how to use it.
+     *
+     * @param applet
+     */
     public Papart(Object applet) {
         this.displayInitialized = false;
         this.cameraInitialized = false;
         this.touchInitialized = false;
         this.applet = (PApplet) applet;
+
+        computerConfiguration = new ComputerConfiguration();
+        computerConfiguration.loadFrom(this.applet, computerConfig);
 
         this.appletClass = applet.getClass();
         PFont font = this.applet.loadFont(defaultFont);
@@ -105,28 +118,169 @@ public class Papart {
         }
     }
 
+    /**
+     * Start a projection with a procam, it replaces size().
+     *
+     * @param applet
+     * @return
+     */
+    public static Papart projection(PApplet applet) {
+        ComputerConfiguration computerConfiguration = new ComputerConfiguration();
+        computerConfiguration.loadFrom(applet, computerConfig);
+
+        removeFrameBorder(applet);
+        applet.size(computerConfiguration.getProjectionScreenWidth(),
+                computerConfiguration.getProjectionScreenHeight(),
+                PConstants.OPENGL);
+
+        Papart papart = new Papart(applet);
+        papart.registerForWindowLocation();
+        papart.initProjectorCamera();
+
+        return papart;
+    }
+
+    /**
+     * Start a see through AR application, it replaces size().
+     *
+     * @param applet
+     * @return
+     */
+    public static Papart seeThrough(PApplet applet) {
+        ComputerConfiguration computerConfiguration = new ComputerConfiguration();
+        computerConfiguration.loadFrom(applet, computerConfig);
+
+        Camera cameraTracking = CameraFactory.createCamera(computerConfiguration.getCameraType(),
+                computerConfiguration.getCameraName());
+        cameraTracking.setParent(applet);
+        cameraTracking.setCalibration(proCamCalib);
+
+        applet.size(cameraTracking.width(),
+                cameraTracking.height(),
+                PConstants.OPENGL);
+
+        Papart papart = new Papart(applet);
+
+        papart.initCamera();
+
+        return papart;
+    }
+
+    /**
+     * Start a 2D projection in screen space, it replaces size() .
+     *
+     * @param applet
+     * @return
+     */
+    public static Papart projection2D(PApplet applet) {
+        ComputerConfiguration computerConfiguration = new ComputerConfiguration();
+        computerConfiguration.loadFrom(applet, computerConfig);
+
+        removeFrameBorder(applet);
+
+        applet.size(computerConfiguration.getProjectionScreenWidth(),
+                computerConfiguration.getProjectionScreenHeight(),
+                PConstants.OPENGL);
+
+        Papart papart = new Papart(applet);
+        papart.registerForWindowLocation();
+
+        return papart;
+    }
+
+    private boolean shouldSetWindowLocation = false;
+
+    private void registerForWindowLocation() {
+        applet.registerMethod("draw", this);
+        this.shouldSetWindowLocation = true;
+    }
+
+    /**
+     * Places the window at the correct location if required, according to the
+     * configuration.
+     *
+     */
+    public static void checkWindowLocation() {
+        Papart papart = getPapart();
+        if (papart != null && papart.shouldSetWindowLocation) {
+            papart.defaultFrameLocation();
+            papart.shouldSetWindowLocation = false;
+        }
+    }
+
+    /**
+     * Does not draw anything, it used only to check the window location.
+     */
+    public void draw() {
+        checkWindowLocation();
+        applet.unregisterMethod("draw", this);
+    }
+
+    /**
+     * Set the frame to default location.
+     */
+    public void defaultFrameLocation() {
+        this.applet.frame.setLocation(computerConfiguration.getProjectionScreenOffsetX(),
+                computerConfiguration.getProjectionScreenOffsetY());
+    }
+
+    protected static void removeFrameBorder(PApplet applet) {
+        if (!applet.isGL()) {
+            applet.frame.removeNotify();
+            applet.frame.setUndecorated(true);
+            applet.frame.addNotify();
+        }
+    }
+
+    /**
+     * Get the Papart singleton.
+     *
+     * @return
+     */
     public static Papart getPapart() {
         return Papart.singleton;
     }
 
+    /**
+     * Save the position of a paperScreen as the default table location.
+     *
+     * @param paperScreen
+     */
     public void setTablePosition(PaperScreen paperScreen) {
         HomographyCalibration.saveMatTo(applet, paperScreen.getLocation(), tablePosition);
     }
 
+    /**
+     * The location of the table, warning it must be set once by
+     * setTablePosition.
+     *
+     * @return
+     */
     public PMatrix3D getTablePosition() {
         return HomographyCalibration.getMatFrom(applet, tablePosition);
     }
 
+    /**
+     * Move a PaperScreen to the table location. After this, the paperScreen
+     * location is not updated anymore. To activate the tracking again use :
+     * paperScreen.useManualLocation(false); You can move the paperScreen
+     * according to its current location with the paperScreen.setLocation()
+     * methods.
+     *
+     * @param paperScreen
+     */
     public void moveToTablePosition(PaperScreen paperScreen) {
         paperScreen.useManualLocation(true);
         paperScreen.screen.setMainLocation(HomographyCalibration.getMatFrom(applet, tablePosition));
     }
 
-    private boolean isWithoutCamera = false;
-
     public void initNoCamera(int quality) {
         this.isWithoutCamera = true;
         initNoCameraDisplay(quality);
+    }
+
+    public void initProjectorCamera() {
+        initProjectorCamera(computerConfiguration.getCameraName(), computerConfiguration.getCameraType(), 1);
     }
 
     public void initProjectorCamera(String cameraNo, Camera.Type cameraType) {
@@ -169,6 +323,15 @@ public class Papart {
         initARDisplay(quality);
 
         checkInitialization();
+    }
+
+    /**
+     * Initialize the default camera for object tracking.
+     *
+     * @see initCamera(String, int, float)
+     */
+    public void initCamera() {
+        initCamera(computerConfiguration.getCameraName(), computerConfiguration.getCameraType(), 1);
     }
 
     /**
@@ -378,6 +541,23 @@ public class Papart {
     public BaseDisplay getDisplay() {
         assert (displayInitialized);
         return this.display;
+    }
+
+    public void setDisplay(BaseDisplay display) {
+        // todo check this . 
+        displayInitialized = true;
+        this.display = display;
+    }
+
+    public void setTrackingCamera(Camera camera) {
+        this.cameraTracking = camera;
+        if (camera == null) {
+            setNoTrackingCamera();
+        }
+    }
+    
+    public void setNoTrackingCamera(){
+        this.isWithoutCamera = true;
     }
 
     public ProjectorDisplay getProjectorDisplay() {

@@ -1,39 +1,21 @@
- import fr.inria.papart.procam.*;
+import fr.inria.papart.procam.*;
 import fr.inria.papart.tools.*;
 import fr.inria.papart.depthcam.*;
 import fr.inria.papart.multitouch.*;
 
 import org.bytedeco.javacv.*;
 import toxi.geom.*;
-import peasy.*;
 
-
-int framePosX = 0;
-int framePosY = 200;
-
-// Undecorated frame 
-public void init() {
-  frame.removeNotify(); 
-  frame.setUndecorated(true); 
-  frame.addNotify(); 
-  super.init();
-}
 
 KinectTouchInput touchInput;
 
-int frameSizeX = 1280;
-int frameSizeY = 800;
-
 void setup(){
-    size(frameSizeX, frameSizeY, OPENGL);
-
-    Papart papart = new Papart(this);
+    Papart papart = Papart.projection2D(this);
 
     // arguments are 2D and 3D precision.
     papart.loadTouchInputKinectOnly(4, 0);
     touchInput = (KinectTouchInput) papart.getTouchInput();
 }
-
 
 void draw(){
 
@@ -47,8 +29,8 @@ void draw(){
     for(TouchPoint tp : touchs2D){
 	fill(50, 50, 255);
 	PVector pos = tp.getPosition();
-	ellipse(pos.x * frameSizeX,
-		pos.y * frameSizeY, 20, 20);
+	ellipse(pos.x * width,
+		pos.y * height, 20, 20);
     }
 	
     fill(255, 0, 0);
@@ -56,16 +38,9 @@ void draw(){
     for(TouchPoint tp : touchs3D){
 
 	PVector pos = tp.getPosition();
-	ellipse(pos.x * frameSizeX,
-		pos.y * frameSizeY, 40, 40);
+	ellipse(pos.x * width,
+		pos.y * height, 40, 40);
     }
-}
-
-void keyPressed() {
-
-  // Placed here, bug if it is placed in setup().
-  if(key == ' ')
-    frame.setLocation(framePosX, framePosY);
 }
 
 

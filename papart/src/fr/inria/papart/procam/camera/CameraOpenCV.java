@@ -31,7 +31,7 @@ import processing.core.PImage;
  */
 public class CameraOpenCV extends Camera {
 
-    private FrameGrabber grabber;
+    private OpenCVFrameGrabber grabber;
 
     protected CameraOpenCV(int cameraNo) {
         this.systemNumber = cameraNo;
@@ -94,9 +94,11 @@ public class CameraOpenCV extends Camera {
         this.setClosing();
         if (grabber != null) {
             try {
-                this.stopThread();
                 grabber.stop();
+                System.out.println("Stopping grabber");
+               
             } catch (Exception e) {
+                System.out.println("Impossible to close " + e);
             }
         }
     }

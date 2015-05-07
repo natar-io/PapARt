@@ -309,10 +309,10 @@ public abstract class Camera implements PConstants {
         if (camImage == null) {
 
             if (this.isPixelFormatGray()) {
-                camImage = new CamImageGray(parent, currentImage.width(), currentImage.height());
+                camImage = new CamImageGray(parent, width(), height());
             }
             if (this.isPixelFormatColor()) {
-                camImage = new CamImageColor(parent, currentImage.width(), currentImage.height());
+                camImage = new CamImageColor(parent, width(), height());
             }
         }
     }

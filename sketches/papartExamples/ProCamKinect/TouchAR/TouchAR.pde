@@ -2,58 +2,50 @@ import fr.inria.papart.procam.*;
 import fr.inria.papart.multitouch.*;
 import org.bytedeco.javacpp.*;
 import org.reflections.*;
+import processing.video.*;
 import TUIO.*;
 import toxi.geom.*;
+import fr.inria.papart.depthcam.*;
+import fr.inria.papart.procam.display.*;
 
-// Frame location. 
-int framePosX = 0;
-int framePosY = 200;
-int frameSizeX = 1280;
-int frameSizeY = 800;
 
-boolean useProjector;
- 
-// Undecorated frame 
-public void init() {
-  frame.removeNotify(); 
-  frame.setUndecorated(true); 
-  frame.addNotify(); 
-  super.init();
-}
+boolean useProjector = true;
+float renderQuality = 1.5f;
+Papart papart;
 
 void setup(){
-    useProjector = true;
-
-    if(!useProjector) {
-	frameSizeX = 640 * 2;
-	frameSizeY = 480 * 2;
-    }
-
-    size(frameSizeX, frameSizeY, OPENGL);
-    Papart papart = new Papart(this);
 
     if(useProjector){
-	papart.initProjectorCamera("1", Camera.Type.OPENCV);
-	papart.loadTouchInput(2, 5);
+	papart = Papart.projection(this);
+	papart.loadTouchInput(1, 1);
     } else {
-	papart.initKinectCamera(2);
-	papart.loadTouchInputKinectOnly(2, 5);
+
+	size((int) (Kinect.WIDTH * renderQuality),
+	     (int) (Kinect.HEIGHT * renderQuality),
+	     OPENGL);
+
+	papart = new Papart(this);
+
+	papart.initKinectCamera(renderQuality);
+	papart.loadTouchInputKinectOnly(1, 1);
+	BaseDisplay display = papart.getDisplay();
+	display.setDrawingSize(width, height);
     }
 
     papart.loadSketches();
     papart.startTracking();
 }
 
-ProjectiveDeviceP pdp;
 
 void draw(){
-
 }
 
+boolean test = false;
 
 void keyPressed() {
-
-  // Placed here, bug if it is placed in setup().
-  if(key == ' ')
-    frame.setLocation(framePosX, framePosY);
+    if(key == 't')
+	test = !test;
 }
+
+
+

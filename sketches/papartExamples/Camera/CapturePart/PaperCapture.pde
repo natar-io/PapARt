@@ -6,10 +6,7 @@ import TUIO.*;
 import toxi.geom.*;
 
 public void setup(){
-    size(640, 480, OPENGL);
-    Papart papart = new Papart(this);
-
-    papart.initCamera("0", Camera.Type.OPENCV);
+    Papart papart = Papart.seeThrough(this);
     papart.loadSketches();
     papart.startTracking();
 }
