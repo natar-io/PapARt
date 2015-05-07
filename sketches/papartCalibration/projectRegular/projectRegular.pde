@@ -1,31 +1,12 @@
-
-
-// Undecorated frame 
-public void init() {
-    frame.removeNotify(); 
-    frame.setUndecorated(true); 
-    frame.addNotify(); 
-    super.init();
-}
-
-
-
-int framePosX = 0;
-int framePosY = 200;
-int frameSizeX = 1920;
-int frameSizeY = 1080;
-
-void setup(){
-    size(frameSizeX, frameSizeY, OPENGL);
-
-    background(0);
-}
-
+import fr.inria.papart.procam.*;
+import org.bytedeco.javacpp.*;
 
 int ellipseSize = 40;
 
-void draw(){
+void setup(){
+    Papart.projection2D(this);
 
+    background(0);
     float step = 0.5f;
     //    nbPoints = (int) ((1 + 1f / step) * (1 + 1f / step));
     
@@ -36,15 +17,13 @@ void draw(){
 	    ellipse(i * width, j * height, ellipseSize, ellipseSize);
 	}
     }
-
+    noLoop();
 }
 
 
-void keyPressed() {
+void draw(){
 
-    // Placed here, bug if it is placed in setup().
-    if(key == ' ')
-	frame.setLocation(framePosX, framePosY);
+
 }
 
 

@@ -12,8 +12,8 @@ import fr.inria.guimodes.*;
 Papart papart;
 
 // Frame location. 
-int framePosX = 1280;
-int framePosY = 0;
+int framePosX = 0;
+int framePosY = 200;
 
 boolean useProjector;
 boolean noCameraMode = false;

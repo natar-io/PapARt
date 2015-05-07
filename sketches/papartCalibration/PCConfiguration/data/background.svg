@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="800"
+   height="600"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.4 r9939"
+   sodipodi:docname="background.svg"
+   inkscape:export-filename="/home/jiii/sketchbook/papartCalibration/PCConfiguration/data/background.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
+  <defs
+     id="defs4">
+    <filter
+       id="filter4057"
+       style="color-interpolation-filters:sRGB;"
+       inkscape:label="Drop Shadow">
+      <feFlood
+         id="feFlood4059"
+         flood-opacity="0.7"
+         flood-color="rgb(0,0,0)"
+         result="flood" />
+      <feComposite
+         id="feComposite4061"
+         in2="SourceGraphic"
+         in="flood"
+         operator="in"
+         result="composite1" />
+      <feGaussianBlur
+         id="feGaussianBlur4063"
+         in="composite"
+         stdDeviation="1.1"
+         result="blur" />
+      <feOffset
+         id="feOffset4065"
+         dx="1.8"
+         dy="2"
+         result="offset" />
+      <feComposite
+         id="feComposite4067"
+         in2="offset"
+         in="SourceGraphic"
+         operator="over"
+         result="composite2" />
+    </filter>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.979899"
+     inkscape:cx="526.66469"
+     inkscape:cy="455.69324"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:window-width="1350"
+     inkscape:window-height="920"
+     inkscape:window-x="113"
+     inkscape:window-y="114"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Calque 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(41.714298,-270.86218)">
+    <rect
+       style="fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none"
+       id="rect3977"
+       width="800"
+       height="600"
+       x="-41.714298"
+       y="270.86218" />
+    <rect
+       style="fill:#737373;fill-opacity:1;fill-rule:nonzero;stroke:none"
+       id="rect3027"
+       width="737.37048"
+       height="570.70563"
+       x="-13.430027"
+       y="277.93326" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:#86abf2;stroke-width:2.93564153;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="rect4018"
+       width="99.36438"
+       height="31.689419"
+       x="23.156179"
+       y="294.77502"
+       ry="3.9311936" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:#86abf2;stroke-width:2.93564153;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="rect4018-7"
+       width="99.36438"
+       height="31.689419"
+       x="25.781208"
+       y="542.88031"
+       ry="3.9311936" />
+    <rect
+       style="fill:#373737;fill-opacity:1;fill-rule:nonzero;stroke:#86abf2;stroke-width:3.10195017;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       id="rect3975-1"
+       width="777.71539"
+       height="227.18236"
+       x="-27.521183"
+       y="573.38263" />
+    <rect
+       style="fill:#373737;fill-opacity:1;fill-rule:nonzero;stroke:#86abf2;stroke-width:2.80017614;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       id="rect3975"
+       width="778.01721"
+       height="185.05772"
+       x="-27.67207"
+       y="324.26971" />
+    <text
+       xml:space="preserve"
+       style="font-size:11px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Serif;-inkscape-font-specification:Serif"
+       x="70.273033"
+       y="342.17639"
+       id="text2998"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3000"
+         x="70.273033"
+         y="342.17639"
+         style="font-size:13px;fill:#ffffff">Pick the projector's screen</tspan></text>
+    <rect
+       style="fill:#333333;fill-opacity:1;fill-rule:nonzero;stroke:#bcbcbc;stroke-width:3.25540042;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       id="rect3002"
+       width="296.7446"
+       height="126.7446"
+       x="7.8378568"
+       y="357.48987" />
+    <rect
+       style="fill:#333333;fill-opacity:1;fill-rule:nonzero;stroke:#bcbcbc;stroke-width:3.32233977000000014;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       id="rect3004"
+       width="130.99748"
+       height="126.67766"
+       x="387.69763"
+       y="357.52335" />
+    <text
+       xml:space="preserve"
+       style="font-size:11px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Serif;-inkscape-font-specification:Serif"
+       x="409.15634"
+       y="343.52844"
+       id="text2998-1"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3000-5"
+         x="409.15634"
+         y="343.52844"
+         style="font-size:13px;fill:#ffffff">Screen offset </tspan></text>
+    <rect
+       style="fill:#333333;fill-opacity:1;fill-rule:nonzero;stroke:#bcbcbc;stroke-width:3.56429361999999994;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       id="rect3029"
+       width="159.44952"
+       height="153.786"
+       x="7.9923038"
+       y="622.99908" />
+    <text
+       xml:space="preserve"
+       style="font-size:11px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Serif;-inkscape-font-specification:Serif"
+       x="39.246586"
+       y="562.00317"
+       id="text3199-1"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3201-2"
+         x="39.246586"
+         y="562.00317"
+         style="font-size:22px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Linux Biolinum O;-inkscape-font-specification:Linux Biolinum O">Camera</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:11px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Serif;-inkscape-font-specification:Serif"
+       x="6.3371096"
+       y="599.88574"
+       id="text2998-1-3"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3000-5-8"
+         x="6.3371096"
+         y="599.88574"
+         style="font-size:13px;fill:#ffffff">Video input type</tspan></text>
+    <rect
+       style="fill:#333333;fill-opacity:1;fill-rule:nonzero;stroke:#bcbcbc;stroke-width:2.68587828;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       id="rect3029-1"
+       width="215.32794"
+       height="64.664413"
+       x="270.69321"
+       y="667.55988" />
+    <text
+       xml:space="preserve"
+       style="font-size:11px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Serif;-inkscape-font-specification:Serif"
+       x="259.62109"
+       y="649.97778"
+       id="text2998-1-3-1"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3000-5-8-8"
+         x="259.62109"
+         y="649.97778"
+         style="font-size:13px;fill:#ffffff">Camera description, number or file. </tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:11px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Serif;-inkscape-font-specification:Serif"
+       x="567.99133"
+       y="676.28516"
+       id="text2998-1-4-1"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3000-5-6-7"
+         x="567.99133"
+         y="676.28516"
+         style="font-size:13px;fill:#ffffff">Test the camera</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:11px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Serif;-inkscape-font-specification:Serif"
+       x="334.57907"
+       y="840.89099"
+       id="text2998-1-4-1-3"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3000-5-6-7-3"
+         x="334.57907"
+         y="840.89099"
+         style="font-size:20px;fill:#ffffff">Save</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:11px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Serif;-inkscape-font-specification:Serif"
+       x="30.607136"
+       y="313.89789"
+       id="text3199"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3201"
+         x="30.607136"
+         y="313.89789"
+         style="font-size:22px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Linux Biolinum O;-inkscape-font-specification:Linux Biolinum O">Projector</tspan></text>
+    <rect
+       style="fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:#86abf2;stroke-width:2.96568202999999997;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;filter:url(#filter4057)"
+       id="rect3973"
+       width="139.18283"
+       height="33.369354"
+       x="561.32959"
+       y="406.17487"
+       ry="10.810536" />
+    <text
+       xml:space="preserve"
+       style="font-size:11px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Serif;-inkscape-font-specification:Serif"
+       x="569.12659"
+       y="426.35394"
+       id="text2998-1-4"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3000-5-6"
+         x="569.12659"
+         y="426.35394"
+         style="font-size:13px;fill:#000000;fill-opacity:1">Test the projection</tspan></text>
+  </g>
+</svg>
