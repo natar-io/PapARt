@@ -191,13 +191,13 @@ public class Screen {
       }
     
     /**
-     * Get the overall transform (after tracking and second transform)
+     * Get a copy of the overall transform (after tracking and second transform).
      *
      * @return
      */
     public PMatrix3D getLocation() {
         if (secondTransformation == null) {
-            return transformation;
+            return transformation.get();
         } else {
             PMatrix3D combinedTransfos = transformation.get();
             combinedTransfos.apply(secondTransformation);
@@ -219,7 +219,7 @@ public class Screen {
     public void computeScreenPosTransform() {
 
         ///////////////////// PLANE COMPUTATION  //////////////////
-        PMatrix3D mat = this.getLocation().get();
+        PMatrix3D mat = this.getLocation();
 
         paperPosCorners3D[0] = new PVector(mat.m03, mat.m13, mat.m23);
         mat.translate(size.x, 0, 0);
@@ -278,7 +278,7 @@ public class Screen {
             this.isOpenGL = true;
             // Transformation  Camera -> Marker
 
-            initPosM = this.getLocation().get();
+            initPosM = this.getLocation();
             // No translation mode
 //            initPosM.m03 = 0;
 //            initPosM.m13 = 0;
@@ -330,7 +330,7 @@ public class Screen {
 
         newPos.mult(virtualPos, virtualPos);
 
-        PMatrix3D rotationPaper = this.getLocation().get();
+        PMatrix3D rotationPaper = this.getLocation();
         rotationPaper.invert();
         rotationPaper.m03 = 0; // newPos.m03;
         rotationPaper.m13 = 0; // newPos.m13;

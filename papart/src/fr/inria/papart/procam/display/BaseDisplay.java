@@ -195,7 +195,7 @@ public class BaseDisplay {
 
     public PVector projectPointer(Screen screen, float x, float y) {
 
-        PMatrix3D screenMat = screen.getLocation().get();
+        PMatrix3D screenMat = screen.getLocation();
         screenMat.invert();
         PVector transformed = new PVector();
         screenMat.mult(new PVector(x * drawingSizeX, y * drawingSizeY), transformed);
