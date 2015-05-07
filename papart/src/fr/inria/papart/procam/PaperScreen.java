@@ -228,10 +228,13 @@ public class PaperScreen {
             init();
         }
         assert (isInitialized);
-        if (!this.isWithoutCamera && !useManualLocation) {
-            screen.updatePos(cameraTracking, markerBoard);
-            checkCorners();
+
+        if (this.isWithoutCamera || useManualLocation) {
+            return;
         }
+
+        screen.updatePos(cameraTracking, markerBoard);
+        checkCorners();
     }
 
     public void useManualLocation(boolean manual) {
