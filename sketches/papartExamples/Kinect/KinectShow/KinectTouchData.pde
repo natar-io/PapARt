@@ -1,8 +1,9 @@
 import fr.inria.papart.depthcam.DepthData;
 import java.util.ArrayList;
 import toxi.geom.Vec3D;
-import fr.inria.papart.depthcam.*;
-import fr.inria.papart.procam.display.*;
+
+PVector boardSize = new PVector(297, 210);   //  21 * 29.7 cm
+float boardResolution = 3;  // 3 pixels / mm
 
 
 public class MyApp extends PaperTouchScreen {
@@ -17,8 +18,6 @@ public class MyApp extends PaperTouchScreen {
 	clear();
 	noStroke();
 
-	//	ArrayList<DepthPoint> points = ((KinectTouchInput) touchInput).projectDepthData((ARDisplay )display, screen);
-	//ArrayList<DepthPoint> points = ((KinectTouchInput) touchInput).projectDepthData2D((ARDisplay )display, screen);
 	ArrayList<DepthPoint> points = ((KinectTouchInput) touchInput).projectDepthData3D((ARDisplay )display, screen);
 
 

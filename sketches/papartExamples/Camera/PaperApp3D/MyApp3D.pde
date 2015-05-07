@@ -1,5 +1,3 @@
-import fr.inria.papart.exceptions.BoardNotDetectedException;
-
 public class MyApp  extends PaperScreen {
 
     PShape rocketShape;

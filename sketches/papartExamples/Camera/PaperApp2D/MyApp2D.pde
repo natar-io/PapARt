@@ -1,6 +1,6 @@
 MyApp app;
 
-public class MyApp  extends PaperScreen {
+public class MyApp extends PaperScreen {
 
   void setup() {
     setDrawingSize(297, 210);
