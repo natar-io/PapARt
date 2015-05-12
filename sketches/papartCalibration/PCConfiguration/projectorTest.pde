@@ -9,8 +9,8 @@ secondApplet s;
 void initSecondApplet(){
     
     try{
-	cc.setProjectionScreenOffsetX(Integer.parseInt(posXText.getText()));
-	cc.setProjectionScreenOffsetY(Integer.parseInt(posYText.getText()));
+	screenConfig.setProjectionScreenOffsetX(Integer.parseInt(posXText.getText()));
+	screenConfig.setProjectionScreenOffsetY(Integer.parseInt(posYText.getText()));
 	PFrame f = new PFrame();
 
     }catch(java.lang.NumberFormatException e){
@@ -24,10 +24,10 @@ class PFrame extends Frame {
     
     public PFrame() {
 
-	int posX = cc.getProjectionScreenOffsetX();
-	int posY = cc.getProjectionScreenOffsetY();
-	int width = cc.getProjectionScreenWidth();
-	int height = cc.getProjectionScreenHeight();
+	int posX = screenConfig.getProjectionScreenOffsetX();
+	int posY = screenConfig.getProjectionScreenOffsetY();
+	int width = screenConfig.getProjectionScreenWidth();
+	int height = screenConfig.getProjectionScreenHeight();
 
         setBounds(posX, posY, width, height);
 
@@ -46,8 +46,8 @@ class secondApplet extends PApplet {
 
     public void setup() {
 
-	int width = cc.getProjectionScreenWidth();
-	int height = cc.getProjectionScreenHeight();
+	int width = screenConfig.getProjectionScreenWidth();
+	int height = screenConfig.getProjectionScreenHeight();
 	size(width, height);
 	
 	rect(0, 0, rectSize, rectSize);

@@ -12,6 +12,7 @@ import org.bytedeco.javacpp.opencv_core.*;
 
 import fr.inria.controlP5.*;
 import fr.inria.controlP5.events.*;
+import fr.inria.controlP5.gui.*;
 import fr.inria.controlP5.gui.group.*;
 import fr.inria.controlP5.gui.controllers.*;
 
@@ -23,7 +24,8 @@ import org.bytedeco.javacv.CanvasFrame;
 
 ControlP5 cp5;
 
-ComputerConfiguration cc;
+CameraConfiguration cameraConfig;
+ScreenConfiguration screenConfig;
 
 int nbScreens = 1;
 PImage backgroundImage;
@@ -49,14 +51,15 @@ void setup(){
     // cc.setProjectionScreenOffsetX(0);
     // cc.setProjectionScreenOffsetY(200);    
 
-
     // Do not modify anything further. 
     size(800, 600, P3D);
 
-    cc = new ComputerConfiguration();
-    cc.loadFrom(this, Papart.computerConfig);
-    println("Load from  " + Papart.computerConfig);
+    cameraConfig = new CameraConfiguration();
+    screenConfig = new ScreenConfiguration();
 
+    cameraConfig.loadFrom(this, Papart.cameraConfig);
+    screenConfig.loadFrom(this, Papart.screenConfig);
+    
     initUI();
     backgroundImage = loadImage("data/background.png");
 
@@ -66,7 +69,7 @@ void setup(){
 void testCameraButton(boolean value){
     println("Start pressed " + value);
 
-    cc.setCameraName(cameraIdText.getText());
+    cameraConfig.setCameraName(cameraIdText.getText());
 
     if(value){
 	testCamera();
@@ -82,24 +85,24 @@ void testCameraButton(boolean value){
 void cameraTypeChooser(int value){
     
     if(value == 0)
-	cc.setCameraType(Camera.Type.OPENCV);
+	cameraConfig.setCameraType(Camera.Type.OPENCV);
 
     if(value == 1)
-	cc.setCameraType(Camera.Type.PROCESSING);
+	cameraConfig.setCameraType(Camera.Type.PROCESSING);
 
     if(value == 2)
-	cc.setCameraType(Camera.Type.OPEN_KINECT);
+	cameraConfig.setCameraType(Camera.Type.OPEN_KINECT);
 
     if(value == 3)
-	cc.setCameraType(Camera.Type.FLY_CAPTURE);
+	cameraConfig.setCameraType(Camera.Type.FLY_CAPTURE);
 }
 
 void screenChooserRadio(int value){
 
     if(value > 0 && value < nbScreens){
 	PVector resolution = getScreenResolution(value);
-	cc.setProjectionScreenWidth((int) resolution.x);
-	cc.setProjectionScreenHeight((int) resolution.y);
+	screenConfig.setProjectionScreenWidth((int) resolution.x);
+	screenConfig.setProjectionScreenHeight((int) resolution.y);
 	println("screen chooser radio");
     }
 }
@@ -111,14 +114,20 @@ PVector getScreenResolution(int screenNo){
 
 
 
-// TODO: test default camera in here. 
-
+// TODO: test default camera in here.
+ 
 int rectSize = 30;
 
 void draw(){
     
-    int c = color(0,0,0,1);
-    startCameraButton.setPosition(610, 401).setSize(142,32).setColorForeground(c).setColorBackground(c);
+
+    // cColor = new CColor(color(49,51,50),
+    // 	       color(51),
+    // 	       color(71),
+    // 	       color(255),
+    // 	       color(255));
+
+    // updateStyles();
 
     image(backgroundImage, 0, 0);
 
@@ -128,25 +137,57 @@ void draw(){
 
 void keyPressed() {
 
-  // Placed here, bug if it is placed in setup().
-  if(key == ' ')
-      frame.setLocation(cc.getProjectionScreenOffsetX(),
-			cc.getProjectionScreenOffsetY());
-  
-  if(key == 's')
-      save();
+
 }
 
-void save(){
+
+
+// Todo: custom file chooser. 
+void saveCameraAs(){
+    selectOutput("Select a file to write to:", "fileSelectedSaveCamera");
+}
+
+void fileSelectedSaveCamera(File selection) {
+    saveCamera(selection.getAbsolutePath());
+}
+
+void saveDefaultCamera(){
+    saveCamera(Papart.cameraConfig);
+}
+
+void saveCamera(String fileName){
+    cameraConfig.setCameraName(cameraIdText.getText());
+    cameraConfig.saveTo(this, fileName);
+    println("Camera saved.");
+}
+
+
+
+// Todo: custom file chooser. 
+void saveScreenAs(){
+    selectOutput("Select a file to write to:", "fileSelectedSaveScreen");
+}
+
+void fileSelectedSaveScreen(File selection) {
+    saveScreen(selection.getAbsolutePath());
+}
+
+void saveDefaultScreen(){
+    saveScreen(Papart.screenConfig);
+}
+
+void saveScreen(String fileName){
     try{
-	cc.setCameraName(cameraIdText.getText());
-	cc.setProjectionScreenOffsetX(Integer.parseInt(posXText.getText()));
-	cc.setProjectionScreenOffsetY(Integer.parseInt(posYText.getText()));
+	screenConfig.setProjectionScreenOffsetX(Integer.parseInt(posXText.getText()));
+	screenConfig.setProjectionScreenOffsetY(Integer.parseInt(posYText.getText()));
     }catch(java.lang.NumberFormatException e){
 	println("Invalid Position");
     }
-
-    cc.saveTo(this, Papart.computerConfig);
     
-    println("Saved to " + Papart.computerConfig);
+    screenConfig.saveTo(this, fileName);
+    println("Default screen saved.");
 }
+
+
+
+

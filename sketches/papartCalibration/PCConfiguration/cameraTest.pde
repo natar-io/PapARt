@@ -9,7 +9,7 @@ camApplet cameraApplet;
 
 void testCamera(){
 
-    cc.setCameraName(cameraIdText.getText());
+    cameraConfig.setCameraName(cameraIdText.getText());
 
     cameraPFrame = new CamPFrame();
 }
@@ -36,7 +36,7 @@ class camApplet extends PApplet {
 
 	size(640, 480, P3D);
 
-	camera = cc.createCamera();
+	camera = cameraConfig.createCamera();
 	camera.setParent(this);
 	camera.setSize(640, 480);
 	camera.start();
