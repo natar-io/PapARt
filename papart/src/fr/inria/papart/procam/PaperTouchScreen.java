@@ -18,6 +18,7 @@
  */
 package fr.inria.papart.procam;
 
+import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.display.BaseDisplay;
 import processing.opengl.PGraphicsOpenGL;
 import fr.inria.papart.drawingapp.Button;

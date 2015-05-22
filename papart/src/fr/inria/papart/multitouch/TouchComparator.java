@@ -1,4 +1,4 @@
-/*
+/* 
  * Copyright (C) 2014 Jeremy Laviole <jeremy.laviole@inria.fr>.
  *
  * This library is free software; you can redistribute it and/or
@@ -16,13 +16,25 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-
 package fr.inria.papart.multitouch;
+
+import fr.inria.papart.multitouch.Touch;
+import java.util.Comparator;
 
 /**
  *
- * @author Jeremy Laviole <jeremy.laviole@inria.fr>
  */
-public class DepthCamPlaneTouchInput {
-    
+public class TouchComparator implements Comparator{
+
+  public TouchComparator(){
+  }
+
+  @Override
+  public int compare(Object touch0, Object touch1){
+    Touch t0 = (Touch) touch0;
+    Touch t1 = (Touch) touch1;
+    if(t0.position.y < t1.position.y)
+      return 1;
+    return -1;
+  }
 }

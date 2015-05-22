@@ -22,7 +22,7 @@ import fr.inria.papart.calibration.HomographyCalibration;
 import fr.inria.papart.calibration.HomographyCreator;
 import fr.inria.papart.calibration.PlaneCalibration;
 import fr.inria.papart.calibration.PlaneCreator;
-import fr.inria.papart.procam.Camera.PixelFormat;
+import fr.inria.papart.procam.camera.Camera.PixelFormat;
 import org.bytedeco.javacpp.opencv_imgproc.*;
 
 import org.bytedeco.javacv.CameraDevice;
@@ -121,7 +121,7 @@ public class Utils {
             return sketchbook + "/libraries/" + LibraryName;
         }
 
-        return getLibrariesFolder() + LibraryName;
+        return getLibrariesFolder() + "/" + LibraryName;
     }
 
     static public PVector mult(PMatrix3D mat, PVector source, PVector target) {

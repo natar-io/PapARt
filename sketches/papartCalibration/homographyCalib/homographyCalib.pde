@@ -44,7 +44,7 @@ void setup(){
     camera = (CameraOpenKinect) CameraFactory.createCamera(Camera.Type.OPEN_KINECT, 0);
     camera.setParent(this);
     camera.setCalibration(Papart.kinectRGBCalib);
-    camera.setDepthFormat(depthFormat);
+    camera.getDepthCamera().setDepthFormat(depthFormat);
     camera.start();
 
     try{
@@ -98,7 +98,7 @@ void draw(){
 
     camera.grab();
     kinectImg = camera.getIplImage();
-    kinectImgDepth = camera.getDepthIplImage();
+    kinectImgDepth = camera.getDepthCamera().getIplImage();
     if(kinectImg == null || kinectImgDepth == null){
 	return;
     }

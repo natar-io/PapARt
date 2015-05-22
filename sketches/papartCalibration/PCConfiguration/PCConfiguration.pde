@@ -62,7 +62,25 @@ void setup(){
     
     initUI();
     backgroundImage = loadImage("data/background.png");
+    tryLoadCameraCalibration();
+}
 
+
+int cameraWidth, cameraHeight;
+boolean cameraCalibrationOk = false;
+
+void tryLoadCameraCalibration(){
+
+    try{
+    String calibrationYAML = Papart.proCamCalib;
+    ProjectiveDeviceP pdp = ProjectiveDeviceP.loadCameraDevice(calibrationYAML, 0);
+    cameraWidth = pdp.getWidth();
+    cameraHeight = pdp.getHeight();
+    cameraCalibrationOk = true;
+    println(cameraWidth + " " + cameraHeight);
+    } catch(Exception e){
+
+    }
 }
 
 
@@ -136,7 +154,10 @@ void draw(){
 
 
 void keyPressed() {
-
+    if (key == 27) {
+	//The ASCII code for esc is 27, so therefore: 27
+     //insert your function here
+     }
 
 }
 
@@ -187,6 +208,7 @@ void saveScreen(String fileName){
     screenConfig.saveTo(this, fileName);
     println("Default screen saved.");
 }
+
 
 
 

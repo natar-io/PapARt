@@ -6,7 +6,7 @@
 
 package fr.inria.papart.calibration;
 
-import fr.inria.papart.procam.Camera;
+import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.CameraFactory;
 import processing.core.PApplet;
 import processing.data.XML;

@@ -18,7 +18,6 @@
  */
 package fr.inria.papart.procam.camera;
 
-import fr.inria.papart.procam.Camera;
 import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import org.bytedeco.javacv.FrameGrabber;

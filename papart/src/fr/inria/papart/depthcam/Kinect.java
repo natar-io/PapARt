@@ -70,10 +70,7 @@ public class Kinect {
     public static final int KINECT_10BIT = 0;
     private int mode;
     
-    /**
-     * Do not modify directly, will go private in a future release. 
-     */
-    public PMatrix3D KinectRGBIRCalibration = new PMatrix3D(1, 0, 0, 15,
+    private PMatrix3D KinectRGBIRCalibration = new PMatrix3D(1, 0, 0, 15,
             0, 1, 0, 0,
             0, 0, 1, 0,
             0, 0, 0, 1);

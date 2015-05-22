@@ -18,6 +18,7 @@
  */
 package fr.inria.papart.procam;
 
+import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.multitouch.OneEuroFilter;
@@ -185,8 +186,8 @@ public class MarkerBoard {
 //            tracker.setUseDetectLite(true);
 
         // Initialize the tracker, with camera parameters and marker config. 
-        if (!tracker.init(camera.calibrationARToolkit, this.getFileName(), 1.0f, 1000.f)) {
-            System.err.println("Init ARTOOLKIT Error " + camera.calibrationARToolkit + " " + this.getFileName());
+        if (!tracker.init(camera.getCalibrationARToolkit(), this.getFileName(), 1.0f, 1000.f)) {
+            System.err.println("Init ARTOOLKIT Error " + camera.getCalibrationARToolkit() + " " + this.getFileName());
         }
 
         float[] transfo = new float[16];
@@ -608,6 +609,14 @@ public class MarkerBoard {
 
     public String getFileName() {
         return fileName;
+    }
+
+    public float getWidth() {
+        return width;
+    }
+
+    public float getHeight() {
+        return height;
     }
 
     public String toString() {

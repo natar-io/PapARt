@@ -38,7 +38,13 @@ class camApplet extends PApplet {
 
 	camera = cameraConfig.createCamera();
 	camera.setParent(this);
-	camera.setSize(640, 480);
+
+	if(cameraConfig.getCameraType() == Camera.Type.FLY_CAPTURE &&
+	   cameraCalibrationOk){
+	    camera.setSize(cameraWidth, cameraHeight);
+	} else {
+	    camera.setSize(640, 480);
+	}
 	camera.start();
 	camera.setThread();
     }

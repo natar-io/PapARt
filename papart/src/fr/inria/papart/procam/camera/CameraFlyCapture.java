@@ -18,7 +18,6 @@
  */
 package fr.inria.papart.procam.camera;
 
-import fr.inria.papart.procam.Camera;
 import org.bytedeco.javacpp.FlyCapture2;
 import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_core.CvSize;
@@ -132,6 +131,7 @@ public class CameraFlyCapture extends Camera {
             try {
                 this.stopThread();
                 grabber.stop();
+                grabber.release();
             } catch (Exception e) {
             }
         }

@@ -24,35 +24,35 @@ package fr.inria.papart.multitouch;
  */
 public class TouchPointComparison implements Comparable<TouchPointComparison> {
 
-    TouchPoint oldTp;
-    TouchPoint newTp;
-    float distance;
+        TouchPoint oldTp;
+        TouchPoint newTp;
+        float distance;
 
-    public TouchPointComparison(TouchPoint oldTp, TouchPoint newTp) {
-        this.oldTp = oldTp;
-        this.newTp = newTp;
-        
-        distance = oldTp.distanceTo(newTp);
-    }
+        public TouchPointComparison(TouchPoint oldTp, TouchPoint newTp) {
+            this.oldTp = oldTp;
+            this.newTp = newTp;
 
-    public TouchPoint getOld() {
-        return oldTp;
-    }
+            distance = oldTp.distanceTo(newTp);
+        }
 
-    public TouchPoint getNew() {
-        return newTp;
-    }
+        public TouchPoint getOld() {
+            return oldTp;
+        }
 
-    public boolean update() {
-        return oldTp.updateWith(newTp);
-    }
+        public TouchPoint getNew() {
+            return newTp;
+        }
 
-    public int compareTo(TouchPointComparison tpt) {
-        return Float.compare(distance, tpt.distance);
-    }
+        public boolean update() {
+            return oldTp.updateWith(newTp);
+        }
 
-    @Override
-    public String toString() {
-        return "TouchPointTracker : \n " + getOld() + "\n" + getNew() + " \nDistance " + distance + " \n";
+        public int compareTo(TouchPointComparison tpt) {
+            return Float.compare(distance, tpt.distance);
+        }
+
+        @Override
+        public String toString() {
+            return "TouchPointTracker : \n " + getOld() + "\n" + getNew() + " \nDistance " + distance + " \n";
+        }
     }
-}

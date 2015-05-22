@@ -2,7 +2,7 @@ import fr.inria.papart.procam.*;
 import fr.inria.papart.procam.camera.*;
 import fr.inria.papart.multitouch.*;
 import fr.inria.papart.depthcam.*;
-import fr.inria.papart.depthcam.calibration.*;
+import fr.inria.papart.calibration.*;
 
 import toxi.geom.*;
 import org.bytedeco.javacpp.opencv_core.IplImage;
@@ -41,7 +41,7 @@ void setup(){
     camera = (CameraOpenKinect) CameraFactory.createCamera(Camera.Type.OPEN_KINECT, 0);
     camera.setParent(this);
     camera.setCalibration(Papart.kinectRGBCalib);
-    camera.setDepthFormat(depthFormat);
+    camera.getDepthCamera().setDepthFormat(depthFormat);
     camera.start();
 
     try{
@@ -82,7 +82,7 @@ void draw(){
 
     camera.grab();
     kinectImg = camera.getIplImage();
-    kinectImgDepth = camera.getDepthIplImage();
+    kinectImgDepth = camera.getDepthCamera().getIplImage();
     if(kinectImg == null || kinectImgDepth == null){
 	return;
     }

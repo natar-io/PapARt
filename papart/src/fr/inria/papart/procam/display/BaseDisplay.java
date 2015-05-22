@@ -22,6 +22,9 @@ import fr.inria.papart.drawingapp.DrawUtils;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.Screen;
 import java.util.ArrayList;
+import java.util.concurrent.Semaphore;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import processing.core.PApplet;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
@@ -34,6 +37,7 @@ import processing.opengl.PGraphicsOpenGL;
  */
 public class BaseDisplay {
 
+    Semaphore sem = new Semaphore(1);
     public PGraphicsOpenGL graphics;
     public ArrayList<Screen> screens = new ArrayList<Screen>();
     protected PApplet parent;
@@ -58,9 +62,16 @@ public class BaseDisplay {
     }
 
     public void init() {
+        initGraphics();
+        automaticMode();
+    }
+
+    /**
+     * Called in init(). Do not call manually except if you know what yeu do.
+     */
+    protected void initGraphics() {
         this.graphics = (PGraphicsOpenGL) parent.createGraphics((int) (frameWidth * quality),
                 (int) (frameHeight * quality), PApplet.OPENGL);
-        automaticMode();
     }
 
     public void automaticMode() {
@@ -93,14 +104,27 @@ public class BaseDisplay {
     }
 
     public void clear() {
-        this.graphics.beginDraw();
-        this.graphics.clear();
-        this.graphics.endDraw();
+        try {
+            sem.acquire();
+            this.graphics.beginDraw();
+            this.graphics.clear();
+            this.graphics.endDraw();
+
+        } catch (InterruptedException ex) {
+            Logger.getLogger(BaseDisplay.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        sem.release();
     }
 
     public PGraphicsOpenGL beginDraw() {
-        this.graphics.beginDraw();
-        return this.graphics;
+        try {
+            sem.acquire();
+            this.graphics.beginDraw();
+            return this.graphics;
+        } catch (InterruptedException ex) {
+            Logger.getLogger(BaseDisplay.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
     }
 
     public PGraphicsOpenGL beginDrawOnScreen(Screen screen) {
@@ -112,8 +136,9 @@ public class BaseDisplay {
     }
 
     public void endDraw() {
-        this.graphics.endDraw();
 
+        this.graphics.endDraw();
+        sem.release();
     }
 
     /**
@@ -124,7 +149,12 @@ public class BaseDisplay {
         drawScreensOver();
         parent.noStroke();
         parent.g.image(this.render(), 0, 0, this.drawingSizeX, this.drawingSizeY);
+        
+            System.out.println("Draw ?");
+        pxCopy = getPixelsCopy();
     }
+
+    public int[] pxCopy;
 
     public PImage render() {
         return this.graphics;
@@ -159,7 +189,32 @@ public class BaseDisplay {
         return this.graphics;
     }
 
-    private void setParent(PApplet parent) {
+    public int[] getPixelsCopy() {
+
+        int[] out;
+        try {
+            sem.acquire();
+            System.out.println("Hece..1");
+            this.graphics.loadPixels();
+            System.out.println("Hece..2");
+            out = new int[graphics.pixels.length];
+
+            System.arraycopy(graphics.pixels, 0, out, 0, graphics.pixels.length);
+            System.out.println("Hece..3");
+            sem.release();
+            return out;
+        } catch (InterruptedException ex) {
+            Logger.getLogger(BaseDisplay.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    /**
+     * Use with care !
+     *
+     * @param parent
+     */
+    protected void setParent(PApplet parent) {
         this.parent = parent;
     }
 

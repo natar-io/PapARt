@@ -41,7 +41,7 @@ void setup(){
   camera = (CameraOpenKinect) CameraFactory.createCamera(Camera.Type.OPEN_KINECT, 0);
   camera.setParent(this);
   camera.setCalibration(Papart.kinectRGBCalib);
-  camera.setDepthFormat(depthFormat);
+  camera.getDepthCamera().setDepthFormat(depthFormat);
   camera.start();
 
   kinect = new KinectProcessing(this,
@@ -93,7 +93,7 @@ void draw(){
     camera.grab();
 
     IplImage colourImg = camera.getIplImage();
-    IplImage depthImg = camera.getDepthIplImage();
+    IplImage depthImg = camera.getDepthCamera().getIplImage();
 
     stereoCalib.m03 = translation;
     kinect.setStereoCalibration(stereoCalib);
