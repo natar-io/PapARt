@@ -248,6 +248,18 @@ public class Utils {
 //        imgIn.w
         return imgOut;
     }
+    
+    static public IplImage createImageFrom(IplImage imgIn) {
+        // TODO: avoid this creation !!
+        CvSize outSize = new CvSize();
+        outSize.width(imgIn.width());
+        outSize.height(imgIn.height());
+        IplImage imgOut = cvCreateImage(outSize, // size
+                imgIn.depth(), // depth
+                imgIn.nChannels());
+//        imgIn.w
+        return imgOut;
+    }
 
     static public IplImage createImageFrom(PImage in) {
         // TODO: avoid this creation !!

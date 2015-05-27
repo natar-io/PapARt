@@ -18,34 +18,28 @@
  */
 package fr.inria.papart.multitouch;
 
-import fr.inria.papart.depthcam.DepthData;
-import fr.inria.papart.depthcam.DepthDataElement;
+import fr.inria.papart.depthcam.KinectDepthData;
+import fr.inria.papart.depthcam.DepthDataElementKinect;
 import fr.inria.papart.depthcam.DepthPoint;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 
 import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.procam.Screen;
-import fr.inria.papart.depthcam.Kinect;
-import fr.inria.papart.depthcam.PointCloudElement;
+import fr.inria.papart.depthcam.DepthAnalysis;
 import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
+import fr.inria.papart.depthcam.KinectDepthAnalysis;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.ProjectiveDeviceP;
-import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.procam.camera.CameraOpenKinect;
-import java.io.FileNotFoundException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import processing.core.PApplet;
-import processing.core.PMatrix;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
-import toxi.geom.Matrix4x4;
 import toxi.geom.Vec3D;
 
 /**
@@ -59,7 +53,7 @@ public class KinectTouchInput extends TouchInput {
 
     public static final int NO_TOUCH = -1;
     private int touch2DPrecision, touch3DPrecision;
-    private Kinect kinect;
+    private KinectDepthAnalysis depthAnalysis;
     private PApplet parent;
 
     private final Semaphore touchPointSemaphore = new Semaphore(1, true);
@@ -82,14 +76,14 @@ public class KinectTouchInput extends TouchInput {
 
     public KinectTouchInput(PApplet applet,
             CameraOpenKinect kinectCamera,
-            Kinect kinect,
+            KinectDepthAnalysis depthAnalysis,
             PlaneAndProjectionCalibration calibration) {
         this.parent = applet;
-        this.kinect = kinect;
+        this.depthAnalysis = depthAnalysis;
         this.kinectCamera = kinectCamera;
         this.calibration = calibration;
-        this.touchDetection2D = new TouchDetectionSimple2D(Kinect.SIZE);
-        this.touchDetection3D = new TouchDetectionSimple3D(Kinect.SIZE);
+        this.touchDetection2D = new TouchDetectionSimple2D(depthAnalysis.getSize());
+        this.touchDetection3D = new TouchDetectionSimple3D(depthAnalysis.getSize());
     }
 
     @Override
@@ -104,16 +98,16 @@ public class KinectTouchInput extends TouchInput {
             }
 
             if (touch2DPrecision > 0 && touch3DPrecision > 0) {
-                kinect.updateMT(depthImage, colImage, calibration, touch2DPrecision, touch3DPrecision);
+                depthAnalysis.updateMT(depthImage, colImage, calibration, touch2DPrecision, touch3DPrecision);
                 findAndTrack2D();
                 findAndTrack3D();
             } else {
                 if (touch2DPrecision > 0) {
-                    kinect.updateMT2D(depthImage, colImage, calibration, touch2DPrecision);
+                    depthAnalysis.updateMT2D(depthImage, colImage, calibration, touch2DPrecision);
                     findAndTrack2D();
                 }
                 if (touch3DPrecision > 0) {
-                    kinect.updateMT3D(depthImage, colImage, calibration, touch3DPrecision);
+                    depthAnalysis.updateMT3D(depthImage, colImage, calibration, touch3DPrecision);
                     findAndTrack3D();
                 }
             }
@@ -222,14 +216,14 @@ public class KinectTouchInput extends TouchInput {
         return paperScreenCoord != NO_INTERSECTION;
     }
 
-    public ArrayList<DepthDataElement> getDepthData() {
+    public ArrayList<DepthDataElementKinect> getDepthData() {
         try {
             depthDataSem.acquire();
-            DepthData depthData = kinect.getDepthData();
-            ArrayList<DepthDataElement> output = new ArrayList<>();
+            KinectDepthData depthData = depthAnalysis.getDepthData();
+            ArrayList<DepthDataElementKinect> output = new ArrayList<>();
             ArrayList<Integer> list = depthData.validPointsList3D;
             for (Integer i : list) {
-                output.add(depthData.getElement(i));
+                output.add(depthData.getElementKinect(i));
             }
             depthDataSem.release();
             return output;
@@ -260,7 +254,7 @@ public class KinectTouchInput extends TouchInput {
     private ArrayList<DepthPoint> projectDepthDataXD(ARDisplay display, Screen screen, boolean is2D) {
         try {
             depthDataSem.acquire();
-            DepthData depthData = kinect.getDepthData();
+            KinectDepthData depthData = depthAnalysis.getDepthData();
             ArrayList<DepthPoint> projected = new ArrayList<DepthPoint>();
             ArrayList<Integer> list = is2D ? depthData.validPointsList : depthData.validPointsList3D;
             for (Integer i : list) {
@@ -281,17 +275,17 @@ public class KinectTouchInput extends TouchInput {
     }
 
     private DepthPoint tryCreateDepthPoint(ARDisplay display, Screen screen, int offset) {
-        Vec3D projectedPt = kinect.getDepthData().projectedPoints[offset];
+        Vec3D projectedPt = depthAnalysis.getDepthData().projectedPoints[offset];
 
         PVector screenPosition = projectPointToScreen(screen, display,
-                kinect.getDepthData().kinectPoints[offset],
+                depthAnalysis.getDepthData().depthPoints[offset],
                 projectedPt);
 
         if (screenPosition == NO_INTERSECTION) {
             return null;
         }
 
-        int c = kinect.getDepthData().pointColors[offset];
+        int c = depthAnalysis.getDepthData().pointColors[offset];
         return new DepthPoint(screenPosition.x, screenPosition.y, screenPosition.z, c);
     }
 
@@ -304,11 +298,11 @@ public class KinectTouchInput extends TouchInput {
      * @return the projected point, NULL if no intersection was found.
      */
     public PVector projectPointToScreen(Screen screen,
-            BaseDisplay display, DepthDataElement dde) {
+            BaseDisplay display, DepthDataElementKinect dde) {
 
         PVector out = this.projectPointToScreen(screen,
                 display,
-                dde.kinectPoint,
+                dde.depthPoint,
                 dde.projectedPoint);
         return out;
     }
@@ -371,7 +365,7 @@ public class KinectTouchInput extends TouchInput {
         ByteBuffer cBuff = colorImage.getByteBuffer();
 
         for (TouchPoint tp : touchPointList) {
-            int offset = 3 * kinect.findColorOffset(tp.getPositionKinect());
+            int offset = 3 * depthAnalysis.findColorOffset(tp.getPositionKinect());
 
             tp.setColor((255 & 0xFF) << 24
                     | (cBuff.get(offset + 2) & 0xFF) << 16
@@ -384,18 +378,18 @@ public class KinectTouchInput extends TouchInput {
     // no updates, no tracking. 
     public ArrayList<TouchPoint> find2DTouchRaw(int skip) {
         assert (skip > 0);
-        return touchDetection2D.compute(kinect.getDepthData(), skip);
+        return touchDetection2D.compute(depthAnalysis.getDepthData(), skip);
     }
 
     public ArrayList<TouchPoint> find3DTouchRaw(int skip) {
         assert (skip > 0);
-        return touchDetection3D.compute(kinect.getDepthData(), skip);
+        return touchDetection3D.compute(depthAnalysis.getDepthData(), skip);
     }
 
     protected void findAndTrack2D() {
         assert (touch2DPrecision != 0);
         ArrayList<TouchPoint> newList = touchDetection2D.compute(
-                kinect.getDepthData(),
+                depthAnalysis.getDepthData(),
                 touch2DPrecision);
        TouchPointTracker.trackPoints(touchPoints2D, newList,
                 parent.millis(), trackNearDist);
@@ -404,7 +398,7 @@ public class KinectTouchInput extends TouchInput {
     protected void findAndTrack3D() {
         assert (touch3DPrecision != 0);
         ArrayList<TouchPoint> newList = touchDetection3D.compute(
-                kinect.getDepthData(),
+                depthAnalysis.getDepthData(),
                 touch3DPrecision);
         TouchPointTracker.trackPoints(touchPoints3D,
                 newList,

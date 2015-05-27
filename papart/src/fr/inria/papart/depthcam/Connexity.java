@@ -136,7 +136,7 @@ public class Connexity {
         int currentOffset = y * width + x;
 
         if (points[currentOffset] == null
-                || points[currentOffset] == Kinect.INVALID_POINT) {
+                || points[currentOffset] == DepthAnalysis.INVALID_POINT) {
             connexity[currentOffset] = 0;
             connexitySum[currentOffset] = 0;
             return;
@@ -165,7 +165,7 @@ public class Connexity {
 //                    type = type | (1 << connNo);
 //                }
                 if (points[offset] != null
-                        && points[offset] != Kinect.INVALID_POINT
+                        && points[offset] != DepthAnalysis.INVALID_POINT
                         && points[currentOffset].distanceTo(points[offset]) < connexityDist) {
                     type = (byte) (type | 1 << connNo);
                     sum++;

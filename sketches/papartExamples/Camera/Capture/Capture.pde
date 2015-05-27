@@ -1,5 +1,6 @@
 // PapARt library
 import fr.inria.papart.procam.*;
+import fr.inria.papart.procam.camera.*;
 import fr.inria.papart.procam.display.*;
 import org.bytedeco.javacpp.*;
 import org.reflections.*;
@@ -11,9 +12,6 @@ MarkerBoard markerBoard;
 PVector boardSize = new PVector(297, 210);  //  21 * 29.7 cm
 TrackedView boardView;
 
-int cameraX = 640;
-int cameraY = 480;
-
 Camera cameraTracking;
 
 public void setup(){
@@ -21,7 +19,7 @@ public void setup(){
     size((int) (boardSize.x * 2) , (int) (boardSize.y * 2), OPENGL);
     papart = new Papart(this);
 
-    papart.initCamera("0", Camera.Type.OPENCV);
+    papart.initCamera();
     
     BaseDisplay display = papart.getDisplay();
 
@@ -43,10 +41,10 @@ public void setup(){
 
     // Create a view of part of the tracked piece of paper. 
     // The resolution (two last arguments) should be at maximum the camera resolution.
-    boardView = new TrackedView(markerBoard, cameraX, cameraY);
-
-    // Register this view with the camera.
-    cameraTracking.addTrackedView(boardView);
+    boardView = new TrackedView(markerBoard);
+    boardView.setImageWidthPx(256);
+    boardView.setImageHeightPx(256);
+    boardView.init();
 
     // Start tracking the pieces of paper. 
     cameraTracking.trackSheets(true);
@@ -58,7 +56,7 @@ PImage out = null;
 void draw(){
 
     background(0);
-    out = cameraTracking.getPView(boardView);
+    out = boardView.getViewOf(cameraTracking);
 
     if(out != null){
 	image(out, 0, 0, width, height);

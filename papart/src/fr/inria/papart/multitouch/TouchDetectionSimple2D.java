@@ -18,8 +18,8 @@
  */
 package fr.inria.papart.multitouch;
 
-import fr.inria.papart.depthcam.DepthData;
-import fr.inria.papart.depthcam.Kinect;
+import fr.inria.papart.depthcam.KinectDepthData;
+import fr.inria.papart.depthcam.DepthAnalysis;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -35,7 +35,7 @@ public class TouchDetectionSimple2D extends TouchDetection{
     }
 
     @Override
-    public ArrayList<TouchPoint> compute(DepthData dData, int skip) {
+    public ArrayList<TouchPoint> compute(KinectDepthData dData, int skip) {
         this.depthData = dData;
         this.precision = skip;
         
@@ -67,11 +67,11 @@ public class TouchDetectionSimple2D extends TouchDetection{
 
         @Override
         public boolean checkPoint(int offset, int currentPoint) {
-            float distanceToCurrent = depthData.kinectPoints[offset].distanceTo(depthData.kinectPoints[currentPoint]);
+            float distanceToCurrent = depthData.depthPoints[offset].distanceTo(depthData.depthPoints[currentPoint]);
 
             return !assignedPoints[offset] // not assigned  
                     && depthData.validPointsMask[offset] // is valid
-                    && (depthData.kinectPoints[offset] != Kinect.INVALID_POINT) // not invalid point (invalid depth)
+                    && (depthData.depthPoints[offset] != DepthAnalysis.INVALID_POINT) // not invalid point (invalid depth)
                     && distanceToCurrent < maxDistance;
         }
     }

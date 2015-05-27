@@ -40,6 +40,8 @@ import processing.core.PVector;
  */
 public class MarkerBoard {
 
+    public static MarkerBoard INVALID_MARKERBOARD = new MarkerBoard();
+    
     private final String fileName;
     protected float width;
     protected float height;
@@ -68,6 +70,10 @@ public class MarkerBoard {
     public enum MarkerType {
 
         ARTOOLKITPLUS, OPENCV_SURF
+    }
+    
+    private MarkerBoard(){
+        this.fileName = "invalidCamera";
     }
 
     public MarkerBoard(String fileName, PVector size) {

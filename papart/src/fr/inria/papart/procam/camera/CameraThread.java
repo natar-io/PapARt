@@ -29,16 +29,14 @@ import java.util.logging.Logger;
  *
  * @author jeremylaviole
  */
-class ARTThread extends Thread {
+class CameraThread extends Thread {
 
-    private Camera camera;
-    private List<MarkerBoard> sheets = null;
+    private final Camera camera;
     private boolean compute;
     public boolean stop;
 
-    public ARTThread(Camera camera, List<MarkerBoard> sheets) {
+    public CameraThread(Camera camera) {
         this.camera = camera;
-        this.sheets = sheets;
         stop = false;
     }
 
@@ -48,7 +46,7 @@ class ARTThread extends Thread {
             camera.grab();
             IplImage img = camera.getIplImage();
             // TODO: check if img can be null...        
-            if (img != null && compute && this.sheets != null) {
+            if (img != null && compute && !camera.getTrackedSheets().isEmpty()) {
                 this.compute(img);
             }
 
@@ -59,12 +57,12 @@ class ARTThread extends Thread {
         try {
             camera.sheetsSemaphore.acquire();
 
-            for (MarkerBoard sheet : sheets) {
+            for (MarkerBoard sheet : camera.getTrackedSheets()) {
                 sheet.updatePosition(camera, img);
             }
             camera.sheetsSemaphore.release();
         } catch (InterruptedException ex) {
-            Logger.getLogger(ARTThread.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(CameraThread.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -74,9 +72,6 @@ class ARTThread extends Thread {
 
     public void setCompute(boolean compute) {
         this.compute = compute;
-        if (compute && this.sheets == null) {
-            this.sheets = camera.getTrackedSheets();
-        }
     }
 
     public void stopThread() {

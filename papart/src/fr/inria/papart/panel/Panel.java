@@ -5,8 +5,9 @@
  */
 package fr.inria.papart.panel;
 
-import fr.inria.papart.depthcam.Kinect;
+import fr.inria.papart.depthcam.DepthAnalysis;
 import fr.inria.papart.procam.Papart;
+import fr.inria.papart.procam.camera.CameraOpenKinect;
 import javax.swing.JFrame;
 import processing.core.PApplet;
 import processing.core.PImage;
@@ -53,13 +54,29 @@ public class Panel {
             size(800, 600, OPENGL);
         }
 
+        public void drawKinectRGB() {
+            try {
+                if (Papart.getPapart() != null
+                        && Papart.getPapart().getKinectCamera() != null) {
+
+                    CameraOpenKinect kinectRGB = Papart.getPapart().getKinectCamera();
+                    if (!kinectRGB.canBeDisplayedOn(this)) {
+                        kinectRGB.prepareToDisplayOn(this);
+                    }
+
+                    PImage img = kinectRGB.getDisplayedOn(this);
+                    image(img, 0, 0, 320, 240);
+                }
+            } catch (Exception e) {
+            }
+        }
+
         public void draw() {
             background(100, random(50) + 50, 100);
             println("draw in second..");
 
-            Kinect kinect = Papart.getPapart().getKinect();
-        
-            
+            DepthAnalysis kinect = Papart.getPapart().getKinect();
+
             // Camera OK !
 //            try {
 //                if (Papart.getPapart() != null
@@ -79,8 +96,6 @@ public class Panel {
 //                System.out.println("Exception " + e);
 //                e.printStackTrace();
 //            }
-
-            
             // Base Display OK !
 //            try {
 //                if (Papart.getPapart() != null

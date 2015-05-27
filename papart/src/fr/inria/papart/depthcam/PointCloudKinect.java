@@ -30,7 +30,7 @@ import toxi.geom.Vec3D;
 public class PointCloudKinect extends PointCloud implements PConstants {
 
     public PointCloudKinect(PApplet parent, int skip) {
-        super(parent, Kinect.SIZE / (skip * skip));
+        super(parent, KinectDepthAnalysis.getKinectSize() / (skip * skip));
     }
     
     public void updateWith(KinectProcessing kinect){
@@ -42,7 +42,7 @@ public class PointCloudKinect extends PointCloud implements PConstants {
         nbColors = 0;
         
         int k = 0;
-        for (int i = 0; i < Kinect.SIZE; i++) {
+        for (int i = 0; i < KinectDepthAnalysis.getKinectSize(); i++) {
 
             if (valid[i]) {
                 Vec3D p = points[i];

@@ -19,8 +19,8 @@
 package fr.inria.papart.multitouch;
 
 import fr.inria.papart.calibration.PlaneCalibration;
-import fr.inria.papart.depthcam.DepthData;
-import fr.inria.papart.depthcam.Kinect;
+import fr.inria.papart.depthcam.KinectDepthData;
+import fr.inria.papart.depthcam.DepthAnalysis;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -49,7 +49,7 @@ public abstract class TouchDetection {
     protected byte currentCompo = STARTING_CONNECTED_COMPONENT;
 
 // set by calling function
-    protected DepthData depthData;
+    protected KinectDepthData depthData;
     protected int precision;
     protected int searchDepth;
 
@@ -65,7 +65,7 @@ public abstract class TouchDetection {
         allocateMemory(size);
     }
 
-    public abstract ArrayList<TouchPoint> compute(DepthData dData, int skip);
+    public abstract ArrayList<TouchPoint> compute(KinectDepthData dData, int skip);
 
     protected void allocateMemory(int size) {
         assignedPoints = new boolean[size];
@@ -132,8 +132,8 @@ public abstract class TouchDetection {
     public ConnectedComponent findNeighboursRec(int currentPoint, int recLevel) {
 
         // TODO: optimisations here ?
-        int x = currentPoint % Kinect.WIDTH;
-        int y = currentPoint / Kinect.WIDTH;
+        int x = currentPoint % depthData.source.getWidth();
+        int y = currentPoint / depthData.source.getHeight();
         ConnectedComponent neighbourList = new ConnectedComponent();
         ArrayList<Integer> visitNext = new ArrayList<Integer>();
 
@@ -141,14 +141,14 @@ public abstract class TouchDetection {
             return neighbourList;
         }
 
-        int minX = PApplet.constrain(x - searchDepth, 0, Kinect.WIDTH - 1);
-        int maxX = PApplet.constrain(x + searchDepth, 0, Kinect.WIDTH - 1);
-        int minY = PApplet.constrain(y - searchDepth, 0, Kinect.HEIGHT - 1);
-        int maxY = PApplet.constrain(y + searchDepth, 0, Kinect.HEIGHT - 1);
+        int minX = PApplet.constrain(x - searchDepth, 0, depthData.source.getWidth() - 1);
+        int maxX = PApplet.constrain(x + searchDepth, 0, depthData.source.getWidth() - 1);
+        int minY = PApplet.constrain(y - searchDepth, 0, depthData.source.getHeight() - 1);
+        int maxY = PApplet.constrain(y + searchDepth, 0, depthData.source.getHeight() - 1);
 
         for (int j = minY; j <= maxY; j += precision) {
             for (int i = minX; i <= maxX; i += precision) {
-                int offset = j * Kinect.WIDTH + i;
+                int offset = j * depthData.source.getWidth() + i;
 
                 // Avoid getting ouside the limits
                 if (currentPointValidityCondition.checkPoint(offset, currentPoint)) {
@@ -175,7 +175,7 @@ public abstract class TouchDetection {
     // TODO: use another type here ?
     protected TouchPoint createTouchPoint(ConnectedComponent connectedComponent) {
         Vec3D meanProj = connectedComponent.getMean(depthData.projectedPoints);
-        Vec3D meanKinect = connectedComponent.getMean(depthData.kinectPoints);
+        Vec3D meanKinect = connectedComponent.getMean(depthData.depthPoints);
         TouchPoint tp = new TouchPoint();
         tp.setPosition(meanProj);
         tp.setPositionKinect(meanKinect);
@@ -195,7 +195,7 @@ public abstract class TouchDetection {
 
     protected void setPrecisionFrom(int firstPoint) {
 
-        Vec3D currentPoint = depthData.kinectPoints[firstPoint];
+        Vec3D currentPoint = depthData.depthPoints[firstPoint];
         PVector coordinates = depthData.projectiveDevice.getCoordinates(firstPoint);
 
         // Find a point. 

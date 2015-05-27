@@ -26,9 +26,10 @@ import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
 import org.bytedeco.javacpp.freenect;
 import fr.inria.papart.drawingapp.Button;
-import fr.inria.papart.depthcam.Kinect;
+import fr.inria.papart.depthcam.DepthAnalysis;
 import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
 import fr.inria.papart.calibration.ScreenConfiguration;
+import fr.inria.papart.depthcam.KinectDepthAnalysis;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.multitouch.TUIOTouchInput;
 import fr.inria.papart.multitouch.KinectTouchInput;
@@ -85,7 +86,7 @@ public class Papart {
     private ProjectorDisplay projector;
 
     private Camera cameraTracking;
-    private Kinect kinect;
+    private KinectDepthAnalysis kinect;
 
 //    private TouchInput touchInput;
     private TouchInput touchInput;
@@ -99,7 +100,7 @@ public class Papart {
 //    private final int depthFormat = freenect.FREENECT_DEPTH_10BIT;
 //    private final int kinectFormat = Kinect.KINECT_10BIT;
     private final int depthFormat = freenect.FREENECT_DEPTH_MM;
-    private final int kinectFormat = Kinect.KINECT_MM;
+    private final int kinectFormat = KinectDepthAnalysis.KINECT_MM;
 
     /**
      * Create the main PapARt object, look at the examples for how to use it.
@@ -479,6 +480,7 @@ public class Papart {
         cameraOpenKinect = (CameraOpenKinect) CameraFactory.createCamera(Camera.Type.OPEN_KINECT, 0);
         cameraOpenKinect.setParent(applet);
         cameraOpenKinect.setCalibration(kinectRGBCalib);
+        cameraOpenKinect.getDepthCamera().setCalibration(kinectIRCalib);
         cameraOpenKinect.getDepthCamera().setDepthFormat(depthFormat);
         cameraOpenKinect.start();
         cameraOpenKinect.setThread();
@@ -486,10 +488,7 @@ public class Papart {
 
     private void loadDefaultTouchKinect(int touch2DPrecision, int touch3DPrecision) {
 
-        kinect = new Kinect(this.applet,
-                kinectIRCalib,
-                kinectRGBCalib,
-                kinectFormat);
+        kinect = new KinectDepthAnalysis(this.applet, cameraOpenKinect);
         kinect.setStereoCalibration(kinectStereoCalib);
 
         PlaneAndProjectionCalibration calibration = new PlaneAndProjectionCalibration();
@@ -627,8 +626,12 @@ public class Papart {
         return this.isWithoutCamera;
     }
 
-    public Kinect getKinect() {
+    public DepthAnalysis getKinect() {
         return kinect;
+    }
+    
+    public CameraOpenKinect getKinectCamera(){
+        return this.cameraOpenKinect;
     }
 
     public PApplet getApplet() {

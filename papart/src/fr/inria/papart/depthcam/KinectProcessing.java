@@ -18,10 +18,11 @@
  */
 package fr.inria.papart.depthcam;
 
-import static fr.inria.papart.depthcam.Kinect.papplet;
+import static fr.inria.papart.depthcam.DepthAnalysis.papplet;
 import fr.inria.papart.calibration.HomographyCalibration;
 import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
 import fr.inria.papart.calibration.PlaneCalibration;
+import fr.inria.papart.procam.camera.CameraOpenKinect;
 import java.util.Arrays;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import processing.core.PApplet;
@@ -33,18 +34,17 @@ import toxi.geom.Vec3D;
  *
  * @author jiii
  */
-public class KinectProcessing extends Kinect {
+public class KinectProcessing extends KinectDepthAnalysis {
 
     public PImage validPointsPImage;
 
-    public KinectProcessing(PApplet parent, String calibIR, String calibRGB, int mode) {
-        super(parent, calibIR, calibRGB, mode);
+    public KinectProcessing(PApplet parent, CameraOpenKinect camera) {
+        super(parent, camera);
+        init();
     }
 
-    @Override
-    protected void init() {
-        super.init();
-        validPointsPImage = papplet.createImage(kinectCalibIR.getWidth(), kinectCalibIR.getHeight(), PConstants.RGB);
+    private void init() {
+        validPointsPImage = papplet.createImage(width, height, PConstants.RGB);
     }
 
     public PImage update(IplImage depth, IplImage color) {
@@ -173,7 +173,7 @@ public class KinectProcessing extends Kinect {
     }
 
     private void setPixelColor(int offset) {
-        int colorOffset = this.findColorOffset(depthData.kinectPoints[offset]) * 3;
+        int colorOffset = this.findColorOffset(depthData.depthPoints[offset]) * 3;
         int c = (colorRaw[colorOffset + 2] & 0xFF) << 16
                 | (colorRaw[colorOffset + 1] & 0xFF) << 8
                 | (colorRaw[colorOffset + 0] & 0xFF);
