@@ -23,7 +23,7 @@ import static fr.inria.papart.depthcam.Kinect.INVALID_POINT;
 import fr.inria.papart.calibration.HomographyCalibration;
 import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
 import fr.inria.papart.calibration.PlaneCalibration;
-import fr.inria.papart.procam.Camera;
+import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -28,7 +28,7 @@ import fr.inria.papart.procam.Screen;
 import fr.inria.papart.depthcam.Kinect;
 import fr.inria.papart.depthcam.PointCloudElement;
 import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
-import fr.inria.papart.procam.Camera;
+import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.procam.display.ProjectorDisplay;
@@ -95,7 +95,7 @@ public class KinectTouchInput extends TouchInput {
     @Override
     public void update() {
         try {
-            IplImage depthImage = kinectCamera.getDepthIplImage();
+            IplImage depthImage = kinectCamera.getDepthCamera().getIplImage();
             IplImage colImage = kinectCamera.getIplImage();
             depthDataSem.acquire();
 

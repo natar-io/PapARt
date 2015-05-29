@@ -15,6 +15,16 @@
             <id>clojars.org</id>
             <url>http://clojars.org/repo</url>
         </repository>
+        
+        <repository>
+            <id>central</id>
+            <name>Maven Repository Switchboard</name>
+            <layout>default</layout>
+            <url>http://repo1.maven.org/maven2</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
     </repositories>
     
     <licenses>
@@ -181,6 +191,15 @@
                     </execution>
                 </executions>
             </plugin>
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <finalName>PapARt</finalName>                   
+                </configuration>
+            </plugin>  
         
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

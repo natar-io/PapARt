@@ -3,40 +3,30 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
 package fr.inria.papart.calibration;
 
-import fr.inria.papart.procam.Camera;
-import fr.inria.papart.procam.camera.CameraFactory;
 import processing.core.PApplet;
 import processing.data.XML;
-import toxi.geom.Plane;
-import toxi.geom.Vec3D;
 
 /**
  *
  * @author Jeremy Laviole <jeremy.laviole@inria.fr>
  */
-public class ComputerConfiguration extends Calibration {
-
+public class ScreenConfiguration extends Calibration{
+    
     static final String SCREEN_XML_NAME = "Screen";
     static final String SCREEN_WIDTH_XML_NAME = "Width";
     static final String SCREEN_HEIGHT_XML_NAME = "Height";
     static final String SCREEN_OFFSET_X_XML_NAME = "OffsetX";
     static final String SCREEN_OFFSET_Y_XML_NAME = "OffsetY";
-    static final String CAMERA_XML_NAME = "Camera";
-    static final String CAMERA_ID_XML_NAME = "CameraID";
-    static final String CAMERA_NAME_XML_NAME = "CameraName";
-    static final String CAMERA_TYPE_XML_NAME = "CameraType";
-
+    
     private int projectionScreenWidth = 0;
     private int projectionScreenHeight = 0;
     private int projectionScreenOffsetX = 0;
-
     private int projectionScreenOffsetY = 0;
-    private String cameraName = "";
-    private Camera.Type cameraType = Camera.Type.OPENCV;
 
-    @Override
+      @Override
     public boolean isValid() {
         // todo check ID, name & type ?
         return true;
@@ -44,18 +34,15 @@ public class ComputerConfiguration extends Calibration {
 
     @Override
     public void addTo(XML xml) {
-        xml.addChild(createScreenNode());
-        xml.addChild(createCameraNode());
-    }
+        xml.addChild(createScreenNode()); 
+   }
 
     @Override
     public void replaceIn(XML xml) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
-    public Camera createCamera(){
-       return CameraFactory.createCamera(cameraType, cameraName);
-    }
+
 
     @Override
     public void loadFrom(PApplet parent, String fileName) {
@@ -66,8 +53,6 @@ public class ComputerConfiguration extends Calibration {
         XML screenNode = root.getChild(SCREEN_XML_NAME);
         loadScreenFrom(screenNode);
 
-        XML cameraNode = root.getChild(CAMERA_XML_NAME);
-        loadCameraFrom(cameraNode);
 
     }
 
@@ -85,20 +70,6 @@ public class ComputerConfiguration extends Calibration {
         screenNode.setInt(SCREEN_OFFSET_X_XML_NAME, projectionScreenOffsetX);
         screenNode.setInt(SCREEN_OFFSET_Y_XML_NAME, projectionScreenOffsetY);
         return screenNode;
-    }
-
-    private void loadCameraFrom(XML cameraNode) {
-        this.cameraName = cameraNode.getString(CAMERA_NAME_XML_NAME);
-        this.cameraType = Camera.Type.valueOf(cameraNode.getString(CAMERA_TYPE_XML_NAME));
-    }
-
-    private XML createCameraNode() {
-        XML cameraNode = new XML(CAMERA_XML_NAME);
-        cameraNode.setString(CAMERA_NAME_XML_NAME, cameraName);
-        String type = this.cameraType.name();
-        cameraNode.setString(CAMERA_TYPE_XML_NAME, type);
-
-        return cameraNode;
     }
 
     public int getProjectionScreenOffsetX() {
@@ -131,22 +102,6 @@ public class ComputerConfiguration extends Calibration {
 
     public void setProjectionScreenHeight(int projectionScreenHeight) {
         this.projectionScreenHeight = projectionScreenHeight;
-    }
-
-    public String getCameraName() {
-        return cameraName;
-    }
-
-    public void setCameraName(String cameraName) {
-        this.cameraName = cameraName;
-    }
-
-    public Camera.Type getCameraType() {
-        return cameraType;
-    }
-
-    public void setCameraType(Camera.Type cameraType) {
-        this.cameraType = cameraType;
     }
 
 }

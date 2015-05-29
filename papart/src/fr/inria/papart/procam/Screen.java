@@ -18,9 +18,11 @@
  */
 package fr.inria.papart.procam;
 
+import fr.inria.papart.calibration.HomographyCalibration;
+import fr.inria.papart.calibration.HomographyCreator;
+import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import static fr.inria.papart.procam.Utils.toVec;
-import fr.inria.papart.tools.Homography;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
@@ -57,10 +59,9 @@ public class Screen {
     private static final int nbPaperPosRender = 4;
     private final PVector[] paperPosCorners3D = new PVector[nbPaperPosRender];
 
-    // TODO: remove this
-    private Homography homography;
-
-    protected Matrix4x4 worldToScreen;
+    // TODO: update this again
+    private HomographyCreator homography;
+    protected HomographyCalibration worldToScreen;
     public float halfEyeDist = 10; // 2cm
     private boolean isDrawing = true;
     private boolean isOpenGL = false;
@@ -137,15 +138,15 @@ public class Screen {
     }
 
     /**
-     * Set the main position (override tracking system). Use only after the 
-     * call of paperScreen.useManualLocation(false);
+     * Set the main position (override tracking system). Use only after the call
+     * of paperScreen.useManualLocation(false);
      *
      * @param position
      */
     public void setMainLocation(PMatrix3D position) {
         transformation.set(position);
     }
-    
+
     /**
      * Set a second transformation applied after tracking transform.
      *
@@ -161,19 +162,20 @@ public class Screen {
 
     /**
      * Set an additional translation (replace the second transformation)
-     * 
-     * @param tr 
+     *
+     * @param tr
      */
     public void setTranslation(PVector tr) {
         setTranslation(tr.x, tr.y, tr.z);
     }
 
-   /**
-    *  Set an additional translation (replace the second transformation)
-    * @param x
-    * @param y
-    * @param z 
-    */
+    /**
+     * Set an additional translation (replace the second transformation)
+     *
+     * @param x
+     * @param y
+     * @param z
+     */
     public void setTranslation(float x, float y, float z) {
         if (secondTransformation == null) {
             secondTransformation = new PMatrix3D();
@@ -183,13 +185,12 @@ public class Screen {
     }
 
     /**
-     * @deprecated
-     * @return 
+     * @deprecated @return
      */
-      public PMatrix3D getPosition() {
-       return getLocation();
-      }
-    
+    public PMatrix3D getPosition() {
+        return getLocation();
+    }
+
     /**
      * Get a copy of the overall transform (after tracking and second transform).
      *
@@ -231,11 +232,11 @@ public class Screen {
 
         plane = new Plane(new Triangle3D(toVec(paperPosCorners3D[0]), toVec(paperPosCorners3D[1]), toVec(paperPosCorners3D[2])));
 
-        for (int i = 0; i < 4; i++) {
-            homography.setPoint(true, i, paperPosCorners3D[i]);
-        }
-        homography.compute();
-        worldToScreen = homography.getTransformation();
+        homography.addPoint(paperPosCorners3D[0], new PVector(0, 0));
+        homography.addPoint(paperPosCorners3D[1], new PVector(1, 0));
+        homography.addPoint(paperPosCorners3D[2], new PVector(1, 1));
+        homography.addPoint(paperPosCorners3D[3], new PVector(0, 1));
+        worldToScreen = homography.getHomography();
     }
 
     public PVector[] getCornerPos() {
@@ -246,11 +247,8 @@ public class Screen {
     ////////////////// 3D SPACE TO PAPER HOMOGRAPHY ///////////////
     // Version 2.0 :  (0,0) is the top-left corner.
     private void initHomography() {
-        homography = new Homography(parent, 3, 2, 4);
-        homography.setPoint(false, 0, new PVector(0, 0));
-        homography.setPoint(false, 1, new PVector(1, 0));
-        homography.setPoint(false, 2, new PVector(1, 1));
-        homography.setPoint(false, 3, new PVector(0, 1));
+        homography = new HomographyCreator(3, 2, 4);
+
     }
 
     public void initDraw(PVector userPos) {
@@ -475,7 +473,7 @@ public class Screen {
         return plane;
     }
 
-    public Matrix4x4 getWorldToScreen() {
+    public HomographyCalibration getWorldToScreen() {
         return worldToScreen;
     }
 

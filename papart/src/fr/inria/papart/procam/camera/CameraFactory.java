@@ -18,8 +18,7 @@
  */
 package fr.inria.papart.procam.camera;
 
-import fr.inria.papart.procam.Camera;
-import fr.inria.papart.procam.Camera.Type;
+import fr.inria.papart.procam.camera.Camera.Type;
 
 /**
  *

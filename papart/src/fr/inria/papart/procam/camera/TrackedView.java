@@ -16,8 +16,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package fr.inria.papart.procam;
+package fr.inria.papart.procam.camera;
 
+import fr.inria.papart.procam.MarkerBoard;
+import fr.inria.papart.procam.Utils;
+import fr.inria.papart.procam.camera.Camera;
 import org.bytedeco.javacpp.opencv_core.CvMat;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import processing.core.PApplet;
@@ -65,7 +68,7 @@ public class TrackedView {
         outScreenP[3] = new PVector(0, outHeight);
 
         this.botLeft = new PVector(0, 0);
-        this.sizeCapture = new PVector(this.board.width, this.board.height);
+        this.sizeCapture = new PVector(this.board.getWidth(), this.board.getHeight());
     }
 
     // Public constructor for capturing part of a markerboard (or oustide it)
@@ -209,17 +212,17 @@ public class TrackedView {
         PMatrix3D tmp = new PMatrix3D();
         tmp.apply(pos);
 
-        tmp.translate(board.width, 0, 0);
+        tmp.translate(board.getWidth(), 0, 0);
         cornerPos[1].x = tmp.m03;
         cornerPos[1].y = tmp.m13;
         cornerPos[1].z = tmp.m23;
 
-        tmp.translate(0, board.height, 0);
+        tmp.translate(0, board.getHeight(), 0);
         cornerPos[2].x = tmp.m03;
         cornerPos[2].y = tmp.m13;
         cornerPos[2].z = tmp.m23;
 
-        tmp.translate(-board.width, 0, 0);
+        tmp.translate(-board.getWidth(), 0, 0);
         cornerPos[3].x = tmp.m03;
         cornerPos[3].y = tmp.m13;
         cornerPos[3].z = tmp.m23;

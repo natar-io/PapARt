@@ -16,12 +16,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package fr.inria.papart.procam;
+package fr.inria.papart.procam.camera;
 
 /**
  *
  * @author jeremylaviole
  */
+import fr.inria.papart.procam.MarkerBoard;
+import fr.inria.papart.procam.ProjectiveDeviceP;
+import fr.inria.papart.procam.Utils;
 import fr.inria.papart.procam.camera.CamImage;
 import fr.inria.papart.procam.camera.CamImageColor;
 import fr.inria.papart.procam.camera.CamImageGray;
@@ -50,15 +53,15 @@ public abstract class Camera implements PConstants {
     protected IplImage currentImage, copyUndist;
 
     protected CamImage camImage = null;
-    protected PImage depthPImage = null;
 
     public enum Type {
+
         OPENCV, PROCESSING, OPEN_KINECT, FLY_CAPTURE
     }
 
     public enum PixelFormat {
 
-        RGB, BGR, ARGB, RGBA, GRAY
+        RGB, BGR, ARGB, RGBA, GRAY, DEPTH_KINECT_MM
     }
 
     protected PixelFormat format;
@@ -73,12 +76,12 @@ public abstract class Camera implements PConstants {
     protected boolean trackSheets = false;
     private boolean isClosing = false;
     protected boolean isConnected = false;
-    
+
     private boolean undistort = false;
 
     // Properties files
     private String calibrationFile;
-    
+
     // Properties (instanciated)
     protected ProjectiveDeviceP pdp = null;
     protected PMatrix3D camIntrinsicsP3D;
@@ -91,6 +94,7 @@ public abstract class Camera implements PConstants {
 
     // ARToolkit 
     protected String calibrationARToolkit;
+
     private ARTThread thread = null;
 
     protected void checkParameters() {
@@ -109,7 +113,7 @@ public abstract class Camera implements PConstants {
     public void setCalibration(String calibrationYAML) {
         try {
             this.calibrationFile = calibrationYAML;
-            
+
             pdp = ProjectiveDeviceP.loadCameraDevice(calibrationYAML, 0);
             camIntrinsicsP3D = pdp.getIntrinsics();
             this.width = pdp.getWidth();
@@ -124,6 +128,20 @@ public abstract class Camera implements PConstants {
 
     public PImage getPImageCopy() {
         PImage out = parent.createImage(this.width, this.height, RGB);
+        Utils.IplImageToPImage(currentImage, out);
+        return out;
+    }
+
+    /**
+     * Works if the source is IPLImage ?.
+     *
+     * @param context
+     * @return
+     */
+    public PImage getPImageCopy(PApplet context) {
+        System.out.println("Ici ...");
+        PImage out = context.createImage(this.width, this.height, RGB);
+        System.out.println("la ...");
         Utils.IplImageToPImage(currentImage, out);
         return out;
     }
@@ -189,7 +207,7 @@ public abstract class Camera implements PConstants {
 
     // Legacy, use the two next functions.
     /**
-     * @deprecated 
+     * @deprecated
      */
     public void initMarkerDetection(PApplet applet, String calibrationARToolkit, MarkerBoard[] paperSheets) {
         initMarkerDetection(calibrationARToolkit);
@@ -319,7 +337,8 @@ public abstract class Camera implements PConstants {
 
     protected boolean isPixelFormatGray() {
         PixelFormat pixelFormat = getPixelFormat();
-        return pixelFormat == PixelFormat.GRAY;
+        return pixelFormat == PixelFormat.GRAY ||
+                  pixelFormat == PixelFormat.DEPTH_KINECT_MM;
     }
 
     protected boolean isPixelFormatColor() {
@@ -425,6 +444,10 @@ public abstract class Camera implements PConstants {
 
         trackedView.computeCorners(this);
         return trackedView.getImageIpl(currentImage);
+    }
+
+    public String getCalibrationARToolkit() {
+        return calibrationARToolkit;
     }
 
     static public void convertARParams(PApplet parent, String calibrationYAML,

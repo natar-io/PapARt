@@ -8,6 +8,7 @@ import toxi.geom.*;
 
 import processing.video.*;
 
+import processing.app.Base;
 
 boolean useProjector = true;
 boolean useCamera = false;
@@ -16,7 +17,6 @@ Papart papart;
 ProjectorDisplay projector;
 
 public void setup() {
-
 
     if(useCamera){
 	if(useProjector)

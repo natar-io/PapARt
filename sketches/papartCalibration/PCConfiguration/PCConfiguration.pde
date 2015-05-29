@@ -12,6 +12,7 @@ import org.bytedeco.javacpp.opencv_core.*;
 
 import fr.inria.controlP5.*;
 import fr.inria.controlP5.events.*;
+import fr.inria.controlP5.gui.*;
 import fr.inria.controlP5.gui.group.*;
 import fr.inria.controlP5.gui.controllers.*;
 
@@ -23,7 +24,8 @@ import org.bytedeco.javacv.CanvasFrame;
 
 ControlP5 cp5;
 
-ComputerConfiguration cc;
+CameraConfiguration cameraConfig;
+ScreenConfiguration screenConfig;
 
 int nbScreens = 1;
 PImage backgroundImage;
@@ -31,11 +33,9 @@ PImage backgroundImage;
 void setup(){
 
 
-    cc = new ComputerConfiguration();
-
     // Here camera, test it with defaultCameraTest
-    cc.setCameraName("1");
-    cc.setCameraType(Camera.Type.OPENCV);
+    // cc.setCameraName("1");
+    // cc.setCameraType(Camera.Type.OPENCV);
     
     // Camera.Type.OPENCV, "2"    
     // Camera.Type.PROCESSING, "/dev/video1"
@@ -44,28 +44,50 @@ void setup(){
     // TODO: sesizable & movable. Save Size and location !
 
     // Here Screen resolution
-    cc.setProjectionScreenWidth(1280);
-    cc.setProjectionScreenHeight(800);
+    // cc.setProjectionScreenWidth(1280);
+    // cc.setProjectionScreenHeight(800);
     
     // Screen offset, where is the projection screen, relative to the main screen. 
-    cc.setProjectionScreenOffsetX(0);
-    cc.setProjectionScreenOffsetY(200);    
-
+    // cc.setProjectionScreenOffsetX(0);
+    // cc.setProjectionScreenOffsetY(200);    
 
     // Do not modify anything further. 
     size(800, 600, P3D);
-    
 
+    cameraConfig = new CameraConfiguration();
+    screenConfig = new ScreenConfiguration();
+
+    cameraConfig.loadFrom(this, Papart.cameraConfig);
+    screenConfig.loadFrom(this, Papart.screenConfig);
+    
     initUI();
     backgroundImage = loadImage("data/background.png");
+    tryLoadCameraCalibration();
+}
 
+
+int cameraWidth, cameraHeight;
+boolean cameraCalibrationOk = false;
+
+void tryLoadCameraCalibration(){
+
+    try{
+    String calibrationYAML = Papart.proCamCalib;
+    ProjectiveDeviceP pdp = ProjectiveDeviceP.loadCameraDevice(calibrationYAML, 0);
+    cameraWidth = pdp.getWidth();
+    cameraHeight = pdp.getHeight();
+    cameraCalibrationOk = true;
+    println(cameraWidth + " " + cameraHeight);
+    } catch(Exception e){
+
+    }
 }
 
 
 void testCameraButton(boolean value){
     println("Start pressed " + value);
 
-    cc.setCameraName(cameraIdText.getText());
+    cameraConfig.setCameraName(cameraIdText.getText());
 
     if(value){
 	testCamera();
@@ -81,24 +103,24 @@ void testCameraButton(boolean value){
 void cameraTypeChooser(int value){
     
     if(value == 0)
-	cc.setCameraType(Camera.Type.OPENCV);
+	cameraConfig.setCameraType(Camera.Type.OPENCV);
 
     if(value == 1)
-	cc.setCameraType(Camera.Type.PROCESSING);
+	cameraConfig.setCameraType(Camera.Type.PROCESSING);
 
     if(value == 2)
-	cc.setCameraType(Camera.Type.OPEN_KINECT);
+	cameraConfig.setCameraType(Camera.Type.OPEN_KINECT);
 
     if(value == 3)
-	cc.setCameraType(Camera.Type.FLY_CAPTURE);
+	cameraConfig.setCameraType(Camera.Type.FLY_CAPTURE);
 }
 
 void screenChooserRadio(int value){
 
     if(value > 0 && value < nbScreens){
 	PVector resolution = getScreenResolution(value);
-	cc.setProjectionScreenWidth((int) resolution.x);
-	cc.setProjectionScreenHeight((int) resolution.y);
+	screenConfig.setProjectionScreenWidth((int) resolution.x);
+	screenConfig.setProjectionScreenHeight((int) resolution.y);
 	println("screen chooser radio");
     }
 }
@@ -110,14 +132,20 @@ PVector getScreenResolution(int screenNo){
 
 
 
-// TODO: test default camera in here. 
-
+// TODO: test default camera in here.
+ 
 int rectSize = 30;
 
 void draw(){
     
-    int c = color(0,0,0,1);
-    startCameraButton.setPosition(610, 401).setSize(142,32).setColorForeground(c).setColorBackground(c);
+
+    // cColor = new CColor(color(49,51,50),
+    // 	       color(51),
+    // 	       color(71),
+    // 	       color(255),
+    // 	       color(255));
+
+    // updateStyles();
 
     image(backgroundImage, 0, 0);
 
@@ -125,21 +153,63 @@ void draw(){
 
 
 
-
 void keyPressed() {
+    if (key == 27) {
+	//The ASCII code for esc is 27, so therefore: 27
+     //insert your function here
+     }
 
-  // Placed here, bug if it is placed in setup().
-  if(key == ' ')
-      frame.setLocation(cc.getProjectionScreenOffsetX(),
-			cc.getProjectionScreenOffsetY());
-  
-  if(key == 's')
-      save();
 }
 
-void save(){
-    cc.setCameraName(cameraIdText.getText());
-    cc.saveTo(this, Papart.computerConfig);
+
+
+// Todo: custom file chooser. 
+void saveCameraAs(){
+    selectOutput("Select a file to write to:", "fileSelectedSaveCamera");
+}
+
+void fileSelectedSaveCamera(File selection) {
+    saveCamera(selection.getAbsolutePath());
+}
+
+void saveDefaultCamera(){
+    saveCamera(Papart.cameraConfig);
+}
+
+void saveCamera(String fileName){
+    cameraConfig.setCameraName(cameraIdText.getText());
+    cameraConfig.saveTo(this, fileName);
+    println("Camera saved.");
+}
+
+
+
+// Todo: custom file chooser. 
+void saveScreenAs(){
+    selectOutput("Select a file to write to:", "fileSelectedSaveScreen");
+}
+
+void fileSelectedSaveScreen(File selection) {
+    saveScreen(selection.getAbsolutePath());
+}
+
+void saveDefaultScreen(){
+    saveScreen(Papart.screenConfig);
+}
+
+void saveScreen(String fileName){
+    try{
+	screenConfig.setProjectionScreenOffsetX(Integer.parseInt(posXText.getText()));
+	screenConfig.setProjectionScreenOffsetY(Integer.parseInt(posYText.getText()));
+    }catch(java.lang.NumberFormatException e){
+	println("Invalid Position");
+    }
     
-    println("Saved to " + Papart.computerConfig);
+    screenConfig.saveTo(this, fileName);
+    println("Default screen saved.");
 }
+
+
+
+
+

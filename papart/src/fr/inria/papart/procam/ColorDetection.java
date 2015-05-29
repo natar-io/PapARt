@@ -5,6 +5,7 @@
  */
 package fr.inria.papart.procam;
 
+import fr.inria.papart.procam.camera.TrackedView;
 import processing.core.PApplet;
 import processing.core.PImage;
 import processing.core.PVector;

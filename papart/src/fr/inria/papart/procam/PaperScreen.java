@@ -18,6 +18,7 @@
  */
 package fr.inria.papart.procam;
 
+import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.calibration.HomographyCalibration;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ARDisplay;

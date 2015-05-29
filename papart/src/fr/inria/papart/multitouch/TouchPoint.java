@@ -32,7 +32,7 @@ import toxi.geom.Vec3D;
  *
  * @author jeremy
  */
-public class TouchPoint extends DepthPoint implements TouchProvider {
+public class TouchPoint extends DepthPoint {
 
     public static int count = 0;
 
@@ -40,6 +40,7 @@ public class TouchPoint extends DepthPoint implements TouchProvider {
     private PVector previousPosition = new PVector();
     private PVector speed = new PVector();
 
+    // TODO: Remove this !
     private Vec3D positionKinect;
     private Vec3D previousPositionKinect;
 //    private PVector speedKinect = new PVector();
@@ -307,18 +308,15 @@ public class TouchPoint extends DepthPoint implements TouchProvider {
 
     Touch touch;
 
-    @Override
     public boolean hasTouch() {
         return touch != null;
     }
 
-    @Override
     public void createTouch() {
         touch = new Touch();
         touch.id = this.id;
     }
 
-    @Override
     public Touch getTouch() {
         if (touch == null) {
             createTouch();
@@ -327,7 +325,6 @@ public class TouchPoint extends DepthPoint implements TouchProvider {
         return touch;
     }
 
-    @Override
     public void deleteTouch() {
         touch = null;
     }

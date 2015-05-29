@@ -18,7 +18,6 @@
  */
 package fr.inria.papart.multitouch;
 
-import fr.inria.papart.multitouch.metaphors.TouchComparator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;

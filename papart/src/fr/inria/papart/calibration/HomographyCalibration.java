@@ -23,6 +23,7 @@ import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.data.XML;
 import toxi.geom.Matrix4x4;
+import toxi.geom.ReadonlyVec3D;
 import toxi.geom.Vec3D;
 
 /**
@@ -63,7 +64,7 @@ public class HomographyCalibration extends Calibration {
         invPmatrix.invert();
     }
 
-    public Vec3D applyTo(Vec3D src) {
+    public Vec3D applyTo(ReadonlyVec3D src) {
         return this.mat.applyTo(src);
     }
 

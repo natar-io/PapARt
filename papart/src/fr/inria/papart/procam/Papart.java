@@ -18,8 +18,9 @@
  */
 package fr.inria.papart.procam;
 
+import fr.inria.papart.procam.camera.Camera;
+import fr.inria.papart.calibration.CameraConfiguration;
 import fr.inria.papart.calibration.HomographyCalibration;
-import fr.inria.papart.calibration.ComputerConfiguration;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
@@ -27,9 +28,11 @@ import org.bytedeco.javacpp.freenect;
 import fr.inria.papart.drawingapp.Button;
 import fr.inria.papart.depthcam.Kinect;
 import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
+import fr.inria.papart.calibration.ScreenConfiguration;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.multitouch.TUIOTouchInput;
 import fr.inria.papart.multitouch.KinectTouchInput;
+import fr.inria.papart.panel.Panel;
 import fr.inria.papart.procam.camera.CameraFactory;
 import fr.inria.papart.procam.camera.CameraOpenKinect;
 import java.lang.reflect.Constructor;
@@ -54,7 +57,10 @@ public class Papart {
     public static String kinectRGBCalib = folder + "/data/calibration/calibration-kinect-RGB.yaml";
     public static String kinectStereoCalib = folder + "/data/calibration/calibration-kinect-Stereo.yaml";
 
-    public static String computerConfig = folder + "/data/calibration/ComputerConfiguration.xml";
+    // -- computerconfig will be removed !
+//    public static String computerConfig = folder + "/data/calibration/ComputerConfiguration.xml";
+    public static String screenConfig = folder + "/data/calibration/screenConfiguration.xml";
+    public static String cameraConfig = folder + "/data/calibration/cameraConfiguration.xml";
     public static String tablePosition = folder + "/data/calibration/tablePosition.xml";
     public static String planeCalib = folder + "/data/calibration/PlaneCalibration.xml";
     public static String homographyCalib = folder + "/data/calibration/HomographyCalibration.xml";
@@ -87,7 +93,8 @@ public class Papart {
     private CameraOpenKinect cameraOpenKinect;
     private boolean isWithoutCamera = false;
 
-    private ComputerConfiguration computerConfiguration;
+    private CameraConfiguration cameraConfiguration;
+    private ScreenConfiguration screenConfiguration;
     // TODO: find what to do with these...
 //    private final int depthFormat = freenect.FREENECT_DEPTH_10BIT;
 //    private final int kinectFormat = Kinect.KINECT_10BIT;
@@ -105,8 +112,8 @@ public class Papart {
         this.touchInitialized = false;
         this.applet = (PApplet) applet;
 
-        computerConfiguration = new ComputerConfiguration();
-        computerConfiguration.loadFrom(this.applet, computerConfig);
+        cameraConfiguration = getDefaultCameraConfiguration(this.applet);
+        screenConfiguration = getDefaultScreenConfiguration(this.applet);
 
         this.appletClass = applet.getClass();
         PFont font = this.applet.loadFont(defaultFont);
@@ -118,6 +125,18 @@ public class Papart {
         }
     }
 
+    private static CameraConfiguration getDefaultCameraConfiguration(PApplet applet) {
+        CameraConfiguration config = new CameraConfiguration();
+        config.loadFrom(applet, cameraConfig);
+        return config;
+    }
+
+    private static ScreenConfiguration getDefaultScreenConfiguration(PApplet applet) {
+        ScreenConfiguration config = new ScreenConfiguration();
+        config.loadFrom(applet, screenConfig);
+        return config;
+    }
+
     /**
      * Start a projection with a procam, it replaces size().
      *
@@ -125,12 +144,13 @@ public class Papart {
      * @return
      */
     public static Papart projection(PApplet applet) {
-        ComputerConfiguration computerConfiguration = new ComputerConfiguration();
-        computerConfiguration.loadFrom(applet, computerConfig);
+
+        ScreenConfiguration screenConfiguration = getDefaultScreenConfiguration(applet);
 
         removeFrameBorder(applet);
-        applet.size(computerConfiguration.getProjectionScreenWidth(),
-                computerConfiguration.getProjectionScreenHeight(),
+        
+        applet.size(screenConfiguration.getProjectionScreenWidth(),
+                screenConfiguration.getProjectionScreenHeight(),
                 PConstants.OPENGL);
 
         Papart papart = new Papart(applet);
@@ -143,15 +163,16 @@ public class Papart {
     /**
      * Start a see through AR application, it replaces size().
      *
-     * @param applet
+     * @param applet$
      * @return
      */
     public static Papart seeThrough(PApplet applet) {
-        ComputerConfiguration computerConfiguration = new ComputerConfiguration();
-        computerConfiguration.loadFrom(applet, computerConfig);
 
-        Camera cameraTracking = CameraFactory.createCamera(computerConfiguration.getCameraType(),
-                computerConfiguration.getCameraName());
+        CameraConfiguration cameraConfiguration = getDefaultCameraConfiguration(applet);
+
+        Camera cameraTracking = CameraFactory.createCamera(
+                cameraConfiguration.getCameraType(),
+                cameraConfiguration.getCameraName());
         cameraTracking.setParent(applet);
         cameraTracking.setCalibration(proCamCalib);
 
@@ -173,18 +194,21 @@ public class Papart {
      * @return
      */
     public static Papart projection2D(PApplet applet) {
-        ComputerConfiguration computerConfiguration = new ComputerConfiguration();
-        computerConfiguration.loadFrom(applet, computerConfig);
+        
+        
+        ScreenConfiguration screenConfiguration = getDefaultScreenConfiguration(applet);
 
         removeFrameBorder(applet);
 
-        applet.size(computerConfiguration.getProjectionScreenWidth(),
-                computerConfiguration.getProjectionScreenHeight(),
+        applet.size(screenConfiguration.getProjectionScreenWidth(),
+                screenConfiguration.getProjectionScreenHeight(),
                 PConstants.OPENGL);
 
         Papart papart = new Papart(applet);
         papart.registerForWindowLocation();
 
+        Panel panel = new Panel(applet);
+        
         return papart;
     }
 
@@ -220,8 +244,8 @@ public class Papart {
      * Set the frame to default location.
      */
     public void defaultFrameLocation() {
-        this.applet.frame.setLocation(computerConfiguration.getProjectionScreenOffsetX(),
-                computerConfiguration.getProjectionScreenOffsetY());
+        this.applet.frame.setLocation(screenConfiguration.getProjectionScreenOffsetX(),
+                screenConfiguration.getProjectionScreenOffsetY());
     }
 
     protected static void removeFrameBorder(PApplet applet) {
@@ -274,13 +298,20 @@ public class Papart {
         paperScreen.screen.setMainLocation(HomographyCalibration.getMatFrom(applet, tablePosition));
     }
 
+    @Deprecated
     public void initNoCamera(int quality) {
         this.isWithoutCamera = true;
         initNoCameraDisplay(quality);
     }
+    
+    public void initDebug() {
+        this.isWithoutCamera = true;
+        initDebugDisplay();
+    }
 
     public void initProjectorCamera() {
-        initProjectorCamera(computerConfiguration.getCameraName(), computerConfiguration.getCameraType(), 1);
+        initProjectorCamera(cameraConfiguration.getCameraName(),
+                cameraConfiguration.getCameraType(), 1);
     }
 
     public void initProjectorCamera(String cameraNo, Camera.Type cameraType) {
@@ -331,7 +362,8 @@ public class Papart {
      * @see initCamera(String, int, float)
      */
     public void initCamera() {
-        initCamera(computerConfiguration.getCameraName(), computerConfiguration.getCameraType(), 1);
+        initCamera(cameraConfiguration.getCameraName(),
+                cameraConfiguration.getCameraType(), 1);
     }
 
     /**
@@ -381,7 +413,12 @@ public class Papart {
         displayInitialized = true;
     }
 
+    @Deprecated
     private void initNoCameraDisplay(float quality) {
+        initDebugDisplay();
+    }
+
+    private void initDebugDisplay() {
         display = new BaseDisplay();
 
         display.setFrameSize(applet.width, applet.height);
@@ -442,7 +479,7 @@ public class Papart {
         cameraOpenKinect = (CameraOpenKinect) CameraFactory.createCamera(Camera.Type.OPEN_KINECT, 0);
         cameraOpenKinect.setParent(applet);
         cameraOpenKinect.setCalibration(kinectRGBCalib);
-        cameraOpenKinect.setDepthFormat(depthFormat);
+        cameraOpenKinect.getDepthCamera().setDepthFormat(depthFormat);
         cameraOpenKinect.start();
         cameraOpenKinect.setThread();
     }
@@ -539,7 +576,7 @@ public class Papart {
     }
 
     public BaseDisplay getDisplay() {
-        assert (displayInitialized);
+//        assert (displayInitialized);
         return this.display;
     }
 
@@ -555,23 +592,24 @@ public class Papart {
             setNoTrackingCamera();
         }
     }
-    
-    public void setNoTrackingCamera(){
+
+    public void setNoTrackingCamera() {
         this.isWithoutCamera = true;
     }
 
+    // TODO: remove these asserts...
     public ProjectorDisplay getProjectorDisplay() {
-        assert (displayInitialized);
+//        assert (displayInitialized);
         return this.projector;
     }
 
     public ARDisplay getARDisplay() {
-        assert (displayInitialized);
+//        assert (displayInitialized);
         return this.arDisplay;
     }
 
     public Camera getCameraTracking() {
-        assert (cameraInitialized);
+//        assert (cameraInitialized);
         return this.cameraTracking;
     }
 

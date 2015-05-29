@@ -16,8 +16,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package fr.inria.papart.procam;
+package fr.inria.papart.procam.camera;
 
+import fr.inria.papart.procam.MarkerBoard;
+import fr.inria.papart.procam.camera.Camera;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import java.util.List;
 import java.util.logging.Level;

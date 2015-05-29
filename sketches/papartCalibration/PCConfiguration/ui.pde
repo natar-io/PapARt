@@ -1,60 +1,62 @@
 
 Textfield cameraIdText, posXText, posYText;
-RadioButton screenChooser;
+RadioButton screenChooser,  cameraType ;
 
-Button startCameraButton;
+Button startCameraButton, saveCameraAsButton, saveDefaultCameraButton;
+Button initButton, saveScreenAsButton, saveDefaultScreenButton;
 
 PFont myFont = createFont("arial",20);
+ControlFont cFont;
+CColor cColor;
+CColor cColorToggle;
 
 PImage testCameraImg;
 
 void initUI(){
     cp5 = new ControlP5(this);
 
+   // cp5.setColorForeground(color(200,0));
+
+   // cp5.setColorLabel(color(0,0,0,0));
+  //  cp5.setColorValue(color(0,0,0,0));
+  //  cp5.setColorActive(color(161,4,4,0));
+    
+   // cp5.setColorBackground(color(200,0));
+
+    PFont pfont = loadFont("data/Serif.plain-13.vlw"); // use true/false for smooth/no-smooth
+    cFont = new ControlFont(pfont,13);
+
+    cColor = new CColor(color(134, 171, 242),
+	       color(51),
+	       color(71),
+	       color(255),
+	       color(255));
+
+
+    cColorToggle = new CColor(color(134, 171, 242),
+	       color(120),
+	       color(219),
+	       color(255),
+	       color(255));
+
+
     initScreenUI();
     initCameraUI();
 
-    cp5.addButton("save")
-	.setPosition(320, 520)
-	.setSize(40, 20)
-	;
+    updateStyles();
+
 }
 
 void initScreenUI(){
     screenChooser = cp5.addRadioButton("screenChooserRadio")
-	.setPosition(57,100)
+	.setPosition(50,100)
 	.setLabel("Screen Chooser")
+	.toUpperCase(false)
 	.setItemWidth(20)
 	.setItemHeight(20)
 	.setColorLabel(color(255))
 	.activate(0)
 	;
-
-
-    posXText = cp5.addTextfield("PosX")
-	.setPosition(440, 100)
-	.setSize(80,20)
-	.setFont(myFont)
-	.setLabel("Position X")
-	.setText(Integer.toString(cc.getProjectionScreenOffsetX()))
-	;
-
-
-    posYText = cp5.addTextfield("PosY")
-	.setPosition(440, 150)
-	.setSize(80,20)
-	.setFont(myFont)
-	.setLabel("Position Y")
-	.setText(Integer.toString(cc.getProjectionScreenOffsetY()))
-	;
-
-
-    cp5.addButton("initSecondApplet")
-	.setPosition(610, 150)
-	.setLabel("Display on Projection Screen")
-	.setSize(200, 20)
-	;
-
 
     String[] descriptions = CanvasFrame.getScreenDescriptions();
     int k = 0;
@@ -70,14 +72,48 @@ void initScreenUI(){
     }
     nbScreens = k;
 
+    posXText = cp5.addTextfield("PosX")
+	.setPosition(417, 100)
+	.setSize(80,20)
+	.setFont(myFont)
+	.setLabel("Position X")
+	.setText(Integer.toString(screenConfig.getProjectionScreenOffsetX()))
+	;
+    
+    posYText = cp5.addTextfield("PosY")
+	.setPosition(417, 150)
+	.setSize(80,20)
+	.setFont(myFont)
+	.setLabel("Position Y")
+	.setText(Integer.toString(screenConfig.getProjectionScreenOffsetY()))
+	;
+
+    initButton = cp5.addButton("initSecondApplet")
+	.setPosition(611, 102)
+	.setLabel("Test Projection")
+	.setSize(110, 20)
+	;
+
+    saveDefaultScreenButton = cp5.addButton("saveDefaultScreen")
+	.setPosition(611, 143)
+	.setLabel("Save as default")
+	.setSize(110, 20)
+	;
+
+    saveScreenAsButton = cp5.addButton("saveScreenAs")
+	.setPosition(611, 183)
+	.setLabel("Save screen as...")
+	.setSize(110, 20)
+	;
+
 
 }
 
 void initCameraUI(){
 
 
-    cp5.addRadioButton("cameraTypeChooser")
-	.setPosition(100, 300)
+    cameraType = cp5.addRadioButton("cameraTypeChooser")
+	.setPosition(50, 365)
 	.setItemWidth(20)
 	.setItemHeight(20)
 	.addItem("OpenCV", 0)
@@ -85,25 +121,73 @@ void initCameraUI(){
 	.addItem("OpenKinect", 2)
 	.addItem("FlyCapture", 3)
 	.setColorLabel(color(255))
-	.activate(0)
+	.activate(cameraConfig.getCameraType().ordinal())
 	;
 
+
     cameraIdText = cp5.addTextfield("CameraId")
-	.setPosition(325 ,350)
+	.setPosition(250 ,370)
 	.setSize(200,20)
 	.setFont(myFont)
 	.setLabel("")
 	.setLabelVisible(false)
-	.setText(cc.getCameraName())
+	.setText(cameraConfig.getCameraName())
 	.setFocus(true)
 	;
+
+   
 
     testCameraImg = loadImage("data/testCamera.png");
 
     startCameraButton = cp5.addButton("testCameraButton")
-	.setPosition(608, 350)
-	.setSize(170,43)
+	.setPosition(611, 372)
+	.setLabel("Test the camera")
+	.setSize(110, 20)
 	;
 
+    saveDefaultCameraButton = cp5.addButton("saveDefaultCamera")
+	.setPosition(611, 413)
+	.setLabel("Save as default")
+	.setSize(110, 20)
+	;
+
+    saveCameraAsButton = cp5.addButton("saveCameraAs")
+	.setPosition(611, 453)
+	.setLabel("Save camera as.")
+	.setSize(110, 20)
+	;
 
 }
+
+
+
+void updateStyles(){
+
+    setStyle(screenChooser);
+    setStyle(posXText);
+    setStyle(posYText);
+    setStyle(initButton);
+    setStyle(saveScreenAsButton);
+    setStyle(saveDefaultScreenButton);
+
+    setStyle(cameraType);
+    setStyle(cameraIdText);
+    setStyle(startCameraButton);
+    setStyle(saveDefaultCameraButton);
+    setStyle(saveCameraAsButton);
+}
+
+void setStyle(Controller controller){
+    controller.getCaptionLabel().updateFont(cFont).toUpperCase(false);
+    controller.setColor(cColor);
+}
+
+
+void setStyle(RadioButton controller){
+    for(Toggle toggle : controller.getItems()){
+	toggle.getCaptionLabel().updateFont(cFont).toUpperCase(false);
+	toggle.setColor(cColorToggle);
+    }
+}
+
+

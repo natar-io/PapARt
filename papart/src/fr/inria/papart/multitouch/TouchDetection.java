@@ -18,10 +18,12 @@
  */
 package fr.inria.papart.multitouch;
 
+import fr.inria.papart.calibration.PlaneCalibration;
 import fr.inria.papart.depthcam.DepthData;
 import fr.inria.papart.depthcam.Kinect;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashSet;
 import processing.core.PApplet;
 import processing.core.PVector;
@@ -228,6 +230,67 @@ public abstract class TouchDetection {
 
     public boolean isInside(PVector v, float min, float max) {
         return v.x > min - sideError && v.x < max + sideError && v.y < max + sideError && v.y > min - sideError;
+    }
+
+    class ClosestComparator implements Comparator {
+
+        public Vec3D[] projPoints;
+
+        public ClosestComparator(Vec3D[] proj) {
+            projPoints = proj;
+        }
+
+        public int compare(Object tp1, Object tp2) {
+
+            Vec3D pos1 = projPoints[(Integer) tp1];
+            Vec3D pos2 = projPoints[(Integer) tp2];
+            if (pos1.z > pos2.z) {
+                return 1;
+            }
+            return -1;
+        }
+    }
+
+    class ClosestComparatorY implements Comparator {
+
+        public Vec3D[] projPoints;
+
+        public ClosestComparatorY(Vec3D[] proj) {
+            projPoints = proj;
+        }
+
+        public int compare(Object tp1, Object tp2) {
+
+            Vec3D pos1 = projPoints[(Integer) tp1];
+            Vec3D pos2 = projPoints[(Integer) tp2];
+            if (pos1.y < pos2.y) {
+                return 1;
+            }
+            return -1;
+        }
+    }
+
+    class ClosestComparatorHeight implements Comparator {
+
+        public Vec3D[] points;
+        PlaneCalibration calibration;
+
+        public ClosestComparatorHeight(Vec3D points[],
+                PlaneCalibration calib) {
+            this.points = points;
+            this.calibration = calib;
+        }
+
+        @Override
+        public int compare(Object tp1, Object tp2) {
+
+            float d1 = calibration.getPlane().distanceTo(points[(Integer) tp1]);
+            float d2 = calibration.getPlane().distanceTo(points[(Integer) tp2]);
+            if (d1 > d2) {
+                return 1;
+            }
+            return -1;
+        }
     }
 
 }

@@ -37,7 +37,6 @@ void setup(){
     camera = (CameraOpenKinect) CameraFactory.createCamera(Camera.Type.OPEN_KINECT, 0);
     camera.setParent(this);
     camera.setCalibration(Papart.kinectRGBCalib);
-    camera.setDepthFormat(depthFormat);
     camera.start();
 
     reset();
@@ -68,15 +67,9 @@ IplImage kinectImgDepth;
 void draw(){
     background(0);
 
-    kinect.KinectRGBIRCalibration = new PMatrix3D(1, 0, 0, 5,
-						  0, 1, 0, 0,
-						  0, 0, 1, 0,
-						  0, 0, 0, 1);
-
-
     camera.grab();
     kinectImg = camera.getIplImage();
-    kinectImgDepth = camera.getDepthIplImage();
+    kinectImgDepth = camera.getDepthCamera().getIplImage();
     if(kinectImg == null || kinectImgDepth == null){
 	return;
     }
