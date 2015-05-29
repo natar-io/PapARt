@@ -57,8 +57,10 @@ public class TouchDetectionSimple2D extends TouchDetection{
 
         currentPointValidityCondition = new CheckTouchPoint();
         int firstPoint = toVisit.iterator().next();
-        setPrecisionFrom(firstPoint);
-        searchDepth = precision * 7;// TODO: FIX this value !
+        
+        maxDistance = 10;
+//         setPrecisionFrom(firstPoint);
+        searchDepth = 40;// TODO: FIX this value !
         MAX_REC = 100; // TODO: fix this value.
     }
 

@@ -207,7 +207,7 @@ public class Papart {
         Papart papart = new Papart(applet);
         papart.registerForWindowLocation();
 
-        Panel panel = new Panel(applet);
+//        Panel panel = new Panel(applet);
         
         return papart;
     }

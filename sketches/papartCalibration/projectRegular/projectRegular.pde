@@ -1,5 +1,6 @@
 import fr.inria.papart.procam.*;
 import org.bytedeco.javacpp.*;
+import toxi.geom.*;
 
 int ellipseSize = 40;
 

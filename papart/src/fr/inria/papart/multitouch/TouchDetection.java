@@ -36,9 +36,10 @@ import toxi.geom.Vec3D;
 public abstract class TouchDetection {
 
     protected float maxDistance = 10f;    // in mm
-    protected float MINIMUM_COMPONENT_SIZE = 5;   // in px
+    protected float MINIMUM_COMPONENT_SIZE = 3;   // in px
+    
+    public static int MINIMUM_HEIGHT = 1; // mm
     protected int MAX_REC = 500;
-    public static int MINIMUM_HEIGHT = 2; // mm
 
     protected boolean[] assignedPoints = null;
     protected byte[] connectedComponentImage = null;
