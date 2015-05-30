@@ -253,7 +253,7 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
     @Override
     public PMatrix3D getExtrinsics() {
         assert (hasExtrinsics());
-        return extrinsics;
+        return extrinsics.get();
     }
 
     /**

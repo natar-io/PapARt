@@ -148,7 +148,7 @@ public class Papart {
         ScreenConfiguration screenConfiguration = getDefaultScreenConfiguration(applet);
 
         removeFrameBorder(applet);
-        
+
         applet.size(screenConfiguration.getProjectionScreenWidth(),
                 screenConfiguration.getProjectionScreenHeight(),
                 PConstants.OPENGL);
@@ -156,6 +156,29 @@ public class Papart {
         Papart papart = new Papart(applet);
         papart.registerForWindowLocation();
         papart.initProjectorCamera();
+
+        return papart;
+    }
+
+    /**
+     * Start a projection with a procam, it replaces size().
+     *
+     * @param applet
+     * @return
+     */
+    public static Papart projectionOnly(PApplet applet) {
+
+        ScreenConfiguration screenConfiguration = getDefaultScreenConfiguration(applet);
+
+        removeFrameBorder(applet);
+
+        applet.size(screenConfiguration.getProjectionScreenWidth(),
+                screenConfiguration.getProjectionScreenHeight(),
+                PConstants.OPENGL);
+
+        Papart papart = new Papart(applet);
+        papart.registerForWindowLocation();
+        papart.initProjectorDisplay(1);
 
         return papart;
     }
@@ -194,8 +217,7 @@ public class Papart {
      * @return
      */
     public static Papart projection2D(PApplet applet) {
-        
-        
+
         ScreenConfiguration screenConfiguration = getDefaultScreenConfiguration(applet);
 
         removeFrameBorder(applet);
@@ -208,7 +230,6 @@ public class Papart {
         papart.registerForWindowLocation();
 
 //        Panel panel = new Panel(applet);
-        
         return papart;
     }
 
@@ -270,8 +291,29 @@ public class Papart {
      *
      * @param paperScreen
      */
-    public void setTablePosition(PaperScreen paperScreen) {
+    public void setTableLocation(PaperScreen paperScreen) {
         HomographyCalibration.saveMatTo(applet, paperScreen.getLocation(), tablePosition);
+    }
+
+    /**
+     * Save the position of a matrix the default table location.
+     *
+     * @param mat
+     */
+    public void setTableLocation(PMatrix3D mat) {
+        HomographyCalibration.saveMatTo(applet, mat, tablePosition);
+    }
+
+    /**
+     * Use if the table location is relative to the projector. 
+     * @return 
+     */
+    public PMatrix3D getTableLocationFromProjector() {
+        PMatrix3D extr = getProjectorDisplay().getExtrinsics();
+        extr.invert();
+        PMatrix3D table = getTableLocation();
+        table.preApply(extr);
+        return table;
     }
 
     /**
@@ -280,7 +322,7 @@ public class Papart {
      *
      * @return
      */
-    public PMatrix3D getTablePosition() {
+    public PMatrix3D getTableLocation() {
         return HomographyCalibration.getMatFrom(applet, tablePosition);
     }
 
@@ -303,7 +345,7 @@ public class Papart {
         this.isWithoutCamera = true;
         initNoCameraDisplay(quality);
     }
-    
+
     public void initDebug() {
         this.isWithoutCamera = true;
         initDebugDisplay();

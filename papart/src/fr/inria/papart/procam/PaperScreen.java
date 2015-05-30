@@ -163,12 +163,16 @@ public class PaperScreen {
                     + "to init. ";
             throw new RuntimeException(message);
         }
+
         if (this.markerBoard == null) {
-            String message = "This PaperScreen cannot be initialized without "
-                    + "a markerboard. See loadMarkerBoard and setMarkerboard "
-                    + "methods. ";
-            throw new RuntimeException(message);
+            this.isWithoutCamera = true;
         }
+//        if (this.markerBoard == null) {
+//            String message = "This PaperScreen cannot be initialized without "
+//                    + "a markerboard. See loadMarkerBoard and setMarkerboard "
+//                    + "methods. ";
+//            throw new RuntimeException(message);
+//        }
 
         this.parent = parent;
         DrawUtils.applet = parent; // For Touch -> Check for removal ?
@@ -183,12 +187,11 @@ public class PaperScreen {
         // add it to the display
         display.addScreen(screen);
 
-        trackCurrentMarkerBoard();
-
         // If there is really a camera tracking. 
         if (!isWithoutCamera) {
             // automatic update of the paper screen, regarding the camera. 
 //            screen.setAutoUpdatePos(cameraTracking, markerBoard);
+            trackCurrentMarkerBoard();
 
             // default filtering
             markerBoard.setDrawingMode(cameraTracking, true, 20);

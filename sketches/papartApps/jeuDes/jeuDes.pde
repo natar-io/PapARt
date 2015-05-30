@@ -61,7 +61,7 @@ void keyPressed() {
     if(key == 'r')
 	removeLastToken();
     
-    if(key == 'n')
+    if(key == 'n' || key == ' ')
 	nextPlayer();
     
 }

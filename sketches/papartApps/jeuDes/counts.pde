@@ -4,7 +4,7 @@ int HEART = 0;
 int ATTACK = 1;
 int POWER = 2;
 
-static Zone[] zones = new Zone[3];
+ Zone[] zones = new Zone[3];
 MyCounter counter; 
 public class MyCounter  extends PaperTouchScreen {
 
@@ -77,10 +77,8 @@ public class MyCounter  extends PaperTouchScreen {
 
 }
 
-static int nbZones = 0;
-static int zoneWidth = 50;
-
-
+int nbZones = 0;
+int zoneWidth = 50;
 
 class Zone {
 
