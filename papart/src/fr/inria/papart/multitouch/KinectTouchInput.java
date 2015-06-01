@@ -18,6 +18,7 @@
  */
 package fr.inria.papart.multitouch;
 
+import fr.inria.papart.calibration.PlanarTouchCalibration;
 import fr.inria.papart.depthcam.DepthData;
 import fr.inria.papart.depthcam.DepthDataElement;
 import fr.inria.papart.depthcam.DepthPoint;
@@ -59,15 +60,11 @@ public class KinectTouchInput extends TouchInput {
 
     public static final int NO_TOUCH = -1;
     private int touch2DPrecision, touch3DPrecision;
-    private Kinect kinect;
-    private PApplet parent;
+    private final Kinect kinect;
+    private final PApplet parent;
 
     private final Semaphore touchPointSemaphore = new Semaphore(1, true);
     private final Semaphore depthDataSem = new Semaphore(1);
-
-// Tracking parameters
-    static public float trackNearDist = 30f;  // in mm
-    static public float trackNearDist3D = 70f;  // in mm
 
     // List of TouchPoints, given to the user
     private final CameraOpenKinect kinectCamera;
@@ -91,6 +88,14 @@ public class KinectTouchInput extends TouchInput {
         this.touchDetection2D = new TouchDetectionSimple2D(Kinect.SIZE);
         this.touchDetection3D = new TouchDetectionSimple3D(Kinect.SIZE);
     }
+    
+    public void setTouchDetectionCalibration(PlanarTouchCalibration touchCalib){
+        this.touchDetection2D.setCalibration(touchCalib);
+    }
+ 
+    public void setTouchDetectionCalibration3D(PlanarTouchCalibration touchCalib){
+        this.touchDetection3D.setCalibration(touchCalib);
+    }
 
     @Override
     public void update() {
@@ -102,6 +107,9 @@ public class KinectTouchInput extends TouchInput {
             if (colImage == null || depthImage == null) {
                 return;
             }
+
+            touch2DPrecision = touchDetection2D.getPrecision();
+            touch3DPrecision = touchDetection3D.getPrecision();
 
             if (touch2DPrecision > 0 && touch3DPrecision > 0) {
                 kinect.updateMT(depthImage, colImage, calibration, touch2DPrecision, touch3DPrecision);
@@ -382,47 +390,29 @@ public class KinectTouchInput extends TouchInput {
 
     // Raw versions of the algorithm are providing each points at each time. 
     // no updates, no tracking. 
-    public ArrayList<TouchPoint> find2DTouchRaw(int skip) {
-        assert (skip > 0);
-        return touchDetection2D.compute(kinect.getDepthData(), skip);
+    public ArrayList<TouchPoint> find2DTouchRaw() {
+        return touchDetection2D.compute(kinect.getDepthData());
     }
 
     public ArrayList<TouchPoint> find3DTouchRaw(int skip) {
-        assert (skip > 0);
-        return touchDetection3D.compute(kinect.getDepthData(), skip);
+        return touchDetection3D.compute(kinect.getDepthData());
     }
 
     protected void findAndTrack2D() {
         assert (touch2DPrecision != 0);
         ArrayList<TouchPoint> newList = touchDetection2D.compute(
-                kinect.getDepthData(),
-                touch2DPrecision);
-       TouchPointTracker.trackPoints(touchPoints2D, newList,
-                parent.millis(), trackNearDist);
+                kinect.getDepthData());
+        TouchPointTracker.trackPoints(touchPoints2D, newList,
+                parent.millis());
     }
 
     protected void findAndTrack3D() {
         assert (touch3DPrecision != 0);
         ArrayList<TouchPoint> newList = touchDetection3D.compute(
-                kinect.getDepthData(),
-                touch3DPrecision);
+                kinect.getDepthData());
         TouchPointTracker.trackPoints(touchPoints3D,
                 newList,
-                parent.millis(),
-                trackNearDist3D);
-    }
-
-    public void setPrecision(int precision2D, int precision3D) {
-        setPrecision2D(precision2D);
-        setPrecision3D(precision3D);
-    }
-
-    public void setPrecision2D(int precision) {
-        this.touch2DPrecision = precision;
-    }
-
-    public void setPrecision3D(int precision) {
-        this.touch3DPrecision = precision;
+                parent.millis());
     }
 
     public ArrayList<TouchPoint> getTouchPoints2D() {
@@ -435,6 +425,14 @@ public class KinectTouchInput extends TouchInput {
 
     public PlaneAndProjectionCalibration getCalibration() {
         return calibration;
+    }
+
+    public TouchDetectionSimple2D getTouchDetection2D() {
+        return touchDetection2D;
+    }
+
+    public TouchDetectionSimple3D getTouchDetection3D() {
+        return touchDetection3D;
     }
 
     public boolean useRawDepth() {

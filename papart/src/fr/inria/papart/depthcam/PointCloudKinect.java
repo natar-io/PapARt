@@ -33,6 +33,10 @@ public class PointCloudKinect extends PointCloud implements PConstants {
         super(parent, Kinect.SIZE / (skip * skip));
     }
     
+    public PointCloudKinect(PApplet parent) {
+        this(parent, 1);
+    }
+    
     public void updateWith(KinectProcessing kinect){
         boolean[] valid = kinect.getValidPoints();
         Vec3D[] points = kinect.getDepthPoints();

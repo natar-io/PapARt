@@ -31,18 +31,17 @@ import java.util.List;
  */
 public class TouchDetectionSimple3D extends TouchDetection {
 
-    protected float MINIMUM_COMPONENT_SIZE_3D = 50;
+    protected int MINIMUM_COMPONENT_SIZE_3D = 50;
     protected int COMPONENT_SIZE_FOR_POSITION = 10;
 
     public TouchDetectionSimple3D(int size) {
         super(size);
-        MINIMUM_COMPONENT_SIZE = MINIMUM_COMPONENT_SIZE_3D;
+        calib.setMinimumComponentSize(MINIMUM_COMPONENT_SIZE_3D);
     }
 
     @Override
-    public ArrayList<TouchPoint> compute(DepthData dData, int skip) {
+    public ArrayList<TouchPoint> compute(DepthData dData) {
         this.depthData = dData;
-        this.precision = skip;
 
         if (!hasCCToFind()) {
             return new ArrayList<TouchPoint>();
@@ -66,10 +65,10 @@ public class TouchDetectionSimple3D extends TouchDetection {
 
         currentPointValidityCondition = new CheckTouchPoint3D();
 
-        int firstPoint = toVisit.iterator().next();
-        setPrecisionFrom(firstPoint);
-        searchDepth = precision * 7;// TODO: FIX this value !
-        MAX_REC = 1000; // TODO: fix this value.
+//        int firstPoint = toVisit.iterator().next();
+//        setPrecisionFrom(firstPoint);
+//        searchDepth = precision * 7;// TODO: FIX this value !
+//        maximumRecursion = 1000; // TODO: fix this value.
     }
 
     @Override
@@ -101,7 +100,7 @@ public class TouchDetectionSimple3D extends TouchDetection {
             return !assignedPoints[offset] // not assigned  
                     && depthData.validPointsMask3D[offset] // is valid
                     && (depthData.kinectPoints[offset] != Kinect.INVALID_POINT) // not invalid point (invalid depth)
-                    && distanceToCurrent < maxDistance;
+                    && distanceToCurrent < calib.getMaximumDistance();
         }
     }
 

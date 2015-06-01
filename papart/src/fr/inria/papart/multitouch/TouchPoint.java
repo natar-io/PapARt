@@ -67,6 +67,8 @@ public class TouchPoint extends DepthPoint {
     public int attachedValue = -1;
     public Object attachedObject;
 
+    private TouchDetection detection;
+
 // filtering 
     private OneEuroFilter[] filters;
     public static float filterFreq = 30f;
@@ -203,8 +205,8 @@ public class TouchPoint extends DepthPoint {
         this.depthDataElements = tp.getDepthDataElements();
     }
 
-    public boolean isObselete(int currentTime, int duration) {
-        return (currentTime - updateTime) > duration;
+    public boolean isObselete(int currentTime) {
+        return (currentTime - updateTime) > this.getDetection().getTrackingForgetTime();
     }
 
     public boolean isToRemove(int currentTime, int duration) {
@@ -327,6 +329,14 @@ public class TouchPoint extends DepthPoint {
 
     public void deleteTouch() {
         touch = null;
+    }
+
+    public TouchDetection getDetection() {
+        return detection;
+    }
+
+    protected void setDetection(TouchDetection detection) {
+        this.detection = detection;
     }
 
 }

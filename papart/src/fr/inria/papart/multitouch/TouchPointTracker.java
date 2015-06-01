@@ -28,10 +28,6 @@ import java.util.Iterator;
  */
 public class TouchPointTracker {
 
-//    static public final int forgetTime = 1000;       // in ms -- TODO: For debug
-    static public int forgetTime = 250;       // in ms
-    static public int deleteDelay = 250;       // in ms
-
     /**
      *
      * @param currentList
@@ -41,15 +37,14 @@ public class TouchPointTracker {
      * @return the deleted points.
      */
     public static void trackPoints(ArrayList<TouchPoint> currentList,
-            ArrayList<TouchPoint> newPoints, int currentTime,
-            float trackDistance) {
+            ArrayList<TouchPoint> newPoints, int currentTime) {
 
         deleteOldPoints(currentList, currentTime);
-        updatePoints(currentList, newPoints, trackDistance);
+        updatePoints(currentList, newPoints);
         addNewPoints(currentList, newPoints);
     }
 
-    public static void updatePoints(ArrayList<TouchPoint> currentList, ArrayList<TouchPoint> newPoints, float trackDistance) {
+    public static void updatePoints(ArrayList<TouchPoint> currentList, ArrayList<TouchPoint> newPoints) {
 
         // many previous points, try to find correspondances.
         ArrayList<TouchPointComparison> tpt = new ArrayList<TouchPointComparison>();
@@ -64,7 +59,7 @@ public class TouchPointTracker {
         Collections.sort(tpt);
 
         for (TouchPointComparison tpc : tpt) {
-            if (tpc.distance < trackDistance) {
+            if (tpc.distance < tpc.newTp.getDetection().getTrackingMaxDistance()) {
                 // new points are marked for deletion after update.
                 tpc.update();
             }
@@ -88,7 +83,7 @@ public class TouchPointTracker {
             TouchPoint tp = it.next();
             tp.setUpdated(false);
 
-            if (tp.isObselete(currentTime, forgetTime)) {
+            if (tp.isObselete(currentTime)) {
                 tp.delete(currentTime);
                 it.remove();
             }

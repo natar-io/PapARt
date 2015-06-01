@@ -10,9 +10,14 @@ import org.bytedeco.javacpp.freenect;
 import org.bytedeco.javacpp.opencv_core.*;
 import java.nio.IntBuffer;
 
+import fr.inria.controlP5.*;
+import fr.inria.controlP5.events.*;
+import fr.inria.controlP5.gui.controllers.*;
+import fr.inria.controlP5.gui.group.*;
 
 import peasy.*;
 
+ControlP5 cp5;
 PeasyCam cam;
 
 CameraOpenKinect camera;
@@ -24,7 +29,7 @@ HomographyCreator homographyCreator;
 HomographyCalibration homographyCalibration;
 PlaneCalibration planeCalibration;
 PlaneAndProjectionCalibration planeProjCalibration;
-
+    
 int precision = 2;
 
 
@@ -56,8 +61,11 @@ void setup(){
 				  Papart.kinectRGBCalib,
 				  kinectFormat);
     
-  pointCloud = new PointCloudKinect(this, precision);
+    //  pointCloud = new PointCloudKinect(this, precision);
+    pointCloud = new PointCloudKinect(this);
 
+  initGui();
+  
   // Set the virtual camera
   cam = new PeasyCam(this, 0, 0, -800, 800);
   cam.setMinimumDistance(0);
@@ -66,16 +74,27 @@ void setup(){
 
   touchDetection = new TouchDetectionSimple2D(Kinect.SIZE);
   touchDetection3D = new TouchDetectionSimple3D(Kinect.SIZE);
+
+  touchCalibration = touchDetection.getCalibration();
+  
 }
+
+
+// Inteface values
+float maxDistance, minHeight;
+int searchDepth, recursion, minCompoSize, forgetTime;
 
 TouchDetectionSimple2D touchDetection;
 TouchDetectionSimple3D touchDetection3D;
+PlanarTouchCalibration touchCalibration;
+
+
 Vec3D[] depthPoints;
 IplImage kinectImg;
 IplImage kinectImgDepth;
 PImage goodDepthImg;  
+ArrayList<TouchPoint> globalTouchList = new ArrayList<TouchPoint>();
 
-boolean draw3D = true;
 
 void draw(){
     background(0);
@@ -91,98 +110,34 @@ void draw(){
     //    kinect.updateTest(kinectImgDepth, kinectImg, planeProjCalibration, precision);
     kinect.update(kinectImgDepth, kinectImg, planeProjCalibration, precision);
 
+    touchCalibration.setMaximumDistance(maxDistance);
+    touchCalibration.setMinimumHeight(minHeight);
 
+    touchCalibration.setMinimumComponentSize((int)minCompoSize);
+    touchCalibration.setMaximumRecursion((int) recursion);
+    touchCalibration.setSearchDepth((int) searchDepth);
+    touchCalibration.setTrackingForgetTime((int)forgetTime);
+
+    touchCalibration.setPrecision(precision);
+    
     if(draw3D){
     	draw3DPointCloud();
     } else {
 	draw2DPoints();
     }
-}
 
-ArrayList<TouchPoint> globalTouchList = new ArrayList<TouchPoint>();
-
-void draw3DPointCloud(){
-    pointCloud.updateWith(kinect);
-    pointCloud.drawSelf((PGraphicsOpenGL) g);
-
-    lights();
-    stroke(200);
-    fill(200);
-
-    DepthData depthData = kinect.getDepthData();
-
-    // ArrayList<TouchPoint> touchs = touchDetection.findRichMultiTouch(depthData, precision);
-    ArrayList<TouchPoint> touchs = touchDetection.compute(depthData, precision);
-
-    TouchPointTracker.trackPoints(globalTouchList, touchs, millis(), KinectTouchInput.trackNearDist);
-
-    colorMode(HSB, 20, 100, 100);
-    for(TouchPoint touchPoint : globalTouchList){
-
-	Vec3D position = touchPoint.getPositionKinect();
-	pushMatrix();
-	translate(position.x, position.y, -position.z);
-
-	fill(touchPoint.getID() % 20, 100, 100);	
-	sphere(3);
-	popMatrix();
-    }
-    
-}
-
-void draw2DPoints(){
     cam.beginHUD();
+    text("'m' to stop the camera", 10,  30);
+    cp5.draw();
+    cam.endHUD(); // always!
     
-    DepthData depthData = kinect.getDepthData();
-
-    drawProjectedPoints(depthData);
-    drawTouchPoints(depthData);
- 
-    cam.endHUD();
 }
 
-void drawProjectedPoints(DepthData depthData){
-    Vec3D[] projPoints = depthData.projectedPoints;
-    boolean[] mask2D = depthData.validPointsMask;
-    boolean[] mask3D = depthData.validPointsMask3D;
-    
-    colorMode(RGB, 255);
-    
-    for(int i = 0; i < Kinect.SIZE; i++){
-	Vec3D p = projPoints[i];
-	if(p == null)
-	    continue;
-	int green = mask2D[i] ? 100 : 0;
-	int blue = mask3D[i] ? 100 : 0;
-	stroke(0, green, blue);
-	point(p.x * Kinect.WIDTH, p.y * Kinect.HEIGHT);
-    }
-}
 
-void drawTouchPoints(DepthData depthData){
 
-    ArrayList<TouchPoint> touchs = touchDetection.compute(depthData, precision);
-    TouchPointTracker.trackPoints(globalTouchList, touchs, millis(), KinectTouchInput.trackNearDist);
 
-    colorMode(HSB, 20, 100, 100);
-    for(TouchPoint touchPoint : globalTouchList){
-	PVector position = touchPoint.getPosition();
-	fill(touchPoint.getID() % 20, 100, 100);
-	ellipse(position.x * Kinect.WIDTH, position.y  * Kinect.HEIGHT, 5, 5);
-    }
-
-    ArrayList<TouchPoint> touchs3D = touchDetection3D.compute(depthData, precision);
-    colorMode(RGB, 255);
-    fill(180, 200, 20);
-    stroke(180, 200, 20);
-    strokeWeight(precision);
-    for(TouchPoint touchPoint : touchs3D){
-	PVector position = touchPoint.getPosition();
-	ellipse(position.x * Kinect.WIDTH, position.y  * Kinect.HEIGHT, 4, 4);
-    }
-
-}
-
+boolean isMouseControl = true;
+boolean draw3D = true;
 
 void keyPressed() {
 
@@ -192,14 +147,34 @@ void keyPressed() {
     // if(key == 'd'){
     // 	planeProjCalibration.moveAlongNormal(-1f);
     // }
+    
+    if(key =='m'){
+	isMouseControl = !isMouseControl;
+	cam.setMouseControlled(isMouseControl);
+    }
 
+    
     if(key == 't'){
 	draw3D = !draw3D;
     }
 
+    if(key == 's')
+	save();
+
+    if(key == 'S')
+	save3D();
+
+}
+
+void save3D(){
+    println("TouchCalibration3D saved.");    
+    touchCalibration.saveTo(this, Papart.touchCalib3D);
 }
 
 void save(){
-    planeProjCalibration.saveTo(this, Papart.planeAndProjectionCalib);
-    println("PlaneProj saved.");
+    // planeProjCalibration.saveTo(this, Papart.planeAndProjectionCalib);
+    // println("PlaneProj saved.");
+
+    println("TouchCalibration2D saved.");    
+    touchCalibration.saveTo(this, Papart.touchCalib);
 }

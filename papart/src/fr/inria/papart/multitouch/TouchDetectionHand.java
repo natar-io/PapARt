@@ -35,10 +35,9 @@ public class TouchDetectionHand extends TouchDetectionSimple2D {
     }
 
     @Override
-    public ArrayList<TouchPoint> compute(DepthData dData, int skip) {
+    public ArrayList<TouchPoint> compute(DepthData dData) {
 
         this.depthData = dData;
-        this.precision = skip;
 
         if (!hasCCToFind()) {
             return new ArrayList<TouchPoint>();
@@ -64,9 +63,9 @@ public class TouchDetectionHand extends TouchDetectionSimple2D {
 
         currentPointValidityCondition = new CheckTouchPoint();
         int firstPoint = toVisit.iterator().next();
-        setPrecisionFrom(firstPoint);
-        searchDepth = precision * 7;// TODO: FIX this value !
-        MAX_REC = 100; // TODO: fix this value.
+//        setPrecisionFrom(firstPoint);
+//        calib.setSearchDepth(precision * 7);// TODO: FIX this value !
+//        maximumRecursion = 100; // TODO: fix this value.
     }
     
     

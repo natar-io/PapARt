@@ -18,6 +18,7 @@
  */
 package fr.inria.papart.multitouch;
 
+import fr.inria.papart.calibration.PlanarTouchCalibration;
 import fr.inria.papart.calibration.PlaneCalibration;
 import fr.inria.papart.depthcam.DepthData;
 import fr.inria.papart.depthcam.Kinect;
@@ -35,11 +36,8 @@ import toxi.geom.Vec3D;
  */
 public abstract class TouchDetection {
 
-    protected float maxDistance = 10f;    // in mm
-    protected float MINIMUM_COMPONENT_SIZE = 3;   // in px
-    
-    public static int MINIMUM_HEIGHT = 1; // mm
-    protected int MAX_REC = 500;
+    // Variable parameters... going to a specific class for saving.  
+    protected PlanarTouchCalibration calib;
 
     protected boolean[] assignedPoints = null;
     protected byte[] connectedComponentImage = null;
@@ -51,8 +49,6 @@ public abstract class TouchDetection {
 
 // set by calling function
     protected DepthData depthData;
-    protected int precision;
-    protected int searchDepth;
 
     protected HashSet<Integer> toVisit;
     protected PointValidityCondition currentPointValidityCondition;
@@ -66,11 +62,12 @@ public abstract class TouchDetection {
         allocateMemory(size);
     }
 
-    public abstract ArrayList<TouchPoint> compute(DepthData dData, int skip);
+    public abstract ArrayList<TouchPoint> compute(DepthData dData);
 
     protected void allocateMemory(int size) {
         assignedPoints = new boolean[size];
         connectedComponentImage = new byte[size];
+        this.calib = new PlanarTouchCalibration();
     }
 
     protected void clearMemory() {
@@ -97,8 +94,8 @@ public abstract class TouchDetection {
         for (ConnectedComponent connectedComponent : connectedComponents) {
 
             float height = connectedComponent.getHeight(depthData.projectedPoints);
-            if (connectedComponent.size() < MINIMUM_COMPONENT_SIZE
-                    || height < MINIMUM_HEIGHT) {
+            if (connectedComponent.size() < calib.getMinimumComponentSize()
+                    || height < calib.getMinimumHeight()) {
 
                 continue;
             }
@@ -122,8 +119,15 @@ public abstract class TouchDetection {
         return connectedComponents;
     }
 
+    protected int searchDepth;
+    protected int precision;
+
     // TODO: chec if currentCompo ++ is relevent. 
     protected ConnectedComponent findConnectedComponent(int startingPoint) {
+
+        searchDepth = calib.getSearchDepth() * calib.getPrecision();
+        precision = calib.getPrecision();
+
         ConnectedComponent cc = findNeighboursRec(startingPoint, 0);
         cc.setId(currentCompo);
         currentCompo++;
@@ -138,7 +142,7 @@ public abstract class TouchDetection {
         ConnectedComponent neighbourList = new ConnectedComponent();
         ArrayList<Integer> visitNext = new ArrayList<Integer>();
 
-        if (recLevel == MAX_REC) {
+        if (recLevel == calib.getMaximumRecursion()) {
             return neighbourList;
         }
 
@@ -178,12 +182,12 @@ public abstract class TouchDetection {
         Vec3D meanProj = connectedComponent.getMean(depthData.projectedPoints);
         Vec3D meanKinect = connectedComponent.getMean(depthData.kinectPoints);
         TouchPoint tp = new TouchPoint();
+        tp.setDetection(this);
         tp.setPosition(meanProj);
         tp.setPositionKinect(meanKinect);
         tp.setCreationTime(depthData.timeStamp);
         tp.set3D(false);
-
-        tp.setConfidence(connectedComponent.size() / MINIMUM_COMPONENT_SIZE);
+        tp.setConfidence(connectedComponent.size() / calib.getMinimumComponentSize());
 
         // TODO: re-enable this one day ?
 //        tp.setConnectedComponent(connectedComponent);
@@ -220,7 +224,7 @@ public abstract class TouchDetection {
     }
 
     protected void setDistance(float distance) {
-        maxDistance = (distance + NOISE_ESTIMATION) * ERROR_DISTANCE_MULTIPLIER;
+        calib.setMaximumDistance((distance + NOISE_ESTIMATION) * ERROR_DISTANCE_MULTIPLIER);
     }
 
     public float sideError = 0.2f;
@@ -231,6 +235,26 @@ public abstract class TouchDetection {
 
     public boolean isInside(PVector v, float min, float max) {
         return v.x > min - sideError && v.x < max + sideError && v.y < max + sideError && v.y > min - sideError;
+    }
+
+    public void setCalibration(PlanarTouchCalibration calibration) {
+        this.calib.setTo(calibration);
+    }
+
+    public PlanarTouchCalibration getCalibration() {
+        return this.calib;
+    }
+    
+    public int getPrecision(){
+        return calib.getPrecision();
+    }
+
+    public int getTrackingForgetTime() {
+        return calib.getTrackingForgetTime();
+    }
+
+    float getTrackingMaxDistance() {
+        return calib.getTrackingMaxDistance();
     }
 
     class ClosestComparator implements Comparator {

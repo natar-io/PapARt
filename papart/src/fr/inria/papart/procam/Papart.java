@@ -21,6 +21,7 @@ package fr.inria.papart.procam;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.calibration.CameraConfiguration;
 import fr.inria.papart.calibration.HomographyCalibration;
+import fr.inria.papart.calibration.PlanarTouchCalibration;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
@@ -65,6 +66,8 @@ public class Papart {
     public static String planeCalib = folder + "/data/calibration/PlaneCalibration.xml";
     public static String homographyCalib = folder + "/data/calibration/HomographyCalibration.xml";
     public static String planeAndProjectionCalib = folder + "/data/calibration/PlaneProjectionCalibration.xml";
+    public static String touchCalib = folder + "/data/calibration/Touch2DCalibration.xml";
+    public static String touchCalib3D = folder + "/data/calibration/Touch3DCalibration.xml";
     public static String defaultFont = folder + "/data/Font/" + "GentiumBookBasic-48.vlw";
     public int defaultFontSize = 12;
 
@@ -490,8 +493,7 @@ public class Papart {
      * @param touch2DPrecision
      * @param touch3DPrecision
      */
-    public void loadTouchInputKinectOnly(int touch2DPrecision,
-            int touch3DPrecision) {
+    public void loadTouchInputKinectOnly(){
 
         if (this.cameraOpenKinect == null) {
             loadDefaultCameraKinect();
@@ -500,7 +502,7 @@ public class Papart {
             checkInitialization();
         }
 
-        loadDefaultTouchKinect(touch2DPrecision, touch3DPrecision);
+        loadDefaultTouchKinect();
         ((KinectTouchInput) this.touchInput).useRawDepth(cameraOpenKinect);
     }
 
@@ -511,10 +513,10 @@ public class Papart {
      * @param touch2DPrecision
      * @param touch3DPrecision
      */
-    public void loadTouchInput(int touch2DPrecision, int touch3DPrecision) {
+    public void loadTouchInput() {
 
         loadDefaultCameraKinect();
-        loadDefaultTouchKinect(touch2DPrecision, touch3DPrecision);
+        loadDefaultTouchKinect();
     }
 
     private void loadDefaultCameraKinect() {
@@ -526,7 +528,7 @@ public class Papart {
         cameraOpenKinect.setThread();
     }
 
-    private void loadDefaultTouchKinect(int touch2DPrecision, int touch3DPrecision) {
+    private void loadDefaultTouchKinect() {
 
         kinect = new Kinect(this.applet,
                 kinectIRCalib,
@@ -544,9 +546,22 @@ public class Papart {
 
         cameraOpenKinect.setTouch(kinectTouchInput);
 
-        kinectTouchInput.setPrecision(touch2DPrecision, touch3DPrecision);
+        kinectTouchInput.setTouchDetectionCalibration(getDefaultTouchCalibration());
+        kinectTouchInput.setTouchDetectionCalibration(getDefaultTouchCalibration3D());
         this.touchInput = kinectTouchInput;
         touchInitialized = true;
+    }
+    
+    public PlanarTouchCalibration getDefaultTouchCalibration(){
+        PlanarTouchCalibration calib = new PlanarTouchCalibration();
+        calib.loadFrom(applet, Papart.touchCalib);
+        return calib;
+    }
+    
+    public PlanarTouchCalibration getDefaultTouchCalibration3D(){
+        PlanarTouchCalibration calib = new PlanarTouchCalibration();
+        calib.loadFrom(applet, Papart.touchCalib3D);
+        return calib;
     }
 
     public void loadTouchInputTUIO() {
