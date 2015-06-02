@@ -86,6 +86,36 @@ public class KinectProcessing extends Kinect {
         validPointsPImage.updatePixels();
         return validPointsPImage;
     }
+    /**
+     * Work in progress tests...
+     * @param depth
+     * @param color
+     * @param planeCalibration
+     * @param skip
+     * @return 
+     */
+    public PImage updateTest(IplImage depth, IplImage color,
+            PlaneCalibration planeCalibration, int skip) {
+        updateRawDepth(depth);
+        updateRawColor(color);
+        depthData.clear();
+        depthData.timeStamp = papplet.millis();
+        validPointsPImage.loadPixels();
+        // set a default color. 
+        Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 255));
+
+        depthData.planeCalibration = planeCalibration;
+
+        computeDepthAndDo(skip, new DoNothing());
+//        doForEachPoint(skip, new Select2DPointOverPlaneDist());
+        doForEachPoint(skip, new Select2DPointOverPlane());
+//        doForEachPoint(skip, new Select3DPointPlaneProjection());
+
+//        computeDepthAndDo(skip, new Select2DPointPlaneProjection());
+        doForEachValidPoint(skip, new SetImageData());
+        validPointsPImage.updatePixels();
+        return validPointsPImage;
+    }
     //////////// WORK IN PROGRESS FUNCTION ///////////////
     public PImage update(IplImage depth, IplImage color,
             PlaneAndProjectionCalibration planeProjCalibration, int skip) {

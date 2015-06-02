@@ -255,6 +255,14 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         assert (hasExtrinsics());
         return extrinsics.get();
     }
+    
+    /**
+     * @return
+     */
+    public PMatrix3D getExtrinsicsInv() {
+        assert (hasExtrinsics());
+        return extrinsicsInv.get();
+    }
 
     /**
      * This function initializes the distorsion map used by the distorsion

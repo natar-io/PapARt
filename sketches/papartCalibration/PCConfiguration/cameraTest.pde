@@ -56,4 +56,8 @@ class camApplet extends PApplet {
 	if(im != null)
 	    image(im, 0, 0, 640, 480);
     }
+
+    void mousePressed(){
+	println("mouse : " + mouseX + " " + mouseY);
+    }
 }

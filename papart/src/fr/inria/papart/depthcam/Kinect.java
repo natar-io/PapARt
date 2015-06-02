@@ -100,6 +100,10 @@ public class Kinect {
     public void setStereoCalibration(PMatrix3D matrix) {
         KinectRGBIRCalibration.set(matrix);
     }
+    
+    public PMatrix3D getStereoCalibration(){
+        return KinectRGBIRCalibration.get();
+    }
 
     public int findColorOffset(Vec3D v) {
         return findColorOffset(v.x, v.y, v.z);

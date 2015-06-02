@@ -105,6 +105,7 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
     }
 
     // without depth value, focal distance is assumed
+    @Deprecated
     public Vec3D pixelToWorld(int x, int y) {
 
         Vec3D result = new Vec3D();
@@ -116,6 +117,7 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
         return result;
     }
 
+    @Deprecated
     public PVector pixelToWorldP(int x, int y) {
         PVector result = new PVector();
         float depth = (fx + fy) / 2;
@@ -126,6 +128,7 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
     }
 
     // To use with a projector...
+    @Deprecated
     public PVector pixelToWorldPDistort(int x, int y, boolean distort) {
         PVector result = new PVector();
 
@@ -142,6 +145,7 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
         return result;
     }
 
+    @Deprecated
     public PVector pixelToWorldPUndistort(int x, int y, boolean distort) {
         PVector result = new PVector();
 
@@ -200,7 +204,7 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
 
         return new PVector(px, py);
     }
-    
+
     public PVector worldToPixelCoord(PVector pt) {
 
         // Reprojection 
@@ -429,8 +433,8 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
     public boolean hasExtrinsics() {
         return this.hasExtrinsics;
     }
-    
-    public PVector getCoordinates(int offset){
+
+    public PVector getCoordinates(int offset) {
         return new PVector(offset % w, offset / w);
     }
 

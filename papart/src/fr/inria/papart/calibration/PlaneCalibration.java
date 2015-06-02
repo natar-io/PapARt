@@ -177,7 +177,15 @@ public class PlaneCalibration extends Calibration {
     }
 
     public static float DEFAULT_PLANE_SHIFT = -8f;
+    public static float DEFAULT_PLANE_HEIGHT = 15f;
 
+    /**
+     * Get a plane from a 3D  matrix. 
+     * Here the size is not that important, might be removed.  
+     * @param mat
+     * @param size
+     * @return 
+     */
     public static PlaneCalibration CreatePlaneCalibrationFrom(PMatrix3D mat, PVector size) {
         PlaneCreator planeCreator = new PlaneCreator();
 
@@ -187,9 +195,12 @@ public class PlaneCalibration extends Calibration {
         mat.translate(0, size.y, 0);
         planeCreator.addPoint(new Vec3D(mat.m03, mat.m13, mat.m23));
 
+        planeCreator.setHeight(DEFAULT_PLANE_HEIGHT);
         assert (planeCreator.isComputed());
         PlaneCalibration planeCalibration = planeCreator.getPlaneCalibration();
-        planeCalibration.moveAlongNormal(DEFAULT_PLANE_SHIFT);
+        
+        planeCalibration.flipNormal();
+//        planeCalibration.moveAlongNormal(DEFAULT_PLANE_SHIFT);
         assert (planeCalibration.isValid());
         return planeCalibration;
     }

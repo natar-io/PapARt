@@ -1,8 +1,9 @@
 import fr.inria.papart.procam.*;
 import fr.inria.papart.procam.camera.*;
+import fr.inria.papart.procam.display.*;
 import fr.inria.papart.multitouch.*;
 import fr.inria.papart.depthcam.*;
-import fr.inria.papart.depthcam.calibration.*;
+import fr.inria.papart.calibration.*;
 
 import toxi.geom.*;
 import org.bytedeco.javacpp.opencv_core.IplImage;
@@ -14,7 +15,7 @@ import peasy.*;
 
 PeasyCam cam;
 
-CameraOpenKinect camera;
+CameraOpenKinect cameraKinect;
 KinectProcessing kinect;
 KinectOpenCV kinectOpenCV;
 PointCloudKinect pointCloud;
@@ -22,13 +23,17 @@ PointCloudKinect pointCloud;
 MarkerBoard markerBoard;
 PlaneCalibration planeCalibration;
 HomographyCalibration homographyCalibration;
+PlaneAndProjectionCalibration planeProjCalib = new PlaneAndProjectionCalibration();
 
 int precision = 1;
-
+ProjectorDisplay projector;
+    
 PVector[] screenPoints;
 int nbPoints = 10;
 int currentPoint = 0;
 
+Papart papart;
+Camera cameraTracking;
 PVector paperSize = new PVector(297, 210);
 
 void setup(){
@@ -38,26 +43,42 @@ void setup(){
     int depthFormat = freenect.FREENECT_DEPTH_MM;
     int kinectFormat = Kinect.KINECT_MM;
 
-    camera = (CameraOpenKinect) CameraFactory.createCamera(Camera.Type.OPEN_KINECT, 0);
-    camera.setParent(this);
-    camera.setCalibration(Papart.kinectIRCalib);
-    camera.setDepthFormat(depthFormat);
-    Camera.convertARParams(this, Papart.kinectIRCalib, "Kinect.cal");
-    camera.initMarkerDetection("Kinect.cal");
-    camera.start();
+    papart = new Papart(this);
+    
+    papart.initProjectorCamera();
+    projector = papart.getProjectorDisplay();
+
+    // no automatic drawing. 
+    projector.manualMode();
+
+    cameraTracking = papart.getCameraTracking();
+    
+
+    cameraKinect = (CameraOpenKinect) CameraFactory.createCamera(Camera.Type.OPEN_KINECT, 0);
+    cameraKinect.setParent(this);
+    cameraKinect.setCalibration(Papart.kinectRGBCalib);
+    cameraKinect.getDepthCamera().setCalibration(Papart.kinectIRCalib);
+
+    cameraKinect.convertARParams(this, Papart.kinectRGBCalib, "Kinect.cal");
+    cameraKinect.initMarkerDetection("Kinect.cal");
+    cameraKinect.start();
 
     planeCalibration = new PlaneCalibration();
-    reset();
 
     kinect = new KinectProcessing(this,
 				  Papart.kinectIRCalib,
 				  Papart.kinectRGBCalib,
 				  kinectFormat);
+
+    kinect.setStereoCalibration(Papart.kinectStereoCalib);
     
     kinectOpenCV = new KinectOpenCV(this,
 				    Papart.kinectIRCalib,
 				    Papart.kinectRGBCalib,
 				    kinectFormat);
+    
+    kinectOpenCV.setStereoCalibration(Papart.kinectStereoCalib);
+
     
   pointCloud = new PointCloudKinect(this, precision);
 
@@ -66,11 +87,13 @@ void setup(){
   cam.setMinimumDistance(0);
   cam.setMaximumDistance(1200);
   cam.setActive(true);
+  
+  markerBoard = new MarkerBoard(sketchPath + "/data/big.cfg", paperSize.x, paperSize.y);
+  cameraKinect.trackMarkerBoard(markerBoard);
+  cameraTracking.trackMarkerBoard(markerBoard);
+  
 
-  markerBoard = new MarkerBoard(sketchPath + "/data/A3-small1.cfg", paperSize.x, paperSize.y);
-  camera.trackMarkerBoard(markerBoard);
-
-
+  reset();
   println("Press R to reset.");
 }
 
@@ -79,43 +102,61 @@ void setup(){
 Vec3D[] depthPoints;
 IplImage kinectImg;
 IplImage kinectImgDepth;
-  
+IplImage cameraImg;
+PlaneCalibration planeCalibKinect, planeCalibCam;
+PMatrix3D kinectPaperTransform;
+PMatrix3D cameraPaperTransform;
+
+
 void draw(){
     background(0);
 
-    camera.grab();
-    kinectImg = camera.getIplImage();
-    kinectImgDepth = camera.getDepthIplImage();
-    if(kinectImg == null || kinectImgDepth == null){
+    cameraKinect.grab();
+    kinectImg = cameraKinect.getIplImage();
+    kinectImgDepth = cameraKinect.getDepthCamera().getIplImage();
+    cameraImg = cameraTracking.getIplImage();
+    
+    if(kinectImg == null || kinectImgDepth == null || cameraImg == null){
 	return;
     }
 
     kinectOpenCV.update(kinectImgDepth, kinectImg);
 
-    markerBoard.updatePosition(camera, kinectOpenCV.getColouredDepthImage());
-    PMatrix3D mat = markerBoard.getTransfoMat(camera);
+    // markerBoard.updatePosition(camera, kinectOpenCV.getColouredDepthImage());
+    markerBoard.updatePosition(cameraKinect,   kinectImg);
+    markerBoard.updatePosition(cameraTracking, cameraImg);
 
 
-    // planeCalibration = Utils.CreatePlaneCalibrationFrom(mat, paperSize);
-    // homographyCalibration = Utils.CreateHomographyCalibrationFrom(mat, paperSize);
+    kinectPaperTransform = markerBoard.getTransfoMat(cameraKinect);
+    cameraPaperTransform = markerBoard.getTransfoMat(cameraTracking);
 
-    //    planeCalibration = Utils.CreatePlaneCalibrationFrom(mat, paperSize);
-    homographyCalibration.setMatrix(mat);
+     // Not so usefull... ? To try with different parameters. 
+    PMatrix3D kinectExtr = kinect.getStereoCalibration();
+    kinectExtr.invert();
+    kinectPaperTransform.preApply(kinectExtr);
 
+    
+    planeCalibKinect =  PlaneCalibration.CreatePlaneCalibrationFrom(kinectPaperTransform, paperSize);
+    planeCalibCam =  PlaneCalibration.CreatePlaneCalibrationFrom(cameraPaperTransform, paperSize);
+    planeCalibCam.flipNormal();
+    
+    computeScreenPaperIntersection();
 
-    if(homographyCalibration.isValid()){
-    	draw3DPointCloud();
-    } 
-    // else {
-    // 	draw2DSelection();
-    // }
+    
+    planeCalibKinect.flipNormal();
+    planeCalibKinect.moveAlongNormal(-15f);
+
+    planeProjCalib.setPlane(planeCalibKinect);
+    planeProjCalib.setHomography(homographyCalibration);
+
+    kinect.update(kinectImgDepth, kinectImg,  planeProjCalib, precision);
+    pointCloud.updateWith(kinect);
+    pointCloud.drawSelf((PGraphicsOpenGL) g);
+
 }
 
 
 void draw3DPointCloud(){
-    kinect.update(kinectImgDepth, kinectImg, homographyCalibration, precision);
-    pointCloud.updateWith(kinect);
-    pointCloud.drawSelf((PGraphicsOpenGL) g);
 }
 
 void reset(){
@@ -126,8 +167,11 @@ void reset(){
 }
 
 
-
+boolean test = false;
 void keyPressed() {
+
+    if(key == 't')
+	test = !test;
 
     if(key == 'r'){
 	reset();
@@ -141,9 +185,13 @@ void keyPressed() {
 
 
 void save(){
-    homographyCalibration.saveTo(this, Papart.homographyCalib);
-    planeCalibration.saveTo(this, Papart.homographyCalib);
-    println("All is saved.");
+
+
+   planeProjCalib.saveTo(this, Papart.planeAndProjectionCalib);
+    
+   // homographyCalibration.saveTo(this, Papart.homographyCalib);
+   // planeCalibration.saveTo(this, Papart.homographyCalib);
+   println("All is saved.");
 }
 
 
