@@ -14,11 +14,15 @@ boolean useProjector = true;
 float renderQuality = 1.5f;
 Papart papart;
 
+KinectTouchInput touchInput;
+TouchDetectionSimple2D touchDetection; 
+
+    
 void setup(){
 
     if(useProjector){
 	papart = Papart.projection(this);
-	papart.loadTouchInput(2, 0);
+	papart.loadTouchInput();
     } else {
 	size((int) (Kinect.WIDTH * renderQuality),
 	     (int) (Kinect.HEIGHT * renderQuality),
@@ -27,11 +31,14 @@ void setup(){
 	papart = new Papart(this);
 
 	papart.initKinectCamera(renderQuality);
-	papart.loadTouchInputKinectOnly(1, 1);
+	papart.loadTouchInputKinectOnly();
 	BaseDisplay display = papart.getDisplay();
 	display.setDrawingSize(width, height);
     }
 
+    touchInput = (KinectTouchInput) papart.getTouchInput();
+    touchDetection = touchInput.getTouchDetection2D();
+    
     papart.loadSketches();
     papart.startTracking();
 }
@@ -53,6 +60,11 @@ void keyPressed() {
 	counter.saveLocationTo("counter.xml");
     if(key == 'c')
 	counter.loadLocationFrom("counter.xml");
+
+    if(key == 'S')
+	myStatus.saveLocationTo("myStatus.xml");
+    if(key == 's')
+	myStatus.loadLocationFrom("myStatus.xml");
 
     
     if(key == 't')

@@ -1,5 +1,6 @@
 
 static int NB_PLAYERS = 0;
+static int MAX_PLAYERS = 5;
 static Player currentPlayer;
 static ArrayList<Player> playerList = new ArrayList<Player>();
 static ArrayList<PVector> allTokens = new ArrayList<PVector>();
@@ -11,11 +12,11 @@ void nextPlayer(){
     println("Next player");
 
 
-    currentPlayer.HP += zones[HEART].intensity * 5;
+    currentPlayer.HP += nbHearts * 5;
 
      for(Player player : playerList){
 	 if(player != currentPlayer)
-	     player.HP -= zones[ATTACK].intensity * 2;
+	     player.HP -= nbAttack * 2;
     }
      
     
@@ -67,8 +68,10 @@ public class Player {
 	}
 
 	println("Adding a token, total " + allTokens.size());
-	allTokens.add(pos);
-	tokens.add(pos);
+
+	PVector tokenPos = pos.get();
+	allTokens.add(tokenPos);
+	tokens.add(tokenPos);
 	return true;
     }
 

@@ -33,8 +33,6 @@ PlaneAndProjectionCalibration planeProjCalibration;
 int precision = 2;
 
 
-int framePosX = 0;
-int framePosY = 200;
 
 void setup(){
     

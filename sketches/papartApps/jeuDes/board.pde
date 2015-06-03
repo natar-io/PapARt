@@ -2,8 +2,8 @@ MyBoard board;
 
 public class MyBoard  extends PaperTouchScreen {
 
-    int width = 400;
-    int height = 280;
+    int width = 390;
+    int height = 270;
     
     void setup() {
 	setDrawingSize(width, height);
@@ -13,6 +13,8 @@ public class MyBoard  extends PaperTouchScreen {
 
 	Player p1 = new Player();
 	Player p2 = new Player();
+	Player p3 = new Player();
+	Player p4 = new Player();
 	currentPlayer = p1;
 	board = this;	
     }
@@ -41,8 +43,10 @@ public class MyBoard  extends PaperTouchScreen {
 	checkTouch();
     
 	endDraw();
+
     }
 
+    
     void countPoints(){
 	loadPixels();
 	for(Player player : playerList){
@@ -79,7 +83,8 @@ public class MyBoard  extends PaperTouchScreen {
 
     void checkTouch(){
 
-	for (Touch t : touchList) {
+	TouchList touch2D = touchList.get2DTouchs();
+	for (Touch t : touch2D) {
 
 	    // draw the touch. 
 	    PVector p = t.position;
