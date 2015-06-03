@@ -57,9 +57,9 @@ public class Papart {
     public static String kinectIRCalib = folder + "/data/calibration/calibration-kinect-IR.yaml";
     public static String kinectRGBCalib = folder + "/data/calibration/calibration-kinect-RGB.yaml";
     public static String kinectStereoCalib = folder + "/data/calibration/calibration-kinect-Stereo.yaml";
+    
+    public static String kinectTrackingCalib = folder + "/data/calibration/kinectTracking.xml";
 
-    // -- computerconfig will be removed !
-//    public static String computerConfig = folder + "/data/calibration/ComputerConfiguration.xml";
     public static String screenConfig = folder + "/data/calibration/screenConfiguration.xml";
     public static String cameraConfig = folder + "/data/calibration/cameraConfiguration.xml";
     public static String tablePosition = folder + "/data/calibration/tablePosition.xml";

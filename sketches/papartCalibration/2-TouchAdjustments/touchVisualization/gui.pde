@@ -46,9 +46,32 @@ void initGui(){
 	.setSize(200, 12);
 
     
+    cp5.addSlider("planeHeight")
+	.setPosition(30, 190)
+	.setValue(planeCalibration.getHeight())
+	.setRange(1, 30)
+	.setSize(200, 12);
+
+    cp5.addButton("planeUp")
+	.setPosition(30, 220)
+	.setSize(30, 30);
+
+    cp5.addButton("planeDown")
+	.setPosition(30, 250)
+	.setSize(30, 30);
+
+    
 
     // Manual draw. 
     cp5.setAutoDraw(false);
 
     textFont(createFont("",15));
+}
+
+void planeUp(){
+    planeCalibration.moveAlongNormal(-1.f);
+}
+
+void planeDown(){
+    planeCalibration.moveAlongNormal(1.f);
 }

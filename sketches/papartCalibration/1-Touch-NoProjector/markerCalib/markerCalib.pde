@@ -21,9 +21,9 @@ KinectOpenCV kinectOpenCV;
 PointCloudKinect pointCloud;
 
 MarkerBoard markerBoard;
-PlaneCalibration planeCalibration;
-HomographyCalibration homographyCalibration;
-PlaneAndProjectionCalibration planeProjCalib = new PlaneAndProjectionCalibration();
+
+
+PlaneAndProjectionCalibration planeProjCalib;
 
 int precision = 1;
 ProjectorDisplay projector;
@@ -33,8 +33,7 @@ int nbPoints = 10;
 int currentPoint = 0;
 
 Papart papart;
-Camera cameraTracking;
-PVector paperSize = new PVector(297, 210);
+PVector trackingSize = new PVector(297, 210);
 
 void setup(){
     
@@ -51,9 +50,7 @@ void setup(){
     // no automatic drawing. 
     projector.manualMode();
 
-    cameraTracking = papart.getCameraTracking();
     
-
     cameraKinect = (CameraOpenKinect) CameraFactory.createCamera(Camera.Type.OPEN_KINECT, 0);
     cameraKinect.setParent(this);
     cameraKinect.setCalibration(Papart.kinectRGBCalib);
@@ -63,8 +60,8 @@ void setup(){
     cameraKinect.initMarkerDetection("Kinect.cal");
     cameraKinect.start();
 
-    planeCalibration = new PlaneCalibration();
-
+    planeProjCalib = new PlaneAndProjectionCalibration();
+    
     kinect = new KinectProcessing(this,
 				  Papart.kinectIRCalib,
 				  Papart.kinectRGBCalib,
@@ -88,13 +85,11 @@ void setup(){
   cam.setMaximumDistance(1200);
   cam.setActive(true);
   
-  markerBoard = new MarkerBoard(sketchPath + "/data/big.cfg", paperSize.x, paperSize.y);
+  markerBoard = new MarkerBoard(sketchPath + "/data/big.cfg", trackingSize.x, trackingSize.y);
   cameraKinect.trackMarkerBoard(markerBoard);
-  cameraTracking.trackMarkerBoard(markerBoard);
+
   
 
-  reset();
-  println("Press R to reset.");
 }
 
 
@@ -114,9 +109,9 @@ void draw(){
     cameraKinect.grab();
     kinectImg = cameraKinect.getIplImage();
     kinectImgDepth = cameraKinect.getDepthCamera().getIplImage();
-    cameraImg = cameraTracking.getIplImage();
+
     
-    if(kinectImg == null || kinectImgDepth == null || cameraImg == null){
+    if(kinectImg == null || kinectImgDepth == null){
 	return;
     }
 
@@ -124,47 +119,40 @@ void draw(){
 
     // markerBoard.updatePosition(camera, kinectOpenCV.getColouredDepthImage());
     markerBoard.updatePosition(cameraKinect,   kinectImg);
-    markerBoard.updatePosition(cameraTracking, cameraImg);
-
 
     kinectPaperTransform = markerBoard.getTransfoMat(cameraKinect);
-    cameraPaperTransform = markerBoard.getTransfoMat(cameraTracking);
 
      // Not so usefull... ? To try with different parameters. 
-    PMatrix3D kinectExtr = kinect.getStereoCalibration();
-    kinectExtr.invert();
-    kinectPaperTransform.preApply(kinectExtr);
+    // PMatrix3D kinectExtr = kinect.getStereoCalibration();
+    // kinectExtr.invert();
+    // kinectPaperTransform.preApply(kinectExtr);
 
     
-    planeCalibKinect =  PlaneCalibration.CreatePlaneCalibrationFrom(kinectPaperTransform, paperSize);
-    planeCalibCam =  PlaneCalibration.CreatePlaneCalibrationFrom(cameraPaperTransform, paperSize);
-    planeCalibCam.flipNormal();
-    
-    computeScreenPaperIntersection();
-
+    planeCalibKinect =  PlaneCalibration.CreatePlaneCalibrationFrom(kinectPaperTransform, trackingSize);
     
     planeCalibKinect.flipNormal();
     planeCalibKinect.moveAlongNormal(-15f);
 
+    HomographyCalibration homographyCalib = HomographyCalibration.CreateHomographyCalibrationFrom(kinectPaperTransform, trackingSize);
+    
+    // kinectPaperTransform.scale(1f / trackingSize.x,
+    // 			       1f / trackingSize.y, 1);
+    // homographyCalibration.setMatrix(new PMatrix3D());
+    
     planeProjCalib.setPlane(planeCalibKinect);
-    planeProjCalib.setHomography(homographyCalibration);
+    planeProjCalib.setHomography(homographyCalib);
 
     kinect.update(kinectImgDepth, kinectImg,  planeProjCalib, precision);
     pointCloud.updateWith(kinect);
     pointCloud.drawSelf((PGraphicsOpenGL) g);
-
 }
+
+
 
 
 void draw3DPointCloud(){
 }
 
-void reset(){
-    println("Reset");
-    homographyCalibration = new HomographyCalibration();
-    planeCalibration = new PlaneCalibration();
-    currentPoint = 0;
-}
 
 
 boolean test = false;
@@ -172,10 +160,6 @@ void keyPressed() {
 
     if(key == 't')
 	test = !test;
-
-    if(key == 'r'){
-	reset();
-    }
 
     if(key == 's'){
 	save();
@@ -186,11 +170,8 @@ void keyPressed() {
 
 void save(){
 
-
    planeProjCalib.saveTo(this, Papart.planeAndProjectionCalib);
-    
-   // homographyCalibration.saveTo(this, Papart.homographyCalib);
-   // planeCalibration.saveTo(this, Papart.homographyCalib);
+
    println("All is saved.");
 }
 

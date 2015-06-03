@@ -4,8 +4,10 @@ ProjectiveDeviceP projectorDevice, kinectDevice;
 int frameWidth, frameHeight;
 
 HomographyCreator homographyCreator;
+PMatrix3D cameraKinectTransform;
 
-void computeScreenPaperIntersection(){
+
+boolean computeScreenPaperIntersection(){
 
     
     
@@ -16,10 +18,9 @@ void computeScreenPaperIntersection(){
     frameHeight = projectorDevice.getHeight();
 
     // compute Camera -> Kinect transformation
-    PMatrix3D cameraKinectTransform = cameraPaperTransform.get();
-    PMatrix3D paperKinectTransform = kinectPaperTransform.get();
+    cameraKinectTransform = cameraPaperTransform.get();
     cameraKinectTransform.invert();
-    cameraKinectTransform.preApply(paperKinectTransform);
+    cameraKinectTransform.preApply(kinectPaperTransform);
 
 
     // generate coordinates...
@@ -39,7 +40,7 @@ void computeScreenPaperIntersection(){
 	    PVector inter = computeIntersection(i, j);
 
 	    if(inter == null)
-		return;
+		return false;
 	    
 	    // where the point on the table is seen by the Kinect. 
 	    cameraKinectTransform.mult(inter, kinectPoint);
@@ -71,7 +72,7 @@ void computeScreenPaperIntersection(){
 
     // px = kinectDevice.worldToPixel(out2, false);
     // println("Pixels 2..." + px);
-
+    return true;
 }
 
 
@@ -112,3 +113,6 @@ PVector computeIntersection(float px, float py){
 	
     return new PVector(inter.x(), inter.y(), inter.z());
 }
+
+
+

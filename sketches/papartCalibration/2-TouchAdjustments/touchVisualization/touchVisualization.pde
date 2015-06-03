@@ -38,7 +38,7 @@ int framePosY = 200;
 
 void setup(){
     
-    size(Kinect.WIDTH, Kinect.HEIGHT, OPENGL);
+    size(800, 600, OPENGL);
     
     int depthFormat = freenect.FREENECT_DEPTH_MM;
     int kinectFormat = Kinect.KINECT_MM;
@@ -52,6 +52,7 @@ void setup(){
     try{
 	planeProjCalibration = new  PlaneAndProjectionCalibration();
 	planeProjCalibration.loadFrom(this, Papart.planeAndProjectionCalib);
+	planeCalibration = planeProjCalibration.getPlaneCalibration();
     }catch(NullPointerException e){
 	die("Impossible to load the plane calibration...");
     }
@@ -82,6 +83,7 @@ void setup(){
 
 // Inteface values
 float maxDistance, minHeight;
+float planeHeight;
 int searchDepth, recursion, minCompoSize, forgetTime;
 
 TouchDetectionSimple2D touchDetection;
@@ -119,6 +121,7 @@ void draw(){
     touchCalibration.setTrackingForgetTime((int)forgetTime);
 
     touchCalibration.setPrecision(precision);
+    planeCalibration.setHeight(planeHeight);
     
     if(draw3D){
     	draw3DPointCloud();
@@ -172,7 +175,7 @@ void save3D(){
 }
 
 void save(){
-    // planeProjCalibration.saveTo(this, Papart.planeAndProjectionCalib);
+    planeProjCalibration.saveTo(this, Papart.planeAndProjectionCalib);
     // println("PlaneProj saved.");
 
     println("TouchCalibration2D saved.");    
