@@ -17,9 +17,22 @@ Papart papart;
 KinectTouchInput touchInput;
 TouchDetectionSimple2D touchDetection; 
 
+boolean noCamera = true;
+
     
 void setup(){
 
+
+    if(noCamera) {
+	size(800, 600, OPENGL);
+	Papart papart = new Papart(this);
+	papart.initNoCamera(1);
+	papart.loadTouchInputTUIO();
+	papart.loadSketches();
+	return;
+    }
+
+    
     if(useProjector){
 	papart = Papart.projection(this);
 	papart.loadTouchInput();

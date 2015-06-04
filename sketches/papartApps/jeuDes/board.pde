@@ -20,6 +20,11 @@ public class MyBoard  extends PaperTouchScreen {
     }
 
     void draw() {
+
+	if(noCamera){
+	    setLocation(100, 100, 0);
+	}
+	
 	beginDraw2D();
 
 	colorMode(RGB, 255);

@@ -17,11 +17,18 @@ public class MyCounter  extends PaperTouchScreen {
     }
     
     void draw() {
+
+	if(noCamera){
+	    setLocation(600, 120,0);
+	}
+
 	beginDraw2D();
 	background(100, 100, 100);
 
 	updateTouch();
 	// reasons ?
+
+	drawTouch();
 	
 	// 	text("Heart: " + zones[HEART].intensity + ", Attack" + zones[ATTACK].intensity + ", Power " + zones[POWER].intensity,0 ,200);
 

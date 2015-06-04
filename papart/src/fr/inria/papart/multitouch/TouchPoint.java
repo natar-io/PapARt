@@ -317,6 +317,7 @@ public class TouchPoint extends DepthPoint {
     public void createTouch() {
         touch = new Touch();
         touch.id = this.id;
+        touch.touchPoint = this;
     }
 
     public Touch getTouch() {

@@ -150,8 +150,7 @@ public class BaseDisplay {
         parent.noStroke();
         parent.g.image(this.render(), 0, 0, this.drawingSizeX, this.drawingSizeY);
         
-            System.out.println("Draw ?");
-        pxCopy = getPixelsCopy();
+//        pxCopy = getPixelsCopy();
     }
 
     public int[] pxCopy;
@@ -194,13 +193,10 @@ public class BaseDisplay {
         int[] out;
         try {
             sem.acquire();
-            System.out.println("Hece..1");
             this.graphics.loadPixels();
-            System.out.println("Hece..2");
             out = new int[graphics.pixels.length];
 
             System.arraycopy(graphics.pixels, 0, out, 0, graphics.pixels.length);
-            System.out.println("Hece..3");
             sem.release();
             return out;
         } catch (InterruptedException ex) {
