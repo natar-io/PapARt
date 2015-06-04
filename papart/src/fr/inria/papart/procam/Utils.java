@@ -22,6 +22,7 @@ import fr.inria.papart.calibration.HomographyCalibration;
 import fr.inria.papart.calibration.HomographyCreator;
 import fr.inria.papart.calibration.PlaneCalibration;
 import fr.inria.papart.calibration.PlaneCreator;
+import fr.inria.papart.procam.camera.Camera.PixelFormat;
 import org.bytedeco.javacpp.opencv_imgproc.*;
 
 import org.bytedeco.javacv.CameraDevice;
