@@ -29,23 +29,19 @@ float defaultNormalMovementIncrement = -10f;
 
 void setup(){
     
-    size(Kinect.WIDTH, Kinect.HEIGHT, OPENGL); 
+    size(640, 480, OPENGL);
     
-    int depthFormat = freenect.FREENECT_DEPTH_MM;
-    int kinectFormat = Kinect.KINECT_MM;
 
     camera = (CameraOpenKinect) CameraFactory.createCamera(Camera.Type.OPEN_KINECT, 0);
     camera.setParent(this);
     camera.setCalibration(Papart.kinectRGBCalib);
+    camera.getDepthCamera().setCalibration(Papart.kinectIRCalib);
     camera.start();
 
     reset();
 
 
-    kinect = new KinectProcessing(this,
-				  Papart.kinectIRCalib,
-				  Papart.kinectRGBCalib,
-				  kinectFormat);
+    kinect = new KinectProcessing(this, camera);
 
     kinect.setStereoCalibration(Papart.kinectStereoCalib);
 

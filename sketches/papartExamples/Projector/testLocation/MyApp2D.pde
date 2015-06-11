@@ -44,9 +44,11 @@ public class MyApp2 extends PaperScreen {
 
     setLocation(transform);
 
-    beginDraw2D();
-    background(30, 255, 0);
-
+    beginDraw3D();
+    // background(30, 255, 0);
+    fill(50);
+    rect(0,0, w, h);
+    stroke(255);
     line(0, 0, 10, 10);
 
     endDraw();

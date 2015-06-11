@@ -59,15 +59,11 @@ public class CamImageGray extends CamImage {
     @Override
     public void update(opencv_core.IplImage iplImage) {
 
-        System.out.println("ICI 1");
         Texture tex = ((PGraphicsOpenGL) parent.g).getTexture(this);
         ByteBuffer buffer = iplImage.getByteBuffer();
-        System.out.println("ICI 2");
         
 //         Utils.byteBufferBRGtoARGB(bgrBuffer, argbBuffer);
         tex.copyBufferFromSource(null, buffer, width, height);
-        
-        System.out.println("ICI 3");
         buffer.rewind();
     }
 

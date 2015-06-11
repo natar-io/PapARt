@@ -1,7 +1,7 @@
 void draw2DPoints(){
     cam.beginHUD();
     
-    DepthData depthData = kinect.getDepthData();
+    KinectDepthData depthData = kinect.getDepthData();
 
     drawProjectedPoints(depthData);
     drawTouchPoints(depthData);
@@ -9,7 +9,7 @@ void draw2DPoints(){
     cam.endHUD();
 }
 
-void drawProjectedPoints(DepthData depthData){
+void drawProjectedPoints(KinectDepthData depthData){
     Vec3D[] projPoints = depthData.projectedPoints;
     boolean[] mask2D = depthData.validPointsMask;
     boolean[] mask3D = depthData.validPointsMask3D;
@@ -27,7 +27,7 @@ void drawProjectedPoints(DepthData depthData){
     }
 }
 
-void drawTouchPoints(DepthData depthData){
+void drawTouchPoints(KinectDepthData depthData){
 
     ArrayList<TouchPoint> touchs = touchDetection.compute(depthData);
     TouchPointTracker.trackPoints(globalTouchList, touchs, millis());

@@ -15,7 +15,6 @@ float renderQuality = 1.5f;
 Papart papart;
 
 KinectTouchInput touchInput;
-TouchDetectionSimple2D touchDetection; 
 
 boolean noCamera = false;
 
@@ -37,8 +36,8 @@ void setup(){
 	papart = Papart.projection(this);
 	papart.loadTouchInput();
     } else {
-	size((int) (Kinect.WIDTH * renderQuality),
-	     (int) (Kinect.HEIGHT * renderQuality),
+	size((int) (640 * renderQuality),
+	     (int) (480 * renderQuality),
 	     OPENGL);
 
 	papart = new Papart(this);
@@ -50,7 +49,6 @@ void setup(){
     }
 
     touchInput = (KinectTouchInput) papart.getTouchInput();
-    touchDetection = touchInput.getTouchDetection2D();
     
     papart.loadSketches();
     papart.startTracking();

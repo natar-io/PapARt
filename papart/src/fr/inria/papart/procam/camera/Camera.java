@@ -22,6 +22,7 @@ package fr.inria.papart.procam.camera;
  *
  * @author jeremylaviole
  */
+import fr.inria.papart.graph.Node;
 import fr.inria.papart.procam.MarkerBoard;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.procam.Utils;
@@ -30,10 +31,6 @@ import fr.inria.papart.procam.camera.CamImageColor;
 import fr.inria.papart.procam.camera.CamImageGray;
 import org.bytedeco.javacpp.opencv_core.CvMat;
 import org.bytedeco.javacpp.opencv_core.IplImage;
-//import diewald_PS3.PS3;
-//import diewald_PS3.constants.COLOR_MODE;
-//import diewald_PS3.constants.VIDEO_MODE;
-//import diewald_PS3.logger.PS3Logger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -47,7 +44,9 @@ import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 
-public abstract class Camera implements PConstants {
+public abstract class Camera extends Node implements PConstants {
+
+    public static Camera INVALID_CAMERA = new CameraOpenCV(-1);
 
     // Images
     protected IplImage currentImage, copyUndist;
@@ -80,7 +79,7 @@ public abstract class Camera implements PConstants {
     private boolean undistort = false;
 
     // Properties files
-    private String calibrationFile;
+    private String calibrationFile = null;
 
     // Properties (instanciated)
     protected ProjectiveDeviceP pdp = null;
@@ -88,15 +87,25 @@ public abstract class Camera implements PConstants {
 
     // Instance variables
     protected PApplet parent = null;
-    private ArrayList<TrackedView> trackedViews;
+
     private List<MarkerBoard> sheets = null;
+
     protected final Semaphore sheetsSemaphore = new Semaphore(1);
 
     // ARToolkit 
     protected String calibrationARToolkit;
 
-    private ARTThread thread = null;
+    private CameraThread thread = null;
 
+    abstract public void start();
+
+    public PImage getImage() {
+        return getPImage();
+    }
+
+    public abstract PImage getPImage();
+
+    
     protected void checkParameters() {
         if (width == 0 || height == 0) {
             throw new RuntimeException("Camera: Width or Height are 0, set them or load a calibration.");
@@ -139,9 +148,7 @@ public abstract class Camera implements PConstants {
      * @return
      */
     public PImage getPImageCopy(PApplet context) {
-        System.out.println("Ici ...");
         PImage out = context.createImage(this.width, this.height, RGB);
-        System.out.println("la ...");
         Utils.IplImageToPImage(currentImage, out);
         return out;
     }
@@ -152,7 +159,7 @@ public abstract class Camera implements PConstants {
     }
 
     /**
-     * Description of the cameara, the number if using OpenCV or OpenKinect, and
+     * Description of the camera, the number if using OpenCV or OpenKinect, and
      * a name or file if using Processing.
      *
      * @param description
@@ -203,28 +210,34 @@ public abstract class Camera implements PConstants {
         this.undistort = undistort;
     }
 
-    abstract public void start();
-
-    // Legacy, use the two next functions.
-    /**
-     * @deprecated
-     */
-    public void initMarkerDetection(PApplet applet, String calibrationARToolkit, MarkerBoard[] paperSheets) {
-        initMarkerDetection(calibrationARToolkit);
-
-        for (MarkerBoard b : paperSheets) {
-            trackMarkerBoard(b);
-        }
+    public boolean isCalibrated() {
+        return this.calibrationFile != null;
     }
 
-    //use trackMarkerBoard now. 
+    public String getCalibrationFile() {
+        return this.calibrationFile;
+    }
+
+    /**
+     * Initialize the tracking with ARToolkit plus.
+     *
+     * @param calibrationARToolkit
+     */
     public void initMarkerDetection(String calibrationARToolkit) {
         // Marker Detection and view
         this.calibrationARToolkit = calibrationARToolkit;
-        this.trackedViews = new ArrayList<TrackedView>();
         this.sheets = Collections.synchronizedList(new ArrayList<MarkerBoard>());
     }
 
+    public String getCalibrationARToolkit() {
+        return calibrationARToolkit;
+    }
+
+    /**
+     * Add a markerboard to track with this camera.
+     *
+     * @param sheet
+     */
     public void trackMarkerBoard(MarkerBoard sheet) {
         sheet.addTracker(parent, this);
         try {
@@ -237,46 +250,6 @@ public abstract class Camera implements PConstants {
             throw new RuntimeException("Marker detection not initialized.");
         }
 
-    }
-
-    public boolean tracks(MarkerBoard board) {
-        return this.sheets.contains(board);
-    }
-
-    public List<MarkerBoard> getTrackedSheets() {
-        return this.sheets;
-    }
-
-    /**
-     * It makes the camera update continuously.
-     */
-    public void setThread() {
-        if (thread == null) {
-            thread = new ARTThread(this, sheets);
-            thread.setCompute(this.trackSheets);
-            thread.start();
-        } else {
-            System.err.println("Camera: Error Thread already launched");
-        }
-    }
-
-    /**
-     * Stops the update thread.
-     */
-    public void stopThread() {
-        if (thread != null) {
-            thread.stopThread();
-            thread = null;
-        }
-    }
-
-    /**
-     * Deprecated : use trackSheets instead
-     *
-     * @param auto
-     */
-    public void setAutoUpdate(boolean auto) {
-        this.trackSheets(auto);
     }
 
     /**
@@ -294,12 +267,47 @@ public abstract class Camera implements PConstants {
         }
     }
 
+    public boolean tracks(MarkerBoard board) {
+        return this.sheets.contains(board);
+    }
+
+    public List<MarkerBoard> getTrackedSheets() {
+        return this.sheets;
+    }
+
+    /**
+     * It makes the camera update continuously.
+     */
+    public void setThread() {
+        if (thread == null) {
+            thread = new CameraThread(this);
+            thread.setCompute(this.trackSheets);
+            thread.start();
+        } else {
+            System.err.println("Camera: Error Thread already launched");
+        }
+    }
+
+    /**
+     * Stops the update thread.
+     */
+    public void stopThread() {
+        if (thread != null) {
+            thread.stopThread();
+            thread = null;
+        }
+    }
+
     public boolean useThread() {
         return thread != null;
     }
 
-    public abstract void grab();
-
+    /**
+     * Update the current Image, from the specific grabber, lens distorsions are
+     * handled here.
+     *
+     * @param img
+     */
     protected void updateCurrentImage(IplImage img) {
         if (undistort) {
             if (copyUndist == null) {
@@ -317,12 +325,9 @@ public abstract class Camera implements PConstants {
         }
     }
 
-    public PImage getImage() {
-        return getPImage();
-    }
-
-    public abstract PImage getPImage();
-
+    /**
+     * Check the memory allocation of the CamImage.
+     */
     protected void checkCamImage() {
         if (camImage == null) {
 
@@ -337,8 +342,8 @@ public abstract class Camera implements PConstants {
 
     protected boolean isPixelFormatGray() {
         PixelFormat pixelFormat = getPixelFormat();
-        return pixelFormat == PixelFormat.GRAY ||
-                  pixelFormat == PixelFormat.DEPTH_KINECT_MM;
+        return pixelFormat == PixelFormat.GRAY
+                || pixelFormat == PixelFormat.DEPTH_KINECT_MM;
     }
 
     protected boolean isPixelFormatColor() {
@@ -348,6 +353,9 @@ public abstract class Camera implements PConstants {
                 || pixelFormat == PixelFormat.RGB
                 || pixelFormat == PixelFormat.RGBA;
     }
+
+// Public API 
+    public abstract void grab();
 
     public IplImage getIplImage() {
         return currentImage;
@@ -405,49 +413,6 @@ public abstract class Camera implements PConstants {
     public PMatrix3D estimateOrientation(PVector[] objectPoints,
             PVector[] imagePoints) {
         return pdp.estimateOrientation(objectPoints, imagePoints);
-    }
-
-    /**
-     * Add a tracked view to the camera. This camera must be tracking the board
-     * already. Returns true if the camera is already tracking.
-     *
-     * @param view
-     * @return
-     */
-    public boolean addTrackedView(TrackedView view) {
-        return trackedViews.add(view);
-    }
-
-    /**
-     * Check the use
-     *
-     * @param trackedView
-     * @return
-     */
-    public IplImage getView(TrackedView trackedView) {
-        return getViewIpl(trackedView);
-    }
-
-    public PImage getPView(TrackedView trackedView) {
-        if (currentImage == null) {
-            return null;
-        }
-
-        trackedView.computeCorners(this);
-        return trackedView.getImage(currentImage);
-    }
-
-    public IplImage getViewIpl(TrackedView trackedView) {
-        if (currentImage == null) {
-            return null;
-        }
-
-        trackedView.computeCorners(this);
-        return trackedView.getImageIpl(currentImage);
-    }
-
-    public String getCalibrationARToolkit() {
-        return calibrationARToolkit;
     }
 
     static public void convertARParams(PApplet parent, String calibrationYAML,

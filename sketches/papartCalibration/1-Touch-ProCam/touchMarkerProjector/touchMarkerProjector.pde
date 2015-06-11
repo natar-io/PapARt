@@ -25,7 +25,7 @@ PlaneCalibration planeCalibration;
 HomographyCalibration homographyCalibration;
 PlaneAndProjectionCalibration planeProjCalib = new PlaneAndProjectionCalibration();
 
-int precision = 1;
+int precision = 2;
 ProjectorDisplay projector;
     
 PVector[] screenPoints;
@@ -64,18 +64,10 @@ void setup(){
 
     planeCalibration = new PlaneCalibration();
 
-    kinect = new KinectProcessing(this,
-				  Papart.kinectIRCalib,
-				  Papart.kinectRGBCalib,
-				  kinectFormat);
-
+    kinect = new KinectProcessing(this, cameraKinect);
     kinect.setStereoCalibration(Papart.kinectStereoCalib);
     
-    kinectOpenCV = new KinectOpenCV(this,
-				    Papart.kinectIRCalib,
-				    Papart.kinectRGBCalib,
-				    kinectFormat);
-    
+    kinectOpenCV = new KinectOpenCV(this, cameraKinect);
     kinectOpenCV.setStereoCalibration(Papart.kinectStereoCalib);
 
     
@@ -110,7 +102,12 @@ PMatrix3D cameraPaperTransform;
 void draw(){
     background(0);
 
-    cameraKinect.grab();
+    try {
+	cameraKinect.grab();
+    } catch(Exception e){
+	println("Could not grab the image " + e);
+    }
+    
     kinectImg = cameraKinect.getIplImage();
     kinectImgDepth = cameraKinect.getDepthCamera().getIplImage();
     cameraImg = cameraTracking.getIplImage();

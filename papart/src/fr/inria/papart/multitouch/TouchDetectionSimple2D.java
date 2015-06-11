@@ -19,7 +19,8 @@
 package fr.inria.papart.multitouch;
 
 import fr.inria.papart.depthcam.DepthData;
-import fr.inria.papart.depthcam.Kinect;
+import fr.inria.papart.depthcam.DepthAnalysis;
+import fr.inria.papart.depthcam.KinectDepthData;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -27,27 +28,24 @@ import java.util.HashSet;
  *
  * @author Jeremy Laviole <jeremy.laviole@inria.fr>
  */
-public class TouchDetectionSimple2D extends TouchDetection{
-
+public class TouchDetectionSimple2D extends TouchDetection {
 
     public TouchDetectionSimple2D(int size) {
         super(size);
     }
 
     @Override
-    public ArrayList<TouchPoint> compute(DepthData dData) {
+    public ArrayList<TouchPoint> compute(KinectDepthData dData) {
         this.depthData = dData;
-        
-        if(!hasCCToFind()){
+
+        if (!hasCCToFind()) {
             return new ArrayList<TouchPoint>();
         }
 
         ArrayList<ConnectedComponent> connectedComponents = findConnectedComponents();
         ArrayList<TouchPoint> touchPoints = this.createTouchPointsFrom(connectedComponents);
-
         return touchPoints;
     }
-    
 
     @Override
     protected void setSearchParameters() {
@@ -56,22 +54,22 @@ public class TouchDetectionSimple2D extends TouchDetection{
 
         currentPointValidityCondition = new CheckTouchPoint();
         int firstPoint = toVisit.iterator().next();
-        
+
 //        maxDistance = 10;
 ////         setPrecisionFrom(firstPoint);
 //        searchDepth = 40;// TODO: FIX this value !
 //        maximumRecursion = 100; // TODO: fix this value.
     }
- 
+
     public class CheckTouchPoint implements PointValidityCondition {
 
         @Override
         public boolean checkPoint(int offset, int currentPoint) {
-            float distanceToCurrent = depthData.kinectPoints[offset].distanceTo(depthData.kinectPoints[currentPoint]);
+            float distanceToCurrent = depthData.depthPoints[offset].distanceTo(depthData.depthPoints[currentPoint]);
 
             return !assignedPoints[offset] // not assigned  
                     && depthData.validPointsMask[offset] // is valid
-                    && (depthData.kinectPoints[offset] != Kinect.INVALID_POINT) // not invalid point (invalid depth)
+                    && (depthData.depthPoints[offset] != DepthAnalysis.INVALID_POINT) // not invalid point (invalid depth)
                     && distanceToCurrent < calib.getMaximumDistance();
         }
     }

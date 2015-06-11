@@ -18,20 +18,23 @@
  */
 package fr.inria.papart.procam.camera;
 
+import fr.inria.papart.graph.Displayable;
 import fr.inria.papart.multitouch.KinectTouchInput;
 import fr.inria.papart.procam.Utils;
+import java.util.HashMap;
 import org.bytedeco.javacpp.freenect;
 import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import org.bytedeco.javacv.OpenKinectFrameGrabber;
 import processing.core.PApplet;
 import processing.core.PImage;
+import processing.opengl.PGraphicsOpenGL;
 
 /**
  *
  * @author jiii
  */
-public class CameraOpenKinect extends Camera {
+public class CameraOpenKinect extends Camera implements Displayable {
 
     private boolean isGrabbingDepth = false;
     protected OpenKinectFrameGrabber grabber;
@@ -123,5 +126,26 @@ public class CameraOpenKinect extends Camera {
     public void setGrabDepth(boolean grabDepth) {
         this.isGrabbingDepth = grabDepth;
     }
+
+    HashMap<PApplet, PImage> imageMap = new HashMap();
+
+    @Override
+    public void prepareToDisplayOn(PApplet display) {
+        PImage image = display.createImage(this.width, this.height, RGB);
+        imageMap.put(display, image);
+    }
+
+    @Override
+    public PImage getDisplayedOn(PApplet display) {
+        PImage image = imageMap.get(display);
+        Utils.IplImageToPImage(currentImage, false, image);
+        return image;
+    }
+
+    @Override
+    public boolean canBeDisplayedOn(PApplet display) {
+        return imageMap.containsKey(display);
+    }
+    
 
 }

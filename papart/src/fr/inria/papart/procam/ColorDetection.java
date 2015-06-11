@@ -5,6 +5,7 @@
  */
 package fr.inria.papart.procam;
 
+import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.TrackedView;
 import processing.core.PApplet;
 import processing.core.PImage;
@@ -54,24 +55,21 @@ public class ColorDetection {
     }
 
     public void initialize() {
+
+        boardView = new TrackedView(paperScreen);
+
         if (invY) {
-            boardView = new TrackedView(paperScreen.markerBoard,
-                    new PVector(pos.x + captureOffset.x,
-                            paperScreen.drawingSize.y - pos.y + captureOffset.y),
-                    captureSize,
-                    picWidth, picHeight);
+            boardView.setBottomLeftCorner(new PVector(pos.x + captureOffset.x,
+                    paperScreen.drawingSize.y - pos.y + captureOffset.y));
         } else {
-            boardView = new TrackedView(paperScreen.markerBoard,
-                    new PVector(pos.x + captureOffset.x,
-                            pos.y + captureOffset.y),
-                    captureSize,
-                    picWidth, picHeight);
+            boardView.setBottomLeftCorner(new PVector(pos.x + captureOffset.x,
+                    pos.y + captureOffset.y));
         }
 
-        // TODO: HACK for NoCameraMode
-        if (paperScreen.cameraTracking != null) {
-            paperScreen.cameraTracking.addTrackedView(boardView);
-        }
+        boardView.setCaptureSizeMM(captureSize);
+        boardView.setImageWidthPx(picWidth);
+        boardView.setImageHeightPx(picHeight);
+        boardView.init();
 
     }
 
@@ -97,7 +95,7 @@ public class ColorDetection {
     }
 
     public void drawCapturedImage() {
-        PImage out = paperScreen.cameraTracking.getPView(boardView);
+        PImage out = getImage();
         if (out != null) {
             paperScreen.image(out, 0, -picHeight - 5, picWidth, picHeight);
         }
@@ -130,13 +128,12 @@ public class ColorDetection {
     }
 
     public PImage getImage() {
-
         // TODO: NoCamera HACK
         if (paperScreen.cameraTracking == null) {
             return null;
         }
 
-        PImage out = paperScreen.cameraTracking.getPView(boardView);
+        PImage out = boardView.getViewOf(paperScreen.cameraTracking);
         return out;
     }
 
@@ -147,7 +144,7 @@ public class ColorDetection {
             return;
         }
 
-        PImage out = paperScreen.cameraTracking.getPView(boardView);
+        PImage out = getImage();
         if (out == null) {
             return;
         }
@@ -176,7 +173,7 @@ public class ColorDetection {
             return 0;
         }
 
-        PImage out = paperScreen.cameraTracking.getPView(boardView);
+        PImage out = getImage();
         if (out == null) {
             return 0;
         }
@@ -215,13 +212,13 @@ public class ColorDetection {
         this.captureSize.set(x, y);
     }
 
-    public int getPicWidth() {
-        return picWidth;
-    }
-
     public void setPicSize(int picWidth, int picHeight) {
         this.picWidth = picWidth;
         this.picHeight = picHeight;
+    }
+
+    public int getPicWidth() {
+        return picWidth;
     }
 
     public int getPicHeight() {

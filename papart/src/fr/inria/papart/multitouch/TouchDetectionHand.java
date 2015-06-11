@@ -18,8 +18,8 @@
  */
 package fr.inria.papart.multitouch;
 
-import fr.inria.papart.depthcam.DepthData;
-import fr.inria.papart.depthcam.Kinect;
+import fr.inria.papart.depthcam.KinectDepthData;
+import fr.inria.papart.depthcam.DepthAnalysis;
 import java.util.ArrayList;
 import java.util.HashSet;
 import toxi.geom.Vec3D;
@@ -35,7 +35,7 @@ public class TouchDetectionHand extends TouchDetectionSimple2D {
     }
 
     @Override
-    public ArrayList<TouchPoint> compute(DepthData dData) {
+    public ArrayList<TouchPoint> compute(KinectDepthData dData) {
 
         this.depthData = dData;
 
@@ -86,15 +86,15 @@ public class TouchDetectionHand extends TouchDetectionSimple2D {
         private final Vec3D firstPoint;
 
         public CheckOverPlane(int offset) {
-            firstPoint = depthData.kinectPoints[offset];
+            firstPoint = depthData.depthPoints[offset];
         }
 
         @Override
         public boolean checkPoint(int offset, int currentPoint) {
-            float distanceToFirst = firstPoint.distanceTo(depthData.kinectPoints[currentPoint]);
+            float distanceToFirst = firstPoint.distanceTo(depthData.depthPoints[currentPoint]);
             return !assignedPoints[offset] // not assigned  
                     && depthData.touchAttributes[offset].isOverTouch() // is a «Touch» point
-                    && (depthData.kinectPoints[offset] != Kinect.INVALID_POINT) // not invalid point (invalid depth)
+                    && (depthData.depthPoints[offset] != DepthAnalysis.INVALID_POINT) // not invalid point (invalid depth)
                     && distanceToFirst < MAX_HAND_SIZE;
         }
     }

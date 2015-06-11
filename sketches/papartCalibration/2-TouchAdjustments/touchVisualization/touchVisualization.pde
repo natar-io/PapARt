@@ -45,6 +45,7 @@ void setup(){
     camera.setParent(this);
     camera.setCalibration(Papart.kinectRGBCalib);
     camera.getDepthCamera().setDepthFormat(depthFormat);
+    camera.getDepthCamera().setCalibration(Papart.kinectIRCalib);
     camera.start();
 
     try{
@@ -55,16 +56,13 @@ void setup(){
 	die("Impossible to load the plane calibration...");
     }
 
-    kinect = new KinectProcessing(this,
-				  Papart.kinectIRCalib,
-				  Papart.kinectRGBCalib,
-				  kinectFormat);
-    
+    kinect = new KinectProcessing(this,camera);
+
     //  pointCloud = new PointCloudKinect(this, precision);
     pointCloud = new PointCloudKinect(this);
 
   initGui();
-  
+
   // Set the virtual camera
   cam = new PeasyCam(this, 0, 0, -800, 800);
   cam.setMinimumDistance(0);
@@ -75,7 +73,7 @@ void setup(){
   touchDetection3D = new TouchDetectionSimple3D(Kinect.SIZE);
 
   touchCalibration = touchDetection.getCalibration();
-  
+
 }
 
 
@@ -99,16 +97,21 @@ ArrayList<TouchPoint> globalTouchList = new ArrayList<TouchPoint>();
 void draw(){
     background(0);
 
+    try{
     camera.grab();
+    }catch(Exception e){
+	println("Could not grab frame..." +e );
+    }
     kinectImg = camera.getIplImage();
     kinectImgDepth = camera.getDepthCamera().getIplImage();
     if(kinectImg == null || kinectImgDepth == null){
+	println("null images..");
 	return;
     }
 
     //    kinect.updateMT(kinectImgDepth, planeProjCalibration, precision, precision);
     //    kinect.updateTest(kinectImgDepth, kinectImg, planeProjCalibration, precision);
-    kinect.update(kinectImgDepth, kinectImg, planeProjCalibration, precision);
+
 
     touchCalibration.setMaximumDistance(maxDistance);
     touchCalibration.setMinimumHeight(minHeight);
@@ -121,16 +124,15 @@ void draw(){
     touchCalibration.setPrecision(precision);
     planeCalibration.setHeight(planeHeight);
     
-    if(draw3D){
-    	draw3DPointCloud();
-    } else {
-	draw2DPoints();
-    }
 
+    kinect.update(kinectImgDepth, kinectImg, planeProjCalibration, precision);
+    draw3DPointCloud();
+    
     cam.beginHUD();
     text("'m' to stop the camera", 10,  30);
     cp5.draw();
     cam.endHUD(); // always!
+        println("WTF ? ?...");
     
 }
 

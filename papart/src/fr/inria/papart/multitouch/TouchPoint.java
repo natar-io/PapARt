@@ -18,8 +18,8 @@
  */
 package fr.inria.papart.multitouch;
 
-import fr.inria.papart.depthcam.DepthData;
-import fr.inria.papart.depthcam.DepthDataElement;
+import fr.inria.papart.depthcam.KinectDepthData;
+import fr.inria.papart.depthcam.DepthDataElementKinect;
 import fr.inria.papart.depthcam.DepthPoint;
 import java.util.ArrayList;
 import processing.core.PVector;
@@ -44,7 +44,7 @@ public class TouchPoint extends DepthPoint {
     private Vec3D positionKinect;
     private Vec3D previousPositionKinect;
 //    private PVector speedKinect = new PVector();
-    private ArrayList<DepthDataElement> depthDataElements = new ArrayList<DepthDataElement>();
+    private ArrayList<DepthDataElementKinect> depthDataElements = new ArrayList<DepthDataElementKinect>();
 
     private float confidence;
 //    public float size;
@@ -241,14 +241,14 @@ public class TouchPoint extends DepthPoint {
         return this.speed;
     }
 
-    public void setDepthDataElements(DepthData depthData, ConnectedComponent connectedComponent) {
+    public void setDepthDataElements(KinectDepthData depthData, ConnectedComponent connectedComponent) {
         depthDataElements.clear();
         for (Integer i : connectedComponent) {
-            depthDataElements.add(depthData.getElement(i));
+            depthDataElements.add(depthData.getElementKinect(i));
         }
     }
 
-    public ArrayList<DepthDataElement> getDepthDataElements() {
+    public ArrayList<DepthDataElementKinect> getDepthDataElements() {
         return this.depthDataElements;
     }
 

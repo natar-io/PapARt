@@ -28,12 +28,10 @@ void setup(){
   camera.setParent(this);
   camera.setCalibration(Papart.kinectRGBCalib);
   camera.getDepthCamera().setDepthFormat(depthFormat);
+  camera.getDepthCamera().setCalibration(Papart.kinectIRCalib);
   camera.start();
 
-  kinect = new KinectProcessing(this,
-		      Papart.kinectIRCalib,
-		      Papart.kinectRGBCalib,
-		      kinectFormat);
+  kinect = new KinectProcessing(this, camera);
   kinect.setStereoCalibration(Papart.kinectStereoCalib);
 
   pointCloud = new PointCloudKinect(this, skip);
@@ -57,11 +55,18 @@ void draw(){
     //           0, 0, 0, 1);
 
     // retreive the camera image.
-    camera.grab();
-
+    try {
+	camera.grab();
+    } catch(Exception e){
+	println("Could not grab the image " + e);
+    }
+    
     IplImage colourImg = camera.getIplImage();
     IplImage depthImg = camera.getDepthCamera().getIplImage();
 
+    if(colourImg == null || depthImg == null)
+	return;
+    
     kinect.update(depthImg, colourImg, skip);
 
     pointCloud.updateWith(kinect);

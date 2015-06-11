@@ -20,8 +20,9 @@ package fr.inria.papart.multitouch;
 
 import fr.inria.papart.calibration.PlanarTouchCalibration;
 import fr.inria.papart.calibration.PlaneCalibration;
+import fr.inria.papart.depthcam.KinectDepthData;
+import fr.inria.papart.depthcam.DepthAnalysis;
 import fr.inria.papart.depthcam.DepthData;
-import fr.inria.papart.depthcam.Kinect;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -48,7 +49,7 @@ public abstract class TouchDetection {
     protected byte currentCompo = STARTING_CONNECTED_COMPONENT;
 
 // set by calling function
-    protected DepthData depthData;
+    protected KinectDepthData depthData;
 
     protected HashSet<Integer> toVisit;
     protected PointValidityCondition currentPointValidityCondition;
@@ -62,7 +63,7 @@ public abstract class TouchDetection {
         allocateMemory(size);
     }
 
-    public abstract ArrayList<TouchPoint> compute(DepthData dData);
+    public abstract ArrayList<TouchPoint> compute(KinectDepthData dData);
 
     protected void allocateMemory(int size) {
         assignedPoints = new boolean[size];
@@ -121,13 +122,12 @@ public abstract class TouchDetection {
 
     protected int searchDepth;
     protected int precision;
-
+    
     // TODO: chec if currentCompo ++ is relevent. 
     protected ConnectedComponent findConnectedComponent(int startingPoint) {
-
+        
         searchDepth = calib.getSearchDepth() * calib.getPrecision();
         precision = calib.getPrecision();
-
         ConnectedComponent cc = findNeighboursRec(startingPoint, 0);
         cc.setId(currentCompo);
         currentCompo++;
@@ -137,8 +137,13 @@ public abstract class TouchDetection {
     public ConnectedComponent findNeighboursRec(int currentPoint, int recLevel) {
 
         // TODO: optimisations here ?
-        int x = currentPoint % Kinect.WIDTH;
-        int y = currentPoint / Kinect.WIDTH;
+        
+        int w = depthData.source.getWidth();
+        int h = depthData.source.getHeight();
+        
+        int x = currentPoint % w;
+        int y = currentPoint / w;
+        
         ConnectedComponent neighbourList = new ConnectedComponent();
         ArrayList<Integer> visitNext = new ArrayList<Integer>();
 
@@ -146,14 +151,14 @@ public abstract class TouchDetection {
             return neighbourList;
         }
 
-        int minX = PApplet.constrain(x - searchDepth, 0, Kinect.WIDTH - 1);
-        int maxX = PApplet.constrain(x + searchDepth, 0, Kinect.WIDTH - 1);
-        int minY = PApplet.constrain(y - searchDepth, 0, Kinect.HEIGHT - 1);
-        int maxY = PApplet.constrain(y + searchDepth, 0, Kinect.HEIGHT - 1);
+        int minX = PApplet.constrain(x - searchDepth, 0, w - 1);
+        int maxX = PApplet.constrain(x + searchDepth, 0, w - 1);
+        int minY = PApplet.constrain(y - searchDepth, 0, h - 1);
+        int maxY = PApplet.constrain(y + searchDepth, 0, h - 1);
 
         for (int j = minY; j <= maxY; j += precision) {
             for (int i = minX; i <= maxX; i += precision) {
-                int offset = j * Kinect.WIDTH + i;
+                int offset = j * w + i;
 
                 // Avoid getting ouside the limits
                 if (currentPointValidityCondition.checkPoint(offset, currentPoint)) {
@@ -180,7 +185,7 @@ public abstract class TouchDetection {
     // TODO: use another type here ?
     protected TouchPoint createTouchPoint(ConnectedComponent connectedComponent) {
         Vec3D meanProj = connectedComponent.getMean(depthData.projectedPoints);
-        Vec3D meanKinect = connectedComponent.getMean(depthData.kinectPoints);
+        Vec3D meanKinect = connectedComponent.getMean(depthData.depthPoints);
         TouchPoint tp = new TouchPoint();
         tp.setDetection(this);
         tp.setPosition(meanProj);
@@ -200,7 +205,7 @@ public abstract class TouchDetection {
 
     protected void setPrecisionFrom(int firstPoint) {
 
-        Vec3D currentPoint = depthData.kinectPoints[firstPoint];
+        Vec3D currentPoint = depthData.depthPoints[firstPoint];
         PVector coordinates = depthData.projectiveDevice.getCoordinates(firstPoint);
 
         // Find a point. 
