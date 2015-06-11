@@ -3,6 +3,7 @@ static int NB_PLAYERS = 0;
 static int MAX_PLAYERS = 5;
 static Player currentPlayer;
 static ArrayList<Player> playerList = new ArrayList<Player>();
+
 static ArrayList<Token> allTokens = new ArrayList<Token>();
 
 int minTokenDist = 30;
@@ -19,7 +20,10 @@ class SpecialAttack extends PVector {
 }
 
 
-void actionPressed(){
+void action(){
+
+    println("Action !");
+    
     if(Mode.is("PlaceDice")){
 	resolveHealAttack();
 	Mode.set("ChooseAction");
@@ -27,41 +31,51 @@ void actionPressed(){
     }
 
     if(Mode.is("ChooseAction")){
-	// todo : check action...
-    }
 
+	if(currentAction == ACTION_NEXT){
+	    nextPlayer();
+	    return;
+	}
+
+	if(currentAction == ACTION_TOWER){
+	    Mode.set("AddTower");
+	    return;
+	}
+
+	if(currentAction == ACTION_ATTACK){
+	    Mode.set("SpecialAttack");
+	    return;
+	}
+
+    }
 }
 
+
 void resolveHealAttack(){
-
-    int nbHearts = heartCounter.size();
-    int nbAttack = attackCounter.size();
-
-    heartCounter.clear();
-    attackCounter.clear();
-    
     currentPlayer.HP += nbHearts * 5;
 
      for(Player player : playerList){
 	 if(player != currentPlayer)
 	     player.HP -= nbAttack * 2;
     }
-     
-    
-
+     Mode.set("ChooseAction");
 
 }
 
 
 void nextPlayer(){
 
+    // TODO: display something for nextplayer, like a glow on colour ?
     println("Next player");
     if(currentPlayer.id == NB_PLAYERS -1){
 	currentPlayer = playerList.get(0);
     } else {
 	currentPlayer = playerList.get(currentPlayer.id + 1);
     }
+
     println("Current player " + currentPlayer.id);
+
+    Mode.set("PlaceDice");
 }
 
 

@@ -22,7 +22,7 @@ public class ColorDetection {
     protected TrackedView boardView;
 
     private PVector captureSize = new PVector(10, 10);
-    private final PVector pos;
+    private final PVector pos = new PVector();
 
     private int picWidth = 8; // Works better with power  of 2
     private int picHeight = 8; // Works better with power  of 2
@@ -33,23 +33,8 @@ public class ColorDetection {
     // output 
     protected int col;
 
-    // Lecagy...
-    public ColorDetection(PaperScreen paperScreen, PVector pos, PVector offset, boolean invY) {
-        this(paperScreen, pos);
-        setCaptureOffset(offset);
-        setInvY(invY);
-        initialize();
-    }
-
-    public ColorDetection(PaperScreen paperScreen, PVector pos, PVector offset) {
-        this(paperScreen, pos);
-        setCaptureOffset(offset);
-        initialize();
-    }
-
-    public ColorDetection(PaperScreen paperScreen, PVector pos) {
+    public ColorDetection(PaperScreen paperScreen) {
         this.invY = false;
-        this.pos = pos.get();
         this.paperScreen = paperScreen;
         setCaptureOffset(new PVector());
     }
@@ -58,19 +43,24 @@ public class ColorDetection {
 
         boardView = new TrackedView(paperScreen);
 
-        if (invY) {
-            boardView.setBottomLeftCorner(new PVector(pos.x + captureOffset.x,
-                    paperScreen.drawingSize.y - pos.y + captureOffset.y));
-        } else {
-            boardView.setBottomLeftCorner(new PVector(pos.x + captureOffset.x,
-                    pos.y + captureOffset.y));
-        }
-
+        setPosition(pos);
         boardView.setCaptureSizeMM(captureSize);
         boardView.setImageWidthPx(picWidth);
         boardView.setImageHeightPx(picHeight);
         boardView.init();
 
+    }
+
+    public void setPosition(PVector pos) {
+        this.pos.set(pos);
+
+        if (boardView != null) {
+            if (invY) {
+                boardView.setBottomLeftCorner(new PVector(pos.x, paperScreen.drawingSize.y - pos.y));
+            } else {
+                boardView.setBottomLeftCorner(pos);
+            }
+        }
     }
 
     public void update() {
@@ -86,7 +76,7 @@ public class ColorDetection {
 
         drawCaptureZonePriv();
         drawCapturedColor();
-//        drawCapturedImage();
+        drawCapturedImage();
         paperScreen.popMatrix();
     }
 

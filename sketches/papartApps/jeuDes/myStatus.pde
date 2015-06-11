@@ -27,6 +27,7 @@ public class MyStatus  extends PaperTouchScreen {
     colorMode(RGB, 255);
     clear();
 
+background(100);
     // stroke(255);
     // noFill();
     // rect(0, 0, width, height);
@@ -40,20 +41,16 @@ public class MyStatus  extends PaperTouchScreen {
     drawDisabledPlayers();
 
 
-    fill(0, 100, 0);
-    drawThrowDice();
-    fill(0, 0, 100);
-    drawEndTurn();
-
-
+    drawMode();
+    
     fill(255);
     stroke(255);
-    int textWidth = 73;
+    int textWidth = 41;
 
-    int px = 84;
-    int py = 42;
-    textFont(font, 20);
-    text("Points ", 0, py);
+    int px = 44;
+    int py = 47;
+    textFont(font, 10);
+    text("Points ", 3, py);
 
     translate(px, 0, 0);
     for (Player player : playerList) {
@@ -61,20 +58,44 @@ public class MyStatus  extends PaperTouchScreen {
       text("J" + player.id + ":" + player.nbPoints +" ", 0, py); 
       translate(textWidth, 0, 0);
     }
-
-
     endDraw();
   }
 
 
-  int beginningOfNumbers = 60;
-  int playerNoWidth = 10;
-  int playerHighlightWidth = 7;
+    void drawMode(){
+	if(Mode.is("PlaceDice")){
+	    fill(0, 100, 0);
+	    rect(1, 14, 69, 23);
+	}
+	
+	if(Mode.is("ChooseAction")){
+	    fill(100, 100, 176);
+	    rect(98, 14, 60, 10);
+	}
+		
+	if(Mode.is("AddTower")){
+	    fill(0, 0, 100);
+	    rect(78, 26, 43, 11);
+	}
+	
+	if(Mode.is("SpecialAttack")){
+	    fill(0, 100, 1);
+	    rect(115, 22, 50, 12);
+	}
+    }
+    
+//  int beginningOfNumbers = 60;
+//  int playerNoWidth = 10;
+//  int playerHighlightWidth = 7;
 
   void drawPlayer(int nb) {
 
+      int beginningOfNumbers = 68;
+  int playerNoWidth = 10;
+  int playerHighlightWidth = 7;
+  
       rect( beginningOfNumbers + nb * playerNoWidth, 
-	    0, 
+	    4, 
 	    playerHighlightWidth, playerHighlightWidth);
   }
 
@@ -85,14 +106,5 @@ public class MyStatus  extends PaperTouchScreen {
     }
   }
 
-
-
-  void drawThrowDice() {
-    rect(34, 10, 45, 10);
-  }
-
-  void drawEndTurn() {
-    rect(84, 10, 37, 10);
-  }
 }
 

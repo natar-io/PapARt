@@ -42,12 +42,10 @@ void setup(){
   camera.setParent(this);
   camera.setCalibration(Papart.kinectRGBCalib);
   camera.getDepthCamera().setDepthFormat(depthFormat);
+  camera.getDepthCamera().setCalibration(Papart.kinectIRCalib);
   camera.start();
 
-  kinect = new KinectProcessing(this,
-		      Papart.kinectIRCalib,
-		      Papart.kinectRGBCalib,
-		      kinectFormat);
+  kinect = new KinectProcessing(this, camera);
 
   try{
       stereoCalib = HomographyCalibration.getMatFrom(this, Papart.kinectStereoCalib);

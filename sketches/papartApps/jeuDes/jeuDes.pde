@@ -88,7 +88,7 @@ void keyPressed() {
 	nextPlayer();
 
     if(key == ' ')
-	actionPressed();
+	action();
     
 }
 

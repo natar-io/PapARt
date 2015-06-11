@@ -28,8 +28,11 @@ public class MyBoard  extends PaperTouchScreen {
 	Mode.add("AddTower");
 	Mode.add("SpecialAttack");
 
+	// Mode.set("SpecialAttack");
 	Mode.set("PlaceDice");
-	
+        // Mode.set("ChooseAction");
+        // Mode.set("AddTower");
+  
     }
 
     void draw() {
