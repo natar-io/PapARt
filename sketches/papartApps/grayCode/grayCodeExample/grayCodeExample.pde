@@ -1,8 +1,8 @@
 import fr.inria.papart.procam.*;
+import fr.inria.papart.procam.camera.*;
 import fr.inria.papart.procam.display.*;
 import fr.inria.papart.drawingapp.*;
 import fr.inria.papart.scanner.*;
-import fr.inria.papart.tools.*; 
 
 // Undecorated frame 
 public void init() {

@@ -35,6 +35,16 @@ public class MyApp  extends PaperTouchScreen {
 	    .setSize(130, 10)
 	    ;
 
+	cp5.addButton("button")
+	    .setPosition(130, 80)
+	    .setSize(60, 60)
+	    ;
+
+	cp5.addToggle("toggle")
+	    .setPosition(130, 120)
+	    .setSize(60, 60)
+	    ;
+
 
 	Slider2D s = cp5.addSlider2D("wave")
 	    .setPosition(30,40)

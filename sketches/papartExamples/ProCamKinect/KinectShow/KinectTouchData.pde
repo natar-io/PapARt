@@ -5,6 +5,7 @@ import fr.inria.papart.depthcam.*;
 import fr.inria.papart.procam.display.*;
 
 
+
 public class MyApp extends PaperTouchScreen {
     
     void setup() {
@@ -21,11 +22,11 @@ public class MyApp extends PaperTouchScreen {
 	ArrayList<DepthPoint> points = ((KinectTouchInput) touchInput).projectDepthData((ARDisplay )display, screen);
 	// ArrayList<DepthPoint> points = ((KinectTouchInput) touchInput).projectDepthData2D((ARDisplay )display, screen);
 	// ArrayList<DepthPoint> points = ((KinectTouchInput) touchInput).projectDepthData3D((ARDisplay )display, screen);
-	
+
 	for(DepthPoint depthPoint : points) {
 	    PVector pos = depthPoint.getPosition();
-	    PVector p1 = new PVector(pos.x * drawingSize.x, 
-				     pos.y * drawingSize.y);
+	    PVector p1 = new PVector(pos.x, 
+				     drawingSize.y - pos.y);
 	    
 	    float ellipseSize = 3;
 	    int c = depthPoint.getColor();

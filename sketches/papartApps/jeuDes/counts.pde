@@ -1,19 +1,28 @@
-
-
 int nbHearts = 0;
 int nbAttack = 0;
 
 MyCounter counter; 
+
+ArrayList<PVector> heartCounter = new ArrayList<PVector>();
+ArrayList<PVector> attackCounter = new ArrayList<PVector>();
+
 public class MyCounter  extends PaperTouchScreen {
 
     int height = 250;
-    int width = 120;
+    int width = 110;
+
+    ColorDetection[] colorDetections = new ColorDetection[1];
     
     void setup() {
 	setDrawingSize(width, height);
 	loadMarkerBoard(sketchPath + "/data/drawing.cfg", width, height);
 
 	counter = this; 
+
+	colorDetections[0] = new ColorDetection(this, new PVector(40, 40));
+	colorDetections[0].setCaptureSize(12, 12);
+	colorDetections[0].initialize();
+
     }
     
     void draw() {
@@ -23,77 +32,118 @@ public class MyCounter  extends PaperTouchScreen {
 	}
 
 	beginDraw2D();
-	background(100, 100, 100);
 
-	updateTouch();
-	// reasons ?
+	background(100);
+	    
+	// colorDetections[0].computeColor();
 
-	drawTouch();
-	
-	// 	text("Heart: " + zones[HEART].intensity + ", Attack" + zones[ATTACK].intensity + ", Power " + zones[POWER].intensity,0 ,200);
+	// colorDetections[0].drawCaptureZone();
 
+	// fill(colorDetections[0].getColor());
 
-	
+	colorDetections[0].drawSelf();
+
+	// if(Mode.is("PlaceDice")){
+
+	//     fill(100, 100, 100);
+	//     noStroke();
+	//     rect(0, 0, 40, 0, 215); 
+	//     rect(70, 0, 40, 0, 215); 
+
+	//     updateTouch();
+	//     checkTouch();
+	//     drawFoundDice();
+	// } else {
+
+	//     fill(100, 100, 100);
+	//     noStroke();
+	//     rect(0, 0, 40, 0, 215); 
+	//     rect(70, 0, 40, 0, 215); 
+
+	// }
+
 	endDraw();
     }
 
-    // void drawZone(Zone zone){
-    // 	noStroke();
-    // 	fill(zone.zoneCol);
-    // 	rect(zone.id *zoneWidth , 0, zoneWidth, height);
+    void drawFoundDice(){
 
-    // 	zone.intensity = 0;
+	for(PVector p : heartCounter){
+	    fill(0, 200, 0);
+	    ellipse(p.x, p.y, 30, 30);
+	}
 
-    // 	TouchList touch2D = touchList.get2DTouchs();
-    // 	for (Touch t : touch2D) {
+	for(PVector p : attackCounter){
+	    fill(200, 0, 0);
+	    ellipse(p.x, p.y, 30, 30);
+	}
 
-    // 	    PVector p = t.position;
-    // 	    fill(200);
-    // 	    ellipse(p.x, p.y, 30, 30);
+    }
 
-    // 	    if(p.x > zone.beginning() &&
-    // 	       p.x < zone.end() ){
 
-    // 		zone.intensity++;
-    // 	    }
+    ArrayList<PVector> currentList;
+    boolean isHeart = false;
+
+    void checkTouch(){
+	TouchList touch2D = touchList.get2DTouchs();
+	for (Touch t : touch2D) {
+
+
+	    TouchPoint tp = t.touchPoint;
+	    if(tp == null){
+		println("TouchPoint null, this method only works with KinectTouchInput.");
+		continue;
+	    }
+
+
+	    PVector p = t.position;
+
+	    fill(200);
+	    ellipse(p.x, p.y, 10, 10);
 	    
-    // 	}
+	    if(tp.attachedValue == NEW_TOUCH){
 
+		if(! checkHeartOrAttack(p))
+		    continue;
 
+		if(touchAlreadyFound(p))
+		    continue;
+		
+		if(tp.getAge(millis()) > 3000){
+		    currentList.add(new PVector(p.x, p.y));
+		    println("Add !");
+		    tp.attachedValue = currentPlayer.id;
+		}
+	    }
+	}
+    }
+
+    boolean checkHeartOrAttack(PVector p){
+
+	// lower 40mm heart, over 40 +30 attack, between nothing. 
+	if(p.x < 55){
+	    currentList = heartCounter;
+	    isHeart = true;
+	}else {
+	    currentList = attackCounter;
+	    isHeart = false;
+	}
+	return true;
+    }
+
+    
+
+    // roughly...
+    float diceDist = minTokenDist;
+
+    boolean touchAlreadyFound(PVector touchPos){
+	for(PVector pos : currentList){
+	    if(PVector.dist(touchPos, pos) < diceDist){
+		return true;
+	    } 
+	}
+	return false;
+    }
+    
+    
 }
 
-// int nbZones = 0;
-// int zoneWidth = 50;
-
-// class Zone {
-
-//     int zoneCol;
-//     int id;
-//     int intensity;
-
-//     public Zone(){
-// 	id = nbZones++;
-// 	zoneCol = getColor();
-//     }
-
-//     public int beginning(){
-// 	return id *zoneWidth;
-//     }
-    
-//     public int end(){
-// 	return (id+1) *zoneWidth;
-//     }
-
-    
-//     public int getColor(){
-// 	if(this.id == 0)
-// 	    return #135F67; // teal
-
-// 	if(this.id == 1)
-// 	    return #571E7C; // purple 
-
-// 	return #9BA514; // yellow
-//     }
-    
-    
-// }

@@ -53,7 +53,6 @@ void setup(){
 
     cameraTracking = papart.getCameraTracking();
     
-
     cameraKinect = (CameraOpenKinect) CameraFactory.createCamera(Camera.Type.OPEN_KINECT, 0);
     cameraKinect.setParent(this);
     cameraKinect.setCalibration(Papart.kinectRGBCalib);

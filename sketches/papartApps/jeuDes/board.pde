@@ -1,4 +1,10 @@
+import fr.inria.guimodes.Mode;
+
 MyBoard board;
+
+int addTowerTime = 3000;
+int NEW_TOUCH = -1;
+
 
 public class MyBoard  extends PaperTouchScreen {
 
@@ -10,13 +16,20 @@ public class MyBoard  extends PaperTouchScreen {
 	//	loadMarkerBoard(sketchPath + "/data/A3-small1.cfg", 297, 210);
 	loadMarkerBoard(sketchPath + "/data/drawing.cfg", width, height);
 
-
 	Player p1 = new Player();
 	Player p2 = new Player();
 	Player p3 = new Player();
 	Player p4 = new Player();
 	currentPlayer = p1;
-	board = this;	
+	board = this;
+
+	Mode.add("PlaceDice");
+	Mode.add("ChooseAction");
+	Mode.add("AddTower");
+	Mode.add("SpecialAttack");
+
+	Mode.set("PlaceDice");
+	
     }
 
     void draw() {
@@ -37,15 +50,16 @@ public class MyBoard  extends PaperTouchScreen {
 	rectMode(CORNER);
 	rect(0, 0, drawingSize.x , drawingSize.y);
 	
-	// for reasons...
+	// for reasons... touch needs to be updated -> was fixed ?
 	updateTouch();
 	
 	drawPlayers();
 
 	// TODO: not always
 	countPoints();
-	
-	checkTouch();
+
+	if(Mode.is("AddTower") || Mode.is("SpecialAttack"))
+	    checkTouch();
     
 	endDraw();
 
@@ -84,7 +98,6 @@ public class MyBoard  extends PaperTouchScreen {
     }
 
 
-    int NEW_TOUCH = -1;
 
     void checkTouch(){
 
@@ -102,17 +115,31 @@ public class MyBoard  extends PaperTouchScreen {
 		continue;
 	    }
 
-	    if(tp.attachedValue == NEW_TOUCH){
-		fill(200);
-		ellipse(p.x, p.y, 10, 10);
 
-		if(tp.getAge(millis()) > 1000){
-		    if(currentPlayer.tryAddToken(p)){
-			tp.attachedValue = currentPlayer.id;
+	    if(Mode.is("AddTower")){
+		if(tp.attachedValue == NEW_TOUCH){
+		    fill(200);
+		    ellipse(p.x, p.y, 10, 10);
+		    
+		    if(tp.getAge(millis()) > addTowerTime){
+			if(currentPlayer.tryAddToken(p)){
+			    tp.attachedValue = currentPlayer.id;
+			}
 		    }
 		}
 	    }
 
+	    if(Mode.is("SpecialAttack")){
+		if(tp.attachedValue == NEW_TOUCH){
+
+		    int size = currentPlayer.HP;
+		    int col = currentPlayer.getTempColor();
+		    fill(col);
+		    ellipse(p.x, p.y, size, size);
+
+		    // TODO: add to a list of the special touchs...
+		}
+	    }
 	    
 	}
 

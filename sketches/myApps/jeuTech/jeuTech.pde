@@ -11,64 +11,45 @@ import fr.inria.guimodes.*;
 
 Papart papart;
 
-// Frame location. 
-int framePosX = 0;
-int framePosY = 200;
 
-boolean useProjector;
+boolean useProjector = true;
 boolean noCameraMode = false;
-
-// Undecorated frame 
-public void init() {
-  frame.removeNotify(); 
-  frame.setUndecorated(true); 
-  frame.addNotify(); 
-  super.init();
-}
 
 PVector boardSize = new PVector(297, 210);   //  21 * 29.7 cm
 float boardResolution = 1;  // 3 pixels / mm
 
 void setup() {
 
-  useProjector = true;
-  int frameSizeX = 1280;
-  int frameSizeY = 800;
+  int frameSizeX = 640 * 2;
+  int frameSizeY = 480 * 2;
 
-  if (!useProjector) {
-    frameSizeX = 640 * 2;
-    frameSizeY = 480 * 2;
-  }
 
- if (noCameraMode) {
-    frameSizeX = 1000;
-    frameSizeY = 650;
-  }
-
-  size(frameSizeX, frameSizeY, OPENGL);
-  papart = new Papart(this);
-
- 
   if (noCameraMode) {
-    papart.initNoCamera(1);
-    papart.loadTouchInputTUIO();
+      size(frameSizeX, frameSizeY, OPENGL);
+      papart = new Papart(this);
+      papart.initNoCamera(1);
+      papart.loadTouchInputTUIO();
+      papart.getTouchInput().computeOutsiders(true);
 
-    papart.getTouchInput().computeOutsiders(true);
   } else {
-    if (useProjector) {
-      papart.initProjectorCamera("1", Camera.Type.OPENCV);
-      papart.loadTouchInput(3, 0);
-    } else {
-      papart.initKinectCamera(2f);
-      papart.loadTouchInputKinectOnly(2, 7);
-      BaseDisplay display = papart.getDisplay();
-      display.setDrawingSize(width, height);
-    }
+      if (useProjector) {
+	  
+	  papart = Papart.projection(this);
+	  papart.loadTouchInput();
+	  
+      } else {
+	  size(frameSizeX, frameSizeY, OPENGL);
+	  papart = new Papart(this);
+	  papart.initKinectCamera(2f);
+	  papart.loadTouchInputKinectOnly();
+	  BaseDisplay display = papart.getDisplay();
+	  display.setDrawingSize(width, height);
+      }
   }
-
+  
   // see Physics.pde 
   initPhysics();
-
+  
   papart.loadSketches();
 
   if (!noCameraMode) {
@@ -93,10 +74,6 @@ boolean test = false;
 boolean DEBUG_TOUCH = false;
 
 void keyPressed() {
-
-  // Placed here, bug if it is placed in setup().
-  if (key == ' ')
-    frame.setLocation(framePosX, framePosY);
 
   if (key == 'c') {
     fixBoards = !fixBoards;

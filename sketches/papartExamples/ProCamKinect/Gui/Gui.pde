@@ -10,7 +10,7 @@ Papart papart;
 public void setup() {
 
     papart = Papart.projection(this);
-    papart.loadTouchInput(2, 5);
+    papart.loadTouchInput();
     
     papart.loadSketches();
     papart.startTracking();

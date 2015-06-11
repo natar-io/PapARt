@@ -1,5 +1,5 @@
 
-import fr.inria.papart.depthcam.calibration.*;
+import fr.inria.papart.calibration.*;
 
 import fr.inria.controlP5.*;
 import fr.inria.controlP5.gui.controllers.*;

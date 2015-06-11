@@ -1,7 +1,6 @@
 import fr.inria.papart.procam.*;
 import fr.inria.papart.procam.display.*;
 import fr.inria.papart.procam.Utils;
-import fr.inria.papart.tools.*;
 import fr.inria.papart.drawingapp.*;
 import fr.inria.papart.scanner.*;
 
@@ -60,7 +59,7 @@ public void setup(){
     size(frameSizeX, frameSizeY, OPENGL);
 
     Papart papart = new Papart(this);
-    papart.initProjectorCamera("1", Camera.Type.OPENCV);
+    papart.initProjectorCamera("0", Camera.Type.OPENCV);
 
     cameraTracking = papart.getCameraTracking();
     cameraX = cameraTracking.width();

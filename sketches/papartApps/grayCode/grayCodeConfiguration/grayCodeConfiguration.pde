@@ -1,8 +1,8 @@
 import fr.inria.papart.procam.*;
+import fr.inria.papart.procam.camera.*;
 import fr.inria.papart.procam.display.*;
 import fr.inria.papart.drawingapp.*;
 import fr.inria.papart.scanner.*;
-import fr.inria.papart.tools.*; 
 
 import org.bytedeco.javacpp.*;
 import org.reflections.*;
@@ -56,7 +56,7 @@ public void setup(){
     initGui();
 
     Papart papart = new Papart(this);
-    papart.initProjectorCamera("0", Camera.Type.FLY_CAPTURE);
+    papart.initProjectorCamera("0", Camera.Type.OPENCV);
     
     cameraTracking = papart.getCameraTracking();
     cameraX = cameraTracking.width();
@@ -143,7 +143,7 @@ void drawResult(){
 
 	updateCodes();
 
-	image(decodedImage, 0, 0, cameraY, cameraY);
+	image(decodedImage, 0, 0, cameraX / 2f, cameraY /2f);
 	
 	// Draw each captured image bone by one.
 	image(grayCodesCaptures[code], cameraX, 0, 
@@ -153,11 +153,11 @@ void drawResult(){
 	// Decode and show the decoded...
 	PImage decodedIm = grayCode.getImageDecoded(code, decodeType, decodeValue);
 
-	image(decodedIm, cameraX, (int) imVisu.y,
+	image(decodedIm, cameraX /2f, (int) imVisu.y,
 	      (int) imVisu.x, (int) imVisu.y);
 	
 	image(projectorView, 
-	      0, cameraY, 
+	      0, cameraY/2, 
 	      frameSizeX / 3,
 	      frameSizeY / 3);
 
@@ -212,7 +212,7 @@ void startCapture(){
     Mode.set("code");
 
     grayCode = new GrayCode(this, frameSizeX, frameSizeY, sc);
-    grayCode.setBlackWhiteColors(0, 110);
+    grayCode.setBlackWhiteColors(0, 200);
 
     nbCodes = grayCode.nbCodes();
     grayCodesCaptures = new PImage[nbCodes];

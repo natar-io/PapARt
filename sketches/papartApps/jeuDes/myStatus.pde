@@ -33,10 +33,10 @@ public class MyStatus  extends PaperTouchScreen {
     noStroke();
 
 
-    fill(255);
+    fill(currentPlayer.getColor());
     drawPlayer(currentPlayer.id);
 
-    fill(100, 0, 0);
+    fill(100, 100, 100);
     drawDisabledPlayers();
 
 
@@ -72,9 +72,10 @@ public class MyStatus  extends PaperTouchScreen {
   int playerHighlightWidth = 7;
 
   void drawPlayer(int nb) {
-    rect( beginningOfNumbers + nb * playerNoWidth, 
-    0, 
-    playerHighlightWidth, playerHighlightWidth);
+
+      rect( beginningOfNumbers + nb * playerNoWidth, 
+	    0, 
+	    playerHighlightWidth, playerHighlightWidth);
   }
 
 

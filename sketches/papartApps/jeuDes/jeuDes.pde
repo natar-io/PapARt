@@ -17,7 +17,7 @@ Papart papart;
 KinectTouchInput touchInput;
 TouchDetectionSimple2D touchDetection; 
 
-boolean noCamera = true;
+boolean noCamera = false;
 
     
 void setup(){
@@ -86,8 +86,11 @@ void keyPressed() {
     if(key == 'r')
 	removeLastToken();
     
-    if(key == 'n' || key == ' ')
+    if(key == 'n')
 	nextPlayer();
+
+    if(key == ' ')
+	actionPressed();
     
 }
 
