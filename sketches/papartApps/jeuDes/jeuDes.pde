@@ -56,12 +56,26 @@ void setup(){
 
 
 void draw(){
+  //  println("FrameRate " + frameRate);
+
+    
 }
 
 boolean test = false;
+boolean saveDiceColors = false;
+boolean saveOrangeColor = false;
+
 
 void keyPressed() {
 
+    if(key == 'd'){
+	saveDiceColors = true;
+	println("SaveDiceColor");
+    }
+    if(key == 'o'){
+	saveOrangeColor = true;
+	println("SaveOrangeColor");
+    }
     if(key == 'B')
 	board.saveLocationTo("board.xml");
     if(key == 'b')
@@ -87,6 +101,13 @@ void keyPressed() {
     if(key == 'n')
 	nextPlayer();
 
+
+    if (key == CODED) {
+	if (keyCode == LEFT) {
+	    undo();
+	}
+    }
+    
     if(key == ' ')
 	action();
     

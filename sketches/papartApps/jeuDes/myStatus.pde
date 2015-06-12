@@ -3,7 +3,7 @@ MyStatus myStatus;
 
 public class MyStatus  extends PaperTouchScreen {
 
-  int width = 400;
+  int width = 350;
   int height = 50;
 
   PFont font;
@@ -47,15 +47,19 @@ background(100);
     stroke(255);
     int textWidth = 41;
 
-    int px = 44;
+    int px = 4;
     int py = 47;
     textFont(font, 10);
-    text("Points ", 3, py);
-
-    translate(px, 0, 0);
+    fill(200);
+    noStroke();
+    
+    translate(182, 10, 0);
+    text("Points ", 3, 0);
+   
+    translate(px, 15, 0);
     for (Player player : playerList) {
 
-      text("J" + player.id + ":" + player.nbPoints +" ", 0, py); 
+      text("J" + player.id + ":" + player.nbPoints +" ", 0, 0); 
       translate(textWidth, 0, 0);
     }
     endDraw();
@@ -68,11 +72,6 @@ background(100);
 	    rect(1, 14, 69, 23);
 	}
 	
-	if(Mode.is("ChooseAction")){
-	    fill(100, 100, 176);
-	    rect(98, 14, 60, 10);
-	}
-		
 	if(Mode.is("AddTower")){
 	    fill(0, 0, 100);
 	    rect(78, 26, 43, 11);
@@ -80,7 +79,7 @@ background(100);
 	
 	if(Mode.is("SpecialAttack")){
 	    fill(0, 100, 1);
-	    rect(115, 22, 50, 12);
+	    rect(122, 27, 52, 14);
 	}
     }
     

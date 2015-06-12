@@ -10,21 +10,27 @@ int ACTION_ATTACK = 2;
 int ACTION_NEXT = 3;
 int currentAction = 3;
 
-public class MyCounter  extends PaperTouchScreen {
 
-    int height = 250;
-    int width = 95;
+public class MyCounter  extends PaperScreen {
 
-    ColorDetection[] heartColors = new ColorDetection[7];
-    ColorDetection[] attackColors = new ColorDetection[7];
+    int height = 290;
+    int width = 80;
 
-    ColorDetection[] chooser = new ColorDetection[4];
+    int refHeartColor = 0;
+    int refAttackColor = 0;
+
+    int orangeColor1, orangeColor2 = 0;
+    
+    ColorDetection[] heartColors = new ColorDetection[6];
+    ColorDetection[] attackColors = new ColorDetection[6];
+
+    ColorDetection[] chooser = new ColorDetection[2];
 
     PImage okRed, okGreen;
 
-    int[] xOffsetValuesCap = new int[3];
+    int[] xOffsetValuesCap = new int[2];
     int yOffset = 20;
-    int yStep = 29;
+    int yStep = 38;
 
     void setup() {
 	setDrawingSize(width, height);
@@ -34,9 +40,9 @@ public class MyCounter  extends PaperTouchScreen {
 
 	okRed = loadImage("ok-red.png");
 	okGreen = loadImage("ok-green.png");
-	xOffsetValuesCap[0] = 8;
-	xOffsetValuesCap[1] = 45;
-	xOffsetValuesCap[2] = 73;
+
+	xOffsetValuesCap[0] = 20;
+	xOffsetValuesCap[1] = 58;
 
 	initColorDetections();
     }
@@ -45,6 +51,24 @@ public class MyCounter  extends PaperTouchScreen {
 
 	int xOffset = xOffsetValuesCap[0];
 
+	for(int i = 0; i < attackColors.length; i++){
+	    attackColors[i] = new ColorDetection(this);
+	    attackColors[i].setInvY(true);
+	    attackColors[i].setCaptureSize(12, 12);
+	    attackColors[i].setPosition(new PVector(xOffset, (yOffset + yStep * i)));
+	    attackColors[i].initialize();
+	}
+
+	chooser[0] = new ColorDetection(this);
+	chooser[0].setInvY(true);
+	chooser[0].setCaptureSize(12, 12);
+	chooser[0].setPosition(new PVector(xOffset,
+					   (yOffset + yStep * attackColors.length)));
+	chooser[0].initialize();
+
+	
+	xOffset = xOffsetValuesCap[1];
+	
 	for(int i = 0; i < heartColors.length; i++){
 	    heartColors[i] = new ColorDetection(this);
 	    heartColors[i].setInvY(true);
@@ -57,43 +81,9 @@ public class MyCounter  extends PaperTouchScreen {
 	chooser[1] = new ColorDetection(this);
 	chooser[1].setInvY(true);
 	chooser[1].setCaptureSize(12, 12);
-	chooser[1].setPosition(new PVector(xOffset, (yOffset + yStep * 7)));
+	chooser[1].setPosition(new PVector(xOffset,
+					   (yOffset + yStep *  heartColors.length)));
 	chooser[1].initialize();
-	
-	// ref 
-	xOffset = xOffsetValuesCap[1];
-	chooser[0] = new ColorDetection(this);
-	chooser[0].setInvY(true);
-	chooser[0].setCaptureSize(12, 12);
-	chooser[0].setPosition(new PVector(xOffset, (yOffset)));
-	chooser[0].initialize();
-	
-	// bot-mid
-	chooser[2] = new ColorDetection(this);
-	chooser[2].setInvY(true);
-	chooser[2].setCaptureSize(12, 12);
-	chooser[2].setPosition(new PVector(xOffset, (yOffset + yStep * 7)));
-	chooser[2].initialize();
-
-	
-	xOffset = xOffsetValuesCap[2];
-
-	// bot-right
-	chooser[3] = new ColorDetection(this);
-	chooser[3].setInvY(true);
-	chooser[3].setCaptureSize(12, 12);
-	chooser[3].setPosition(new PVector(xOffset, (yOffset + yStep  * 7)));
-	chooser[3].initialize();
-	
-	for(int i = 0; i < attackColors.length; i++){
-	    attackColors[i] = new ColorDetection(this);
-	    attackColors[i].setInvY(true);
-	    attackColors[i].setCaptureSize(12, 12);
-	    attackColors[i].setPosition(new PVector(xOffset, (yOffset + yStep * i)));
-	    attackColors[i].initialize();
-	}
-
-	
     }
     
     void draw() {
@@ -102,115 +92,141 @@ public class MyCounter  extends PaperTouchScreen {
 	    setLocation(600, 120,0);
 	}
 
-
-	xOffsetValuesCap[0] = 8;
-	xOffsetValuesCap[1] = 43;
-	xOffsetValuesCap[2] = 73;
+	xOffsetValuesCap[0] = 20;
+	xOffsetValuesCap[1] = 58;
+        yOffset = 44;
+        yStep = 38;
 
 	beginDraw2D();
 
-	background(70);
+	background(100);
 	
 
-	computeCaptures();
+
+	// Here is where we set the mode.
+	
+	// fill(0);
+	// stroke(200);
+	// strokeWeight(2);
+	// rect(0, 0, width, 200);
+	computeHeartAttack();
+	countAndDrawHeartAttack();
+	//	drawCapturesDebug();
+
+	    // fill(0);
+	    // stroke(200);
+	    // strokeWeight(2);
+	    // rect(0, 200, width, 80);
 	computeAction();
 	
-	// if(Mode.is("PlaceDice")){
-
-	//     fill(100, 100, 100);
-	//     noStroke();
-	//     rect(0, 0, 40, 0, 215); 
-	//     rect(70, 0, 40, 0, 215); 
-
-	//     updateTouch();
-	//     checkTouch();
-	//     drawFoundDice();
-	// } else {
-
-	//     fill(100, 100, 100);
-	//     noStroke();
-	//     rect(0, 0, 40, 0, 215); 
-	//     rect(70, 0, 40, 0, 215); 
-
-	// }
-
 	endDraw();
     }
 
     void computeAction(){
 	int xOffset = xOffsetValuesCap[0];
 
+
 	chooser[0].computeColor();
+	chooser[1].computeColor();
 
-	int refC = chooser[0].getColor();
-	for(int i = 1; i < 4; i++){
-
-	    chooser[i].setPosition(new PVector(xOffsetValuesCap[i-1], (yOffset + yStep * 7)));
-
-	    
-	    chooser[i].computeColor();
-	    int c1 = chooser[i].getColor();
-
-	    ////// Debug
-	    // pushMatrix();
-	    // translate(xOffsetValuesCap[i-1], 40);
-	    // chooser[i].drawCapturedImage();
-	    //popMatrix();
-
-	    if(Utils.colorDist(c1, refC, 35)){
-		currentAction = i;
-	    }
+	if(saveDiceColors){
+	    refAttackColor = chooser[0].getColor();
+	    refHeartColor = chooser[1].getColor();	
+	    saveDiceColors = false;
 	}
 
-	ellipse(3 + xOffsetValuesCap[currentAction-1], 235, 32, 23);
+	if(saveOrangeColor){
+	    orangeColor1 = chooser[0].getColor();
+	    orangeColor2 = chooser[1].getColor();	
+	    saveOrangeColor = false;
+	}
+
+	int c1 = chooser[0].getColor();
+	int c2 = chooser[1].getColor();
+
+/////// DEBUG 
+   for(int i = 0; i < chooser.length; i++){
+       chooser[i].setPosition(new PVector(xOffsetValuesCap[i],
+                 (yOffset + yStep * attackColors.length)));
+       chooser[i].computeColor();
+       // int c1 = chooser[i].getColor();
+
+       ////// Debug
+       pushMatrix();
+       translate(xOffsetValuesCap[i], yOffset + yStep * attackColors.length -36);
+       chooser[i].drawCapturedImage();
+       popMatrix();
+
+       // if(Utils.colorDist(c1, refC, 35)){
+       //   currentAction = i;
+       // }
+   }
+  
+
+	if(Utils.colorDist(c1, orangeColor1, 50)){
+         // println("Add TowerMode, orange1 found. ");
+	    Mode.set("AddTower");
+            return;
+	}
+
+	if(Utils.colorDist(c2, orangeColor2, 50)){
+        // println("Add TowerMode, orange1 found. ");
+	    Mode.set("SpecialAttack");
+	    return;
+	}
+
+	Mode.set("PlaceDice");
+
 			
     }
 
-    void computeCaptures(){
-	nbHearts = 0;
-	nbAttack = 0;
+
+    void computeHeartAttack(){
 
 	int xOffset = xOffsetValuesCap[0];
-
+	for(int i = 0; i < attackColors.length; i++){
+	    attackColors[i].setPosition(new PVector(xOffset, (yOffset + yStep * i)));
+	    attackColors[i].computeColor();
+	}
 	
+
+	xOffset = xOffsetValuesCap[1];
+
 	for(int i = 0; i < heartColors.length; i++){
 	    heartColors[i].setPosition(new PVector(xOffset, (yOffset + yStep * i)));
 	    heartColors[i].computeColor();
 	}
 
-	xOffset = xOffsetValuesCap[2];
-	for(int i = 0; i < attackColors.length; i++){
-	    attackColors[i].setPosition(new PVector(xOffset, (yOffset + yStep * i)));
-	    attackColors[i].computeColor();
-	}
 
-	int refHeart = heartColors[0].getColor();
-	for(int i = 1; i < heartColors.length; i++){
+    }
+
+    void countAndDrawHeartAttack(){
+	nbHearts = 0;
+	nbAttack = 0;
+
+	for(int i = 0; i < heartColors.length; i++){
 	    int c1 = heartColors[i].getColor();
-	    if(Utils.colorDist(c1, refHeart, 35)){
-		image(okGreen, 33, (8 + yStep * i) , 10, 10);
+	    if(Utils.colorDist(c1, refHeartColor, 60)){
+		image(okGreen, 40, (14 + yStep * i) , 10, 10);
 		nbHearts++;
 	    }
 	}
 
-	int refAttack = attackColors[0].getColor();
-	for(int i = 1; i < attackColors.length; i++){
+	for(int i = 0; i < attackColors.length; i++){
 	    int c1 = attackColors[i].getColor();
-	    if(Utils.colorDist(c1, refAttack, 35)){
-		image(okRed, 53, (8 + yStep * i) , 10, 10);
+	    if(Utils.colorDist(c1, refAttackColor, 60)){
+		image(okRed, 32, (14 + yStep * i) , 10, 10);
 		nbAttack++;
 	    }
 	}
     }
     
     // Debug function :]
-    void drawCaptures(){
+    void drawCapturesDebug(){
 
 	
-	int xOffset = 8;
-	int yOffset = 20;
-	int yStep = 29;
-	
+	int xOffset = xOffsetValuesCap[0];
+		
 	for(int i = 0; i < heartColors.length; i++){
 
 	    heartColors[i].setPosition(new PVector(xOffset, (yOffset + yStep * i)));
@@ -221,13 +237,14 @@ public class MyCounter  extends PaperTouchScreen {
 	    // rect(33, (8 + yStep * i) , 10, 10);
 
 	    ///// Debug :: The image 
-	    // pushMatrix();
-	    // translate(33, (yStep * i));
-	    // heartColors[i].drawCapturedImage();
-	    // popMatrix();
+	    pushMatrix();
+	    translate(32, (yStep * i) + 39);
+	    heartColors[i].drawCapturedImage();
+	    popMatrix();
+
 	}
 
-	xOffset = 73;
+	xOffset = xOffsetValuesCap[1];
 
 	for(int i = 0; i < attackColors.length; i++){
 	    
@@ -239,10 +256,10 @@ public class MyCounter  extends PaperTouchScreen {
 	    // rect(53, (8 + yStep * i) , 10, 10);
 
 	    ///// Debug :: The image 
-	    // pushMatrix();
-	    // translate(53, (yStep * i ));
-	    // attackColors[i].drawCapturedImage();
-	    // popMatrix();
+	    pushMatrix();
+	    translate(53, (yStep * i ) + 40);
+	    attackColors[i].drawCapturedImage();
+	    popMatrix();
 	}
 
     }

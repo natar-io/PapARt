@@ -3,8 +3,9 @@ static int NB_PLAYERS = 0;
 static int MAX_PLAYERS = 5;
 static Player currentPlayer;
 static ArrayList<Player> playerList = new ArrayList<Player>();
-
 static ArrayList<Token> allTokens = new ArrayList<Token>();
+static ArrayList<SpecialAttack> allAttacks = new ArrayList<SpecialAttack>();
+
 
 int minTokenDist = 30;
 
@@ -16,56 +17,94 @@ class Token extends PVector {
 }
 
 class SpecialAttack extends PVector {
-
+    public Player owner;
+    public SpecialAttack(float x, float y){
+	super(x,y);
+    }
 }
 
+// Ration between size of  Tower and special attack
+float attackHPRatio = 1.5f;
+
+int heartHPUp = 5;
+int attackHPDown = 2;
+
+boolean actionPressed = false;
+
+boolean tryAddElement = false;
 
 void action(){
 
     println("Action !");
-    
+
     if(Mode.is("PlaceDice")){
-	resolveHealAttack();
-	Mode.set("ChooseAction");
-	return;
+	nextPlayer();
     }
-
-    if(Mode.is("ChooseAction")){
-
-	if(currentAction == ACTION_NEXT){
-	    nextPlayer();
-	    return;
-	}
-
-	if(currentAction == ACTION_TOWER){
-	    Mode.set("AddTower");
-	    return;
-	}
-
-	if(currentAction == ACTION_ATTACK){
-	    Mode.set("SpecialAttack");
-	    return;
-	}
-
+    
+    if(Mode.is("SpecialAttack") || Mode.is("AddTower")){
+	tryAddElement = true;
+    	return;
     }
+}
+
+// To be done again
+void undo(){
+    // if(Mode.is("AddTower") || Mode.is("SpecialAttack")){
+    // 	Mode.set("ChooseAction");
+    // 	return;
+    // }
+    
+    // if(Mode.is("ChooseAction")){
+    // 	undoPlayersHP();
+    // 	Mode.set("PlaceDice");
+    // 	return;
+    // }
+
+    // if(Mode.is("PlaceDice")){
+    // 	prevPlayer();
+    // 	return;
+    // }
+}
+
+void addTower(){
+    nextPlayer();
+}
+
+void addSpecialAttack(){
+    nextPlayer();
 }
 
 
 void resolveHealAttack(){
-    currentPlayer.HP += nbHearts * 5;
+    savePlayersHP();
+    currentPlayer.heal();
 
      for(Player player : playerList){
 	 if(player != currentPlayer)
-	     player.HP -= nbAttack * 2;
-    }
-     Mode.set("ChooseAction");
+	     player.receiveDamage();
 
+    }
 }
 
+void savePlayersHP(){
+    for(Player player : playerList){
+	player.saveHP();
+    }
+}
+
+void undoPlayersHP(){
+    for(Player player : playerList){
+	player.restoreHP();
+    }
+}
+
+    // TODO: display something for nextplayer, like a glow on colour ?
+float lastNextPlayer = 0;
 
 void nextPlayer(){
 
-    // TODO: display something for nextplayer, like a glow on colour ?
+    resolveHealAttack();
+    
     println("Next player");
     if(currentPlayer.id == NB_PLAYERS -1){
 	currentPlayer = playerList.get(0);
@@ -74,9 +113,25 @@ void nextPlayer(){
     }
 
     println("Current player " + currentPlayer.id);
-
+    lastNextPlayer = millis();
     Mode.set("PlaceDice");
 }
+
+void prevPlayer(){
+
+    // TODO: display something for nextplayer, like a glow on colour ?
+    println("Prev player");
+
+    if(currentPlayer.id == 0){
+	currentPlayer = playerList.get(NB_PLAYERS -1);
+    } else {
+	currentPlayer = playerList.get(currentPlayer.id - 1);
+    }
+
+    println("Current player " + currentPlayer.id);
+    Mode.set("PlaceDice");
+}
+
 
 
 
@@ -91,15 +146,33 @@ void removeLastToken(){
     
 }
 
+boolean isCloseToAToken(PVector pos){
+    for(Token v : allTokens){
+	if(v.dist(pos) < minTokenDist)
+	    return true;
+    }
+    return false;
+}
+
+
+public float damageAmount(){
+    return nbAttack * attackHPDown;
+}
+
+public float healAmount(){
+    return nbHearts * heartHPUp;
+}
 
 public class Player {
 
     ArrayList<Token> tokens = new ArrayList<Token>();
+    ArrayList<SpecialAttack> attacks = new ArrayList<SpecialAttack>();
     int drawingColor;
     int drawingTempColor;
 
     int id;
     int HP = 40;
+    int lastHP = 40;
     int nbPoints = 0;
     
     public Player(){
@@ -107,22 +180,47 @@ public class Player {
 	this.drawingColor = getColor();
 	playerList.add(this);
     }
+
+    public void heal(){
+	HP += healAmount();
+    }
     
-    public boolean tryAddToken(PVector pos){
+    public void receiveDamage(){
+	HP -= damageAmount();
+    }
 
-	for(Token v : allTokens){
-	    if(v.dist(pos) < minTokenDist)
-		return false;
-	}
+    public void saveHP(){
+	lastHP = HP;
+    }
 
-	println("Adding a token, total " + allTokens.size());
+    public void restoreHP(){
+	HP = lastHP;
+    }
+
+    
+    public void addToken(PVector pos){
 
 	Token token = new Token(pos.x, pos.y);
 	token.owner = this;
 	allTokens.add(token);
 	tokens.add(token);
-	return true;
+
+	println("Adding a token, total " + allTokens.size());
     }
+
+    
+
+    public void addAttack(PVector pos){
+	
+	SpecialAttack attack = new SpecialAttack(pos.x, pos.y);
+	attack.owner = this;
+	allAttacks.add(attack);
+	attacks.add(attack);
+
+	println("Adding a specialattack, total " + allAttacks.size());
+    }
+
+    
 
     public int getColor(){
 	if(this.id == 0)
