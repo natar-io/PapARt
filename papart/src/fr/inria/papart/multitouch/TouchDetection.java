@@ -51,7 +51,7 @@ public abstract class TouchDetection {
 // set by calling function
     protected KinectDepthData depthData;
 
-    protected HashSet<Integer> toVisit;
+    protected final HashSet<Integer> toVisit = new HashSet<>();
     protected PointValidityCondition currentPointValidityCondition;
 
     public interface PointValidityCondition {
@@ -199,10 +199,13 @@ public abstract class TouchDetection {
         tp.setDepthDataElements(depthData, connectedComponent);
         return tp;
     }
+    
+    
 
     public float ERROR_DISTANCE_MULTIPLIER = 1.3f;
     public float NOISE_ESTIMATION = 1.5f; // in millimeter. 
 
+    @Deprecated
     protected void setPrecisionFrom(int firstPoint) {
 
         Vec3D currentPoint = depthData.depthPoints[firstPoint];
@@ -228,6 +231,7 @@ public abstract class TouchDetection {
         } // for i
     }
 
+    @Deprecated
     protected void setDistance(float distance) {
         calib.setMaximumDistance((distance + NOISE_ESTIMATION) * ERROR_DISTANCE_MULTIPLIER);
     }
@@ -261,6 +265,20 @@ public abstract class TouchDetection {
     float getTrackingMaxDistance() {
         return calib.getTrackingMaxDistance();
     }
+    
+     public class CheckTouchPoint implements PointValidityCondition {
+
+        @Override
+        public boolean checkPoint(int offset, int currentPoint) {
+            float distanceToCurrent = depthData.depthPoints[offset].distanceTo(depthData.depthPoints[currentPoint]);
+
+            return !assignedPoints[offset] // not assigned  
+                    && depthData.validPointsMask[offset] // is valid
+                    && (depthData.depthPoints[offset] != DepthAnalysis.INVALID_POINT) // not invalid point (invalid depth)
+                    && distanceToCurrent < calib.getMaximumDistance();
+        }
+    }
+     
 
     class ClosestComparator implements Comparator {
 

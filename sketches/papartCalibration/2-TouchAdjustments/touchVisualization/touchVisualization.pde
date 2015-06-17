@@ -61,19 +61,23 @@ void setup(){
     //  pointCloud = new PointCloudKinect(this, precision);
     pointCloud = new PointCloudKinect(this);
 
-  initGui();
+
 
   // Set the virtual camera
   cam = new PeasyCam(this, 0, 0, -800, 800);
-  cam.setMinimumDistance(0);
-  cam.setMaximumDistance(1200);
+  cam.setMinimumDistance(100);
+  cam.setMaximumDistance(5000);
   cam.setActive(true);
 
   touchDetection = new TouchDetectionSimple2D(Kinect.SIZE);
   touchDetection3D = new TouchDetectionSimple3D(Kinect.SIZE);
 
-  touchCalibration = touchDetection.getCalibration();
-
+  touchCalibration = new PlanarTouchCalibration();
+  touchCalibration.loadFrom(this, Papart.touchCalib);
+  touchDetection.setCalibration(touchCalibration);
+  
+  initGui();
+  
 }
 
 
@@ -81,6 +85,7 @@ void setup(){
 float maxDistance, minHeight;
 float planeHeight;
 int searchDepth, recursion, minCompoSize, forgetTime;
+float trackingMaxDistance;
 
 TouchDetectionSimple2D touchDetection;
 TouchDetectionSimple3D touchDetection3D;
@@ -119,21 +124,22 @@ void draw(){
     touchCalibration.setMinimumComponentSize((int)minCompoSize);
     touchCalibration.setMaximumRecursion((int) recursion);
     touchCalibration.setSearchDepth((int) searchDepth);
-    touchCalibration.setTrackingForgetTime((int)forgetTime);
 
+    touchCalibration.setTrackingForgetTime((int)forgetTime);
+    touchCalibration.setTrackingMaxDistance(trackingMaxDistance);
+    
     touchCalibration.setPrecision(precision);
     planeCalibration.setHeight(planeHeight);
     
 
     kinect.update(kinectImgDepth, kinectImg, planeProjCalibration, precision);
+    //    kinect.update(kinectImgDepth, kinectImg, planeCalibration, precision);
     draw3DPointCloud();
     
     cam.beginHUD();
     text("'m' to stop the camera", 10,  30);
     cp5.draw();
     cam.endHUD(); // always!
-        println("WTF ? ?...");
-    
 }
 
 
@@ -144,13 +150,6 @@ boolean draw3D = true;
 
 void keyPressed() {
 
-    // if(key == 'u'){
-    // 	planeProjCalibration.moveAlongNormal(1f);
-    // }
-    // if(key == 'd'){
-    // 	planeProjCalibration.moveAlongNormal(-1f);
-    // }
-    
     if(key =='m'){
 	isMouseControl = !isMouseControl;
 	cam.setMouseControlled(isMouseControl);

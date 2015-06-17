@@ -82,12 +82,12 @@ public class KinectTouchInput extends TouchInput {
         this.touchDetection2D = new TouchDetectionSimple2D(depthAnalysis.getSize());
         this.touchDetection3D = new TouchDetectionSimple3D(depthAnalysis.getSize());
     }
-    
-    public void setTouchDetectionCalibration(PlanarTouchCalibration touchCalib){
+
+    public void setTouchDetectionCalibration(PlanarTouchCalibration touchCalib) {
         this.touchDetection2D.setCalibration(touchCalib);
     }
- 
-    public void setTouchDetectionCalibration3D(PlanarTouchCalibration touchCalib){
+
+    public void setTouchDetectionCalibration3D(PlanarTouchCalibration touchCalib) {
         this.touchDetection3D.setCalibration(touchCalib);
     }
 
@@ -104,7 +104,6 @@ public class KinectTouchInput extends TouchInput {
 
             touch2DPrecision = touchDetection2D.getPrecision();
             touch3DPrecision = touchDetection3D.getPrecision();
-
             if (touch2DPrecision > 0 && touch3DPrecision > 0) {
                 depthAnalysis.updateMT(depthImage, colImage, calibration, touch2DPrecision, touch3DPrecision);
                 findAndTrack2D();

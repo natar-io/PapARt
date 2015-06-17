@@ -32,7 +32,7 @@ public class KinectDepthAnalysis extends DepthAnalysis {
     private int mode;
 
     // Configuration 
-    private float closeThreshold = 300f, farThreshold = 4000f;
+    private float closeThreshold = 300f, farThreshold = 12000f;
     protected ProjectiveDeviceP calibIR, calibRGB;
     private final PMatrix3D KinectRGBIRCalibration = new PMatrix3D(1, 0, 0, 15,
             0, 1, 0, 0,
@@ -66,19 +66,20 @@ public class KinectDepthAnalysis extends DepthAnalysis {
         depthData = new KinectDepthData(this);
         depthData.projectiveDevice = this.calibIR;
 
-        if (depthLookUp == null) {
-            depthLookUp = new float[2048];
-            if (this.mode == Kinect.KINECT_10BIT) {
-                for (int i = 0; i < depthLookUp.length; i++) {
-                    depthLookUp[i] = rawDepthToMeters10Bits(i);
-                }
-            }
-            if (this.mode == Kinect.KINECT_MM) {
-                for (int i = 0; i < depthLookUp.length; i++) {
-                    depthLookUp[i] = rawDepthToMetersNoChange(i);
-                }
-            }
-        }
+        // Hack : no more depthLookup...
+//        if (depthLookUp == null) {
+//            depthLookUp = new float[2048];
+//            if (this.mode == Kinect.KINECT_10BIT) {
+//                for (int i = 0; i < depthLookUp.length; i++) {
+//                    depthLookUp[i] = rawDepthToMeters10Bits(i);
+//                }
+//            }
+//            if (this.mode == Kinect.KINECT_MM) {
+//                for (int i = 0; i < depthLookUp.length; i++) {
+//                    depthLookUp[i] = rawDepthToMetersNoChange(i);
+//                }
+//            }
+//        }
     }
 
     public void update(IplImage depth) {
@@ -118,8 +119,9 @@ public class KinectDepthAnalysis extends DepthAnalysis {
 
         // TechFest Hacks
 //        updateRawColor(color);
-        depthData.clearDepth();
-        depthData.clear2D();
+        depthData.clear();
+//        depthData.clearDepth();
+//        depthData.clear2D();
 //        depthData.clearColor();
         depthData.timeStamp = papplet.millis();
         depthData.planeAndProjectionCalibration = calib;
@@ -133,8 +135,9 @@ public class KinectDepthAnalysis extends DepthAnalysis {
         updateRawDepth(depth);
         // TechFest Hack
 //        updateRawColor(color);
-        depthData.clearDepth();
-        depthData.clear3D();
+        depthData.clear();
+//        depthData.clearDepth();
+//        depthData.clear3D();
 //        depthData.clearColor();
         depthData.timeStamp = papplet.millis();
         depthData.planeAndProjectionCalibration = calib;
@@ -262,15 +265,17 @@ public class KinectDepthAnalysis extends DepthAnalysis {
     protected float getDepth(int offset) {
         float d = (depthRaw[offset * 2] & 0xFF) << 8
                 | (depthRaw[offset * 2 + 1] & 0xFF);
-        if (d >= 2047) {
-            return INVALID_DEPTH;
-        }
-        d = 1000 * depthLookUp[(int) d];
-        if (isGoodDepth(d)) {
-            return d;
-        } else {
-            return INVALID_DEPTH;
-        }
+        
+        return d;
+//        if (d >= 2047) {
+//            return INVALID_DEPTH;
+//        }
+//        d = 1000 * depthLookUp[(int) d];
+//        if (isGoodDepth(d)) {
+//            return d;
+//        } else {
+//            return INVALID_DEPTH;
+//        }
     }
 
     public void setNearFarValue(float near, float far) {

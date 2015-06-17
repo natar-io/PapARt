@@ -54,22 +54,23 @@ import processing.core.PVector;
 public class Papart {
 
     public final static String folder = fr.inria.papart.procam.Utils.getPapartFolder();
-    public static String proCamCalib = folder + "/data/calibration/camera-projector.yaml";
-    public static String camCalibARtoolkit = folder + "/data/calibration/camera-projector.cal";
-    public static String kinectIRCalib = folder + "/data/calibration/calibration-kinect-IR.yaml";
-    public static String kinectRGBCalib = folder + "/data/calibration/calibration-kinect-RGB.yaml";
-    public static String kinectStereoCalib = folder + "/data/calibration/calibration-kinect-Stereo.yaml";
+    public final static String calibrationFolder = "/data/calibration/";
+    public static String proCamCalib = folder + calibrationFolder + "camera-projector.yaml";
+    public static String camCalibARtoolkit = folder + calibrationFolder + "camera-projector.cal";
+    public static String kinectIRCalib = folder + calibrationFolder + "calibration-kinect-IR.yaml";
+    public static String kinectRGBCalib = folder + calibrationFolder + "calibration-kinect-RGB.yaml";
+    public static String kinectStereoCalib = folder + calibrationFolder + "calibration-kinect-Stereo.yaml";
     
-    public static String kinectTrackingCalib = folder + "/data/calibration/kinectTracking.xml";
+    public static String kinectTrackingCalib = folder + calibrationFolder + "kinectTracking.xml";
 
-    public static String screenConfig = folder + "/data/calibration/screenConfiguration.xml";
-    public static String cameraConfig = folder + "/data/calibration/cameraConfiguration.xml";
-    public static String tablePosition = folder + "/data/calibration/tablePosition.xml";
-    public static String planeCalib = folder + "/data/calibration/PlaneCalibration.xml";
-    public static String homographyCalib = folder + "/data/calibration/HomographyCalibration.xml";
-    public static String planeAndProjectionCalib = folder + "/data/calibration/PlaneProjectionCalibration.xml";
-    public static String touchCalib = folder + "/data/calibration/Touch2DCalibration.xml";
-    public static String touchCalib3D = folder + "/data/calibration/Touch3DCalibration.xml";
+    public static String screenConfig = folder + calibrationFolder + "screenConfiguration.xml";
+    public static String cameraConfig = folder + calibrationFolder + "cameraConfiguration.xml";
+    public static String tablePosition = folder + calibrationFolder + "tablePosition.xml";
+    public static String planeCalib = folder + calibrationFolder + "PlaneCalibration.xml";
+    public static String homographyCalib = folder + calibrationFolder + "HomographyCalibration.xml";
+    public static String planeAndProjectionCalib = folder + calibrationFolder + "PlaneProjectionCalibration.xml";
+    public static String touchCalib = folder + calibrationFolder + "Touch2DCalibration.xml";
+    public static String touchCalib3D = folder + calibrationFolder + "Touch3DCalibration.xml";
     public static String defaultFont = folder + "/data/Font/" + "GentiumBookBasic-48.vlw";
     public int defaultFontSize = 12;
 
@@ -90,7 +91,7 @@ public class Papart {
     private ProjectorDisplay projector;
 
     private Camera cameraTracking;
-    private KinectDepthAnalysis kinect;
+    private KinectDepthAnalysis kinectDepthAnalysis;
 
 //    private TouchInput touchInput;
     private TouchInput touchInput;
@@ -290,7 +291,15 @@ public class Papart {
     public static Papart getPapart() {
         return Papart.singleton;
     }
+    
+    public void saveCalibration(String fileName, PMatrix3D mat){
+        HomographyCalibration.saveMatTo(applet, mat, Papart.folder + calibrationFolder +  fileName);
+    }
 
+    public PMatrix3D loadCalibration(String fileName){
+        return HomographyCalibration.getMatFrom(applet, Papart.folder + calibrationFolder + fileName);
+    }
+    
     /**
      * Save the position of a paperScreen as the default table location.
      *
@@ -503,7 +512,6 @@ public class Papart {
             cameraInitialized = true;
             checkInitialization();
         }
-
         loadDefaultTouchKinect();
         ((KinectTouchInput) this.touchInput).useRawDepth(cameraOpenKinect);
     }
@@ -533,8 +541,8 @@ public class Papart {
 
     private void loadDefaultTouchKinect() {
 
-        kinect = new KinectDepthAnalysis(this.applet, cameraOpenKinect);
-        kinect.setStereoCalibration(kinectStereoCalib);
+        kinectDepthAnalysis = new KinectDepthAnalysis(this.applet, cameraOpenKinect);
+        kinectDepthAnalysis.setStereoCalibration(kinectStereoCalib);
 
         PlaneAndProjectionCalibration calibration = new PlaneAndProjectionCalibration();
         calibration.loadFrom(this.applet, planeAndProjectionCalib);
@@ -542,12 +550,12 @@ public class Papart {
         KinectTouchInput kinectTouchInput
                 = new KinectTouchInput(this.applet,
                         cameraOpenKinect,
-                        kinect, calibration);
+                        kinectDepthAnalysis, calibration);
 
         cameraOpenKinect.setTouch(kinectTouchInput);
 
         kinectTouchInput.setTouchDetectionCalibration(getDefaultTouchCalibration());
-        kinectTouchInput.setTouchDetectionCalibration(getDefaultTouchCalibration3D());
+        kinectTouchInput.setTouchDetectionCalibration3D(getDefaultTouchCalibration3D());
         this.touchInput = kinectTouchInput;
         touchInitialized = true;
     }
@@ -685,7 +693,7 @@ public class Papart {
     }
 
     public DepthAnalysis getKinect() {
-        return kinect;
+        return kinectDepthAnalysis;
     }
     
     public CameraOpenKinect getKinectCamera(){

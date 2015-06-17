@@ -32,6 +32,7 @@ public class TouchDetectionSimple2D extends TouchDetection {
 
     public TouchDetectionSimple2D(int size) {
         super(size);
+        currentPointValidityCondition = new CheckTouchPoint();
     }
 
     @Override
@@ -49,28 +50,16 @@ public class TouchDetectionSimple2D extends TouchDetection {
 
     @Override
     protected void setSearchParameters() {
-        this.toVisit = new HashSet<Integer>();
+        this.toVisit.clear();
         this.toVisit.addAll(depthData.validPointsList);
 
-        currentPointValidityCondition = new CheckTouchPoint();
-        int firstPoint = toVisit.iterator().next();
-
+        
+//        int firstPoint = toVisit.iterator().next();
 //        maxDistance = 10;
 ////         setPrecisionFrom(firstPoint);
 //        searchDepth = 40;// TODO: FIX this value !
 //        maximumRecursion = 100; // TODO: fix this value.
     }
 
-    public class CheckTouchPoint implements PointValidityCondition {
-
-        @Override
-        public boolean checkPoint(int offset, int currentPoint) {
-            float distanceToCurrent = depthData.depthPoints[offset].distanceTo(depthData.depthPoints[currentPoint]);
-
-            return !assignedPoints[offset] // not assigned  
-                    && depthData.validPointsMask[offset] // is valid
-                    && (depthData.depthPoints[offset] != DepthAnalysis.INVALID_POINT) // not invalid point (invalid depth)
-                    && distanceToCurrent < calib.getMaximumDistance();
-        }
-    }
+ 
 }

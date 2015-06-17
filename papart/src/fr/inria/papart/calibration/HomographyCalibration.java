@@ -171,10 +171,10 @@ public class HomographyCalibration extends Calibration {
         HomographyCreator homographyCreator = new HomographyCreator(3, 2, nbPoints);
         for (float i = 0; i <= 1.0; i += step) {
             for (float j = 0; j <= 1.0; j += step) {
-                mat.translate(-i * size.x, -j * size.x);
+                mat.translate(-i * size.x, -j * size.y);
                 homographyCreator.addPoint(new PVector(mat.m03, mat.m13, mat.m23),
                         new PVector(i, j));
-                mat.translate(i * size.x, j * size.x);
+                mat.translate(i * size.x, j * size.y);
             }
         }
         assert (homographyCreator.isComputed());

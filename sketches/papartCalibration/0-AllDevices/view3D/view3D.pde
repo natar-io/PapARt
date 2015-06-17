@@ -39,7 +39,7 @@ void setup(){
   // Set the virtual camera
   cam = new PeasyCam(this, 0, 0, -800, 800);
   cam.setMinimumDistance(0);
-  cam.setMaximumDistance(1200);
+  cam.setMaximumDistance(5000);
   cam.setActive(true);
 }
 

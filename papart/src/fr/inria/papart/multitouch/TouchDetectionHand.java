@@ -58,7 +58,7 @@ public class TouchDetectionHand extends TouchDetectionSimple2D {
     
     @Override
     protected void setSearchParameters() {
-        this.toVisit = new HashSet<Integer>();
+        this.toVisit.clear();
         this.toVisit.addAll(depthData.validPointsList);
 
         currentPointValidityCondition = new CheckTouchPoint();

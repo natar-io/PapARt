@@ -179,4 +179,8 @@ public class PlanarTouchCalibration extends Calibration {
         return this.trackingMaxDistance;
     }
 
+    public void setTrackingMaxDistance(float trackDistance) {
+        this.trackingMaxDistance = trackDistance;
+    }
+
 }

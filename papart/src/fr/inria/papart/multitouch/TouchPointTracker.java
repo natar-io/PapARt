@@ -33,7 +33,6 @@ public class TouchPointTracker {
      * @param currentList
      * @param newPoints
      * @param currentTime
-     * @param trackDistance
      * @return the deleted points.
      */
     public static void trackPoints(ArrayList<TouchPoint> currentList,

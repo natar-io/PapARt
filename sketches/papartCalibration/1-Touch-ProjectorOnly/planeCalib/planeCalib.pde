@@ -81,7 +81,7 @@ void draw(){
 
 void draw3DPointCloud(){
 
-    kinect.update(kinectImgDepth, kinectImg, planeCalibration, precision);
+    kinect.updateTest(kinectImgDepth, kinectImg, planeCalibration, precision);
     pointCloud.updateWith(kinect);
     pointCloud.drawSelf((PGraphicsOpenGL) g);
 }

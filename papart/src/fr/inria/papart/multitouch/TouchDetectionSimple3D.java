@@ -37,7 +37,7 @@ public class TouchDetectionSimple3D extends TouchDetection {
 
     public TouchDetectionSimple3D(int size) {
         super(size);
-        calib.setMinimumComponentSize(MINIMUM_COMPONENT_SIZE_3D);
+        currentPointValidityCondition = new CheckTouchPoint3D();
     }
 
     @Override
@@ -53,18 +53,16 @@ public class TouchDetectionSimple3D extends TouchDetection {
 
         return touchPoints;
     }
-    
+
     @Override
-    public boolean hasCCToFind(){
-             return !depthData.validPointsList3D.isEmpty();
+    public boolean hasCCToFind() {
+        return !depthData.validPointsList3D.isEmpty();
     }
 
     @Override
     protected void setSearchParameters() {
-        this.toVisit = new HashSet<Integer>();
+        this.toVisit.clear();
         this.toVisit.addAll(depthData.validPointsList3D);
-
-        currentPointValidityCondition = new CheckTouchPoint3D();
 
 //        int firstPoint = toVisit.iterator().next();
 //        setPrecisionFrom(firstPoint);
@@ -79,20 +77,21 @@ public class TouchDetectionSimple3D extends TouchDetection {
         // get a subset of the points.
         Collections.sort(connectedComponent, closestComparator);
 
+        int max = COMPONENT_SIZE_FOR_POSITION > connectedComponent.size() ? connectedComponent.size() : COMPONENT_SIZE_FOR_POSITION;
         //  Get a sublist
-        List<Integer> subList = connectedComponent.subList(0, COMPONENT_SIZE_FOR_POSITION);
+        List<Integer> subList = connectedComponent.subList(0, max);
         ConnectedComponent subCompo = new ConnectedComponent();
         subCompo.addAll(subList);
 
         TouchPoint tp = super.createTouchPoint(subCompo);
-        
+
         // TODO: use this, add another with only the ones of the touch ?!
         tp.setDepthDataElements(depthData, connectedComponent);
         tp.set3D(true);
         return tp;
     }
-
-    public class CheckTouchPoint3D implements PointValidityCondition {
+    
+         public class CheckTouchPoint3D implements PointValidityCondition {
 
         @Override
         public boolean checkPoint(int offset, int currentPoint) {
@@ -104,5 +103,6 @@ public class TouchDetectionSimple3D extends TouchDetection {
                     && distanceToCurrent < calib.getMaximumDistance();
         }
     }
+
 
 }
