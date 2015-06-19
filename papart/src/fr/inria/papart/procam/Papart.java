@@ -402,6 +402,7 @@ public class Papart {
         cameraTracking = CameraFactory.createCamera(Camera.Type.OPEN_KINECT, 0);
         cameraTracking.setParent(applet);
         cameraTracking.setCalibration(kinectRGBCalib);
+        ((CameraOpenKinect) cameraTracking).getDepthCamera().setCalibration(kinectIRCalib);
         cameraTracking.start();
         cameraOpenKinect = (CameraOpenKinect) cameraTracking;
         loadTracking(kinectRGBCalib);
@@ -411,7 +412,7 @@ public class Papart {
 
         checkInitialization();
     }
-
+   
     /**
      * Initialize the default camera for object tracking.
      *

@@ -43,10 +43,8 @@ public class CameraOpenKinectDepth extends Camera {
             opencv_core.IplImage img = parent.grabber.grabDepth();
 
             this.currentImage = img;
-            System.out.println("Grab");
             if (touchInput != null) {
                 touchInput.lock();
-                        System.out.println("GrabDepth - update");
                 touchInput.update();
                 touchInput.getTouch2DColors(parent.currentImage);
                 touchInput.unlock();
