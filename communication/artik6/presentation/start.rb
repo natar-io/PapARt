@@ -3,7 +3,7 @@ require 'soby'
 # Give the current folder to Processing.
 Processing::App::SKETCH_PATH = __FILE__
 
-$app =  SobyPlayer.new  if $app == nil
+$app =  SobyPlayer.new 800, 600 if $app == nil
 
 if $app.ready? 
 
