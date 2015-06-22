@@ -16,7 +16,7 @@ require './cp5'
 class SobyPlayer
 
   attr_accessor :robot_prez
-  attr_reader :background_sketch
+  attr_reader :background_sketch, :paper
   attr_reader :cp5
 
   ## For CP5
@@ -33,8 +33,9 @@ class SobyPlayer
     
   end
 
+  
   def init_ar
-    return if @init_ar
+    return if @is_ar_initalized
     return if Papartlib::Papart::getPapart != nil
     
     @papart = Papartlib::Papart.new self
@@ -50,15 +51,13 @@ class SobyPlayer
     @paper = MyPaper.new
 
     @papart.startTracking
-    @init_ar = true
-    @draw_ar = true
+    @is_ar_initalized = true
   end
 
 
   
   def custom_pre_draw
     background 255
-
 
     return if @background_sketch == nil
     @background_sketch.update millis
@@ -68,31 +67,40 @@ class SobyPlayer
   end
 
   def reset_sketch
-    @processing_demo = nil
     @cp5.remove "my_slider"
+    @cp5.remove "init_ar"
+
+    @processing_demo = nil
     @papart_demo = nil
+    @is_ar_initalized = nil
+    @draw_ar = nil
   end
 
   def papart_demo
     draw_ar
 
     return if @papart_demo != nil
-
+    @draw_ar = true
     @cp5.addButton("init_ar")
-      .setPosition(100, 100)
+      .setPosition(50, 50)
       .setSize(50, 50)
     @papart_demo = true
+    processing_demo
   end
 
   def processing_demo
     return if @processing_demo != nil
     @cp5.addSlider("my_slider")
-      .setPosition(100, 100)
+      .setPosition(100, 50)
       .setValue(0.1)
       .setRange(-1, 1)
       .setSize(400, 40)
     @cp5.update
     @processing_demo = true
+  end
+
+  def is_draw_ar
+    return @draw_ar
   end
   
   # def processing_demo
@@ -106,12 +114,16 @@ class SobyPlayer
     if @draw_ar    
       @display.drawScreens
       im = @camera.getPImage
+
+      w = 1280
+      h = 1024
+      
       if im != nil
         pushMatrix
-        translate(300, 300, 0)
-        image im, 0, 0, 800, 600
+        translate((@width - w) / 2, (@height - h) /2, 0)
+        image im, 0, 0, w, h
         #      Papartlib::DrawUtils::drawImage(
-        draw_y_inverted(g, @display.render, 0, 0, 800, 600)
+        draw_y_inverted(g, @display.render, 0, 0, w, h)
         popMatrix
       end 
     end

@@ -102,13 +102,13 @@ class ControlP5 < Java::FrInriaControlP5::ControlP5
   def get_controller_value controller
     return 1 if is_event_class controller.class
     return controller.getValue if is_value_class controller.class
-    return controller.getStringValue  if is_string_value_class controller.class
+#    return controller.getStringValue  if is_string_value_class controller.class
   end
 
   def set_controller_value controller, value
     return if is_event_class controller.class
     return controller.setValue value  if is_value_class controller.class
-    return controller.setStringValue value  if is_string_value_class controller.class
+#    return controller.setStringValue value  if is_string_value_class controller.class
   end
 
   
@@ -122,10 +122,10 @@ class ControlP5 < Java::FrInriaControlP5::ControlP5
   end
   
 ## TODO
-  def is_string_value_class object_class
-    False
-    #    object_class == Java::FrInriaControlP5GuiControllers::Slider
-  end
+  # def is_string_value_class object_class
+  #   False
+  #   #    object_class == Java::FrInriaControlP5GuiControllers::Slider
+  # end
   
 
 end
