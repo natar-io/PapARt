@@ -1,4 +1,5 @@
 import fr.inria.papart.procam.*;
+import fr.inria.papart.procam.display.*;
 import fr.inria.papart.procam.camera.*;
 import fr.inria.papart.multitouch.*;
 import fr.inria.papart.depthcam.*;
@@ -20,10 +21,9 @@ import peasy.*;
 ControlP5 cp5;
 PeasyCam cam;
 
-CameraOpenKinect camera;
+CameraOpenKinect cameraKinect;
 KinectProcessing kinect;
 PointCloudKinect pointCloud;
-
 
 HomographyCreator homographyCreator;
 HomographyCalibration homographyCalibration;
@@ -32,22 +32,30 @@ PlaneAndProjectionCalibration planeProjCalibration;
     
 int precision = 2;
 
-
-
 void setup(){
     
     size(800, 600, OPENGL);
-    
+
     int depthFormat = freenect.FREENECT_DEPTH_MM;
     int kinectFormat = Kinect.KINECT_MM;
-    
-    camera = (CameraOpenKinect) CameraFactory.createCamera(Camera.Type.OPEN_KINECT, 0);
-    camera.setParent(this);
-    camera.setCalibration(Papart.kinectRGBCalib);
-    camera.getDepthCamera().setDepthFormat(depthFormat);
-    camera.getDepthCamera().setCalibration(Papart.kinectIRCalib);
-    camera.start();
 
+    Papart papart = new Papart(this);
+    
+     papart.initKinectCamera(1);
+     ARDisplay kinectDisplay = papart.getARDisplay();
+     kinectDisplay.manualMode();
+
+     cameraKinect = (CameraOpenKinect) papart.getCameraTracking();
+     
+    // cameraKinect = (CameraOpenKinect) CameraFactory.createCamera(Camera.Type.OPEN_KINECT, 0);
+    // cameraKinect.setParent(this);
+    // cameraKinect.setCalibration(Papart.kinectRGBCalib);
+    // cameraKinect.getDepthCamera().setCalibration(Papart.kinectIRCalib);
+    // // cameraKinect.convertARParams(this, Papart.kinectRGBCalib, "Kinect.cal");
+    // // cameraKinect.initMarkerDetection("Kinect.cal");
+    // cameraKinect.start();
+
+    
     try{
 	planeProjCalibration = new  PlaneAndProjectionCalibration();
 	planeProjCalibration.loadFrom(this, Papart.planeAndProjectionCalib);
@@ -56,11 +64,9 @@ void setup(){
 	die("Impossible to load the plane calibration...");
     }
 
-    kinect = new KinectProcessing(this,camera);
+    kinect = new KinectProcessing(this, cameraKinect);
 
-    //  pointCloud = new PointCloudKinect(this, precision);
-    pointCloud = new PointCloudKinect(this);
-
+    pointCloud = new PointCloudKinect(this, 1);
 
 
   // Set the virtual camera
@@ -75,9 +81,9 @@ void setup(){
   touchCalibration = new PlanarTouchCalibration();
   touchCalibration.loadFrom(this, Papart.touchCalib);
   touchDetection.setCalibration(touchCalibration);
-  
+
   initGui();
-  
+
 }
 
 
@@ -103,12 +109,13 @@ void draw(){
     background(0);
 
     try{
-    camera.grab();
+	cameraKinect.grab();
     }catch(Exception e){
 	println("Could not grab frame..." +e );
+	return;
     }
-    kinectImg = camera.getIplImage();
-    kinectImgDepth = camera.getDepthCamera().getIplImage();
+    kinectImg = cameraKinect.getIplImage();
+    kinectImgDepth = cameraKinect.getDepthCamera().getIplImage();
     if(kinectImg == null || kinectImgDepth == null){
 	println("null images..");
 	return;

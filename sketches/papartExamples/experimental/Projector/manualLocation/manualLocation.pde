@@ -1,7 +1,6 @@
 import fr.inria.papart.procam.*;
 import fr.inria.papart.procam.display.*;
 import fr.inria.papart.drawingapp.*;
-import fr.inria.papart.tools.*;
 import org.bytedeco.javacpp.*;
 import TUIO.*;
 import toxi.geom.*;
@@ -40,21 +39,21 @@ public void setup() {
   image[3] = new PVector(100, 200);
 }
 
-PMatrix3D mat, pos;
+PMatrix3D objectProjectorTransfo, pos;
 PVector object[];
 PVector image[];
 
 void draw() {
 
   ProjectiveDeviceP pdp = projector.getProjectiveDeviceP();
-  mat = pdp.estimateOrientation(object, image);
-  //    mat.print();
+  objectProjectorTransfo = pdp.estimateOrientation(object, image);
+  //    objectProjectorTransfo.print();
 
   PGraphicsOpenGL g1 = projector.beginDraw();  
   g1.background(69, 145, 181);
 
 
-  g1.modelview.apply(mat);
+  g1.modelview.apply(objectProjectorTransfo);
 
   g1.fill(50, 50, 200);
   // g1.translate(-10, -10, 0);
@@ -77,7 +76,7 @@ void draw() {
   image[3].x, image[3].y);
 
   if (test) { 
-    mat.print();
+    objectProjectorTransfo.print();
     test = false;
   }
 }
@@ -94,23 +93,23 @@ boolean set = false;
 
 void keyPressed() {
 
-  if (key == '0')
+  if (key == '1')
     currentPt = 0;
 
-  if (key == '1')
+  if (key == '2')
     currentPt = 1;
 
-  if (key == '2')
+  if (key == '3')
     currentPt = 2;
 
-  if (key == '3')
+  if (key == '4')
     currentPt = 3;
 
   if (key == 't')
     test = !test;
 
   if (key == 's') {
-      papart.setTableLocation(mat);
+      papart.setTableLocation(objectProjectorTransfo);
       println("Saved");
   }
 }

@@ -6,10 +6,10 @@ import TUIO.*;
 import toxi.geom.*;
 
 public void setup(){
-    size(1200, 900, OPENGL);
+    size(640, 480, OPENGL);
     Papart papart = new Papart(this);
 
-    papart.initNoCamera(1);
+    papart.initDebug();
     papart.loadTouchInputTUIO();
     papart.loadSketches();
 }

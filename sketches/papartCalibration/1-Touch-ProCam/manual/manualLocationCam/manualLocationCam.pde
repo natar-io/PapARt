@@ -35,7 +35,6 @@ public void setup() {
   object = new PVector[4];
   image = new PVector[4]; 
 
-  // 10 cm. 
   object[0] = new PVector(0, 0, 0);
   object[1] = new PVector(objectWidth, 0, 0);
   object[2] = new PVector(objectWidth, objectHeight, 0);

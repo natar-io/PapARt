@@ -45,6 +45,7 @@ void setup(){
     camera.setParent(this);
     camera.setCalibration(Papart.kinectRGBCalib);
     camera.getDepthCamera().setDepthFormat(depthFormat);
+    camera.getDepthCamera().setCalibration(Papart.kinectIRCalib);
     camera.start();
 
     try{
@@ -57,10 +58,7 @@ void setup(){
     init2DDestinationPoints();
     reset();
 
-    kinect = new KinectProcessing(this,
-				  Papart.kinectIRCalib,
-				  Papart.kinectRGBCalib,
-				  kinectFormat);
+    kinect = new KinectProcessing(this, camera);
     kinect.setStereoCalibration(Papart.kinectStereoCalib);
 
   pointCloud = new PointCloudKinect(this, precision);

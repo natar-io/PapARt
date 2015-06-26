@@ -47,7 +47,7 @@ public void setup() {
   image[3] = new PVector(100, 200);
 }
 
-PMatrix3D mat, pos;
+PMatrix3D paperCameraTransform, pos;
 PVector object[];
 PVector image[];
 
@@ -61,7 +61,7 @@ void draw() {
     image(img, 0, 0, width, height);
     
   ProjectiveDeviceP pdp = cameraDisplay.getProjectiveDeviceP();
-  mat = pdp.estimateOrientation(object, image);
+  paperCameraTransform = pdp.estimateOrientation(object, image);
   //    mat.print();
 
   PGraphicsOpenGL g1 = cameraDisplay.beginDraw();  
@@ -69,7 +69,7 @@ void draw() {
   g1.clear();
 
 
-  g1.modelview.apply(mat);
+  g1.modelview.apply(paperCameraTransform);
 
   g1.fill(50, 50, 200, 100);
   // g1.translate(-10, -10, 0);
@@ -101,7 +101,7 @@ void draw() {
 
   
   if (test) { 
-    mat.print();
+    paperCameraTransform.print();
     test = false;
   }
 }
@@ -118,23 +118,23 @@ boolean set = false;
 
 void keyPressed() {
 
-  if (key == '0')
+  if (key == '1')
     currentPt = 0;
 
-  if (key == '1')
+  if (key == '2')
     currentPt = 1;
 
-  if (key == '2')
+  if (key == '3')
     currentPt = 2;
 
-  if (key == '3')
+  if (key == '4')
     currentPt = 3;
 
   if (key == 't')
     test = !test;
 
   if (key == 's') {
-      papart.saveCalibration("marker.xml", mat);
+      papart.saveCalibration("marker.xml", paperCameraTransform);
       println("Saved");
   }
 }

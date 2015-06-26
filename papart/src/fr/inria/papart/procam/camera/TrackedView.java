@@ -102,6 +102,10 @@ public class TrackedView {
 
 
     public PImage getViewOf(Camera camera) {
+        if(extractedImage == null){
+            System.err.println("You should init the TrackedView before getting the view.");
+            return null;
+        }
         if(camera.getIplImage() == null)
             return null;
 

@@ -33,7 +33,7 @@ int nbPoints = 10;
 int currentPoint = 0;
 
 Papart papart;
-PVector trackingSize = new PVector(297, 210);
+PVector trackingSize = new PVector(400, 400);
 
 void setup(){
     
@@ -62,18 +62,11 @@ void setup(){
 
     planeProjCalib = new PlaneAndProjectionCalibration();
     
-    kinect = new KinectProcessing(this,
-				  Papart.kinectIRCalib,
-				  Papart.kinectRGBCalib,
-				  kinectFormat);
+    kinect = new KinectProcessing(this, cameraKinect);
 
     kinect.setStereoCalibration(Papart.kinectStereoCalib);
     
-    kinectOpenCV = new KinectOpenCV(this,
-				    Papart.kinectIRCalib,
-				    Papart.kinectRGBCalib,
-				    kinectFormat);
-    
+    kinectOpenCV = new KinectOpenCV(this, cameraKinect);    
     kinectOpenCV.setStereoCalibration(Papart.kinectStereoCalib);
 
     
@@ -82,14 +75,11 @@ void setup(){
   // Set the virtual camera
   cam = new PeasyCam(this, 0, 0, -800, 800);
   cam.setMinimumDistance(0);
-  cam.setMaximumDistance(1200);
+  cam.setMaximumDistance(5000);
   cam.setActive(true);
   
   markerBoard = new MarkerBoard(sketchPath + "/data/big.cfg", trackingSize.x, trackingSize.y);
   cameraKinect.trackMarkerBoard(markerBoard);
-
-  
-
 }
 
 
@@ -104,6 +94,7 @@ PMatrix3D cameraPaperTransform;
 
 
 void draw(){
+
     background(0);
 
     cameraKinect.grab();
@@ -127,6 +118,8 @@ void draw(){
     // kinectExtr.invert();
     // kinectPaperTransform.preApply(kinectExtr);
 
+    // DEBUG
+    //    kinectPaperTransform.print();
     
     planeCalibKinect =  PlaneCalibration.CreatePlaneCalibrationFrom(kinectPaperTransform, trackingSize);
     

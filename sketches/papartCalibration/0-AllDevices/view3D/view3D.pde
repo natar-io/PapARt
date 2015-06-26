@@ -43,16 +43,8 @@ void setup(){
   cam.setActive(true);
 }
 
-
-
-
 void draw(){
     background(100);
-
-    // kinect.KinectRGBIRCalibration = new PMatrix3D(1, 0, 0, 5,
-    //           0, 1, 0, 0,
-    //           0, 0, 1, 0,
-    //           0, 0, 0, 1);
 
     // retreive the camera image.
     try {

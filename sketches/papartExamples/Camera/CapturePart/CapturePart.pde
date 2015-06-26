@@ -1,3 +1,5 @@
+import fr.inria.papart.procam.camera.*;
+
 public class MyApp  extends PaperScreen {
 
     TrackedView boardView;
@@ -11,30 +13,31 @@ public class MyApp  extends PaperScreen {
 	setDrawingSize(297, 210);
 	loadMarkerBoard(sketchPath + "/data/A3-small1.cfg", 297, 210);
 	
-	boardView = new TrackedView(markerBoard, 
-				    origin,
-				    captureSize,
-				    picSize, picSize);
+	boardView = new TrackedView(this);
+	boardView.setCaptureSizeMM(captureSize);
 
-	// Register this view with the camera.
-	cameraTracking.addTrackedView(boardView);
-  }
+	boardView.setImageWidthPx(picSize);
+	boardView.setImageHeightPx(picSize);
 
+	boardView.setBottomLeftCorner(origin);
 
-  void draw() {
-    beginDraw2D();
-    //    background(0, 0, 0);
-    clear();
-
-    fill(200, 100, 20);
-    rect(10, 10, 10, 10);
-
-    PImage out = cameraTracking.getPView(boardView);
-    
-    if(out != null){
-	image(out, 120, 40, picSize, picSize);
+	boardView.init();
     }
-    endDraw();
-  }
+
+
+    void draw() {
+	beginDraw2D();
+
+	clear();
+
+	fill(200, 100, 20);
+	rect(10, 10, 10, 10);
+	PImage out = boardView.getViewOf(cameraTracking);
+    
+	if(out != null){
+	    image(out, 120, 40, picSize, picSize);
+	}
+	endDraw();
+    }
 }
 

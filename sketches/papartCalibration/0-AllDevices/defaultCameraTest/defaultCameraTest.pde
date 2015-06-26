@@ -5,9 +5,6 @@ import org.reflections.*;
 import TUIO.*;
 import toxi.geom.*;
 
-
-
-
 Papart papart;
 
 public void setup() {

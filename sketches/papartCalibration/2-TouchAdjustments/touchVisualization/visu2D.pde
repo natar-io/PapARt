@@ -1,3 +1,6 @@
+
+///// Warning, not used anymore. 
+
 void draw2DPoints(){
     cam.beginHUD();
     

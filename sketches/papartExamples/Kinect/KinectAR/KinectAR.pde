@@ -5,11 +5,9 @@ import TUIO.*;
 import toxi.geom.*;
 
 void setup(){
-    int cameraX = 640;
-    int cameraY = 480;
 
-    size(cameraX, cameraY, OPENGL);
-
+    size(640, 480, OPENGL);
+    
     Papart papart = new Papart(this);
     papart.initKinectCamera(1);
     papart.loadSketches() ;

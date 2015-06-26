@@ -52,7 +52,7 @@ public void setup() {
 
 }
 
-PMatrix3D mat, pos;
+PMatrix3D kinectObjectTransfo, pos;
 PVector object[];
 PVector image[];
 
@@ -66,7 +66,7 @@ void draw() {
     image(img, 0, 0, width, height);
     
   ProjectiveDeviceP pdp = cameraDisplay.getProjectiveDeviceP();
-  mat = pdp.estimateOrientation(object, image);
+  kinectObjectTransfo = pdp.estimateOrientation(object, image);
   //    mat.print();
 
   PGraphicsOpenGL g1 = cameraDisplay.beginDraw();  
@@ -74,7 +74,7 @@ void draw() {
   g1.clear();
 
 
-  g1.modelview.apply(mat);
+  g1.modelview.apply(kinectObjectTransfo);
 
   g1.fill(50, 50, 200, 100);
   // g1.translate(-10, -10, 0);
@@ -103,12 +103,9 @@ void draw() {
        image[2].x, image[2].y, 
        image[3].x, image[3].y);
 
-
-
-  
   
   if (test) { 
-    mat.print();
+    kinectObjectTransfo.print();
     test = false;
   }
 }
@@ -147,18 +144,18 @@ void keyPressed() {
       PlaneAndProjectionCalibration planeProjCalib = new PlaneAndProjectionCalibration();
       PlaneCalibration planeCalibKinect;
 
-      planeCalibKinect =  PlaneCalibration.CreatePlaneCalibrationFrom(mat, trackingSize);
+      planeCalibKinect =  PlaneCalibration.CreatePlaneCalibrationFrom(kinectObjectTransfo, trackingSize);
       
       planeCalibKinect.flipNormal();
       planeCalibKinect.moveAlongNormal(-15f);
       
-      HomographyCalibration homographyCalib = HomographyCalibration.CreateHomographyCalibrationFrom(mat, trackingSize);
+      HomographyCalibration homographyCalib = HomographyCalibration.CreateHomographyCalibrationFrom(kinectObjectTransfo, trackingSize);
       
       planeProjCalib.setPlane(planeCalibKinect);
       planeProjCalib.setHomography(homographyCalib);
       planeProjCalib.saveTo(this, Papart.planeAndProjectionCalib);
 
-      papart.saveCalibration("kinectPaperForTouch.xml", mat);
+      papart.saveCalibration("kinectPaperForTouch.xml", kinectObjectTransfo);
       planeSet = true;
       println("Saved");
   }
