@@ -302,6 +302,10 @@ public abstract class Camera extends Node implements PConstants {
         return thread != null;
     }
 
+    public void forceCurrentImage(IplImage img){
+        updateCurrentImage(img);
+    }
+    
     /**
      * Update the current Image, from the specific grabber, lens distorsions are
      * handled here.

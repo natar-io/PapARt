@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 require 'ruby-processing' 
 
+Processing::Runner
+Dir["#{Processing::RP_CONFIG['PROCESSING_ROOT']}/core/library/\*.jar"].each{ |jar| require jar }
 Processing::App::SKETCH_PATH = __FILE__
+
 Processing::App::load_library :PapARt, :javacv, :toxiclibscore
 
 module Papartlib
@@ -24,16 +27,18 @@ class Sketch < Processing::App
     @useProjector = false
     
     if @useProjector
-      size(frameSizeX, frameSizeY, OPENGL)
-      @papart = Papartlib::Papart.new self
-      @papart.initProjectorCamera("0",
-                                  Papartlib::Camera::Type::OPENCV);
-      @papart.loadTouchInput(2, 5)
+
+      @papart = PapartLib::Papart.projection(self)
+      @papart.loadTouchInput()
     else 
-      size(@camera_x, @camera_y, OPENGL)
-      @papart = Papartlib::Papart.new self
-      @papart.initKinectCamera(2)
-      @papart.loadTouchInputKinectOnly(2, 5)
+
+      @papart = Papartlib::Papart.seeThrough self
+      @papart.loadTouchInput()
+
+      # size(@camera_x, @camera_y, OPENGL)
+      # @papart = Papartlib::Papart.new self
+      # @papart.initKinectCamera(2)
+      # @papart.loadTouchInputKinectOnly()
     end
 
     @moon = Moon.new
@@ -42,7 +47,8 @@ class Sketch < Processing::App
 
   end
 
-  def draw 
+  def draw
+
   end 
 end
 

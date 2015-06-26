@@ -41,7 +41,7 @@ public class ProjectorDisplay extends ARDisplay {
     @Override
     protected void loadInternalParams(String calibrationYAML) {
         // Load the camera parameters.
-        System.out.println("Load here ");
+        System.out.println("Loading Projector intrinsics.");
 
         try {
             projectiveDeviceP = ProjectiveDeviceP.loadProjectorDevice(calibrationYAML, 0);

@@ -22,9 +22,12 @@ import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
+import org.bytedeco.javacpp.opencv_core;
+import org.bytedeco.javacpp.opencv_core.IplImage;
 import processing.core.PApplet;
 import static processing.core.PConstants.RGB;
 import processing.core.PImage;
+import static org.bytedeco.javacpp.opencv_highgui.*;
 
 /**
  *
@@ -41,6 +44,7 @@ public class DecodedCode implements Serializable {
     private static final String MASK_NAME = "mask";
 
     protected PImage refImage;
+    protected IplImage refImageIpl;
 
     protected boolean[] validMask;
 
@@ -60,9 +64,30 @@ public class DecodedCode implements Serializable {
         decodedX = new int[width * height];
         decodedY = new int[width * height];
     }
+    private DecodedCode(){}
 
     public void setRefImage(PImage refImage) {
         this.refImage = refImage;
+    }
+    
+    public PImage getRefImage(){
+        return this.refImage;
+    }
+
+    public opencv_core.IplImage getRefImageIpl(){
+        return this.refImageIpl;
+    }
+    
+    public int[] getDecodedX(){
+        return decodedX;
+    }
+    
+    public int[] getDecodedY(){
+        return decodedY;
+    }
+    
+    public boolean[] getMask(){
+        return validMask;
     }
 
     public PImage getProjectorImage(PApplet applet, int projWidth, int projHeight) {
@@ -86,24 +111,34 @@ public class DecodedCode implements Serializable {
         return projectorImage;
     }
 
-    public void loadFrom(PApplet applet, String fileName) {
-        this.applet = applet;
-        refImage = applet.loadImage(fileName + SEPARATION + REF_NAME + EXTENSION_IMG);
-        this.width = refImage.width;
-        this.height = refImage.height;
+    public static DecodedCode loadFrom(PApplet applet, String fileName) {
+        DecodedCode decodedCode = new DecodedCode();
+        decodedCode.refImage = applet.loadImage(fileName + SEPARATION + REF_NAME + EXTENSION_IMG);
+            
+        String filePath = applet.sketchPath + "/"+ fileName + SEPARATION + REF_NAME + EXTENSION_IMG;
+        System.out.println("Loading .. " + filePath);
+        decodedCode.refImageIpl = cvLoadImage(filePath);
+ 
+        
+        decodedCode.width = decodedCode.refImage.width;
+        decodedCode.width = decodedCode.refImage.height;
+        
+        decodedCode.applet = applet;
+        
 
-        decodedX = loadIntArray(fileName + SEPARATION + X_NAME + EXTENSION_BYTE, decodedX);
-        decodedY = loadIntArray(fileName + SEPARATION + Y_NAME + EXTENSION_BYTE, decodedY);
-        validMask = loadBoolArray(fileName + SEPARATION + MASK_NAME + EXTENSION_BYTE, validMask);
+        decodedCode.decodedX = decodedCode.loadIntArray(fileName + SEPARATION + X_NAME + EXTENSION_BYTE);
+        decodedCode.decodedY = decodedCode.loadIntArray(fileName + SEPARATION + Y_NAME + EXTENSION_BYTE);
+        decodedCode.validMask = decodedCode.loadBoolArray(fileName + SEPARATION + MASK_NAME + EXTENSION_BYTE, null);
+        return decodedCode;
     }
 
-    private int[] loadIntArray(String name, int[] array) {
+    private int[] loadIntArray(String name) {
         byte[] byteArr = applet.loadBytes(name);
         IntBuffer bb = java.nio.ByteBuffer
                 .wrap(byteArr)
                 .order(ByteOrder.BIG_ENDIAN)
                 .asIntBuffer();
-        array = new int[bb.remaining()];
+        int[] array = new int[bb.remaining()];
         bb.get(array);
         return array;
     }
@@ -112,7 +147,7 @@ public class DecodedCode implements Serializable {
 
         byte[] byteArr = applet.loadBytes(name);
 
-        if (array.length != byteArr.length) {
+        if (array == null || array.length != byteArr.length) {
             array = new boolean[byteArr.length];
         }
 
@@ -153,7 +188,7 @@ public class DecodedCode implements Serializable {
 
     private byte[] createByteArrayFrom(int[] array) {
         ByteBuffer bb = java.nio.ByteBuffer.allocate(array.length * Integer.SIZE / 8);
-        IntBuffer ib = IntBuffer.wrap(decodedX);
+        IntBuffer ib = IntBuffer.wrap(array);
         bb.asIntBuffer().put(ib);
         return bb.array();
     }

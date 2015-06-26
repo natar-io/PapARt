@@ -13,7 +13,7 @@ void setup(){
 
     Papart papart = new Papart(this);
     papart.initKinectCamera(1);
-    papart.loadTouchInputKinectOnly(2, 5);
+    papart.loadTouchInputKinectOnly();
 
     papart.loadSketches() ;
     papart.startTracking();

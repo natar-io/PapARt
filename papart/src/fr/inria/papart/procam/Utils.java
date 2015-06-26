@@ -617,7 +617,7 @@ public class Utils {
         dst.copyFrom((BufferedImage) src.getImage());
     }
 
-    static public void PImageToIplImage2(IplImage img, PApplet applet, boolean RGB, PImage ret) {
+    static public void PImageToIplImage2(IplImage img, boolean RGB, PImage ret) {
 
         ByteBuffer buff = img.getByteBuffer();
 

@@ -341,6 +341,87 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
         mat.set(RTMat);
         return mat;
     }
+    
+    public PMatrix3D estimateOrientationRansac(PVector[] objectPoints,
+            PVector[] imagePoints) {
+
+        assert (objectPoints.length == imagePoints.length);
+
+        CvMat op = CvMat.create(objectPoints.length, 3);
+        CvMat ip = CvMat.create(imagePoints.length, 2);
+//        Mat op = new Mat(objectPoints.length, 3, CV_32FC1);
+//        Mat ip = new Mat(imagePoints.length, 2, CV_32FC1);
+
+        Mat rotation = new Mat(3, 1, CV_32FC1);
+        Mat translation = new Mat(3, 1, CV_32FC1);
+
+//        CvMat rotation = CvMat.create(3, 1);
+//        CvMat translation = CvMat.create(3, 1);
+        // Create internal parameters matrix.
+        if (intrinsicsMat == null) {
+            intrinsicsMat = CvMat.create(3, 3);
+
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 3; j++) {
+                    intrinsicsMat.put(i, j, 0);
+                }
+            }
+
+            intrinsicsMat.put(0, 0, intrinsics.m00);
+            intrinsicsMat.put(1, 1, intrinsics.m11);
+            intrinsicsMat.put(0, 2, intrinsics.m02);
+            intrinsicsMat.put(1, 2, intrinsics.m12);
+            intrinsicsMat.put(2, 2, 1);
+        }
+
+        // Fill the object and image matrices.
+        for (int i = 0; i < objectPoints.length; i++) {
+            op.put(i, 0, objectPoints[i].x);
+            op.put(i, 1, objectPoints[i].y);
+            op.put(i, 2, objectPoints[i].z);
+
+            ip.put(i, 0, imagePoints[i].x);
+            ip.put(i, 1, imagePoints[i].y);
+        }
+
+        // TODO: remove the new ...
+//        ITERATIVE=CV_ITERATIVE,
+//        EPNP=CV_EPNP,
+//        P3P=CV_P3P;
+        // Convert all to Mat, instead of CvMat
+        opencv_calib3d.solvePnPRansac(
+                new Mat(op),
+                new Mat(ip),
+                new Mat(intrinsicsMat), 
+                new Mat(),
+                rotation,
+                translation,
+                false, // extrinsic guess
+                100, // iterationsCount
+                8.0f, // reprojError
+                100, // minInlinersCount
+                new Mat(),  // outputArray
+                opencv_calib3d.ITERATIVE);
+
+//        boolean solvePnP(@InputArray CvMat objectPoints,
+//            @InputArray CvMat imagePoints, @InputArray CvMat cameraMatrix,
+//            @InputArray CvMat distCoeffs,  @OutputArray CvMat rvec,
+//            @OutputArray CvMat tvec, boolean useExtrinsicGuess
+        PMatrix3D mat = new PMatrix3D();
+
+        CvMat rotMat = CvMat.create(3, 3);
+        cvRodrigues2(rotation.asCvMat(), rotMat, null);
+
+        CvMat translationCv = translation.asCvMat();
+
+        float RTMat[] = {
+            (float) rotMat.get(0), (float) rotMat.get(1), (float) rotMat.get(2), (float) translationCv.get(0),
+            (float) rotMat.get(3), (float) rotMat.get(4), (float) rotMat.get(5), (float) translationCv.get(1),
+            (float) rotMat.get(6), (float) rotMat.get(7), (float) rotMat.get(8), (float) translationCv.get(2),
+            0, 0, 0, 1f};
+        mat.set(RTMat);
+        return mat;
+    }
 
     private static void loadParameters(ProjectiveDevice dev, ProjectiveDeviceP p) {
         double[] camMat = dev.cameraMatrix.get();

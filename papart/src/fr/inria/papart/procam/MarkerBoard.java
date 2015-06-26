@@ -419,6 +419,7 @@ public class MarkerBoard {
         // Find the markers
         tracker.calc(img.imageData());
 
+        System.out.println("Calc... " + tracker.getNumDetectedMarkers() );
         // Minimum 2 markers !
         if (tracker.getNumDetectedMarkers() <= 1) {
             return;

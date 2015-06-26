@@ -99,8 +99,8 @@ public class Papart {
     private CameraOpenKinect cameraOpenKinect;
     private boolean isWithoutCamera = false;
 
-    private CameraConfiguration cameraConfiguration;
-    private ScreenConfiguration screenConfiguration;
+    public CameraConfiguration cameraConfiguration;
+    public ScreenConfiguration screenConfiguration;
     // TODO: find what to do with these...
 //    private final int depthFormat = freenect.FREENECT_DEPTH_10BIT;
 //    private final int kinectFormat = Kinect.KINECT_10BIT;

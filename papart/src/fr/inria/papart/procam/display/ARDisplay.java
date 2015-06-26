@@ -255,10 +255,11 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         assert (hasExtrinsics());
         return extrinsics.get();
     }
-    
+
     /**
      * @return
      */
+    @Deprecated
     public PMatrix3D getExtrinsicsInv() {
         assert (hasExtrinsics());
         return extrinsicsInv.get();

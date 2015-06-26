@@ -137,6 +137,10 @@ public class PaperScreen {
         this.drawingSize.x = width;
         this.drawingSize.y = height;
     }
+    
+    public void setDrawing(boolean drawing){
+        screen.setDrawing(drawing);
+    }
 
     /**
      * Set the resolution of the drawing in px/mm . e.g.: A board with 100mm

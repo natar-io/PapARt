@@ -19,12 +19,8 @@
 package fr.inria.papart.scanner;
 
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.util.Arrays;
 import processing.core.PApplet;
 import static processing.core.PApplet.ceil;
 import static processing.core.PApplet.floor;
@@ -45,10 +41,10 @@ public class GrayCode implements PConstants {
     public static final int DECODE_ABS = 2;
 
 //    static public float differenceThreshold = 120;
-    private PApplet parent;
+    private final PApplet parent;
 
     // The user sets them
-    private PImage[] grayCodesCaptures;
+    private final PImage[] grayCodesCaptures;
     private PImage refImage = null;
 
     private final int nbCols;
