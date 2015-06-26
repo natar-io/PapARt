@@ -44,7 +44,7 @@ public class DecodedCode implements Serializable {
     private static final String MASK_NAME = "mask";
 
     protected PImage refImage;
-    protected IplImage refImageIpl;
+//    protected IplImage refImageIpl;
 
     protected boolean[] validMask;
 
@@ -74,9 +74,9 @@ public class DecodedCode implements Serializable {
         return this.refImage;
     }
 
-    public opencv_core.IplImage getRefImageIpl(){
-        return this.refImageIpl;
-    }
+//    public opencv_core.IplImage getRefImageIpl(){
+//        return this.refImageIpl;
+//    }
     
     public int[] getDecodedX(){
         return decodedX;
@@ -115,9 +115,9 @@ public class DecodedCode implements Serializable {
         DecodedCode decodedCode = new DecodedCode();
         decodedCode.refImage = applet.loadImage(fileName + SEPARATION + REF_NAME + EXTENSION_IMG);
             
-        String filePath = applet.sketchPath + "/"+ fileName + SEPARATION + REF_NAME + EXTENSION_IMG;
-        System.out.println("Loading .. " + filePath);
-        decodedCode.refImageIpl = cvLoadImage(filePath);
+//        String filePath = applet.sketchPath + "/"+ fileName + SEPARATION + REF_NAME + EXTENSION_IMG;
+//        System.out.println("Loading .. " + filePath);
+//        decodedCode.refImageIpl = cvLoadImage(filePath);
  
         
         decodedCode.width = decodedCode.refImage.width;

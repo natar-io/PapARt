@@ -9,11 +9,9 @@ import toxi.geom.*;
 import processing.video.*;
 
 boolean useProjector = false;
-
 Papart papart;
 
 public void setup() {
-
     if(useProjector)
 	papart = Papart.projection(this);
     else 
@@ -27,20 +25,4 @@ void draw() {
 }
 
 
-void keyPressed() {
 
-    if(key == 's'){
-	app.saveLocationTo("loc.xml");
-	println("Position saved");
-    }
-
-    if(key == 'l'){
-	app.loadLocationFrom("loc.xml");
-    }
-
-    // Move again
-    if(key == 'm'){
-	app.useManualLocation(false);
-    }
-
-}
