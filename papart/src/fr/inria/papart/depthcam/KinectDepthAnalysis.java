@@ -28,7 +28,6 @@ public class KinectDepthAnalysis extends DepthAnalysis {
     // Protected values, important data. 
     protected float[] depthLookUp = null;
 
- 
     private int mode;
 
     // Configuration 
@@ -178,6 +177,9 @@ public class KinectDepthAnalysis extends DepthAnalysis {
     }
 
     protected void doForEachPoint(int precision, DepthPointManiplation manip) {
+        if (precision <= 0) {
+            return;
+        }
         for (int y = 0; y < calibIR.getHeight(); y += precision) {
             for (int x = 0; x < calibIR.getWidth(); x += precision) {
                 int offset = y * calibIR.getWidth() + x;
@@ -190,6 +192,9 @@ public class KinectDepthAnalysis extends DepthAnalysis {
     }
 
     protected void doForEachValidPoint(int precision, DepthPointManiplation manip) {
+        if (precision <= 0) {
+            return;
+        }
         for (int y = 0; y < calibIR.getHeight(); y += precision) {
             for (int x = 0; x < calibIR.getWidth(); x += precision) {
                 int offset = y * calibIR.getWidth() + x;
@@ -202,6 +207,9 @@ public class KinectDepthAnalysis extends DepthAnalysis {
     }
 
     protected void doForEachValid3DPoint(int precision, DepthPointManiplation manip) {
+        if (precision <= 0) {
+            return;
+        }
         for (int y = 0; y < calibIR.getHeight(); y += precision) {
             for (int x = 0; x < calibIR.getWidth(); x += precision) {
                 int offset = y * calibIR.getWidth() + x;
@@ -265,7 +273,7 @@ public class KinectDepthAnalysis extends DepthAnalysis {
     protected float getDepth(int offset) {
         float d = (depthRaw[offset * 2] & 0xFF) << 8
                 | (depthRaw[offset * 2 + 1] & 0xFF);
-        
+
         return d;
 //        if (d >= 2047) {
 //            return INVALID_DEPTH;

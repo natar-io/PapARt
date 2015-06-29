@@ -38,7 +38,7 @@ public class MyApp extends PaperTouchScreen {
 
 	    float ellipseSize = 3;
 	    int c = depthPoint.getColor();
-	    if(c == Kinect.INVALID_COLOR){
+	    if(c == DepthAnalysis.INVALID_COLOR){
 	    	fill(0, 0, 200);
 	    } else {
 	    	fill(red(c), green(c), blue(c));

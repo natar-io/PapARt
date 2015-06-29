@@ -17,7 +17,7 @@ void setup(){
 
     if(useProjector){
 	papart = Papart.projection(this);
-	papart.loadTouchInput(1, 1);
+	papart.loadTouchInput();
     } else {
 
 	size((int) (Kinect.WIDTH * renderQuality),
@@ -27,7 +27,7 @@ void setup(){
 	papart = new Papart(this);
 
 	papart.initKinectCamera(renderQuality);
-	papart.loadTouchInputKinectOnly(1, 1);
+	papart.loadTouchInputKinectOnly();
 	BaseDisplay display = papart.getDisplay();
 	display.setDrawingSize(width, height);
     }

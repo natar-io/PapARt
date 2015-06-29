@@ -104,31 +104,32 @@ public class PointCloud {
 
     private int currentVertNo = 0;
 
-    public void update(PointCloudElement[] pce, boolean[] mask) {
-        nbColors = 0;
-        currentVertNo = 0;
-
-        assert (pce.length <= nbPoints);
-        for (int i = 0; i < pce.length; i++) {
-            if (mask[i]) {
-                addPoint(pce[i]);
-            }
-        }
-
-        loadVerticesToNative();
-    }
-
-    public void update(PointCloudElement[] pce) {
-        currentVertNo = 0;
-        nbColors = 0;
-        assert (pce.length <= nbPoints);
-
-        for (int i = 0; i < pce.length; i++) {
-            // TODO: parallel ?
-            addPoint(pce[i]);
-        }
-        loadVerticesToNative();
-    }
+//    @Deprecated
+//    public void update(PointCloudElement[] pce, boolean[] mask) {
+//        nbColors = 0;
+//        currentVertNo = 0;
+//
+//        assert (pce.length <= nbPoints);
+//        for (int i = 0; i < pce.length; i++) {
+//            if (mask[i]) {
+//                addPoint(pce[i]);
+//            }
+//        }
+//
+//        loadVerticesToNative();
+//    }
+//
+//    public void update(PointCloudElement[] pce) {
+//        currentVertNo = 0;
+//        nbColors = 0;
+//        assert (pce.length <= nbPoints);
+//
+//        for (int i = 0; i < pce.length; i++) {
+//            // TODO: parallel ?
+//            addPoint(pce[i]);
+//        }
+//        loadVerticesToNative();
+//    }
 
 //    public void updateCheck(PointCloudElement[] pce, int w, int h) {
 //        nbVertices = 0;

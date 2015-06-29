@@ -1,5 +1,4 @@
 import fr.inria.papart.procam.*;
-import fr.inria.papart.tools.*;
 import fr.inria.papart.depthcam.*;
 import fr.inria.papart.multitouch.*;
 
@@ -18,7 +17,7 @@ void setup(){
     Papart papart = new Papart(this);
 
     // arguments are 2D and 3D precision.
-    papart.loadTouchInputKinectOnly(2, 2);
+    papart.loadTouchInputKinectOnly();
     touchInput = (KinectTouchInput) papart.getTouchInput();
 }
 
@@ -33,8 +32,8 @@ void draw(){
     ArrayList<TouchPoint> touchs2D = new ArrayList<TouchPoint>(touchInput.getTouchPoints2D());
     for(TouchPoint tp : touchs2D){
 
-	ArrayList<DepthDataElement> depthDataElements = tp.getDepthDataElements();
-	for(DepthDataElement dde : depthDataElements){
+	ArrayList<DepthDataElementKinect> depthDataElements = tp.getDepthDataElements();
+	for(DepthDataElementKinect dde : depthDataElements){
 	    Vec3D v = dde.projectedPoint;
 	    noStroke();
 	    setColor(dde.pointColor, 255);
@@ -53,9 +52,9 @@ void draw(){
     ArrayList<TouchPoint> touchs3D = new ArrayList<TouchPoint>(touchInput.getTouchPoints3D());
     for(TouchPoint tp : touchs3D){
 
-	ArrayList<DepthDataElement> depthDataElements = tp.getDepthDataElements();
+	ArrayList<DepthDataElementKinect> depthDataElements = tp.getDepthDataElements();
 	
-	for(DepthDataElement dde : depthDataElements){
+	for(DepthDataElementKinect dde : depthDataElements){
 	    Vec3D v = dde.projectedPoint;
 	    noStroke();
 	    setColor(dde.pointColor, 100);

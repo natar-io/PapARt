@@ -22,8 +22,10 @@ import static fr.inria.papart.depthcam.DepthAnalysis.papplet;
 import fr.inria.papart.calibration.HomographyCalibration;
 import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
 import fr.inria.papart.calibration.PlaneCalibration;
+import static fr.inria.papart.depthcam.DepthAnalysis.papplet;
 import fr.inria.papart.procam.camera.CameraOpenKinect;
 import java.util.Arrays;
+import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import processing.core.PApplet;
 import processing.core.PConstants;
@@ -47,96 +49,24 @@ public class KinectProcessing extends KinectDepthAnalysis {
         validPointsPImage = papplet.createImage(width, height, PConstants.RGB);
     }
 
-    public PImage update(IplImage depth, IplImage color) {
-        return update(depth, color, 1);
-    }
-
-    public PImage update(IplImage depth, IplImage color, int skip) {
+    @Override
+    public void updateMT(opencv_core.IplImage depth, opencv_core.IplImage color, PlaneAndProjectionCalibration calib, int skip2D, int skip3D) {
         updateRawDepth(depth);
+        // optimisation no Color. 
         updateRawColor(color);
         depthData.clear();
         depthData.timeStamp = papplet.millis();
-        validPointsPImage.loadPixels();
-        // set a default color. 
-        Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 255));
-        computeDepthAndDo(skip, new SetImageData());
-        validPointsPImage.updatePixels();
-        return validPointsPImage;
-    }
+        depthData.planeAndProjectionCalibration = calib;
+        computeDepthAndDo(skip2D, new DoNothing());
+        doForEachPoint(skip2D, new Select2DPointPlaneProjection());
+        doForEachPoint(skip3D, new Select3DPointPlaneProjection());
 
-//    //////////// Default FUNCTION ///////////////
-    public PImage updateTest(IplImage depth, IplImage color,
-            PlaneAndProjectionCalibration planeProjCalibration, int skip) {
-        updateRawDepth(depth);
-        updateRawColor(color);
-        depthData.clear();
-        depthData.timeStamp = papplet.millis();
         validPointsPImage.loadPixels();
-        // set a default color. 
         Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 255));
 
-        depthData.planeAndProjectionCalibration = planeProjCalibration;
-
-        computeDepthAndDo(skip, new DoNothing());
-        doForEachPoint(skip, new Select2DPointPlaneProjection());
-        doForEachPoint(skip, new Select3DPointPlaneProjection());
-
-//        computeDepthAndDo(skip, new Select2DPointPlaneProjection());
-        doForEachValidPoint(skip, new SetImageData());
+        doForEachValidPoint(skip2D, new SetImageData());
         validPointsPImage.updatePixels();
-        return validPointsPImage;
     }
-    /**
-     * Work in progress tests...
-     * @param depth
-     * @param color
-     * @param planeCalibration
-     * @param skip
-     * @return 
-     */
-    public PImage updateTest(IplImage depth, IplImage color,
-            PlaneCalibration planeCalibration, int skip) {
-        updateRawDepth(depth);
-        updateRawColor(color);
-        depthData.clear();
-        depthData.timeStamp = papplet.millis();
-        validPointsPImage.loadPixels();
-        // set a default color. 
-        Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 255));
-
-        depthData.planeCalibration = planeCalibration;
-
-        computeDepthAndDo(skip, new DoNothing());
-//        doForEachPoint(skip, new Select2DPointOverPlaneDist());
-        doForEachPoint(skip, new Select2DPointOverPlane());
-//        doForEachPoint(skip, new Select3DPointPlaneProjection());
-
-//        computeDepthAndDo(skip, new Select2DPointPlaneProjection());
-        doForEachValidPoint(skip, new SetImageData());
-        validPointsPImage.updatePixels();
-        return validPointsPImage;
-    }
-    //////////// WORK IN PROGRESS FUNCTION ///////////////
-//    public PImage update(IplImage depth, IplImage color,
-//            PlaneAndProjectionCalibration planeProjCalibration, int skip) {
-//        updateRawDepth(depth);
-//        updateRawColor(color);
-//        depthData.clear();
-//        depthData.timeStamp = papplet.millis();
-//        validPointsPImage.loadPixels();
-//        // set a default color. 
-//        Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 255));
-//
-//        depthData.planeAndProjectionCalibration = planeProjCalibration;
-//
-//        computeDepthAndDo(skip, new DoNothing());
-//        doForEachPoint(skip, new SelectPlaneTouchHand());
-//        doForEachPoint(skip, new SetTouchInformation());
-//
-////        doForEachValidPoint(skip, new SetImageData());
-//        validPointsPImage.updatePixels();
-//        return validPointsPImage;
-//    }
 
     public PImage update(IplImage depth, IplImage color,
             PlaneAndProjectionCalibration planeProjCalibration, int skip) {
@@ -156,24 +86,6 @@ public class KinectProcessing extends KinectDepthAnalysis {
         validPointsPImage.updatePixels();
         return validPointsPImage;
     }
-  
-
-    public PImage update(IplImage depth, IplImage color,
-            HomographyCalibration homographyCalibration, int skip) {
-        updateRawDepth(depth);
-        updateRawColor(color);
-        depthData.clear();
-        depthData.timeStamp = papplet.millis();
-        validPointsPImage.loadPixels();
-        // set a default color. 
-        Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 255));
-
-        depthData.homographyCalibration = homographyCalibration;
-        computeDepthAndDo(skip, new Select2DPointCalibratedHomography());
-        doForEachValidPoint(skip, new SetImageData());
-        validPointsPImage.updatePixels();
-        return validPointsPImage;
-    }
 
     class SetTouchInformation implements DepthPointManiplation {
 
@@ -181,7 +93,7 @@ public class KinectProcessing extends KinectDepthAnalysis {
         public void execute(Vec3D p, int x, int y, int offset) {
 //            depthData.validPointsMask[offset] = true;
             int r = depthData.touchAttributes[offset].isInTouch() ? 100 : 0;
-            int g = depthData.touchAttributes[offset].isOverTouch()? 100 : 0;
+            int g = depthData.touchAttributes[offset].isOverTouch() ? 100 : 0;
             int b = depthData.touchAttributes[offset].isUnderTouch() ? 100 : 0;
             setFakeColor(offset, r, g, b);
         }

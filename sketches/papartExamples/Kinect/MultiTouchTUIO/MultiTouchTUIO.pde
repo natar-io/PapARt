@@ -1,5 +1,4 @@
 import fr.inria.papart.procam.*;
-import fr.inria.papart.tools.*;
 import fr.inria.papart.depthcam.*;
 import fr.inria.papart.tuio.*;
 import fr.inria.papart.multitouch.*;
@@ -22,7 +21,7 @@ void setup(){
     Papart papart = new Papart(this);
 
     // arguments are 2D and 2D precising in that order. 
-    papart.loadTouchInputKinectOnly(2, 5);
+    papart.loadTouchInputKinectOnly();
     touchInput = (KinectTouchInput) papart.getTouchInput();
     server = new TuioServer(this, 12000, "127.0.0.1", 3333);
 }
