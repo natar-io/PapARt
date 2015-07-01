@@ -1160,6 +1160,14 @@
          id="path4423-5-6-4-4-9-3-9"
          d="m 729.961,1314.87 4503.209,0 0,3411.58 -4503.209,0 0,-3411.58 z" />
     </clipPath>
+    <clipPath
+       id="clipPath4421-2-4-4-0-9-5-2"
+       clipPathUnits="userSpaceOnUse">
+      <path
+         inkscape:connector-curvature="0"
+         id="path4423-5-6-4-4-9-3-3"
+         d="m 729.961,1314.87 4503.209,0 0,3411.58 -4503.209,0 0,-3411.58 z" />
+    </clipPath>
   </defs>
   <sodipodi:namedview
      id="base"
@@ -1168,17 +1176,17 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.70000001"
-     inkscape:cx="1321.0015"
-     inkscape:cy="1251.8559"
+     inkscape:zoom="0.74590142"
+     inkscape:cx="-2843.7316"
+     inkscape:cy="457.85528"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1920"
-     inkscape:window-height="1144"
-     inkscape:window-x="0"
-     inkscape:window-y="0"
-     inkscape:window-maximized="1"
+     inkscape:window-width="1521"
+     inkscape:window-height="978"
+     inkscape:window-x="90"
+     inkscape:window-y="65"
+     inkscape:window-maximized="0"
      fit-margin-top="0"
      fit-margin-left="0"
      fit-margin-right="0"
@@ -1191,7 +1199,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -1597,7 +1605,11 @@
          sodipodi:role="line"
          x="-3547.3669"
          y="-799.96973"
-         id="tspan4584">optical center : 45% </tspan></text>
+         id="tspan4584">optical center : 45%</tspan><tspan
+         sodipodi:role="line"
+         x="-3547.3669"
+         y="-776.53223"
+         id="tspan5745">Weight :  500gr ~ 800gr ?.  </tspan></text>
     <rect
        style="fill:#aa8800;fill-opacity:1;stroke:none;stroke-width:0.95700002;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect4161-0"
@@ -2144,7 +2156,11 @@
          sodipodi:role="line"
          x="-4817.2534"
          y="660.76746"
-         id="tspan4584-7">optical center : 50% ? </tspan></text>
+         id="tspan4584-7">optical center : 50% ?</tspan><tspan
+         sodipodi:role="line"
+         x="-4817.2534"
+         y="684.20496"
+         id="tspan5747">weight : ~800 gr   </tspan></text>
     <path
        style="fill:#1c2360;fill-opacity:0.06074766;fill-rule:evenodd;stroke:#2a397b;stroke-width:1.33678722px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:0.64485925"
        d="m -5141.8779,554.17737 385.9967,999.93723 -857.9318,0 457.4911,-999.66246"
@@ -2154,7 +2170,7 @@
     <g
        clip-path="url(#clipPath4421-2-4-4-0-9-5)"
        id="g4789-9-6-9-5-8"
-       transform="matrix(0,-0.09864767,-0.2772009,0,-4112.1071,925.26437)">
+       transform="matrix(0,-0.10055385,-0.4285368,0,-3546.9938,931.85719)">
       <path
          d="m 3682.5,3802.41 601.12,0 c 10,0 18.04,-8.05 18.04,-18.05 l 0,-85.88 c 0,-9.99 -8.04,-18 -18.04,-18 l -601.12,0 c -10,0 -18.04,8.01 -18.04,18 l 0,85.88 c 0,10 8.04,18.05 18.04,18.05"
          style="fill:#f4f4f4;fill-opacity:1;fill-rule:nonzero;stroke:none"
@@ -2403,5 +2419,79 @@
          id="tspan8588"
          x="588.88123"
          y="-286.04712">45 °, pivot milieu Asus</tspan></text>
+    <g
+       clip-path="url(#clipPath4421-2-4-4-0-9-5-2)"
+       id="g4789-9-6-9-5-8-7"
+       transform="matrix(0.06985968,-0.07232359,-0.30822609,-0.29772548,1407.9481,1504.2165)">
+      <path
+         d="m 3682.5,3802.41 601.12,0 c 10,0 18.04,-8.05 18.04,-18.05 l 0,-85.88 c 0,-9.99 -8.04,-18 -18.04,-18 l -601.12,0 c -10,0 -18.04,8.01 -18.04,18 l 0,85.88 c 0,10 8.04,18.05 18.04,18.05"
+         style="fill:#f4f4f4;fill-opacity:1;fill-rule:nonzero;stroke:none"
+         id="path4791-0-3-3-8-2-3"
+         inkscape:connector-curvature="0" />
+      <path
+         d="m 3682.5,3802.41 601.12,0 c 10,0 18.04,-8.05 18.04,-18.05 l 0,-85.88 c 0,-9.99 -8.04,-18 -18.04,-18 l -601.12,0 c -10,0 -18.04,8.01 -18.04,18 l 0,85.88 c 0,10 8.04,18.05 18.04,18.05 z"
+         style="fill:none;stroke:#c4c4c4;stroke-width:30.72970009;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         id="path4793-5-7-6-8-7-8"
+         inkscape:connector-curvature="0" />
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:18.75px;line-height:125%;font-family:serif;-inkscape-font-specification:'serif, Normal';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="-4216.0542"
+       y="1076.0463"
+       id="text4666"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4668"
+         x="-4216.0542"
+         y="1076.0463">Feature 	Kinect for Windows 1 	Kinect for Windows 2</tspan><tspan
+         sodipodi:role="line"
+         x="-4216.0542"
+         y="1099.4838"
+         id="tspan4670">Color Camera 	640 x 480 @30 fps 	1920 x 1080 @30 fps</tspan><tspan
+         sodipodi:role="line"
+         x="-4216.0542"
+         y="1122.9213"
+         id="tspan4672">Depth Camera 	320 x 240 	512 x 424</tspan><tspan
+         sodipodi:role="line"
+         x="-4216.0542"
+         y="1146.3588"
+         id="tspan4674">Max Depth Distance 	~4.5 M 	8 M</tspan><tspan
+         sodipodi:role="line"
+         x="-4216.0542"
+         y="1169.7963"
+         id="tspan4676">Min Depth Distance 	40 cm in near mode 	50 cm</tspan><tspan
+         sodipodi:role="line"
+         x="-4216.0542"
+         y="1193.2338"
+         id="tspan4678">Depth Horizontal Field of View 	57 degrees 	70 degrees</tspan><tspan
+         sodipodi:role="line"
+         x="-4216.0542"
+         y="1216.6713"
+         id="tspan4680">Depth Vertical Field of View 	43 degrees 	60 degrees</tspan><tspan
+         sodipodi:role="line"
+         x="-4216.0542"
+         y="1240.1088"
+         id="tspan4682">Tilt Motor 	yes 	no</tspan><tspan
+         sodipodi:role="line"
+         x="-4216.0542"
+         y="1263.5463"
+         id="tspan4684">Skeleton Joints Defined 	20 joints 	25 joints</tspan><tspan
+         sodipodi:role="line"
+         x="-4216.0542"
+         y="1286.9838"
+         id="tspan4686">Full Skeletons Tracked 	2 	6</tspan><tspan
+         sodipodi:role="line"
+         x="-4216.0542"
+         y="1310.4213"
+         id="tspan4688">USB Standard 	2.0 	3.0</tspan><tspan
+         sodipodi:role="line"
+         x="-4216.0542"
+         y="1333.8588"
+         id="tspan4690">Supported OS 	Win 7, Win 8 	Win 8</tspan><tspan
+         sodipodi:role="line"
+         x="-4216.0542"
+         y="1357.2963"
+         id="tspan4692">Price 	$249 	$199</tspan></text>
   </g>
 </svg>

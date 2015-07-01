@@ -135,7 +135,7 @@ void draw(){
     planeProjCalib.setPlane(planeCalibKinect);
     planeProjCalib.setHomography(homographyCalib);
 
-    kinect.update(kinectImgDepth, kinectImg,  planeProjCalib, precision);
+    kinect.updateMT(kinectImgDepth, kinectImg,  planeProjCalib, precision, precision);
     pointCloud.updateWith(kinect);
     pointCloud.drawSelf((PGraphicsOpenGL) g);
 }
