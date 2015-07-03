@@ -42,13 +42,23 @@ PGraphics decodedImage;
 public void setup(){
 
     Papart papart = Papart.projection(this);
-
     initGui();
-
     cameraTracking = papart.getCameraTracking();
     cameraX = cameraTracking.width();
     cameraY = cameraTracking.height();
 
+    // Papart papart = Papart.projectionOnly(this);
+    // initGui();
+    // cameraX = 1920;
+    // cameraY = 1080;
+    // cameraTracking  = CameraFactory.createCamera(Camera.Type.FLY_CAPTURE, "0");   
+    // cameraTracking.setParent(this);
+    // cameraTracking.setSize(cameraX, cameraY);
+    // ((CameraFlyCapture) cameraTracking).setBayerDecode(true);
+    // cameraTracking.start();
+    // cameraTracking.setThread();
+
+    
     decodedImage = createGraphics(cameraX, cameraY);
 
     projector = (ProjectorDisplay) papart.getDisplay();
@@ -157,7 +167,9 @@ void decode(){
 
     drawDecoded();
     saveScanBang.show();
-    projectorView = grayCode.getProjectorImage();
+    //    projectorView = grayCode.getProjectorImage();
+    projectorView = grayCode.getProjectorImageScaled(downScale);
+
     projectorView.save("ProjView.bmp");
     System.gc();
 }
@@ -195,7 +207,7 @@ void startCapture(){
     Mode.set("code");
 
     grayCode = new GrayCode(this, width, height, downScale);
-    grayCode.setBlackWhiteColors(0, 180);
+    grayCode.setBlackWhiteColors(0, 255);
 
     nbCodes = grayCode.nbCodes();
     grayCodesCaptures = new PImage[nbCodes];

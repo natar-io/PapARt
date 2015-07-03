@@ -54,6 +54,7 @@ public class DecodedCode implements Serializable {
 
     // TODO: Create the same for projector view !
     private int width, height;
+
     private PApplet applet;
 
     public DecodedCode(int width, int height) {
@@ -64,29 +65,30 @@ public class DecodedCode implements Serializable {
         decodedX = new int[width * height];
         decodedY = new int[width * height];
     }
-    private DecodedCode(){}
+
+    private DecodedCode() {
+    }
 
     public void setRefImage(PImage refImage) {
         this.refImage = refImage;
     }
-    
-    public PImage getRefImage(){
+
+    public PImage getRefImage() {
         return this.refImage;
     }
 
 //    public opencv_core.IplImage getRefImageIpl(){
 //        return this.refImageIpl;
 //    }
-    
-    public int[] getDecodedX(){
+    public int[] getDecodedX() {
         return decodedX;
     }
-    
-    public int[] getDecodedY(){
+
+    public int[] getDecodedY() {
         return decodedY;
     }
-    
-    public boolean[] getMask(){
+
+    public boolean[] getMask() {
         return validMask;
     }
 
@@ -111,20 +113,40 @@ public class DecodedCode implements Serializable {
         return projectorImage;
     }
 
+    public PImage getProjectorImageScaled(PApplet applet, int projWidth, int projHeight, int precision) {
+
+        PImage projectorImage = applet.createImage(projWidth / precision, projHeight / precision, RGB);
+        projectorImage.loadPixels();
+        refImage.loadPixels();
+
+        int imSize = width * height;
+        for (int i = 0; i < imSize; i++) {
+            if (validMask[i]) {
+                int x = decodedX[i];
+                int y = decodedY[i];
+
+                x = x / precision;
+                y = y / precision;
+                int offset = y * projWidth / precision + x;
+                projectorImage.pixels[offset] = refImage.pixels[i];
+            }
+        }
+
+        projectorImage.updatePixels();
+        return projectorImage;
+    }
+
     public static DecodedCode loadFrom(PApplet applet, String fileName) {
         DecodedCode decodedCode = new DecodedCode();
         decodedCode.refImage = applet.loadImage(fileName + SEPARATION + REF_NAME + EXTENSION_IMG);
-            
+
 //        String filePath = applet.sketchPath + "/"+ fileName + SEPARATION + REF_NAME + EXTENSION_IMG;
 //        System.out.println("Loading .. " + filePath);
 //        decodedCode.refImageIpl = cvLoadImage(filePath);
- 
-        
         decodedCode.width = decodedCode.refImage.width;
-        decodedCode.width = decodedCode.refImage.height;
-        
+        decodedCode.height = decodedCode.refImage.height;
+
         decodedCode.applet = applet;
-        
 
         decodedCode.decodedX = decodedCode.loadIntArray(fileName + SEPARATION + X_NAME + EXTENSION_BYTE);
         decodedCode.decodedY = decodedCode.loadIntArray(fileName + SEPARATION + Y_NAME + EXTENSION_BYTE);
@@ -186,6 +208,7 @@ public class DecodedCode implements Serializable {
         applet.saveBytes(fileName + SEPARATION + MASK_NAME + EXTENSION_BYTE, mask);
     }
 
+
     private byte[] createByteArrayFrom(int[] array) {
         ByteBuffer bb = java.nio.ByteBuffer.allocate(array.length * Integer.SIZE / 8);
         IntBuffer ib = IntBuffer.wrap(array);
@@ -199,6 +222,15 @@ public class DecodedCode implements Serializable {
             output[i] = array[i] ? (byte) 1 : (byte) 0;
         }
         return output;
+    }
+    
+    
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
     }
 
 }

@@ -315,6 +315,11 @@ public class GrayCode implements PConstants {
         return decodedCode.getProjectorImage(parent, displayWidth, displayHeight);
     }
 
+    public PImage getProjectorImageScaled(int scale) {
+        assert (isDecoded());
+        return decodedCode.getProjectorImageScaled(parent, displayWidth, displayHeight, scale);
+    }
+
     protected void decodeImpl() {
         convertImagesToGray();
         this.decodedCode = new DecodedCode(cameraResX, cameraResY);

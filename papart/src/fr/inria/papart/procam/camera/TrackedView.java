@@ -39,23 +39,22 @@ public class TrackedView {
     private IplImage extractedIplImage = null;
 
     // private data
-    private PVector[] corner3DPos;
-    private PVector[] screenPixelCoordinates;
-    private PVector[] imagePixelCoordinates;
+    private final PVector[] corner3DPos = new PVector[4];
+    private final PVector[] screenPixelCoordinates = new PVector[4];
+    private final PVector[] imagePixelCoordinates = new PVector[4];
 
     // external information
     private MarkerBoard board = MarkerBoard.INVALID_MARKERBOARD;
     private PaperScreen paperScreen = null; // todo : invalid one...
-    
+
     private boolean useBoardLocation = false;
     private boolean usePaperLocation = false;
-    
-    
+    private boolean useManualConrers = false;
+
     private PVector bottomLeftCorner = new PVector(0, 0), captureSizeMM = new PVector(100, 100);
     private int imageWidthPx = 128, imageHeightPx = 128;
 
     // temporary variables
-    private CvMat homography;
     private IplImage mainImage;
     private Camera camera;
 
@@ -63,31 +62,46 @@ public class TrackedView {
     public TrackedView(MarkerBoard board) {
         this.board = board;
         this.useBoardLocation = true;
+        allocateMemory();
 //        this.setImageHeightPx((int) board.getHeight());
 //        this.setImageWidthPx((int) board.getWidth());
         this.setCaptureSizeMM(new PVector(board.getWidth(), board.getHeight()));
     }
-    
+
     public TrackedView(PaperScreen paperScreen) {
         this.paperScreen = paperScreen;
         this.usePaperLocation = true;
+        allocateMemory();
 //        this.setImageHeightPx((int) board.getHeight());
 //        this.setImageWidthPx((int) board.getWidth());
         this.setCaptureSizeMM(paperScreen.getDrawingSize());
     }
-    
-    
+
+    public TrackedView() {
+        this.useManualConrers = true;
+        allocateMemory();
+    }
+
+    /**
+     *
+     * @param corners
+     */
+    public void setCorners(PVector[] corners) {
+        if (corners.length == 4) {
+            for (int i = 0; i < 4; i++) {
+                screenPixelCoordinates[i] = corners[i];
+            }
+        }
+
+    }
 
     public void init() {
         extractedImage = new PImage(imageWidthPx, imageHeightPx, PApplet.RGB);
-        allocateMemory();
+
         initiateImageCoordinates();
     }
 
     private void allocateMemory() {
-        screenPixelCoordinates = new PVector[4];
-        corner3DPos = new PVector[4];
-        imagePixelCoordinates = new PVector[4];
         for (int i = 0; i < 4; i++) {
             corner3DPos[i] = new PVector();
         }
@@ -100,41 +114,41 @@ public class TrackedView {
         imagePixelCoordinates[3] = new PVector(0, 0);
     }
 
-
     public PImage getViewOf(Camera camera) {
-        if(extractedImage == null){
+        if (extractedImage == null) {
             System.err.println("You should init the TrackedView before getting the view.");
             return null;
         }
-        if(camera.getIplImage() == null)
+        if (camera.getIplImage() == null) {
             return null;
+        }
 
         this.mainImage = camera.getIplImage();
         this.camera = camera;
-        
-        prepareHomography();
+
+        CvMat homography = computeHomography();
         Utils.remapImage(homography, camera.getIplImage(), extractedIplImage, extractedImage);
         return extractedImage;
     }
-    
+
     public IplImage getIplViewOf(Camera camera) {
-        if(camera.getIplImage() == null)
+        if (camera.getIplImage() == null) {
             return null;
+        }
 
         this.mainImage = camera.getIplImage();
         this.camera = camera;
-        prepareHomography();
+        CvMat homography = computeHomography();
         Utils.remapImageIpl(homography, camera.getIplImage(), extractedIplImage);
         return extractedIplImage;
     }
-    
 
-    private void prepareHomography() {
+    private CvMat computeHomography() {
         checkMemory();
         computeCorners();
-        homography = Utils.createHomography(screenPixelCoordinates, imagePixelCoordinates);
+        CvMat homography = Utils.createHomography(screenPixelCoordinates, imagePixelCoordinates);
+        return homography;
     }
-
 
     private void checkMemory() {
         if (extractedIplImage == null) {
@@ -145,19 +159,23 @@ public class TrackedView {
     private void computeCorners() {
 
         PMatrix3D pos = null;
+
+        if(useManualConrers){
+            return ;
+        }
         
-        if(usePaperLocation){
+        if (usePaperLocation) {
             pos = paperScreen.getLocation();
         }
-        
-        if(useBoardLocation){
+
+        if (useBoardLocation) {
             pos = board.getTransfoMat(camera).get();
         }
-        
-        if(pos == null){
+
+        if (pos == null) {
             throw new RuntimeException("ERROR in TrackedView, report this.");
         }
-        
+
         PMatrix3D tmp = new PMatrix3D();
 
         tmp.apply(pos);

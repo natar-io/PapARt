@@ -21,6 +21,8 @@ package fr.inria.papart.scanner;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.procam.display.ProjectorDisplay;
+import java.util.ArrayList;
+import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
@@ -32,8 +34,6 @@ import processing.opengl.PGraphicsOpenGL;
  */
 public class Scanner3D implements PConstants {
 
-    int[] decodedX, decodedY;
-
     private final PMatrix3D extrinsics, extrinsicsInv;
     private final PVector projPos, camPos;
     private final ProjectiveDeviceP projDev, camDev;
@@ -43,10 +43,10 @@ public class Scanner3D implements PConstants {
 
     private PVector lastError = new PVector();
 
-    public Scanner3D(Camera camera, ProjectorDisplay projector){
+    public Scanner3D(Camera camera, ProjectorDisplay projector) {
         this(camera.getProjectiveDevice(), projector);
     }
-    
+
     // We suppose that the camera is loaded, and running.
     public Scanner3D(ProjectiveDeviceP camera, ProjectorDisplay projector) {
         this.projector = projector;
@@ -78,6 +78,101 @@ public class Scanner3D implements PConstants {
         cy = projector.getIntrinsics().m12;
     }
 
+    ArrayList<PVector> scannedPoints = new ArrayList<PVector>();
+    ArrayList<PVector> scannedPointsColors = new ArrayList<PVector>();
+
+    public void compute3DPos(DecodedCode decodedCode, int scale) {
+
+
+        int cameraX = decodedCode.getWidth();
+        int cameraY = decodedCode.getHeight();
+
+        boolean[] myMask = decodedCode.getMask();
+        int[] decodedX = decodedCode.getDecodedX();
+        int[] decodedY = decodedCode.getDecodedY();
+
+        decodedCode.refImage.loadPixels();
+
+        scannedPoints.clear();
+        scannedPointsColors.clear();
+
+        for (int y = 0; y < cameraY; y += scale) {
+            for (int x = 0; x < cameraX; x += scale) {
+
+                int offset = x + y * cameraX;
+
+                if (!myMask[offset]) {
+                    continue;
+                }
+
+                PVector projectedPointProj = sceenTo3D(decodedX[offset], decodedY[offset]);
+                PVector intersection = compute3DPoint(projectedPointProj,
+                        new PVector(x, y));
+
+                if (intersection == null) {
+                    continue;
+                }
+
+                // TODO: Error in configuration file 
+                if (intersection.z < 200 || intersection.z > 2000) {
+//		println("Intersection too far");
+                    continue;
+                }
+
+                PVector error = lastError();
+                float errX = error.x;
+                float errY = error.y;
+                PVector p2 = projector2DViewOf(intersection);
+
+                if (errX > 2 || errY > 2) {
+                    continue;
+                }
+
+                scannedPoints.add(intersection);
+
+                int c = decodedCode.refImage.pixels[offset];
+                scannedPointsColors.add(new PVector(
+                        c >> 16 & 0xFF,
+                        c >> 8 & 0xFF,
+                        c >> 0 & 0xFF));
+                
+                // Error as color. 
+//                scannedPointsColors.add(new PVector(errX * 255f / 20f,
+//                        errY * 255f / 20f,
+//                        0));
+
+                // noStroke();
+                // fill(errX *2, errY*2, 100);
+                // rect(p2.x, p2.y, sc, sc);
+                // fill(errX *2, errY*2, 50);
+                // rect(decodedX[offset], decodedY[offset], sc, sc);
+            }
+
+        }
+        
+        System.out.println("3D points recovered : " + scannedPoints.size() );
+    }
+
+    public void savePoints(PApplet applet, String name) {
+        String[] vertices = new String[scannedPoints.size()];
+        int k = 0;
+
+        for (int i = 0; i < scannedPoints.size(); i++) {
+
+            PVector v = scannedPoints.get(i);
+            PVector c = scannedPointsColors.get(i);
+            vertices[k++] = ("v " + v.x + " " + v.y + " " + v.z + " " + c.x + " " + c.y + " " + c.z);
+            // for(PVector v : scannedPoints){
+            // 	vertices[k++] = ("v " + v.x + " " + v.y + " " + v.z );
+            // }
+        }
+
+        // Writes the strings to a file, each on a separate line
+        applet.saveStrings(name, vertices);
+        scannedPoints.clear();
+        scannedPointsColors.clear();
+    }
+
     public float focalDistance() {
         return fx;
     }
@@ -103,7 +198,7 @@ public class Scanner3D implements PConstants {
      * *
      *
      * @param projectedPoint in 3D coordinate of the projector
-     * @param detectedPoint in 2D coordianate of the camera
+     * @param detectedPoint in 2D coordinate of the camera
      * @return the 3D intersection or null if the error is too important.
      */
     public PVector compute3DPoint(PVector projectedPoint, PVector detectedPoint) {
