@@ -52,7 +52,6 @@ public class TouchDetectionSimple2D extends TouchDetection {
     protected void setSearchParameters() {
         this.toVisit.clear();
         this.toVisit.addAll(depthData.validPointsList);
-
         
 //        int firstPoint = toVisit.iterator().next();
 //        maxDistance = 10;

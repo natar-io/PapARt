@@ -49,8 +49,8 @@ public class KinectProcessing extends KinectDepthAnalysis {
         validPointsPImage = papplet.createImage(width, height, PConstants.RGB);
     }
 
-    @Override
-    public void updateMT(opencv_core.IplImage depth, opencv_core.IplImage color, PlaneAndProjectionCalibration calib, int skip2D, int skip3D) {
+
+    public void updateMT(opencv_core.IplImage depth, opencv_core.IplImage color, PlaneAndProjectionCalibration calib, int skip2D) {
         updateRawDepth(depth);
         // optimisation no Color. 
         updateRawColor(color);
@@ -59,7 +59,7 @@ public class KinectProcessing extends KinectDepthAnalysis {
         depthData.planeAndProjectionCalibration = calib;
         computeDepthAndDo(skip2D, new DoNothing());
         doForEachPoint(skip2D, new Select2DPointPlaneProjection());
-        doForEachPoint(skip3D, new Select3DPointPlaneProjection());
+//        doForEachPoint(skip3D, new Select3DPointPlaneProjection());
 
         validPointsPImage.loadPixels();
         Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 255));
@@ -86,6 +86,30 @@ public class KinectProcessing extends KinectDepthAnalysis {
         validPointsPImage.updatePixels();
         return validPointsPImage;
     }
+    
+    /**
+     * Simple visualization
+     * @param depth
+     * @param color
+     * @param skip
+     * @return 
+     */
+    public PImage update(IplImage depth, IplImage color, int skip) {
+        updateRawDepth(depth);
+        updateRawColor(color);
+        depthData.clear();
+        depthData.timeStamp = papplet.millis();
+        validPointsPImage.loadPixels();
+        // set a default color. 
+        Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 255));
+
+        computeDepthAndDo(skip, new SetImageData());
+//        computeDepthAndDo(skip, new Select2DPointOverPlane());
+
+        validPointsPImage.updatePixels();
+        return validPointsPImage;
+    }
+    
 
     class SetTouchInformation implements DepthPointManiplation {
 

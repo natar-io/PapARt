@@ -122,32 +122,46 @@ public abstract class TouchDetection {
 
     protected int searchDepth;
     protected int precision;
-    
+
     // TODO: chec if currentCompo ++ is relevent. 
     protected ConnectedComponent findConnectedComponent(int startingPoint) {
-        
+
+        // searchDepth is by precision steps. 
         searchDepth = calib.getSearchDepth() * calib.getPrecision();
         precision = calib.getPrecision();
+
         ConnectedComponent cc = findNeighboursRec(startingPoint, 0);
-        cc.setId(currentCompo);
+               cc.setId(currentCompo);
         currentCompo++;
         return cc;
+    }
+
+    private void addPointInConnectedComponent(ConnectedComponent cc, int point) {
+        assignedPoints[point] = true;
+        connectedComponentImage[point] = currentCompo;
+        toVisit.remove(point);
+        cc.add(point);
     }
 
     public ConnectedComponent findNeighboursRec(int currentPoint, int recLevel) {
 
         // TODO: optimisations here ?
-        
         int w = depthData.source.getWidth();
         int h = depthData.source.getHeight();
-        
+
         int x = currentPoint % w;
         int y = currentPoint / w;
-        
+
         ConnectedComponent neighbourList = new ConnectedComponent();
         ArrayList<Integer> visitNext = new ArrayList<Integer>();
 
+        // At least one point in connected compo !
+        if(recLevel == 0){
+            addPointInConnectedComponent(neighbourList, currentPoint);
+        }
+            
         if (recLevel == calib.getMaximumRecursion()) {
+            addPointInConnectedComponent(neighbourList, currentPoint);
             return neighbourList;
         }
 
@@ -163,12 +177,17 @@ public abstract class TouchDetection {
                 // Avoid getting ouside the limits
                 if (currentPointValidityCondition.checkPoint(offset, currentPoint)) {
 
-                    assignedPoints[offset] = true;
-                    connectedComponentImage[offset] = currentCompo;
+//                    assignedPoints[offset] = true;
+//                    connectedComponentImage[offset] = currentCompo;
 
                     // Remove If present -> it might not be the case often. 
-                    toVisit.remove(offset);
+//                    toVisit.remove(offset);
+                    
+                    addPointInConnectedComponent(neighbourList, currentPoint);
+                    
                     neighbourList.add((Integer) offset);
+                    
+                    // It will be visited, 
                     visitNext.add(offset);
                 } // if is ValidPoint
             } // for j
@@ -199,8 +218,6 @@ public abstract class TouchDetection {
         tp.setDepthDataElements(depthData, connectedComponent);
         return tp;
     }
-    
-    
 
     public float ERROR_DISTANCE_MULTIPLIER = 1.3f;
     public float NOISE_ESTIMATION = 1.5f; // in millimeter. 
@@ -247,14 +264,15 @@ public abstract class TouchDetection {
     }
 
     public void setCalibration(PlanarTouchCalibration calibration) {
-        this.calib.setTo(calibration);
+//        this.calib.setTo(calibration);
+        this.calib = calibration;
     }
 
     public PlanarTouchCalibration getCalibration() {
         return this.calib;
     }
-    
-    public int getPrecision(){
+
+    public int getPrecision() {
         return calib.getPrecision();
     }
 
@@ -265,8 +283,8 @@ public abstract class TouchDetection {
     float getTrackingMaxDistance() {
         return calib.getTrackingMaxDistance();
     }
-    
-     public class CheckTouchPoint implements PointValidityCondition {
+
+    public class CheckTouchPoint implements PointValidityCondition {
 
         @Override
         public boolean checkPoint(int offset, int currentPoint) {
@@ -278,7 +296,6 @@ public abstract class TouchDetection {
                     && distanceToCurrent < calib.getMaximumDistance();
         }
     }
-     
 
     class ClosestComparator implements Comparator {
 
@@ -307,6 +324,7 @@ public abstract class TouchDetection {
             projPoints = proj;
         }
 
+        @Override
         public int compare(Object tp1, Object tp2) {
 
             Vec3D pos1 = projPoints[(Integer) tp1];
@@ -314,6 +332,9 @@ public abstract class TouchDetection {
             if (pos1.y < pos2.y) {
                 return 1;
             }
+            if(pos1.y == pos2.y)
+                return 0;
+            
             return -1;
         }
     }
