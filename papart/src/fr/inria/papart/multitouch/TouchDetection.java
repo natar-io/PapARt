@@ -358,6 +358,9 @@ public abstract class TouchDetection {
             if (d1 > d2) {
                 return 1;
             }
+            if(d1 == d2)
+                return 0;
+            
             return -1;
         }
     }

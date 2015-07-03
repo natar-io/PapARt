@@ -20,7 +20,6 @@ public class MyApp extends PaperTouchScreen {
 
 	ArrayList<DepthPoint> points = ((KinectTouchInput) touchInput).projectDepthData3D((ARDisplay )display, screen);
 
-
 	int k = 0;
 	for(DepthPoint depthPoint : points) {
 	    PVector pos = depthPoint.getPosition();

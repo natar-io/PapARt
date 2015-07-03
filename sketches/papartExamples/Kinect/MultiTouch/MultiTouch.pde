@@ -27,9 +27,9 @@ void draw(){
     ArrayList<TouchPoint> touchs3D = new ArrayList<TouchPoint>(touchInput.getTouchPoints3D());
     for(TouchPoint tp : touchs3D){
 
-	PVector pos = tp.getPosition();
-	ellipse(pos.x * width,
-		pos.y * height, 40, 40);
+    	PVector pos = tp.getPosition();
+    	ellipse(pos.x * width,
+    		pos.y * height, 40, 40);
     }
 
 

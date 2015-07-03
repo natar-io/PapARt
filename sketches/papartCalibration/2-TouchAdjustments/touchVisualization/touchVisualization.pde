@@ -30,7 +30,7 @@ HomographyCalibration homographyCalibration;
 PlaneCalibration planeCalibration;
 PlaneAndProjectionCalibration planeProjCalibration;
     
-int precision = 2;
+int precision = 3;
 
 void setup(){
     
@@ -51,8 +51,6 @@ void setup(){
     cameraKinect.setParent(this);
     cameraKinect.setCalibration(Papart.kinectRGBCalib);
     cameraKinect.getDepthCamera().setCalibration(Papart.kinectIRCalib);
-    // cameraKinect.convertARParams(this, Papart.kinectRGBCalib, "Kinect.cal");
-    // cameraKinect.initMarkerDetection("Kinect.cal");
     cameraKinect.start();
 
     
@@ -108,7 +106,7 @@ ArrayList<TouchPoint> globalTouchList = new ArrayList<TouchPoint>();
 
 void draw(){
     background(0);
-    println("Framerate " + frameRate);
+    //    println("Framerate " + frameRate);
     
     try{
     	cameraKinect.grab();
@@ -136,12 +134,16 @@ void draw(){
     touchCalibration.setPrecision(precision);
     planeCalibration.setHeight(planeHeight);
 
-    kinect.update(kinectImgDepth, kinectImg,  planeProjCalibration,
-    		  precision);
+    
+    kinect.updateMT(kinectImgDepth, kinectImg,  planeProjCalibration,
+		    precision);
 
      //    kinect.update(kinectImgDepth, kinectImg, planeCalibration, precision);
     draw3DPointCloud();
     
+
+
+
     cam.beginHUD();
 
     text("'m' to stop the camera", 10,  30);

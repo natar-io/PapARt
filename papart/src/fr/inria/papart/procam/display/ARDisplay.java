@@ -357,6 +357,8 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
 
         return this.graphics;
     }
+    
+    
 
     @Override
     public PGraphicsOpenGL beginDrawOnScreen(Screen screen) {
@@ -370,7 +372,11 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         return this.graphics;
     }
 
-    protected void loadModelView() {
+    /**
+     * Warning advanced use.  Load the modelview to render object from the 
+     * ARDisplay (camera or projector) 's point of view. 
+     */
+    public void loadModelView() {
         // make the modelview matrix as the default matrix
         this.graphics.resetMatrix();
 

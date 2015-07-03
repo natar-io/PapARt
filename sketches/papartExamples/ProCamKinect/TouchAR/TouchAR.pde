@@ -13,7 +13,7 @@ boolean useProjector = true;
 float renderQuality = 1.5f;
 Papart papart;
 
-void setup(){
+ void setup(){
 
     if(useProjector){
 	papart = Papart.projection(this);

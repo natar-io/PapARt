@@ -34,9 +34,9 @@ public class MyApp extends PaperTouchScreen {
 		continue;
 	    }
 
-	    ArrayList<DepthDataElement> depthDataElements = tp.getDepthDataElements();
+	    ArrayList<DepthDataElementKinect> depthDataElements = tp.getDepthDataElements();
 
-	    for(DepthDataElement dde : depthDataElements){
+	    for(DepthDataElementKinect dde : depthDataElements){
 		try{
 		    Vec3D projPt = dde.projectedPoint;
 		    PVector v = touchInput.project(screen, display, projPt.x, projPt.y);

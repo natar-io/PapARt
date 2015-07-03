@@ -47,6 +47,7 @@ void draw(){
 	ellipse(pos.x * width,
 		pos.y * height, 20, 20);
     }
+
 	
     fill(255, 0, 0);
     ArrayList<TouchPoint> touchs3D = new ArrayList<TouchPoint>(touchInput.getTouchPoints3D());

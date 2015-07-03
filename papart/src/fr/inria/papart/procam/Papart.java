@@ -61,7 +61,7 @@ public class Papart {
     public static String kinectRGBCalib = folder + calibrationFolder + "calibration-kinect-RGB.yaml";
     public static String kinectStereoCalib = folder + calibrationFolder + "calibration-kinect-Stereo.yaml";
     
-    public static String kinectTrackingCalib = folder + calibrationFolder + "kinectTracking.xml";
+    public static String kinectTrackingCalib = "kinectTracking.xml";
 
     public static String screenConfig = folder + calibrationFolder + "screenConfiguration.xml";
     public static String cameraConfig = folder + calibrationFolder + "cameraConfiguration.xml";
