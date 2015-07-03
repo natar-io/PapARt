@@ -9,13 +9,6 @@ import fr.inria.papart.calibration.*;
 import org.bytedeco.javacpp.*;
 import toxi.geom.*;
 
-// Undecorated frame 
-public void init() {
-  frame.removeNotify(); 
-  frame.setUndecorated(true); 
-  frame.addNotify(); 
-  super.init();
-}
 
 Papart papart;
 ARDisplay cameraDisplay;

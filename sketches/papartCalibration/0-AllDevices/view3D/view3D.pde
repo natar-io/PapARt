@@ -58,9 +58,8 @@ void draw(){
 
     if(colourImg == null || depthImg == null)
 	return;
-    
-    kinect.update(depthImg, colourImg, skip);
 
+    kinect.update(depthImg, colourImg, skip);
     pointCloud.updateWith(kinect);
     pointCloud.drawSelf((PGraphicsOpenGL) g);
 }

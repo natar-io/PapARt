@@ -127,9 +127,9 @@ void draw(){
     cameraPaperTransform = markerBoard.getTransfoMat(cameraTracking);
 
      // Not so usefull... ? To try with different parameters. 
-    PMatrix3D kinectExtr = kinect.getStereoCalibration();
-    kinectExtr.invert();
-    kinectPaperTransform.preApply(kinectExtr);
+    // PMatrix3D kinectExtr = kinect.getStereoCalibration();
+    // kinectExtr.invert();
+    // kinectPaperTransform.preApply(kinectExtr);
 
     
     planeCalibKinect =  PlaneCalibration.CreatePlaneCalibrationFrom(kinectPaperTransform, paperSize);
@@ -190,9 +190,8 @@ void save(){
 
    planeProjCalib.saveTo(this, Papart.planeAndProjectionCalib);
 
-   HomographyCalibration.saveMatTo(this,
-				    cameraKinectTransform,
-				    Papart.kinectTrackingCalib);
+   papart.saveCalibration(Papart.kinectTrackingCalib, cameraKinectTransform);
+
    
    // homographyCalibration.saveTo(this, Papart.homographyCalib);
    // planeCalibration.saveTo(this, Papart.homographyCalib);
