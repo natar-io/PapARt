@@ -81,7 +81,7 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         this.graphics = (PGraphicsOpenGL) parent.createGraphics((int) (frameWidth * quality),
                 (int) (frameHeight * quality), PApplet.OPENGL);
         screens = new ArrayList<Screen>();
-        initProjection();
+        updateIntrinsicsRendering();
         initDistortMap();
         automaticMode();
     }
@@ -114,7 +114,7 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         this.drawingSizeY = frameHeight;
     }
 
-    private void initProjection() {
+    public void updateIntrinsicsRendering() {
         float p00, p11, p02, p12;
 
         // ----------- OPENGL --------------
