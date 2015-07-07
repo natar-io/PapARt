@@ -105,7 +105,6 @@ public abstract class Camera extends Node implements PConstants {
 
     public abstract PImage getPImage();
 
-    
     protected void checkParameters() {
         if (width == 0 || height == 0) {
             throw new RuntimeException("Camera: Width or Height are 0, set them or load a calibration.");
@@ -123,10 +122,11 @@ public abstract class Camera extends Node implements PConstants {
         try {
             this.calibrationFile = calibrationYAML;
 
-            pdp = ProjectiveDeviceP.loadCameraDevice(calibrationYAML, 0);
+            pdp = ProjectiveDeviceP.loadCameraDevice(calibrationYAML);
             camIntrinsicsP3D = pdp.getIntrinsics();
             this.width = pdp.getWidth();
             this.height = pdp.getHeight();
+            this.undistort = pdp.handleDistorsions();
         } catch (Exception e) {
             e.printStackTrace();
 
@@ -302,10 +302,10 @@ public abstract class Camera extends Node implements PConstants {
         return thread != null;
     }
 
-    public void forceCurrentImage(IplImage img){
+    public void forceCurrentImage(IplImage img) {
         updateCurrentImage(img);
     }
-    
+
     /**
      * Update the current Image, from the specific grabber, lens distorsions are
      * handled here.
@@ -313,7 +313,17 @@ public abstract class Camera extends Node implements PConstants {
      * @param img
      */
     protected void updateCurrentImage(IplImage img) {
+
+        currentImage = img;
+
         if (undistort) {
+
+            if (pdp == null || !pdp.handleDistorsions()) {
+                System.err.println("I cannot distort the image for processing. The "
+                        + "calibration did not contain information. ");
+                return;
+            }
+
             if (copyUndist == null) {
                 copyUndist = img.clone();
             }
@@ -324,8 +334,6 @@ public abstract class Camera extends Node implements PConstants {
             }
             pdp.getDevice().undistort(img, copyUndist);
             currentImage = copyUndist;
-        } else {
-            currentImage = img;
         }
     }
 

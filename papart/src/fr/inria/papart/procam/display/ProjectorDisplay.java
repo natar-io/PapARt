@@ -40,11 +40,9 @@ public class ProjectorDisplay extends ARDisplay {
 
     @Override
     protected void loadInternalParams(String calibrationYAML) {
-        // Load the camera parameters.
-        System.out.println("Loading Projector intrinsics.");
 
         try {
-            projectiveDeviceP = ProjectiveDeviceP.loadProjectorDevice(calibrationYAML, 0);
+            projectiveDeviceP = ProjectiveDeviceP.loadProjectorDevice(calibrationYAML);
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Error loading the projector device." + e);
@@ -56,8 +54,8 @@ public class ProjectorDisplay extends ARDisplay {
         extrinsicsInv = extrinsics.get();
         extrinsicsInv.invert();
         projectiveDevice = projectiveDeviceP.getDevice();
-        this.hasExtrinsics = true;
-        this.setDistort(true);
+        this.hasExtrinsics = projectiveDeviceP.hasExtrinsics();
+        this.setDistort(projectiveDeviceP.handleDistorsions());
     }
 
     @Override

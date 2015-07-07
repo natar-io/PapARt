@@ -108,8 +108,8 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         }
         this.projectiveDeviceP = pdp;
         this.projectiveDevice = pdp.getDevice();
-        this.frameWidth = projectiveDevice.imageWidth;
-        this.frameHeight = projectiveDevice.imageHeight;
+        this.frameWidth = pdp.getWidth();
+        this.frameHeight = pdp.getHeight();
         this.drawingSizeX = frameWidth;
         this.drawingSizeY = frameHeight;
     }
@@ -272,13 +272,14 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
      * @param proj
      */
     private void initDistortMap() {
-//        lensFilter = parent.loadShader("distortFrag.glsl", "distortVert.glsl"); // projDistort.xml");
-        lensFilter = parent.loadShader(ARDisplay.class.getResource("distortFrag.glsl").toString(),
+        if (!projectiveDeviceP.handleDistorsions()) {
+            return;
+        }
+
+        lensFilter = parent.loadShader(
+                ARDisplay.class.getResource("distortFrag.glsl").toString(),
                 ARDisplay.class.getResource("distortVert.glsl").toString());
-
-//        mapImg = parent.createImage(graphics.width, graphics.height, PApplet.RGB);
         mapImg = parent.createImage((int) (quality * frameWidth), (int) (quality * frameHeight), PApplet.RGB);
-
         mapImg.loadPixels();
 
         // Maximum disparity, in pixels
@@ -357,8 +358,6 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
 
         return this.graphics;
     }
-    
-    
 
     @Override
     public PGraphicsOpenGL beginDrawOnScreen(Screen screen) {
@@ -373,8 +372,8 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
     }
 
     /**
-     * Warning advanced use.  Load the modelview to render object from the 
-     * ARDisplay (camera or projector) 's point of view. 
+     * Warning advanced use. Load the modelview to render object from the
+     * ARDisplay (camera or projector) 's point of view.
      */
     public void loadModelView() {
         // make the modelview matrix as the default matrix
@@ -407,9 +406,15 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
      *
      * @return graphics context
      */
+    @Override
     public PGraphicsOpenGL render() {
         if (distort) {
+            if (!this.projectiveDeviceP.handleDistorsions()) {
+                System.err.println("I cannot distort the display, it is not in the calibration.");
+                return this.graphics;
+            }
             this.graphics.filter(lensFilter);
+
         }
         return this.graphics;
     }

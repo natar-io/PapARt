@@ -56,6 +56,7 @@ public class Papart {
     public final static String folder = fr.inria.papart.procam.Utils.getPapartFolder();
     public final static String calibrationFolder = "/data/calibration/";
     public static String proCamCalib = folder + calibrationFolder + "camera-projector.yaml";
+    public static String projectorCalib = folder + calibrationFolder + "camera-projector.yaml";
     public static String camCalibARtoolkit = folder + calibrationFolder + "camera-projector.cal";
     public static String kinectIRCalib = folder + calibrationFolder + "calibration-kinect-IR.yaml";
     public static String kinectRGBCalib = folder + calibrationFolder + "calibration-kinect-RGB.yaml";
@@ -448,7 +449,7 @@ public class Papart {
 
     private void initProjectorDisplay(float quality) {
         // TODO: check if file exists !
-        projector = new ProjectorDisplay(this.applet, proCamCalib);
+        projector = new ProjectorDisplay(this.applet, projectorCalib);
         projector.setZNearFar(zNear, zFar);
         projector.setQuality(quality);
         arDisplay = projector;

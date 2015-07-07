@@ -54,6 +54,7 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
     private float cy;
     private CvMat intrinsicsMat;
     private boolean hasExtrinsics = false;
+    private boolean handleDistorsion = false;
 
     public ProjectiveDeviceP() {
     }
@@ -89,7 +90,17 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
         return this.w * this.h;
     }
 
-    public void loadParameters() {
+    @Override
+    public boolean hasExtrinsics() {
+        return this.hasExtrinsics;
+    }
+
+    public PVector getCoordinates(int offset) {
+        return new PVector(offset % w, offset / w);
+    }
+
+    public boolean handleDistorsions() {
+        return this.handleDistorsion;
     }
 
     public Vec3D pixelToWorld(int x, int y, float depthValue) {
@@ -341,7 +352,7 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
         mat.set(RTMat);
         return mat;
     }
-    
+
     public PMatrix3D estimateOrientationRansac(PVector[] objectPoints,
             PVector[] imagePoints) {
 
@@ -392,7 +403,7 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
         opencv_calib3d.solvePnPRansac(
                 new Mat(op),
                 new Mat(ip),
-                new Mat(intrinsicsMat), 
+                new Mat(intrinsicsMat),
                 new Mat(),
                 rotation,
                 translation,
@@ -400,7 +411,7 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
                 100, // iterationsCount
                 8.0f, // reprojError
                 100, // minInlinersCount
-                new Mat(),  // outputArray
+                new Mat(), // outputArray
                 opencv_calib3d.ITERATIVE);
 
 //        boolean solvePnP(@InputArray CvMat objectPoints,
@@ -423,8 +434,73 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
         return mat;
     }
 
+    
+    public static ProjectiveDeviceP loadCameraDevice(String filename) throws Exception {
+        return loadCameraDevice(filename, 0);
+    }
+
+    public static ProjectiveDeviceP loadCameraDevice(String filename, int id) throws Exception {
+        ProjectiveDeviceP p = new ProjectiveDeviceP();
+
+        if (filename.endsWith(".yaml")) {
+            CameraDevice[] camDev = CameraDevice.read(filename);
+            if (camDev.length <= id) {
+                throw new Exception("No camera device with the id " + id + " in the calibration file: " + filename);
+            }
+            CameraDevice cameraDevice = camDev[id];
+            p.device = cameraDevice;
+            loadParameters(cameraDevice, p);
+        }
+
+        return p;
+    }
+
+    public static ProjectiveDeviceP loadProjectorDevice(String filename) throws Exception {
+        return loadProjectorDevice(filename, 0);
+    }
+
+    public static ProjectiveDeviceP loadProjectorDevice(String filename, int id) throws Exception {
+
+        ProjectiveDeviceP p = new ProjectiveDeviceP();
+
+        try {
+            ProjectorDevice[] camDev = ProjectorDevice.read(filename);
+
+            if (camDev.length <= id) {
+                throw new Exception("No projector device with the id " + id + " in the calibration file: " + filename);
+            }
+            ProjectorDevice projectorDevice = camDev[id];
+            p.device = projectorDevice;
+            loadParameters(projectorDevice, p);
+
+        } catch (Exception e) {
+            throw new Exception("Error reading the calibration file : " + filename + " \n" + e);
+        }
+
+        return p;
+    }
+
+    @Deprecated
+    public static ProjectiveDeviceP loadProjectiveDevice(String filename, int id) throws Exception {
+        ProjectiveDeviceP p = new ProjectiveDeviceP();
+        try {
+            ProjectiveDevice[] camDev = ProjectiveDevice.read(filename);
+            if (camDev.length <= id) {
+                throw new Exception("No projective device with the id " + id + " in the calibration file: " + filename);
+            }
+            ProjectiveDevice projectiveDevice = camDev[id];
+            p.device = projectiveDevice;
+            loadParameters(projectiveDevice, p);
+        } catch (Exception e) {
+            throw new Exception("Error reading the calibration file : " + filename + " \n" + e);
+        }
+        return p;
+    }
+
     private static void loadParameters(ProjectiveDevice dev, ProjectiveDeviceP p) {
         double[] camMat = dev.cameraMatrix.get();
+
+        p.handleDistorsion = true;
 
         p.intrinsics = new PMatrix3D((float) camMat[0], (float) camMat[1], (float) camMat[2], 0,
                 (float) camMat[3], (float) camMat[4], (float) camMat[5], 0,
@@ -452,71 +528,6 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
                     0, 0, 0, 1);
         }
 
-    }
-
-    public static ProjectiveDeviceP loadCameraDevice(String filename, int id) throws Exception {
-        ProjectiveDeviceP p = new ProjectiveDeviceP();
-
-        CameraDevice[] camDev = CameraDevice.read(filename);
-        if (camDev.length <= id) {
-            throw new Exception("No camera device with the id " + id + " in the calibration file: " + filename);
-        }
-        CameraDevice cameraDevice = camDev[id];
-        p.device = cameraDevice;
-        loadParameters(cameraDevice, p);
-
-        return p;
-    }
-
-    public static ProjectiveDeviceP loadProjectorDevice(String filename, int id) throws Exception {
-
-        ProjectiveDeviceP p = new ProjectiveDeviceP();
-
-        try {
-            ProjectorDevice[] camDev = ProjectorDevice.read(filename);
-
-            if (camDev.length <= id) {
-                throw new Exception("No projector device with the id " + id + " in the calibration file: " + filename);
-            }
-            ProjectorDevice projectorDevice = camDev[id];
-            p.device = projectorDevice;
-            loadParameters(projectorDevice, p);
-
-        } catch (Exception e) {
-            throw new Exception("Error reading the calibration file : " + filename + " \n" + e);
-        }
-
-        return p;
-    }
-
-    public static ProjectiveDeviceP loadProjectiveDevice(String filename, int id) throws Exception {
-
-        ProjectiveDeviceP p = new ProjectiveDeviceP();
-
-        try {
-            ProjectiveDevice[] camDev = ProjectiveDevice.read(filename);
-
-            if (camDev.length <= id) {
-                throw new Exception("No projective device with the id " + id + " in the calibration file: " + filename);
-            }
-            ProjectiveDevice projectiveDevice = camDev[id];
-            p.device = projectiveDevice;
-            loadParameters(projectiveDevice, p);
-
-        } catch (Exception e) {
-            throw new Exception("Error reading the calibration file : " + filename + " \n" + e);
-        }
-
-        return p;
-    }
-
-    @Override
-    public boolean hasExtrinsics() {
-        return this.hasExtrinsics;
-    }
-
-    public PVector getCoordinates(int offset) {
-        return new PVector(offset % w, offset / w);
     }
 
     public String toString() {

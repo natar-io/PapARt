@@ -1,0 +1,179 @@
+/*
+ * Copyright (C) 2014 Jeremy Laviole <jeremy.laviole@inria.fr>.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301  USA
+ */
+package fr.inria.papart.calibration;
+
+import java.util.Arrays;
+import processing.core.PApplet;
+import processing.core.PMatrix3D;
+import processing.core.PVector;
+import processing.data.XML;
+import toxi.geom.Matrix4x4;
+import toxi.geom.ReadonlyVec3D;
+import toxi.geom.Vec3D;
+
+/**
+ *
+ * @author Jeremy Laviole <jeremy.laviole@inria.fr>
+ */
+public class ProjectiveDeviceCalibration extends Calibration {
+
+    static final String INTRINSICS_XML_NAME = "Intrinsics";
+    static final String EXTRINSICS_XML_NAME = "Extrinsics";
+
+    // TO implement...
+//    static final String DISTORSION_XML_NAME = "Distorsions";
+    protected final PMatrix3D intrinsics = new PMatrix3D();
+    protected final PMatrix3D extrinsics = new PMatrix3D();
+    private boolean hasExtrinsics = false;
+
+    @Override
+    public void addTo(XML xml) {
+        xml.addChild(intrinsicNode());
+
+        if (hasExtrinsics) {
+            xml.addChild(extrinsicsNode());
+        }
+    }
+
+    private XML intrinsicNode() {
+        XML node = new XML(INTRINSICS_XML_NAME);
+        setXmlTo(node, intrinsics);
+        return node;
+    }
+
+    private XML extrinsicsNode() {
+        XML node = new XML(EXTRINSICS_XML_NAME);
+        setXmlTo(node, extrinsics);
+        return node;
+    }
+
+    @Override
+    public void replaceIn(XML xml) {
+
+        XML intrNode = xml.getChild(INTRINSICS_XML_NAME);
+        xml.removeChild(intrNode);
+
+        XML extrNode = xml.getChild(EXTRINSICS_XML_NAME);
+        xml.removeChild(extrNode);
+
+        addTo(xml);
+    }
+
+    private void setXmlTo(XML xml, PMatrix3D matrix) {
+        xml.setFloat("m00", matrix.m00);
+        xml.setFloat("m01", matrix.m01);
+        xml.setFloat("m02", matrix.m02);
+        xml.setFloat("m03", matrix.m03);
+        xml.setFloat("m10", matrix.m10);
+        xml.setFloat("m11", matrix.m11);
+        xml.setFloat("m12", matrix.m12);
+        xml.setFloat("m13", matrix.m13);
+        xml.setFloat("m20", matrix.m20);
+        xml.setFloat("m21", matrix.m21);
+        xml.setFloat("m22", matrix.m22);
+        xml.setFloat("m23", matrix.m23);
+        xml.setFloat("m30", matrix.m30);
+        xml.setFloat("m31", matrix.m31);
+        xml.setFloat("m32", matrix.m32);
+        xml.setFloat("m33", matrix.m33);
+    }
+
+    private void getMatFrom(XML node, PMatrix3D matrix) {
+        matrix.m00 = node.getFloat("m00");
+        matrix.m01 = node.getFloat("m01");
+        matrix.m02 = node.getFloat("m02");
+        matrix.m03 = node.getFloat("m03");
+        matrix.m10 = node.getFloat("m10");
+        matrix.m11 = node.getFloat("m11");
+        matrix.m12 = node.getFloat("m12");
+        matrix.m13 = node.getFloat("m13");
+        matrix.m20 = node.getFloat("m20");
+        matrix.m21 = node.getFloat("m21");
+        matrix.m22 = node.getFloat("m22");
+        matrix.m23 = node.getFloat("m23");
+        matrix.m30 = node.getFloat("m30");
+        matrix.m31 = node.getFloat("m31");
+        matrix.m32 = node.getFloat("m32");
+        matrix.m33 = node.getFloat("m33");
+    }
+
+    @Override
+    public void loadFrom(PApplet parent, String fileName) {
+        XML root = parent.loadXML(fileName);
+        XML intrinsicsNode = root.getChild(INTRINSICS_XML_NAME);
+        getMatFrom(intrinsicsNode, intrinsics);
+
+        XML extrinsicsNode = root.getChild(EXTRINSICS_XML_NAME);
+        if(extrinsicsNode == null){
+            this.hasExtrinsics = false;
+            return;
+        }
+        getMatFrom(extrinsicsNode, extrinsics);
+
+        checkExtrinsics();
+    }
+
+    private void checkExtrinsics() {
+        this.hasExtrinsics = !isIdentity(extrinsics);
+    }
+
+    public boolean isIdentity(PMatrix3D mat) {
+        PMatrix3D identity = new PMatrix3D();
+        identity.reset();
+        float[] identityArray = new float[16];
+        float[] matArray = new float[16];
+        identity.get(identityArray);
+        mat.get(matArray);
+
+        return Arrays.equals(identityArray, matArray);
+    }
+
+    public void setExtrinsics(PMatrix3D mat) {
+        this.extrinsics.set(mat);
+        checkExtrinsics();
+    }
+    
+    public void setIntrinsics(PMatrix3D mat) {
+        this.intrinsics.set(mat);
+    }
+    
+    public PMatrix3D getExtrinsics(){
+        return this.extrinsics.get();
+    }
+    
+    public PMatrix3D getIntrinsics(){
+        return this.intrinsics.get();
+    }
+    
+    public boolean hasExtrinsics(){
+        return this.hasExtrinsics;
+    }
+
+    @Override
+    public boolean isValid() {
+        return true;
+//        return this.pmatrix != null;
+    }
+
+    @Override
+    public String toString() {
+        return this.intrinsics.toString() + this.extrinsics.toString();
+    }
+
+}
