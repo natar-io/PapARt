@@ -35,15 +35,20 @@ public class ProjectiveDeviceCalibration extends Calibration {
 
     static final String INTRINSICS_XML_NAME = "Intrinsics";
     static final String EXTRINSICS_XML_NAME = "Extrinsics";
+    static final String RESOLUTION_XML_NAME = "Resolution";
+    static final String WIDTH_XML_NAME = "Width";
+    static final String HEIGHT_XML_NAME = "Height";
 
     // TO implement...
 //    static final String DISTORSION_XML_NAME = "Distorsions";
     protected final PMatrix3D intrinsics = new PMatrix3D();
     protected final PMatrix3D extrinsics = new PMatrix3D();
+    private int width, height;
     private boolean hasExtrinsics = false;
 
     @Override
     public void addTo(XML xml) {
+        xml.addChild(resolutionNode());
         xml.addChild(intrinsicNode());
 
         if (hasExtrinsics) {
@@ -51,6 +56,13 @@ public class ProjectiveDeviceCalibration extends Calibration {
         }
     }
 
+    private XML resolutionNode() {
+        XML node = new XML(RESOLUTION_XML_NAME);
+        node.setInt(WIDTH_XML_NAME, width);
+        node.setInt(HEIGHT_XML_NAME, height);
+        return node;
+    }
+    
     private XML intrinsicNode() {
         XML node = new XML(INTRINSICS_XML_NAME);
         setXmlTo(node, intrinsics);
@@ -71,6 +83,9 @@ public class ProjectiveDeviceCalibration extends Calibration {
 
         XML extrNode = xml.getChild(EXTRINSICS_XML_NAME);
         xml.removeChild(extrNode);
+
+        XML resNode = xml.getChild(RESOLUTION_XML_NAME);
+        xml.removeChild(resNode);
 
         addTo(xml);
     }
@@ -116,6 +131,11 @@ public class ProjectiveDeviceCalibration extends Calibration {
     @Override
     public void loadFrom(PApplet parent, String fileName) {
         XML root = parent.loadXML(fileName);
+        XML resolutionNode = root.getChild(RESOLUTION_XML_NAME);
+        this.width = resolutionNode.getInt(WIDTH_XML_NAME);
+        this.height = resolutionNode.getInt(HEIGHT_XML_NAME);
+        
+        
         XML intrinsicsNode = root.getChild(INTRINSICS_XML_NAME);
         getMatFrom(intrinsicsNode, intrinsics);
 
@@ -164,7 +184,23 @@ public class ProjectiveDeviceCalibration extends Calibration {
     public boolean hasExtrinsics(){
         return this.hasExtrinsics;
     }
+    
+    public int getWidth(){
+        return width;
+    }
+    
+    public int getHeight(){
+        return height;
+    }
 
+    public void setWidth(int width){
+        this.width = width;
+    }
+    
+    public void setHeight(int height){
+        this.height = height;
+    }
+    
     @Override
     public boolean isValid() {
         return true;

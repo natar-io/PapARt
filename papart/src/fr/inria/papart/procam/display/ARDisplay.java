@@ -53,7 +53,7 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
     protected boolean hasExtrinsics;
 // OpenGL information
     protected float[] projectionMatrixGL = new float[16];
-    protected PMatrix3D projectionInit;
+    protected PMatrix3D projectionInit = new PMatrix3D();
     // TODO...
     protected PShader lensFilter;
     protected GL2 gl = null;
@@ -66,13 +66,13 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
 
     public ARDisplay(PApplet parent, String calibrationYAML) {
         super(parent);
-        loadInternalParams(calibrationYAML);
+        loadCalibration(calibrationYAML);
     }
 
     public ARDisplay(PApplet parent, Camera camera) {
         super(parent);
         this.camera = camera;
-        loadInternalParams(camera.getProjectiveDevice());
+        setCalibration(camera.getProjectiveDevice());
         System.out.println("ARDisplay Created");
     }
 
@@ -86,19 +86,18 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         automaticMode();
     }
 
-    protected void loadInternalParams(String calibrationYAML) {
-
+    protected void loadCalibration(String calibrationYAML) {
 // Load the camera parameters.
         try {
 //            pdp = ProjectiveDeviceP.loadProjectiveDevice(calibrationYAML, 0);
-            projectiveDeviceP = ProjectiveDeviceP.loadCameraDevice(calibrationYAML, 0);
-            loadInternalParams(projectiveDeviceP);
+            projectiveDeviceP = ProjectiveDeviceP.loadCameraDevice(parent, calibrationYAML, 0);
+            setCalibration(projectiveDeviceP);
         } catch (Exception e) {
             System.out.println("ARDisplay, Error at loading internals !!" + e);
         }
     }
 
-    protected void loadInternalParams(ProjectiveDeviceP pdp) {
+    protected void setCalibration(ProjectiveDeviceP pdp) {
         // Load the camera parameters.
 //            pdp = ProjectiveDeviceP.loadProjectiveDevice(calibrationYAML, 0);
 
@@ -112,6 +111,7 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         this.frameHeight = pdp.getHeight();
         this.drawingSizeX = frameWidth;
         this.drawingSizeY = frameHeight;
+        this.setDistort(pdp.handleDistorsions());
     }
 
     public void updateIntrinsicsRendering() {
@@ -136,7 +136,7 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         this.graphics.projection.m12 = p12;
 
         // Save these good parameters
-        projectionInit = this.graphics.projection.get();
+        projectionInit.set(this.graphics.projection);
         this.graphics.endDraw();
     }
 
@@ -400,7 +400,7 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
     }
 
     /**
-     * Note: The distorsions for the view are important for Projectors. For
+     * Note: The distortions for the view are important for Projectors. For
      * cameras it is not necessary. And not desired if the rendering image is
      * scaled.
      *

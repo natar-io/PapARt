@@ -55,13 +55,17 @@ public class Papart {
 
     public final static String folder = fr.inria.papart.procam.Utils.getPapartFolder();
     public final static String calibrationFolder = "/data/calibration/";
-    public static String proCamCalib = folder + calibrationFolder + "camera-projector.yaml";
+
+    @Deprecated
+    public static String procamCalib = folder + calibrationFolder + "camera-projector.yaml";
+
+    public static String cameraCalib = folder + calibrationFolder + "camera-projector.yaml";
     public static String projectorCalib = folder + calibrationFolder + "camera-projector.yaml";
     public static String camCalibARtoolkit = folder + calibrationFolder + "camera-projector.cal";
     public static String kinectIRCalib = folder + calibrationFolder + "calibration-kinect-IR.yaml";
     public static String kinectRGBCalib = folder + calibrationFolder + "calibration-kinect-RGB.yaml";
     public static String kinectStereoCalib = folder + calibrationFolder + "calibration-kinect-Stereo.yaml";
-    
+
     public static String kinectTrackingCalib = "kinectTracking.xml";
 
     public static String screenConfig = folder + calibrationFolder + "screenConfiguration.xml";
@@ -204,7 +208,7 @@ public class Papart {
                 cameraConfiguration.getCameraType(),
                 cameraConfiguration.getCameraName());
         cameraTracking.setParent(applet);
-        cameraTracking.setCalibration(proCamCalib);
+        cameraTracking.setCalibration(cameraCalib);
 
         applet.size(cameraTracking.width(),
                 cameraTracking.height(),
@@ -292,15 +296,15 @@ public class Papart {
     public static Papart getPapart() {
         return Papart.singleton;
     }
-    
-    public void saveCalibration(String fileName, PMatrix3D mat){
-        HomographyCalibration.saveMatTo(applet, mat, Papart.folder + calibrationFolder +  fileName);
+
+    public void saveCalibration(String fileName, PMatrix3D mat) {
+        HomographyCalibration.saveMatTo(applet, mat, Papart.folder + calibrationFolder + fileName);
     }
 
-    public PMatrix3D loadCalibration(String fileName){
+    public PMatrix3D loadCalibration(String fileName) {
         return HomographyCalibration.getMatFrom(applet, Papart.folder + calibrationFolder + fileName);
     }
-    
+
     /**
      * Save the position of a paperScreen as the default table location.
      *
@@ -320,8 +324,9 @@ public class Papart {
     }
 
     /**
-     * Use if the table location is relative to the projector. 
-     * @return 
+     * Use if the table location is relative to the projector.
+     *
+     * @return
      */
     public PMatrix3D getTableLocationFromProjector() {
         PMatrix3D extr = getProjectorDisplay().getExtrinsics();
@@ -389,9 +394,9 @@ public class Papart {
 
         cameraTracking = CameraFactory.createCamera(cameraType, cameraNo);
         cameraTracking.setParent(applet);
-        cameraTracking.setCalibration(proCamCalib);
+        cameraTracking.setCalibration(cameraCalib);
         cameraTracking.start();
-        loadTracking(proCamCalib);
+        loadTracking(cameraCalib);
         cameraTracking.setThread();
 
         checkInitialization();
@@ -413,7 +418,7 @@ public class Papart {
 
         checkInitialization();
     }
-   
+
     /**
      * Initialize the default camera for object tracking.
      *
@@ -438,9 +443,9 @@ public class Papart {
 
         cameraTracking = CameraFactory.createCamera(cameraType, cameraNo);
         cameraTracking.setParent(applet);
-        cameraTracking.setCalibration(proCamCalib);
+        cameraTracking.setCalibration(cameraCalib);
         cameraTracking.start();
-        loadTracking(proCamCalib);
+        loadTracking(cameraCalib);
         cameraTracking.setThread();
 
         initARDisplay(quality);
@@ -506,7 +511,7 @@ public class Papart {
      * @param touch2DPrecision
      * @param touch3DPrecision
      */
-    public void loadTouchInputKinectOnly(){
+    public void loadTouchInputKinectOnly() {
 
         if (this.cameraOpenKinect == null) {
             loadDefaultCameraKinect();
@@ -561,14 +566,14 @@ public class Papart {
         this.touchInput = kinectTouchInput;
         touchInitialized = true;
     }
-    
-    public PlanarTouchCalibration getDefaultTouchCalibration(){
+
+    public PlanarTouchCalibration getDefaultTouchCalibration() {
         PlanarTouchCalibration calib = new PlanarTouchCalibration();
         calib.loadFrom(applet, Papart.touchCalib);
         return calib;
     }
-    
-    public PlanarTouchCalibration getDefaultTouchCalibration3D(){
+
+    public PlanarTouchCalibration getDefaultTouchCalibration3D() {
         PlanarTouchCalibration calib = new PlanarTouchCalibration();
         calib.loadFrom(applet, Papart.touchCalib3D);
         return calib;
@@ -697,8 +702,8 @@ public class Papart {
     public DepthAnalysis getKinect() {
         return kinectDepthAnalysis;
     }
-    
-    public CameraOpenKinect getKinectCamera(){
+
+    public CameraOpenKinect getKinectCamera() {
         return this.cameraOpenKinect;
     }
 

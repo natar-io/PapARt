@@ -122,7 +122,7 @@ public abstract class Camera extends Node implements PConstants {
         try {
             this.calibrationFile = calibrationYAML;
 
-            pdp = ProjectiveDeviceP.loadCameraDevice(calibrationYAML);
+            pdp = ProjectiveDeviceP.loadCameraDevice(parent, calibrationYAML);
             camIntrinsicsP3D = pdp.getIntrinsics();
             this.width = pdp.getWidth();
             this.height = pdp.getHeight();

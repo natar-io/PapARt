@@ -39,23 +39,16 @@ public class ProjectorDisplay extends ARDisplay {
     }
 
     @Override
-    protected void loadInternalParams(String calibrationYAML) {
-
+    protected void loadCalibration(String calibrationYAML) {
+        System.out.println("Loading projector internals ... " + calibrationYAML);
         try {
-            projectiveDeviceP = ProjectiveDeviceP.loadProjectorDevice(calibrationYAML);
+            projectiveDeviceP = ProjectiveDeviceP.loadProjectorDevice(parent, calibrationYAML);
+            setCalibration(projectiveDeviceP);
+
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Error loading the projector device." + e);
         }
-        loadInternalParams(projectiveDeviceP);
-
-        extrinsics = projectiveDeviceP.getExtrinsics();
-        intrinsics = projectiveDeviceP.getIntrinsics();
-        extrinsicsInv = extrinsics.get();
-        extrinsicsInv.invert();
-        projectiveDevice = projectiveDeviceP.getDevice();
-        this.hasExtrinsics = projectiveDeviceP.hasExtrinsics();
-        this.setDistort(projectiveDeviceP.handleDistorsions());
     }
 
     @Override
@@ -73,26 +66,16 @@ public class ProjectorDisplay extends ARDisplay {
                 0, 0, this.frameWidth, this.frameHeight);
     }
 
-    //   @deprecated
     public PGraphicsOpenGL beginDrawOnBoard(Camera camera, MarkerBoard board) {
-
         this.beginDraw();
 
-        ///////// New version /////////////
         // Get the markerboard viewed by the camera
         PMatrix3D camBoard = board.getTransfoMat(camera);
         camBoard.preApply(getExtrinsics());
         this.graphics.applyMatrix(camBoard);
 
-        ////////// old Version  //////////////
-//        // Place the projector to his projection respective to the origin (camera here)
-//         this.graphics.modelview.apply(getExtrinsics());
-//
-//        // Goto to the screen position
-//        this.graphics.modelview.apply(board.getTransfoMat(camera));
         return this.graphics;
     }
-//   @deprecated
 
     public void drawOnBoard(Camera camera, MarkerBoard board) {
         loadModelView();

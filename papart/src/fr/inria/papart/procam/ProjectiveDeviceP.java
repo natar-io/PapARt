@@ -18,6 +18,7 @@
  */
 package fr.inria.papart.procam;
 
+import fr.inria.papart.calibration.ProjectiveDeviceCalibration;
 import org.bytedeco.javacv.CameraDevice;
 import org.bytedeco.javacv.ProjectiveDevice;
 import org.bytedeco.javacv.ProjectorDevice;
@@ -56,13 +57,13 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
     private boolean hasExtrinsics = false;
     private boolean handleDistorsion = false;
 
-    public ProjectiveDeviceP() {
+    private ProjectiveDeviceP() {
     }
 
-    public ProjectiveDeviceP(int width, int height) {
-        this.w = width;
-        this.h = height;
-    }
+//    public ProjectiveDeviceP(int width, int height) {
+//        this.w = width;
+//        this.h = height;
+//    }
 
     public PMatrix3D getIntrinsics() {
         return this.intrinsics;
@@ -434,12 +435,22 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
         return mat;
     }
 
-    
-    public static ProjectiveDeviceP loadCameraDevice(String filename) throws Exception {
-        return loadCameraDevice(filename, 0);
+    public void saveTo(PApplet applet, String filename) {
+        ProjectiveDeviceCalibration calib = new ProjectiveDeviceCalibration();
+        calib.setWidth(this.w);
+        calib.setHeight(this.h);
+        calib.setIntrinsics(intrinsics);
+        if (this.hasExtrinsics()) {
+            calib.setExtrinsics(extrinsics);
+        }
+        calib.saveTo(applet, filename);
     }
 
-    public static ProjectiveDeviceP loadCameraDevice(String filename, int id) throws Exception {
+    public static ProjectiveDeviceP loadCameraDevice(PApplet parent, String filename) throws Exception {
+        return loadCameraDevice(parent, filename, 0);
+    }
+
+    public static ProjectiveDeviceP loadCameraDevice(PApplet parent, String filename, int id) throws Exception {
         ProjectiveDeviceP p = new ProjectiveDeviceP();
 
         if (filename.endsWith(".yaml")) {
@@ -448,35 +459,46 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
                 throw new Exception("No camera device with the id " + id + " in the calibration file: " + filename);
             }
             CameraDevice cameraDevice = camDev[id];
-            p.device = cameraDevice;
             loadParameters(cameraDevice, p);
+        }
+
+        if (filename.endsWith((".xml"))) {
+            ProjectiveDeviceCalibration calib = new ProjectiveDeviceCalibration();
+            calib.loadFrom(parent, filename);
+            loadParameters(calib, p);
         }
 
         return p;
     }
 
-    public static ProjectiveDeviceP loadProjectorDevice(String filename) throws Exception {
-        return loadProjectorDevice(filename, 0);
+    public static ProjectiveDeviceP loadProjectorDevice(PApplet parent, String filename) throws Exception {
+        return loadProjectorDevice(parent, filename, 0);
     }
 
-    public static ProjectiveDeviceP loadProjectorDevice(String filename, int id) throws Exception {
+    public static ProjectiveDeviceP loadProjectorDevice(PApplet parent, String filename, int id) throws Exception {
 
         ProjectiveDeviceP p = new ProjectiveDeviceP();
+        if (filename.endsWith((".yaml"))) {
+            try {
+                ProjectorDevice[] camDev = ProjectorDevice.read(filename);
 
-        try {
-            ProjectorDevice[] camDev = ProjectorDevice.read(filename);
+                if (camDev.length <= id) {
+                    throw new Exception("No projector device with the id " + id + " in the calibration file: " + filename);
+                }
+                ProjectorDevice projectorDevice = camDev[id];
+                p.device = projectorDevice;
+                loadParameters(projectorDevice, p);
 
-            if (camDev.length <= id) {
-                throw new Exception("No projector device with the id " + id + " in the calibration file: " + filename);
+            } catch (Exception e) {
+                throw new Exception("Error reading the calibration file : " + filename + " \n" + e);
             }
-            ProjectorDevice projectorDevice = camDev[id];
-            p.device = projectorDevice;
-            loadParameters(projectorDevice, p);
-
-        } catch (Exception e) {
-            throw new Exception("Error reading the calibration file : " + filename + " \n" + e);
         }
 
+        if (filename.endsWith((".xml"))) {
+            ProjectiveDeviceCalibration calib = new ProjectiveDeviceCalibration();
+            calib.loadFrom(parent, filename);
+            loadParameters(calib, p);
+        }
         return p;
     }
 
@@ -509,12 +531,8 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
 
         p.w = dev.imageWidth;
         p.h = dev.imageHeight;
-        p.fx = p.intrinsics.m00;
-        p.fy = p.intrinsics.m11;
-        p.ifx = 1f / p.intrinsics.m00;
-        p.ify = 1f / p.intrinsics.m11;
-        p.cx = p.intrinsics.m02;
-        p.cy = p.intrinsics.m12;
+
+        p.updateFromIntrinsics();
 
         p.hasExtrinsics = dev.R != null && dev.T != null;
 
@@ -527,11 +545,42 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
                     (float) projR[6], (float) projR[7], (float) projR[8], (float) projT[2],
                     0, 0, 0, 1);
         }
+        p.device = dev;
+    }
 
+    private static void loadParameters(ProjectiveDeviceCalibration dev, ProjectiveDeviceP p) {
+        // Not implemented yet
+        p.handleDistorsion = false;
+        p.intrinsics = dev.getIntrinsics();
+
+        p.w = dev.getWidth();
+        p.h = dev.getHeight();
+        p.updateFromIntrinsics();
+
+        if (p.hasExtrinsics()) {
+            p.extrinsics = dev.getExtrinsics();
+        }
+
+        p.device = null;
+    }
+
+    
+    public void setIntrinsics(PMatrix3D intrinsics){
+        this.intrinsics.set(intrinsics);
+        updateFromIntrinsics();
+    }
+
+    public void updateFromIntrinsics() {
+        fx = intrinsics.m00;
+        fy = intrinsics.m11;
+        ifx = 1f / intrinsics.m00;
+        ify = 1f / intrinsics.m11;
+        cx = intrinsics.m02;
+        cy = intrinsics.m12;
     }
 
     public String toString() {
-        return "intr " + intrinsics.toString() + " extr " + extrinsics.toString() + " "
+        return "intr " + intrinsics.toString() + (extrinsics != null ? " extr " + extrinsics.toString() : " ") + " "
                 + " width " + w + " height " + h;
     }
 }
