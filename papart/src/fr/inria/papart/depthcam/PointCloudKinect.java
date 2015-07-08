@@ -19,6 +19,8 @@
 package fr.inria.papart.depthcam;
 
 import static fr.inria.papart.depthcam.PointCloud.javaToNativeARGB;
+import fr.inria.papart.multitouch.TouchPoint;
+import java.util.ArrayList;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PImage;
@@ -65,6 +67,49 @@ public class PointCloudKinect extends PointCloud implements PConstants {
                 // Think about dividing the color intensity by 255 in the shader...
             }
         }
+        verticesNative.rewind();
+        verticesNative.put(verticesJava, 0, nbVertices * 4);
+
+        colorsNative.rewind();
+        colorsNative.put(colorsJava, 0, nbColors);
+    }
+    
+    
+    public void updateWith(KinectProcessing kinect, ArrayList<TouchPoint> touchs){
+        
+        boolean[] valid = kinect.getValidPoints();
+        Vec3D[] points = kinect.getDepthPoints();
+        PImage colorsImg = kinect.getColouredDepthImage();
+        
+        nbVertices = 0;
+        nbColors = 0;
+        int k = 0;
+
+        int id = 0;
+        for(TouchPoint touch : touchs){
+            
+            int c =  (((id +1) % 5) * (255 / 5) & 0xFF) << 16
+                | (255 - (id % 10 *255)  & 0xFF) << 8
+                | (100 & 0xFF);
+
+            id++;
+            int c2 = javaToNativeARGB(c);
+            
+            for(DepthDataElementKinect dde : touch.getDepthDataElements()){
+                Vec3D p = dde.depthPoint;
+                verticesJava[k++] = p.x;
+                verticesJava[k++] = p.y;
+                verticesJava[k++] = -p.z;
+                verticesJava[k++] = 1;
+
+                nbVertices++;
+                
+                colorsJava[nbColors++] = c2;
+                 
+            }            
+        }
+        
+     
         verticesNative.rewind();
         verticesNative.put(verticesJava, 0, nbVertices * 4);
 

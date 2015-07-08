@@ -120,6 +120,8 @@ public abstract class TouchDetection {
         return connectedComponents;
     }
 
+    // TODO: optimisations here ?
+    int w, h;
     protected int searchDepth;
     protected int precision;
 
@@ -130,8 +132,10 @@ public abstract class TouchDetection {
         searchDepth = calib.getSearchDepth() * calib.getPrecision();
         precision = calib.getPrecision();
 
-        ConnectedComponent cc = findNeighboursRec(startingPoint, 0);
-               cc.setId(currentCompo);
+        w = depthData.source.getWidth();
+        h = depthData.source.getHeight();
+        ConnectedComponent cc = findNeighboursRec(startingPoint, 0, getX(startingPoint), getY(startingPoint));
+        cc.setId(currentCompo);
         currentCompo++;
         return cc;
     }
@@ -143,35 +147,47 @@ public abstract class TouchDetection {
         cc.add(point);
     }
 
-    public ConnectedComponent findNeighboursRec(int currentPoint, int recLevel) {
+    public int getX(int currentPoint) {
+        return currentPoint % w;
+    }
 
-        // TODO: optimisations here ?
-        int w = depthData.source.getWidth();
-        int h = depthData.source.getHeight();
+    public int getY(int currentPoint) {
+        return currentPoint / w;
+    }
 
-        int x = currentPoint % w;
-        int y = currentPoint / w;
+    public ConnectedComponent findNeighboursRec(int currentPoint, int recLevel, int x, int y) {
 
         ConnectedComponent neighbourList = new ConnectedComponent();
         ArrayList<Integer> visitNext = new ArrayList<Integer>();
 
         // At least one point in connected compo !
-        if(recLevel == 0){
+        if (recLevel == 0) {
             addPointInConnectedComponent(neighbourList, currentPoint);
         }
-            
+
         if (recLevel == calib.getMaximumRecursion()) {
             addPointInConnectedComponent(neighbourList, currentPoint);
             return neighbourList;
         }
 
-        int minX = PApplet.constrain(x - searchDepth, 0, w - 1);
-        int maxX = PApplet.constrain(x + searchDepth, 0, w - 1);
-        int minY = PApplet.constrain(y - searchDepth, 0, h - 1);
-        int maxY = PApplet.constrain(y + searchDepth, 0, h - 1);
+        // do nothing on borders -> dead zone optimization ?!
+        if(x - searchDepth < 0 || x + searchDepth > w-1 ||
+           y - searchDepth < 0 || y + searchDepth > h-1 )
+            return neighbourList;
+        
+        
+        // Usual...
+//        int minX = PApplet.constrain(x - searchDepth, 0, w - 1);
+//        int maxX = PApplet.constrain(x + searchDepth, 0, w - 1);
+//        int minY = PApplet.constrain(y - searchDepth, 0, h - 1);
+//        int maxY = PApplet.constrain(y + searchDepth, 0, h - 1);
 
-        for (int j = minY; j <= maxY; j += precision) {
-            for (int i = minX; i <= maxX; i += precision) {
+
+//        for (int j = minY; j <= maxY; j += precision) {
+//            for (int i = minX; i <= maxX; i += precision) {
+        
+        for (int j = y - searchDepth; j <= y + searchDepth; j += precision) {
+            for (int i = x - searchDepth ; i <= x + searchDepth; i += precision) {
                 int offset = j * w + i;
 
                 // Avoid getting ouside the limits
@@ -179,27 +195,25 @@ public abstract class TouchDetection {
 
 //                    assignedPoints[offset] = true;
 //                    connectedComponentImage[offset] = currentCompo;
-
                     // Remove If present -> it might not be the case often. 
 //                    toVisit.remove(offset);
-                    
                     addPointInConnectedComponent(neighbourList, currentPoint);
-                    
+
                     neighbourList.add((Integer) offset);
-                    
-                    // It will be visited, 
-                    visitNext.add(offset);
+
+                    ConnectedComponent subNeighbours = findNeighboursRec(offset, recLevel + 1, i, j);
+                    neighbourList.addAll(subNeighbours);
+                       
                 } // if is ValidPoint
             } // for j
         } // for i
 
-        for (int offset : visitNext) {
-            ConnectedComponent subNeighbours = findNeighboursRec(offset, recLevel + 1);
-            neighbourList.addAll(subNeighbours);
-        }
-
         return neighbourList;
     }
+    
+      static public final int constrain(int amt, int low, int high) {
+    return (amt < low) ? low : ((amt > high) ? high : amt);
+  }
 
     // TODO: use another type here ?
     protected TouchPoint createTouchPoint(ConnectedComponent connectedComponent) {
@@ -288,12 +302,12 @@ public abstract class TouchDetection {
 
         @Override
         public boolean checkPoint(int offset, int currentPoint) {
-            float distanceToCurrent = depthData.depthPoints[offset].distanceTo(depthData.depthPoints[currentPoint]);
+//            float distanceToCurrent = depthData.depthPoints[offset].distanceTo(depthData.depthPoints[currentPoint]);
 
             return !assignedPoints[offset] // not assigned  
                     && depthData.validPointsMask[offset] // is valid
                     && (depthData.depthPoints[offset] != DepthAnalysis.INVALID_POINT) // not invalid point (invalid depth)
-                    && distanceToCurrent < calib.getMaximumDistance();
+                    && depthData.depthPoints[offset].distanceTo(depthData.depthPoints[currentPoint]) < calib.getMaximumDistance();
         }
     }
 
@@ -332,9 +346,10 @@ public abstract class TouchDetection {
             if (pos1.y < pos2.y) {
                 return 1;
             }
-            if(pos1.y == pos2.y)
+            if (pos1.y == pos2.y) {
                 return 0;
-            
+            }
+
             return -1;
         }
     }
@@ -358,9 +373,10 @@ public abstract class TouchDetection {
             if (d1 > d2) {
                 return 1;
             }
-            if(d1 == d2)
+            if (d1 == d2) {
                 return 0;
-            
+            }
+
             return -1;
         }
     }

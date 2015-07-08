@@ -76,7 +76,7 @@ public class TouchDetectionHand extends TouchDetectionSimple2D {
 
         ConnectedComponent neighbours = findNeighboursRec(
                 startingPoint,
-                0);
+                0, getX(startingPoint), getY(startingPoint));
         return neighbours;
     }
 
