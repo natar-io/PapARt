@@ -3,22 +3,32 @@ import java.util.ArrayList;
 import toxi.geom.Vec3D;
 import fr.inria.papart.depthcam.*;
 import fr.inria.papart.procam.display.*;
-
+import fr.inria.papart.calibration.*;
 
 public class MyApp extends PaperTouchScreen {
 
     PMatrix3D kinectProjector;
+    PMatrix3D cameraProjector;
+    PlaneCalibration tablePlane;
+
     void setup() {
 	setDrawingSize(297, 210);
 	loadMarkerBoard(sketchPath + "/data/A3-small1.cfg", 297, 210);
 
 	kinectProjector = papart.loadCalibration(Papart.kinectTrackingCalib);
 	kinectProjector.invert();
+
+	cameraProjector = ((ProjectorDisplay) display).getExtrinsics().get();
+	cameraProjector.invert();
+
+	tablePlane = papart.getTablePlane();
     }
 
-    PVector pos = new PVector();
+    PVector pointPos = new PVector();
+    PVector posProj = new PVector();
     
     void draw(){
+	println("Frame Rate " + frameRate);
 	beginDraw3D();
 	clear();
 	background(0);
@@ -28,20 +38,31 @@ public class MyApp extends PaperTouchScreen {
 	// in draw3D Mode the graphics here are the projector's graphics. 
 
 	ProjectorDisplay projector = (ProjectorDisplay) display;
-	projector.loadModelView();
+	ProjectiveDeviceP pdp = projector.getProjectiveDeviceP();
+
+ 	projector.loadModelView();
 	applyMatrix(projector.getExtrinsics());
 
-	lights();
-	pointLight(0, 100, 0, 0, 100, 0);
+	// lights();
+	// pointLight(0, 100, 0, 0, 100, 0);
 
 	noStroke();
-	fill(255);
+	fill(0);
 
+	float focal = pdp.getIntrinsics().m00;
+	float cx = pdp.getIntrinsics().m02;
+	float cy = pdp.getIntrinsics().m12;
 
+//println(cx + " " + cy + " " + focal);
+//	translate(-782, -1383, 1000);
+
+ // rectMode(CENTER);
+//	rect(0, 0, 200, 200);
 	// pushMatrix();
-	// translate(0, 0, 850);
+
 	// sphere(10);
 	// popMatrix();
+
 
 	
 	for (Touch t : touchList) {
@@ -66,16 +87,33 @@ public class MyApp extends PaperTouchScreen {
 		    
 	    	    Vec3D depthPoint = dde.depthPoint;
 	    
-		    kinectProjector.mult(new PVector(depthPoint.x,
-						     depthPoint.y,
-						     depthPoint.z),
-					 pos);
-		    pushMatrix();
-		    translate(pos.x, pos.y , pos.z);
-		    sphere(1);
-		    popMatrix();
+	    	    kinectProjector.mult(new PVector(depthPoint.x,
+	    					     depthPoint.y,
+	    					     depthPoint.z),
+	    				 pointPos);
+
+
+		    // PVector out2D = pdp.worldToPixelCoord(pointPos);
+	    	    // println("Out " + out2D);
+		    // ellipse(out2D.x, out2D.y, 10, 10);
 		    
+		    // cameraProjector.mult(pointPos,
+	    	    // 			 posProj);
+
+		    float dist = tablePlane.distanceTo(pointPos);
+		    if(dist > 100)
+			continue;
+		    
+		    float col = 255 * ((100 - dist) / 100);
+
+		    pushMatrix();
+		    fill(col);
+	    	    translate(pointPos.x -2.2, pointPos.y -2.2 , pointPos.z);
+		    
+		    ellipse(0, 0, 3, 3);
+	    	    popMatrix();
 	    }
+
 	}
 	endDraw();
     }

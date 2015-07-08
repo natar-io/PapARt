@@ -79,6 +79,10 @@ public class PlaneCalibration extends Calibration {
     public float distanceTo(Vec3D point) {
         return plane.getDistanceToPoint(point);
     }
+    
+    public float distanceTo(PVector point) {
+        return plane.getDistanceToPoint(new Vec3D(point.x, point.y, point.z));
+    }
 
     public void flipNormal() {
         plane.normal = plane.normal.invert();

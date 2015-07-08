@@ -18,6 +18,7 @@
  */
 package fr.inria.papart.calibration;
 
+import java.io.FileNotFoundException;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;

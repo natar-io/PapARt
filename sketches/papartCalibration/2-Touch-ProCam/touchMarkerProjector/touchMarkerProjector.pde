@@ -191,7 +191,8 @@ void save(){
    planeProjCalib.saveTo(this, Papart.planeAndProjectionCalib);
 
    papart.saveCalibration(Papart.kinectTrackingCalib, cameraKinectTransform);
-
+   
+   papart.setTableLocation(cameraPaperTransform);
    
    // homographyCalibration.saveTo(this, Papart.homographyCalib);
    // planeCalibration.saveTo(this, Papart.homographyCalib);

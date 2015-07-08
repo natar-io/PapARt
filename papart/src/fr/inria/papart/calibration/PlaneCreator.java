@@ -31,7 +31,7 @@ public class PlaneCreator {
     private float height = PlaneCalibration.HEIGHT_NOT_SET;
 
     private Plane plane;
-    private Vec3D[] points = new Vec3D[3];
+    private final Vec3D[] points = new Vec3D[3];
     private int currentPointPlane = 0;
 
     public void addPoint(Vec3D point) {

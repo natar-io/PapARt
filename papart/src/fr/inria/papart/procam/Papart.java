@@ -29,6 +29,7 @@ import org.bytedeco.javacpp.freenect;
 import fr.inria.papart.drawingapp.Button;
 import fr.inria.papart.depthcam.DepthAnalysis;
 import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
+import fr.inria.papart.calibration.PlaneCalibration;
 import fr.inria.papart.calibration.ScreenConfiguration;
 import fr.inria.papart.depthcam.Kinect;
 import fr.inria.papart.depthcam.KinectDepthAnalysis;
@@ -38,6 +39,7 @@ import fr.inria.papart.multitouch.KinectTouchInput;
 import fr.inria.papart.panel.Panel;
 import fr.inria.papart.procam.camera.CameraFactory;
 import fr.inria.papart.procam.camera.CameraOpenKinect;
+import java.io.File;
 import java.lang.reflect.Constructor;
 import java.util.Set;
 import org.reflections.Reflections;
@@ -46,6 +48,7 @@ import processing.core.PConstants;
 import processing.core.PFont;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
+import toxi.geom.Plane;
 
 /**
  *
@@ -61,12 +64,14 @@ public class Papart {
 
     public static String cameraCalib = folder + calibrationFolder + "camera-projector.yaml";
     public static String projectorCalib = folder + calibrationFolder + "camera-projector.yaml";
+
     public static String camCalibARtoolkit = folder + calibrationFolder + "camera-projector.cal";
     public static String kinectIRCalib = folder + calibrationFolder + "calibration-kinect-IR.yaml";
     public static String kinectRGBCalib = folder + calibrationFolder + "calibration-kinect-RGB.yaml";
-    public static String kinectStereoCalib = folder + calibrationFolder + "calibration-kinect-Stereo.yaml";
+    public static String kinectStereoCalib = folder + calibrationFolder + "calibration-kinect-Stereo.xml";
 
     public static String kinectTrackingCalib = "kinectTracking.xml";
+    public static String cameraProjExtrinsics = "camProjExtrinsics.xml";
 
     public static String screenConfig = folder + calibrationFolder + "screenConfiguration.xml";
     public static String cameraConfig = folder + calibrationFolder + "cameraConfiguration.xml";
@@ -301,8 +306,21 @@ public class Papart {
         HomographyCalibration.saveMatTo(applet, mat, Papart.folder + calibrationFolder + fileName);
     }
 
+    /**
+     * Get a calibration from sketchbook/libraries/PapARt/data/calibration
+     * folder.
+     *
+     * @param fileName
+     * @return null if the file does not exists.
+     */
     public PMatrix3D loadCalibration(String fileName) {
-        return HomographyCalibration.getMatFrom(applet, Papart.folder + calibrationFolder + fileName);
+
+        File f = new File(Papart.folder + calibrationFolder + fileName);
+        if (f.exists()) {
+            return HomographyCalibration.getMatFrom(applet, Papart.folder + calibrationFolder + fileName);
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -344,6 +362,15 @@ public class Papart {
      */
     public PMatrix3D getTableLocation() {
         return HomographyCalibration.getMatFrom(applet, tablePosition);
+    }
+
+    /**
+     * Work in progress function
+     * @return 
+     */
+    public PlaneCalibration getTablePlane() {
+        return PlaneCalibration.CreatePlaneCalibrationFrom(HomographyCalibration.getMatFrom(applet, tablePosition), 
+                new PVector(100, 100));
     }
 
     /**
@@ -391,6 +418,7 @@ public class Papart {
         assert (!cameraInitialized);
 
         initProjectorDisplay(quality);
+        tryLoadExtrinsics();
 
         cameraTracking = CameraFactory.createCamera(cameraType, cameraNo);
         cameraTracking.setParent(applet);
@@ -400,6 +428,15 @@ public class Papart {
         cameraTracking.setThread();
 
         checkInitialization();
+    }
+
+    private void tryLoadExtrinsics() {
+        PMatrix3D extrinsics = loadCalibration(cameraProjExtrinsics);
+        if (extrinsics == null) {
+            System.out.println("loading default extrinsics. Could not find " + cameraProjExtrinsics + " .");
+        } else {
+            projector.setExtrinsics(extrinsics);
+        }
     }
 
     public void initKinectCamera(float quality) {
