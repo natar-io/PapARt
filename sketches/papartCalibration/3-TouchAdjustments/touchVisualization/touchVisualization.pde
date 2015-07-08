@@ -34,7 +34,7 @@ int precision = 3;
 
 void setup(){
     
-    size(800, 600, OPENGL);
+    size(1200, 900, OPENGL);
 
     int depthFormat = freenect.FREENECT_DEPTH_MM;
     int kinectFormat = Kinect.KINECT_MM;
@@ -106,7 +106,7 @@ ArrayList<TouchPoint> globalTouchList = new ArrayList<TouchPoint>();
 
 void draw(){
     background(0);
-    //    println("Framerate " + frameRate);
+    println("Framerate " + frameRate);
     
     try{
     	cameraKinect.grab();
@@ -141,9 +141,6 @@ void draw(){
      //    kinect.update(kinectImgDepth, kinectImg, planeCalibration, precision);
     draw3DPointCloud();
     
-
-
-
     cam.beginHUD();
 
     text("'m' to stop the camera", 10,  30);
@@ -153,17 +150,20 @@ void draw(){
 
 
 void draw3DPointCloud(){
-    pointCloud.updateWith(kinect);
+
+    KinectDepthData depthData = kinect.getDepthData();
+    ArrayList<TouchPoint> touchs = touchDetection.compute(depthData);
+    TouchPointTracker.trackPoints(globalTouchList, touchs, millis());
+
+    //     pointCloud.updateWith(kinect);
+    pointCloud.updateWith(kinect, touchs);
     pointCloud.drawSelf((PGraphicsOpenGL) g);
 
     lights();
     stroke(200);
     fill(200);
 
-    KinectDepthData depthData = kinect.getDepthData();
-    ArrayList<TouchPoint> touchs = touchDetection.compute(depthData);
-    TouchPointTracker.trackPoints(globalTouchList, touchs, millis());
-
+    
     colorMode(HSB, 20, 100, 100);
     for(TouchPoint touchPoint : globalTouchList){
 
@@ -172,7 +172,8 @@ void draw3DPointCloud(){
     	translate(position.x, position.y, -position.z);
 
     	fill(touchPoint.getID() % 20, 100, 100);	
-    	sphere(3);
+	ellipse(0, 0, 3, 3);
+    	//sphere(3);
     	popMatrix();
     }
     

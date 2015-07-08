@@ -11,19 +11,15 @@ import processing.video.*;
 Papart papart;
 
 public void setup() {
-
     papart = Papart.projection(this);
-    
     
     computeCameraProjectorTransfo();
     
-    PMatrix3D extr = papart.loadCalibration("camProjExtrinsics.xml");
+    PMatrix3D extr = papart.loadCalibration(Papart.cameraProjExtrinsics);
     papart.getProjectorDisplay().setExtrinsics(extr);
     
     papart.loadSketches();
     papart.startTracking();
-
-
 }
 
 void computeCameraProjectorTransfo(){
@@ -37,7 +33,7 @@ void computeCameraProjectorTransfo(){
     projPaper.preApply(camPaper);
     projPaper.print();
     projPaper.invert();
-    papart.saveCalibration("camProjExtrinsics.xml", projPaper);
+    papart.saveCalibration(Papart.cameraProjExtrinsics, projPaper);
 }
 
 
