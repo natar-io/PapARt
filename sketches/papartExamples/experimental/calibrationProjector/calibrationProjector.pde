@@ -13,11 +13,13 @@ ARDisplay ardisplay;
 float focal, cx, cy;
 PMatrix3D projIntrinsics; 
 
-boolean useProjector = false;
+boolean useProjector = true;
 
 
 public void setup() {
 
+    Papart.projectorCalib = "calib.xml";
+    
     if(useProjector)
 	Papart.projectionOnly(this);
     else
@@ -25,7 +27,6 @@ public void setup() {
 
   papart =  Papart.getPapart();
   ardisplay = papart.getARDisplay();
-  //  projector = papart.getArdisplayDisplay();
   ardisplay.manualMode();
 
   projIntrinsics = ardisplay.getIntrinsics();
@@ -60,12 +61,20 @@ void draw() {
     projIntrinsics.m11 = focal;
     projIntrinsics.m02 = cx;
     projIntrinsics.m12 = cy;
-    
+
+    // Update the rendering.
     ardisplay.updateIntrinsicsRendering();
         
     ProjectiveDeviceP pdp = ardisplay.getProjectiveDeviceP();
-    objectArdisplayTransfo = pdp.estimateOrientation(object, image);
+    
+    // Update the estimation.
+    pdp.updateFromIntrinsics();
+
+    
+    //    objectArdisplayTransfo = pdp.estimateOrientation(object, image);
     //    objectArdisplayTransfo.print();
+
+
     
     PGraphicsOpenGL g1 = ardisplay.beginDraw();  
 
@@ -73,11 +82,18 @@ void draw() {
 	g1.background(69, 145, 181);
     else
 	g1.clear();
+
+    g1.scale(1, -1, 1);
     
-    g1.modelview.apply(objectArdisplayTransfo);
-    
+    // g1.modelview.apply(objectArdisplayTransfo);
+
+    g1.translate(0, 200, 1200);
+
     g1.fill(50, 50, 200);
     g1.rect(-10, -10, 120, 120);
+
+    fill(200);
+    g1.rect(0, 0, 100, 100);
     
     g1.fill(0, 191, 100);
     g1.rect(150, 80, 50, 50);
@@ -91,13 +107,13 @@ void draw() {
 			ardisplay.render(), 
 			0, 0, width, height);
     
-    quad(image[0].x, image[0].y, 
-	 image[1].x, image[1].y, 
-	 image[2].x, image[2].y, 
-	 image[3].x, image[3].y);
+    // quad(image[0].x, image[0].y, 
+    // 	 image[1].x, image[1].y, 
+    // 	 image[2].x, image[2].y, 
+    // 	 image[3].x, image[3].y);
     
     if (test) { 
-	objectArdisplayTransfo.print();
+	//	objectArdisplayTransfo.print();
 	test = false;
     }
 }
@@ -108,7 +124,7 @@ void mouseDragged() {
 }
 
 
-boolean test = true;
+boolean test = false;
 int currentPt = 0;
 boolean set = false;
 
@@ -130,7 +146,9 @@ void keyPressed() {
     test = !test;
 
   if (key == 's') {
-      papart.setTableLocation(objectArdisplayTransfo);
+
+      ProjectiveDeviceP pdp = ardisplay.getProjectiveDeviceP();
+      pdp.saveTo(this, "calib.xml");
       println("Saved");
   }
 }

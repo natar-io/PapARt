@@ -56,7 +56,7 @@ public class ControlFrame extends PApplet {
 	.setPosition(10, 20)
 	.setRange(500, 3000)
 	.setSize(800,20)
-	.setValue(focal)
+	.setValue(1000)
 	;
 
     cp5.addSlider("cx").plugTo(parent, "cx")

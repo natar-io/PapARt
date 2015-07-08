@@ -18,11 +18,16 @@ ProjectorDisplay projector;
 
 public void setup() {
 
+    Papart.projectorCalib = "calib.xml";
+    
   Papart.projectionOnly(this);
 
   papart =  Papart.getPapart();
   projector = papart.getProjectorDisplay();
   projector.manualMode();
+
+  // ProjectiveDeviceP pdp = projector.getProjectiveDeviceP();
+  // pdp.getIntrinsics().print();  
 
   object = new PVector[4];
   image = new PVector[4]; 
@@ -45,13 +50,24 @@ PVector image[];
 
 void draw() {
 
-  ProjectiveDeviceP pdp = projector.getProjectiveDeviceP();
+
+
+    PMatrix3D projIntrinsics = projector.getIntrinsics();
+    
+    // projIntrinsics.m00 = 1200;
+    // projIntrinsics.m11 = 1200;
+
+    // //    projIntrinsics.print();
+    // projector.updateIntrinsicsRendering();
+
+    ProjectiveDeviceP pdp = projector.getProjectiveDeviceP();
+
+    
   objectProjectorTransfo = pdp.estimateOrientation(object, image);
-  //    objectProjectorTransfo.print();
+  //  objectProjectorTransfo.print();
 
   PGraphicsOpenGL g1 = projector.beginDraw();  
   g1.background(69, 145, 181);
-
 
   g1.modelview.apply(objectProjectorTransfo);
 
