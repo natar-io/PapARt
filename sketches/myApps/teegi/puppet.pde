@@ -1,7 +1,7 @@
 // try out TCPWriteAnalog with a nice GUI
 import fr.inria.openvibelink.write.*;
 import processing.net.*;
-import controlP5.*;
+
 
 
 final int TCPOutServerPort = 12345;

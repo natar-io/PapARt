@@ -8,7 +8,7 @@ ArrayList<Drop> drips = new ArrayList<Drop>();
 
 void initBlood(){
 
-    bloodGraphics = (PGraphicsOpenGL) createGraphics(frameSizeX, frameSizeY, OPENGL);
+    bloodGraphics = (PGraphicsOpenGL) createGraphics(width, height, OPENGL);
     bloodGraphics.beginDraw();
     bloodGraphics.background(0);
     bloodGraphics.endDraw();
@@ -19,8 +19,7 @@ int shotDuration = 7000;
 
 void drawBlood(){
 
-
-    DepthData depthData = kinect.getDepthData();
+    KinectDepthData depthData = kinect.getDepthData();
 
     Vec3D[] projPoints = depthData.projectedPoints;
     boolean[] mask2D = depthData.validPointsMask;
@@ -36,7 +35,7 @@ void drawBlood(){
 
     boolean newImage =  millis() >  lastShot + shotDuration;
 
-    if( newImage){
+    if(newImage){
 
 	lastShot = millis();
 
@@ -55,14 +54,14 @@ void drawBlood(){
 		if(p == null)
 		    continue;
 		
-		if(!mask3D[i]) 
-		    continue; 
+		// if(!mask3D[i]) 
+		//     continue; 
 		
 		if(perCentChance(50)){
 		    
 		    int intensity = (int) (50 + random(200));    
-		    PVector screenP = new PVector(p.x * frameSizeX, 
-						  p.y * frameSizeY);
+		    PVector screenP = new PVector(p.x * width, 
+						  p.y * height);
 		    
 		    // if(p.z > 1000) {
 		    // 	g.stroke(255, 100);

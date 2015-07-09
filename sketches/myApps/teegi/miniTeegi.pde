@@ -26,21 +26,28 @@ public class MiniTeegi extends PaperScreen {
   }
 
 
-  void initModeDetection() {
-    meditationDetection=  new ColorDetection(this, new PVector(25, colorOnPaperY));
-    visionDetection=  new ColorDetection(this, new PVector(61, colorOnPaperY));
-    rawDetection =  new ColorDetection(this, new PVector(100, colorOnPaperY));
-    currentModeDetection = new ColorDetection(this, new PVector(180, 70));
+    void initModeDetection() {
+	meditationDetection=  new ColorDetection(this);
+	meditationDetection.setPosition(new PVector(25, colorOnPaperY));
+	
+	visionDetection=  new ColorDetection(this);
+	visionDetection.setPosition(new PVector(61, colorOnPaperY));
+	
+	rawDetection =  new ColorDetection(this);
+	rawDetection.setPosition(new PVector(100, colorOnPaperY));
 
-    try{
-    meditationDetection.initialize(); 
-    visionDetection.initialize(); 
-    rawDetection.initialize(); 
-    currentModeDetection.initialize(); 
-    }catch(Exception e){
-	println("e");
-	e.printStackTrace();
-    }
+	currentModeDetection = new ColorDetection(this);
+	currentModeDetection.setPosition(new PVector(180, 70));
+      
+      try{
+	  meditationDetection.initialize(); 
+	  visionDetection.initialize(); 
+	  rawDetection.initialize(); 
+	  currentModeDetection.initialize(); 
+      }catch(Exception e){
+	  println("e");
+	  e.printStackTrace();
+      }
   }
 
   void draw() {

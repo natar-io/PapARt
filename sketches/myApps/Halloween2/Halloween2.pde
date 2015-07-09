@@ -2,7 +2,7 @@ import fr.inria.papart.procam.*;
 import fr.inria.papart.procam.camera.*;
 import fr.inria.papart.multitouch.*;
 import fr.inria.papart.depthcam.*;
-import fr.inria.papart.depthcam.calibration.*;
+import fr.inria.papart.calibration.*;
 
 import toxi.geom.*;
 import org.bytedeco.javacpp.opencv_core.IplImage;
@@ -23,10 +23,6 @@ public void init() {
     super.init();
 }
 
-int framePosX = 0;
-int framePosY = 120;
-int frameSizeX = 1920;
-int frameSizeY = 1080;
 
 int precision = 4;
 
@@ -40,15 +36,13 @@ KinectProcessing kinect;
 TouchDetectionSimple3D touchDetection3D;
 
 void setup(){
-    size(frameSizeX, frameSizeY, OPENGL);
 
-    int depthFormat = freenect.FREENECT_DEPTH_MM;
-    int kinectFormat = Kinect.KINECT_MM;
+    Papart papart = Papart.projection2D(this);
 
     camera = (CameraOpenKinect) CameraFactory.createCamera(Camera.Type.OPEN_KINECT, 0);
     camera.setParent(this);
     camera.setCalibration(Papart.kinectRGBCalib);
-    camera.setDepthFormat(depthFormat);
+    camera.getDepthCamera().setCalibration(Papart.kinectIRCalib);
     camera.start();
 
    try{
@@ -58,11 +52,7 @@ void setup(){
 	die("Impossible to load the plane calibration...");
     }
 
-
-   kinect = new KinectProcessing(this,
-				 Papart.kinectIRCalib,
-				 Papart.kinectRGBCalib,
-				 kinectFormat);
+   kinect = new KinectProcessing(this, camera);
    
    touchDetection3D = new TouchDetectionSimple3D(Kinect.SIZE);
 
@@ -82,35 +72,18 @@ void draw(){
 
     camera.grab();
     kinectImg = camera.getIplImage();
-    kinectImgDepth = camera.getDepthIplImage();
+    kinectImgDepth = camera.getDepthCamera().getIplImage();
     if(kinectImg == null || kinectImgDepth == null){
 	return;
     }
 
-    kinect.updateMT(kinectImgDepth, planeProjCalibration, precision, precision);
-    // kinect.updateTest(kinectImgDepth, kinectImg, planeProjCalibration, precision);
-    // kinect.update(kinectImgDepth, kinectImg, planeProjCalibration, precision);
+    kinect.updateMT(kinectImgDepth, kinectImg, planeProjCalibration, precision);
 
     drawBlood();
-    //image(bloodGraphics, 0, 0);
+
 }
 
 
 boolean perCentChance(float value){
     return random(1) <  (value / 100f);
 }
-
-void keyPressed() {
-
-    // Placed here, bug if it is placed in setup().
-    if(key == ' '){
-	frame.setLocation(framePosX, framePosY);
-
-	// bloodGraphics.beginDraw();
-	// bloodGraphics.background(0);
-	// bloodGraphics.endDraw();
-    }
-}
-
-
-

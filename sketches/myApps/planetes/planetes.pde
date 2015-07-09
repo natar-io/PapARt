@@ -1,7 +1,10 @@
 // PapARt library
+
 import fr.inria.papart.procam.*;
-import fr.inria.papart.multitouch.*;
 import fr.inria.papart.procam.display.*;
+import fr.inria.papart.depthcam.*;
+import fr.inria.papart.multitouch.*;
+
 import org.bytedeco.javacpp.*;
 import org.reflections.*;
 import TUIO.*;
@@ -10,63 +13,39 @@ import toxi.geom.*;
 
 Papart papart;
 
-// Frame location. 
-int framePosX = 0;
-int framePosY = 200;
-
-boolean useProjector;
+boolean useProjector = true;
 float planetScale = 2f / 20000f;
 
-// Undecorated frame 
-public void init() {
-  frame.removeNotify(); 
-  frame.setUndecorated(true); 
-  frame.addNotify(); 
-  super.init();
-}
 
 PVector boardSize = new PVector(297, 210);   //  21 * 29.7 cm
 float boardResolution = 1;  // 3 pixels / mm
+float renderQuality = 1.5f;
 
 void setup() {
 
-  useProjector = false;
-  int frameSizeX = 1280;
-  int frameSizeY = 800;
+    if(useProjector){
+	papart = Papart.projection(this);
+	papart.loadTouchInput();
+    } else {
+	
+	size((int) (Kinect.WIDTH * renderQuality),
+	     (int) (Kinect.HEIGHT * renderQuality),
+	     OPENGL);
+	
+	papart = new Papart(this);
+	
+	papart.initKinectCamera(renderQuality);
+	papart.loadTouchInputKinectOnly();
+	BaseDisplay display = papart.getDisplay();
+	display.setDrawingSize(width, height);
+    }
 
-  if (!useProjector) {
-    frameSizeX = 640;
-    frameSizeY = 480;
-  }
 
-  size(frameSizeX, frameSizeY, OPENGL);
-  papart = new Papart(this);
-
-  if (useProjector) {
-    papart.initProjectorCamera("1", Camera.Type.OPENCV);
-    papart.loadTouchInput(2, 5);
-  } else {
-          papart.initCamera("1", Camera.Type.OPENCV);
-    //	papart.loadTouchInput(2, 5);
-
-    // papart.initKinectCamera(1f);
-    
-
-    BaseDisplay display = papart.getDisplay();
-    display.setDrawingSize(width, height);
-  }
-
-  papart.loadSketches();
-  papart.startTracking();
+    papart.loadSketches();
+    papart.startTracking();
 }
 
 
 void draw() {
 }
 
-void keyPressed() {
-
-  // Placed here, bug if it is placed in setup().
-  if (key == ' ')
-    frame.setLocation(framePosX, framePosY);
-}

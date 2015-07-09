@@ -1,5 +1,4 @@
- import fr.inria.papart.procam.*;
-import fr.inria.papart.tools.*;
+import fr.inria.papart.procam.*;
 import fr.inria.papart.depthcam.*;
 import fr.inria.papart.multitouch.*;
 import fr.inria.papart.procam.camera.*;
@@ -12,31 +11,18 @@ import java.util.ArrayList;
 
 Camera camera;
 
-// Undecorated frame 
-public void init() {
-    frame.removeNotify(); 
-    frame.setUndecorated(true); 
-    frame.addNotify(); 
-    super.init();
-}
 
 KinectTouchInput touchInput;
-
-int framePosX = 0;
-int framePosY = 200;
-int frameSizeX = 1280;
-int frameSizeY = 800;
 
 PFont font;
 PGraphicsOpenGL bloodGraphics;
 
 void setup(){
-    size(frameSizeX, frameSizeY, OPENGL);
 
-    Papart papart = new Papart(this);
+    Papart papart = Papart.projection2D(this);
 
     // arguments are 2D and 3D precision.
-    papart.loadTouchInputKinectOnly(2, 0);
+    papart.loadTouchInputKinectOnly();
     touchInput = (KinectTouchInput) papart.getTouchInput();
 
     initBlood();
@@ -71,8 +57,6 @@ void keyPressed() {
 
     // Placed here, bug if it is placed in setup().
     if(key == ' '){
-	frame.setLocation(framePosX, framePosY);
-
 	bloodGraphics.beginDraw();
 	bloodGraphics.background(0);
 	bloodGraphics.endDraw();

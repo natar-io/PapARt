@@ -1,44 +1,36 @@
 import fr.inria.papart.procam.*;
+import fr.inria.papart.depthcam.*;
+import fr.inria.papart.procam.display.*;
 
+import org.reflections.*;
+import org.bytedeco.javacpp.*;
+import toxi.geom.*;
 
 PVector boardSize = new PVector(297, 210);   //  21 * 29.7 cm
 float boardResolution = 3;  // 3 pixels / mm
 
-// Frame location. 
-int framePosX = 0;
-int framePosY = 200;
-
-boolean useProjector;
- 
-// Undecorated frame 
-public void init() {
-  frame.removeNotify(); 
-  frame.setUndecorated(true); 
-  frame.addNotify(); 
-  super.init();
-}
+float renderQuality = 1.5f;
+boolean useProjector = true;
+Papart papart;
 
 
 void setup(){
 
-    useProjector = true;
-    int frameSizeX = 1280;
-    int frameSizeY = 800;
-
-    if(!useProjector) {
-	frameSizeX = 640 * 2;
-	frameSizeY = 480 * 2;
-    }
-
-    size(frameSizeX, frameSizeY, OPENGL);
-    Papart papart = new Papart(this);
-
     if(useProjector){
-	papart.initProjectorCamera("0", Camera.Type.OPENCV);
-	papart.loadTouchInput(2, 5);
+	papart = Papart.projection(this);
+	papart.loadTouchInput();
     } else {
-	papart.initKinectCamera(2);
-	papart.loadTouchInputKinectOnly(2, 5);
+
+	size((int) (Kinect.WIDTH * renderQuality),
+	     (int) (Kinect.HEIGHT * renderQuality),
+	     OPENGL);
+
+	papart = new Papart(this);
+
+	papart.initKinectCamera(renderQuality);
+	papart.loadTouchInputKinectOnly();
+	BaseDisplay display = papart.getDisplay();
+	display.setDrawingSize(width, height);
     }
 
     papart.loadSketches();
@@ -57,8 +49,6 @@ void keyPressed() {
   if(key == 't')
       test = !test;
 
-  if(key == ' ')
-    frame.setLocation(framePosX, framePosY);
 }
 
 

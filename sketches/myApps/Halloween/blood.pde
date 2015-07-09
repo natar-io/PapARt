@@ -8,7 +8,7 @@ ArrayList<Drop> drips = new ArrayList<Drop>();
 
 void initBlood(){
 
-    bloodGraphics = (PGraphicsOpenGL) createGraphics(frameSizeX, frameSizeY, OPENGL);
+    bloodGraphics = (PGraphicsOpenGL) createGraphics(width, height, OPENGL);
     bloodGraphics.beginDraw();
     bloodGraphics.background(0);
     bloodGraphics.endDraw();
@@ -25,8 +25,8 @@ void drawBlood(){
 	int nbPoints = (int) (maxPointsPerTouch * random(1));
 
 	for(int i=0; i < nbPoints ;i++){
-	    int px = (int) (pos.x*frameSizeX +random(-leap,leap));
-	    int py = (int) (pos.y*frameSizeY +random(-leap,leap));
+	    int px = (int) (pos.x* width +random(-leap,leap));
+	    int py = (int) (pos.y* height +random(-leap,leap));
 	    
 	    bloodGraphics.stroke(255-i, 30, 30, 100 + random(100));
 	    bloodGraphics.fill(255-i, 30, 30, 100 + random(100));
@@ -40,8 +40,8 @@ void drawBlood(){
 	}
 
 	if(perCentChance(8)){
-	    drips.add(new Drop((int) (pos.x*frameSizeX), 
-			       (int) (pos.y*frameSizeY), 
+	    drips.add(new Drop((int) (pos.x* width), 
+			       (int) (pos.y* height), 
 			       (int) (100 + random(100))));
 	}
     }
