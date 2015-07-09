@@ -1,4 +1,4 @@
- // import java.util.*;
+// import java.util.*;
 
 float paperOffsetX = -22;
 float paperOffsetY = -30;
@@ -23,7 +23,7 @@ public class Player1  extends PaperTouchScreen {
     boolean needReset = true;
     int picSize = 24;
 
-   public ArrayList<PVector> look = new ArrayList<PVector>();
+    public ArrayList<PVector> look = new ArrayList<PVector>();
 
 
     ColorDetection shootLookColorDetection;
@@ -95,12 +95,12 @@ public class Player1  extends PaperTouchScreen {
     }
 
     
- //   void drawCastle(PGraphicsOpenGL g){
-//	if(castle == null) 
-//	    return;
-  //	g.fill(playerColor);
- //       castle.display(g);
-//    }
+    //   void drawCastle(PGraphicsOpenGL g){
+    //	if(castle == null) 
+    //	    return;
+    //	g.fill(playerColor);
+    //       castle.display(g);
+    //    }
 
     Touch aimTouch;
     float ellipseSize = 15;
@@ -168,8 +168,8 @@ public class Player1  extends PaperTouchScreen {
 
     // TODO: get a list of targets. 
     // Get a target for aiming...
-//    public PVector getTargetLocation(){
-//	return castle.getPosPxGame();
-//    }
+    //    public PVector getTargetLocation(){
+    //	return castle.getPosPxGame();
+    //    }
 
 }

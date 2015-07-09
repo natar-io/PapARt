@@ -11,59 +11,57 @@ import fr.inria.guimodes.*;
 
 Papart papart;
 
-
 boolean useProjector = true;
 boolean noCameraMode = false;
 
 PVector boardSize = new PVector(297, 210);   //  21 * 29.7 cm
 float boardResolution = 1;  // 3 pixels / mm
 
-void setup() {
+void setup(){
 
-  int frameSizeX = 640 * 2;
-  int frameSizeY = 480 * 2;
+    int frameSizeX = 640 * 2;
+    int frameSizeY = 480 * 2;
 
+    if (noCameraMode) {
+	size(frameSizeX, frameSizeY, OPENGL);
+	papart = new Papart(this);
+	papart.initNoCamera(1);
+	papart.loadTouchInputTUIO();
+	papart.getTouchInput().computeOutsiders(true);
 
-  if (noCameraMode) {
-      size(frameSizeX, frameSizeY, OPENGL);
-      papart = new Papart(this);
-      papart.initNoCamera(1);
-      papart.loadTouchInputTUIO();
-      papart.getTouchInput().computeOutsiders(true);
-
-  } else {
-      if (useProjector) {
+    } else {
+	if (useProjector) {
 	  
-	  papart = Papart.projection(this);
-	  papart.loadTouchInput();
+	    papart = Papart.projection(this);
+	    papart.loadTouchInput();
 	  
-      } else {
-	  size(frameSizeX, frameSizeY, OPENGL);
-	  papart = new Papart(this);
-	  papart.initKinectCamera(2f);
-	  papart.loadTouchInputKinectOnly();
-	  BaseDisplay display = papart.getDisplay();
-	  display.setDrawingSize(width, height);
-      }
-  }
+	} else {
+	    size(frameSizeX, frameSizeY, OPENGL);
+	    papart = new Papart(this);
+	    papart.initKinectCamera(2f);
+	    papart.loadTouchInputKinectOnly();
+	    BaseDisplay display = papart.getDisplay();
+	    display.setDrawingSize(width, height);
+	}
+    }
   
-  // see Physics.pde 
-  initPhysics();
+    // see Physics.pde 
+    initPhysics();
   
-  papart.loadSketches();
+    papart.loadSketches();
 
-  if (!noCameraMode) {
-    papart.startTracking();
-  }else {
-    Mode.add("wall");
-    Mode.add("touch");
-    Mode.set("wall");
-  }
+    if (!noCameraMode) {
+	papart.startTracking();
+    }else {
+	Mode.add("wall");
+	Mode.add("touch");
+	Mode.set("wall");
+    }
 
 }
 
 void draw() {
-  // println("FRAMERATE " + frameRate);
+    // println("FRAMERATE " + frameRate);
 }
 
 boolean fixBoards = false;
@@ -75,26 +73,26 @@ boolean DEBUG_TOUCH = false;
 
 void keyPressed() {
 
-  if (key == 'c') {
-    fixBoards = !fixBoards;
-    papart.getCameraTracking().trackSheets(!fixBoards);
-  }
+    if (key == 'c') {
+	fixBoards = !fixBoards;
+	papart.getCameraTracking().trackSheets(!fixBoards);
+    }
 
-  if (key == 'b') {
-    fixGame = !fixGame;
-  }
+    if (key == 'b') {
+	fixGame = !fixGame;
+    }
 
-  if (key == 't') {
-    test = !test;
-  }
+    if (key == 't') {
+	test = !test;
+    }
 
-  if (key == '1') {
-    Mode.set("wall");
-  }
-  if (key == '2') {
-    Mode.set("touch");
-  }
+    if (key == '1') {
+	Mode.set("wall");
+    }
+    if (key == '2') {
+	Mode.set("touch");
+    }
 
 
-  println("Test " + test);
+    println("Test " + test);
 }

@@ -22,7 +22,7 @@ class Wall extends DyingObject{
     // Constructor
     Wall(float x, float y, int size) {
 	super();
-	lifeTime = 2100;
+	lifeTime = 200;
 	w = size;
 	h = size;
 	// Add the box to the box2d world

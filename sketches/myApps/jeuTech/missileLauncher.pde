@@ -125,7 +125,7 @@ class MissileLauncher implements TouchPointEventHandler{
 	touch.invertY(drawingSizeY);
 
 	missile.setGoal(posFromGame, power * level);  
-  }
+    }
 
     void launch(Missile missile, Touch touch){
 	touch.invertY(drawingSizeY);
@@ -184,5 +184,5 @@ class MissileLauncher implements TouchPointEventHandler{
 
     public void delete(){
 
-   }
+    }
 }

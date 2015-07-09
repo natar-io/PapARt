@@ -66,7 +66,7 @@ public class Game  extends PaperTouchScreen {
 	}
 
 	try{
-	robot = new Robot();
+	    robot = new Robot();
 	}catch(Exception e){}
 
     }
@@ -84,15 +84,18 @@ public class Game  extends PaperTouchScreen {
     int outputCaptureHeight = 128; 
 
     void createCaptures(){
-	colorDetections[0] = new ColorDetection(this, new PVector(80, 60));
+	colorDetections[0] = new ColorDetection(this);
+	colorDetections[0].setPosition(new PVector(80, 60));
 	colorDetections[0].setCaptureOffset(offset);
 	colorDetections[0].initialize();
-
-	colorDetections[1] = new ColorDetection(this, new PVector(120, 60));
+	
+	colorDetections[1] = new ColorDetection(this);
+	colorDetections[1].setPosition(new PVector(120, 60));
 	colorDetections[1].setCaptureOffset(offset);
 	colorDetections[1].initialize();
 
-	colorDetections[2] = new ColorDetection(this, new PVector(160, 60));
+	colorDetections[2] = new ColorDetection(this);
+	colorDetections[2].setPosition(new PVector(160, 60));
 	colorDetections[2].setCaptureOffset(offset);
 	colorDetections[2].initialize();
 
@@ -100,16 +103,17 @@ public class Game  extends PaperTouchScreen {
 	// colorDetections[3].setCaptureOffset(offset);
 	// colorDetections[3].initialize();
 
-	colorDrawingDetection = new ColorDetection(this, new PVector(200, 60));
+	colorDrawingDetection = new ColorDetection(this);
+	colorDrawingDetection.setPosition(new PVector(200, 60));
 	colorDrawingDetection.setCaptureOffset(offset);
 	colorDrawingDetection.initialize();
 
-	drawingDetection = new ColorDetection(this, new PVector(0, -drawingCaptureHeight));
+	drawingDetection = new ColorDetection(this);
+	drawingDetection.setPosition(new PVector(0, -drawingCaptureHeight));
 	drawingDetection.setCaptureOffset(offset);
 	drawingDetection.setCaptureSize(drawingCaptureWidth, drawingCaptureHeight);
 	drawingDetection.setPicSize(outputCaptureWidth,  outputCaptureHeight);  // pixels 
 	drawingDetection.initialize();
-
     }
     
 
@@ -565,8 +569,8 @@ public class Game  extends PaperTouchScreen {
 			// TODO: no camera mode...
 		    } else { 
 			TouchPoint tp = t.touchPoint;
-			ArrayList<DepthDataElement> depthDataElements = tp.getDepthDataElements();
-			for(DepthDataElement dde :  depthDataElements){
+			ArrayList<DepthDataElementKinect> depthDataElements = tp.getDepthDataElements();
+			for(DepthDataElementKinect dde :  depthDataElements){
 			    PVector v = kTouchInput.projectPointToScreen(screen, display, dde);
 			    
 			    if(v != null && isInMiddle(v)) {
@@ -594,7 +598,7 @@ public class Game  extends PaperTouchScreen {
     }
 
     int lastWallCreation = 0;
-    int wallCreationEvent = 1000;
+    int wallCreationEvent = 100;
 
 
     void drawPlayerInfos(){
