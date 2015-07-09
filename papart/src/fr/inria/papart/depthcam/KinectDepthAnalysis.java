@@ -163,7 +163,6 @@ public class KinectDepthAnalysis extends DepthAnalysis {
 
     protected void computeDepthAndDo(int precision, DepthPointManiplation manip) {
 
-        for (int i = 0; i < 100; i++) {
             computeDepthAndDoParallel(precision, manip);
 
 //        PixelList pixels = new PixelList(precision);
@@ -176,30 +175,9 @@ public class KinectDepthAnalysis extends DepthAnalysis {
 //                manip.execute(pKinect, px);
 //            }
 //        }
-        }
     }
 
     protected void computeDepthAndDoParallel(int precision, DepthPointManiplation manip) {
-
-        // THread version not as good...
-        
-//        ArrayList<Thread> threads = new ArrayList<>();
-//        for (int i = 0; i < nbThreads; i++) {
-//
-//            DepthPixelTaskThread depthPixelTask = new DepthPixelTaskThread(i, nbThreads, precision, manip);
-//
-//            Thread t = new Thread(depthPixelTask);
-//            t.start();
-//            threads.add(t);
-//
-//        }
-//        for (Thread t : threads) {
-//            try {
-//                t.join();
-//            } catch (InterruptedException ex) {
-//                Logger.getLogger(KinectDepthAnalysis.class.getName()).log(Level.SEVERE, null, ex);
-//            }
-//        }
 
         ArrayList<FutureTask<DepthPixelTask>> tasks = new ArrayList<>();
         for (int i = 0; i < nbThreads; i++) {
@@ -261,47 +239,7 @@ public class KinectDepthAnalysis extends DepthAnalysis {
 
     }
 
-       // THread version not as good...
-    class DepthPixelTaskThread implements Runnable {
-
-        private int part;
-        private int nbThreads;
-        private int precision;
-        private DepthPointManiplation manip;
-
-        public DepthPixelTaskThread(int part, int nbThreads, int precision, DepthPointManiplation manip) {
-            this.part = part;
-            this.nbThreads = nbThreads;
-            this.precision = precision;
-            this.manip = manip;
-        }
-
-        public void run() {
-
-            int nbParts = nbThreads;
-            int partSize = nbParts / calibIR.getHeight();
-            int begin = partSize * part;
-
-            int end;
-            if (part == nbThreads - 1) {
-                end = calibIR.getHeight();
-            } else {
-                end = partSize * (part + 1);
-            }
-
-            PixelList pixels = new PixelList(precision, begin, end);
-
-            for (PixelOffset px : pixels) {
-                float d = getDepth(px.offset);
-                if (d != INVALID_DEPTH) {
-                    Vec3D pKinect = calibIR.pixelToWorld(px.x, px.y, d);
-                    depthData.depthPoints[px.offset] = pKinect;
-                    manip.execute(pKinect, px);
-                }
-            }
-        }
-
-    }
+  
 
     protected void computeDepthAndDo(int precision, DepthPointManiplation manip, InvalidPointManiplation invalidManip) {
 
