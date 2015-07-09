@@ -6,13 +6,10 @@
 package fr.inria.papart.scanner;
 
 import fr.inria.papart.calibration.PlaneCalibration;
-import fr.inria.papart.depthcam.DepthAnalysis;
-import fr.inria.papart.procam.MarkerBoard;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import java.util.ArrayList;
-import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import toxi.geom.Ray3D;

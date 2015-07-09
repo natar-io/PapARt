@@ -19,7 +19,6 @@
 package fr.inria.papart.procam.camera;
 
 import java.util.concurrent.TimeUnit;
-import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import processing.core.PImage;
 

@@ -18,8 +18,6 @@
  */
 package fr.inria.papart.multitouch;
 
-import TUIO.TuioCursor;
-import java.util.ArrayList;
 import processing.core.PVector;
 
 /**

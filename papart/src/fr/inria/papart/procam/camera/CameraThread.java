@@ -19,9 +19,7 @@
 package fr.inria.papart.procam.camera;
 
 import fr.inria.papart.procam.MarkerBoard;
-import fr.inria.papart.procam.camera.Camera;
 import org.bytedeco.javacpp.opencv_core.IplImage;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

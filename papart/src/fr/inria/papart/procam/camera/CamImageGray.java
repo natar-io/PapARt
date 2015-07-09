@@ -18,12 +18,10 @@
  */
 package fr.inria.papart.procam.camera;
 
-import fr.inria.papart.procam.Utils;
 import java.awt.Image;
 import java.nio.ByteBuffer;
 import org.bytedeco.javacpp.opencv_core;
 import processing.core.PApplet;
-import static processing.core.PConstants.ARGB;
 import processing.opengl.PGraphicsOpenGL;
 import processing.opengl.Texture;
 

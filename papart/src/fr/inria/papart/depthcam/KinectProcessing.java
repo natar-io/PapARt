@@ -57,8 +57,8 @@ public class KinectProcessing extends KinectDepthAnalysis {
         depthData.clear();
         depthData.timeStamp = papplet.millis();
         depthData.planeAndProjectionCalibration = calib;
-        computeDepthAndDo(skip2D, new DoNothing());
-        doForEachPoint(skip2D, new Select2DPointPlaneProjection());
+        computeDepthAndDo(skip2D, new Select2DPointPlaneProjection());
+//        doForEachPoint(skip2D, new Select2DPointPlaneProjection());
 //        doForEachPoint(skip3D, new Select3DPointPlaneProjection());
 
         validPointsPImage.loadPixels();

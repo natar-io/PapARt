@@ -18,7 +18,6 @@
  */
 package fr.inria.papart.procam.display;
 
-import fr.inria.papart.drawingapp.DrawUtils;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.Screen;
 import java.util.ArrayList;

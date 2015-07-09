@@ -18,7 +18,6 @@
  */
 package fr.inria.papart.procam.camera;
 
-import org.bytedeco.javacpp.FlyCapture2;
 import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_core.CvSize;
 import org.bytedeco.javacpp.opencv_core.IplImage;

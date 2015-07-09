@@ -18,8 +18,6 @@
  */
 package fr.inria.papart.calibration;
 
-import fr.inria.papart.calibration.Calibration;
-import com.google.common.cache.Cache;
 import fr.inria.papart.scanner.GrayCode;
 import processing.core.PApplet;
 import processing.data.XML;

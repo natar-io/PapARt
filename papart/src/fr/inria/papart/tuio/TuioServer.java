@@ -25,7 +25,6 @@ import oscP5.OscMessage;
 import oscP5.OscP5;
 import processing.core.PApplet;
 import processing.core.PVector;
-import toxi.geom.Vec3D;
 
 /**
  *
@@ -33,8 +32,8 @@ import toxi.geom.Vec3D;
  */
 public class TuioServer {
 
-    private int outPort;
-    private int inPort;
+    private final int outPort;
+    private final int inPort;
 
     private OscP5 oscP5;
     private NetAddress myRemoteLocation;

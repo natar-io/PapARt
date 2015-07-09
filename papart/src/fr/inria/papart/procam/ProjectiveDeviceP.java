@@ -115,7 +115,7 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
         result.z = depth;
         return result;
     }
-
+    
     // without depth value, focal distance is assumed
     @Deprecated
     public Vec3D pixelToWorld(int x, int y) {

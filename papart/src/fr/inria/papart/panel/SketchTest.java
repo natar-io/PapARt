@@ -9,7 +9,7 @@ import processing.core.PApplet;
 import processing.opengl.*;
 
 /**
- *
+ * TEST CODE
  * @author jiii
  */
 public class SketchTest extends PApplet {

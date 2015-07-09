@@ -19,7 +19,6 @@
 package fr.inria.papart.depthcam;
 
 import java.util.Arrays;
-import processing.core.PVector;
 import toxi.geom.Vec3D;
 
 /**

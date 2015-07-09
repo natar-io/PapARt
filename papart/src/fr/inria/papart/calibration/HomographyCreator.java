@@ -22,12 +22,9 @@ import static org.bytedeco.javacpp.opencv_calib3d.cvFindHomography;
 import org.bytedeco.javacpp.opencv_core;
 import static org.bytedeco.javacpp.opencv_core.CV_32FC1;
 import static org.bytedeco.javacpp.opencv_core.cvCreateMat;
-import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
-import processing.data.XML;
 import toxi.geom.Matrix4x4;
-import toxi.geom.Vec3D;
 
 /**
  *

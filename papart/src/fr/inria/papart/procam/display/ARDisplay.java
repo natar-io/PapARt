@@ -26,7 +26,6 @@ import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.HasExtrinsics;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.procam.Screen;
-import fr.inria.papart.procam.Utils;
 import java.util.ArrayList;
 import javax.media.opengl.GL2;
 import processing.core.PApplet;

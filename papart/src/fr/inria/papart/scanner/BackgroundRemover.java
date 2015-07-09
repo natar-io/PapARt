@@ -22,18 +22,10 @@ package fr.inria.papart.scanner;
  *
  * @author jiii
  */
-import org.bytedeco.javacpp.Loader;
-import org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.Loader.*;
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
-import static org.bytedeco.javacpp.opencv_highgui.*;
-
-import org.bytedeco.javacpp.opencv_imgproc.*;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.IntBuffer;
 import processing.core.PConstants;
 import processing.core.PVector;
 

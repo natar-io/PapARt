@@ -14,7 +14,7 @@ import processing.core.PImage;
 import processing.opengl.PGraphicsOpenGL;
 
 /**
- *
+ * TEST CODE.
  * @author jiii
  */
 public class Panel {

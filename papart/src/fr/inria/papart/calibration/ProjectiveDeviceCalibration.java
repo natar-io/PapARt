@@ -21,11 +21,7 @@ package fr.inria.papart.calibration;
 import java.util.Arrays;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
-import processing.core.PVector;
 import processing.data.XML;
-import toxi.geom.Matrix4x4;
-import toxi.geom.ReadonlyVec3D;
-import toxi.geom.Vec3D;
 
 /**
  *
