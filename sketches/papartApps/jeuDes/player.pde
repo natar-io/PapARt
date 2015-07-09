@@ -25,7 +25,6 @@ class SpecialAttack extends PVector {
 
 // Ration between size of  Tower and special attack
 float attackHPRatio = 1.5f;
-
 int heartHPUp = 5;
 int attackHPDown = 2;
 
@@ -49,21 +48,6 @@ void action(){
 
 // To be done again
 void undo(){
-    // if(Mode.is("AddTower") || Mode.is("SpecialAttack")){
-    // 	Mode.set("ChooseAction");
-    // 	return;
-    // }
-    
-    // if(Mode.is("ChooseAction")){
-    // 	undoPlayersHP();
-    // 	Mode.set("PlaceDice");
-    // 	return;
-    // }
-
-    // if(Mode.is("PlaceDice")){
-    // 	prevPlayer();
-    // 	return;
-    // }
 }
 
 void addTower(){

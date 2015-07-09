@@ -50,48 +50,46 @@ public class MyBoard  extends PaperTouchScreen {
 	
 	beginDraw2D();
 
-		if(millis() > lastAction + actionTimeout)
-	    {
+	if(millis() > lastAction + actionTimeout)  {
 
-	colorMode(RGB, 255);
+	    colorMode(RGB, 255);
 
-	clear();
+	    clear();
 	
+	    noFill();
+	    stroke(200);
+	    strokeWeight(3);
+	    rectMode(CORNER);
+
+	    float animationAmount = ((float)millis() - lastNextPlayer) / nextPlayerAnimationDuration;
+
+	    if(animationAmount < 1)
+		fill(animationAmount * maxAmount);
 	
-	noFill();
-	stroke(200);
-	strokeWeight(3);
-	rectMode(CORNER);
-
-	float animationAmount = ((float)millis() - lastNextPlayer) / nextPlayerAnimationDuration;
-
-	if(animationAmount < 1)
-	    fill(animationAmount * maxAmount);
-	
-	rect(0, 0, drawingSize.x , drawingSize.y);
+	    rect(0, 0, drawingSize.x , drawingSize.y);
 
 
-	rectMode(CENTER);
-	ellipseMode(CENTER);
+	    rectMode(CENTER);
+	    ellipseMode(CENTER);
 
 	
-		// for reasons... touch needs to be updated -> was fixed ?
-		updateTouch();
+	    // for reasons... touch needs to be updated -> was fixed ?
+	    updateTouch();
 		
-		drawAttacks();
-		drawPlayers();
+	    drawAttacks();
+	    drawPlayers();
 		
-		// TODO: not always
-		countPoints();
+	    // TODO: not always
+	    countPoints();
 		
-		if(Mode.is("AddTower"))
-		    checkAddTower();
-		if(Mode.is("SpecialAttack"))
-		    checkSpecialAttack();
+	    if(Mode.is("AddTower"))
+		checkAddTower();
+	    if(Mode.is("SpecialAttack"))
+		checkSpecialAttack();
 
-		lastAction = millis();
+	    lastAction = millis();
 		
-	    }
+	}
 	
 	endDraw();
 
