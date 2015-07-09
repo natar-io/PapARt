@@ -12,6 +12,15 @@ import static fr.inria.papart.depthcam.DepthAnalysis.papplet;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.procam.camera.CameraOpenKinect;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import processing.core.PApplet;
@@ -57,6 +66,14 @@ public class KinectDepthAnalysis extends DepthAnalysis {
         calibRGB = camera.getProjectiveDevice();
         calibIR = camera.getDepthCamera().getProjectiveDevice();
         initMemory();
+        initThreadPool();
+    }
+
+    private int nbThreads = 16;
+    ExecutorService threadPool;
+
+    private void initThreadPool() {
+        threadPool = Executors.newFixedThreadPool(nbThreads);
     }
 
     private void initMemory() {
@@ -145,33 +162,160 @@ public class KinectDepthAnalysis extends DepthAnalysis {
     }
 
     protected void computeDepthAndDo(int precision, DepthPointManiplation manip) {
-        for (int y = 0; y < calibIR.getHeight(); y += precision) {
-            for (int x = 0; x < calibIR.getWidth(); x += precision) {
 
-                int offset = y * calibIR.getWidth() + x;
-                float d = getDepth(offset);
-                if (d != INVALID_DEPTH) {
-                    Vec3D pKinect = calibIR.pixelToWorld(x, y, d);
-                    depthData.depthPoints[offset] = pKinect;
-                    manip.execute(pKinect, x, y, offset);
-                }
-            }
+        for (int i = 0; i < 100; i++) {
+            computeDepthAndDoParallel(precision, manip);
+
+//        PixelList pixels = new PixelList(precision);
+//
+//        for (PixelOffset px : pixels) {
+//            float d = getDepth(px.offset);
+//            if (d != INVALID_DEPTH) {
+//                Vec3D pKinect = calibIR.pixelToWorld(px.x, px.y, d);
+//                depthData.depthPoints[px.offset] = pKinect;
+//                manip.execute(pKinect, px);
+//            }
+//        }
         }
     }
 
-    protected void computeDepthAndDo(int precision, DepthPointManiplation manip, InvalidPointManiplation invalidManip) {
-        for (int y = 0; y < calibIR.getHeight(); y += precision) {
-            for (int x = 0; x < calibIR.getWidth(); x += precision) {
+    protected void computeDepthAndDoParallel(int precision, DepthPointManiplation manip) {
 
-                int offset = y * calibIR.getWidth() + x;
-                float d = getDepth(offset);
+        // THread version not as good...
+        
+//        ArrayList<Thread> threads = new ArrayList<>();
+//        for (int i = 0; i < nbThreads; i++) {
+//
+//            DepthPixelTaskThread depthPixelTask = new DepthPixelTaskThread(i, nbThreads, precision, manip);
+//
+//            Thread t = new Thread(depthPixelTask);
+//            t.start();
+//            threads.add(t);
+//
+//        }
+//        for (Thread t : threads) {
+//            try {
+//                t.join();
+//            } catch (InterruptedException ex) {
+//                Logger.getLogger(KinectDepthAnalysis.class.getName()).log(Level.SEVERE, null, ex);
+//            }
+//        }
+
+        ArrayList<FutureTask<DepthPixelTask>> tasks = new ArrayList<>();
+        for (int i = 0; i < nbThreads; i++) {
+            DepthPixelTask depthPixelTask = new DepthPixelTask(i, nbThreads, precision, manip);
+            FutureTask<DepthPixelTask> task = new FutureTask<DepthPixelTask>(depthPixelTask);
+
+            threadPool.submit(task);
+            tasks.add(task);
+
+        }
+        try {
+            for (FutureTask<DepthPixelTask> task : tasks) {
+                task.get();
+            }
+        } catch (ExecutionException e) {
+        } catch (InterruptedException e) {
+        }
+    }
+
+    class DepthPixelTask implements Callable {
+
+        private int part;
+        private int nbThreads;
+        private int precision;
+        private DepthPointManiplation manip;
+
+        public DepthPixelTask(int part, int nbThreads, int precision, DepthPointManiplation manip) {
+            this.part = part;
+            this.nbThreads = nbThreads;
+            this.precision = precision;
+            this.manip = manip;
+        }
+
+        public Object call() {
+
+            int nbParts = nbThreads;
+            int partSize = nbParts / calibIR.getHeight();
+            int begin = partSize * part;
+
+            int end;
+            if (part == nbThreads - 1) {
+                end = calibIR.getHeight();
+            } else {
+                end = partSize * (part + 1);
+            }
+
+            PixelList pixels = new PixelList(precision, begin, end);
+
+            for (PixelOffset px : pixels) {
+                float d = getDepth(px.offset);
                 if (d != INVALID_DEPTH) {
-                    Vec3D pKinect = calibIR.pixelToWorld(x, y, d);
-                    depthData.depthPoints[offset] = pKinect;
-                    manip.execute(pKinect, x, y, offset);
-                } else {
-                    invalidManip.execute(x, y, offset);
+                    Vec3D pKinect = calibIR.pixelToWorld(px.x, px.y, d);
+                    depthData.depthPoints[px.offset] = pKinect;
+                    manip.execute(pKinect, px);
                 }
+            }
+            return null;
+        }
+
+    }
+
+       // THread version not as good...
+    class DepthPixelTaskThread implements Runnable {
+
+        private int part;
+        private int nbThreads;
+        private int precision;
+        private DepthPointManiplation manip;
+
+        public DepthPixelTaskThread(int part, int nbThreads, int precision, DepthPointManiplation manip) {
+            this.part = part;
+            this.nbThreads = nbThreads;
+            this.precision = precision;
+            this.manip = manip;
+        }
+
+        public void run() {
+
+            int nbParts = nbThreads;
+            int partSize = nbParts / calibIR.getHeight();
+            int begin = partSize * part;
+
+            int end;
+            if (part == nbThreads - 1) {
+                end = calibIR.getHeight();
+            } else {
+                end = partSize * (part + 1);
+            }
+
+            PixelList pixels = new PixelList(precision, begin, end);
+
+            for (PixelOffset px : pixels) {
+                float d = getDepth(px.offset);
+                if (d != INVALID_DEPTH) {
+                    Vec3D pKinect = calibIR.pixelToWorld(px.x, px.y, d);
+                    depthData.depthPoints[px.offset] = pKinect;
+                    manip.execute(pKinect, px);
+                }
+            }
+        }
+
+    }
+
+    protected void computeDepthAndDo(int precision, DepthPointManiplation manip, InvalidPointManiplation invalidManip) {
+
+        PixelList pixels = new PixelList(precision);
+
+        for (PixelOffset px : pixels) {
+
+            float d = getDepth(px.offset);
+            if (d != INVALID_DEPTH) {
+                Vec3D pKinect = calibIR.pixelToWorld(px.x, px.y, d);
+                depthData.depthPoints[px.offset] = pKinect;
+                manip.execute(pKinect, px);
+            } else {
+                invalidManip.execute(px);
             }
         }
     }
@@ -180,14 +324,14 @@ public class KinectDepthAnalysis extends DepthAnalysis {
         if (precision <= 0) {
             return;
         }
-        for (int y = 0; y < calibIR.getHeight(); y += precision) {
-            for (int x = 0; x < calibIR.getWidth(); x += precision) {
-                int offset = y * calibIR.getWidth() + x;
-                Vec3D pKinect = depthData.depthPoints[offset];
-                if (pKinect != INVALID_POINT) {
-                    manip.execute(pKinect, x, y, offset);
-                }
+        PixelList pixels = new PixelList(precision);
+
+        for (PixelOffset px : pixels) {
+            Vec3D pKinect = depthData.depthPoints[px.offset];
+            if (pKinect != INVALID_POINT) {
+                manip.execute(pKinect, px);
             }
+
         }
     }
 
@@ -195,13 +339,13 @@ public class KinectDepthAnalysis extends DepthAnalysis {
         if (precision <= 0) {
             return;
         }
-        for (int y = 0; y < calibIR.getHeight(); y += precision) {
-            for (int x = 0; x < calibIR.getWidth(); x += precision) {
-                int offset = y * calibIR.getWidth() + x;
-                Vec3D pKinect = depthData.depthPoints[offset];
-                if (pKinect != INVALID_POINT && depthData.validPointsMask[offset] == true) {
-                    manip.execute(pKinect, x, y, offset);
-                }
+
+        PixelList pixels = new PixelList(precision);
+
+        for (PixelOffset px : pixels) {
+            Vec3D pKinect = depthData.depthPoints[px.offset];
+            if (pKinect != INVALID_POINT && depthData.validPointsMask[px.offset] == true) {
+                manip.execute(pKinect, px);
             }
         }
     }
@@ -210,13 +354,12 @@ public class KinectDepthAnalysis extends DepthAnalysis {
         if (precision <= 0) {
             return;
         }
-        for (int y = 0; y < calibIR.getHeight(); y += precision) {
-            for (int x = 0; x < calibIR.getWidth(); x += precision) {
-                int offset = y * calibIR.getWidth() + x;
-                Vec3D pKinect = depthData.depthPoints[offset];
-                if (pKinect != INVALID_POINT && depthData.validPointsMask3D[offset] == true) {
-                    manip.execute(pKinect, x, y, offset);
-                }
+        PixelList pixels = new PixelList(precision);
+
+        for (PixelOffset px : pixels) {
+            Vec3D pKinect = depthData.depthPoints[px.offset];
+            if (pKinect != INVALID_POINT && depthData.validPointsMask3D[px.offset] == true) {
+                manip.execute(pKinect, px);
             }
         }
     }
@@ -294,13 +437,13 @@ public class KinectDepthAnalysis extends DepthAnalysis {
     class Select2DPointPlaneProjection implements DepthPointManiplation {
 
         @Override
-        public void execute(Vec3D p, int x, int y, int offset) {
+        public void execute(Vec3D p, PixelOffset px) {
             if (depthData.planeAndProjectionCalibration.hasGoodOrientationAndDistance(p)) {
                 Vec3D projected = depthData.planeAndProjectionCalibration.project(p);
-                depthData.projectedPoints[offset] = projected;
+                depthData.projectedPoints[px.offset] = projected;
                 if (isInside(projected, 0.f, 1.f, 0.0f)) {
-                    depthData.validPointsMask[offset] = true;
-                    depthData.validPointsList.add(offset);
+                    depthData.validPointsMask[px.offset] = true;
+                    depthData.validPointsList.add(px.offset);
                 }
             }
         }
@@ -309,7 +452,7 @@ public class KinectDepthAnalysis extends DepthAnalysis {
     class SelectPlaneTouchHand implements DepthPointManiplation {
 
         @Override
-        public void execute(Vec3D p, int x, int y, int offset) {
+        public void execute(Vec3D p, PixelOffset px) {
 
             boolean overTouch = depthData.planeAndProjectionCalibration.hasGoodOrientation(p);
             boolean underTouch = depthData.planeAndProjectionCalibration.isUnderPlane(p);
@@ -319,12 +462,12 @@ public class KinectDepthAnalysis extends DepthAnalysis {
 
             if (isInside(projected, 0.f, 1.f, 0.0f)) {
 
-                depthData.projectedPoints[offset] = projected;
-                depthData.touchAttributes[offset] = new TouchAttributes(touchSurface, underTouch, overTouch);
-                depthData.validPointsMask[offset] = touchSurface;
+                depthData.projectedPoints[px.offset] = projected;
+                depthData.touchAttributes[px.offset] = new TouchAttributes(touchSurface, underTouch, overTouch);
+                depthData.validPointsMask[px.offset] = touchSurface;
 
                 if (touchSurface) {
-                    depthData.validPointsList.add(offset);
+                    depthData.validPointsList.add(px.offset);
                 }
             }
         }
@@ -333,10 +476,10 @@ public class KinectDepthAnalysis extends DepthAnalysis {
     class Select2DPointOverPlane implements DepthPointManiplation {
 
         @Override
-        public void execute(Vec3D p, int x, int y, int offset) {
+        public void execute(Vec3D p, PixelOffset px) {
             if (depthData.planeCalibration.hasGoodOrientation(p)) {
-                depthData.validPointsMask[offset] = true;
-                depthData.validPointsList.add(offset);
+                depthData.validPointsMask[px.offset] = true;
+                depthData.validPointsList.add(px.offset);
             }
         }
     }
@@ -344,10 +487,10 @@ public class KinectDepthAnalysis extends DepthAnalysis {
     class Select2DPointOverPlaneDist implements DepthPointManiplation {
 
         @Override
-        public void execute(Vec3D p, int x, int y, int offset) {
+        public void execute(Vec3D p, PixelOffset px) {
             if (depthData.planeCalibration.hasGoodOrientationAndDistance(p)) {
-                depthData.validPointsMask[offset] = true;
-                depthData.validPointsList.add(offset);
+                depthData.validPointsMask[px.offset] = true;
+                depthData.validPointsList.add(px.offset);
             }
         }
     }
@@ -355,7 +498,7 @@ public class KinectDepthAnalysis extends DepthAnalysis {
     class Select2DPointCalibratedHomography implements DepthPointManiplation {
 
         @Override
-        public void execute(Vec3D p, int x, int y, int offset) {
+        public void execute(Vec3D p, PixelOffset px) {
 
             PVector projected = new PVector();
             PVector init = new PVector(p.x, p.y, p.z);
@@ -364,8 +507,8 @@ public class KinectDepthAnalysis extends DepthAnalysis {
 
             // TODO: Find how to select the points... 
             if (projected.z > 10 && projected.x > 0 && projected.y > 0) {
-                depthData.validPointsMask[offset] = true;
-                depthData.validPointsList.add(offset);
+                depthData.validPointsMask[px.offset] = true;
+                depthData.validPointsList.add(px.offset);
             }
         }
     }
@@ -373,13 +516,13 @@ public class KinectDepthAnalysis extends DepthAnalysis {
     class Select3DPointPlaneProjection implements DepthPointManiplation {
 
         @Override
-        public void execute(Vec3D p, int x, int y, int offset) {
+        public void execute(Vec3D p, PixelOffset px) {
             if (depthData.planeAndProjectionCalibration.hasGoodOrientation(p)) {
                 Vec3D projected = depthData.planeAndProjectionCalibration.project(p);
-                depthData.projectedPoints[offset] = projected;
+                depthData.projectedPoints[px.offset] = projected;
                 if (isInside(projected, 0.f, 1.f, 0.2f)) {
-                    depthData.validPointsMask3D[offset] = true;
-                    depthData.validPointsList3D.add(offset);
+                    depthData.validPointsMask3D[px.offset] = true;
+                    depthData.validPointsList3D.add(px.offset);
                 }
             }
         }
@@ -388,8 +531,8 @@ public class KinectDepthAnalysis extends DepthAnalysis {
     class SetImageData implements DepthPointManiplation {
 
         @Override
-        public void execute(Vec3D p, int x, int y, int offset) {
-            depthData.pointColors[offset] = getPixelColor(offset);
+        public void execute(Vec3D p, PixelOffset px) {
+            depthData.pointColors[px.offset] = getPixelColor(px.offset);
 
         }
     }
@@ -400,6 +543,70 @@ public class KinectDepthAnalysis extends DepthAnalysis {
                 | (colorRaw[colorOffset + 1] & 0xFF) << 8
                 | (colorRaw[colorOffset + 0] & 0xFF);
         return c;
+    }
+
+    // TODO: array ? or what instead ?
+    public class PixelList implements Iterable<PixelOffset> {
+
+        int precision = 1;
+        int begin = 0;
+        int end;
+
+        public PixelList(int precision) {
+            this.precision = precision;
+            this.begin = 0;
+            this.end = calibIR.getHeight();
+        }
+
+        /**
+         * Begin and end are on Y axis.
+         *
+         * @param precision
+         * @param begin
+         * @param end
+         */
+        public PixelList(int precision, int begin, int end) {
+            this.precision = precision;
+            this.begin = begin;
+            this.end = end;
+        }
+
+        @Override
+        public Iterator<PixelOffset> iterator() {
+            Iterator<PixelOffset> it = new Iterator<PixelOffset>() {
+
+                private int x = 0;
+                private int y = begin;
+                private int offset = 0;
+                private final int width = calibIR.getWidth();
+
+                @Override
+                public boolean hasNext() {
+                    return offset < width * end;
+                }
+
+                @Override
+                public PixelOffset next() {
+                    PixelOffset out = new PixelOffset(x, y, offset);
+                    x += precision;
+                    offset += precision;
+
+                    if (x >= width) {
+                        x = 0;
+                        y += precision;
+                        offset = y * width;
+                    }
+
+                    return out;
+                }
+
+                @Override
+                public void remove() {
+                    throw new UnsupportedOperationException();
+                }
+            };
+            return it;
+        }
     }
 
     public void undistortRGB(opencv_core.IplImage rgb, opencv_core.IplImage out) {

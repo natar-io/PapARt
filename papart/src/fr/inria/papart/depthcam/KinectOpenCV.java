@@ -77,9 +77,9 @@ public class KinectOpenCV extends KinectDepthAnalysis {
     class setImageData implements DepthPointManiplation {
 
         @Override
-        public void execute(Vec3D p, int x, int y, int offset) {
-            depthData.validPointsMask[offset] = true;
-            int outputOffset = offset * 3;
+        public void execute(Vec3D p, PixelOffset px) {
+            depthData.validPointsMask[px.offset] = true;
+            int outputOffset = px.offset * 3;
             int colorOffset = findColorOffset(p) * 3;
             validPointsRaw[outputOffset + 2] = colorRaw[colorOffset + 2];
             validPointsRaw[outputOffset + 1] = colorRaw[colorOffset + 1];

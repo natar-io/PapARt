@@ -56,29 +56,29 @@ public abstract class DepthAnalysis {
 
     public interface InvalidPointManiplation {
 
-        public void execute(int x, int y, int offset);
+        public void execute(PixelOffset px);
     }
 
     public interface DepthPointManiplation {
 
-        public void execute(Vec3D p, int x, int y, int offset);
+        public void execute(Vec3D p, PixelOffset px);
     }
 
     class ComputeNormal implements DepthPointManiplation {
 
         @Override
-        public void execute(Vec3D p, int x, int y, int offset) {
+        public void execute(Vec3D p, PixelOffset px) {
 
-            depthData.connexity.compute(x, y);
-            Vec3D normal = computeNormalImpl(depthData.depthPoints[offset], offset, x, y);
-            depthData.normals[offset] = normal;
+            depthData.connexity.compute(px.x, px.y);
+            Vec3D normal = computeNormalImpl(depthData.depthPoints[px.offset], px);
+            depthData.normals[px.offset] = normal;
         }
     }
 
-    private Vec3D computeNormalImpl(Vec3D point, int offset, int x, int y) {
+    private Vec3D computeNormalImpl(Vec3D point, PixelOffset px) {
 
-        Vec3D[] neighbours = depthData.connexity.getNeighbourList(x, y);
-        if (depthData.connexity.connexitySum[offset] < 2) {
+        Vec3D[] neighbours = depthData.connexity.getNeighbourList(px.x, px.y);
+        if (depthData.connexity.connexitySum[px.offset] < 2) {
             return null;
         }
 
@@ -208,7 +208,7 @@ public abstract class DepthAnalysis {
     class DoNothing implements DepthPointManiplation {
 
         @Override
-        public void execute(Vec3D p, int x, int y, int offset) {
+        public void execute(Vec3D p, PixelOffset px) {
 
         }
     }

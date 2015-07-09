@@ -114,21 +114,21 @@ public class KinectProcessing extends KinectDepthAnalysis {
     class SetTouchInformation implements DepthPointManiplation {
 
         @Override
-        public void execute(Vec3D p, int x, int y, int offset) {
-//            depthData.validPointsMask[offset] = true;
-            int r = depthData.touchAttributes[offset].isInTouch() ? 100 : 0;
-            int g = depthData.touchAttributes[offset].isOverTouch() ? 100 : 0;
-            int b = depthData.touchAttributes[offset].isUnderTouch() ? 100 : 0;
-            setFakeColor(offset, r, g, b);
+        public void execute(Vec3D p, PixelOffset px) {
+//            depthData.validPointsMask[px.offset] = true;
+            int r = depthData.touchAttributes[px.offset].isInTouch() ? 100 : 0;
+            int g = depthData.touchAttributes[px.offset].isOverTouch() ? 100 : 0;
+            int b = depthData.touchAttributes[px.offset].isUnderTouch() ? 100 : 0;
+            setFakeColor(px.offset, r, g, b);
         }
     }
 
     class SetImageData implements DepthPointManiplation {
 
         @Override
-        public void execute(Vec3D p, int x, int y, int offset) {
-            depthData.validPointsMask[offset] = true;
-            setPixelColor(offset);
+        public void execute(Vec3D p, PixelOffset px) {
+            depthData.validPointsMask[px.offset] = true;
+            setPixelColor(px.offset);
         }
     }
 
