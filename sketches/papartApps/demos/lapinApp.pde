@@ -2,7 +2,7 @@ import fr.inria.papart.multitouch.metaphors.*;
 
 public class LapinApp extends PaperTouchScreen{
     
-    PVector userPos = new PVector(0, 500, 500);
+    PVector userPos = new PVector(0, 200, 500);
     PShape rabbit;
     PShape sphereM;
     PGraphicsOpenGL pg;
@@ -13,7 +13,7 @@ public class LapinApp extends PaperTouchScreen{
     void setup(){
 
 	setDrawingSize(297, 210);
-	loadMarkerBoard(sketchPath + "/data/markers/lapin.cfg", 297, 210);
+	loadMarkerBoard(sketchPath + "/data/markers/A3-small1.cfg", 297, 210);
 
 	rabbit = loadShape("models/bun_zipper.obj");
 	sphereM = loadShape("models/sphere/sphere1.obj");
@@ -31,12 +31,16 @@ public class LapinApp extends PaperTouchScreen{
     }
 
     void draw(){
-        //   screen.setDrawing(true);
-	//	updateTouch();
+
+	userPos = new PVector(0, 400, 900);
+
+
+	//   screen.setDrawing(true);
+	 updateTouch();
 	
-	// if(isLightMode()){
+	if(isLightMode()){
 	    updateLightPos();
-	// }
+	}
 
 	if(isLockMode()){
 
@@ -52,17 +56,22 @@ public class LapinApp extends PaperTouchScreen{
 	noStroke();
 	fill(140);
 
-	pushMatrix();
- 	  scale(resolution);
-	  drawTouch(3);
-	  drawButtons();
-
-	if(b.isTouched()){
+	//drawTouch(3);
+	// drawButtons();
+	
+	if(test){
 	    resetPos();
+	    println("Reset Pos");
+	    test = false;
 	}
-	popMatrix();
+	    
+	// if(b.isTouched()){
+	//     resetPos();
+	// }
 
-	drawMono();
+	// drawMono();
+        scale(resolution);
+        drawAnaglyph();
 	/////////////// Analglyph ////////////////////
 
 	screen.endDrawPerspective();
@@ -128,10 +137,10 @@ public class LapinApp extends PaperTouchScreen{
     private void drawRabbit(){
 	pushMatrix();
 
-	scale(resolution);
-	rst.applyTransformationTo(this);
-	scale(1f / resolution);
-	translate(0, 0, 7);
+	//	scale(resolution);
+	// rst.applyTransformationTo(this);
+	// scale(1f / resolution);
+	translate(0, 0, 0);
 	rotateX(HALF_PI);
 	rotateY(PI);
 	scale(400);	
@@ -140,7 +149,7 @@ public class LapinApp extends PaperTouchScreen{
     }
 
     private void drawLines(){
-	stroke(180);
+	stroke(120);
 	int lineSpace = 20;
 	pushMatrix();
 	translate(-drawingSize.x /2, 

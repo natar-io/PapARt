@@ -353,7 +353,7 @@ public class PaperScreen {
         PGraphicsOpenGL g = screen.getGraphics();
         this.currentGraphics = g;
         g.beginDraw();
-//        g.scale(resolution);
+        g.scale(resolution);
         this.isDrawingOnScreen = true;
         return g;
     }

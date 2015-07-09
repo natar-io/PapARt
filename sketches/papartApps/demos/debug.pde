@@ -68,9 +68,9 @@ public class Debug  extends PaperTouchScreen {
 	    ellipse(p.x, p.y, ellipseSize, ellipseSize);
 
 	    TouchPoint tp = t.touchPoint;
-	    ArrayList<DepthDataElement> depthDataElements = tp.getDepthDataElements();
+	    ArrayList<DepthDataElementKinect> depthDataElements = tp.getDepthDataElements();
 
-	    for(DepthDataElement dde : depthDataElements){
+	    for(DepthDataElementKinect dde : depthDataElements){
 
 		Vec3D projPt = dde.projectedPoint;
 		try{
