@@ -5,7 +5,7 @@ void initGui(){
     cp5.addSlider("recursion")
 	.setPosition(30, 50)
 	.setValue(touchCalibration.getMaximumRecursion())
-	.setRange(1, 50)
+	.setRange(1, 500)
 	.setSize(200, 12);
 
     cp5.addSlider("searchDepth")

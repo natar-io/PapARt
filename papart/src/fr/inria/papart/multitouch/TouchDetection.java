@@ -158,7 +158,6 @@ public abstract class TouchDetection {
     public ConnectedComponent findNeighboursRec(int currentPoint, int recLevel, int x, int y) {
 
         ConnectedComponent neighbourList = new ConnectedComponent();
-        ArrayList<Integer> visitNext = new ArrayList<Integer>();
 
         // At least one point in connected compo !
         if (recLevel == 0) {
@@ -171,23 +170,28 @@ public abstract class TouchDetection {
         }
 
         // do nothing on borders -> dead zone optimization ?!
-        if(x - searchDepth < 0 || x + searchDepth > w-1 ||
-           y - searchDepth < 0 || y + searchDepth > h-1 )
+        if (x - searchDepth < 0 || x + searchDepth > w - 1
+                || y - searchDepth < 0 || y + searchDepth > h - 1) {
             return neighbourList;
-        
-        
+        }
+
+        assert (assignedPoints[currentPoint] == true);
+
         // Usual...
 //        int minX = PApplet.constrain(x - searchDepth, 0, w - 1);
 //        int maxX = PApplet.constrain(x + searchDepth, 0, w - 1);
 //        int minY = PApplet.constrain(y - searchDepth, 0, h - 1);
 //        int maxY = PApplet.constrain(y + searchDepth, 0, h - 1);
+        int minX = x - searchDepth;
+        int maxX = x + searchDepth;
+        int minY = y - searchDepth;
+        int maxY = y + searchDepth;
+        for (int j = minY; j <= maxY; j += precision) {
+            boolean isBorderY = (j == y - searchDepth) || (j == y + searchDepth);
 
+            for (int i = minX; i <= maxX; i += precision) {
+                boolean isBorderX = (i == x - searchDepth) || (i == x + searchDepth);
 
-//        for (int j = minY; j <= maxY; j += precision) {
-//            for (int i = minX; i <= maxX; i += precision) {
-        
-        for (int j = y - searchDepth; j <= y + searchDepth; j += precision) {
-            for (int i = x - searchDepth ; i <= x + searchDepth; i += precision) {
                 int offset = j * w + i;
 
                 // Avoid getting ouside the limits
@@ -197,23 +201,26 @@ public abstract class TouchDetection {
 //                    connectedComponentImage[offset] = currentCompo;
                     // Remove If present -> it might not be the case often. 
 //                    toVisit.remove(offset);
-                    addPointInConnectedComponent(neighbourList, currentPoint);
-
+                    addPointInConnectedComponent(neighbourList, offset);
                     neighbourList.add((Integer) offset);
 
-                    ConnectedComponent subNeighbours = findNeighboursRec(offset, recLevel + 1, i, j);
-                    neighbourList.addAll(subNeighbours);
-                       
+                    if (isBorderY || isBorderX) {
+                        ConnectedComponent subNeighbours = findNeighboursRec(offset, recLevel + 1, i, j);
+                        neighbourList.addAll(subNeighbours);
+                    }
+//                    ConnectedComponent subNeighbours = findNeighboursRec(offset, recLevel + 1, i, j);
+//                    neighbourList.addAll(subNeighbours);
+
                 } // if is ValidPoint
             } // for j
         } // for i
 
         return neighbourList;
     }
-    
-      static public final int constrain(int amt, int low, int high) {
-    return (amt < low) ? low : ((amt > high) ? high : amt);
-  }
+
+    static public final int constrain(int amt, int low, int high) {
+        return (amt < low) ? low : ((amt > high) ? high : amt);
+    }
 
     // TODO: use another type here ?
     protected TouchPoint createTouchPoint(ConnectedComponent connectedComponent) {

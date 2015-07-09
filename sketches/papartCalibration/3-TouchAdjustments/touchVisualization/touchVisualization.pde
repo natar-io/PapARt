@@ -81,6 +81,12 @@ void setup(){
   touchCalibration.loadFrom(this, Papart.touchCalib);
   touchDetection.setCalibration(touchCalibration);
 
+  touchDetection3D = new TouchDetectionSimple3D(Kinect.SIZE);
+  touchCalibration3D = new PlanarTouchCalibration();
+  touchCalibration3D.loadFrom(this, Papart.touchCalib3D);
+  touchDetection3D.setCalibration(touchCalibration3D);
+
+  
   initGui();
 
   frameRate(200);
@@ -95,7 +101,8 @@ int searchDepth, recursion, minCompoSize, forgetTime;
 float trackingMaxDistance;
 
 TouchDetectionSimple2D touchDetection;
-PlanarTouchCalibration touchCalibration;
+TouchDetectionSimple3D touchDetection3D;
+PlanarTouchCalibration touchCalibration, touchCalibration3D;
 
 
 Vec3D[] depthPoints;
@@ -106,7 +113,7 @@ ArrayList<TouchPoint> globalTouchList = new ArrayList<TouchPoint>();
 
 void draw(){
     background(0);
-    println("Framerate " + frameRate);
+    //     println("Framerate " + frameRate);
     
     try{
     	cameraKinect.grab();
@@ -121,18 +128,9 @@ void draw(){
     	return;
     }
 
-    touchCalibration.setMaximumDistance(maxDistance);
-    touchCalibration.setMinimumHeight(minHeight);
-
-    touchCalibration.setMinimumComponentSize((int)minCompoSize);
-    touchCalibration.setMaximumRecursion((int) recursion);
-    touchCalibration.setSearchDepth((int) searchDepth);
-
-    touchCalibration.setTrackingForgetTime((int)forgetTime);
-    touchCalibration.setTrackingMaxDistance(trackingMaxDistance);
-    
-    touchCalibration.setPrecision(precision);
     planeCalibration.setHeight(planeHeight);
+
+    updateCalibration(is3D ? touchCalibration3D : touchCalibration);
 
     
     kinect.updateMT(kinectImgDepth, kinectImg,  planeProjCalibration,
@@ -148,11 +146,35 @@ void draw(){
     cam.endHUD(); // always!
 }
 
+void updateCalibration(PlanarTouchCalibration calib){
+
+    calib.setMaximumDistance(maxDistance);
+    calib.setMinimumHeight(minHeight);
+
+    calib.setMinimumComponentSize((int)minCompoSize);
+    calib.setMaximumRecursion((int) recursion);
+    calib.setSearchDepth((int) searchDepth);
+
+    calib.setTrackingForgetTime((int)forgetTime);
+    calib.setTrackingMaxDistance(trackingMaxDistance);
+    
+    calib.setPrecision(precision);
+
+}
+
 
 void draw3DPointCloud(){
 
     KinectDepthData depthData = kinect.getDepthData();
-    ArrayList<TouchPoint> touchs = touchDetection.compute(depthData);
+
+    ArrayList<TouchPoint> touchs;
+
+    if(is3D){
+	touchs = touchDetection3D.compute(depthData);
+    } else{
+	touchs = touchDetection.compute(depthData);
+    }
+
     TouchPointTracker.trackPoints(globalTouchList, touchs, millis());
 
     //     pointCloud.updateWith(kinect);
@@ -179,27 +201,35 @@ void draw3DPointCloud(){
     
 }
 
-
+boolean is3D = false;
 boolean isMouseControl = true;
 
 void keyPressed() {
 
+    if(key == 't'){
+	globalTouchList.clear();
+	is3D = !is3D;
+	println("Is 3D " + is3D);
+    }
+    
     if(key =='m'){
 	isMouseControl = !isMouseControl;
 	cam.setMouseControlled(isMouseControl);
     }
 
-    if(key == 's')
-	save();
+    if(key == 's'){
+	if(is3D)
+	    save3D();
+	else
+	    save();
+    }
 
-    if(key == 'S')
-	save3D();
 
 }
 
 void save3D(){
     println("TouchCalibration3D saved.");    
-    touchCalibration.saveTo(this, Papart.touchCalib3D);
+    touchCalibration3D.saveTo(this, Papart.touchCalib3D);
 }
 
 void save(){

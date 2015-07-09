@@ -382,7 +382,7 @@ public class KinectDepthAnalysis extends DepthAnalysis {
             if (depthData.planeAndProjectionCalibration.hasGoodOrientation(p)) {
                 Vec3D projected = depthData.planeAndProjectionCalibration.project(p);
                 depthData.projectedPoints[px.offset] = projected;
-                if (isInside(projected, 0.f, 1.f, 0.2f)) {
+                if (isInside(projected, 0.f, 1.f, 0.1f)) {
                     depthData.validPointsMask3D[px.offset] = true;
                     depthData.validPointsList3D.add(px.offset);
                 }

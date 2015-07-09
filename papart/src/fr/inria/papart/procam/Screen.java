@@ -62,7 +62,7 @@ public class Screen {
     // TODO: update this again
     private HomographyCreator homography;
     protected HomographyCalibration worldToScreen;
-    public float halfEyeDist = 20; // 2cm
+    public float halfEyeDist = 10; // 2cm
     private boolean isDrawing = true;
     private boolean isOpenGL = false;
 
@@ -289,7 +289,7 @@ public class Screen {
         PVector user = new PVector();
 
         if (isAnaglyph && isLeft) {
-            userPos.add(halfEyeDist * 2, 0, 0);
+            userPos.add(-halfEyeDist * 2, 0, 0);
         }
         newPos.mult(userPos, user);
         PVector paperCameraPos = user;
