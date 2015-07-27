@@ -1,9 +1,10 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ *
+ * Copyright Inria, Bordeaux University.
+ * Author : Jeremy Laviole. 
+ *
+ * No licence yet.
  */
-
 package fr.inria.papart.calibration;
 
 import fr.inria.papart.procam.camera.Camera;
