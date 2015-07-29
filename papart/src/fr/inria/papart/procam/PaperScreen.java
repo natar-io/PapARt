@@ -24,9 +24,11 @@ import processing.core.PMatrix2D;
 import processing.core.PMatrix3D;
 import processing.core.PShape;
 import processing.core.PStyle;
+import processing.core.PSurface;
 import processing.core.PVector;
 import processing.event.KeyEvent;
 import processing.opengl.FrameBuffer;
+import processing.opengl.PGL;
 import processing.opengl.PShader;
 import processing.opengl.Texture;
 
@@ -511,17 +513,21 @@ public class PaperScreen {
     }
 
     //////// Automatic generation of delegated methods...
-    public void setFrameRate(float frameRate) {
-        currentGraphics.setFrameRate(frameRate);
+
+    public void setPrimary(boolean primary) {
+        currentGraphics.setPrimary(primary);
     }
 
-    // TODO: check...
     public void setSize(int iwidth, int iheight) {
         currentGraphics.setSize(iwidth, iheight);
     }
 
     public void dispose() {
         currentGraphics.dispose();
+    }
+
+    public PSurface createSurface() {
+        return currentGraphics.createSurface();
     }
 
     public void setCache(PImage image, Object storage) {
@@ -536,16 +542,24 @@ public class PaperScreen {
         currentGraphics.removeCache(image);
     }
 
-    public void requestFocus() {
-        currentGraphics.requestFocus();
+    public float getPixelScale() {
+        return currentGraphics.getPixelScale();
     }
 
-    public boolean canDraw() {
-        return currentGraphics.canDraw();
+//    public void beginDraw() {
+//        currentGraphics.beginDraw();
+//    }
+//
+//    public void endDraw() {
+//        currentGraphics.endDraw();
+//    }
+
+    public PGL beginPGL() {
+        return currentGraphics.beginPGL();
     }
 
-    public void requestDraw() {
-        currentGraphics.requestDraw();
+    public void endPGL() {
+        currentGraphics.endPGL();
     }
 
     public void updateProjmodelview() {
@@ -594,6 +608,30 @@ public class PaperScreen {
 
     public void vertex(float x, float y, float z, float u, float v) {
         currentGraphics.vertex(x, y, z, u, v);
+    }
+
+    public void attribPosition(String name, float x, float y, float z) {
+        currentGraphics.attribPosition(name, x, y, z);
+    }
+
+    public void attribNormal(String name, float nx, float ny, float nz) {
+        currentGraphics.attribNormal(name, nx, ny, nz);
+    }
+
+    public void attribColor(String name, int color) {
+        currentGraphics.attribColor(name, color);
+    }
+
+    public void attrib(String name, float... values) {
+        currentGraphics.attrib(name, values);
+    }
+
+    public void attrib(String name, int... values) {
+        currentGraphics.attrib(name, values);
+    }
+
+    public void attrib(String name, boolean... values) {
+        currentGraphics.attrib(name, values);
     }
 
     public void noClip() {
@@ -662,18 +700,6 @@ public class PaperScreen {
 
     public void sphere(float r) {
         currentGraphics.sphere(r);
-    }
-
-    public void smooth() {
-        currentGraphics.smooth();
-    }
-
-    public void smooth(int level) {
-        currentGraphics.smooth(level);
-    }
-
-    public void noSmooth() {
-        currentGraphics.noSmooth();
     }
 
     public PShape loadShape(String filename) {
@@ -960,6 +986,10 @@ public class PaperScreen {
         currentGraphics.set(x, y, argb);
     }
 
+    public boolean save(String filename) {
+        return currentGraphics.save(filename);
+    }
+
     public void loadTexture() {
         currentGraphics.loadTexture();
     }
@@ -1048,6 +1078,10 @@ public class PaperScreen {
         currentGraphics.resetShader(kind);
     }
 
+    public void setParent(PApplet parent) {
+        currentGraphics.setParent(parent);
+    }
+
     public void setPath(String path) {
         currentGraphics.setPath(path);
     }
@@ -1090,10 +1124,6 @@ public class PaperScreen {
 
     public PShape createShape() {
         return currentGraphics.createShape();
-    }
-
-    public PShape createShape(PShape source) {
-        return currentGraphics.createShape(source);
     }
 
     public PShape createShape(int type) {
@@ -1198,6 +1228,18 @@ public class PaperScreen {
 
     public void curve(float x1, float y1, float z1, float x2, float y2, float z2, float x3, float y3, float z3, float x4, float y4, float z4) {
         currentGraphics.curve(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4);
+    }
+
+    public void smooth() {
+        currentGraphics.smooth();
+    }
+
+    public void smooth(int quality) {
+        currentGraphics.smooth(quality);
+    }
+
+    public void noSmooth() {
+        currentGraphics.noSmooth();
     }
 
     public void imageMode(int mode) {
@@ -1644,8 +1686,16 @@ public class PaperScreen {
         return currentGraphics.is3D();
     }
 
+    public boolean is2X() {
+        return currentGraphics.is2X();
+    }
+
     public void init(int width, int height, int format) {
         currentGraphics.init(width, height, format);
+    }
+
+    public void init(int width, int height, int format, int factor) {
+        currentGraphics.init(width, height, format, factor);
     }
 
     public Image getImage() {
@@ -1716,6 +1766,10 @@ public class PaperScreen {
         return currentGraphics.get();
     }
 
+    public PImage copy() {
+        return currentGraphics.copy();
+    }
+
     public void set(int x, int y, PImage img) {
         currentGraphics.set(x, y, img);
     }
@@ -1735,9 +1789,7 @@ public class PaperScreen {
     public void blend(PImage src, int sx, int sy, int sw, int sh, int dx, int dy, int dw, int dh, int mode) {
         currentGraphics.blend(src, sx, sy, sw, sh, dx, dy, dw, dh, mode);
     }
-
-    public boolean save(String filename) {
-        return currentGraphics.save(filename);
-    }
-
+    
+    
+    
 }

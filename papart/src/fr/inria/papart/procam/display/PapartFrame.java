@@ -21,6 +21,11 @@ public class PapartFrame extends JFrame {
     PApplet parent;
     BaseDisplay display;
 
+    /**
+     * WARNING IT IS BROKEN IN PROCESSING 3 
+     * @param parent
+     * @param display 
+     */
     public PapartFrame(PApplet parent, BaseDisplay display) {
 
         this.parent = parent;
@@ -29,13 +34,13 @@ public class PapartFrame extends JFrame {
         setSize(display.getWidth(), display.getHeight());
 
         applet = new ARApplet();
-        applet.init();
+//        applet.init();
 
         display.manualMode();
 
         // Force initialization again, to create the texture at the right place.
 //        display.automaticMode();
-        this.add(applet);
+//        this.add(applet);
 
         this.setVisible(true);
 

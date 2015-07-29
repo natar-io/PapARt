@@ -264,6 +264,8 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
             return;
         }
 
+//        lensFilter = parent.loadShader("fr/inria/papart/procam/distortFrag.glsl", "distortVert.glsl");
+        
         lensFilter = parent.loadShader(
                 ARDisplay.class.getResource("distortFrag.glsl").toString(),
                 ARDisplay.class.getResource("distortVert.glsl").toString());

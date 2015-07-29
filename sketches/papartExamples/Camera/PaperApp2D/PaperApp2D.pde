@@ -12,8 +12,9 @@ boolean useProjector = false;
 Papart papart;
 
 public void setup() {
+	
     if(useProjector)
-	papart = Papart.projection(this);
+     	papart = Papart.projection(this);
     else 
 	papart = Papart.seeThrough(this);
 
@@ -21,7 +22,12 @@ public void setup() {
     papart.startTracking();
 }
 
+void settings(){
+    size(300, 300, P3D);
+}
+
 void draw() {
+    
 }
 
 

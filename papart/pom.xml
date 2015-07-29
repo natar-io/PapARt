@@ -110,13 +110,13 @@
         <dependency>
             <groupId>org.processing</groupId>
             <artifactId>video</artifactId>
-            <version>2.2.1</version>
+            <version>3.0a11</version>
         </dependency>
 
         <dependency>
             <groupId>org.processing</groupId>
             <artifactId>core</artifactId>
-            <version>2.2.1</version>
+            <version>3.0a11</version>
         </dependency>
 
         <dependency>

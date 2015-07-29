@@ -17,10 +17,11 @@ public void setup() {
     int resX = 1920;
     int resY = 1080;
 
-    size(resX, resY, OPENGL);
+    // size(resX, resY, OPENGL);
+    size(800, 600, OPENGL);
     
-    if (frame != null) {
-	frame.setResizable(true);
+    if (surface != null) {
+	surface.setResizable(true);
     }
     
 
