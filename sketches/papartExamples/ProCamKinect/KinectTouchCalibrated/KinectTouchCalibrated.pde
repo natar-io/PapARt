@@ -7,6 +7,10 @@ import toxi.geom.*;
 
 Papart papart;
 
+void settings(){
+    fullScreen(P3D);
+}
+
 public void setup() {
 
     papart = Papart.projection(this);

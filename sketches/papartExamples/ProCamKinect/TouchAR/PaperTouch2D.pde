@@ -2,7 +2,7 @@ public class MyApp  extends PaperTouchScreen {
 
   void setup() {
     setDrawingSize(297, 210);
-    loadMarkerBoard(sketchPath + "/data/A3-small1.cfg", 297, 210);
+    loadMarkerBoard(sketchPath() + "/data/A3-small1.cfg", 297, 210);
   }
 
   void draw() {

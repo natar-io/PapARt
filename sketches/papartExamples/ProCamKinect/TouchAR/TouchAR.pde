@@ -13,16 +13,23 @@ boolean useProjector = true;
 float renderQuality = 1.5f;
 Papart papart;
 
+void settings(){
+    
+    if(useProjector){
+	fullScreen(P3D);
+    }else{
+    	size((int) (Kinect.WIDTH * renderQuality),
+	     (int) (Kinect.HEIGHT * renderQuality),
+	     P3D);
+    }
+}
+
  void setup(){
 
     if(useProjector){
 	papart = Papart.projection(this);
 	papart.loadTouchInput();
     } else {
-
-	size((int) (Kinect.WIDTH * renderQuality),
-	     (int) (Kinect.HEIGHT * renderQuality),
-	     OPENGL);
 
 	papart = new Papart(this);
 
