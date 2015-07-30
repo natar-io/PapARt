@@ -1,40 +1,32 @@
 import java.awt.Frame;
 
 // http://forum.processing.org/one/topic/popup-how-to-open-a-new-window.html
-
-CamPFrame cameraPFrame;
 camApplet cameraApplet;
 
 
-
 void testCamera(){
-
     cameraConfig.setCameraName(cameraIdText.getText());
 
-    cameraPFrame = new CamPFrame();
+    cameraApplet = new camApplet();
 }
 
 
-class CamPFrame extends Frame {
-    
-    public CamPFrame() {
-        setBounds(100, 100, 640, 480);
-	
-        cameraApplet = new camApplet();
-        add(cameraApplet);
-        cameraApplet.init();
-        show();
-    }
-}
 
 Camera camera;
 
 class camApplet extends PApplet {
 
-  
-    public void setup() {
+    public camApplet() {
+	super();
+	PApplet.runSketch(new String[]{this.getClass().getName()}, this);
+    }
 
+    public void settings() {
 	size(640, 480, P3D);
+	smooth();
+    }
+
+    public void setup() {
 
 	camera = cameraConfig.createCamera();
 	camera.setParent(this);

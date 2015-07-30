@@ -10,6 +10,10 @@ import processing.video.*;
 
 Papart papart;
 
+public void settings(){
+    fullScreen(P3D);
+}
+
 public void setup() {
     papart = Papart.projection(this);
     

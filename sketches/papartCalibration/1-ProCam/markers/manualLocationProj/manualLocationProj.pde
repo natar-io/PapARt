@@ -13,6 +13,10 @@ float rectAroundWidth = 10;
 Papart papart;
 ProjectorDisplay projector;
 
+public void settings(){
+    fullScreen(P3D);
+}
+
 public void setup() {
 
   Papart.projectionOnly(this);

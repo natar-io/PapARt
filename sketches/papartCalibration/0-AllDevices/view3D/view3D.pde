@@ -20,9 +20,12 @@ int kinectFormat = Kinect.KINECT_MM;
 
 int skip = 2;
 
-void setup(){
-
+void settings(){
   size(800, 600, OPENGL); 
+}
+
+
+void setup(){
 
   camera = (CameraOpenKinect) CameraFactory.createCamera(Camera.Type.OPEN_KINECT, 0);
   camera.setParent(this);

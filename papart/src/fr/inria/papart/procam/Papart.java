@@ -154,12 +154,14 @@ public class Papart {
 
         removeFrameBorder(applet);
 
-        applet.size(screenConfiguration.getProjectionScreenWidth(),
-                screenConfiguration.getProjectionScreenHeight(),
-                PConstants.OPENGL);
-
         Papart papart = new Papart(applet);
-        papart.registerForWindowLocation();
+
+        papart.frameSize.set(screenConfiguration.getProjectionScreenWidth(),
+                screenConfiguration.getProjectionScreenHeight());
+
+        papart.shouldSetWindowLocation = true;
+        papart.shouldSetWindowSize = true;
+        papart.registerPost();
         papart.initProjectorCamera();
 
         return papart;
@@ -181,9 +183,9 @@ public class Papart {
 
         papart.frameSize.set(screenConfiguration.getProjectionScreenWidth(),
                 screenConfiguration.getProjectionScreenHeight());
-        papart.registerForWindowSize();
-
-        papart.registerForWindowLocation();
+        papart.shouldSetWindowLocation = true;
+        papart.shouldSetWindowSize = true;
+        papart.registerPost();
         papart.initProjectorDisplay(1);
 
         return papart;
@@ -212,7 +214,8 @@ public class Papart {
         Papart papart = new Papart(applet);
 
         papart.frameSize.set(cameraTracking.width(), cameraTracking.height());
-        papart.registerForWindowSize();
+        papart.shouldSetWindowSize = true;
+        papart.registerPost();
 
         papart.initCamera();
 
@@ -235,8 +238,9 @@ public class Papart {
 
         papart.frameSize.set(screenConfiguration.getProjectionScreenWidth(),
                 screenConfiguration.getProjectionScreenHeight());
-        papart.registerForWindowLocation();
-        papart.registerForWindowSize();
+        papart.shouldSetWindowLocation = true;
+        papart.shouldSetWindowSize = true;
+        papart.registerPost();
 
 //        Panel panel = new Panel(applet);
         return papart;
@@ -245,14 +249,8 @@ public class Papart {
     private boolean shouldSetWindowLocation = false;
     private boolean shouldSetWindowSize = false;
 
-    private void registerForWindowLocation() {
+    private void registerPost() {
         applet.registerMethod("post", this);
-        this.shouldSetWindowLocation = true;
-    }
-
-    private void registerForWindowSize() {
-        applet.registerMethod("post", this);
-        this.shouldSetWindowSize = true;
     }
 
     /**
@@ -285,6 +283,8 @@ public class Papart {
      * Set the frame to default location.
      */
     public void defaultFrameLocation() {
+        System.out.println("Setting the frame location...");
+        
         this.applet.frame.setLocation(screenConfiguration.getProjectionScreenOffsetX(),
                 screenConfiguration.getProjectionScreenOffsetY());
     }

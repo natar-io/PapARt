@@ -2,8 +2,8 @@ public class MyApp  extends PaperScreen {
 
   void setup() {
     setDrawingSize(297, 210);
-        loadMarkerBoard(sketchPath + "/data/A3-small1.cfg", 297, 210);
-    // loadMarkerBoard(sketchPath + "/data/frame5.png",
+    loadMarkerBoard(sketchPath() + "/data/A3-small1.cfg", 297, 210);
+    // loadMarkerBoard(sketchPath() + "/data/frame5.png",
     // 		    420, 297);
 
   }

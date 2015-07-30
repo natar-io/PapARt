@@ -7,6 +7,11 @@ import toxi.geom.*;
 
 Papart papart;
 
+public void settings(){
+    size(200, 200, P3D);
+}
+    
+
 public void setup() {
 
     papart = Papart.seeThrough(this);

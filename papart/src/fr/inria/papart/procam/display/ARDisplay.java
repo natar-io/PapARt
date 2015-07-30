@@ -70,7 +70,10 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
                 (int) (frameHeight * quality), PApplet.OPENGL);
         screens = new ArrayList<Screen>();
         updateIntrinsicsRendering();
-        initDistortMap();
+
+        if (distort) {
+            initDistortMap();
+        }
         automaticMode();
     }
 
@@ -99,7 +102,10 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         this.frameHeight = pdp.getHeight();
         this.drawingSizeX = frameWidth;
         this.drawingSizeY = frameHeight;
-        this.setDistort(pdp.handleDistorsions());
+        
+        // TODO: no more distorsions Processing3 test 
+        // this.setDistort(pdp.handleDistorsions());
+        this.setDistort(false);
     }
 
     public void updateIntrinsicsRendering() {
@@ -265,7 +271,6 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         }
 
 //        lensFilter = parent.loadShader("fr/inria/papart/procam/distortFrag.glsl", "distortVert.glsl");
-        
         lensFilter = parent.loadShader(
                 ARDisplay.class.getResource("distortFrag.glsl").toString(),
                 ARDisplay.class.getResource("distortVert.glsl").toString());

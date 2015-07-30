@@ -10,6 +10,9 @@ import peasy.*;
 
 KinectTouchInput touchInput;
 
+void settings(){
+    fullScreen(P3D);
+}
 
 void setup(){
     Papart.projection2D(this);

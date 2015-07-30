@@ -11,13 +11,14 @@ import processing.video.*;
 
 Camera camera;
 
+int resX = 1920;
+int resY = 1080;
+
+public void settings(){
+    size(resX, resY, P3D);
+}
+
 public void setup() {
-
-
-    int resX = 1920;
-    int resY = 1080;
-
-    size(resX, resY, OPENGL);
     
     if (frame != null) {
 	frame.setResizable(true);
