@@ -1,4 +1,7 @@
 import fr.inria.papart.multitouch.metaphors.*;
+import processing.opengl.PGL;
+import processing.opengl.PGraphicsOpenGL;
+import com.jogamp.opengl.GL;
 
 public class LapinApp extends PaperTouchScreen{
     
@@ -13,7 +16,7 @@ public class LapinApp extends PaperTouchScreen{
     void setup(){
 
 	setDrawingSize(297, 210);
-	loadMarkerBoard(sketchPath + "/data/markers/A3-small1.cfg", 297, 210);
+	loadMarkerBoard(sketchPath() + "/data/markers/A3-small1.cfg", 297, 210);
 
 	rabbit = loadShape("models/bun_zipper.obj");
 	sphereM = loadShape("models/sphere/sphere1.obj");
@@ -50,7 +53,6 @@ public class LapinApp extends PaperTouchScreen{
 	//rst.update(touchList, millis());	    
 	//	}
 
-
 	beginDraw3DProjected();
 	background(0);
 	noStroke();
@@ -69,10 +71,9 @@ public class LapinApp extends PaperTouchScreen{
 	//     resetPos();
 	// }
 
+
 	// drawMono();
-        scale(resolution);
         drawAnaglyph();
-	/////////////// Analglyph ////////////////////
 
 	screen.endDrawPerspective();
 	endDraw();
@@ -94,7 +95,12 @@ public class LapinApp extends PaperTouchScreen{
 	screen.initDraw(userPos, 20, 5000, true, false, false);
 
 	pointLight(255, 255, 255, 
-		      lightPos.x, lightPos.y, lightPos.z);
+		   -lightPos.x, -lightPos.y, lightPos.z);
+
+	// pushMatrix();
+	// translate(-lightPos.x, -lightPos.y, lightPos.z);
+	// pointLight(255, 255, 255, 0, 0, 0);
+	// popMatrix();
 
 
 	PGL pgl = getGraphics().pgl;

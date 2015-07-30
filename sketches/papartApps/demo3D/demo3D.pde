@@ -4,7 +4,6 @@ import fr.inria.papart.drawingapp.*;
 import fr.inria.papart.multitouch.*;
 import fr.inria.papart.drawingapp.Button; 
 import org.bytedeco.javacpp.*;
-import javax.media.opengl.GL;
 import processing.opengl.*;
 import org.reflections.*;
 
@@ -23,6 +22,9 @@ MarkerBoard markerBoardDrawing ;
 
 Papart papart; 
 
+public void settings(){
+    fullScreen(P3D);
+}
 
 public void setup(){
 

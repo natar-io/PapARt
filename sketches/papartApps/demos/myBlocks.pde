@@ -25,7 +25,7 @@ public class MyBlocks extends PaperTouchScreen {
 
     void setup(){
 	setDrawingSize(320, 210);
-	loadMarkerBoard(sketchPath + "/data/markers/blocks.cfg", 320, 210);
+	loadMarkerBoard(sketchPath() + "/data/markers/blocks.cfg", 320, 210);
 
 	markerBoard.setDrawingMode(cameraTracking, false, 1);
 

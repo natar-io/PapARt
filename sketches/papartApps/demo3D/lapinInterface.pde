@@ -20,7 +20,7 @@ public class LapinInterface extends PaperTouchScreen{
     
     void setup(){
 	setDrawingSize((int) paperSize.x, (int) paperSize.y);
-	loadMarkerBoard(sketchPath + "/data/markers/lapinInterface.cfg", 
+	loadMarkerBoard(sketchPath() + "/data/markers/lapinInterface.cfg", 
 			paperSize.x, paperSize.y);
 
 	createButtons();

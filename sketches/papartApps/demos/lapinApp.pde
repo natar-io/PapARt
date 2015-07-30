@@ -1,5 +1,9 @@
 import fr.inria.papart.multitouch.metaphors.*;
 
+import processing.opengl.PGL;
+import processing.opengl.PGraphicsOpenGL;
+import com.jogamp.opengl.GL;
+
 public class LapinApp extends PaperTouchScreen{
     
     PVector userPos = new PVector(0, 200, 500);
@@ -13,7 +17,7 @@ public class LapinApp extends PaperTouchScreen{
     void setup(){
 
 	setDrawingSize(297, 210);
-	loadMarkerBoard(sketchPath + "/data/markers/A3-small1.cfg", 297, 210);
+	loadMarkerBoard(sketchPath() + "/data/markers/A3-small1.cfg", 297, 210);
 
 	rabbit = loadShape("models/bun_zipper.obj");
 	sphereM = loadShape("models/sphere/sphere1.obj");
@@ -117,7 +121,6 @@ public class LapinApp extends PaperTouchScreen{
     }
 
     protected void drawScene(){
-
 	// The first call is ignored ?!...
 	rect(0, 0, 10, 10);
 	
