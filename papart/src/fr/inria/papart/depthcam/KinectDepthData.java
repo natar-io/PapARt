@@ -23,8 +23,7 @@ import toxi.geom.Vec3D;
  *
  * @author jiii
  */
-public class KinectDepthData extends DepthData{
-
+public class KinectDepthData extends DepthData {
 
     /**
      * Normalized version of the 3D points
@@ -50,16 +49,19 @@ public class KinectDepthData extends DepthData{
     public HomographyCalibration homographyCalibration;
     public PlaneCalibration planeCalibration;
 
-    
     public KinectDepthData(DepthAnalysis source) {
         this(source, true);
     }
 
     public KinectDepthData(DepthAnalysis source, boolean is3D) {
         super(source);
-        
+
         int size = source.getSize();
         projectedPoints = new Vec3D[size];
+        for (int i = 0; i < size; i++) {
+            projectedPoints[i] = new Vec3D();
+        }
+        
         touchAttributes = new TouchAttributes[size];
         validPointsList = new ArrayList();
         if (is3D) {
@@ -69,20 +71,20 @@ public class KinectDepthData extends DepthData{
         connexity = new Connexity(depthPoints, source.getWidth(), source.getHeight());
 //        connexity = new Connexity(projectedPoints, width, height);
     }
-    
-    public DepthDataElementKinect getElementKinect(int i){
+
+    public DepthDataElementKinect getElementKinect(int i) {
         DepthDataElementKinect dde = new DepthDataElementKinect();
         fillDepthDataElement(dde, i);
         return dde;
     }
 
-    protected void fillDepthDataElement(DepthDataElementKinect ddek, int i ){
+    protected void fillDepthDataElement(DepthDataElementKinect ddek, int i) {
         super.fillDepthDataElement(ddek, i);
         ddek.projectedPoint = projectedPoints[i];
         ddek.touchAttribute = touchAttributes[i];
         ddek.validPoint3D = validPointsMask3D[i];
     }
-    
+
     @Override
     public void clear() {
         clearDepth();
@@ -92,17 +94,20 @@ public class KinectDepthData extends DepthData{
         connexity.reset();
         Arrays.fill(touchAttributes, TouchAttributes.NO_ATTRIBUTES);
     }
-    
 
     @Override
     void clearDepth() {
         super.clearDepth();
-        Arrays.fill(this.projectedPoints, INVALID_POINT);
+
+        for (Vec3D pt : projectedPoints) {
+            pt.clear();
+        }
+//        Arrays.fill(this.projectedPoints, INVALID_POINT);
     }
 
     @Override
     void clear2D() {
-        Arrays.fill(this.validPointsMask, false);
+        super.clear2D();
         this.validPointsList.clear();
     }
 

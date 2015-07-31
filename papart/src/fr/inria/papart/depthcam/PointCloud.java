@@ -11,7 +11,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import javax.media.opengl.GL2;
+import com.jogamp.opengl.GL2;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;

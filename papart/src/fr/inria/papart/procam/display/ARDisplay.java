@@ -16,7 +16,6 @@ import fr.inria.papart.procam.HasExtrinsics;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.procam.Screen;
 import java.util.ArrayList;
-import javax.media.opengl.GL2;
 import processing.core.PApplet;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
@@ -44,7 +43,6 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
     protected PMatrix3D projectionInit = new PMatrix3D();
     // TODO...
     protected PShader lensFilter;
-    protected GL2 gl = null;
     protected PMatrix3D invProjModelView;
     private Camera camera = null;
 

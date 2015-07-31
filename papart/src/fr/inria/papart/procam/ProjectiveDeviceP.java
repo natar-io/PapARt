@@ -105,6 +105,16 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
         return result;
     }
     
+    public void pixelToWorld(int x, int y, float depthValue, Vec3D result) {
+
+        float depth = depthValue;
+//        float depth = 1000 * depthLookUp[depthValue]; 
+        result.x = (float) ((x - cx) * depth * ifx);
+        result.y = (float) ((y - cy) * depth * ify);
+
+        result.z = depth;
+    }
+    
     // without depth value, focal distance is assumed
     @Deprecated
     public Vec3D pixelToWorld(int x, int y) {
@@ -185,12 +195,15 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
     }
 
     public int worldToPixel(Vec3D pt) {
-
+        return worldToPixel(pt.x(), pt.y(), pt.z());
+    }
+    
+    public int worldToPixel(float x, float y, float z) {
         // Reprojection 
-        float invZ = 1.0f / pt.z();
+        float invZ = 1.0f / z;
 
-        int px = PApplet.constrain(PApplet.round((pt.x() * invZ * fx) + cx), 0, w - 1);
-        int py = PApplet.constrain(PApplet.round((pt.y() * invZ * fy) + cy), 0, h - 1);
+        int px = PApplet.constrain(PApplet.round((x * invZ * fx) + cx), 0, w - 1);
+        int py = PApplet.constrain(PApplet.round((y * invZ * fy) + cy), 0, h - 1);
 
         return (int) (py * w + px);
     }

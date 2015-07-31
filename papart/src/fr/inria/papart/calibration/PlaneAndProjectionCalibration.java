@@ -30,11 +30,18 @@ public class PlaneAndProjectionCalibration extends Calibration {
     }
 
     public Vec3D project(Vec3D point) {
-        Vec3D projectedPoint = homographyCalibration.mat.applyTo(getPlane().getProjectedPoint(point));
+        Vec3D out = new Vec3D();
+        project(point,out);
+        return out;
+    }
+    
+    public void project(Vec3D point, Vec3D projectedPoint) {
+//        Vec3D out = homographyCalibration.mat.applyTo(getPlane().getProjectedPointOptimAlloc(point));
+        Vec3D out = homographyCalibration.mat.applyTo(getPlane().getProjectedPoint(point));
+        projectedPoint.set(out);
         projectedPoint.x /= projectedPoint.z;
         projectedPoint.y /= projectedPoint.z;
         projectedPoint.z = getPlane().getDistanceToPoint(point);
-        return projectedPoint;
     }
 
     @Override

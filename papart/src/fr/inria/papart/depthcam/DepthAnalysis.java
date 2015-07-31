@@ -37,9 +37,13 @@ public abstract class DepthAnalysis {
 
     public static PApplet papplet;
 
-    public static final Vec3D INVALID_POINT = new Vec3D();
+    public static final Vec3D INVALID_POINT = new Vec3D(0,0,0);
     public static final int INVALID_COLOR = -1;
 
+    
+    public static final boolean isValidPoint(Vec3D point){
+        return point.x != 0 && point.y != 0 && point.z != 0;
+    }
     
     public abstract void update(IplImage depth);
 
@@ -71,6 +75,8 @@ public abstract class DepthAnalysis {
             return null;
         }
 
+        // TODO: no more allocations here ! 
+        
 //        Vec3D normal = computeNormal(point, neighbours[0], neighbours[1]);
         Vec3D normal = new Vec3D();
         // BIG  square around the point. 

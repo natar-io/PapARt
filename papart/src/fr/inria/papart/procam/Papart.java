@@ -158,7 +158,6 @@ public class Papart {
 
         papart.frameSize.set(screenConfiguration.getProjectionScreenWidth(),
                 screenConfiguration.getProjectionScreenHeight());
-
         papart.shouldSetWindowLocation = true;
         papart.shouldSetWindowSize = true;
         papart.registerPost();
@@ -430,17 +429,14 @@ public class Papart {
      */
     public void initProjectorCamera(String cameraNo, Camera.Type cameraType, float quality) {
         assert (!cameraInitialized);
-
         initProjectorDisplay(quality);
         tryLoadExtrinsics();
-
         cameraTracking = CameraFactory.createCamera(cameraType, cameraNo);
         cameraTracking.setParent(applet);
         cameraTracking.setCalibration(cameraCalib);
         cameraTracking.start();
         loadTracking(cameraCalib);
         cameraTracking.setThread();
-
         checkInitialization();
     }
 

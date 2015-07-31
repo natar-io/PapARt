@@ -8,6 +8,10 @@ import toxi.geom.*;
 
 KinectTouchInput touchInput;
 
+void settings(){
+    fullScreen(P3D);
+}
+
 void setup(){
     Papart papart = Papart.projection2D(this);
 

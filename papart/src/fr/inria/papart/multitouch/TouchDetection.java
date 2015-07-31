@@ -302,7 +302,7 @@ public abstract class TouchDetection {
 
             return !assignedPoints[offset] // not assigned  
                     && depthData.validPointsMask[offset] // is valid
-                    && (depthData.depthPoints[offset] != DepthAnalysis.INVALID_POINT) // not invalid point (invalid depth)
+                    && DepthAnalysis.isValidPoint(depthData.depthPoints[offset]) 
                     && depthData.depthPoints[offset].distanceTo(depthData.depthPoints[currentPoint]) < calib.getMaximumDistance();
         }
     }
