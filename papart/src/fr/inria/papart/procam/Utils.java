@@ -612,9 +612,9 @@ public class Utils {
      *
      * Deprecated
      */
-    static public void PImageToIplImage(PImage src, IplImage dst) {
-        dst.copyFrom((BufferedImage) src.getImage());
-    }
+//    static public void PImageToIplImage(PImage src, IplImage dst) {
+//        dst.copyFrom((BufferedImage) src.getImage());
+//    }
 
     static public void PImageToIplImage2(IplImage img, boolean RGB, PImage ret) {
 

@@ -13,6 +13,7 @@ import org.bytedeco.javacpp.opencv_core.IplImage;
 import org.bytedeco.javacpp.opencv_imgproc;
 import org.bytedeco.javacv.FlyCapture2FrameGrabber;
 import org.bytedeco.javacv.FrameGrabber;
+import org.bytedeco.javacv.OpenCVFrameConverter;
 import processing.core.PImage;
 
 /**
@@ -23,10 +24,12 @@ public class CameraFlyCapture extends Camera {
 
     private FrameGrabber grabber;
     private boolean useBayerDecode = false;
+    private final OpenCVFrameConverter.ToIplImage converter;
 
     protected CameraFlyCapture(int cameraNo) {
         this.systemNumber = cameraNo;
         this.setPixelFormat(PixelFormat.BGR);
+        converter = new OpenCVFrameConverter.ToIplImage();
     }
 
     @Override
@@ -63,7 +66,7 @@ public class CameraFlyCapture extends Camera {
             return;
         }
         try {
-            IplImage img = grabber.grab();
+            IplImage img = converter.convert(grabber.grab());
 
             img = checkBayer(img);
 

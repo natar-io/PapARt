@@ -10,6 +10,7 @@ package fr.inria.papart.procam.camera;
 import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import org.bytedeco.javacv.FrameGrabber;
+import org.bytedeco.javacv.OpenCVFrameConverter;
 import org.bytedeco.javacv.OpenCVFrameGrabber;
 import processing.core.PImage;
 
@@ -20,10 +21,12 @@ import processing.core.PImage;
 public class CameraOpenCV extends Camera {
 
     private OpenCVFrameGrabber grabber;
+    private final OpenCVFrameConverter.ToIplImage converter;
 
     protected CameraOpenCV(int cameraNo) {
         this.systemNumber = cameraNo;
         this.setPixelFormat(PixelFormat.BGR);
+        converter = new OpenCVFrameConverter.ToIplImage();
     }
 
     @Override
@@ -54,7 +57,7 @@ public class CameraOpenCV extends Camera {
             return;
         }
         try {
-            IplImage img = grabber.grab();
+            IplImage img = converter.convertToIplImage(grabber.grab());
             if (img != null) {
                 this.updateCurrentImage(img);
             }

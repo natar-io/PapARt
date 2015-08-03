@@ -12,12 +12,12 @@ import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.multitouch.OneEuroFilter;
 import org.bytedeco.javacpp.ARToolKitPlus;
-import org.bytedeco.javacpp.ARToolKitPlus.TrackerMultiMarker;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static org.bytedeco.javacpp.opencv_highgui.cvLoadImage;
+import org.bytedeco.javacpp.ARToolKitPlus.TrackerMultiMarker;
+import static org.bytedeco.javacpp.opencv_imgcodecs.cvLoadImage;
 import org.bytedeco.javacv.ObjectFinder;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
@@ -30,7 +30,7 @@ import processing.core.PVector;
 public class MarkerBoard {
 
     public static MarkerBoard INVALID_MARKERBOARD = new MarkerBoard();
-    
+
     private final String fileName;
     protected float width;
     protected float height;
@@ -60,8 +60,8 @@ public class MarkerBoard {
 
         ARTOOLKITPLUS, OPENCV_SURF
     }
-    
-    private MarkerBoard(){
+
+    private MarkerBoard() {
         this.fileName = "invalidCamera";
     }
 
@@ -139,6 +139,29 @@ public class MarkerBoard {
         OneEuroFilter[] filter = null;
         this.filters.add(filter);
     }
+    
+    
+     
+//        /**
+//     * These parameters control the way the toolkit warps a found
+//     * marker to a perfect square. The square has size
+//     * pattWidth * pattHeight, the projected
+//     * square in the image is subsampled at a min of
+//     * pattWidth/pattHeight and a max of pattSamples
+//     * steps in both x and y direction
+//     *  @param imWidth width of the source image in px
+//     *  @param imHeight height of the source image in px
+//     *  @param maxImagePatterns describes the maximum number of patterns that can be analyzed in a camera image.
+//     *  @param pattWidth describes the pattern image width (must be 6 for binary markers)
+//     *  @param pattHeight describes the pattern image height (must be 6 for binary markers)
+//     *  @param pattSamples describes the maximum resolution at which a pattern is sampled from the camera image
+//     *  (6 by default, must a a multiple of pattWidth and pattHeight).
+//     *  @param maxLoadPatterns describes the maximum number of pattern files that can be loaded.
+//     *  Reduce maxLoadPatterns and maxImagePatterns to reduce memory footprint.
+//     */
+//    public TrackerMultiMarker(int imWidth, int imHeight, int maxImagePatterns/*=8*/, int pattWidth/*=6*/, int pattHeight/*=6*/, int pattSamples/*=6*/,
+//                int maxLoadPatterns/*=0*/) { allocate(imWidth, imHeight, maxImagePatterns, pattWidth, pattHeight, pattSamples, maxLoadPatterns); }
+//    
 
     private void addARtoolkitPlusTracker(Camera camera) {
 
@@ -148,40 +171,43 @@ public class MarkerBoard {
         //  - works with luminance (gray) images
         //  - can load a maximum of 0 non-binary pattern
         //  - can detect a maximum of 8 patterns in one image
-        TrackerMultiMarker tracker = new ARToolKitPlus.TrackerMultiMarker(camera.width(), camera.height(), 20, 6, 6, 6, 5);
+        TrackerMultiMarker tracker = new TrackerMultiMarker(camera.width(), camera.height(), 20, 6, 6, 6, 5);
 
-        int pixfmt = 0;
-        switch (camera.getPixelFormat()) {
-            case BGR:
-                pixfmt = ARToolKitPlus.PIXEL_FORMAT_BGR;
-                break;
-            case RGB:
-                pixfmt = ARToolKitPlus.PIXEL_FORMAT_RGB;
-                break;
-            case ARGB: // closest, not the same.
-                pixfmt = ARToolKitPlus.PIXEL_FORMAT_ABGR;
-                break;
-            case RGBA:
-                pixfmt = ARToolKitPlus.PIXEL_FORMAT_RGBA;
-            default:
-                throw new RuntimeException("ARtoolkit : Camera pixel format unknown");
-        }
+        // Working in gray images. 
+        int pixfmt = ARToolKitPlus.PIXEL_FORMAT_LUM;
+        
+//        switch (camera.getPixelFormat()) {
+//            case BGR:
+//                pixfmt = ARToolKitPlus.PIXEL_FORMAT_BGR;
+//                break;
+//            case RGB:
+//                pixfmt = ARToolKitPlus.PIXEL_FORMAT_RGB;
+//                break;
+//            case ARGB: // closest, not the same.
+//                pixfmt = ARToolKitPlus.PIXEL_FORMAT_ABGR;
+//                break;
+//            case RGBA:
+//                pixfmt = ARToolKitPlus.PIXEL_FORMAT_RGBA;
+//            default:
+//                throw new RuntimeException("ARtoolkit : Camera pixel format unknown");
+//        }
 
         tracker.setPixelFormat(pixfmt);
         tracker.setBorderWidth(0.125f);
-        tracker.activateAutoThreshold(true);
+//        tracker.activateAutoThreshold(true);
+        tracker.activateAutoThreshold(false);
 //            tracker.setUndistortionMode(ARToolKitPlus.UNDIST_NONE);
         tracker.setPoseEstimator(ARToolKitPlus.POSE_ESTIMATOR_RPP);
 
 //            tracker.setPoseEstimator(ARToolKitPlus.POSE_ESTIMATOR_ORIGINAL_CONT);
         tracker.setMarkerMode(ARToolKitPlus.MARKER_ID_BCH);
-//            tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_FULL_RES);
-        tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_HALF_RES);
-        tracker.setUseDetectLite(false);
-//            tracker.setUseDetectLite(true);
+        tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_FULL_RES);
+//        tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_HALF_RES);
+//        tracker.setUseDetectLite(false);
+        tracker.setUseDetectLite(true);
 
         // Initialize the tracker, with camera parameters and marker config. 
-        if (!tracker.init(camera.getCalibrationARToolkit(), this.getFileName(), 1.0f, 1000.f)) {
+        if (!tracker.init(camera.getCalibrationARToolkit(), this.getFileName(), 1.0f, 10000.f)) {
             System.err.println("Init ARTOOLKIT Error " + camera.getCalibrationARToolkit() + " " + this.getFileName());
         }
 
@@ -600,6 +626,14 @@ public class MarkerBoard {
     }
 
     public boolean useFloatArray() {
+        return this.type == MarkerType.ARTOOLKITPLUS;
+    }
+
+    public boolean useSurf() {
+        return this.type == MarkerType.OPENCV_SURF;
+    }
+
+    public boolean useARToolkit() {
         return this.type == MarkerType.ARTOOLKITPLUS;
     }
 

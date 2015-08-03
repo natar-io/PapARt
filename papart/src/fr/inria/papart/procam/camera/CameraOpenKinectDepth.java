@@ -10,7 +10,7 @@ package fr.inria.papart.procam.camera;
 import fr.inria.papart.multitouch.KinectTouchInput;
 import fr.inria.papart.procam.Utils;
 import org.bytedeco.javacpp.freenect;
-import org.bytedeco.javacpp.opencv_core;
+import org.bytedeco.javacpp.opencv_core.IplImage;
 import processing.core.PApplet;
 import processing.core.PImage;
 
@@ -24,7 +24,7 @@ public class CameraOpenKinectDepth extends Camera {
     private int depthFormat = freenect.FREENECT_DEPTH_MM;
     // other possibility freenect.FREENECT_DEPTH_10_BIT -> Obselete;
 
-    private opencv_core.IplImage depthImage;
+    private IplImage depthImage;
     private KinectTouchInput touchInput;
     private PImage camImageDepth = null;
 
@@ -42,7 +42,7 @@ public class CameraOpenKinectDepth extends Camera {
     @Override
     public void grab() {
         try {
-            opencv_core.IplImage img = parent.grabber.grabDepth();
+            IplImage img = parent.grabber.grabDepth();
 
             this.currentImage = img;
             if (touchInput != null) {

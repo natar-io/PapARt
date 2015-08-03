@@ -29,6 +29,11 @@ public class PaperApp2D extends PApplet {
 //        }
 //
 //        papart.loadSketches();
+
+//        for (int i = 0; i < 100; i++) {
+//            MyApp2D app = new MyApp2D();
+//        }
+
         MyApp2D app = new MyApp2D();
 
         papart.startTracking();
