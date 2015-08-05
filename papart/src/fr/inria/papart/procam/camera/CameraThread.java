@@ -52,8 +52,8 @@ class CameraThread extends Thread {
     private ExecutorService threadPool;
 
     private void initThreadPool() {
-//        threadPool = Executors.newFixedThreadPool(nbThreads);
-        threadPool = Executors.newCachedThreadPool();
+        threadPool = Executors.newFixedThreadPool(nbThreads);
+//        threadPool = Executors.newCachedThreadPool();
     }
 
     @Override
@@ -66,7 +66,6 @@ class CameraThread extends Thread {
                 if (thresholdedImage == null) {
                     initGrayScale();
                 }
-
                 this.compute();
             }
 
@@ -103,13 +102,14 @@ class CameraThread extends Thread {
             threadPool.submit(task);
             tasks.add(task);
         }
-        try {
-            for (FutureTask<DepthPixelTask> task : tasks) {
-                task.get();
-            }
-        } catch (ExecutionException e) {
-        } catch (InterruptedException e) {
-        }
+//        try {
+//            for (FutureTask<DepthPixelTask> task : tasks) {
+//                task.get();
+//            }
+//        } catch (ExecutionException e) {
+//        } catch (InterruptedException e) {
+//        }
+        
     }
 
     class DepthPixelTask implements Callable {

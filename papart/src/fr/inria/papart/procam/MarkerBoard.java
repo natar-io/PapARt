@@ -11,6 +11,7 @@ import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.multitouch.OneEuroFilter;
+import fr.inria.papart.tracking.ObjectFinder;
 import org.bytedeco.javacpp.ARToolKitPlus;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import java.util.ArrayList;
@@ -18,7 +19,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bytedeco.javacpp.ARToolKitPlus.TrackerMultiMarker;
 import static org.bytedeco.javacpp.opencv_imgcodecs.cvLoadImage;
-import org.bytedeco.javacv.ObjectFinder;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
@@ -37,7 +37,7 @@ public class MarkerBoard {
     protected ArrayList<Camera> cameras;
     protected ArrayList<Boolean> drawingMode;
     protected ArrayList<Float> minDistanceDrawingMode;
-    protected ArrayList transfos;
+    protected ArrayList<PMatrix3D> transfos = new ArrayList<PMatrix3D>();
     protected ArrayList trackers;
     protected ArrayList<OneEuroFilter[]> filters;
     protected ArrayList<PVector> lastPos;
@@ -49,7 +49,10 @@ public class MarkerBoard {
 
     private PVector[] objectPoints;
     private PVector[] imagePoints;
-    private PVector botLeft, botRight, topLeft, topRight;
+    private final PVector topLeft = new PVector();
+    private final PVector topRight = new PVector();
+    private final PVector botLeft = new PVector();
+    private final PVector botRight = new PVector();
 
     private static final int updateTime = 1000; // 1 sec
     static public final int NORMAL = 1;
@@ -58,7 +61,7 @@ public class MarkerBoard {
 
     public enum MarkerType {
 
-        ARTOOLKITPLUS, OPENCV_SURF
+        ARTOOLKITPLUS, JAVACV_FINDER
     }
 
     private MarkerBoard() {
@@ -78,22 +81,19 @@ public class MarkerBoard {
         cameras = new ArrayList<Camera>();
 
         if (type == MarkerType.ARTOOLKITPLUS) {
-            transfos = new ArrayList<float[]>();
             trackers = new ArrayList<ARToolKitPlus.TrackerMultiMarker>();
         }
-        if (type == MarkerType.OPENCV_SURF) {
-            transfos = new ArrayList<PMatrix3D>();
+        if (type == MarkerType.JAVACV_FINDER) {
             trackers = new ArrayList<ObjectFinder>();
+
             imagePoints = new PVector[4];
             objectPoints = new PVector[4];
-            // botLeft
+
             objectPoints[0] = new PVector(0, 0, 0);
-            // botRight
             objectPoints[1] = new PVector(width, 0, 0);
-            // topLeft
-            objectPoints[2] = new PVector(0, height, 0);
-            // topRight
-            objectPoints[3] = new PVector(width, height, 0);
+            objectPoints[2] = new PVector(width, height, 0);
+            objectPoints[3] = new PVector(0, height, 0);
+
             Logger logger = Logger.getLogger(ObjectFinder.class.getName());
             logger.setLevel(Level.OFF);
         }
@@ -112,7 +112,7 @@ public class MarkerBoard {
             this.type = MarkerType.ARTOOLKITPLUS;
         }
         if (name.endsWith("png") || name.endsWith("jpg")) {
-            this.type = MarkerType.OPENCV_SURF;
+            this.type = MarkerType.JAVACV_FINDER;
         }
         assert (type != null);
     }
@@ -124,8 +124,8 @@ public class MarkerBoard {
         if (type == MarkerType.ARTOOLKITPLUS) {
             addARtoolkitPlusTracker(camera);
         }
-        if (this.type == MarkerType.OPENCV_SURF) {
-            addSurfTracker();
+        if (this.type == MarkerType.JAVACV_FINDER) {
+            addJavaCVTracker();
         }
 
         this.cameras.add(camera);
@@ -139,9 +139,7 @@ public class MarkerBoard {
         OneEuroFilter[] filter = null;
         this.filters.add(filter);
     }
-    
-    
-     
+
 //        /**
 //     * These parameters control the way the toolkit warps a found
 //     * marker to a perfect square. The square has size
@@ -162,7 +160,6 @@ public class MarkerBoard {
 //    public TrackerMultiMarker(int imWidth, int imHeight, int maxImagePatterns/*=8*/, int pattWidth/*=6*/, int pattHeight/*=6*/, int pattSamples/*=6*/,
 //                int maxLoadPatterns/*=0*/) { allocate(imWidth, imHeight, maxImagePatterns, pattWidth, pattHeight, pattSamples, maxLoadPatterns); }
 //    
-
     private void addARtoolkitPlusTracker(Camera camera) {
 
         // create a tracker that does:
@@ -175,7 +172,7 @@ public class MarkerBoard {
 
         // Working in gray images. 
         int pixfmt = ARToolKitPlus.PIXEL_FORMAT_LUM;
-        
+
 //        switch (camera.getPixelFormat()) {
 //            case BGR:
 //                pixfmt = ARToolKitPlus.PIXEL_FORMAT_BGR;
@@ -191,7 +188,6 @@ public class MarkerBoard {
 //            default:
 //                throw new RuntimeException("ARtoolkit : Camera pixel format unknown");
 //        }
-
         tracker.setPixelFormat(pixfmt);
         tracker.setBorderWidth(0.125f);
 //        tracker.activateAutoThreshold(true);
@@ -211,30 +207,25 @@ public class MarkerBoard {
             System.err.println("Init ARTOOLKIT Error " + camera.getCalibrationARToolkit() + " " + this.getFileName());
         }
 
-        float[] transfo = new float[16];
-        for (int i = 0; i < 3; i++) {
-            transfo[12 + i] = 0;
-        }
-        transfo[15] = 0;
+//        float[] transfo = new float[16];
+//        for (int i = 0; i < 3; i++) {
+//            transfo[12 + i] = 0;
+//        }
+//        transfo[15] = 0;
+        PMatrix3D tr = new PMatrix3D();
         this.trackers.add(tracker);
-        this.transfos.add(transfo);
+        this.transfos.add(tr);
     }
 
-    private void addSurfTracker() {
-        ObjectFinder.Settings settings = new ObjectFinder.Settings();
-
+    private void addJavaCVTracker() {
         IplImage imgToFind = cvLoadImage(this.fileName);
 
-        // TODO: tweak these.
-        settings.setObjectImage(imgToFind);
-        settings.setUseFLANN(true);
-        settings.setRansacReprojThreshold(5);
-        settings.setMatchesMin(16);
-        ObjectFinder finder = new ObjectFinder(settings);
+        ObjectFinder finder = new ObjectFinder(imgToFind);
+//        finder.getSettings().setUseFLANN(true);
+//        finder.getSettings().setMatchesMin(6);
 
         this.trackers.add(finder);
         this.transfos.add(new PMatrix3D());
-
     }
 
     private int getId(Camera camera) {
@@ -245,6 +236,11 @@ public class MarkerBoard {
         int id = cameras.indexOf(camera);
         OneEuroFilter[] filter = createFilter(freq, minCutOff);
         filters.set(id, filter);
+    }
+
+    public void removeFiltering(Camera camera) {
+        int id = cameras.indexOf(camera);
+        filters.remove(id);
     }
 
     public void setDrawingMode(Camera camera, boolean dm) {
@@ -260,16 +256,8 @@ public class MarkerBoard {
 
     public void setFakeLocation(Camera camera, PMatrix3D location) {
         int id = cameras.indexOf(camera);
-
-        if (type == MarkerType.ARTOOLKITPLUS) {
-            float transfo[] = (float[]) transfos.get(id);
-            location.get(transfo);
-        }
-        if (type == MarkerType.OPENCV_SURF) {
-            PMatrix3D transfo = (PMatrix3D) transfos.get(id);
-            transfo.set(location);
-        }
-
+        PMatrix3D transfo = (PMatrix3D) transfos.get(id);
+        transfo.set(location);
     }
 
     private OneEuroFilter[] createFilter(double freq, double minCutOff) {
@@ -318,15 +306,8 @@ public class MarkerBoard {
     }
 
     private PVector getPositionVector(int id) {
-        if (type == MarkerType.ARTOOLKITPLUS) {
-            float transfo[] = (float[]) transfos.get(id);
-            return new PVector(transfo[3], transfo[7], transfo[11]);
-        }
-        if (type == MarkerType.OPENCV_SURF) {
-            PMatrix3D transfo = (PMatrix3D) transfos.get(id);
-            return new PVector(transfo.m03, transfo.m13, transfo.m23);
-        }
-        return null;
+        PMatrix3D transfo = (PMatrix3D) transfos.get(id);
+        return new PVector(transfo.m03, transfo.m13, transfo.m23);
     }
 
     // We suppose that the ARDisplay is the one of the camera...
@@ -370,9 +351,9 @@ public class MarkerBoard {
             return;
         }
 
-        ///////////// SURF UPDATE ////////////////////
-        if (type == MarkerType.OPENCV_SURF) {
-            updateSURFPosition(id, currentTime, endTime, mode, camera, img);
+        ///////////// Javacv UPDATE ////////////////////
+        if (type == MarkerType.JAVACV_FINDER) {
+            updateJavaCVFinderPosition(id, currentTime, endTime, mode, camera, img);
         }
 
         ///////////// ARTOOLKITPLUS UPDATE ////////////////////
@@ -383,18 +364,38 @@ public class MarkerBoard {
 
     }
 
-    private void updateSURFPosition(int id, int currentTime, int endTime, int mode, Camera camera, IplImage img) {
+    private void updateJavaCVFinderPosition(int id, int currentTime, int endTime, int mode, Camera camera, IplImage img) {
 
         ObjectFinder finder = (ObjectFinder) trackers.get(id);
 
         // Find the markers
         double[] corners = finder.find(img);
 
+        // one use... HACK
+        finder = new ObjectFinder(finder.getSettings());
+        trackers.set(id, finder);
+
         if (corners == null) {
             return;
         }
 
         PMatrix3D newPos = compute3DPos(corners, camera);
+
+        if (newPos == null) {
+            return;
+        }
+
+        PVector currentPos = new PVector(newPos.m03, newPos.m13, newPos.m23);
+        if (currentPos.z < 10f || currentPos.z > 10000) {
+            return;
+        }
+
+        float distance = currentPos.dist(lastPos.get(id));
+        System.out.println("Distance " + distance);
+        if (distance > 1500) // 1 meter~?
+        {
+            return;
+        }
 
         // if the update is forced 
         if (mode == FORCE_UPDATE && currentTime < endTime) {
@@ -406,9 +407,6 @@ public class MarkerBoard {
         if (mode == FORCE_UPDATE || mode == BLOCK_UPDATE && currentTime > endTime) {
             updateStatus.set(id, NORMAL);
         }
-
-        PVector currentPos = new PVector(newPos.m03, newPos.m13, newPos.m23);
-        float distance = currentPos.dist(lastPos.get(id));
 
         // if it is a drawing mode
         if (drawingMode.get(id)) {
@@ -428,15 +426,16 @@ public class MarkerBoard {
 
     }
 
+    public int MIN_ARTOOLKIT_MARKER_DETECTED = 2;
+
     private void updateArtoolkitPosition(int id, int currentTime, int endTime, int mode, Camera camera, IplImage img) {
         TrackerMultiMarker tracker = (TrackerMultiMarker) trackers.get(id);
 
         // Find the markers
         tracker.calc(img.imageData());
 
-//        System.out.println("Calc... " + tracker.getNumDetectedMarkers() );
-        // Minimum 2 markers !
-        if (tracker.getNumDetectedMarkers() <= 1) {
+//        System.out.println("Calc... " + tracker.getNumDetectedMarkers());
+        if (tracker.getNumDetectedMarkers() < MIN_ARTOOLKIT_MARKER_DETECTED) {
             return;
         }
 
@@ -462,18 +461,17 @@ public class MarkerBoard {
             updateStatus.set(id, NORMAL);
         }
 
-        float distance = currentPos.dist(lastPos.get(id));
-
         // if it is a drawing mode
         if (drawingMode.get(id)) {
+            float distance = currentPos.dist(lastPos.get(id));
 
             if (distance > this.minDistanceDrawingMode.get(id)) {
                 update(multiMarkerConfig, id);
-
                 lastPos.set(id, currentPos);
                 updateStatus.set(id, FORCE_UPDATE);
                 nextTimeEvent.set(id, applet.millis() + MarkerBoard.updateTime);
-//                    System.out.println("Next Update for x seconds");
+//            } else {
+//                System.out.println("Not updating, because of drawing mode...");
             }
 
         } else {
@@ -482,59 +480,75 @@ public class MarkerBoard {
     }
 
     private PMatrix3D compute3DPos(double[] corners, Camera camera) {
-        if (topLeft == null) {
-            topLeft = new PVector();
-            topRight = new PVector();
-            botLeft = new PVector();
-            botRight = new PVector();
+
+        //  double[] srcCorners = {0, 0,  w, 0,  w, h,  0, h};
+        botLeft.set((float) corners[0], (float) corners[1]);
+        botRight.set((float) corners[2], (float) corners[3]);
+        topRight.set((float) corners[4], (float) corners[5]);
+        topLeft.set((float) corners[6], (float) corners[7]);
+
+        // check image bounds...
+        if (botLeft.x < 0 || botRight.x < 0 || topLeft.x < 0 || topRight.x < 0
+                || botLeft.x > camera.width() || botRight.x > camera.width() || topLeft.x > camera.width() || topRight.x > camera.width()
+                || botLeft.y < 0 || botRight.y < 0 || topLeft.y < 0 || topRight.y < 0
+                || botLeft.y > camera.height() || botRight.y > camera.height() || topLeft.y > camera.height() || topRight.y > camera.height()) {
+            return null;
         }
-
-        botRight.x = (float) corners[0];
-        botRight.y = (float) corners[1];
-
-        botLeft.x = (float) corners[2];
-        botLeft.y = (float) corners[3];
-
-        topLeft.x = (float) corners[4];
-        topLeft.y = (float) corners[5];
-        topRight.x = (float) corners[6];
-        topRight.y = (float) corners[7];
 
         imagePoints[0] = botLeft;
         imagePoints[1] = botRight;
-        imagePoints[2] = topLeft;
-        imagePoints[3] = topRight;
+        imagePoints[2] = topRight;
+        imagePoints[3] = topLeft;
 
+//      objectPoints[0] = new PVector(0, 0, 0);
+//      objectPoints[1] = new PVector(width, 0, 0);
+//      objectPoints[2] = new PVector(width, height, 0);
+//      objectPoints[3] = new PVector(0, height, 0);
         ProjectiveDeviceP pdp = camera.getProjectiveDevice();
         return pdp.estimateOrientation(objectPoints, imagePoints);
+
     }
 
     private void update(ARToolKitPlus.ARMultiMarkerInfoT multiMarkerConfig, int id) {
-
-        float transfo[] = (float[]) transfos.get(id);
+        PMatrix3D transfo = transfos.get(id);
         OneEuroFilter filter[] = filters.get(id);
 
         if (filter == null) {
-            for (int i = 0; i < 12; i++) {
-                transfo[i] = (float) multiMarkerConfig.trans().get(i);
-            }
+            transfo.m00 = multiMarkerConfig.trans().get(0);
+            transfo.m01 = multiMarkerConfig.trans().get(1);
+            transfo.m02 = multiMarkerConfig.trans().get(2);
+            transfo.m03 = multiMarkerConfig.trans().get(3);
+
+            transfo.m10 = multiMarkerConfig.trans().get(4);
+            transfo.m11 = multiMarkerConfig.trans().get(5);
+            transfo.m12 = multiMarkerConfig.trans().get(6);
+            transfo.m13 = multiMarkerConfig.trans().get(7);
+
+            transfo.m20 = multiMarkerConfig.trans().get(8);
+            transfo.m21 = multiMarkerConfig.trans().get(9);
+            transfo.m22 = multiMarkerConfig.trans().get(10);
+            transfo.m23 = multiMarkerConfig.trans().get(11);
         } else {
             try {
-                for (int i = 0; i < 12; i++) {
-                    float v = (float) multiMarkerConfig.trans().get(i);
-                    transfo[i] = (float) filter[i].filter(v);
-                }
+                transfo.m00 = (float) filter[0].filter(multiMarkerConfig.trans().get(0));
+                transfo.m01 = (float) filter[1].filter(multiMarkerConfig.trans().get(1));
+                transfo.m02 = (float) filter[2].filter(multiMarkerConfig.trans().get(2));
+                transfo.m03 = (float) filter[3].filter(multiMarkerConfig.trans().get(3));
+
+                transfo.m10 = (float) filter[4].filter(multiMarkerConfig.trans().get(4));
+                transfo.m11 = (float) filter[5].filter(multiMarkerConfig.trans().get(5));
+                transfo.m12 = (float) filter[6].filter(multiMarkerConfig.trans().get(6));
+                transfo.m13 = (float) filter[7].filter(multiMarkerConfig.trans().get(7));
+
+                transfo.m20 = (float) filter[8].filter(multiMarkerConfig.trans().get(8));
+                transfo.m21 = (float) filter[9].filter(multiMarkerConfig.trans().get(9));
+                transfo.m22 = (float) filter[10].filter(multiMarkerConfig.trans().get(10));
+                transfo.m23 = (float) filter[11].filter(multiMarkerConfig.trans().get(11));
             } catch (Exception e) {
                 System.out.println("Filtering error " + e);
             }
         }
-//
-//        // If z negation hack required...
-//         PMatrix3D tmp = new PMatrix3D(transfo[0], transfo[1], transfo[2], transfo[3],
-//                transfo[4], transfo[5], transfo[6], transfo[7],
-//                transfo[8], transfo[9], transfo[10], transfo[11],
-//                0, 0, 0, 1);
-////         tmp.print();
+//    Z negation ?
 //        tmp.scale(1, 1, -1);
 //        transfo[11] = -transfo[11];
     }
@@ -579,37 +593,37 @@ public class MarkerBoard {
 //        transfo[11] = -transfo[11];
     }
 
-    // TODO: Watch this for performance...
-    public float[] getTransfo(Camera camera) {
-
-        if (this.type == MarkerType.ARTOOLKITPLUS) {
-            return (float[]) this.transfos.get(cameras.indexOf(camera));
-        }
-        if (this.type == MarkerType.OPENCV_SURF) {
-            PMatrix3D mat = (PMatrix3D) this.transfos.get(cameras.indexOf(camera));
-
-            float[] tmp = new float[12];
-            mat.get(tmp);
-            return tmp;
-        }
-        return null;
-    }
-
+//    public void filter(Camera camera) {
+//        int id = cameras.indexOf(camera);
+//        PMatrix3D transfo = (PMatrix3D) transfos.get(id);
+//        OneEuroFilter filter[] = filters.get(id);
+//
+//        PMatrix3D newPos = transfo;
+//        assert (filter != null);
+//
+//        try {
+//            // Rotation
+//            transfo.m00 = (float) filter[0].filter(newPos.m00);
+//            transfo.m01 = (float) filter[1].filter(newPos.m01);
+//            transfo.m02 = (float) filter[2].filter(newPos.m02);
+//            transfo.m10 = (float) filter[3].filter(newPos.m10);
+//            transfo.m11 = (float) filter[4].filter(newPos.m11);
+//            transfo.m12 = (float) filter[5].filter(newPos.m12);
+//            transfo.m20 = (float) filter[6].filter(newPos.m20);
+//            transfo.m21 = (float) filter[7].filter(newPos.m21);
+//            transfo.m22 = (float) filter[8].filter(newPos.m22);
+//
+//            // Translation
+//            transfo.m03 = (float) filter[9].filter(newPos.m03);
+//            transfo.m13 = (float) filter[10].filter(newPos.m13);
+//            transfo.m23 = (float) filter[11].filter(newPos.m23);
+//
+//        } catch (Exception e) {
+//            System.out.println("Filtering error " + e);
+//        }
+//    }
     public PMatrix3D getTransfoMat(Camera camera) {
-        if (this.type == MarkerType.ARTOOLKITPLUS) {
-            float[] t = getTransfo(camera);
-            return new PMatrix3D(t[0], t[1], t[2], t[3],
-                    t[4], t[5], t[6], t[7],
-                    t[8], t[9], t[10], t[11],
-                    0, 0, 0, 1);
-        }
-        if (this.type == MarkerType.OPENCV_SURF) {
-
-            PMatrix3D transfo = (PMatrix3D) this.transfos.get(cameras.indexOf(camera));
-            return transfo;
-//            return (PMatrix3D) this.transfos.get(cameras.indexOf(camera));
-        }
-        return null;
+        return transfos.get(cameras.indexOf(camera));
     }
 
     public PMatrix3D getTransfoRelativeTo(Camera camera, MarkerBoard board2) {
@@ -621,16 +635,22 @@ public class MarkerBoard {
         return tr2;
     }
 
-    public boolean usePMatrix() {
-        return this.type == MarkerType.OPENCV_SURF;
+    public ObjectFinder getObjectTracking(Camera camera) {
+        assert (this.useJavaCVFinder());
+        return (ObjectFinder) getTracking(camera);
     }
 
-    public boolean useFloatArray() {
-        return this.type == MarkerType.ARTOOLKITPLUS;
+    public ARToolKitPlus.TrackerMultiMarker getARToolkitTracking(Camera camera) {
+        assert (this.useARToolkit());
+        return (ARToolKitPlus.TrackerMultiMarker) getTracking(camera);
     }
 
-    public boolean useSurf() {
-        return this.type == MarkerType.OPENCV_SURF;
+    private Object getTracking(Camera camera) {
+        return trackers.get(cameras.indexOf(camera));
+    }
+
+    public boolean useJavaCVFinder() {
+        return this.type == MarkerType.JAVACV_FINDER;
     }
 
     public boolean useARToolkit() {

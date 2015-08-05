@@ -303,8 +303,6 @@ public abstract class Camera extends Node implements PConstants {
      */
     protected void updateCurrentImage(IplImage img) {
 
-        currentImage = img;
-
         if (undistort) {
 
             if (pdp == null || !pdp.handleDistorsions()) {
@@ -323,6 +321,8 @@ public abstract class Camera extends Node implements PConstants {
             }
             pdp.getDevice().undistort(img, copyUndist);
             currentImage = copyUndist;
+        } else {
+            currentImage = img;
         }
     }
 

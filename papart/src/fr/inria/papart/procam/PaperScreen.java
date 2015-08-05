@@ -13,6 +13,7 @@ import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.drawingapp.DrawUtils;
 import static fr.inria.papart.procam.Papart.tablePosition;
+import fr.inria.papart.tracking.ObjectFinder;
 import java.awt.Image;
 import processing.opengl.PGraphicsOpenGL;
 import processing.core.PApplet;
@@ -190,7 +191,8 @@ public class PaperScreen {
 
             // default filtering
             markerBoard.setDrawingMode(cameraTracking, true, 20);
-            markerBoard.setFiltering(cameraTracking, 30, 4);
+//            markerBoard.setFiltering(cameraTracking, 30, 4);
+            markerBoard.setFiltering(cameraTracking, 30, 2f);
         }
 
         isInitialized = true;
@@ -482,6 +484,15 @@ public class PaperScreen {
     public void loadLocationFrom(String filename) {
         this.useManualLocation(true);
         setMainLocation(HomographyCalibration.getMatFrom(Papart.getPapart().getApplet(), filename));
+    }
+    
+    public ObjectFinder getObjectTracking(){
+        if(markerBoard.useJavaCVFinder()){
+        return markerBoard.getObjectTracking(cameraTracking);
+        } else {
+            System.err.println("getObjectTracking is only accessible with image-based tracking.");
+            return null;
+        }
     }
 
     public MarkerBoard getBoard() {

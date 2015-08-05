@@ -47,11 +47,12 @@ public class Papart {
 
     public final static String folder = fr.inria.papart.procam.Utils.getPapartFolder();
     public final static String calibrationFolder = "/data/calibration/";
+    public final static String markerFolder = folder + "/data/markers/";
 
     @Deprecated
     public static String procamCalib = folder + calibrationFolder + "camera-projector.yaml";
 
-    public static String cameraCalib = folder + calibrationFolder + "camera-projector.yaml";
+    public static String cameraCalib = folder + calibrationFolder + "camera.yaml";
     public static String projectorCalib = folder + calibrationFolder + "camera-projector.yaml";
 
     public static String camCalibARtoolkit = folder + calibrationFolder + "camera-projector.cal";

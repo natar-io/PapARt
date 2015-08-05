@@ -1,5 +1,6 @@
 package fr.inria.papart.apps;
 
+import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.PaperScreen;
 
 public class MyApp2D extends PaperScreen {
@@ -10,10 +11,12 @@ public class MyApp2D extends PaperScreen {
     
     protected void setup() {
         setDrawingSize(297, 210);
-        loadMarkerBoard(parent.sketchPath() + "/data/markers/big.cfg", 297, 210);
+//        loadMarkerBoard(Papart.markerFolder + "big.cfg", 297, 210);
+        loadMarkerBoard(Papart.markerFolder + "dlink.png", 140,140);
     }
 
     public void draw() {
+//        this.getLocation().print();
         beginDraw2D();
         background(100, 0, 0);
         fill(200, 100, 20);
