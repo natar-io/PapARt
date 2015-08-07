@@ -21,7 +21,7 @@ int kinectFormat = Kinect.KINECT_MM;
 int skip = 2;
 
 void settings(){
-  size(800, 600, OPENGL); 
+  size(800, 600, P3D); 
 }
 
 

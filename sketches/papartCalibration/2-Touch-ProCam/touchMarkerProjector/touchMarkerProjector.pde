@@ -81,7 +81,7 @@ void setup(){
   cam.setMaximumDistance(1200);
   cam.setActive(true);
   
-  markerBoard = new MarkerBoard(sketchPath() + "/data/big.cfg", paperSize.x, paperSize.y);
+  markerBoard = new MarkerBoard(Papart.markerFolder + "big.cfg", paperSize.x, paperSize.y);
   cameraKinect.trackMarkerBoard(markerBoard);
   cameraTracking.trackMarkerBoard(markerBoard);
   
@@ -127,6 +127,11 @@ void draw(){
 
     kinectPaperTransform = markerBoard.getTransfoMat(cameraKinect);
     cameraPaperTransform = markerBoard.getTransfoMat(cameraTracking);
+
+    println("Kinect " );
+    kinectPaperTransform.print();
+    println("Camera");
+    cameraPaperTransform.print();
 
      // Not so usefull... ? To try with different parameters. 
     // PMatrix3D kinectExtr = kinect.getStereoCalibration();
