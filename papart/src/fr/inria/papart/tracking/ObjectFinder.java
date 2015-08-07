@@ -71,7 +71,7 @@ public class ObjectFinder {
     public static class Settings extends BaseChildSettings {
         IplImage objectImage = null;
 //        ORB detector = ORB.create();
-        ORB detector = ORB.create(700/*=500*/, 1.2f /*=1.2f*/, 12 /*=8*/, 31/*=31*/,
+        ORB detector = ORB.create(500/*=500*/, 1.6f /*=1.2f*/, 6 /*=8*/, 31/*=31*/,
             0/*=0*/, 2/*=2*/, ORB.HARRIS_SCORE/*=cv::ORB::HARRIS_SCORE*/, 31 /*=31*/, 20/*=20*/);
 //        AKAZE detector = AKAZE.create();  // -> CRAZY memory leaks ?!
 //        AKAZE detector = AKAZE.create(AKAZE.DESCRIPTOR_KAZE,
