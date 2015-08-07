@@ -191,8 +191,7 @@ public class PaperScreen {
 
             // default filtering
             markerBoard.setDrawingMode(cameraTracking, true, 20);
-//            markerBoard.setFiltering(cameraTracking, 30, 4);
-            markerBoard.setFiltering(cameraTracking, 30, 2f);
+            markerBoard.setFiltering(cameraTracking, 30, 4);
         }
 
         isInitialized = true;
