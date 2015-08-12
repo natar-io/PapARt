@@ -21,6 +21,12 @@ import toxi.geom.Vec3D;
  *
  * @author jeremy
  */
+
+/** 
+ * TouchPoint, touch events go through this class. 
+ * TODO: add event handling !
+ * @author jiii
+ */
 public class TouchPoint extends DepthPoint {
 
     public static int count = 0;
