@@ -66,12 +66,15 @@ public class KinectDepthAnalysis extends DepthAnalysis {
         calibRGB = camera.getProjectiveDevice();
         calibIR = camera.getDepthCamera().getProjectiveDevice();
         initMemory();
+
         PixelOffset.initStaticMode(width, height);
-        initThreadPool();
+
+        // initThreadPool();
     }
 
+    // Thread version... No bonus whatsoever for now.
     private int nbThreads = 16;
-    ExecutorService threadPool;
+    private ExecutorService threadPool;
 
     private void initThreadPool() {
         threadPool = Executors.newFixedThreadPool(nbThreads);
@@ -83,21 +86,6 @@ public class KinectDepthAnalysis extends DepthAnalysis {
 
         depthData = new KinectDepthData(this);
         depthData.projectiveDevice = this.calibIR;
-
-        // Hack : no more depthLookup...
-//        if (depthLookUp == null) {
-//            depthLookUp = new float[2048];
-//            if (this.mode == Kinect.KINECT_10BIT) {
-//                for (int i = 0; i < depthLookUp.length; i++) {
-//                    depthLookUp[i] = rawDepthToMeters10Bits(i);
-//                }
-//            }
-//            if (this.mode == Kinect.KINECT_MM) {
-//                for (int i = 0; i < depthLookUp.length; i++) {
-//                    depthLookUp[i] = rawDepthToMetersNoChange(i);
-//                }
-//            }
-//        }
     }
 
     public void update(IplImage depth) {
@@ -117,8 +105,9 @@ public class KinectDepthAnalysis extends DepthAnalysis {
         depthData.clear();
         depthData.timeStamp = papplet.millis();
         depthData.planeAndProjectionCalibration = calib;
-        computeDepthAndDo(skip2D, new DoNothing());
-        doForEachPoint(skip2D, new Select2DPointPlaneProjection());
+//        computeDepthAndDo(skip2D, new DoNothing());
+        computeDepthAndDo(skip2D, new Select2DPointPlaneProjection());
+//        doForEachPoint(skip2D, new Select2DPointPlaneProjection());
         doForEachPoint(skip3D, new Select3DPointPlaneProjection());
 
         // Optimisations -- for demos
@@ -169,9 +158,12 @@ public class KinectDepthAnalysis extends DepthAnalysis {
         for (PixelOffset px : pixels) {
             float d = getDepth(px.offset);
             if (d != INVALID_DEPTH) {
-                Vec3D pKinect = calibIR.pixelToWorld(px.x, px.y, d);
-                depthData.depthPoints[px.offset] = pKinect;
-                manip.execute(pKinect, px);
+
+//                Vec3D pKinect = calibIR.pixelToWorld(px.x, px.y, d);
+//                depthData.depthPoints[px.offset] = pKinect;
+                calibIR.pixelToWorld(px.x, px.y, d, depthData.depthPoints[px.offset]);
+
+                manip.execute(depthData.depthPoints[px.offset], px);
             }
         }
     }
@@ -184,9 +176,13 @@ public class KinectDepthAnalysis extends DepthAnalysis {
 
             float d = getDepth(px.offset);
             if (d != INVALID_DEPTH) {
-                Vec3D pKinect = calibIR.pixelToWorld(px.x, px.y, d);
-                depthData.depthPoints[px.offset] = pKinect;
-                manip.execute(pKinect, px);
+//                Vec3D pKinect = calibIR.pixelToWorld(px.x, px.y, d);
+//                depthData.depthPoints[px.offset] = pKinect;
+//                manip.execute(pKinect, px);
+
+                calibIR.pixelToWorld(px.x, px.y, d, depthData.depthPoints[px.offset]);
+                manip.execute(depthData.depthPoints[px.offset], px);
+
             } else {
                 invalidManip.execute(px);
             }
@@ -273,13 +269,16 @@ public class KinectDepthAnalysis extends DepthAnalysis {
         return findColorOffset(v.x, v.y, v.z);
     }
 
+    private PVector vt = new PVector();
+    private PVector vt2 = new PVector();
+    
     public int findColorOffset(float x, float y, float z) {
-        PVector vt = new PVector(x, y, z);
-        PVector vt2 = new PVector();
+        vt.set(x, y, z);
+        vt2.set(0,0,0);
         //  Ideally use a calibration... 
 //        kinectCalibRGB.getExtrinsics().mult(vt, vt2);       
         KinectRGBIRCalibration.mult(vt, vt2);
-        return calibRGB.worldToPixel(new Vec3D(vt2.x, vt2.y, vt2.z));
+        return calibRGB.worldToPixel(vt2.x, vt2.y, vt2.z);
     }
 
     /**
@@ -303,9 +302,13 @@ public class KinectDepthAnalysis extends DepthAnalysis {
         @Override
         public void execute(Vec3D p, PixelOffset px) {
             if (depthData.planeAndProjectionCalibration.hasGoodOrientationAndDistance(p)) {
-                Vec3D projected = depthData.planeAndProjectionCalibration.project(p);
-                depthData.projectedPoints[px.offset] = projected;
-                if (isInside(projected, 0.f, 1.f, 0.0f)) {
+
+//                Vec3D projected = depthData.planeAndProjectionCalibration.project(p);
+//                depthData.projectedPoints[px.offset] = projected;
+
+                depthData.planeAndProjectionCalibration.project(p, depthData.projectedPoints[px.offset]);
+
+                if (isInside(depthData.projectedPoints[px.offset], 0.f, 1.f, 0.0f)) {
                     depthData.validPointsMask[px.offset] = true;
                     depthData.validPointsList.add(px.offset);
                 }
@@ -382,9 +385,12 @@ public class KinectDepthAnalysis extends DepthAnalysis {
         @Override
         public void execute(Vec3D p, PixelOffset px) {
             if (depthData.planeAndProjectionCalibration.hasGoodOrientation(p)) {
-                Vec3D projected = depthData.planeAndProjectionCalibration.project(p);
-                depthData.projectedPoints[px.offset] = projected;
-                if (isInside(projected, 0.f, 1.f, 0.1f)) {
+//                Vec3D projected = depthData.planeAndProjectionCalibration.project(p);
+//                depthData.projectedPoints[px.offset] = projected;
+
+                depthData.planeAndProjectionCalibration.project(p, depthData.projectedPoints[px.offset]);
+                
+                if (isInside(depthData.projectedPoints[px.offset], 0.f, 1.f, 0.1f)) {
                     depthData.validPointsMask3D[px.offset] = true;
                     depthData.validPointsList3D.add(px.offset);
                 }
@@ -453,6 +459,7 @@ public class KinectDepthAnalysis extends DepthAnalysis {
                 public PixelOffset next() {
                     // no allocation mode -- static
 //                    PixelOffset out = new PixelOffset(x, y, offset);
+
                     PixelOffset out = PixelOffset.get(offset);
                     x += precision;
                     offset += precision;
@@ -531,9 +538,11 @@ public class KinectDepthAnalysis extends DepthAnalysis {
             for (PixelOffset px : pixels) {
                 float d = getDepth(px.offset);
                 if (d != INVALID_DEPTH) {
-                    Vec3D pKinect = calibIR.pixelToWorld(px.x, px.y, d);
-                    depthData.depthPoints[px.offset] = pKinect;
-                    manip.execute(pKinect, px);
+//                    Vec3D pKinect = calibIR.pixelToWorld(px.x, px.y, d);
+//                    depthData.depthPoints[px.offset] = pKinect;
+                    
+                    calibIR.pixelToWorld(px.x, px.y, d, depthData.depthPoints[px.offset]);
+                    manip.execute(depthData.depthPoints[px.offset], px);
                 }
             }
             return null;

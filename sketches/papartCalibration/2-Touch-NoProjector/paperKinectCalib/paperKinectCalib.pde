@@ -9,14 +9,6 @@ import fr.inria.papart.calibration.*;
 import org.bytedeco.javacpp.*;
 import toxi.geom.*;
 
-// Undecorated frame 
-public void init() {
-  frame.removeNotify(); 
-  frame.setUndecorated(true); 
-  frame.addNotify(); 
-  super.init();
-}
-
 Papart papart;
 ARDisplay cameraDisplay;
 Camera camera;
@@ -25,6 +17,10 @@ float objectWidth = 420;
 float objectHeight = 297;
 PVector trackingSize=  new PVector(1500, 3000);
 float rectAroundWidth = 10;
+
+void settings(){
+    size(200, 200, P3D);
+}
 
 public void setup() {
 

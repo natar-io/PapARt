@@ -85,22 +85,22 @@ public class Screen {
      * @deprecated
      *
      */
-    public void setAutoUpdatePos(Camera camera, MarkerBoard board) {
-        if (!camera.tracks(board)) {
-            camera.trackMarkerBoard(board);
-        }
-
-        isFloatArrayUpdating = board.useFloatArray();
-        if (this.isFloatArrayUpdating) {
-            posFloat = board.getTransfo(camera);
-            transformation = new PMatrix3D();
-        } else {
-//            System.out.println("Getting the original transfo");
-
-            transformation = board.getTransfoMat(camera);
-            posFloat = new float[12];
-        }
-    }
+//    public void setAutoUpdatePos(Camera camera, MarkerBoard board) {
+//        if (!camera.tracks(board)) {
+//            camera.trackMarkerBoard(board);
+//        }
+//
+//        isFloatArrayUpdating = board.useFloatArray();
+//        if (this.isFloatArrayUpdating) {
+//            posFloat = board.getTransfo(camera);
+//            transformation = new PMatrix3D();
+//        } else {
+////            System.out.println("Getting the original transfo");
+//
+//            transformation = board.getTransfoMat(camera);
+//            posFloat = new float[12];
+//        }
+//    }
 
     public boolean isOpenGL() {
         return isOpenGL;

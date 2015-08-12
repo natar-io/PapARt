@@ -35,9 +35,11 @@ Papart papart;
 Camera cameraTracking;
 PVector paperSize = new PVector(297, 210);
 
+void settings(){
+    size(Kinect.WIDTH, Kinect.HEIGHT, P3D); 
+}
+
 void setup(){
-    
-    size(Kinect.WIDTH, Kinect.HEIGHT, OPENGL); 
     
     int depthFormat = freenect.FREENECT_DEPTH_MM;
     int kinectFormat = Kinect.KINECT_MM;

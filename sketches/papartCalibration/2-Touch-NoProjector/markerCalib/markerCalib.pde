@@ -35,9 +35,11 @@ int currentPoint = 0;
 Papart papart;
 PVector trackingSize = new PVector(400, 400);
 
+void settings(){
+    size(Kinect.WIDTH, Kinect.HEIGHT, P3D);
+}
+
 void setup(){
-    
-    size(Kinect.WIDTH, Kinect.HEIGHT, OPENGL); 
     
     int depthFormat = freenect.FREENECT_DEPTH_MM;
     int kinectFormat = Kinect.KINECT_MM;
@@ -78,7 +80,7 @@ void setup(){
   cam.setMaximumDistance(5000);
   cam.setActive(true);
   
-  markerBoard = new MarkerBoard(sketchPath + "/data/big.cfg", trackingSize.x, trackingSize.y);
+  markerBoard = new MarkerBoard(sketchPath() + "/data/big.cfg", trackingSize.x, trackingSize.y);
   cameraKinect.trackMarkerBoard(markerBoard);
 }
 

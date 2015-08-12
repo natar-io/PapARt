@@ -1,62 +1,59 @@
 import java.awt.Frame;
 
-// http://forum.processing.org/one/topic/popup-how-to-open-a-new-window.html
 
-PFrame f;
-secondApplet s;
-
+SecondApplet s;
 
 void initSecondApplet(){
     
     try{
 	screenConfig.setProjectionScreenOffsetX(Integer.parseInt(posXText.getText()));
 	screenConfig.setProjectionScreenOffsetY(Integer.parseInt(posYText.getText()));
-	PFrame f = new PFrame();
+
+	SecondApplet app = new SecondApplet(); 
 
     }catch(java.lang.NumberFormatException e){
 	println("Invalid Position");
     }
 }
 
+public class SecondApplet extends PApplet {
 
-
-class PFrame extends Frame {
+    private boolean first = true;
     
-    public PFrame() {
-
-	int posX = screenConfig.getProjectionScreenOffsetX();
-	int posY = screenConfig.getProjectionScreenOffsetY();
-	int width = screenConfig.getProjectionScreenWidth();
-	int height = screenConfig.getProjectionScreenHeight();
-
-        setBounds(posX, posY, width, height);
-
-	
-	setUndecorated(true); 
-	
-        s = new secondApplet();
-        add(s);
-        s.init();
-        show();
+    public SecondApplet(){
+	super();
+	PApplet.runSketch(new String[]{this.getClass().getName()}, this);
     }
-}
 
-class secondApplet extends PApplet {
-
+    public void settings() {
+	size(screenConfig.getProjectionScreenWidth(),
+	     screenConfig.getProjectionScreenHeight(), P3D);
+	fullScreen();
+    }
 
     public void setup() {
 
-	int width = screenConfig.getProjectionScreenWidth();
-	int height = screenConfig.getProjectionScreenHeight();
-	size(width, height);
-	
+    }
+
+    public void post(){
+
+	if(first){
+	    println("Post");
+	    frame.setLocation(screenConfig.getProjectionScreenOffsetX(),
+			      screenConfig.getProjectionScreenOffsetY());
+	    // getSurface().setSize(screenConfig.getProjectionScreenWidth(),
+	    // 			  screenConfig.getProjectionScreenHeight());
+
+	    frame.setUndecorated(true); 
+	}
+    }
+
+    public void draw() {
+	background(100);
 	rect(0, 0, rectSize, rectSize);
 	rect(width-rectSize, 0, rectSize, rectSize);
 	rect(width-rectSize, height-rectSize, rectSize, rectSize);
 	rect(0, height-rectSize, rectSize, rectSize);
-	
-        noLoop();
-    }
-    public void draw() {
+
     }
 }

@@ -36,13 +36,16 @@ public class Panel {
 //        f.setTitle("second window");
     }
 
+    /**
+     * Broken WITH PROCESSING 3
+     */
     public class PFrame extends JFrame {
 
         public PFrame(int width, int height) {
             setBounds(100, 100, width, height);
             secondApplet = new SecondApplet();
-            add(secondApplet);
-            secondApplet.init();
+//            add(secondApplet);
+//            secondApplet.init();
             this.setVisible(true);
         }
     }

@@ -16,7 +16,6 @@ import fr.inria.papart.procam.HasExtrinsics;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.procam.Screen;
 import java.util.ArrayList;
-import javax.media.opengl.GL2;
 import processing.core.PApplet;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
@@ -44,7 +43,6 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
     protected PMatrix3D projectionInit = new PMatrix3D();
     // TODO...
     protected PShader lensFilter;
-    protected GL2 gl = null;
     protected PMatrix3D invProjModelView;
     private Camera camera = null;
 
@@ -70,7 +68,10 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
                 (int) (frameHeight * quality), PApplet.OPENGL);
         screens = new ArrayList<Screen>();
         updateIntrinsicsRendering();
-        initDistortMap();
+
+        if (distort) {
+            initDistortMap();
+        }
         automaticMode();
     }
 
@@ -99,7 +100,10 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         this.frameHeight = pdp.getHeight();
         this.drawingSizeX = frameWidth;
         this.drawingSizeY = frameHeight;
-        this.setDistort(pdp.handleDistorsions());
+        
+        // TODO: no more distorsions Processing3 test 
+        // this.setDistort(pdp.handleDistorsions());
+        this.setDistort(false);
     }
 
     public void updateIntrinsicsRendering() {
@@ -264,6 +268,7 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
             return;
         }
 
+//        lensFilter = parent.loadShader("fr/inria/papart/procam/distortFrag.glsl", "distortVert.glsl");
         lensFilter = parent.loadShader(
                 ARDisplay.class.getResource("distortFrag.glsl").toString(),
                 ARDisplay.class.getResource("distortVert.glsl").toString());

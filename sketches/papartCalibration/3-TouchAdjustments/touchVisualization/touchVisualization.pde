@@ -32,9 +32,12 @@ PlaneAndProjectionCalibration planeProjCalibration;
     
 int precision = 3;
 
+
+void settings(){
+    size(1200, 900, P3D);
+}
+
 void setup(){
-    
-    size(1200, 900, OPENGL);
 
     int depthFormat = freenect.FREENECT_DEPTH_MM;
     int kinectFormat = Kinect.KINECT_MM;

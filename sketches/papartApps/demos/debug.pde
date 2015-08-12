@@ -9,10 +9,9 @@ import fr.inria.papart.procam.display.*;
 
 public class Debug  extends PaperTouchScreen {
 
-
     void setup(){
 	setDrawingSize((int) debugSize.x, (int) debugSize.y);
-	loadMarkerBoard(sketchPath + "/data/markers/debug.cfg", 
+	loadMarkerBoard(sketchPath() + "/data/markers/debug.cfg", 
 		    debugSize.x, debugSize.y);
     }
 

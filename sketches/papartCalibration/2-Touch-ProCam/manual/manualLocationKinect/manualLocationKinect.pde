@@ -18,10 +18,12 @@ float objectWidth = 420;
 float objectHeight = 297;
 float rectAroundWidth = 10;
 
+public void settings(){
+    size(640, 480, P3D);
+}
+
 public void setup() {
 
-    size(640, 480, OPENGL);
-    
     papart = new Papart(this);
 
     papart.initKinectCamera(1);

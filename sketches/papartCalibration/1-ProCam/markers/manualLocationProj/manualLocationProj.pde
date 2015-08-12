@@ -13,6 +13,10 @@ float rectAroundWidth = 10;
 Papart papart;
 ProjectorDisplay projector;
 
+public void settings(){
+    fullScreen(P3D);
+}
+
 public void setup() {
 
   Papart.projectionOnly(this);
@@ -34,16 +38,36 @@ public void setup() {
   image[1] = new PVector(200, 100);
   image[2] = new PVector(200, 200);
   image[3] = new PVector(100, 200);
+
+  imageScaled[0] = new PVector(100, 100);
+  imageScaled[1] = new PVector(200, 100);
+  imageScaled[2] = new PVector(200, 200);
+  imageScaled[3] = new PVector(100, 200);
+
 }
 
 PMatrix3D objectProjectorTransfo, pos;
 PVector object[];
 PVector image[];
+PVector[] imageScaled = new PVector[4];
+
 
 void draw() {
 
   ProjectiveDeviceP pdp = projector.getProjectiveDeviceP();
-  objectProjectorTransfo = pdp.estimateOrientation(object, image);
+    imageScaled[0].x = image[0].x / width * projector.getWidth();
+  imageScaled[0].y = image[0].y / height * projector.getHeight();
+  
+  imageScaled[1].x = image[1].x / width * projector.getWidth();
+  imageScaled[1].y = image[1].y / height * projector.getHeight();
+  
+  imageScaled[2].x = image[2].x / width * projector.getWidth();
+  imageScaled[2].y = image[2].y / height * projector.getHeight();
+  
+  imageScaled[3].x = image[3].x / width * projector.getWidth();
+  imageScaled[3].y = image[3].y / height * projector.getHeight();
+
+  objectProjectorTransfo = pdp.estimateOrientation(object, imageScaled);
   //    objectProjectorTransfo.print();
 
   PGraphicsOpenGL g1 = projector.beginDraw();  

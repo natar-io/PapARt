@@ -12,6 +12,7 @@ import fr.inria.papart.calibration.HomographyCreator;
 import fr.inria.papart.calibration.PlaneCalibration;
 import fr.inria.papart.calibration.PlaneCreator;
 import fr.inria.papart.procam.camera.Camera.PixelFormat;
+import fr.inria.papart.procam.display.ARDisplay;
 import org.bytedeco.javacpp.opencv_imgproc.*;
 
 import org.bytedeco.javacv.CameraDevice;
@@ -79,12 +80,20 @@ public class Utils {
     }
 
     static public String getLibrariesFolder() {
+        
+        // This is used, as Papart classes are often linked to another folder...
         URL main = Matrix4x4.class.getResource("Matrix4x4.class");
+//        URL main = ARDisplay.class.getResource("ARDisplay.class");
         String tmp = main.getPath();
 
-        tmp = tmp.substring(0, tmp.indexOf('!'));
-        tmp = tmp.replace("file:", "");
+        System.out.println("path  " + tmp);
+
+        // its in a jar
+        if (tmp.contains("!")) {
+            tmp = tmp.substring(0, tmp.indexOf('!'));
+            tmp = tmp.replace("file:", "");
 //        tmp = tmp.replace("file:/", "");  TODO: OS check ?
+        }
 
         File f = new File(tmp);
         if (!f.exists()) {
@@ -93,10 +102,10 @@ public class Utils {
 
         // if the file is within a library/lib folder
         if (f.getParentFile().getAbsolutePath().endsWith(("/lib"))) {
-            //             pathToSketchbook/libraries/myLib/library/lib/myLib.jar
+            //     pathToSketchbook/libraries/myLib/library/lib/myLib.jar
             f = f.getParentFile().getParentFile().getParentFile().getParentFile();
         } else {
-            //             pathToSketchbook/libraries/myLib/library/myLib.jar
+            //     pathToSketchbook/libraries/myLib/library/myLib.jar
             f = f.getParentFile().getParentFile().getParentFile();
         }
 
@@ -107,10 +116,11 @@ public class Utils {
 
         String sketchbook = java.lang.System.getenv("SKETCHBOOK");
         if (sketchbook != null) {
+            System.out.println("Found  SKETCHBOOK environment variable.");
             return sketchbook + "/libraries/" + LibraryName;
         }
 
-        return getLibrariesFolder() + "/" +LibraryName;
+        return getLibrariesFolder() + "/" + LibraryName;
     }
 
     static public PVector mult(PMatrix3D mat, PVector source, PVector target) {
@@ -237,7 +247,7 @@ public class Utils {
 //        imgIn.w
         return imgOut;
     }
-    
+
     static public IplImage createImageFrom(IplImage imgIn) {
         // TODO: avoid this creation !!
         CvSize outSize = new CvSize();
@@ -602,9 +612,9 @@ public class Utils {
      *
      * Deprecated
      */
-    static public void PImageToIplImage(PImage src, IplImage dst) {
-        dst.copyFrom((BufferedImage) src.getImage());
-    }
+//    static public void PImageToIplImage(PImage src, IplImage dst) {
+//        dst.copyFrom((BufferedImage) src.getImage());
+//    }
 
     static public void PImageToIplImage2(IplImage img, boolean RGB, PImage ret) {
 

@@ -124,7 +124,7 @@ public class Connexity {
         int currentOffset = y * width + x;
 
         if (points[currentOffset] == null
-                || points[currentOffset] == DepthAnalysis.INVALID_POINT) {
+                ||  !DepthAnalysis.isValidPoint(points[currentOffset])) {
             connexity[currentOffset] = 0;
             connexitySum[currentOffset] = 0;
             return;

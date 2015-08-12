@@ -12,12 +12,10 @@ import fr.inria.papart.multitouch.KinectTouchInput;
 import fr.inria.papart.procam.Utils;
 import java.util.HashMap;
 import org.bytedeco.javacpp.freenect;
-import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import org.bytedeco.javacv.OpenKinectFrameGrabber;
 import processing.core.PApplet;
 import processing.core.PImage;
-import processing.opengl.PGraphicsOpenGL;
 
 /**
  *

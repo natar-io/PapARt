@@ -11,21 +11,23 @@ import processing.video.*;
 
 Camera camera;
 
+int resX = 640;
+int resY = 480;
+
+public void settings(){
+    // fullScreen(P3D);
+    size(resX, resY, P3D);
+}
+
 public void setup() {
-
-
-    int resX = 1920;
-    int resY = 1080;
-
-    size(resX, resY, OPENGL);
     
     if (frame != null) {
 	frame.setResizable(true);
     }
     
 
-    // camera = CameraFactory.createCamera(Camera.Type.OPEN_KINECT, "0");    
-    camera = CameraFactory.createCamera(Camera.Type.OPENCV, "0");    
+     camera = CameraFactory.createCamera(Camera.Type.OPEN_KINECT, "0");    
+     // camera = CameraFactory.createCamera(Camera.Type.OPENCV, "0");    
     // camera = CameraFactory.createCamera(Camera.Type.PROCESSING, "/dev/video1");
     // camera = CameraFactory.createCamera(Camera.Type.FLY_CAPTURE, 0);
 

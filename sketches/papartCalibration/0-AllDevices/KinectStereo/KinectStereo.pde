@@ -33,10 +33,11 @@ int skip = 2;
 
 float translation = 15;
 
-void setup(){
-
+void settings(){
   size(800, 600, OPENGL); 
+}
 
+void setup(){
   
   camera = (CameraOpenKinect) CameraFactory.createCamera(Camera.Type.OPEN_KINECT, 0);
   camera.setParent(this);

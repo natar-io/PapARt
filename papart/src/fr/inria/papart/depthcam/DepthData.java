@@ -22,8 +22,8 @@ import toxi.geom.Vec3D;
  * @author jiii
  */
 public class DepthData {
-    
-        /**
+
+    /**
      * 3D points viewed by the depth camera.
      */
     public Vec3D[] depthPoints;
@@ -40,7 +40,7 @@ public class DepthData {
     public int[] pointColors;
 
     public Connexity connexity;
-    
+
     /**
      * List of valid points
      */
@@ -50,27 +50,31 @@ public class DepthData {
 
     public int timeStamp;
     public DepthAnalysis source;
-    
+
     public DepthData(DepthAnalysis source) {
         int width = source.getWidth();
         int height = source.getHeight();
         this.source = source;
         int size = width * height;
         depthPoints = new Vec3D[size];
+        for (int i = 0; i < size; i++) {
+            depthPoints[i] = new Vec3D();
+        }
+
         validPointsMask = new boolean[size];
         pointColors = new int[size];
         validPointsList = new ArrayList();
         connexity = new Connexity(depthPoints, width, height);
 //        connexity = new Connexity(projectedPoints, width, height);
     }
-    
-    public DepthDataElement getElement(int i){
+
+    public DepthDataElement getElement(int i) {
         DepthDataElement dde = new DepthDataElement();
         fillDepthDataElement(dde, i);
         return dde;
     }
-    
-    protected void fillDepthDataElement(DepthDataElement dde, int i){
+
+    protected void fillDepthDataElement(DepthDataElement dde, int i) {
         dde.pointColor = pointColors[i];
         dde.depthPoint = depthPoints[i];
         dde.validPoint = validPointsMask[i];
@@ -85,13 +89,16 @@ public class DepthData {
         clearColor();
         connexity.reset();
     }
-    
-    void clearColor(){
+
+    void clearColor() {
         Arrays.fill(this.pointColors, INVALID_COLOR);
     }
 
     void clearDepth() {
-        Arrays.fill(this.depthPoints, INVALID_POINT);
+        for (Vec3D pt : depthPoints) {
+            pt.clear();
+        }
+//        Arrays.fill(this.depthPoints, INVALID_POINT);
     }
 
     void clear2D() {

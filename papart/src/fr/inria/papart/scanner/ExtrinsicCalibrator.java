@@ -78,7 +78,9 @@ public class ExtrinsicCalibrator {
             k++;
         }
         if (k > 100) {
-            PMatrix3D orientation = projectorDevice.estimateOrientationRansac(objectPoints, imagePoints);
+            // TODO: Repair ransac !
+//            PMatrix3D orientation = projectorDevice.estimateOrientationRansac(objectPoints, imagePoints);
+            PMatrix3D orientation = projectorDevice.estimateOrientation(objectPoints, imagePoints);
 
             orientation.print();
             return orientation;

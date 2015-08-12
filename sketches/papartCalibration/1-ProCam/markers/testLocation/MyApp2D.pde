@@ -2,7 +2,7 @@ public class MyApp extends PaperScreen {
 
   void setup() {
     setDrawingSize(297, 210);
-    loadMarkerBoard(sketchPath + "/data/big.cfg", 297, 210);
+    loadMarkerBoard(sketchPath() + "/data/big.cfg", 297, 210);
   }
 
   void draw() {

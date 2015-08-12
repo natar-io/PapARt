@@ -13,7 +13,7 @@ public class DrawingAppInterface  extends PaperTouchScreen {
 
     void setup(){
 	setDrawingSize((int) interfaceSize.x, (int) interfaceSize.y);
-	loadMarkerBoard(sketchPath + "/data/markers/drawing.cfg",
+	loadMarkerBoard(sketchPath() + "/data/markers/drawing.cfg",
 		    (int) interfaceSize.x, (int) interfaceSize.y);
 
 

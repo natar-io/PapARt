@@ -47,11 +47,12 @@ public class Papart {
 
     public final static String folder = fr.inria.papart.procam.Utils.getPapartFolder();
     public final static String calibrationFolder = "/data/calibration/";
+    public final static String markerFolder = folder + "/data/markers/";
 
     @Deprecated
     public static String procamCalib = folder + calibrationFolder + "camera-projector.yaml";
 
-    public static String cameraCalib = folder + calibrationFolder + "camera-projector.yaml";
+    public static String cameraCalib = folder + calibrationFolder + "camera.yaml";
     public static String projectorCalib = folder + calibrationFolder + "camera-projector.yaml";
 
     public static String camCalibARtoolkit = folder + calibrationFolder + "camera-projector.cal";
@@ -94,7 +95,7 @@ public class Papart {
 
 //    private TouchInput touchInput;
     private TouchInput touchInput;
-    private PVector frameSize;
+    private PVector frameSize = new PVector();
     private CameraOpenKinect cameraOpenKinect;
     private boolean isWithoutCamera = false;
 
@@ -154,12 +155,13 @@ public class Papart {
 
         removeFrameBorder(applet);
 
-        applet.size(screenConfiguration.getProjectionScreenWidth(),
-                screenConfiguration.getProjectionScreenHeight(),
-                PConstants.OPENGL);
-
         Papart papart = new Papart(applet);
-        papart.registerForWindowLocation();
+
+        papart.frameSize.set(screenConfiguration.getProjectionScreenWidth(),
+                screenConfiguration.getProjectionScreenHeight());
+        papart.shouldSetWindowLocation = true;
+        papart.shouldSetWindowSize = true;
+        papart.registerPost();
         papart.initProjectorCamera();
 
         return papart;
@@ -177,12 +179,13 @@ public class Papart {
 
         removeFrameBorder(applet);
 
-        applet.size(screenConfiguration.getProjectionScreenWidth(),
-                screenConfiguration.getProjectionScreenHeight(),
-                PConstants.OPENGL);
-
         Papart papart = new Papart(applet);
-        papart.registerForWindowLocation();
+
+        papart.frameSize.set(screenConfiguration.getProjectionScreenWidth(),
+                screenConfiguration.getProjectionScreenHeight());
+        papart.shouldSetWindowLocation = true;
+        papart.shouldSetWindowSize = true;
+        papart.registerPost();
         papart.initProjectorDisplay(1);
 
         return papart;
@@ -204,11 +207,15 @@ public class Papart {
         cameraTracking.setParent(applet);
         cameraTracking.setCalibration(cameraCalib);
 
-        applet.size(cameraTracking.width(),
-                cameraTracking.height(),
-                PConstants.OPENGL);
-
+        // TODO:  Hack into this
+//        applet.size(cameraTracking.width(),
+//                cameraTracking.height(),
+//                PConstants.P3D);
         Papart papart = new Papart(applet);
+
+        papart.frameSize.set(cameraTracking.width(), cameraTracking.height());
+        papart.shouldSetWindowSize = true;
+        papart.registerPost();
 
         papart.initCamera();
 
@@ -227,22 +234,23 @@ public class Papart {
 
         removeFrameBorder(applet);
 
-        applet.size(screenConfiguration.getProjectionScreenWidth(),
-                screenConfiguration.getProjectionScreenHeight(),
-                PConstants.OPENGL);
-
         Papart papart = new Papart(applet);
-        papart.registerForWindowLocation();
+
+        papart.frameSize.set(screenConfiguration.getProjectionScreenWidth(),
+                screenConfiguration.getProjectionScreenHeight());
+        papart.shouldSetWindowLocation = true;
+        papart.shouldSetWindowSize = true;
+        papart.registerPost();
 
 //        Panel panel = new Panel(applet);
         return papart;
     }
 
     private boolean shouldSetWindowLocation = false;
+    private boolean shouldSetWindowSize = false;
 
-    private void registerForWindowLocation() {
-        applet.registerMethod("draw", this);
-        this.shouldSetWindowLocation = true;
+    private void registerPost() {
+        applet.registerMethod("post", this);
     }
 
     /**
@@ -256,26 +264,42 @@ public class Papart {
             papart.defaultFrameLocation();
             papart.shouldSetWindowLocation = false;
         }
+        if (papart != null && papart.shouldSetWindowSize) {
+
+            papart.setFrameSize();
+            papart.shouldSetWindowSize = true;
+        }
     }
 
     /**
      * Does not draw anything, it used only to check the window location.
      */
-    public void draw() {
+    public void post() {
         checkWindowLocation();
-        applet.unregisterMethod("draw", this);
+        applet.unregisterMethod("post", this);
     }
 
     /**
      * Set the frame to default location.
      */
     public void defaultFrameLocation() {
+        System.out.println("Setting the frame location...");
+        
         this.applet.frame.setLocation(screenConfiguration.getProjectionScreenOffsetX(),
                 screenConfiguration.getProjectionScreenOffsetY());
     }
 
+    /**
+     * Set the frame to default location.
+     */
+    public void setFrameSize() {
+        System.out.println("Trying to set the size of the frame...");
+//        this.applet.frame.setSize((int) frameSize.x, (int) frameSize.y);
+        this.applet.getSurface().setSize((int) frameSize.x, (int) frameSize.y);
+    }
+
     protected static void removeFrameBorder(PApplet applet) {
-        if (!applet.isGL()) {
+        if (!applet.g.isGL()) {
             applet.frame.removeNotify();
             applet.frame.setUndecorated(true);
             applet.frame.addNotify();
@@ -355,10 +379,11 @@ public class Papart {
 
     /**
      * Work in progress function
-     * @return 
+     *
+     * @return
      */
     public PlaneCalibration getTablePlane() {
-        return PlaneCalibration.CreatePlaneCalibrationFrom(HomographyCalibration.getMatFrom(applet, tablePosition), 
+        return PlaneCalibration.CreatePlaneCalibrationFrom(HomographyCalibration.getMatFrom(applet, tablePosition),
                 new PVector(100, 100));
     }
 
@@ -405,17 +430,14 @@ public class Papart {
      */
     public void initProjectorCamera(String cameraNo, Camera.Type cameraType, float quality) {
         assert (!cameraInitialized);
-
         initProjectorDisplay(quality);
         tryLoadExtrinsics();
-
         cameraTracking = CameraFactory.createCamera(cameraType, cameraNo);
         cameraTracking.setParent(applet);
         cameraTracking.setCalibration(cameraCalib);
         cameraTracking.start();
         loadTracking(cameraCalib);
         cameraTracking.setThread();
-
         checkInitialization();
     }
 
@@ -487,7 +509,7 @@ public class Papart {
         display = projector;
         projector.init();
         displayInitialized = true;
-        frameSize = new PVector(projector.getWidth(), projector.getHeight());
+        frameSize.set(projector.getWidth(), projector.getHeight());
     }
 
     private void initARDisplay(float quality) {
@@ -498,7 +520,7 @@ public class Papart {
         arDisplay.setQuality(quality);
         arDisplay.init();
         this.display = arDisplay;
-        frameSize = new PVector(arDisplay.getWidth(), arDisplay.getHeight());
+        frameSize.set(arDisplay.getWidth(), arDisplay.getHeight());
         displayInitialized = true;
     }
 

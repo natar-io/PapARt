@@ -30,6 +30,10 @@ ScreenConfiguration screenConfig;
 int nbScreens = 1;
 PImage backgroundImage;
 
+public void settings() {
+    size(800, 600, P3D);
+}
+
 void setup(){
 
 
@@ -52,7 +56,6 @@ void setup(){
     // cc.setProjectionScreenOffsetY(200);    
 
     // Do not modify anything further. 
-    size(800, 600, P3D);
 
     cameraConfig = new CameraConfiguration();
     screenConfig = new ScreenConfiguration();
@@ -72,12 +75,12 @@ boolean cameraCalibrationOk = false;
 void tryLoadCameraCalibration(){
 
     try{
-    String calibrationYAML = Papart.proCamCalib;
-    ProjectiveDeviceP pdp = ProjectiveDeviceP.loadCameraDevice(calibrationYAML, 0);
-    cameraWidth = pdp.getWidth();
-    cameraHeight = pdp.getHeight();
-    cameraCalibrationOk = true;
-    println(cameraWidth + " " + cameraHeight);
+	String calibrationYAML = Papart.cameraCalib;
+	ProjectiveDeviceP pdp = ProjectiveDeviceP.loadCameraDevice(this, calibrationYAML);
+	cameraWidth = pdp.getWidth();
+	cameraHeight = pdp.getHeight();
+	cameraCalibrationOk = true;
+	println(cameraWidth + " " + cameraHeight);
     } catch(Exception e){
 
     }
