@@ -1,9 +1,14 @@
 # -*- coding: utf-8 -*-
-require 'ruby-processing' 
 
-Processing::Runner
-Dir["#{Processing::RP_CONFIG['PROCESSING_ROOT']}/core/library/\*.jar"].each{ |jar| require jar }
+require 'jruby_art'
+require 'jruby_art/app'
+
 Processing::App::SKETCH_PATH = __FILE__
+
+# require 'ruby-processing' 
+# Processing::Runner
+# Dir["#{Processing::RP_CONFIG['PROCESSING_ROOT']}/core/library/\*.jar"].each{ |jar| require jar }
+# Processing::App::SKETCH_PATH = __FILE__
 
 Processing::App::load_library :PapARt, :javacv, :toxiclibscore
 
