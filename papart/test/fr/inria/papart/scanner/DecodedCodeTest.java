@@ -58,7 +58,7 @@ public class DecodedCodeTest {
 
     @Test
     public void testSaveLoad() {
-        sketch = new Sketch();
+        sketch = new Sketch();         String[] args = new String[]{"--present", "test.fr.inria.papart.calibration.ProjectiveCalibrationTest"};         PApplet.runSketch(args, sketch);
         decodedCode = new DecodedCode(10, 10);
 
 

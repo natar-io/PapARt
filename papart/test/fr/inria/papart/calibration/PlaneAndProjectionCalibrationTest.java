@@ -22,6 +22,8 @@ import fr.inria.papart.calibration.HomographyCalibration;
 import fr.inria.papart.calibration.PlaneCalibration;
 import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
 import fr.inria.papart.Sketch;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import processing.core.PApplet;
@@ -41,7 +43,7 @@ public class PlaneAndProjectionCalibrationTest {
 
     @Test
     public void testCreation() {
-        sketch = new Sketch();
+        sketch = new Sketch();         String[] args = new String[]{"--present", "test.fr.inria.papart.calibration.ProjectiveCalibrationTest"};         PApplet.runSketch(args, sketch);
 
         PlaneCalibration planeCalibration = new PlaneCalibration();
         planeCalibration.loadFrom(sketch, Common.currentPath + Common.PlaneCalibration);
@@ -58,7 +60,7 @@ public class PlaneAndProjectionCalibrationTest {
 
     @Test
     public void testLoading() {
-        sketch = new Sketch();
+        sketch = new Sketch();         String[] args = new String[]{"--present", "test.fr.inria.papart.calibration.ProjectiveCalibrationTest"};         PApplet.runSketch(args, sketch);
         PlaneAndProjectionCalibration papc = new PlaneAndProjectionCalibration();
         papc.loadFrom(sketch, Common.currentPath + Common.PlaneProjectionCalibration);
         PlaneCalibrationTest.checkPlane(papc.getPlaneCalibration());

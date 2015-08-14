@@ -38,7 +38,7 @@ public class ProjectiveCalibrationTest {
 
     @Test
     public void CreateValues() {
-        sketch = new Sketch();
+        sketch = new Sketch();         String[] args = new String[]{"--present", "test.fr.inria.papart.calibration.ProjectiveCalibrationTest"};         PApplet.runSketch(args, sketch);
 
         ProjectiveDeviceCalibration calibNoExtr;
         calibNoExtr = new ProjectiveDeviceCalibration();
@@ -69,6 +69,9 @@ public class ProjectiveCalibrationTest {
     @Test
     public void checkLoad() {
         sketch = new Sketch();
+        String[] args = new String[]{"--present", "test.fr.inria.papart.calibration.ProjectiveCalibrationTest"};
+        PApplet.runSketch(args, sketch);
+        
         instance = new ProjectiveDeviceCalibration();
         instance.loadFrom(sketch, Common.currentPath + Common.ProjectiveCalibrationNoExtrinsics);
 
@@ -100,7 +103,7 @@ public class ProjectiveCalibrationTest {
 
 //    @Test
 //    public void checkReplaceIn() {
-//        sketch = new Sketch();
+//        sketch = new Sketch();         String[] args = new String[]{"--present", "test.fr.inria.papart.calibration.ProjectiveCalibrationTest"};         PApplet.runSketch(args, sketch);
 //        instance = new HomographyCalibration();
 //        setFakeMatrix();
 //        instance.replaceIn(sketch, Common.currentPath + Common.HomographyCalibrationCopy);
@@ -123,7 +126,7 @@ public class ProjectiveCalibrationTest {
 //    }
 //    @Test
 //    public void checkXML() {
-//        sketch = new Sketch();
+//        sketch = new Sketch();         String[] args = new String[]{"--present", "test.fr.inria.papart.calibration.ProjectiveCalibrationTest"};         PApplet.runSketch(args, sketch);
 //        XML root = sketch.loadXML(Common.currentPath + Common.HomographyCalibration);
 //        assertTrue(root.getName() == Calibration.CALIBRATION_XML_NAME);
 //

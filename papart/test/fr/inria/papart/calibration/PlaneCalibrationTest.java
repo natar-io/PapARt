@@ -63,7 +63,7 @@ public class PlaneCalibrationTest {
 
     @Test
     public void checkLoad() {
-        sketch = new Sketch();
+        sketch = new Sketch();         String[] args = new String[]{"--present", "test.fr.inria.papart.calibration.ProjectiveCalibrationTest"};         PApplet.runSketch(args, sketch);
         instance = new PlaneCalibration();
         instance.loadFrom(sketch, Common.currentPath + Common.PlaneCalibration);
         checkPlane(instance);
@@ -71,7 +71,7 @@ public class PlaneCalibrationTest {
 
     @Test
     public void checkXML() {
-        sketch = new Sketch();
+        sketch = new Sketch();         String[] args = new String[]{"--present", "test.fr.inria.papart.calibration.ProjectiveCalibrationTest"};         PApplet.runSketch(args, sketch);
         instance = new PlaneCalibration();
 
         XML root = sketch.loadXML(Common.currentPath + Common.PlaneCalibration);
@@ -91,7 +91,7 @@ public class PlaneCalibrationTest {
     }
 
     private void createInstanceAndSketch() {
-        sketch = new Sketch();
+        sketch = new Sketch();         String[] args = new String[]{"--present", "test.fr.inria.papart.calibration.ProjectiveCalibrationTest"};         PApplet.runSketch(args, sketch);
         instance = createPlane();
     }
 

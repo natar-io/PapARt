@@ -16,21 +16,24 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-
 package fr.inria.papart;
 
 /**
  *
  * @author Jeremy Laviole <jeremy.laviole@inria.fr>
  */
-
 import processing.core.PApplet;
 
 public class Sketch extends PApplet {
 
     @Override
-    public void setup() {
+    public void settings() {
         size(200, 200);
+    }
+
+    @Override
+    public void setup() {
+
         stroke(155, 0, 0);
     }
 

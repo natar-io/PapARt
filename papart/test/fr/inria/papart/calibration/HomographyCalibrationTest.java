@@ -41,7 +41,7 @@ public class HomographyCalibrationTest {
 
     @Test
     public void CreateValues() {
-        sketch = new Sketch();
+        sketch = new Sketch();         String[] args = new String[]{"--present", "test.fr.inria.papart.calibration.ProjectiveCalibrationTest"};         PApplet.runSketch(args, sketch);
         instance = new HomographyCalibration();
         instance.setMatrix(createDummyValues());
         instance.saveTo(sketch, Common.currentPath + Common.HomographyCalibration);
@@ -49,7 +49,7 @@ public class HomographyCalibrationTest {
     
     @Test
     public void checkLoadAndSave() {
-        sketch = new Sketch();
+        sketch = new Sketch();         String[] args = new String[]{"--present", "test.fr.inria.papart.calibration.ProjectiveCalibrationTest"};         PApplet.runSketch(args, sketch);
         instance = new HomographyCalibration();
         instance.loadFrom(sketch, Common.currentPath + Common.HomographyCalibration);
         PMatrix3D homograpy = instance.getHomography();
@@ -81,7 +81,7 @@ public class HomographyCalibrationTest {
 
     @Test
     public void checkReplaceIn() {
-        sketch = new Sketch();
+        sketch = new Sketch();         String[] args = new String[]{"--present", "test.fr.inria.papart.calibration.ProjectiveCalibrationTest"};         PApplet.runSketch(args, sketch);
         instance = new HomographyCalibration();
         setFakeMatrix();
         instance.replaceIn(sketch, Common.currentPath + Common.HomographyCalibrationCopy);
@@ -105,7 +105,7 @@ public class HomographyCalibrationTest {
 
     @Test
     public void checkXML() {
-        sketch = new Sketch();
+        sketch = new Sketch();         String[] args = new String[]{"--present", "test.fr.inria.papart.calibration.ProjectiveCalibrationTest"};         PApplet.runSketch(args, sketch);
         XML root = sketch.loadXML(Common.currentPath + Common.HomographyCalibration);
         assertTrue(root.getName() == Calibration.CALIBRATION_XML_NAME);
 

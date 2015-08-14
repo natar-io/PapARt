@@ -24,6 +24,7 @@ import fr.inria.papart.Sketch;
 import fr.inria.papart.scanner.GrayCode;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import processing.core.PApplet;
 
 /**
  *
@@ -104,7 +105,7 @@ public class CameraProjectorSyncTest {
         CameraProjectorSync cps
                 = new CameraProjectorSync(defaultDuration * 2,
                         defaultCaptureTime * 2, defaultDelay * 2);
-         cps.setDecodeParameters(GrayCode.DECODE_REF, defaultDecodeValue*2);
+        cps.setDecodeParameters(GrayCode.DECODE_REF, defaultDecodeValue * 2);
         return cps;
     }
 
@@ -115,6 +116,8 @@ public class CameraProjectorSyncTest {
     public void testAddTo() {
         CameraProjectorSync cps = createInstance();
         Sketch sketch = new Sketch();
+        String[] args = new String[]{"--present", "test.fr.inria.papart.calibration.ProjectiveCalibrationTest"};
+        PApplet.runSketch(args, sketch);
         cps.saveTo(sketch, Common.currentPath + Common.CameraProjectorSync);
 
         CameraProjectorSync cps2 = new CameraProjectorSync(0, 0, 0);
@@ -132,6 +135,8 @@ public class CameraProjectorSyncTest {
     public void testReplaceIn() {
 
         Sketch sketch = new Sketch();
+        String[] args = new String[]{"--present", "test.fr.inria.papart.calibration.ProjectiveCalibrationTest"};
+        PApplet.runSketch(args, sketch);
 
         CameraProjectorSync cps = createInstance2();
         cps.replaceIn(sketch, Common.currentPath + Common.CameraProjectorSync);
