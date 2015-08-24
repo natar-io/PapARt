@@ -53,7 +53,7 @@ public class Papart {
     public static String procamCalib = folder + calibrationFolder + "camera-projector.yaml";
 
     public static String cameraCalib = folder + calibrationFolder + "camera.yaml";
-    public static String projectorCalib = folder + calibrationFolder + "camera-projector.yaml";
+    public static String projectorCalib = folder + calibrationFolder + "projector.yaml";
 
     public static String camCalibARtoolkit = folder + calibrationFolder + "camera-projector.cal";
     public static String kinectIRCalib = folder + calibrationFolder + "calibration-kinect-IR.yaml";
