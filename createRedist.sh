@@ -28,7 +28,7 @@ sh $SKETCHBOOK/clean.sh
 
 echo "Copy Library"
 # Library
-cp papart/target/PapARt.jar $TMP/$NAME/library/$NAME.jar
+cp papart/target/$NAME.jar $TMP/$NAME/library/$NAME.jar
 
 
 # echo "Copy JavaCV, OpenCV and friends"
