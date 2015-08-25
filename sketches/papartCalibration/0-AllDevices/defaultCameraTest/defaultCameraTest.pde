@@ -10,7 +10,6 @@ Papart papart;
 public void settings(){
     size(200, 200, P3D);
 }
-    
 
 public void setup() {
 
@@ -18,16 +17,8 @@ public void setup() {
     
     papart.loadSketches();
     papart.startTracking();
-    frameRate(200);
+
 }
 
 void draw() {
-}
-
-
-void keyPressed() {
-
-  // Placed here, bug if it is placed in setup().
-  if (key == ' ')
-    	papart.defaultFrameLocation();
 }
