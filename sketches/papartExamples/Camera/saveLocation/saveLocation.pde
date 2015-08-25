@@ -10,42 +10,23 @@ import processing.video.*;
 
 import processing.app.Base;
 
-boolean useProjector = true;
-boolean useCamera = false;
 
 Papart papart;
-ProjectorDisplay projector;
+
+void settings(){
+    size(200, 200, P3D);
+}
 
 public void setup() {
 
-    if(useCamera){
-	if(useProjector)
-	    papart = Papart.projection(this);
-	else 
-	    papart = Papart.seeThrough(this);
-
-    }else {
-	
-	papart = Papart.projection2D(this);
-
-	projector = new ProjectorDisplay(this, Papart.proCamCalib);
-        projector.setZNearFar(10, 6000);
-        projector.setQuality(1);
-        projector.init();
-
-        papart.setDisplay(projector);
-	papart.setNoTrackingCamera();
-
-    }
-
+    papart = Papart.seeThrough(this);
     papart.loadSketches();
-
-    if(useCamera)
-	papart.startTracking();
+    papart.startTracking();
 }
 
 void draw() {
 }
+
 
 
 void keyPressed() {
