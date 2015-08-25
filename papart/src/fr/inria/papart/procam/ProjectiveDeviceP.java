@@ -54,6 +54,22 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
     private ProjectiveDeviceP() {
     }
 
+    public float getFx() {
+        return fx;
+    }
+
+    public float getFy() {
+        return fy;
+    }
+
+    public float getCx() {
+        return cx;
+    }
+
+    public float getCy() {
+        return cy;
+    }
+    
 //    public ProjectiveDeviceP(int width, int height) {
 //        this.w = width;
 //        this.h = height;

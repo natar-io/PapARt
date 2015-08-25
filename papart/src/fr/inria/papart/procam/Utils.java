@@ -80,7 +80,7 @@ public class Utils {
     }
 
     static public String getLibrariesFolder() {
-        
+
         // This is used, as Papart classes are often linked to another folder...
         URL main = Matrix4x4.class.getResource("Matrix4x4.class");
 //        URL main = ARDisplay.class.getResource("ARDisplay.class");
@@ -615,7 +615,6 @@ public class Utils {
 //    static public void PImageToIplImage(PImage src, IplImage dst) {
 //        dst.copyFrom((BufferedImage) src.getImage());
 //    }
-
     static public void PImageToIplImage2(IplImage img, boolean RGB, PImage ret) {
 
         ByteBuffer buff = img.getByteBuffer();
@@ -687,50 +686,48 @@ public class Utils {
         return;
     }
 
-    static public void convertARParam2(PApplet pa, String inputYAML, String outputDAT) throws Exception {
+    static public void convertARParam2(PApplet pa, String fileName, String outputDAT) throws Exception {
 
         CameraDevice cam = null;
 
-        CameraDevice[] c = CameraDevice.read(inputYAML);
-        if (c.length > 0) {
-            cam = c[0];
-        }
-        Settings camSettings = (org.bytedeco.javacv.CameraDevice.Settings) cam.getSettings();
-        int w = camSettings.getImageWidth();
-        int h = camSettings.getImageHeight();
+        ProjectiveDeviceP pdp = ProjectiveDeviceP.loadCameraDevice(pa, fileName);
 
-        double[] proj = cam.cameraMatrix.get();
-        double[] distort = cam.distortionCoeffs.get();
-
+//        CameraDevice[] c = CameraDevice.read(fileName);
+//        if (c.length > 0) {
+//            cam = c[0];
+//        }
         OutputStream os = pa.createOutput(outputDAT);
-
         PrintWriter pw = pa.createWriter(outputDAT);
-
         StringBuffer sb = new StringBuffer();
 
-//        byte[] buf = new byte[SIZE_OF_PARAM_SET];
-//        ByteBuffer bb = ByteBuffer.wrap(buf);
-//        bb.order(ByteOrder.BIG_ENDIAN);
-//        bb.putInt(w);
-//        bb.putInt(h);
         // From ARToolkitPlus...
-//http://www.vision.caltech.edu/bouguetj/calib_doc/htmls/parameters.html
+        //http://www.vision.caltech.edu/bouguetj/calib_doc/htmls/parameters.html
         sb.append("ARToolKitPlus_CamCal_Rev02\n");
-        sb.append(w).append(" ").append(h).append(" ");
+        sb.append(pdp.getWidth()).append(" ").append(pdp.getHeight()).append(" ");
 
-        // cx cy  fx fy  
-        sb.append(proj[2]).append(" ").append(proj[5])
-                .append(" ").append(proj[0]).
-                append(" ").append(proj[4]).append(" ");
+        // cx cy fx fy  
+        sb.append(pdp.getCx()).append(" ").append(pdp.getCy())
+                .append(" ").append(pdp.getFx()).
+                append(" ").append(pdp.getFy()).append(" ");
 
-        // alpha_c ?  
-//        sb.append("0 ");
+        // alpha_c  // skew factor  
+        sb.append("0 ").append(" ");
+        
         // kc(1 - x)  -> 6 values
-        for (int i = 0; i < distort.length; i++) {
-            sb.append(distort[i]).append(" ");
-        }
-        for (int i = distort.length; i < 6; i++) {
-            sb.append("0 ");
+        if (pdp.handleDistorsions()) {
+            double[] distort = ((CameraDevice) pdp.getDevice()).distortionCoeffs.get();
+
+            for (int i = 0; i < distort.length; i++) {
+                sb.append(distort[i]).append(" ");
+            }
+            // fill with 0s the end. 
+            for (int i = distort.length; i < 5; i++) {
+                sb.append("0 ");
+            }
+        } else {
+            for (int i = 0; i < 5; i++) {
+                sb.append("0 ");
+            }
         }
 
         // undist iterations

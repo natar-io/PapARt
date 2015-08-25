@@ -46,31 +46,31 @@ import toxi.geom.Plane;
 public class Papart {
 
     public final static String folder = fr.inria.papart.procam.Utils.getPapartFolder();
-    public final static String calibrationFolder = "/data/calibration/";
+    public final static String calibrationFolder = folder + "/data/calibration/";
     public final static String markerFolder = folder + "/data/markers/";
 
-    @Deprecated
-    public static String procamCalib = folder + calibrationFolder + "camera-projector.yaml";
+    public static String cameraCalibName = "camera.yaml";
+    public static String projectorCalibName = "projector.yaml";
 
-    public static String cameraCalib = folder + calibrationFolder + "camera.yaml";
-    public static String projectorCalib = folder + calibrationFolder + "projector.yaml";
+    public static String cameraCalib = calibrationFolder + cameraCalibName;
+    public static String projectorCalib = calibrationFolder + projectorCalibName;
 
-    public static String camCalibARtoolkit = folder + calibrationFolder + "camera-projector.cal";
-    public static String kinectIRCalib = folder + calibrationFolder + "calibration-kinect-IR.yaml";
-    public static String kinectRGBCalib = folder + calibrationFolder + "calibration-kinect-RGB.yaml";
-    public static String kinectStereoCalib = folder + calibrationFolder + "calibration-kinect-Stereo.xml";
+    public static String camCalibARtoolkit = calibrationFolder + "camera-projector.cal";
+    public static String kinectIRCalib = calibrationFolder + "calibration-kinect-IR.yaml";
+    public static String kinectRGBCalib = calibrationFolder + "calibration-kinect-RGB.yaml";
+    public static String kinectStereoCalib = calibrationFolder + "calibration-kinect-Stereo.xml";
 
     public static String kinectTrackingCalib = "kinectTracking.xml";
     public static String cameraProjExtrinsics = "camProjExtrinsics.xml";
 
-    public static String screenConfig = folder + calibrationFolder + "screenConfiguration.xml";
-    public static String cameraConfig = folder + calibrationFolder + "cameraConfiguration.xml";
-    public static String tablePosition = folder + calibrationFolder + "tablePosition.xml";
-    public static String planeCalib = folder + calibrationFolder + "PlaneCalibration.xml";
-    public static String homographyCalib = folder + calibrationFolder + "HomographyCalibration.xml";
-    public static String planeAndProjectionCalib = folder + calibrationFolder + "PlaneProjectionCalibration.xml";
-    public static String touchCalib = folder + calibrationFolder + "Touch2DCalibration.xml";
-    public static String touchCalib3D = folder + calibrationFolder + "Touch3DCalibration.xml";
+    public static String screenConfig = calibrationFolder + "screenConfiguration.xml";
+    public static String cameraConfig = calibrationFolder + "cameraConfiguration.xml";
+    public static String tablePosition = calibrationFolder + "tablePosition.xml";
+    public static String planeCalib = calibrationFolder + "PlaneCalibration.xml";
+    public static String homographyCalib = calibrationFolder + "HomographyCalibration.xml";
+    public static String planeAndProjectionCalib = calibrationFolder + "PlaneProjectionCalibration.xml";
+    public static String touchCalib = calibrationFolder + "Touch2DCalibration.xml";
+    public static String touchCalib3D = calibrationFolder + "Touch3DCalibration.xml";
     public static String defaultFont = folder + "/data/Font/" + "GentiumBookBasic-48.vlw";
     public int defaultFontSize = 12;
 
@@ -93,8 +93,7 @@ public class Papart {
     private Camera cameraTracking;
     private KinectDepthAnalysis kinectDepthAnalysis;
 
-//    private TouchInput touchInput;
-    private TouchInput touchInput;
+
     private PVector frameSize = new PVector();
     private CameraOpenKinect cameraOpenKinect;
     private boolean isWithoutCamera = false;
@@ -207,10 +206,6 @@ public class Papart {
         cameraTracking.setParent(applet);
         cameraTracking.setCalibration(cameraCalib);
 
-        // TODO:  Hack into this
-//        applet.size(cameraTracking.width(),
-//                cameraTracking.height(),
-//                PConstants.P3D);
         Papart papart = new Papart(applet);
 
         papart.frameSize.set(cameraTracking.width(), cameraTracking.height());
@@ -284,7 +279,6 @@ public class Papart {
      */
     public void defaultFrameLocation() {
         System.out.println("Setting the frame location...");
-        
         this.applet.frame.setLocation(screenConfiguration.getProjectionScreenOffsetX(),
                 screenConfiguration.getProjectionScreenOffsetY());
     }
@@ -316,7 +310,7 @@ public class Papart {
     }
 
     public void saveCalibration(String fileName, PMatrix3D mat) {
-        HomographyCalibration.saveMatTo(applet, mat, Papart.folder + calibrationFolder + fileName);
+        HomographyCalibration.saveMatTo(applet, mat, Papart.calibrationFolder + fileName);
     }
 
     /**
@@ -328,9 +322,9 @@ public class Papart {
      */
     public PMatrix3D loadCalibration(String fileName) {
 
-        File f = new File(Papart.folder + calibrationFolder + fileName);
+        File f = new File(Papart.calibrationFolder + fileName);
         if (f.exists()) {
-            return HomographyCalibration.getMatFrom(applet, Papart.folder + calibrationFolder + fileName);
+            return HomographyCalibration.getMatFrom(applet, Papart.calibrationFolder + fileName);
         } else {
             return null;
         }
@@ -446,7 +440,7 @@ public class Papart {
         if (extrinsics == null) {
             System.out.println("loading default extrinsics. Could not find " + cameraProjExtrinsics + " .");
         } else {
-            projector.setExtrinsics(extrinsics);
+            arDisplay.setExtrinsics(extrinsics);
         }
     }
 

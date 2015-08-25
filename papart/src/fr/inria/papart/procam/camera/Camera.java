@@ -107,11 +107,11 @@ public abstract class Camera extends Node implements PConstants {
 
     }
 
-    public void setCalibration(String calibrationYAML) {
+    public void setCalibration(String fileName) {
         try {
-            this.calibrationFile = calibrationYAML;
+            this.calibrationFile = fileName;
 
-            pdp = ProjectiveDeviceP.loadCameraDevice(parent, calibrationYAML);
+            pdp = ProjectiveDeviceP.loadCameraDevice(parent, fileName);
             camIntrinsicsP3D = pdp.getIntrinsics();
             this.width = pdp.getWidth();
             this.height = pdp.getHeight();
@@ -120,7 +120,7 @@ public abstract class Camera extends Node implements PConstants {
             e.printStackTrace();
 
             System.err.println("Camera: error reading the calibration " + pdp
-                    + "file" + calibrationYAML + " \n" + e);
+                    + "file" + fileName + " \n" + e);
         }
     }
 
@@ -416,18 +416,18 @@ public abstract class Camera extends Node implements PConstants {
         return pdp.estimateOrientation(objectPoints, imagePoints);
     }
 
-    static public void convertARParams(PApplet parent, String calibrationYAML,
+    static public void convertARParams(PApplet parent, String calibrationFile,
             String calibrationARtoolkit) {
-        convertARParams(parent, calibrationYAML, calibrationARtoolkit, 0, 0);
+        convertARParams(parent, calibrationFile, calibrationARtoolkit, 0, 0);
     }
 
-    static public void convertARParams(PApplet parent, String calibrationYAML,
+    static public void convertARParams(PApplet parent, String calibrationFile,
             String calibrationARtoolkit, int width, int height) {
         try {
             // ARToolkit Plus 2.1.1
 //            fr.inria.papart.procam.Utils.convertARParam(parent, calibrationYAML, calibrationData, width, height);
             // ARToolkit Plus 2.3.0
-            fr.inria.papart.procam.Utils.convertARParam2(parent, calibrationYAML, calibrationARtoolkit);
+            fr.inria.papart.procam.Utils.convertARParam2(parent, calibrationFile, calibrationARtoolkit);
         } catch (Exception e) {
             PApplet.println("Conversion error. " + e);
         }
