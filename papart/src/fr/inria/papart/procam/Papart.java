@@ -93,7 +93,7 @@ public class Papart {
     private Camera cameraTracking;
     private KinectDepthAnalysis kinectDepthAnalysis;
 
-
+    private TouchInput touchInput;
     private PVector frameSize = new PVector();
     private CameraOpenKinect cameraOpenKinect;
     private boolean isWithoutCamera = false;
