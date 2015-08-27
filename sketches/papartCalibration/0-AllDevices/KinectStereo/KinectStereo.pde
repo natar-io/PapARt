@@ -10,14 +10,14 @@ import org.bytedeco.javacpp.freenect;
 import toxi.geom.*;
 import peasy.*;
 
-import fr.inria.controlP5.*;
-import fr.inria.controlP5.events.*;
-import fr.inria.controlP5.gui.controllers.*;
-import fr.inria.controlP5.gui.group.*;
+import fr.inria.skatolo.*;
+import fr.inria.skatolo.events.*;
+import fr.inria.skatolo.gui.controllers.*;
+import fr.inria.skatolo.gui.group.*;
 
 
 
-ControlP5 cp5;
+Skatolo skatolo;
 PeasyCam cam;
 
 PointCloudKinect pointCloud;
@@ -60,15 +60,15 @@ void setup(){
   }
 
 
-  cp5 = new ControlP5(this);
-  cp5.addSlider("translation")
+  skatolo = new Skatolo(this);
+  skatolo.addSlider("translation")
       .setPosition(30, 50)
       .setValue(stereoCalib.m03)
       .setRange(-15, 30)
       .setSize(200, 12);
 
   // Manual draw. 
-  cp5.setAutoDraw(false);
+  skatolo.setAutoDraw(false);
 
   textFont(createFont("",15));
 
@@ -103,7 +103,7 @@ void draw(){
 
     cam.beginHUD();
     text("'m' to stop the camera, 's' to save the calibration.", 10, 30);
-    cp5.draw();
+    skatolo.draw();
     cam.endHUD(); // always!
 
 }

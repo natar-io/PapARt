@@ -1,6 +1,6 @@
 
-import fr.inria.controlP5.*;
-import fr.inria.controlP5.gui.controllers.*;
+import fr.inria.skatolo.*;
+import fr.inria.skatolo.gui.controllers.*;
 import java.awt.Frame;
 
 
@@ -35,16 +35,16 @@ ControlFrame addControlFrame(String theName, int theWidth, int theHeight) {
 
 // the ControlFrame class extends PApplet, so we 
 // are creating a new processing applet inside a
-// new frame with a controlP5 object loaded
+// new frame with a skatolo object loaded
 public class ControlFrame extends PApplet {
   int w, h;
-  ControlP5 cp5;
+  Skatolo skatolo;
   Object parent;
   
   public void setup() {
     size(w, h);
     frameRate(25);
-    cp5 = new ControlP5(this);
+    skatolo = new Skatolo(this);
 
     // add a horizontal sliders, the value of this slider will be linked
     // to variable 'sliderValue' 
@@ -52,21 +52,21 @@ public class ControlFrame extends PApplet {
     int width = ardisplay.getWidth();
     int height = ardisplay.getHeight();
     
-    cp5.addSlider("focal").plugTo(parent, "focal")
+    skatolo.addSlider("focal").plugTo(parent, "focal")
 	.setPosition(10, 20)
 	.setRange(500, 3000)
 	.setSize(800,20)
 	.setValue(1000)
 	;
 
-    cp5.addSlider("cx").plugTo(parent, "cx")
+    skatolo.addSlider("cx").plugTo(parent, "cx")
 	.setPosition(10, 60)
 	.setRange(0, width  *2)
 	.setSize(800,20)
 	.setValue(width / 2)
 	;
 
-    cp5.addSlider("cy").plugTo(parent, "cy")
+    skatolo.addSlider("cy").plugTo(parent, "cy")
 	.setPosition(10, 100)
 	.setSize(800,20)
 	.setRange(0 , height  *3)
@@ -87,8 +87,8 @@ public class ControlFrame extends PApplet {
     w = theWidth;
     h = theHeight;
   }
-  public ControlP5 control() {
-    return cp5;
+  public skatolo control() {
+    return skatolo;
   }
 }
 

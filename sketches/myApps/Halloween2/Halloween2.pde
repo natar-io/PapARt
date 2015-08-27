@@ -15,11 +15,11 @@ import java.util.Iterator;
 import java.util.ArrayList;
 
 
-// Undecorated frame 
+// Undecorated frame
 public void init() {
-    frame.removeNotify(); 
-    frame.setUndecorated(true); 
-    frame.addNotify(); 
+    frame.removeNotify();
+    frame.setUndecorated(true);
+    frame.addNotify();
     super.init();
 }
 
@@ -45,28 +45,29 @@ void setup(){
     camera.getDepthCamera().setCalibration(Papart.kinectIRCalib);
     camera.start();
 
-   try{
-	planeProjCalibration = new  PlaneAndProjectionCalibration();
-	planeProjCalibration.loadFrom(this, Papart.planeAndProjectionCalib);
-    }catch(NullPointerException e){
-	die("Impossible to load the plane calibration...");
+    try{
+        planeProjCalibration = new  PlaneAndProjectionCalibration();
+        planeProjCalibration.loadFrom (this, Papart.planeAndProjectionCalib);
+    }
+    catch (NullPointerException e) {
+        die("Impossible to load the plane calibration...");
     }
 
-   kinect = new KinectProcessing(this, camera);
-   
-   touchDetection3D = new TouchDetectionSimple3D(Kinect.SIZE);
+    kinect = new KinectProcessing(this, camera);
 
-   //     initBlood();
+    touchDetection3D = new TouchDetectionSimple3D(Kinect.SIZE);
+
+     //     initBlood();
 
     background(0);
     font = loadFont("WCRhesusBBta-48.vlw"); //load the font stored in the data file
 
-}
 
 
 
-IplImage kinectImg;
-IplImage kinectImgDepth;
+
+    IplImage kinectImg;
+    IplImage} kinectImgDepth;
 
 void draw(){
 

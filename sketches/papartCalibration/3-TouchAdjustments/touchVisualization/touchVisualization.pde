@@ -11,14 +11,14 @@ import org.bytedeco.javacpp.freenect;
 import org.bytedeco.javacpp.opencv_core.*;
 import java.nio.IntBuffer;
 
-import fr.inria.controlP5.*;
-import fr.inria.controlP5.events.*;
-import fr.inria.controlP5.gui.controllers.*;
-import fr.inria.controlP5.gui.group.*;
+import fr.inria.skatolo.*;
+import fr.inria.skatolo.events.*;
+import fr.inria.skatolo.gui.controllers.*;
+import fr.inria.skatolo.gui.group.*;
 
 import peasy.*;
 
-ControlP5 cp5;
+Skatolo skatolo;
 PeasyCam cam;
 
 CameraOpenKinect cameraKinect;
@@ -145,7 +145,7 @@ void draw(){
     cam.beginHUD();
 
     text("'m' to stop the camera", 10,  30);
-    cp5.draw();
+    skatolo.draw();
     cam.endHUD(); // always!
 }
 

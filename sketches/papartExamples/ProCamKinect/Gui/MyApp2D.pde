@@ -1,6 +1,6 @@
-import fr.inria.controlP5.*;
-import fr.inria.controlP5.events.*;
-import fr.inria.controlP5.gui.controllers.*;
+import fr.inria.skatolo.*;
+import fr.inria.skatolo.events.*;
+import fr.inria.skatolo.gui.controllers.*;
 
 import java.util.ArrayList;
 import toxi.geom.Vec3D;
@@ -9,7 +9,7 @@ import fr.inria.papart.multitouch.*;
 
 public class MyApp  extends PaperTouchScreen {
 
-    ControlP5 cp5;
+    Skatolo skatolo;
     
     int hello = 10;
 
@@ -25,35 +25,35 @@ public class MyApp  extends PaperTouchScreen {
 	currentGraphics = screen.getGraphics();
 
 	// now the graphics are OK. 
-	cp5 = new ControlP5(this.parent, this);
+	skatolo = new Skatolo(this.parent, this);
 
-	cp5.getMousePointer().disable();
-	cp5.setAutoDraw(false);
+	skatolo.getMousePointer().disable();
+	skatolo.setAutoDraw(false);
 
-	cp5.addSlider("Sliiiide")
+	skatolo.addSlider("Sliiiide")
 	    .setPosition(0, 0)
 	    .setSize(130, 10)
 	    ;
 
-	cp5.addButton("button")
+	skatolo.addButton("button")
 	    .setPosition(130, 80)
 	    .setSize(60, 60)
 	    ;
 
-	cp5.addToggle("toggle")
+	skatolo.addToggle("toggle")
 	    .setPosition(130, 120)
 	    .setSize(60, 60)
 	    ;
 
 
-	Slider2D s = cp5.addSlider2D("wave")
+	Slider2D s = skatolo.addSlider2D("wave")
 	    .setPosition(30,40)
 	    .setSize(100,100)
 	    .setArrayValue(new float[] {50, 50})
 	    //.disableCrosshair()
 	    ;
 
-	// cp5.addNumberbox("numberbox")
+	// skatolo.addNumberbox("numberbox")
 	//     .setPosition(100,160)
 	//     .setSize(100,14)
 	//     .setScrollSensitivity(0.1)
@@ -72,8 +72,8 @@ public class MyApp  extends PaperTouchScreen {
 
 	background(150);
 
-	cp5.draw();
-	//	cp5.draw(getGraphics());
+	skatolo.draw();
+	//	skatolo.draw(getGraphics());
 
 	for (Touch t : touchList.get2DTouchs()) {
 
@@ -87,31 +87,31 @@ public class MyApp  extends PaperTouchScreen {
 
 		if(!pointers.contains(t.id)){
 		    ellipse(p.x, p.y, 100, 100);
-		    cp5.addPointer(t.id);
+		    skatolo.addPointer(t.id);
 		    pointers.add(t.id);
-		    cp5.updatePointerPress(t.id, true);
+		    skatolo.updatePointerPress(t.id, true);
 		} else {
-		    cp5.updatePointer(t.id, (int) p.x, (int) p.y);
+		    skatolo.updatePointer(t.id, (int) p.x, (int) p.y);
 		}
 
-		cp5.updatePointerPress(t.id, true);
+		skatolo.updatePointerPress(t.id, true);
 		ellipse(p.x, p.y, 10, 10);
 	    }
 
 	    //	    println("Setting Pointer " + p);
 
-	    // cp5.getPointer().set((int) p.x, (int)p.y);
-	    // cp5.getPointer().pressed();
+	    // skatolo.getPointer().set((int) p.x, (int)p.y);
+	    // skatolo.getPointer().pressed();
 
 
 	    // pushMatrix();
-	    // translate(cp5.getPointer().getX(), cp5.getPointer().getY());
+	    // translate(skatolo.getPointer().getX(), skatolo.getPointer().getY());
 	    // stroke(255);
 	    // line(-10,0,10,0);
 	    // line(0,-10,0,10);
 	    // popMatrix();
 
-	    //	     	println(cp5.isMouseOver());
+	    //	     	println(skatolo.isMouseOver());
 	}
 
 	ArrayList<Integer> currentTouchIds = touchList.get2DTouchs().getIds();
@@ -120,9 +120,9 @@ public class MyApp  extends PaperTouchScreen {
 	toDelete.removeAll(currentTouchIds);
 
 	for(Integer pointerId : toDelete){
-	    // cp5.updatePointerPress(pointerId, false);
-	    // cp5.updatePointer(pointerId, 0, 0);
-	    cp5.removePointer(pointerId);
+	    // skatolo.updatePointerPress(pointerId, false);
+	    // skatolo.updatePointer(pointerId, 0, 0);
+	    skatolo.removePointer(pointerId);
 	    pointers.remove(pointerId);
 	}
 

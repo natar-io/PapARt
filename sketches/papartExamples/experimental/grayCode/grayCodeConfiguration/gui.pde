@@ -1,11 +1,11 @@
 
 import fr.inria.papart.calibration.*;
 
-import fr.inria.controlP5.*;
-import fr.inria.controlP5.gui.controllers.*;
+import fr.inria.skatolo.*;
+import fr.inria.skatolo.gui.controllers.*;
 
 
-ControlP5 cp5;
+Skatolo skatolo;
 
 Mode waitForStartMode, startPressed, displayCodeMode, displayResult;
 //   wait            , start       , code           , result      
@@ -22,37 +22,37 @@ void initGui(){
 
     Mode.set("wait");
 
-    cp5 = new ControlP5(this);
+    skatolo = new Skatolo(this);
 
     // add a horizontal sliders, the value of this slider will be linked
     // to variable 'sliderValue' 
-    cp5.addSlider("displayTime")
+    skatolo.addSlider("displayTime")
 	.setPosition(frameSizeX + 10, 20)
 	.setRange(30,1200)
 	.setValue(displayTime)
 	;
     
-    cp5.addSlider("captureTime")
+    skatolo.addSlider("captureTime")
 	.setPosition(frameSizeX + 10, 40)
 	.setRange(30, 1200)
 	.setValue(captureTime)
 	;
     
-    cp5.addSlider("delay")
+    skatolo.addSlider("delay")
 	.setPosition(frameSizeX + 10, 60)
 	.setRange(0, 300)
 	.setValue(delay)
 	;
     
     
-    cp5.addSlider("sc")
+    skatolo.addSlider("sc")
 	.setPosition(frameSizeX + 10, 80)
 	.setRange(1, 8)
 	.setValue(sc)
 	.setLabel("pixel scale")
 	;
     
-    cp5.addRadioButton("decodeType")
+    skatolo.addRadioButton("decodeType")
     	.setPosition(frameSizeX + 10, 100)
     	.addItem("reference", GrayCode.DECODE_REF)
     	.addItem("absolute", GrayCode.DECODE_ABS)
@@ -60,34 +60,34 @@ void initGui(){
     	.setNoneSelectedAllowed(true) 
     	;
 
-    cp5.addSlider("decodeValue")
+    skatolo.addSlider("decodeValue")
     	.setPosition(frameSizeX + 10, 130)
     	.setRange(0, 255)
     	.setValue(decodeValue)
     	.setLabel("Decode value")
     	;
 
-    cp5.addBang("startButton")
+    skatolo.addBang("startButton")
 	.setPosition(frameSizeX + 10, 200)
 	.setSize(20, 20)
 	.setLabel("Start")
 	;
     
     
-    cp5.addBang("saveCalib")
+    skatolo.addBang("saveCalib")
 	.setPosition(frameSizeX + 10, 400)
 	.setSize(20, 20)
 	.setLabel("Save Calibration")
 	;
     
 
-    decodeBang = cp5.addBang("decodeBang")
+    decodeBang = skatolo.addBang("decodeBang")
 	.setPosition(frameSizeX + 10, 260)
 	.setSize(20, 20)
 	.setLabel("Decode again")
 	;
     
-    saveScanBang = cp5.addBang("saveScan")
+    saveScanBang = skatolo.addBang("saveScan")
 	.setPosition(frameSizeX + 10, 300)
 	.setSize(20, 20)
 	.setLabel("Save decoded")

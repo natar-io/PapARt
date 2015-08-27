@@ -6,7 +6,7 @@ import org.reflections.*;
 import TUIO.*;
 import toxi.geom.*;
 
-import controlP5.*;
+import skatolo.*;
 
 Papart papart;
 boolean useProjector; 
@@ -45,18 +45,18 @@ void setup(){
     papart.loadSketches() ;
     papart.startTracking();
 
-   ControlP5 cp5 = new ControlP5(this);
-    cp5.addSlider("hValue")
+   Skatolo skatolo = new Skatolo(this);
+    skatolo.addSlider("hValue")
 	.setPosition(100,50)
 	.setRange(0,180)
 	;
 
-    cp5.addSlider("sValue")
+    skatolo.addSlider("sValue")
 	.setPosition(100,70)
 	.setRange(0,100)
 	;
 
-    cp5.addSlider("bValue")
+    skatolo.addSlider("bValue")
 	.setPosition(100,90)
 	.setRange(0,100)
 	;

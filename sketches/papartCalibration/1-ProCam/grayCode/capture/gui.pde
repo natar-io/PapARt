@@ -1,8 +1,8 @@
 
 import fr.inria.papart.calibration.*;
 
-import fr.inria.controlP5.*;
-import fr.inria.controlP5.gui.controllers.*;
+import fr.inria.skatolo.*;
+import fr.inria.skatolo.gui.controllers.*;
 
 
 ControlFrame cf;

@@ -7,11 +7,11 @@ Processing::Runner
 Dir["#{Processing::RP_CONFIG['PROCESSING_ROOT']}/core/library/\*.jar"].each{ |jar| require jar }
 Processing::App::SKETCH_PATH = __FILE__   unless defined? Processing::App::SKETCH_PATH
 
-require './cp5' 
+require './skatolo' 
 
 class MyApp < Processing::App
 
-  attr_reader :cp5
+  attr_reader :skatolo
   attr_accessor :once, :button, :slider
 
   def create_method(name, &block)
@@ -22,18 +22,18 @@ class MyApp < Processing::App
     size 800, 800, OPENGL
 
     
-    @cp5 = ControlP5.new self
+    @skatolo = skatolo.new self
 
 
-    @button = @cp5.addButton("button")
+    @button = @skatolo.addButton("button")
               .setPosition(40, 200)
               .setSize(280, 40)
     
-    @slider = @cp5.addSlider("slider1")
+    @slider = @skatolo.addSlider("slider1")
               .setPosition(0, 0)
               .setSize(150, 20)
     
-    @cp5.update
+    @skatolo.update
        
   end
 

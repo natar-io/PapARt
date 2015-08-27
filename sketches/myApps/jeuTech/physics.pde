@@ -9,11 +9,11 @@ import org.jbox2d.dynamics.*;
 import org.jbox2d.dynamics.contacts.*;
 
 
-import fr.inria.controlP5.*;
-import fr.inria.controlP5.events.*;
-import fr.inria.controlP5.gui.controllers.*;
+import fr.inria.skatolo.*;
+import fr.inria.skatolo.events.*;
+import fr.inria.skatolo.gui.controllers.*;
 
-private ControlP5 cp5;
+private Skatolo skatolo;
 ControlFrame cf;
 
 // A reference to our box2d world
@@ -154,34 +154,34 @@ ControlFrame addControlFrame(String theName, int theWidth, int theHeight) {
 
 // the ControlFrame class extends PApplet, so we 
 // are creating a new processing applet inside a
-// new frame with a controlP5 object loaded
+// new frame with a skatolo object loaded
 public class ControlFrame extends PApplet {
   int w, h;
-  ControlP5 cp5;
+  skatolo skatolo;
   Object parent;
   
   public void setup() {
     size(w, h);
     frameRate(25);
-    cp5 = new ControlP5(this);
+    skatolo = new Skatolo(this);
 
-    cp5.addSlider("attractorPower").plugTo(parent,"attractorPower")
+    skatolo.addSlider("attractorPower").plugTo(parent,"attractorPower")
 	.setRange(0, 10)
 	.setValue(8)
 	.setPosition(20,20);
 
-    cp5.addSlider("attractorDistance").plugTo(parent,"attractorDistance")
+    skatolo.addSlider("attractorDistance").plugTo(parent,"attractorDistance")
 	.setRange(10, 200)
 	.setValue(60)
 	.setPosition(20,40);
 
-    cp5.addSlider("drawingDistance").plugTo(parent,"drawingDistance")
+    skatolo.addSlider("drawingDistance").plugTo(parent,"drawingDistance")
 	.setRange(1, 20)
 	.setValue(5)
 	.setPosition(20,50);
 
 
-    cp5.addSlider("acceleration").plugTo(parent,"acceleration")
+    skatolo.addSlider("acceleration").plugTo(parent,"acceleration")
 	.setRange(-100, 100)
 	.setPosition(20,60);
 
@@ -189,37 +189,37 @@ public class ControlFrame extends PApplet {
     float y = 60;
 
     y+= 20;
-    cp5.addSlider("colorDistDrawing").plugTo(parent,"colorDistDrawing")
+    skatolo.addSlider("colorDistDrawing").plugTo(parent,"colorDistDrawing")
 	.setRange(0, 255)
 	.setValue(40)
 	.setPosition(20, y);
 
     y+= 20;
-    cp5.addSlider("colorDistObject").plugTo(parent,"colorDistObject")
+    skatolo.addSlider("colorDistObject").plugTo(parent,"colorDistObject")
 	.setRange(0, 50)
 	.setValue(15)
 	.setPosition(20,y);
 
     y+= 20;
-    cp5.addSlider("colorNbObject").plugTo(parent,"colorNbObject")
+    skatolo.addSlider("colorNbObject").plugTo(parent,"colorNbObject")
 	.setRange(0, 30)
 	.setValue(5)
 	.setPosition(20, y);
 
     y+= 20;
-    cp5.addSlider("towerPowerUpThreshold").plugTo(parent,"towerPowerUpThreshold")
+    skatolo.addSlider("towerPowerUpThreshold").plugTo(parent,"towerPowerUpThreshold")
 	.setRange(5, 150)
 	.setValue(75)
 	.setPosition(20, y);
 
     y+= 20;
-    cp5.addSlider("levelPixelRatio").plugTo(parent,"levelPixelRatio")
+    skatolo.addSlider("levelPixelRatio").plugTo(parent,"levelPixelRatio")
 	.setRange(0, 30)
 	.setValue(17.80f)
 	.setPosition(20, y);
 
     y+= 20;
-    cp5.addSlider("towerRateRatio").plugTo(parent,"towerRateRatio")
+    skatolo.addSlider("towerRateRatio").plugTo(parent,"towerRateRatio")
 	.setRange(0, 100)
 	.setValue(30)
 	.setPosition(20, y);
@@ -238,7 +238,7 @@ public class ControlFrame extends PApplet {
     w = theWidth;
     h = theHeight;
   }
-  public ControlP5 control() {
-    return cp5;
+  public skatolo control() {
+    return skatolo;
   }
 }

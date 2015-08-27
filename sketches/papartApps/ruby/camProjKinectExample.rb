@@ -5,7 +5,7 @@ require 'jruby_art/app'
 
 Processing::App::SKETCH_PATH = __FILE__
 
-# require 'ruby-processing' 
+# require 'ruby-processing'
 # Processing::Runner
 # Dir["#{Processing::RP_CONFIG['PROCESSING_ROOT']}/core/library/\*.jar"].each{ |jar| require jar }
 # Processing::App::SKETCH_PATH = __FILE__
@@ -18,24 +18,23 @@ end
 
 class Sketch < Processing::App
 
-
   attr_reader :camera_tracking, :display, :papart, :moon
 
-  def setup 
+  def setup
 
     frameSizeX = 1280
     frameSizeY = 800
 
     @camera_x = 640
     @camera_y = 480
-    
+
     @useProjector = false
-    
+
     if @useProjector
 
       @papart = PapartLib::Papart.projection(self)
       @papart.loadTouchInput()
-    else 
+    else
 
       @papart = Papartlib::Papart.seeThrough self
       @papart.loadTouchInput()
@@ -50,11 +49,11 @@ class Sketch < Processing::App
 
     @papart.startTracking
 
+
+    def draw
+
+    end
   end
-
-  def draw
-
-  end 
 end
 
 

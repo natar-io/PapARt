@@ -1,9 +1,9 @@
 import org.bytedeco.javacpp.ARToolKitPlus;
 import org.bytedeco.javacpp.ARToolKitPlus.TrackerMultiMarker;
 
-import fr.inria.controlP5.*;
-import fr.inria.controlP5.events.*;
-import fr.inria.controlP5.gui.controllers.*;
+import fr.inria.skatolo.*;
+import fr.inria.skatolo.events.*;
+import fr.inria.skatolo.gui.controllers.*;
 
 public class Menu extends PaperTouchScreen {
     int buttonSize = 30;

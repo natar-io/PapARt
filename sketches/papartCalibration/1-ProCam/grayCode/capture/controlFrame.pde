@@ -16,46 +16,46 @@ ControlFrame addControlFrame(String theName, int theWidth, int theHeight) {
 
 // the ControlFrame class extends PApplet, so we 
 // are creating a new processing applet inside a
-// new frame with a controlP5 object loaded
+// new frame with a skatolo object loaded
 public class ControlFrame extends PApplet {
   int w, h;
-  ControlP5 cp5;
+  Skatolo skatolo;
   Object parent;
   
   public void setup() {
     size(w, h);
     frameRate(25);
-    cp5 = new ControlP5(this);
+    skatolo = new Skatolo(this);
 
     // add a horizontal sliders, the value of this slider will be linked
     // to variable 'sliderValue' 
-    cp5.addSlider("displayTime").plugTo(parent, "displayTime")
+    skatolo.addSlider("displayTime").plugTo(parent, "displayTime")
 	.setPosition(10, 20)
 	.setRange(30,1200)
 	.setValue(displayTime)
 	;
     
-    cp5.addSlider("captureTime").plugTo(parent, "captureTime")
+    skatolo.addSlider("captureTime").plugTo(parent, "captureTime")
 	.setPosition(10, 40)
 	.setRange(30, 1200)
 	.setValue(captureTime)
 	;
     
-    cp5.addSlider("delay").plugTo(parent, "delay")
+    skatolo.addSlider("delay").plugTo(parent, "delay")
 	.setPosition(10, 60)
 	.setRange(0, 300)
 	.setValue(delay)
 	;
     
     
-    cp5.addSlider("downScale").plugTo(parent, "downScale")
+    skatolo.addSlider("downScale").plugTo(parent, "downScale")
 	.setPosition(10, 80)
 	.setRange(1, 8)
 	.setValue(downScale)
 	.setLabel("pixel scale")
 	;
     
-    cp5.addRadioButton("decodeType").plugTo(parent, "decodeType")
+    skatolo.addRadioButton("decodeType").plugTo(parent, "decodeType")
     	.setPosition(10, 100)
     	.addItem("reference", GrayCode.DECODE_REF)
     	.addItem("absolute", GrayCode.DECODE_ABS)
@@ -63,34 +63,34 @@ public class ControlFrame extends PApplet {
     	.setNoneSelectedAllowed(true) 
     	;
 
-    cp5.addSlider("decodeValue").plugTo(parent, "decodeValue")
+    skatolo.addSlider("decodeValue").plugTo(parent, "decodeValue")
     	.setPosition(10, 130)
     	.setRange(0, 255)
     	.setValue(decodeValue)
     	.setLabel("Decode value")
     	;
 
-    cp5.addBang("startButton").plugTo(parent, "startButton")
+    skatolo.addBang("startButton").plugTo(parent, "startButton")
 	.setPosition(10, 200)
 	.setSize(20, 20)
 	.setLabel("Start")
 	;
     
     
-    cp5.addBang("saveCalib").plugTo(parent, "saveCalib")
+    skatolo.addBang("saveCalib").plugTo(parent, "saveCalib")
 	.setPosition(10, 400)
 	.setSize(20, 20)
 	.setLabel("Save Calibration")
 	;
     
 
-    decodeBang = cp5.addBang("decodeBang").plugTo(parent, "decodeBang")
+    decodeBang = skatolo.addBang("decodeBang").plugTo(parent, "decodeBang")
 	.setPosition(10, 260)
 	.setSize(20, 20)
 	.setLabel("Decode again")
 	;
     
-    saveScanBang = cp5.addBang("saveScan").plugTo(parent, "saveScan")
+    saveScanBang = skatolo.addBang("saveScan").plugTo(parent, "saveScan")
 	.setPosition(10, 300)
 	.setSize(20, 20)
 	.setLabel("Save decoded")
@@ -114,8 +114,8 @@ public class ControlFrame extends PApplet {
     w = theWidth;
     h = theHeight;
   }
-  public ControlP5 control() {
-    return cp5;
+  public skatolo control() {
+    return skatolo;
   }
 }
 

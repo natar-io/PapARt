@@ -10,11 +10,11 @@ import org.bytedeco.javacpp.freenect;
 import org.bytedeco.javacpp.opencv_core.*;
 
 
-import fr.inria.controlP5.*;
-import fr.inria.controlP5.events.*;
-import fr.inria.controlP5.gui.*;
-import fr.inria.controlP5.gui.group.*;
-import fr.inria.controlP5.gui.controllers.*;
+import fr.inria.skatolo.*;
+import fr.inria.skatolo.events.*;
+import fr.inria.skatolo.gui.*;
+import fr.inria.skatolo.gui.group.*;
+import fr.inria.skatolo.gui.controllers.*;
 
 import processing.video.*;
 
@@ -22,7 +22,7 @@ import java.awt.DisplayMode;
 import java.awt.GraphicsDevice;
 import org.bytedeco.javacv.CanvasFrame;
 
-ControlP5 cp5;
+Skatolo skatolo;
 
 CameraConfiguration cameraConfig;
 ScreenConfiguration screenConfig;

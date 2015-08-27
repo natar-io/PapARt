@@ -13,15 +13,15 @@ CColor cColorToggle;
 PImage testCameraImg;
 
 void initUI(){
-    cp5 = new ControlP5(this);
+    skatolo = new Skatolo(this);
 
-   // cp5.setColorForeground(color(200,0));
+   // skatolo.setColorForeground(color(200,0));
 
-   // cp5.setColorLabel(color(0,0,0,0));
-  //  cp5.setColorValue(color(0,0,0,0));
-  //  cp5.setColorActive(color(161,4,4,0));
+   // skatolo.setColorLabel(color(0,0,0,0));
+  //  skatolo.setColorValue(color(0,0,0,0));
+  //  skatolo.setColorActive(color(161,4,4,0));
     
-   // cp5.setColorBackground(color(200,0));
+   // skatolo.setColorBackground(color(200,0));
 
     PFont pfont = loadFont("data/Serif.plain-13.vlw"); // use true/false for smooth/no-smooth
     cFont = new ControlFont(pfont,13);
@@ -48,7 +48,7 @@ void initUI(){
 }
 
 void initScreenUI(){
-    screenChooser = cp5.addRadioButton("screenChooserRadio")
+    screenChooser = skatolo.addRadioButton("screenChooserRadio")
 	.setPosition(50,100)
 	.setLabel("Screen Chooser")
 	.toUpperCase(false)
@@ -72,7 +72,7 @@ void initScreenUI(){
     }
     nbScreens = k;
 
-    posXText = cp5.addTextfield("PosX")
+    posXText = skatolo.addTextfield("PosX")
 	.setPosition(417, 100)
 	.setSize(80,20)
 	.setFont(myFont)
@@ -80,7 +80,7 @@ void initScreenUI(){
 	.setText(Integer.toString(screenConfig.getProjectionScreenOffsetX()))
 	;
     
-    posYText = cp5.addTextfield("PosY")
+    posYText = skatolo.addTextfield("PosY")
 	.setPosition(417, 150)
 	.setSize(80,20)
 	.setFont(myFont)
@@ -88,19 +88,19 @@ void initScreenUI(){
 	.setText(Integer.toString(screenConfig.getProjectionScreenOffsetY()))
 	;
 
-    initButton = cp5.addButton("initSecondApplet")
+    initButton = skatolo.addButton("initSecondApplet")
 	.setPosition(611, 102)
 	.setLabel("Test Projection")
 	.setSize(110, 20)
 	;
 
-    saveDefaultScreenButton = cp5.addButton("saveDefaultScreen")
+    saveDefaultScreenButton = skatolo.addButton("saveDefaultScreen")
 	.setPosition(611, 143)
 	.setLabel("Save as default")
 	.setSize(110, 20)
 	;
 
-    saveScreenAsButton = cp5.addButton("saveScreenAs")
+    saveScreenAsButton = skatolo.addButton("saveScreenAs")
 	.setPosition(611, 183)
 	.setLabel("Save screen as...")
 	.setSize(110, 20)
@@ -112,7 +112,7 @@ void initScreenUI(){
 void initCameraUI(){
 
 
-    cameraType = cp5.addRadioButton("cameraTypeChooser")
+    cameraType = skatolo.addRadioButton("cameraTypeChooser")
 	.setPosition(50, 365)
 	.setItemWidth(20)
 	.setItemHeight(20)
@@ -125,7 +125,7 @@ void initCameraUI(){
 	;
 
 
-    cameraIdText = cp5.addTextfield("CameraId")
+    cameraIdText = skatolo.addTextfield("CameraId")
 	.setPosition(250 ,370)
 	.setSize(200,20)
 	.setFont(myFont)
@@ -139,19 +139,19 @@ void initCameraUI(){
 
     testCameraImg = loadImage("data/testCamera.png");
 
-    startCameraButton = cp5.addButton("testCameraButton")
+    startCameraButton = skatolo.addButton("testCameraButton")
 	.setPosition(611, 372)
 	.setLabel("Test the camera")
 	.setSize(110, 20)
 	;
 
-    saveDefaultCameraButton = cp5.addButton("saveDefaultCamera")
+    saveDefaultCameraButton = skatolo.addButton("saveDefaultCamera")
 	.setPosition(611, 413)
 	.setLabel("Save as default")
 	.setSize(110, 20)
 	;
 
-    saveCameraAsButton = cp5.addButton("saveCameraAs")
+    saveCameraAsButton = skatolo.addButton("saveCameraAs")
 	.setPosition(611, 453)
 	.setLabel("Save camera as.")
 	.setSize(110, 20)
