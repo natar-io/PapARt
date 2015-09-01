@@ -12,7 +12,7 @@ import processing.data.XML;
 
 /**
  *
- * @author Jeremy Laviole <jeremy.laviole@inria.fr>
+ * @author Jeremy Laviole jeremy.laviole@inria.fr
  */
 public class ScreenConfiguration extends Calibration{
     

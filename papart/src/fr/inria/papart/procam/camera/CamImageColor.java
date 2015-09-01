@@ -18,7 +18,7 @@ import processing.opengl.Texture;
 
 /**
  *
- * @author Jeremy Laviole <jeremy.laviole@inria.fr>
+ * @author Jeremy Laviole jeremy.laviole@inria.fr
  */
 public class CamImageColor extends CamImage {
 

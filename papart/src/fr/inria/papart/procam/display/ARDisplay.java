@@ -162,7 +162,6 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
     /**
      * Draw an image.
      *
-     * @see image() from the Processing API.
      * @param g graphics context to draw on.
      * @param image Image to be drawn
      * @param x location x

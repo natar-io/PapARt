@@ -193,7 +193,7 @@ public class Papart {
     /**
      * Start a see through AR application, it replaces size().
      *
-     * @param applet$
+     * @param applet
      * @return
      */
     public static Papart seeThrough(PApplet applet) {
@@ -416,7 +416,7 @@ public class Papart {
     }
 
     /**
-     * Load a projector & camera couple. Default configuration files are used.
+     * Load a projector - camera couple. Default configuration files are used.
      *
      * @param quality
      * @param cameraNo
@@ -464,7 +464,6 @@ public class Papart {
     /**
      * Initialize the default camera for object tracking.
      *
-     * @see initCamera(String, int, float)
      */
     public void initCamera() {
         initCamera(cameraConfiguration.getCameraName(),
@@ -474,7 +473,6 @@ public class Papart {
     /**
      * Initialize a camera for object tracking.
      *
-     * @see initCamera(String, int, float)
      */
     public void initCamera(String cameraNo, Camera.Type cameraType) {
         initCamera(cameraNo, cameraType, 1);
@@ -550,8 +548,6 @@ public class Papart {
     /**
      * Touch input when the camera tracking the markers is a Kinect.
      *
-     * @param touch2DPrecision
-     * @param touch3DPrecision
      */
     public void loadTouchInputKinectOnly() {
 
@@ -569,8 +565,6 @@ public class Papart {
      * *
      * Touch input with a Kinect calibrated with the display area.
      *
-     * @param touch2DPrecision
-     * @param touch3DPrecision
      */
     public void loadTouchInput() {
 

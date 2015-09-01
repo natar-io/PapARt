@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Jeremy Laviole <jeremy.laviole@inria.fr>.
+ * Copyright (C) 2014 Jeremy Laviole jeremy.laviole@inria.fr.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -28,7 +28,7 @@ import processing.core.PApplet;
 
 /**
  *
- * @author Jeremy Laviole <jeremy.laviole@inria.fr>
+ * @author Jeremy Laviole jeremy.laviole@inria.fr
  */
 public class CameraProjectorSyncTest {
 

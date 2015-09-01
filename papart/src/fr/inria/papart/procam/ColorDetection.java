@@ -16,7 +16,7 @@ import processing.core.PVector;
 /**
  * Experimental class, do not use
  *
- * @author Jeremy Laviole <jeremy.laviole@inria.fr>
+ * @author Jeremy Laviole jeremy.laviole@inria.fr
  */
 public class ColorDetection {
 

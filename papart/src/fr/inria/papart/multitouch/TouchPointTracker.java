@@ -13,7 +13,7 @@ import java.util.Iterator;
 
 /**
  *
- * @author Jeremy Laviole <jeremy.laviole@inria.fr>
+ * @author Jeremy Laviole jeremy.laviole@inria.fr
  */
 public class TouchPointTracker {
 
@@ -22,7 +22,6 @@ public class TouchPointTracker {
      * @param currentList
      * @param newPoints
      * @param currentTime
-     * @return the deleted points.
      */
     public static void trackPoints(ArrayList<TouchPoint> currentList,
             ArrayList<TouchPoint> newPoints, int currentTime) {

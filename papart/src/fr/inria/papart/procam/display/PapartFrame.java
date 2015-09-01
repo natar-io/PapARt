@@ -13,7 +13,7 @@ import processing.opengl.PGraphicsOpenGL;
 
 /**
  * TEST CODE.
- * @author Jeremy Laviole <jeremy.laviole@inria.fr>
+ * @author Jeremy Laviole jeremy.laviole@inria.fr
  */
 public class PapartFrame extends JFrame {
 

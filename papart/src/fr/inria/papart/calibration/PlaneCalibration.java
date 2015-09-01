@@ -18,7 +18,7 @@ import toxi.math.MathUtils;
 
 /**
  *
- * @author Jeremy Laviole <jeremy.laviole@inria.fr>
+ * @author Jeremy Laviole jeremy.laviole@inria.fr
  */
 public class PlaneCalibration extends Calibration {
 

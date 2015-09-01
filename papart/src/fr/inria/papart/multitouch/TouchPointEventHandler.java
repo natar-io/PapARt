@@ -9,7 +9,7 @@ package fr.inria.papart.multitouch;
 
 /**
  *
- * @author Jeremy Laviole <jeremy.laviole@inria.fr>
+ * @author Jeremy Laviole jeremy.laviole@inria.fr
  */
 public interface TouchPointEventHandler {
 

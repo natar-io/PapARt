@@ -22,7 +22,7 @@ import toxi.geom.Vec3D;
 
 /**
  *
- * @author Jeremy Laviole <jeremy.laviole@inria.fr>
+ * @author Jeremy Laviole jeremy.laviole@inria.fr
  */
 public abstract class TouchDetection {
 

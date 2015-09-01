@@ -15,7 +15,7 @@ import toxi.geom.Vec3D;
 
 /**
  *
- * @author Jeremy Laviole <jeremy.laviole@inria.fr>
+ * @author Jeremy Laviole jeremy.laviole@inria.fr
  */
 public class TouchDetectionHand extends TouchDetectionSimple2D {
 
