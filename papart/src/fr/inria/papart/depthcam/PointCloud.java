@@ -16,6 +16,10 @@ import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.opengl.PGL;
+import static processing.opengl.PGL.ARRAY_BUFFER;
+import static processing.opengl.PGL.FLOAT;
+import static processing.opengl.PGL.STATIC_DRAW;
+import static processing.opengl.PGL.STREAM_DRAW;
 import processing.opengl.PGraphicsOpenGL;
 import processing.opengl.PShader;
 import toxi.geom.Vec3D;
@@ -59,6 +63,8 @@ public class PointCloud {
         initPointCloud();
     }
 
+    private int vertexBuffer, colorBuffer;
+    
     private void initPointCloud() {
         PGL pgl = ((PGraphicsOpenGL) parentApplet.g).pgl;
 
@@ -77,10 +83,10 @@ public class PointCloud {
 //         System.out.println("Shader program " + shaderProgram + " vertex loc " + vertLoc + " transform loc " + transformLoc + " colors " + colorsLoc);
         // Allocate the buffer in central memory (native),  then java, then OpenGL 
         // Native memory         
-        int bytes = nbPoints * 4 * 4; // 4 : SizeOf Float   -> ? SIZEOF_FLOAT
-        verticesNative = ByteBuffer.allocateDirect(bytes).order(ByteOrder.nativeOrder()).
+        int byteSize = nbPoints * 4 * 4; // 4 : SizeOf Float   -> ? SIZEOF_FLOAT
+        verticesNative = ByteBuffer.allocateDirect(byteSize).order(ByteOrder.nativeOrder()).
                 asFloatBuffer();
-        colorsNative = ByteBuffer.allocateDirect(bytes).order(ByteOrder.nativeOrder()).asIntBuffer();
+        colorsNative = ByteBuffer.allocateDirect(byteSize).order(ByteOrder.nativeOrder()).asIntBuffer();
 
         // Java memory 
         verticesJava = new float[nbPoints * 4];
@@ -89,6 +95,13 @@ public class PointCloud {
 //        System.out.println("Buffer vertex object: " + glVertBuff);
         // unbind the buffer.
         pgl.bindBuffer(PGL.ARRAY_BUFFER, 0);
+        
+        // Generate a buffer color data and color. 
+        IntBuffer intBuffer = IntBuffer.allocate(2);
+        pgl.genBuffers(2, intBuffer);
+        vertexBuffer = intBuffer.get(0);
+        colorBuffer = intBuffer.get(1);
+        
     }
 
     private int currentVertNo = 0;
@@ -119,7 +132,6 @@ public class PointCloud {
 //        }
 //        loadVerticesToNative();
 //    }
-
 //    public void updateCheck(PointCloudElement[] pce, int w, int h) {
 //        nbVertices = 0;
 //        nbColors = 0;
@@ -145,7 +157,6 @@ public class PointCloud {
 //        }
 //        loadVerticesToNative();
 //    }
-
     private void addPoint(DepthPoint pce) {
 
         if (pce == null || pce.position == null) {
@@ -185,40 +196,36 @@ public class PointCloud {
 
         // Use the shader program
         myShader.bind();
-
-        // enable the vertice array
-        pgl.enableVertexAttribArray(vertLoc);
-        pgl.enableVertexAttribArray(colorsLoc);
-
         // load the transformation matrix
         pgl.uniformMatrix4fv(transformLoc, 1, false, toOpenGL(g.projmodelview));
+        
+   
+        
+        // load the buffer 
+        pgl.bindBuffer(GL2.GL_ARRAY_BUFFER, vertexBuffer);
+        // set the data 
+        // TODO: not sure about the size... 
+        verticesNative.position(0); // start at 0
+        pgl.bufferData(ARRAY_BUFFER, nbPoints * 4 * SIZEOF_FLOAT, verticesNative, STREAM_DRAW);
+        pgl.vertexAttribPointer(vertLoc, 4, PGL.FLOAT, false, 4 * SIZEOF_FLOAT, 0);
+        
+        // enable the vertice array
+        pgl.enableVertexAttribArray(vertLoc);
+        
+        
+
 
         // Making sure that no VBO is bound at this point.
-        pgl.bindBuffer(GL2.GL_ARRAY_BUFFER, 0);
-
-        // check the positions -> useless ? !
-        verticesNative.position(0); // start at 0
+        pgl.bindBuffer(GL2.GL_ARRAY_BUFFER, colorBuffer);
         colorsNative.position(0); // start at 0
-
-        // Say where vertices are
-        // Version 1
-        pgl.vertexAttribPointer(vertLoc, 4, PGL.FLOAT, false, 4 * SIZEOF_FLOAT, verticesNative);
-
-        // Version 2
-//        pgl.bindBuffer(PGL.ARRAY_BUFFER, glVertBuff);
-//        pgl.bufferData(PGL.ARRAY_BUFFER, nbVertices * 4 * SIZEOF_FLOAT, vertices, PGL.STREAM_DRAW);
-//        gl.glVertexAttribPointer(vertLoc, 4, PGL.FLOAT, false, 4 * SIZEOF_FLOAT, 0);
-        // Version 1 
-//        pgl.bindBuffer(GL2.GL_ARRAY_BUFFER, 0);
-        // Say where colors are
-        // TEST
-        pgl.vertexAttribPointer(colorsLoc, 4, PGL.UNSIGNED_BYTE, false, 4 * SIZEOF_BYTE, colorsNative);
+        pgl.bufferData(ARRAY_BUFFER, nbPoints * SIZEOF_BYTE * 4 , colorsNative, STREAM_DRAW);
+        
+        pgl.vertexAttribPointer(colorsLoc, 4, PGL.UNSIGNED_BYTE, false, 4 * SIZEOF_BYTE, 0);
 //        pgl.vertexAttribPointer(colorsLoc, 4, PGL.UNSIGNED_INT, false, 4 * SIZEOF_INT, colorsNative);
-
-        // Version 2 
-//        pgl.bindBuffer(PGL.ARRAY_BUFFER, glColorsBuff);
-//        pgl.bufferData(PGL.ARRAY_BUFFER, nbVertices * 4 * SIZEOF_BYTE, colors, PGL.STREAM_DRAW);
-//        gl.glVertexAttribPointer(colorsLoc, 4, PGL.UNSIGNED_BYTE, false, 4 * SIZEOF_BYTE, 0);
+        
+        // enable the color array
+        pgl.enableVertexAttribArray(colorsLoc);
+        
         // Draw the array nbToDraw elements.
         pgl.drawArrays(vertexMode, 0, nbVertices);
 
