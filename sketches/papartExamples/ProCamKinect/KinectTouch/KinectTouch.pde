@@ -7,16 +7,19 @@ import toxi.geom.*;
 
 Papart papart;
 
+public void settings(){
+    fullScreen(P3D);
+}
+
+
 public void setup() {
 
     papart = Papart.projection(this);
     papart.loadTouchInput();
-    
+
     papart.loadSketches();
     papart.startTracking();
 }
 
 void draw() {
 }
-
-
