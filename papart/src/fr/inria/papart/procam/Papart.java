@@ -20,8 +20,8 @@ import fr.inria.papart.depthcam.DepthAnalysis;
 import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
 import fr.inria.papart.calibration.PlaneCalibration;
 import fr.inria.papart.calibration.ScreenConfiguration;
-import fr.inria.papart.depthcam.Kinect;
-import fr.inria.papart.depthcam.KinectDepthAnalysis;
+import fr.inria.papart.depthcam.devices.Kinect360;
+import fr.inria.papart.depthcam.devices.KinectDepthAnalysis;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.multitouch.TUIOTouchInput;
 import fr.inria.papart.multitouch.KinectTouchInput;
@@ -104,7 +104,7 @@ public class Papart {
 //    private final int depthFormat = freenect.FREENECT_DEPTH_10BIT;
 //    private final int kinectFormat = Kinect.KINECT_10BIT;
     private final int depthFormat = freenect.FREENECT_DEPTH_MM;
-    private final int kinectFormat = Kinect.KINECT_MM;
+    private final int kinectFormat = Kinect360.KINECT_MM;
 
     /**
      * Create the main PapARt object, look at the examples for how to use it.

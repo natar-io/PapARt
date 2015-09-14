@@ -31,6 +31,9 @@ public class CameraFactory {
             case OPENCV:
                 camera = new CameraOpenCV(cameraNo);
                 break;
+            case OPENCV_DEPTH:
+                camera = new CameraOpenCVDepth(cameraNo);
+                break;
             case OPEN_KINECT:
                 camera = new CameraOpenKinect(cameraNo);
                 break;

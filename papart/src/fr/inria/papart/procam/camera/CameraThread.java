@@ -8,7 +8,7 @@
 package fr.inria.papart.procam.camera;
 
 import fr.inria.papart.depthcam.DepthAnalysis;
-import fr.inria.papart.depthcam.KinectDepthAnalysis;
+import fr.inria.papart.depthcam.devices.KinectDepthAnalysis;
 import fr.inria.papart.depthcam.PixelOffset;
 import fr.inria.papart.procam.MarkerBoard;
 import java.util.ArrayList;

@@ -44,12 +44,12 @@ public abstract class Camera extends Node implements PConstants {
 
     public enum Type {
 
-        OPENCV, PROCESSING, OPEN_KINECT, FLY_CAPTURE
+        OPENCV, OPENCV_DEPTH, PROCESSING, OPEN_KINECT, FLY_CAPTURE
     }
 
     public enum PixelFormat {
 
-        RGB, BGR, ARGB, RGBA, GRAY, DEPTH_KINECT_MM
+        RGB, BGR, ARGB, RGBA, GRAY, DEPTH_KINECT_MM, DEPTH_KINECT_RAW
     }
 
     protected PixelFormat format;
@@ -344,7 +344,8 @@ public abstract class Camera extends Node implements PConstants {
     protected boolean isPixelFormatGray() {
         PixelFormat pixelFormat = getPixelFormat();
         return pixelFormat == PixelFormat.GRAY
-                || pixelFormat == PixelFormat.DEPTH_KINECT_MM;
+                || pixelFormat == PixelFormat.DEPTH_KINECT_MM
+                || pixelFormat == PixelFormat.DEPTH_KINECT_RAW;
     }
 
     protected boolean isPixelFormatColor() {

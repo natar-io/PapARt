@@ -5,12 +5,13 @@
  *
  * No licence yet.
  */
-package fr.inria.papart.depthcam;
+package fr.inria.papart.depthcam.devices;
 
 import static fr.inria.papart.depthcam.DepthAnalysis.papplet;
 import fr.inria.papart.calibration.HomographyCalibration;
 import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
 import fr.inria.papart.calibration.PlaneCalibration;
+import fr.inria.papart.depthcam.PixelOffset;
 import static fr.inria.papart.depthcam.DepthAnalysis.papplet;
 import fr.inria.papart.procam.camera.CameraOpenKinect;
 import java.util.Arrays;
@@ -34,8 +35,13 @@ public class KinectProcessing extends KinectDepthAnalysis {
         init();
     }
 
+    public KinectProcessing(PApplet parent, KinectOne kinectOne) {
+        super(parent, kinectOne);
+        init();
+    }
+
     private void init() {
-        validPointsPImage = papplet.createImage(width, height, PConstants.RGB);
+        validPointsPImage = papplet.createImage(kinectDevice().depthWidth(), kinectDevice().depthHeight(), PConstants.RGB);
     }
 
 
@@ -92,7 +98,12 @@ public class KinectProcessing extends KinectDepthAnalysis {
         // set a default color. 
         Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 255));
 
+//        computeDepthAndDo(skip, new DoNothing());
+        
+        // TODO: get the color with Kinect2... 
         computeDepthAndDo(skip, new SetImageData());
+        
+        
 //        computeDepthAndDo(skip, new Select2DPointOverPlane());
 
         validPointsPImage.updatePixels();

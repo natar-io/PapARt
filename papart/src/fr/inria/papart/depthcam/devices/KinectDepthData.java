@@ -5,13 +5,18 @@
  *
  * No licence yet.
  */
-package fr.inria.papart.depthcam;
+package fr.inria.papart.depthcam.devices;
 
 import static fr.inria.papart.depthcam.DepthAnalysis.INVALID_COLOR;
 import static fr.inria.papart.depthcam.DepthAnalysis.INVALID_POINT;
 import fr.inria.papart.calibration.HomographyCalibration;
 import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
 import fr.inria.papart.calibration.PlaneCalibration;
+import fr.inria.papart.depthcam.Connexity;
+import fr.inria.papart.depthcam.DepthAnalysis;
+import fr.inria.papart.depthcam.DepthData;
+import fr.inria.papart.depthcam.DepthDataElementKinect;
+import fr.inria.papart.depthcam.TouchAttributes;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import java.util.ArrayList;
@@ -56,7 +61,7 @@ public class KinectDepthData extends DepthData {
     public KinectDepthData(DepthAnalysis source, boolean is3D) {
         super(source);
 
-        int size = source.getSize();
+        int size = source.getDepthSize();
         projectedPoints = new Vec3D[size];
         for (int i = 0; i < size; i++) {
             projectedPoints[i] = new Vec3D();
@@ -68,7 +73,7 @@ public class KinectDepthData extends DepthData {
             validPointsMask3D = new boolean[size];
             validPointsList3D = new ArrayList();
         }
-        connexity = new Connexity(depthPoints, source.getWidth(), source.getHeight());
+        connexity = new Connexity(depthPoints, source.getDepthWidth(), source.getDepthHeight());
 //        connexity = new Connexity(projectedPoints, width, height);
     }
 
@@ -96,7 +101,7 @@ public class KinectDepthData extends DepthData {
     }
 
     @Override
-    void clearDepth() {
+    public void clearDepth() {
         super.clearDepth();
 
         for (Vec3D pt : projectedPoints) {
@@ -106,7 +111,7 @@ public class KinectDepthData extends DepthData {
     }
 
     @Override
-    void clear2D() {
+    public void clear2D() {
         super.clear2D();
         this.validPointsList.clear();
     }

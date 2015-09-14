@@ -9,7 +9,7 @@ package fr.inria.papart.multitouch;
 
 import fr.inria.papart.calibration.PlanarTouchCalibration;
 import fr.inria.papart.calibration.PlaneCalibration;
-import fr.inria.papart.depthcam.KinectDepthData;
+import fr.inria.papart.depthcam.devices.KinectDepthData;
 import fr.inria.papart.depthcam.DepthAnalysis;
 import fr.inria.papart.depthcam.DepthData;
 import java.util.ArrayList;
@@ -121,8 +121,8 @@ public abstract class TouchDetection {
         searchDepth = calib.getSearchDepth() * calib.getPrecision();
         precision = calib.getPrecision();
 
-        w = depthData.source.getWidth();
-        h = depthData.source.getHeight();
+        w = depthData.source.getDepthWidth();
+        h = depthData.source.getDepthHeight();
         ConnectedComponent cc = findNeighboursRec(startingPoint, 0, getX(startingPoint), getY(startingPoint));
         cc.setId(currentCompo);
         currentCompo++;

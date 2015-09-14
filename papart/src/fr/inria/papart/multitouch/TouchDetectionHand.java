@@ -7,7 +7,7 @@
  */
 package fr.inria.papart.multitouch;
 
-import fr.inria.papart.depthcam.KinectDepthData;
+import fr.inria.papart.depthcam.devices.KinectDepthData;
 import fr.inria.papart.depthcam.DepthAnalysis;
 import java.util.ArrayList;
 import java.util.HashSet;

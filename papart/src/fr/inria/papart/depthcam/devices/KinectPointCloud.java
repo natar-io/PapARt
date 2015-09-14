@@ -5,8 +5,12 @@
  *
  * No licence yet.
  */
-package fr.inria.papart.depthcam;
+package fr.inria.papart.depthcam.devices;
 
+import fr.inria.papart.depthcam.DepthDataElementKinect;
+import fr.inria.papart.depthcam.PointCloud;
+import fr.inria.papart.depthcam.devices.KinectProcessing;
+import fr.inria.papart.depthcam.devices.KinectDepthAnalysis;
 import static fr.inria.papart.depthcam.PointCloud.javaToNativeARGB;
 import fr.inria.papart.multitouch.TouchPoint;
 import java.util.ArrayList;
@@ -18,26 +22,26 @@ import toxi.geom.Vec3D;
 /**
  *
  */
-public class PointCloudKinect extends PointCloud implements PConstants {
+public class KinectPointCloud extends PointCloud implements PConstants {
 
-    public PointCloudKinect(PApplet parent, int skip) {
-        super(parent, KinectDepthAnalysis.getKinectSize() / (skip * skip));
+    public KinectPointCloud(PApplet parent, KinectDepthAnalysis depthAnalysis, int skip) {
+        super(parent, depthAnalysis.getDepthSize() / (skip * skip));
     }
-    
-    public PointCloudKinect(PApplet parent) {
-        this(parent, 1);
+
+    public KinectPointCloud(PApplet parent, KinectDepthAnalysis depthAnalysis) {
+        this(parent, depthAnalysis, 1);
     }
-    
-    public void updateWith(KinectProcessing kinect){
+
+    public void updateWith(KinectProcessing kinect) {
         boolean[] valid = kinect.getValidPoints();
         Vec3D[] points = kinect.getDepthPoints();
         PImage colorsImg = kinect.getColouredDepthImage();
-        
+
         nbVertices = 0;
         nbColors = 0;
-        
+
         int k = 0;
-        for (int i = 0; i < KinectDepthAnalysis.getKinectSize(); i++) {
+        for (int i = 0; i < kinect.getDepthSize(); i++) {
 
             if (valid[i]) {
                 Vec3D p = points[i];
@@ -47,11 +51,11 @@ public class PointCloudKinect extends PointCloud implements PConstants {
                 verticesJava[k++] = p.y;
                 verticesJava[k++] = -p.z;
                 verticesJava[k++] = 1;
-                
+
                 int c2 = javaToNativeARGB(c);
 
                 nbVertices++;
-                
+
                 colorsJava[nbColors++] = c2;
                 // Think about dividing the color intensity by 255 in the shader...
             }
@@ -62,29 +66,28 @@ public class PointCloudKinect extends PointCloud implements PConstants {
         colorsNative.rewind();
         colorsNative.put(colorsJava, 0, nbColors);
     }
-    
-    
-    public void updateWith(KinectProcessing kinect, ArrayList<TouchPoint> touchs){
-        
+
+    public void updateWith(KinectProcessing kinect, ArrayList<TouchPoint> touchs) {
+
         boolean[] valid = kinect.getValidPoints();
         Vec3D[] points = kinect.getDepthPoints();
         PImage colorsImg = kinect.getColouredDepthImage();
-        
+
         nbVertices = 0;
         nbColors = 0;
         int k = 0;
 
         int id = 0;
-        for(TouchPoint touch : touchs){
-            
-            int c =  (((id +1) % 5) * (255 / 5) & 0xFF) << 16
-                | (255 - (id % 10 *255)  & 0xFF) << 8
-                | (100 & 0xFF);
+        for (TouchPoint touch : touchs) {
+
+            int c = (((id + 1) % 5) * (255 / 5) & 0xFF) << 16
+                    | (255 - (id % 10 * 255) & 0xFF) << 8
+                    | (100 & 0xFF);
 
             id++;
             int c2 = javaToNativeARGB(c);
-            
-            for(DepthDataElementKinect dde : touch.getDepthDataElements()){
+
+            for (DepthDataElementKinect dde : touch.getDepthDataElements()) {
                 Vec3D p = dde.depthPoint;
                 verticesJava[k++] = p.x;
                 verticesJava[k++] = p.y;
@@ -92,13 +95,12 @@ public class PointCloudKinect extends PointCloud implements PConstants {
                 verticesJava[k++] = 1;
 
                 nbVertices++;
-                
+
                 colorsJava[nbColors++] = c2;
-                 
-            }            
+
+            }
         }
-        
-     
+
         verticesNative.rewind();
         verticesNative.put(verticesJava, 0, nbVertices * 4);
 

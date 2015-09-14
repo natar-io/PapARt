@@ -8,7 +8,7 @@
 package fr.inria.papart.multitouch;
 
 import fr.inria.papart.calibration.PlanarTouchCalibration;
-import fr.inria.papart.depthcam.KinectDepthData;
+import fr.inria.papart.depthcam.devices.KinectDepthData;
 import fr.inria.papart.depthcam.DepthDataElementKinect;
 import fr.inria.papart.depthcam.DepthPoint;
 import org.bytedeco.javacpp.opencv_core.IplImage;
@@ -17,7 +17,7 @@ import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.procam.Screen;
 import fr.inria.papart.depthcam.DepthAnalysis;
 import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
-import fr.inria.papart.depthcam.KinectDepthAnalysis;
+import fr.inria.papart.depthcam.devices.KinectDepthAnalysis;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.ProjectiveDeviceP;
@@ -68,8 +68,8 @@ public class KinectTouchInput extends TouchInput {
         this.depthAnalysis = depthAnalysis;
         this.kinectCamera = kinectCamera;
         this.calibration = calibration;
-        this.touchDetection2D = new TouchDetectionSimple2D(depthAnalysis.getSize());
-        this.touchDetection3D = new TouchDetectionSimple3D(depthAnalysis.getSize());
+        this.touchDetection2D = new TouchDetectionSimple2D(depthAnalysis.getDepthSize());
+        this.touchDetection3D = new TouchDetectionSimple3D(depthAnalysis.getDepthSize());
     }
 
     public void setTouchDetectionCalibration(PlanarTouchCalibration touchCalib) {

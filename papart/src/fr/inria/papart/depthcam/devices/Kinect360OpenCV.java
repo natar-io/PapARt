@@ -5,8 +5,9 @@
  *
  * No licence yet.
  */
-package fr.inria.papart.depthcam;
+package fr.inria.papart.depthcam.devices;
 
+import fr.inria.papart.depthcam.PixelOffset;
 import fr.inria.papart.procam.camera.CameraOpenKinect;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -20,21 +21,21 @@ import toxi.geom.Vec3D;
  *
  * @author jiii
  */
-public class KinectOpenCV extends KinectDepthAnalysis {
+public class Kinect360OpenCV extends KinectDepthAnalysis {
 
     public IplImage validPointsIpl;
     public byte[] validPointsRaw;
 
-    public KinectOpenCV(PApplet parent, CameraOpenKinect camera) {
+    public Kinect360OpenCV(PApplet parent, CameraOpenKinect camera) {
        super(parent, camera);
        init();
     }
 
     private void init() {
-        validPointsIpl = IplImage.create(cvSize(width,
-                height),
+        validPointsIpl = IplImage.create(cvSize(kinectDevice().depthWidth(),
+                kinectDevice().depthHeight()),
                 IPL_DEPTH_8U, 3);
-        validPointsRaw = new byte[size * 3];
+        validPointsRaw = new byte[kinectDevice().depthSize() * 3];
     }
 
     public IplImage update(IplImage depth, IplImage color) {
