@@ -1,4 +1,3 @@
-
 Textfield cameraIdText, posXText, posYText;
 RadioButton screenChooser,  cameraType ;
 
@@ -20,7 +19,7 @@ void initUI(){
    // skatolo.setColorLabel(color(0,0,0,0));
   //  skatolo.setColorValue(color(0,0,0,0));
   //  skatolo.setColorActive(color(161,4,4,0));
-    
+
    // skatolo.setColorBackground(color(200,0));
 
     PFont pfont = loadFont("data/Serif.plain-13.vlw"); // use true/false for smooth/no-smooth
@@ -62,10 +61,10 @@ void initScreenUI(){
     int k = 0;
     for(String description : descriptions){
 	println(description);
-	DisplayMode displayMode = CanvasFrame.getDisplayMode(k); 
-	screenChooser.addItem("Screen " 
-			      + description 
-			      + " -- Resolution  " + displayMode.getWidth() 
+	DisplayMode displayMode = CanvasFrame.getDisplayMode(k);
+	screenChooser.addItem("Screen "
+			      + description
+			      + " -- Resolution  " + displayMode.getWidth()
 			      + "x" + displayMode.getHeight(), k);
 
 	k++;
@@ -79,7 +78,7 @@ void initScreenUI(){
 	.setLabel("Position X")
 	.setText(Integer.toString(screenConfig.getProjectionScreenOffsetX()))
 	;
-    
+
     posYText = skatolo.addTextfield("PosY")
 	.setPosition(417, 150)
 	.setSize(80,20)
@@ -135,7 +134,7 @@ void initCameraUI(){
 	.setFocus(true)
 	;
 
-   
+
 
     testCameraImg = loadImage("data/testCamera.png");
 
@@ -189,5 +188,3 @@ void setStyle(RadioButton controller){
 	toggle.setColor(cColorToggle);
     }
 }
-
-

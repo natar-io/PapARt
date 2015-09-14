@@ -1,6 +1,7 @@
 import fr.inria.papart.procam.*;
 import fr.inria.papart.procam.camera.*;
 import fr.inria.papart.depthcam.*;
+import fr.inria.papart.depthcam.devices.*;
 
 import fr.inria.papart.calibration.HomographyCalibration;
 
@@ -16,70 +17,63 @@ import fr.inria.skatolo.gui.controllers.*;
 import fr.inria.skatolo.gui.group.*;
 
 
+Camera cameraRGB, cameraIR, cameraDepth;
+KinectDevice kinectDevice;
+KinectPointCloud pointCloud;
+KinectProcessing kinectAnalysis;
+
+PMatrix3D stereoCalib;
 
 Skatolo skatolo;
 PeasyCam cam;
 
-PointCloudKinect pointCloud;
-
-CameraOpenKinect camera;
-KinectProcessing kinect;
-PMatrix3D stereoCalib;
-
-int depthFormat = freenect.FREENECT_DEPTH_MM;
-int kinectFormat = Kinect.KINECT_MM;
-
 int skip = 2;
-
 float translation = 15;
 
 void settings(){
-  size(800, 600, OPENGL); 
+  size(800, 600, OPENGL);
 }
 
 void setup(){
-  
-  camera = (CameraOpenKinect) CameraFactory.createCamera(Camera.Type.OPEN_KINECT, 0);
-  camera.setParent(this);
-  camera.setCalibration(Papart.kinectRGBCalib);
-  camera.getDepthCamera().setDepthFormat(depthFormat);
-  camera.getDepthCamera().setCalibration(Papart.kinectIRCalib);
-  camera.start();
 
-  kinect = new KinectProcessing(this, camera);
+    kinectDevice = KinectDevice.createKinectOne(this);
+    // kinectDevice = KinectDevice.createKinect360(this);
+    kinectDevice.setStereoCalibration(Papart.kinectStereoCalib);
 
-  try{
-      stereoCalib = HomographyCalibration.getMatFrom(this, Papart.kinectStereoCalib);
-      translation = stereoCalib.m03;
-  } catch(Exception e){
-      println("File invalid or not found, load default values. " + e);
-      stereoCalib = new PMatrix3D(1, 0, 0, 15,
-				  0, 1, 0, 0,
-				  0, 0, 1, 0,
-				  0, 0, 0, 1);
-  }
+    cameraRGB = kinectDevice.getCameraRGB();
+    cameraDepth = kinectDevice.getCameraDepth();
+// cameraIR = kinectDevice.getCameraIR();
 
+    kinectAnalysis = new KinectProcessing(this, kinectDevice);
+    pointCloud = new KinectPointCloud(this, kinectAnalysis, skip);
 
-  skatolo = new Skatolo(this);
-  skatolo.addSlider("translation")
-      .setPosition(30, 50)
-      .setValue(stereoCalib.m03)
-      .setRange(-15, 30)
-      .setSize(200, 12);
+    try{
+        stereoCalib = HomographyCalibration.getMatFrom(this, Papart.kinectStereoCalib);
+        translation = stereoCalib.m03;
+    } catch(Exception e){
+        println("File invalid or not found, load default values. " + e);
+        stereoCalib = new PMatrix3D(1, 0, 0, 15,
+                                    0, 1, 0, 0,
+                                    0, 0, 1, 0,
+                                    0, 0, 0, 1);
+    }
 
-  // Manual draw. 
-  skatolo.setAutoDraw(false);
+    // Set the virtual camera
+    cam = new PeasyCam(this, 0, 0, -800, 800);
+    cam.setMinimumDistance(0);
+    cam.setMaximumDistance(5000);
+    cam.setActive(true);
 
-  textFont(createFont("",15));
-
-  pointCloud = new PointCloudKinect(this, skip);
-
-
-  // Set the virtual camera
-  cam = new PeasyCam(this, 0, 0, -800, 800);
-  cam.setMinimumDistance(0);
-  cam.setMaximumDistance(1200);
-  cam.setActive(true);
+    // GUI
+    skatolo = new Skatolo(this);
+    skatolo.addSlider("translation")
+        .setPosition(30, 50)
+        .setValue(stereoCalib.m03)
+        .setRange(-15, 30)
+        .setSize(200, 12);
+    // Manual draw.
+    skatolo.setAutoDraw(false);
+    textFont(createFont("",15));
 }
 
 
@@ -87,18 +81,24 @@ void setup(){
 
 void draw(){
     background(100);
+   // retreive the camera image.
 
-    // retreive the camera image.
-    camera.grab();
+    try {
+	cameraRGB.grab();
+        cameraDepth.grab();
+// cameraIR.grab();
+    } catch(Exception e){
+	println("Could not grab the image " + e);
+    }
 
-    IplImage colourImg = camera.getIplImage();
-    IplImage depthImg = camera.getDepthCamera().getIplImage();
+    IplImage colourImg = cameraRGB.getIplImage();
+    IplImage depthImg = cameraDepth.getIplImage();
 
     stereoCalib.m03 = translation;
-    kinect.setStereoCalibration(stereoCalib);
-    kinect.update(depthImg, colourImg, skip);
+    kinectDevice.setStereoCalibration(stereoCalib);
+    kinectAnalysis.update(depthImg, colourImg, skip);
 
-    pointCloud.updateWith(kinect);
+    pointCloud.updateWith(kinectAnalysis);
     pointCloud.drawSelf((PGraphicsOpenGL) g);
 
     cam.beginHUD();
@@ -111,7 +111,7 @@ void draw(){
 boolean isMouseControl = true;
 
 void keyPressed(){
-    
+
     if(key =='m'){
 	isMouseControl = !isMouseControl;
 	cam.setMouseControlled(isMouseControl);
@@ -125,7 +125,7 @@ void keyPressed(){
 
 void close(){
     try{
-	camera.close();
+	kinectDevice.close();
     }catch(Exception e){
     }
 }

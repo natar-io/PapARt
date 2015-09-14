@@ -3,6 +3,8 @@ import fr.inria.papart.procam.display.*;
 import fr.inria.papart.procam.camera.*;
 import fr.inria.papart.multitouch.*;
 import fr.inria.papart.depthcam.*;
+import fr.inria.papart.depthcam.devices.*;
+
 import fr.inria.papart.calibration.*;
 
 import toxi.geom.*;
@@ -21,15 +23,18 @@ import peasy.*;
 Skatolo skatolo;
 PeasyCam cam;
 
-CameraOpenKinect cameraKinect;
-KinectProcessing kinect;
-PointCloudKinect pointCloud;
+
+KinectProcessing kinectAnalysis;
+KinectPointCloud pointCloud;
+
+KinectDevice kinectDevice;
+Camera cameraRGB, cameraDepth;
 
 HomographyCreator homographyCreator;
 HomographyCalibration homographyCalibration;
 PlaneCalibration planeCalibration;
 PlaneAndProjectionCalibration planeProjCalibration;
-    
+
 int precision = 3;
 
 
@@ -39,24 +44,15 @@ void settings(){
 
 void setup(){
 
-    int depthFormat = freenect.FREENECT_DEPTH_MM;
-    int kinectFormat = Kinect.KINECT_MM;
 
     Papart papart = new Papart(this);
-    
-    //      papart.initKinectCamera(1);
-     // ARDisplay kinectDisplay = papart.getARDisplay();
-     // kinectDisplay.manualMode();
 
-     // cameraKinect = (CameraOpenKinect) papart.getCameraTracking();
-     
-    cameraKinect = (CameraOpenKinect) CameraFactory.createCamera(Camera.Type.OPEN_KINECT, 0);
-    cameraKinect.setParent(this);
-    cameraKinect.setCalibration(Papart.kinectRGBCalib);
-    cameraKinect.getDepthCamera().setCalibration(Papart.kinectIRCalib);
-    cameraKinect.start();
+    // kinectDevice = KinectDevice.createKinect360(this);
+    kinectDevice = KinectDevice.createKinectOne(this);
 
-    
+    cameraRGB = kinectDevice.getCameraRGB();
+    cameraDepth = kinectDevice.getCameraDepth();
+
     try{
 	planeProjCalibration = new  PlaneAndProjectionCalibration();
 	planeProjCalibration.loadFrom(this, Papart.planeAndProjectionCalib);
@@ -65,11 +61,9 @@ void setup(){
 	die("Impossible to load the plane calibration...");
     }
 
-    kinect = new KinectProcessing(this, cameraKinect);
+    kinectAnalysis = new KinectProcessing(this, kinectDevice);
 
-     kinect.setStereoCalibration(Papart.kinectStereoCalib);
-    
-    pointCloud = new PointCloudKinect(this, 1);
+    pointCloud = new KinectPointCloud(this, kinectAnalysis, 1);
 
 
   // Set the virtual camera
@@ -78,18 +72,18 @@ void setup(){
   cam.setMaximumDistance(5000);
   cam.setActive(true);
 
-  touchDetection = new TouchDetectionSimple2D(Kinect.SIZE);
+  touchDetection = new TouchDetectionSimple2D(kinectDevice.depthSize());
 
   touchCalibration = new PlanarTouchCalibration();
   touchCalibration.loadFrom(this, Papart.touchCalib);
   touchDetection.setCalibration(touchCalibration);
 
-  touchDetection3D = new TouchDetectionSimple3D(Kinect.SIZE);
+  touchDetection3D = new TouchDetectionSimple3D(kinectDevice.depthSize());
   touchCalibration3D = new PlanarTouchCalibration();
   touchCalibration3D.loadFrom(this, Papart.touchCalib3D);
   touchDetection3D.setCalibration(touchCalibration3D);
 
-  
+
   initGui();
 
   frameRate(200);
@@ -117,15 +111,18 @@ ArrayList<TouchPoint> globalTouchList = new ArrayList<TouchPoint>();
 void draw(){
     background(0);
     //     println("Framerate " + frameRate);
-    
-    try{
-    	cameraKinect.grab();
-    }catch(Exception e){
-    	println("Could not grab frame..." +e );
-    	return;
+
+    // retreive the camera image.
+    try {
+	cameraRGB.grab();
+        cameraDepth.grab();
+// cameraIR.grab();
+    } catch(Exception e){
+	println("Could not grab the image " + e);
     }
-    kinectImg = cameraKinect.getIplImage();
-    kinectImgDepth = cameraKinect.getDepthCamera().getIplImage();
+
+    kinectImg = cameraRGB.getIplImage();
+    kinectImgDepth = cameraDepth.getIplImage();
     if(kinectImg == null || kinectImgDepth == null){
     	println("null images..");
     	return;
@@ -135,13 +132,12 @@ void draw(){
 
     updateCalibration(is3D ? touchCalibration3D : touchCalibration);
 
-    
-    kinect.updateMT(kinectImgDepth, kinectImg,  planeProjCalibration,
+    kinectAnalysis.updateMT(kinectImgDepth, kinectImg,  planeProjCalibration,
 		    precision);
 
-     //    kinect.update(kinectImgDepth, kinectImg, planeCalibration, precision);
+     //    kinectAnalysis.update(kinectImgDepth, kinectImg, planeCalibration, precision);
     draw3DPointCloud();
-    
+
     cam.beginHUD();
 
     text("'m' to stop the camera", 10,  30);
@@ -160,7 +156,7 @@ void updateCalibration(PlanarTouchCalibration calib){
 
     calib.setTrackingForgetTime((int)forgetTime);
     calib.setTrackingMaxDistance(trackingMaxDistance);
-    
+
     calib.setPrecision(precision);
 
 }
@@ -168,7 +164,7 @@ void updateCalibration(PlanarTouchCalibration calib){
 
 void draw3DPointCloud(){
 
-    KinectDepthData depthData = kinect.getDepthData();
+    KinectDepthData depthData = kinectAnalysis.getDepthData();
 
     ArrayList<TouchPoint> touchs;
 
@@ -180,15 +176,15 @@ void draw3DPointCloud(){
 
     TouchPointTracker.trackPoints(globalTouchList, touchs, millis());
 
-    //     pointCloud.updateWith(kinect);
-    pointCloud.updateWith(kinect, touchs);
+    //     pointCloud.updateWith(kinectAnalysis);
+    pointCloud.updateWith(kinectAnalysis, touchs);
     pointCloud.drawSelf((PGraphicsOpenGL) g);
 
     lights();
     stroke(200);
     fill(200);
 
-    
+
     colorMode(HSB, 20, 100, 100);
     for(TouchPoint touchPoint : globalTouchList){
 
@@ -196,12 +192,12 @@ void draw3DPointCloud(){
     	pushMatrix();
     	translate(position.x, position.y, -position.z);
 
-    	fill(touchPoint.getID() % 20, 100, 100);	
+    	fill(touchPoint.getID() % 20, 100, 100);
 	ellipse(0, 0, 3, 3);
     	//sphere(3);
     	popMatrix();
     }
-    
+
 }
 
 boolean is3D = false;
@@ -214,7 +210,7 @@ void keyPressed() {
 	is3D = !is3D;
 	println("Is 3D " + is3D);
     }
-    
+
     if(key =='m'){
 	isMouseControl = !isMouseControl;
 	cam.setMouseControlled(isMouseControl);
@@ -231,7 +227,7 @@ void keyPressed() {
 }
 
 void save3D(){
-    println("TouchCalibration3D saved.");    
+    println("TouchCalibration3D saved.");
     touchCalibration3D.saveTo(this, Papart.touchCalib3D);
 }
 
@@ -239,6 +235,6 @@ void save(){
     planeProjCalibration.saveTo(this, Papart.planeAndProjectionCalib);
     // println("PlaneProj saved.");
 
-    println("TouchCalibration2D saved.");    
+    println("TouchCalibration2D saved.");
     touchCalibration.saveTo(this, Papart.touchCalib);
 }

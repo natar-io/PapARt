@@ -40,8 +40,8 @@ void setup(){
     // Here camera, test it with defaultCameraTest
     // cc.setCameraName("1");
     // cc.setCameraType(Camera.Type.OPENCV);
-    
-    // Camera.Type.OPENCV, "2"    
+
+    // Camera.Type.OPENCV, "2"
     // Camera.Type.PROCESSING, "/dev/video1"
     // Camera.Type.FLY_CAPTURE, 0
 
@@ -50,19 +50,19 @@ void setup(){
     // Here Screen resolution
     // cc.setProjectionScreenWidth(1280);
     // cc.setProjectionScreenHeight(800);
-    
-    // Screen offset, where is the projection screen, relative to the main screen. 
-    // cc.setProjectionScreenOffsetX(0);
-    // cc.setProjectionScreenOffsetY(200);    
 
-    // Do not modify anything further. 
+    // Screen offset, where is the projection screen, relative to the main screen.
+    // cc.setProjectionScreenOffsetX(0);
+    // cc.setProjectionScreenOffsetY(200);
+
+    // Do not modify anything further.
 
     cameraConfig = new CameraConfiguration();
     screenConfig = new ScreenConfiguration();
 
     cameraConfig.loadFrom(this, Papart.cameraConfig);
     screenConfig.loadFrom(this, Papart.screenConfig);
-    
+
     initUI();
     backgroundImage = loadImage("data/background.png");
     tryLoadCameraCalibration();
@@ -104,7 +104,7 @@ void testCameraButton(boolean value){
 
 
 void cameraTypeChooser(int value){
-    
+
     if(value == 0)
 	cameraConfig.setCameraType(Camera.Type.OPENCV);
 
@@ -129,18 +129,18 @@ void screenChooserRadio(int value){
 }
 
 PVector getScreenResolution(int screenNo){
-    DisplayMode displayMode = CanvasFrame.getDisplayMode(screenNo); 
+    DisplayMode displayMode = CanvasFrame.getDisplayMode(screenNo);
     return new PVector(displayMode.getWidth(), displayMode.getHeight());
 }
 
 
 
 // TODO: test default camera in here.
- 
+
 int rectSize = 30;
 
 void draw(){
-    
+
 
     // cColor = new CColor(color(49,51,50),
     // 	       color(51),
@@ -166,7 +166,7 @@ void keyPressed() {
 
 
 
-// Todo: custom file chooser. 
+// Todo: custom file chooser.
 void saveCameraAs(){
     selectOutput("Select a file to write to:", "fileSelectedSaveCamera");
 }
@@ -187,7 +187,7 @@ void saveCamera(String fileName){
 
 
 
-// Todo: custom file chooser. 
+// Todo: custom file chooser.
 void saveScreenAs(){
     selectOutput("Select a file to write to:", "fileSelectedSaveScreen");
 }
@@ -207,12 +207,7 @@ void saveScreen(String fileName){
     }catch(java.lang.NumberFormatException e){
 	println("Invalid Position");
     }
-    
+
     screenConfig.saveTo(this, fileName);
     println("Default screen saved.");
 }
-
-
-
-
-
