@@ -26,8 +26,8 @@ public class Kinect360OpenCV extends KinectDepthAnalysis {
     public IplImage validPointsIpl;
     public byte[] validPointsRaw;
 
-    public Kinect360OpenCV(PApplet parent, CameraOpenKinect camera) {
-       super(parent, camera);
+    public Kinect360OpenCV(PApplet parent, KinectDevice kinect) {
+       super(parent, kinect);
        init();
     }
 
@@ -70,7 +70,7 @@ public class Kinect360OpenCV extends KinectDepthAnalysis {
         public void execute(Vec3D p, PixelOffset px) {
             depthData.validPointsMask[px.offset] = true;
             int outputOffset = px.offset * 3;
-            int colorOffset = findColorOffset(p) * 3;
+            int colorOffset = kinectDevice.findColorOffset(p) * 3;
             validPointsRaw[outputOffset + 2] = colorRaw[colorOffset + 2];
             validPointsRaw[outputOffset + 1] = colorRaw[colorOffset + 1];
             validPointsRaw[outputOffset + 0] = colorRaw[colorOffset + 0];

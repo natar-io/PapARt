@@ -22,6 +22,7 @@ import fr.inria.papart.calibration.PlaneCalibration;
 import fr.inria.papart.calibration.ScreenConfiguration;
 import fr.inria.papart.depthcam.devices.Kinect360;
 import fr.inria.papart.depthcam.devices.KinectDepthAnalysis;
+import fr.inria.papart.depthcam.devices.KinectDevice;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.multitouch.TUIOTouchInput;
 import fr.inria.papart.multitouch.KinectTouchInput;
@@ -95,7 +96,6 @@ public class Papart {
 
     private TouchInput touchInput;
     private PVector frameSize = new PVector();
-    private CameraOpenKinect cameraOpenKinect;
     private boolean isWithoutCamera = false;
 
     public CameraConfiguration cameraConfiguration;
@@ -447,12 +447,8 @@ public class Papart {
     public void initKinectCamera(float quality) {
         assert (!cameraInitialized);
 
-        cameraTracking = CameraFactory.createCamera(Camera.Type.OPEN_KINECT, 0);
-        cameraTracking.setParent(applet);
-        cameraTracking.setCalibration(kinectRGBCalib);
-        ((CameraOpenKinect) cameraTracking).getDepthCamera().setCalibration(kinectIRCalib);
-        cameraTracking.start();
-        cameraOpenKinect = (CameraOpenKinect) cameraTracking;
+        loadDefaultCameraKinect();
+        cameraTracking = kinectDevice.getCameraRGB();
         loadTracking(kinectRGBCalib);
         cameraTracking.setThread();
 
@@ -551,14 +547,16 @@ public class Papart {
      */
     public void loadTouchInputKinectOnly() {
 
-        if (this.cameraOpenKinect == null) {
+        if (this.kinectDevice == null) {
             loadDefaultCameraKinect();
-            cameraTracking = cameraOpenKinect;
+            cameraTracking = kinectDevice.getCameraRGB();
+            kinectDevice.getCameraRGB().setThread();
+            kinectDevice.getCameraDepth().setThread();
             cameraInitialized = true;
             checkInitialization();
         }
         loadDefaultTouchKinect();
-        ((KinectTouchInput) this.touchInput).useRawDepth(cameraOpenKinect);
+        ((KinectTouchInput) this.touchInput).useRawDepth();
     }
 
     /**
@@ -567,35 +565,34 @@ public class Papart {
      *
      */
     public void loadTouchInput() {
-
         loadDefaultCameraKinect();
+        kinectDevice.getCameraRGB().setThread();
+        kinectDevice.getCameraDepth().setThread();
+
         loadDefaultTouchKinect();
     }
 
-    private void loadDefaultCameraKinect() {
-        cameraOpenKinect = (CameraOpenKinect) CameraFactory.createCamera(Camera.Type.OPEN_KINECT, 0);
-        cameraOpenKinect.setParent(applet);
-        cameraOpenKinect.setCalibration(kinectRGBCalib);
-        cameraOpenKinect.getDepthCamera().setCalibration(kinectIRCalib);
-        cameraOpenKinect.getDepthCamera().setDepthFormat(depthFormat);
-        cameraOpenKinect.start();
-        cameraOpenKinect.setThread();
+    public KinectDevice loadDefaultCameraKinect() {
+        kinectDevice = KinectDevice.createKinect360(applet);
+        return kinectDevice;
     }
+
+    public KinectDevice kinectDevice;
 
     private void loadDefaultTouchKinect() {
 
-        kinectDepthAnalysis = new KinectDepthAnalysis(this.applet, cameraOpenKinect);
-        kinectDepthAnalysis.setStereoCalibration(kinectStereoCalib);
+        kinectDevice.setStereoCalibration(kinectStereoCalib);
+        kinectDepthAnalysis = new KinectDepthAnalysis(this.applet, kinectDevice);
 
         PlaneAndProjectionCalibration calibration = new PlaneAndProjectionCalibration();
         calibration.loadFrom(this.applet, planeAndProjectionCalib);
 
         KinectTouchInput kinectTouchInput
                 = new KinectTouchInput(this.applet,
-                        cameraOpenKinect,
+                        kinectDevice,
                         kinectDepthAnalysis, calibration);
 
-        cameraOpenKinect.setTouch(kinectTouchInput);
+        kinectDevice.setTouch(kinectTouchInput);
 
         kinectTouchInput.setTouchDetectionCalibration(getDefaultTouchCalibration());
         kinectTouchInput.setTouchDetectionCalibration3D(getDefaultTouchCalibration3D());
@@ -670,8 +667,8 @@ public class Papart {
     }
 
     public void dispose() {
-        if (touchInitialized && cameraOpenKinect != null) {
-            cameraOpenKinect.close();
+        if (touchInitialized && kinectDevice != null) {
+            kinectDevice.close();
         }
         if (cameraInitialized && cameraTracking != null) {
             try {
@@ -739,8 +736,8 @@ public class Papart {
         return kinectDepthAnalysis;
     }
 
-    public CameraOpenKinect getKinectCamera() {
-        return this.cameraOpenKinect;
+    public Camera getKinectCamera() {
+        return this.kinectDevice.getCameraRGB();
     }
 
     public PApplet getApplet() {

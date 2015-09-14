@@ -30,8 +30,8 @@ public class KinectProcessing extends KinectDepthAnalysis {
 
     public PImage validPointsPImage;
 
-    public KinectProcessing(PApplet parent, CameraOpenKinect camera) {
-        super(parent, camera);
+    public KinectProcessing(PApplet parent, KinectDevice kinect) {
+        super(parent, kinect);
         init();
     }
 
@@ -140,7 +140,7 @@ public class KinectProcessing extends KinectDepthAnalysis {
     }
 
     private void setPixelColor(int offset) {
-        int colorOffset = this.findColorOffset(depthData.depthPoints[offset]) * 3;
+        int colorOffset = kinectDevice.findColorOffset(depthData.depthPoints[offset]) * 3;
         int c = (colorRaw[colorOffset + 2] & 0xFF) << 16
                 | (colorRaw[colorOffset + 1] & 0xFF) << 8
                 | (colorRaw[colorOffset + 0] & 0xFF);

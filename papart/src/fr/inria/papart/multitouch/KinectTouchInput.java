@@ -18,6 +18,7 @@ import fr.inria.papart.procam.Screen;
 import fr.inria.papart.depthcam.DepthAnalysis;
 import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
 import fr.inria.papart.depthcam.devices.KinectDepthAnalysis;
+import fr.inria.papart.depthcam.devices.KinectDevice;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.ProjectiveDeviceP;
@@ -50,7 +51,7 @@ public class KinectTouchInput extends TouchInput {
     private final Semaphore depthDataSem = new Semaphore(1);
 
     // List of TouchPoints, given to the user
-    private final CameraOpenKinect kinectCamera;
+    private final KinectDevice kinectDevice;
 
     private final PlaneAndProjectionCalibration calibration;
 
@@ -61,12 +62,12 @@ public class KinectTouchInput extends TouchInput {
     private final TouchDetectionSimple3D touchDetection3D;
 
     public KinectTouchInput(PApplet applet,
-            CameraOpenKinect kinectCamera,
+            KinectDevice kinectDevice,
             KinectDepthAnalysis depthAnalysis,
             PlaneAndProjectionCalibration calibration) {
         this.parent = applet;
         this.depthAnalysis = depthAnalysis;
-        this.kinectCamera = kinectCamera;
+        this.kinectDevice = kinectDevice;
         this.calibration = calibration;
         this.touchDetection2D = new TouchDetectionSimple2D(depthAnalysis.getDepthSize());
         this.touchDetection3D = new TouchDetectionSimple3D(depthAnalysis.getDepthSize());
@@ -83,8 +84,8 @@ public class KinectTouchInput extends TouchInput {
     @Override
     public void update() {
         try {
-            IplImage depthImage = kinectCamera.getDepthCamera().getIplImage();
-            IplImage colImage = kinectCamera.getIplImage();
+            IplImage depthImage = kinectDevice.getCameraIR().getIplImage();
+            IplImage colImage = kinectDevice.getCameraRGB().getIplImage();
             depthDataSem.acquire();
 
             if (colImage == null || depthImage == null) {
@@ -162,12 +163,12 @@ public class KinectTouchInput extends TouchInput {
     }
 
     // TODO: Raw Depth is for Kinect Only, find a cleaner solution.
-    private ProjectiveDeviceP pdp;
+//    private ProjectiveDeviceP pdp;
     private boolean useRawDepth = false;
 
-    public void useRawDepth(Camera camera) {
+    public void useRawDepth() {
         this.useRawDepth = true;
-        this.pdp = camera.getProjectiveDevice();
+//        this.pdp = camera.getProjectiveDevice();
     }
 
     private boolean projectPositionAndSpeed(Screen screen,
@@ -361,7 +362,7 @@ public class KinectTouchInput extends TouchInput {
         ByteBuffer cBuff = colorImage.getByteBuffer();
 
         for (TouchPoint tp : touchPointList) {
-            int offset = 3 * depthAnalysis.findColorOffset(tp.getPositionKinect());
+            int offset = 3 * depthAnalysis.kinectDevice().findColorOffset(tp.getPositionKinect());
 
             tp.setColor((255 & 0xFF) << 24
                     | (cBuff.get(offset + 2) & 0xFF) << 16
@@ -409,7 +410,7 @@ public class KinectTouchInput extends TouchInput {
         return calibration;
     }
 
-    public boolean useRawDepth() {
+    public boolean isUseRawDepth() {
         return useRawDepth;
     }
 

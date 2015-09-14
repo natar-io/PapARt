@@ -97,7 +97,7 @@ public class PaperTouchScreen extends PaperScreen {
         touchList.sortAlongYAxis();
 
         if (touchInput instanceof KinectTouchInput) {
-            if (((KinectTouchInput) (touchInput)).useRawDepth()) {
+            if (((KinectTouchInput) (touchInput)).isUseRawDepth()) {
                 touchList.invertY(drawingSize);
             } else {
 

@@ -44,10 +44,6 @@ public class KinectDepthAnalysis extends DepthAnalysis {
     // Configuration 
     private float closeThreshold = 300f, farThreshold = 12000f;
     protected ProjectiveDeviceP calibIR, calibRGB;
-    private final PMatrix3D KinectRGBIRCalibration = new PMatrix3D(1, 0, 0, 15,
-            0, 1, 0, 0,
-            0, 0, 1, 0,
-            0, 0, 0, 1);
 
     // private variables 
     // Raw data from the Kinect Sensor
@@ -58,6 +54,7 @@ public class KinectDepthAnalysis extends DepthAnalysis {
     protected static final float INVALID_DEPTH = -1;
 
     protected KinectDevice kinectDevice;
+    protected DepthComputation depthComputationMethod;
 
     public KinectDevice kinectDevice() {
         return this.kinectDevice;
@@ -67,44 +64,26 @@ public class KinectDepthAnalysis extends DepthAnalysis {
     public int getDepthSize() {
         return kinectDevice().depthSize();
     }
+
     @Override
     public int getDepthWidth() {
         return kinectDevice().depthWidth();
     }
+
     @Override
     public int getDepthHeight() {
         return kinectDevice().depthHeight();
     }
 
-    // TODO: only one constructor -- or a better factorization. 
-    public KinectDepthAnalysis(PApplet parent, CameraOpenKinect camera) {
-
-        // todo: better than this...
-        kinectDevice = new Kinect360();
-
-        DepthAnalysis.papplet = parent;
-
-        calibRGB = camera.getProjectiveDevice();
-        calibIR = camera.getDepthCamera().getProjectiveDevice();
-        initMemory();
-
-        // initThreadPool();
-    }
-
-    public KinectDepthAnalysis(PApplet parent, KinectOne kinect) {
+    public KinectDepthAnalysis(PApplet parent, KinectDevice kinect) {
         kinectDevice = kinect;
-
         DepthAnalysis.papplet = parent;
-
-        calibRGB = kinect.cameraRGB.getProjectiveDevice();
-        calibIR = kinect.cameraIR.getProjectiveDevice();
-        useKinectOne = true;
+        calibRGB = kinect.getCameraRGB().getProjectiveDevice();
+        calibIR = kinect.getCameraDepth().getProjectiveDevice();
         initMemory();
 
         // initThreadPool();
     }
-
-    private boolean useKinectOne = false;
 
     // Thread version... No bonus whatsoever for now.
     private int nbThreads = 16;
@@ -115,20 +94,24 @@ public class KinectDepthAnalysis extends DepthAnalysis {
     }
 
     private void initMemory() {
-        
+
         System.out.println("Init color memory " + kinectDevice.colorSize());
         colorRaw = new byte[kinectDevice.colorSize() * 3];
-//        if (useKinectOne) {
-        depthRaw = new byte[kinectDevice.depthSize() * 3];
-//        } else {
-//            depthRaw = new byte[size * 2];
-//        }
+        depthRaw = new byte[kinectDevice.rawDepthSize()];
 
         depthData = new KinectDepthData(this);
         depthData.projectiveDevice = this.calibIR;
-        
+
         System.out.println("Width " + kinectDevice.depthWidth());
-        
+
+        if (kinectDevice instanceof Kinect360) {
+            depthComputationMethod = new Kinect360Depth();
+        } else {
+            if (kinectDevice instanceof KinectOne) {
+                depthComputationMethod = new KinectOneDepth();
+            }
+        }
+
         PixelOffset.initStaticMode(kinectDevice.depthWidth(), kinectDevice.depthHeight());
     }
 
@@ -291,60 +274,15 @@ public class KinectDepthAnalysis extends DepthAnalysis {
         colBuff.get(colorRaw);
     }
 
-    public void setStereoCalibration(String fileName) {
-        HomographyCalibration calib = new HomographyCalibration();
-        calib.loadFrom(papplet, fileName);
-        setStereoCalibration(calib.getHomography());
-    }
-
-    public void setStereoCalibration(PMatrix3D matrix) {
-        KinectRGBIRCalibration.set(matrix);
-    }
-
-    public PMatrix3D getStereoCalibration() {
-        return KinectRGBIRCalibration;
-    }
-
-    public int findColorOffset(Vec3D v) {
-        return findColorOffset(v.x, v.y, v.z);
-    }
-
-    public int findColorOffset(PVector v) {
-        return findColorOffset(v.x, v.y, v.z);
-    }
-
-    private PVector vt = new PVector();
-    private PVector vt2 = new PVector();
-
-    public int findColorOffset(float x, float y, float z) {
-        vt.set(x, y, z);
-        vt2.set(0, 0, 0);
-        //  Ideally use a calibration... 
-//        kinectCalibRGB.getExtrinsics().mult(vt, vt2);       
-        KinectRGBIRCalibration.mult(vt, vt2);
-        return calibRGB.worldToPixel(vt2.x, vt2.y, vt2.z);
-    }
-
     /**
      * @param offset
      * @return the depth (float).
      */
     protected float getDepth(int offset) {
 
-        int r = (int) (depthRaw[offset * 3] & 0xFF);
-        int g = (int) (depthRaw[offset * 3 + 1] & 0xFF);
-        int b = (int) (depthRaw[offset * 3 + 2] & 0xFF);
-
-//        System.out.println("r " + r + " g " + g +" b " + b );
-        float d = (depthRaw[offset * 3 +1 ] & 0xFF) << 8
-                | (depthRaw[offset * 3 ] & 0xFF);
-
-//        d = d / 100f;
-//        System.out.println(d + " ");
-        return d;
+        return depthComputationMethod.findDepth(offset);
     }
 
-    // TODO: TO activate 
     public interface DepthComputation {
 
         public float findDepth(int offset);
@@ -359,16 +297,14 @@ public class KinectDepthAnalysis extends DepthAnalysis {
 
             return d;
         }
-
     }
 
     class KinectOneDepth implements DepthComputation {
 
         @Override
         public float findDepth(int offset) {
-            float d = (depthRaw[offset * 2] & 0xFF) << 8
-                    | (depthRaw[offset * 2 + 1] & 0xFF);
-
+            float d = (depthRaw[offset * 3 + 1] & 0xFF) << 8
+                    | (depthRaw[offset * 3] & 0xFF);
             return d;
         }
     }
@@ -488,7 +424,7 @@ public class KinectDepthAnalysis extends DepthAnalysis {
     }
 
     protected int getPixelColor(int offset) {
-        int colorOffset = this.findColorOffset(depthData.depthPoints[offset]) * 3;
+        int colorOffset = kinectDevice.findColorOffset(depthData.depthPoints[offset]) * 3;
         int c = (colorRaw[colorOffset + 2] & 0xFF) << 16
                 | (colorRaw[colorOffset + 1] & 0xFF) << 8
                 | (colorRaw[colorOffset + 0] & 0xFF);

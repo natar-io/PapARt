@@ -7,9 +7,12 @@
  */
 package fr.inria.papart.depthcam.devices;
 
+import fr.inria.papart.multitouch.KinectTouchInput;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.CameraFactory;
+import fr.inria.papart.procam.camera.CameraOpenCVDepth;
+import fr.inria.papart.procam.camera.CameraOpenKinectDepth;
 import processing.core.PApplet;
 
 /**
@@ -19,7 +22,6 @@ import processing.core.PApplet;
 public final class KinectOne extends KinectDevice {
 
     protected Camera cameraRGB, cameraIR, cameraDepth;
-    protected PApplet parent;
 
     public KinectOne(PApplet parent) {
         // IR and Depth image size 
@@ -36,6 +38,8 @@ public final class KinectOne extends KinectDevice {
         initRGB();
         initIR();
         initDepth();
+        
+        setStereoCalibration(Papart.kinectStereoCalib);
     }
 
     public void close() {
@@ -65,9 +69,12 @@ public final class KinectOne extends KinectDevice {
         cameraDepth.setParent(parent);
 //        cameraDepth.setSize(WIDTH, HEIGHT);
         cameraDepth.setCalibration(Papart.calibrationFolder + "camera-kinect2-IR.yaml");
+        ((CameraOpenCVDepth)cameraDepth).setColorCamera(cameraRGB);
+        
         cameraDepth.start();
     }
 
+    @Override
     public Camera getCameraRGB() {
         return cameraRGB;
     }
@@ -75,9 +82,18 @@ public final class KinectOne extends KinectDevice {
     public Camera getCameraIR() {
         return cameraIR;
     }
-
     public Camera getCameraDepth() {
         return cameraDepth;
+    }
+
+    @Override
+    public int rawDepthSize() {
+        return SIZE * 3;
+    }
+
+    @Override
+    public void setTouch(KinectTouchInput kinectTouchInput) {
+        ((CameraOpenCVDepth) cameraDepth).setTouchInput(kinectTouchInput);
     }
 
 }

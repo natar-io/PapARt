@@ -7,6 +7,7 @@
  */
 package fr.inria.papart.procam.camera;
 
+import fr.inria.papart.multitouch.KinectTouchInput;
 import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import org.bytedeco.javacv.FrameGrabber;
@@ -22,7 +23,9 @@ public class CameraOpenCVDepth extends Camera {
 
     private  OpenCV16BitFrameGrabber grabber;
     private final OpenCVFrameConverter.ToIplImage converter;
-
+    private KinectTouchInput touchInput;
+    public Camera colorCamera;
+    
     protected CameraOpenCVDepth(int cameraNo) {
         this.systemNumber = cameraNo;
         this.setPixelFormat(PixelFormat.RGB);
@@ -39,7 +42,7 @@ public class CameraOpenCVDepth extends Camera {
  
         try {
             grabberCV.start();
-            
+
             System.out.println("Format : " + grabberCV.getFormat());
             
             this.grabber = grabberCV;
@@ -66,6 +69,19 @@ public class CameraOpenCVDepth extends Camera {
             if (img != null) {
                 this.updateCurrentImage(img);
             }
+            
+            this.currentImage = img;
+            if (touchInput != null) {
+                touchInput.lock();
+                touchInput.update();
+                touchInput.getTouch2DColors(colorCamera.getIplImage());
+                touchInput.unlock();
+            } else {
+                if (touchInput != null) {
+                    System.err.println("Error, the TouchInput is set, but no DepthImg is grabbed.");
+                }
+            }
+            
         } catch (Exception e) {
             System.err.println("Camera: OpenCV Grab() Error ! " + e);
         }
@@ -95,6 +111,14 @@ public class CameraOpenCVDepth extends Camera {
                 System.out.println("Impossible to close " + e);
             }
         }
+    }
+
+    public void setTouchInput(KinectTouchInput kinectTouchInput) {
+        this.touchInput = kinectTouchInput;
+    }
+
+    public void setColorCamera(Camera camera) {
+        this.colorCamera = camera;
     }
 
 }
