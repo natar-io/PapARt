@@ -96,15 +96,6 @@
             <version>1.0</version>
         </dependency>
         
-        
-        <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>libfreenect2</artifactId>
-            <version>0.1.0-1.0.2-SNAPSHOT</version>
-            <classifier>${platform}</classifier>
-            <scope>runtime</scope>
-        </dependency>
-        
         <dependency>
             <groupId>org.bytedeco.javacpp-presets</groupId>
             <artifactId>opencv</artifactId>
