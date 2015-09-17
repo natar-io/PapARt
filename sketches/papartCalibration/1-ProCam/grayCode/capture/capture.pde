@@ -30,7 +30,7 @@ PImage projectorView = null;
 Camera cameraTracking;
 ProjectorDisplay projector;
 
-int cameraX; 
+int cameraX;
 int cameraY;
 
 int decodeType = 1;
@@ -38,8 +38,15 @@ int decodeType = 1;
 
 PGraphics decodedImage;
 
+void settings(){
+    fullScreen(P3D);
+}
+
+PApplet mainApplet;
 
 public void setup(){
+
+    mainApplet = this;
 
     Papart papart = Papart.projection(this);
     initGui();
@@ -51,21 +58,21 @@ public void setup(){
     // initGui();
     // cameraX = 1920;
     // cameraY = 1080;
-    // cameraTracking  = CameraFactory.createCamera(Camera.Type.FLY_CAPTURE, "0");   
+    // cameraTracking  = CameraFactory.createCamera(Camera.Type.FLY_CAPTURE, "0");
     // cameraTracking.setParent(this);
     // cameraTracking.setSize(cameraX, cameraY);
     // ((CameraFlyCapture) cameraTracking).setBayerDecode(true);
     // cameraTracking.start();
     // cameraTracking.setThread();
 
-    
+
     decodedImage = createGraphics(cameraX, cameraY);
 
     projector = (ProjectorDisplay) papart.getDisplay();
     projector.manualMode();
 
     imageOut = createImage(cameraX, cameraY, RGB);
- 
+
     frameRate(100);
 }
 
@@ -97,11 +104,11 @@ void draw(){
 
     // decoded !
     drawResult();
-}  
+}
 
 void drawWait(){
     if(Mode.is("wait")){
-	image(cameraImage, 0, 0, cameraX, cameraY);
+	image(cameraImage, 0, 0, width, height);
     }
 }
 
@@ -109,19 +116,19 @@ void drawWait(){
 void drawCode(){
     if(Mode.is("code")){
 	updateCodes();
-	
+
 	// Display the gray code to capture
 	// Other possibility.
 	// 	image(grayCodes[code], 0, 0, frameSizeX, frameSizeY);
 
 	grayCode.display((PGraphicsOpenGL) this.g, code);
 	tryCaptureImage();
-	
+
 	if(allCodesCaptured()){
 	    Mode.set("result");
 	    decodeBang.show();
 	}
-	
+
     }
 }
 
@@ -130,16 +137,16 @@ PVector imVisu = new PVector(400, 300);
 
 void drawResult(){
     if(Mode.is("result")){
-	
+
 	if(!grayCode.isDecoded())
 	    decode();
 
 	updateCodes();
 
 	image(decodedImage, 0, 0, cameraX / 2f, cameraY /2f);
-	
+
 	// Draw each captured image bone by one.
-	image(grayCodesCaptures[code], cameraX, 0, 
+	image(grayCodesCaptures[code], cameraX, 0,
 	      (int) imVisu.x, (int) imVisu.y);
 
 
@@ -148,9 +155,9 @@ void drawResult(){
 
 	image(decodedIm, cameraX /2f, (int) imVisu.y,
 	      (int) imVisu.x, (int) imVisu.y);
-	
-	image(projectorView, 
-	      0, cameraY/2, 
+
+	image(projectorView,
+	      0, cameraY/2,
 	      width / 3,
 	      height / 3);
 
@@ -180,14 +187,14 @@ void decode(){
 void tryCaptureImage(){
     if(captureOK()){
 
-    	if(grayCodesCaptures[codeProjected] == null){		
+    	if(grayCodesCaptures[codeProjected] == null){
 
 	    setNextCaptureTime();
-    	
+
 	    // Create an image
 	    PImage im = cameraTracking.getPImageCopy();
 	    addCapturedImage(im);
-	    
+
 	    if(codeProjected == nbCodes){
 		grayCode.setRefImage(im);
 	    }
@@ -225,7 +232,7 @@ void startCapture(){
 boolean test = false;
 
 void keyPressed() {
-  
+
   if(key == 't')
     test = !test;
 
@@ -244,8 +251,8 @@ void checkStart(){
 void drawDecoded(){
     int[] decodedX = grayCode.decodedX();
     int[] decodedY = grayCode.decodedY();
-    boolean[] mask = grayCode.mask(); 
-    
+    boolean[] mask = grayCode.mask();
+
     decodedImage.beginDraw();
     decodedImage.background(0);
     decodedImage.colorMode(RGB, width, height, 255);
@@ -260,7 +267,7 @@ void drawDecoded(){
 	    }
 	    decodedImage.stroke(decodedX[offset], decodedY[offset], 100);
 	    decodedImage.point(x,y);
-	}
+        }
     }
     decodedImage.endDraw();
 }

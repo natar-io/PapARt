@@ -16,7 +16,7 @@ void settings(){
 
 void setup(){
     Papart.projection2D(this);
-    
+
     Papart papart = new Papart(this);
 
     // arguments are 2D and 3D precision.
@@ -51,13 +51,13 @@ void draw(){
 		pos.y * height, 20, 20);
     }
 
-	
+
     fill(255, 0, 0);
     ArrayList<TouchPoint> touchs3D = new ArrayList<TouchPoint>(touchInput.getTouchPoints3D());
     for(TouchPoint tp : touchs3D){
 
 	ArrayList<DepthDataElementKinect> depthDataElements = tp.getDepthDataElements();
-	
+
 	for(DepthDataElementKinect dde : depthDataElements){
 	    Vec3D v = dde.projectedPoint;
 	    noStroke();
@@ -79,5 +79,3 @@ void setColor(int rgb, float intens){
     int b = rgb & 0xFF;          // Faster way of getting blue(argb)
     fill(r, g, b, intens);
 }
-
-

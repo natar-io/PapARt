@@ -44,7 +44,7 @@ public abstract class Camera extends Node implements PConstants {
 
     public enum Type {
 
-        OPENCV, OPENCV_DEPTH, PROCESSING, OPEN_KINECT, FLY_CAPTURE
+        OPENCV, OPENCV_DEPTH, PROCESSING, OPEN_KINECT, FLY_CAPTURE, KINECT2_RGB, KINECT2_IR
     }
 
     public enum PixelFormat {

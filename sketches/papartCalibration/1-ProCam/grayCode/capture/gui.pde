@@ -1,4 +1,3 @@
-
 import fr.inria.papart.calibration.*;
 
 import fr.inria.skatolo.*;
@@ -8,12 +7,12 @@ import fr.inria.skatolo.gui.controllers.*;
 ControlFrame cf;
 
 // Modes
-//   wait , start , code , result      
+//   wait , start , code , result
 
 Bang saveScanBang, decodeBang;
 
 void initGui(){
-    
+
     Mode.init(this);
     Mode.add("wait");
     Mode.add("start");
@@ -21,10 +20,7 @@ void initGui(){
     Mode.add("result");
 
     Mode.set("wait");
-
-    cf = addControlFrame("controls", 300, 500);
-    
-
+    cf = new ControlFrame();
 }
 
 

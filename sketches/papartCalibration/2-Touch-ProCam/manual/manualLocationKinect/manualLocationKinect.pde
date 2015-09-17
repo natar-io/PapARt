@@ -26,17 +26,19 @@ public void setup() {
 
     papart = new Papart(this);
 
+
     papart.initKinectCamera(1);
+
 
   cameraDisplay = papart.getARDisplay();
   cameraDisplay.manualMode();
 
   camera = papart.getCameraTracking();
-  
-  object = new PVector[4];
-  image = new PVector[4]; 
 
-  // 10 cm. 
+  object = new PVector[4];
+  image = new PVector[4];
+
+  // 10 cm.
   object[0] = new PVector(0, 0, 0);
   object[1] = new PVector(objectWidth, 0, 0);
   object[2] = new PVector(objectWidth, objectHeight, 0);
@@ -61,12 +63,12 @@ void draw() {
 
     background(0);
     image(img, 0, 0, width, height);
-    
+
   ProjectiveDeviceP pdp = cameraDisplay.getProjectiveDeviceP();
   mat = pdp.estimateOrientation(object, image);
   //    mat.print();
 
-  PGraphicsOpenGL g1 = cameraDisplay.beginDraw();  
+  PGraphicsOpenGL g1 = cameraDisplay.beginDraw();
 
   g1.clear();
 
@@ -81,30 +83,30 @@ void draw() {
 	  objectHeight + rectAroundWidth*2);
 
 
-  
+
   g1.translate(objectWidth + 100, objectHeight + 100, 0);
-  // 5cm rect 
+  // 5cm rect
   g1.fill(0, 191, 100, 100);
   g1.rect(150, 80, 100, 100);
 
   cameraDisplay.endDraw();
 
-  DrawUtils.drawImage((PGraphicsOpenGL) g, 
-		      cameraDisplay.render(), 
+  DrawUtils.drawImage((PGraphicsOpenGL) g,
+		      cameraDisplay.render(),
 		      0, 0, width, height);
 
 
   fill(255, 100);
-  quad(image[0].x, image[0].y, 
-       image[1].x, image[1].y, 
-       image[2].x, image[2].y, 
+  quad(image[0].x, image[0].y,
+       image[1].x, image[1].y,
+       image[2].x, image[2].y,
        image[3].x, image[3].y);
 
 
 
-  
-  
-  if (test) { 
+
+
+  if (test) {
     mat.print();
     test = false;
   }
@@ -141,10 +143,8 @@ void keyPressed() {
 
   if (key == 's') {
 
-      papart.saveCalibration("kinectPaperForTouch.xml", mat);
+      papart.saveCalibration("kinectPaper.xml", mat);
       planeSet = true;
       println("Saved");
   }
 }
-
-

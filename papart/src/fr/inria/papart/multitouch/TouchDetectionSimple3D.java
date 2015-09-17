@@ -61,7 +61,9 @@ public class TouchDetectionSimple3D extends TouchDetection {
 
     @Override
     protected TouchPoint createTouchPoint(ConnectedComponent connectedComponent) {
-        ClosestComparatorY closestComparator = new ClosestComparatorY(depthData.projectedPoints);
+        
+//        ClosestComparatorY closestComparator = new ClosestComparatorY(depthData.projectedPoints);
+        ClosestComparatorHeight closestComparator = new ClosestComparatorHeight(depthData.projectedPoints, depthData.planeAndProjectionCalibration.getPlaneCalibration());
 
         // get a subset of the points.
         Collections.sort(connectedComponent, closestComparator);

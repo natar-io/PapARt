@@ -23,6 +23,7 @@ import fr.inria.papart.calibration.ScreenConfiguration;
 import fr.inria.papart.depthcam.devices.Kinect360;
 import fr.inria.papart.depthcam.devices.KinectDepthAnalysis;
 import fr.inria.papart.depthcam.devices.KinectDevice;
+import fr.inria.papart.depthcam.devices.KinectOne;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.multitouch.TUIOTouchInput;
 import fr.inria.papart.multitouch.KinectTouchInput;
@@ -555,6 +556,7 @@ public class Papart {
             cameraInitialized = true;
             checkInitialization();
         }
+
         loadDefaultTouchKinect();
         ((KinectTouchInput) this.touchInput).useRawDepth();
     }
@@ -566,15 +568,44 @@ public class Papart {
      */
     public void loadTouchInput() {
         loadDefaultCameraKinect();
-        kinectDevice.getCameraRGB().setThread();
         kinectDevice.getCameraDepth().setThread();
 
         loadDefaultTouchKinect();
     }
 
+    private boolean useKinectOne = true;
+
+    public void useKinectOne(boolean kinectOne) {
+        this.useKinectOne = kinectOne;
+    }
+
+    /**
+     * WORK IN PROGRESS
+     *
+     * @return
+     */
     public KinectDevice loadDefaultCameraKinect() {
-        kinectDevice = KinectDevice.createKinect360(applet);
+
+        if (cameraConfiguration.getCameraType() == Camera.Type.KINECT2_RGB) {
+            kinectDevice = new KinectOne(applet, cameraTracking);
+
+            if (cameraTracking != null) {
+                kinectDevice = new KinectOne(applet, cameraTracking);
+            } else {
+                kinectDevice = new KinectOne(applet);
+                cameraTracking = kinectDevice.getCameraRGB();
+            }
+
+        } else {
+            kinectDevice = KinectDevice.createKinect360(applet);
+            kinectDevice.getCameraRGB().setThread();
+        }
         return kinectDevice;
+    }
+
+    private void loadKinectOne() {
+        kinectDevice = new KinectOne(applet);
+        cameraTracking = kinectDevice.getCameraRGB();
     }
 
     public KinectDevice kinectDevice;

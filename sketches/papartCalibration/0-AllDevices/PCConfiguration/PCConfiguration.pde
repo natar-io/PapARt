@@ -116,6 +116,13 @@ void cameraTypeChooser(int value){
 
     if(value == 3)
 	cameraConfig.setCameraType(Camera.Type.FLY_CAPTURE);
+
+    if(value == 4)
+	cameraConfig.setCameraType(Camera.Type.KINECT2_RGB);
+
+    if(value == 5)
+	cameraConfig.setCameraType(Camera.Type.KINECT2_IR);
+
 }
 
 void screenChooserRadio(int value){

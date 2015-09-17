@@ -14,12 +14,12 @@ float renderQuality = 1.5f;
 Papart papart;
 
 void settings(){
-    
+
     if(useProjector){
 	fullScreen(P3D);
     }else{
-    	size((int) (Kinect.WIDTH * renderQuality),
-	     (int) (Kinect.HEIGHT * renderQuality),
+    	size((int) (640 * renderQuality),
+	     (int) (480 * renderQuality),
 	     P3D);
     }
 }
@@ -53,6 +53,3 @@ void keyPressed() {
     if(key == 't')
 	test = !test;
 }
-
-
-

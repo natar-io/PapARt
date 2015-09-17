@@ -14,7 +14,7 @@ PeasyCam cam;
 KinectPointCloud pointCloud;
 KinectProcessing kinectAnalysis;
 
-int skip = 2;
+int skip = 1;
 
 void settings(){
   size(800, 600, P3D);

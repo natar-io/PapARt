@@ -70,10 +70,13 @@ public class CameraOpenCVDepth extends Camera {
                 this.updateCurrentImage(img);
             }
             
+//            System.out.println("Grabbing Depth Kinect2...");
             this.currentImage = img;
             if (touchInput != null) {
                 touchInput.lock();
+                      System.out.println("Touch input update...");
                 touchInput.update();
+            
                 touchInput.getTouch2DColors(colorCamera.getIplImage());
                 touchInput.unlock();
             } else {

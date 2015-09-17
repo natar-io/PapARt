@@ -21,12 +21,12 @@ import toxi.geom.Vec3D;
  *
  * @author jiii
  */
-public class Kinect360OpenCV extends KinectDepthAnalysis {
+public class KinectOpenCV extends KinectDepthAnalysis {
 
     public IplImage validPointsIpl;
     public byte[] validPointsRaw;
 
-    public Kinect360OpenCV(PApplet parent, KinectDevice kinect) {
+    public KinectOpenCV(PApplet parent, KinectDevice kinect) {
        super(parent, kinect);
        init();
     }

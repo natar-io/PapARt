@@ -119,6 +119,8 @@ void initCameraUI(){
 	.addItem("Processing", 1)
 	.addItem("OpenKinect", 2)
 	.addItem("FlyCapture", 3)
+        .addItem("Kinect2RGB", 4)
+        .addItem("Kinect2IR", 5)
 	.setColorLabel(color(255))
 	.activate(cameraConfig.getCameraType().ordinal())
 	;

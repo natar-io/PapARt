@@ -27,8 +27,9 @@ PMatrix3D stereoCalib;
 Skatolo skatolo;
 PeasyCam cam;
 
-int skip = 2;
-float translation = 15;
+int skip = 1;
+float translationX = 15;
+float translationY = 15;
 
 void settings(){
   size(800, 600, OPENGL);
@@ -49,7 +50,8 @@ void setup(){
 
     try{
         stereoCalib = HomographyCalibration.getMatFrom(this, Papart.kinectStereoCalib);
-        translation = stereoCalib.m03;
+        translationX = stereoCalib.m03;
+        translationY = stereoCalib.m13;
     } catch(Exception e){
         println("File invalid or not found, load default values. " + e);
         stereoCalib = new PMatrix3D(1, 0, 0, 15,
@@ -66,12 +68,19 @@ void setup(){
 
     // GUI
     skatolo = new Skatolo(this);
-    skatolo.addSlider("translation")
+    skatolo.addSlider("translationX")
         .setPosition(30, 50)
         .setValue(stereoCalib.m03)
-        .setRange(-15, 30)
-        .setSize(200, 12);
+        .setRange(-80, 50)
+        .setSize(400, 12);
     // Manual draw.
+
+    skatolo.addSlider("translationY")
+        .setPosition(30, 70)
+        .setValue(stereoCalib.m13)
+        .setRange(-50, 50)
+        .setSize(400, 12);
+
     skatolo.setAutoDraw(false);
     textFont(createFont("",15));
 }
@@ -94,7 +103,8 @@ void draw(){
     IplImage colourImg = cameraRGB.getIplImage();
     IplImage depthImg = cameraDepth.getIplImage();
 
-    stereoCalib.m03 = translation;
+    stereoCalib.m03 = translationX;
+    stereoCalib.m13 = translationY;
     kinectDevice.setStereoCalibration(stereoCalib);
     kinectAnalysis.update(depthImg, colourImg, skip);
 

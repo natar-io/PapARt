@@ -4,7 +4,7 @@ import fr.inria.papart.procam.display.*;
 import fr.inria.papart.drawingapp.*;
 import fr.inria.papart.scanner.*;
 import fr.inria.papart.calibration.*;
-
+import fr.inria.guimodes.*;
 
 import static org.bytedeco.javacpp.opencv_core.*;
 import org.bytedeco.javacpp.*;
@@ -40,11 +40,11 @@ PVector paperSize = new PVector(297, 210);
 
 ExtrinsicCalibrator calibrator;
 
-public void setup(){
+void settings(){
+    size(800, 600, P3D);
+}
 
-    // TODO: Kinect ?
-    size(800, 600, OPENGL);
-    // Camera
+public void setup(){
 
     papart = new Papart(this);
 
@@ -55,12 +55,12 @@ public void setup(){
 
     cameraTracking.convertARParams(this, papart.proCamCalib, papart.camCalibARtoolkit);
     cameraTracking.initMarkerDetection(papart.camCalibARtoolkit);
-    
-    markerBoard = new MarkerBoard(sketchPath + "/data/big.cfg", paperSize.x, paperSize.y); // the size does not matter here. 
+
+    markerBoard = new MarkerBoard(sketchPath + "/data/big.cfg", paperSize.x, paperSize.y); // the size does not matter here.
     cameraTracking.trackMarkerBoard(markerBoard);
 
     // TODO: make this work without starting the camera...
-    
+
     cameraTracking.start();
     // grab a few images...
     for(int i = 0; i < 10; i++)
@@ -71,20 +71,20 @@ public void setup(){
 
     cameraImg = cameraTracking.getPImage();
     cameraImgIpl = cameraTracking.getIplImage();
-    
+
     markerBoard.updatePosition(cameraTracking, cameraImgIpl);
     cameraPaperTransform = markerBoard.getTransfoMat(cameraTracking);
 
     println("Camera Paper...");
     cameraPaperTransform.print();
-    
+
     projector = new ProjectorDisplay(this, papart.proCamCalib);
     decodedCode = DecodedCode.loadFrom(this, "../capture/scan0");
-    
+
     calibrator = new ExtrinsicCalibrator(cameraPaperTransform, decodedCode, projector, cameraTracking);
 
     PMatrix3D output = calibrator.compute();
-    papart.saveCalibration("camProjExtrinsics.xml", output);    
+    papart.saveCalibration("camProjExtrinsics.xml", output);
 
     image(cameraImg, 0, 0, width, height);
 
@@ -93,5 +93,4 @@ public void setup(){
 
 void draw(){
 
-}  
-
+}

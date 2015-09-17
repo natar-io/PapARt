@@ -31,6 +31,12 @@ public class CameraFactory {
             case OPENCV:
                 camera = new CameraOpenCV(cameraNo);
                 break;
+            case KINECT2_RGB:  // Hack for now with V4L loopback. 
+                camera = new CameraOpenCV(0);
+                break;
+            case KINECT2_IR:  // Hack for now with V4L loopback. 
+                camera = new CameraOpenCV(2);
+                break;
             case OPENCV_DEPTH:
                 camera = new CameraOpenCVDepth(cameraNo);
                 break;

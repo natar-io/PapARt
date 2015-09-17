@@ -38,9 +38,6 @@ import toxi.geom.Vec3D;
  */
 public class KinectDepthAnalysis extends DepthAnalysis {
 
-    // Protected values, important data. 
-    protected float[] depthLookUp = null;
-
     // Configuration 
     private float closeThreshold = 300f, farThreshold = 12000f;
     protected ProjectiveDeviceP calibIR, calibRGB;
@@ -303,9 +300,10 @@ public class KinectDepthAnalysis extends DepthAnalysis {
 
         @Override
         public float findDepth(int offset) {
-            float d = (depthRaw[offset * 3 + 1] & 0xFF) << 8
-                    | (depthRaw[offset * 3] & 0xFF);
-            return d;
+            float d = (depthRaw[offset * 3 + 1] & 0xFF) * 256 + 
+                     (depthRaw[offset * 3] & 0xFF);
+            
+            return d / 10f; // / 65535f * 10000f;
         }
     }
 
