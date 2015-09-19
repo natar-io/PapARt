@@ -8,27 +8,31 @@ import toxi.geom.*;
 
 import processing.video.*;
 
-boolean useProjector = false;
+boolean useProjector = true;
 Papart papart;
 
+
 public void setup() {
-	
+
     if(useProjector)
      	papart = Papart.projection(this);
-    else 
+    else
 	papart = Papart.seeThrough(this);
 
     papart.loadSketches();
     papart.startTracking();
 }
 
+
 void settings(){
-    size(300, 300, P3D);
+    if(useProjector){
+        fullScreen(P3D);
+    }
+    else {
+        size(300, 300, P3D);
+    }
 }
 
 void draw() {
-    
+
 }
-
-
-

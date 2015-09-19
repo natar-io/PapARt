@@ -65,10 +65,10 @@ public abstract class Camera extends Node implements PConstants {
     private boolean isClosing = false;
     protected boolean isConnected = false;
 
-    private boolean undistort = false;
+    protected boolean undistort = false;
 
     // Properties files
-    private String calibrationFile = null;
+    protected String calibrationFile = null;
 
     // Properties (instanciated)
     protected ProjectiveDeviceP pdp = null;

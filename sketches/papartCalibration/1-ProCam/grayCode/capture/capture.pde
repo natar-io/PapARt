@@ -214,7 +214,7 @@ void startCapture(){
     Mode.set("code");
 
     grayCode = new GrayCode(this, width, height, downScale);
-    grayCode.setBlackWhiteColors(0, 255);
+    grayCode.setBlackWhiteColors(0, 180);
 
     nbCodes = grayCode.nbCodes();
     grayCodesCaptures = new PImage[nbCodes];

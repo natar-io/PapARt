@@ -7,6 +7,7 @@
  */
 package fr.inria.papart.procam;
 
+import com.jogamp.newt.opengl.GLWindow;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.calibration.CameraConfiguration;
 import fr.inria.papart.calibration.HomographyCalibration;
@@ -30,15 +31,18 @@ import fr.inria.papart.multitouch.KinectTouchInput;
 import fr.inria.papart.panel.Panel;
 import fr.inria.papart.procam.camera.CameraFactory;
 import fr.inria.papart.procam.camera.CameraOpenKinect;
+import java.awt.Robot;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.util.Set;
 import org.reflections.Reflections;
+import processing.awt.PSurfaceAWT;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PFont;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
+import processing.opengl.PSurfaceJOGL;
 import toxi.geom.Plane;
 
 /**
@@ -249,6 +253,31 @@ public class Papart {
         applet.registerMethod("post", this);
     }
 
+    public void forceCameraSize() {
+
+        frameSize.set(cameraTracking.width(),
+                cameraTracking.height());
+//        this.shouldSetWindowSize = true;
+//        registerPost();
+
+        GLWindow window = (GLWindow) applet.getSurface().getNative();
+        window.setUndecorated(false);
+         window.setSize(cameraTracking.width(),
+                cameraTracking.height());
+    }
+
+    public void forceProjectorSize() {
+        frameSize.set(projector.getWidth(),
+                projector.getHeight());
+//        this.shouldSetWindowSize = true;
+//        registerPost();
+
+        GLWindow window = (GLWindow) applet.getSurface().getNative();
+        window.setUndecorated(true);
+        window.setSize(projector.getWidth(),
+                projector.getHeight());
+    }
+
     /**
      * Places the window at the correct location if required, according to the
      * configuration.
@@ -256,15 +285,17 @@ public class Papart {
      */
     public static void checkWindowLocation() {
         Papart papart = getPapart();
-        if (papart != null && papart.shouldSetWindowLocation) {
-            papart.defaultFrameLocation();
-            papart.shouldSetWindowLocation = false;
-        }
-        if (papart != null && papart.shouldSetWindowSize) {
 
-            papart.setFrameSize();
-            papart.shouldSetWindowSize = true;
+        if(papart == null)
+            return;
+        if (papart.shouldSetWindowLocation) {
+            papart.defaultFrameLocation();
         }
+        if (papart.shouldSetWindowSize) {
+            papart.setFrameSize();
+        }
+        papart.shouldSetWindowLocation = false;
+        papart.shouldSetWindowSize = false;
     }
 
     /**
@@ -272,6 +303,7 @@ public class Papart {
      */
     public void post() {
         checkWindowLocation();
+        System.out.println("Post");
         applet.unregisterMethod("post", this);
     }
 
@@ -285,11 +317,10 @@ public class Papart {
     }
 
     /**
-     * Set the frame to default location.
+     * Set the frame to current valid location.
      */
     public void setFrameSize() {
-        System.out.println("Trying to set the size of the frame...");
-//        this.applet.frame.setSize((int) frameSize.x, (int) frameSize.y);
+        System.out.println("Trying to set the size of the frame... " + frameSize.x);
         this.applet.getSurface().setSize((int) frameSize.x, (int) frameSize.y);
     }
 
