@@ -421,6 +421,7 @@ public abstract class Camera extends Node implements PConstants {
             String calibrationARtoolkit) {
         convertARParams(parent, calibrationFile, calibrationARtoolkit, 0, 0);
     }
+    
 
     static public void convertARParams(PApplet parent, String calibrationFile,
             String calibrationARtoolkit, int width, int height) {

@@ -192,17 +192,20 @@ public class MarkerBoard {
         tracker.setBorderWidth(0.125f);
         tracker.activateAutoThreshold(true);
 //        tracker.activateAutoThreshold(false);
-//            tracker.setUndistortionMode(ARToolKitPlus.UNDIST_NONE);
+        tracker.setUndistortionMode(ARToolKitPlus.UNDIST_NONE);
         tracker.setPoseEstimator(ARToolKitPlus.POSE_ESTIMATOR_RPP);
 
 //            tracker.setPoseEstimator(ARToolKitPlus.POSE_ESTIMATOR_ORIGINAL_CONT);
         tracker.setMarkerMode(ARToolKitPlus.MARKER_ID_BCH);
+
+        // TODO: find why  FULL RES is not working with a FULL HD image. 
+        
 //        tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_FULL_RES);
         tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_HALF_RES);
-  
+
         tracker.setUseDetectLite(false);
 //        tracker.setUseDetectLite(true);
-
+        
         // Initialize the tracker, with camera parameters and marker config. 
         if (!tracker.init(camera.getCalibrationARToolkit(), this.getFileName(), 1.0f, 10000.f)) {
             System.err.println("Init ARTOOLKIT Error " + camera.getCalibrationARToolkit() + " " + this.getFileName());

@@ -98,10 +98,10 @@ class CameraThread extends Thread {
     }
 
     protected void updateParallel() {
-        ArrayList<FutureTask<DepthPixelTask>> tasks = new ArrayList<>();
+        ArrayList<FutureTask<ARTrackingTask>> tasks = new ArrayList<>();
         for (MarkerBoard sheet : camera.getTrackedSheets()) {
-            DepthPixelTask depthPixelTask = new DepthPixelTask(sheet);
-            FutureTask<DepthPixelTask> task = new FutureTask<DepthPixelTask>(depthPixelTask);
+            ARTrackingTask depthPixelTask = new ARTrackingTask(sheet);
+            FutureTask<ARTrackingTask> task = new FutureTask<ARTrackingTask>(depthPixelTask);
             threadPool.submit(task);
             tasks.add(task);
         }
@@ -115,11 +115,11 @@ class CameraThread extends Thread {
 
     }
 
-    class DepthPixelTask implements Callable {
+    class ARTrackingTask implements Callable {
 
         private final MarkerBoard markerBoard;
 
-        public DepthPixelTask(MarkerBoard markerBoard) {
+        public ARTrackingTask(MarkerBoard markerBoard) {
             this.markerBoard = markerBoard;
         }
 

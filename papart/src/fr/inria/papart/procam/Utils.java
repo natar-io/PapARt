@@ -16,7 +16,6 @@ import fr.inria.papart.procam.display.ARDisplay;
 import org.bytedeco.javacpp.opencv_imgproc.*;
 
 import org.bytedeco.javacv.CameraDevice;
-import org.bytedeco.javacv.CameraDevice.Settings;
 import org.bytedeco.javacv.ProjectorDevice;
 import org.bytedeco.javacpp.opencv_imgproc;
 import static org.bytedeco.javacpp.opencv_core.*;
@@ -685,22 +684,22 @@ public class Utils {
         pa.println("Conversion done !");
         return;
     }
-    
+
     static public void convertARParam2(PApplet pa, String inputYAML, String outputDAT) throws Exception {
 
         CameraDevice cam = null;
 
         // Hack 
-        if(inputYAML.endsWith(".xml")){
+        if (inputYAML.endsWith(".xml")) {
             convertARParamXML(pa, inputYAML, outputDAT);
             return;
         }
-            
+
         CameraDevice[] c = CameraDevice.read(inputYAML);
         if (c.length > 0) {
             cam = c[0];
         }
-        Settings camSettings = (org.bytedeco.javacv.CameraDevice.Settings) cam.getSettings();
+        CameraDevice.Settings camSettings = (org.bytedeco.javacv.CameraDevice.Settings) cam.getSettings();
         int w = camSettings.getImageWidth();
         int h = camSettings.getImageHeight();
 
@@ -746,6 +745,61 @@ public class Utils {
         pw.close();
     }
 
+    static public void convertProjParam(PApplet pa, String inputYAML, String outputDAT) throws Exception{
+
+        ProjectorDevice cam = null;
+
+
+        ProjectorDevice[] c = ProjectorDevice.read(inputYAML);
+        if (c.length > 0) {
+            cam = c[0];
+        }
+        ProjectorDevice.Settings projSettings = (org.bytedeco.javacv.ProjectorDevice.Settings) cam.getSettings();
+        int w = projSettings.getImageWidth();
+        int h = projSettings.getImageHeight();
+
+        double[] mat = cam.cameraMatrix.get();
+        double[] distort = cam.distortionCoeffs.get();
+
+        OutputStream os = pa.createOutput(outputDAT);
+
+        PrintWriter pw = pa.createWriter(outputDAT);
+
+        StringBuffer sb = new StringBuffer();
+
+//        byte[] buf = new byte[SIZE_OF_PARAM_SET];
+//        ByteBuffer bb = ByteBuffer.wrap(buf);
+//        bb.order(ByteOrder.BIG_ENDIAN);
+//        bb.putInt(w);
+//        bb.putInt(h);
+        // From ARToolkitPlus...
+//http://www.vision.caltech.edu/bouguetj/calib_doc/htmls/parameters.html
+        sb.append("ARToolKitPlus_CamCal_Rev02\n");
+        sb.append(w).append(" ").append(h).append(" ");
+
+        // cx cy  fx fy  
+        sb.append(mat[2]).append(" ").append(mat[5])
+                .append(" ").append(mat[0]).
+                append(" ").append(mat[4]).append(" ");
+
+        // alpha_c ?  
+//        sb.append("0 ");
+        // kc(1 - x)  -> 6 values
+        for (int i = 0; i < distort.length; i++) {
+            sb.append(distort[i]).append(" ");
+        }
+        for (int i = distort.length; i < 6; i++) {
+            sb.append("0 ");
+        }
+
+        // undist iterations
+        sb.append("10\n");
+
+        pw.print(sb);
+        pw.flush();
+        pw.close();
+    }
+
     static public void convertARParamXML(PApplet pa, String fileName, String outputDAT) throws Exception {
 
         CameraDevice cam = null;
@@ -772,7 +826,7 @@ public class Utils {
 
         // alpha_c  // skew factor  
         sb.append("0 ").append(" ");
-        
+
         // kc(1 - x)  -> 6 values
         if (pdp.handleDistorsions()) {
             double[] distort = ((CameraDevice) pdp.getDevice()).distortionCoeffs.get();
@@ -798,6 +852,7 @@ public class Utils {
         pw.close();
     }
 
+    @Deprecated
     static public void convertProjParam(PApplet pa, String inputYAML, String outputDAT, int w, int h) throws Exception {
 
         ProjectorDevice proj = null;
@@ -841,6 +896,7 @@ public class Utils {
         pa.println("Conversion done !");
         return;
     }
+
 //     static public void convertARParam(PApplet pa, String inputYAML, String outputDAT, int w, int h) throws Exception {
 //
 //        CameraDevice cam = null;
