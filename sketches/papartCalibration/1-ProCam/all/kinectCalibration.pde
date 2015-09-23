@@ -11,69 +11,75 @@ KinectProcessing kinectAnalysis;
 PointCloudVisualization pcv;
 
 boolean isKinectOneActivated = false;
+boolean isKinect360Activated = false;
 PlaneAndProjectionCalibration planeProjCalib;
 HomographyCalibration homographyCalibration;
+PlaneCalibration planeCalibCam;
+
+// camera Kinect360
+Camera cameraKinect;
 
 void initKinectOne(){
-
     if(isKinectOneActivated)
         return;
 
     kinectDevice = new KinectOne(this, camera);
-    kinectDevice.getCameraRGB().setThread();
-    kinectDevice.getCameraDepth().setThread();
 
-    kinectAnalysis = new KinectProcessing(this, kinectDevice);
-
-    planeProjCalib =
-        new PlaneAndProjectionCalibration();
-    homographyCalibration = new HomographyCalibration();
-
-    pcv = new PointCloudVisualization();
-    // // TODO: variable precision.  ?
-
-
+    initCommonKinect();
 
     // Kinect camera is the main tracking Camera
     kinectProjectiveP = camera.getProjectiveDevice();
-    projectorDevice = projector.getProjectiveDeviceP();
-
-    frameWidth = projectorDevice.getWidth();
-    frameHeight = projectorDevice.getHeight();
 
     // identity - no external camera for ProCam calibration
     kinectCameraExtrinsics = new PMatrix3D();
-    kinectCameraExtrinsics.reset();
-
 
     isKinectOneActivated = true;
 }
 
 void stopKinectOne(){
-
+}
+void stopKinect360(){
 }
 
 // To implement fully
 void initKinect360(){
 
-    // TODO: load the Kinect camera & stuff...
-/*
-    kinectProjectiveP = cameraKinectRGB.getProjectiveDevice();
-    projectorDevice = projector.getProjectiveDeviceP();
+    kinectDevice = new Kinect360(this);
 
-    frameWidth = projectorDevice.getWidth();
-    frameHeight = projectorDevice.getHeight();
-*/
+    cameraKinect = kinectDevice.getCameraRGB();
 
-// TODO: find the  KinectPaperTransform (with the tracking).
-    // compute Camera -> Kinect transformation
-    // kinectCameraExtrinsics = cameraPaperTransform.get();
-    // kinectCameraExtrinsics.invert();
-    // kinectCameraExtrinsics.preApply(kinectPaperTransform);
+    // stop the update...
+    board.blockUpdate(camera, 3000);
 
+    String ARToolkitCalib = sketchPath() + "/data/Kinect.cal";
+    cameraKinect.convertARParams(this, cameraKinect.getCalibrationFile(), ARToolkitCalib);
+    cameraKinect.initMarkerDetection(ARToolkitCalib);
+
+    // TODO: Find why it updates before camera starts?
+    cameraKinect.trackMarkerBoard(board);
+    cameraKinect.trackSheets(true);
+
+    kinectProjectiveP = cameraKinect.getProjectiveDevice();
+    initCommonKinect();
+
+    isKinect360Activated = true;
 }
 
-boolean computeScreenPaperIntersection(){
+void initCommonKinect(){
+    kinectDevice.getCameraRGB().setThread();
+    kinectDevice.getCameraDepth().setThread();
+
+    kinectAnalysis = new KinectProcessing(this, kinectDevice);
+    planeProjCalib = new PlaneAndProjectionCalibration();
+    homographyCalibration = new HomographyCalibration();
+    pcv = new PointCloudVisualization();
+    projectorDevice = projector.getProjectiveDeviceP();
+    frameWidth = projectorDevice.getWidth();
+    frameHeight = projectorDevice.getHeight();
+}
+
+
+boolean computeScreenPaperIntersection(PlaneCalibration planeCalibCam){
 
     // generate coordinates...
     float step = 0.5f;
@@ -89,7 +95,7 @@ boolean computeScreenPaperIntersection(){
             PVector kinectPoint = new PVector();
 
             // where the point is on the table.
-            PVector inter = computeIntersection(i, j);
+            PVector inter = computeIntersection(planeCalibCam, i, j);
             if(inter == null)
                 return false;
 
@@ -103,7 +109,7 @@ boolean computeScreenPaperIntersection(){
 
 
 
-PVector computeIntersection(float px, float py){
+PVector computeIntersection(PlaneCalibration planeCalibCam,float px, float py){
 
     // Create ray from the projector (origin / viewed pixel)
     // Intersect this ray with the piece of paper.

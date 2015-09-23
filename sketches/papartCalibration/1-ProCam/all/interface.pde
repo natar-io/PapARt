@@ -1,5 +1,6 @@
-import java.awt.Frame;
-
+import fr.inria.skatolo.*;
+import fr.inria.skatolo.gui.controllers.*;
+import fr.inria.skatolo.gui.controllers.Button;
 
 public class ControlFrame extends PApplet {
 
@@ -14,6 +15,13 @@ public class ControlFrame extends PApplet {
 
     Skatolo skatolo;
 
+    public Button kinect360Button, kinectOneButton;
+
+    public void hideKinectButtons(){
+        kinect360Button.hide();
+        kinectOneButton.hide();
+    }
+
     public void setup() {
         frameRate(25);
         skatolo = new Skatolo(this);
@@ -24,8 +32,12 @@ public class ControlFrame extends PApplet {
             .setPosition(10, 10)
             ;
 
-        skatolo.addButton("KinectOne").plugTo(mainApplet, "setKinectOne")
-            .setPosition(10, 40)
+        kinectOneButton = skatolo.addButton("KinectOne").plugTo(mainApplet, "setKinectOne")
+            .setPosition(10, 60)
+            ;
+
+        kinect360Button = skatolo.addButton("Kinect360").plugTo(mainApplet, "setKinect360")
+            .setPosition(10, 90)
             ;
 
         skatolo.addRadioButton("Projection Corners")

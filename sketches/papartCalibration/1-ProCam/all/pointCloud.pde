@@ -6,11 +6,9 @@ int precision = 2;
 
 public class PointCloudVisualization extends PApplet {
 
-
-
     public PointCloudVisualization() {
-	super();
-	PApplet.runSketch(new String[]{this.getClass().getName()}, this);
+        super();
+        PApplet.runSketch(new String[]{this.getClass().getName()}, this);
     }
 
     public void settings() {
