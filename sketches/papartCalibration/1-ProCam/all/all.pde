@@ -23,6 +23,7 @@ PApplet mainApplet;
 
 // Display, for AR rendering.
 ProjectorDisplay projector;
+ARDisplay arDisplay;
 
 // "Cameras"
 Camera camera;
@@ -54,7 +55,7 @@ public void settings(){
     size(200, 200, P3D);
 }
 
-ARDisplay arDisplay;
+
 
 public void setup() {
     mainApplet = this;
@@ -157,17 +158,16 @@ public void draw(){
         }
     }
 
+    if(Mode.is("ProjManual") || Mode.is("CamManual")){
+        draw3DCorners();
+    }
+
     if(areCorners){
         fill(0, 180,0, 100);
         quad(corners[0].x, corners[0].y,
              corners[1].x, corners[1].y,
              corners[2].x, corners[2].y,
              corners[3].x, corners[3].y);
-    }
-
-    if(Mode.is("ProjManual")){
-
-
     }
 
 }

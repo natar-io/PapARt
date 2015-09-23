@@ -31,31 +31,48 @@ void activateProjectorCorners(){
     } catch(Exception e){};
 }
 
+int rectAroundWidth = 10;
 
 void draw3DCorners(){
-    // ProjectiveDeviceP pdp = projector.getProjectiveDeviceP();
-    // PMatrix3D objectProjectorTransfo = pdp.estimateOrientation(object, imageScaled);
 
-    // PGraphicsOpenGL g1 = projector.beginDraw();
-    // g1.background(69, 145, 181);
-    // g1.modelview.apply(objectProjectorTransfo);
 
-    // g1.fill(50, 50, 200, 100);
-    // // g1.translate(-10, -10, 0);
-    // g1.rect(-rectAroundWidth,
-    //         -rectAroundWidth,
-    //         objectWidth + rectAroundWidth*2,
-    //         objectHeight + rectAroundWidth*2);
 
-    // g1.translate(objectWidth + 100, objectHeight + 100, 0);
-    // g1.fill(0, 191, 100, 100);
-    // g1.rect(150, 80, 100, 100);
+    ProjectiveDeviceP pdp;
+    ARDisplay display = null;
+    if(Mode.is("ProjManual")){
+        display = projector;
+    }
+    if(Mode.is("CamManual")){
+        display = arDisplay;
+    }
 
-    // projector.endDraw();
+    assert(display != null);
 
-    // DrawUtils.drawImage((PGraphicsOpenGL) g,
-    //                     projector.render(),
-    //                     0, 0, width, height);
+    pdp = display.getProjectiveDeviceP();
+    updateObjectPointsSizes();
+
+    objectProjectorTransfo = pdp.estimateOrientation(objectPoints, corners);
+
+    PGraphicsOpenGL g1 = display.beginDraw();
+    g1.background(69, 145, 181, 100);
+    g1.modelview.apply(objectProjectorTransfo);
+
+    g1.fill(50, 50, 200, 100);
+    // g1.translate(-10, -10, 0);
+    g1.rect(-rectAroundWidth,
+            -rectAroundWidth,
+            objectWidth + rectAroundWidth*2,
+            objectHeight + rectAroundWidth*2);
+
+    g1.translate(objectWidth + 100, objectHeight + 100, 0);
+    g1.fill(0, 191, 100, 100);
+    g1.rect(150, 80, 100, 100);
+
+    display.endDraw();
+
+    DrawUtils.drawImage((PGraphicsOpenGL) g,
+                        display.render(),
+                        0, 0, width, height);
 }
 
 
