@@ -20,16 +20,16 @@ public class ControlFrame extends PApplet {
 
         // add a horizontal sliders, the value of this slider will be linked
         // to variable 'sliderValue'
-        skatolo.addBang("Camera").plugTo(mainApplet, "setCorners")
-            .setPosition(10, 20)
+        skatolo.addBang("calibrate").plugTo(mainApplet, "calibrate")
+            .setPosition(10, 10)
             ;
 
-        skatolo.addBang("Projector").plugTo(mainApplet, "setProjection")
-            .setPosition(10, 60)
+        skatolo.addButton("KinectOne").plugTo(mainApplet, "setKinectOne")
+            .setPosition(10, 40)
             ;
 
-        skatolo.addRadioButton("activeCorner")
-            .setPosition(10,100 )
+        skatolo.addRadioButton("Projection Corners")
+            .setPosition(10,150 )
             .setItemWidth(20)
             .setItemHeight(20)
             .addItem("bottom Left", 0) // 0, y

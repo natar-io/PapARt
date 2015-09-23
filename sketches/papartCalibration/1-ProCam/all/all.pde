@@ -1,12 +1,14 @@
 import fr.inria.papart.procam.*;
 import fr.inria.papart.procam.camera.*;
 import fr.inria.papart.procam.display.*;
+import fr.inria.papart.calibration.*;
 import fr.inria.papart.drawingapp.*;
 import org.bytedeco.javacpp.*;
 import TUIO.*;
 import toxi.geom.*;
 import fr.inria.guimodes.Mode;
 
+import static org.bytedeco.javacpp.opencv_imgcodecs.*;
 import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_64F;
 import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;
 import static org.bytedeco.javacpp.opencv_core.cvConvertScale;
@@ -36,6 +38,8 @@ MarkerBoard board;
 
 // view of the projector
 TrackedView projectorView;
+
+// set in cameraView.pde
 PVector[] corners = new PVector[4];
 
 // User interface
@@ -43,8 +47,7 @@ ControlFrame controlFrame;
 
 
 public void settings(){
-    //fullScreen(P3D);
-    size(200, 200, P3D);
+    fullScreen(P3D);
 }
 
 public void setup() {
@@ -55,11 +58,9 @@ public void setup() {
     papart =  Papart.getPapart();
     projector = papart.getProjectorDisplay();
     camera = papart.getCameraTracking();
-    projector.manualMode();
 
     app = new MyApp();
-    // force the initialization.
-    app.pre();
+    app.pre(); // -> forces the initialization.
 
     board = app.getBoard();
 
@@ -67,8 +68,10 @@ public void setup() {
 
     controlFrame = new ControlFrame();
 
-    Mode.add("Corners");
-    Mode.add("Projection");
+    Mode.add("KinectOne");
+    Mode.add("None");
+
+    CameraView cameraView = new CameraView();
 
     papart.startTracking();
 }
@@ -83,74 +86,107 @@ private void initProjectorAsCamera(){
     projectorAsCamera.setCalibration(Papart.projectorCalib);
 
     String ARToolkitCalibFile =  sketchPath() + "/data/projector.cal";
-    Camera.convertARParams(this, projectorAsCamera.getCalibrationFile(),
+    ProjectorAsCamera.convertARProjParams(this, projectorAsCamera.getCalibrationFile(),
                            ARToolkitCalibFile);
     projectorAsCamera.initMarkerDetection(ARToolkitCalibFile);
 
     board.addTracker(this, projectorAsCamera);
 
-    // Corners of the image of the projector
-    corners[0] = new PVector(100, 100);
-    corners[1] = new PVector(200, 100);
-    corners[2] = new PVector(200, 200);
-    corners[3] = new PVector(100, 200);
 }
 
-void setCorners(){
-    if(Mode.is("Corners"))
-        return;
+// No modes for now...
 
-    Mode.set("Corners");
-    projector.manualMode();
-    papart.forceCameraSize();
+boolean isKinectOne = false;
+boolean isKinect360 = false;
+
+void setKinectOne(boolean useKinectOne){
+    if(useKinectOne)
+        activateKinectOne();
+    else
+        deActivateKinectOne();
+
 }
 
-void setProjection(){
-
-    if(Mode.is("Projection"))
-        return;
-
-    Mode.set("Projection");
-    projector.automaticMode();
-    papart.forceProjectorSize();
+void activateKinectOne(){
+    Mode.set("KinectOne");
+    println("Kinect One activation");
+    isKinectOne = true;
+    initKinectOne();
 }
 
+void deActivateKinectOne(){
+    Mode.set("None");
+    isKinectOne = false;
+    stopKinectOne();
+}
+
+
+
+// void setProjection(){
+//     if(Mode.is("Projection"))
+//         return;
+//     Mode.set("Projection");
+//     projector.automaticMode();
+//     papart.forceProjectorSize();
+// }
+
+
+PlaneCalibration planeCalibCam;
+
+
+boolean isCalibrated = false;
 
 // required :
 // Position of the Markerboard from the camera.
 // Position of the Markerboard from the projector
-void calibrate(){
+public void calibrate(){
 
     PMatrix3D camPaper = camBoard().get();
     PMatrix3D projPaper = projBoard().get();
 
-    // BIM camera -> Projector.
-    // camPaper.invert();
-    // camPaper.preApply(projPaper);
-    // projector.setExtrinsics(camPaper);
+    camPaper.print();
+    projPaper.print();
 
-// BIM Projector ->  Camera
     projPaper.invert();
     projPaper.preApply(camPaper);
+    projPaper.print();
+    projPaper.invert();
+
+    papart.saveCalibration(Papart.cameraProjExtrinsics, projPaper);
+    // projPaper.print();
     projector.setExtrinsics(projPaper);
 
-    // camPaper.print();
-    // projPaper.print();
+
+    if(isKinectOne){
+        planeCalibCam = PlaneCalibration.CreatePlaneCalibrationFrom(camPaper,
+                                                                    new PVector(297, 210));
+        planeCalibCam.flipNormal();
+        computeScreenPaperIntersection();
+
+        // move the plane up a little.
+        planeCalibCam.moveAlongNormal(-10f);
+
+        planeProjCalib.setPlane(planeCalibCam);
+        planeProjCalib.setHomography(homographyCalibration);
+
+        planeProjCalib.saveTo(this, Papart.planeAndProjectionCalib);
+        HomographyCalibration.saveMatTo(this,
+                                        kinectCameraExtrinsics,
+                                        Papart.kinectTrackingCalib);
+        println("Calibration OK");
+        isCalibrated = true;
+    }
+
+    if(isKinect360){
+
+    }
 
 
-    // projPaper.invert();
-    // projPaper.preApply(camPaper);
-
-    // projPaper.invert();
-
-    // // papart.saveCalibration(Papart.cameraProjExtrinsics, projPaper);
-    // projPaper.print();
-    // projector.setExtrinsics(projPaper);
 
 }
 
 PMatrix3D camBoard(){
-    return app.getLocation();
+    return board.getTransfoMat(camera);
 }
 
 PMatrix3D projBoard(){
@@ -187,33 +223,32 @@ IplImage greyProjectorImage(IplImage projImage){
                                     IPL_DEPTH_8U, 1);
     }
     cvCvtColor(projImage, grayImage, CV_BGR2GRAY);
+
+    if(test){
+        cvSaveImage( sketchPath() + "/data/projImage.jpg", grayImage);
+        cvSaveImage( sketchPath() + "/data/camImage.jpg", camera.getIplImage());
+    }
+
     return grayImage;
 }
 
 
 
 public void draw(){
-
     if(test)
         calibrate();
 
+    fill(255);
+    rect(0,0, 5, 5);
 
-    if(Mode.is("Projection"))
-        return;
+    fill(255);
+    rect(width-5,0, 5, 5);
 
-    PImage camImage = camera.getPImage();
-    if(camImage == null)
-        return;
+    fill(255);
+    rect(width-5,height-5, 5, 5);
 
-    image(camImage, 0, 0, width, height);
-
-
-    fill(0, 180,0, 100);
-    quad(corners[0].x, corners[0].y,
-         corners[1].x, corners[1].y,
-         corners[2].x, corners[2].y,
-         corners[3].x, corners[3].y);
-
+    fill(255);
+    rect(0, height-5, 5, 5);
 }
 
 boolean test = false;

@@ -435,6 +435,8 @@ public class MarkerBoard {
     private void updateArtoolkitPosition(int id, int currentTime, int endTime, int mode, Camera camera, IplImage img) {
         TrackerMultiMarker tracker = (TrackerMultiMarker) trackers.get(id);
 
+//        tracker.getCamera().changeFrameSize(camera.width(), camera.height());
+        
         // Find the markers
         tracker.calc(img.imageData());
 

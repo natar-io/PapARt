@@ -88,6 +88,11 @@ public abstract class Camera extends Node implements PConstants {
 
     abstract public void start();
 
+    @Override
+    public String toString(){
+        return "Camera, res " + width() + "x"+ height() + " calibration " + this.calibrationFile ;
+    }
+    
     public PImage getImage() {
         return getPImage();
     }
@@ -216,6 +221,7 @@ public abstract class Camera extends Node implements PConstants {
         // Marker Detection and view
         this.calibrationARToolkit = calibrationARToolkit;
         this.sheets = Collections.synchronizedList(new ArrayList<MarkerBoard>());
+        System.out.println("Init MARKER DETECTION " + this + " " + this.sheets);
     }
 
     public String getCalibrationARToolkit() {
@@ -234,9 +240,10 @@ public abstract class Camera extends Node implements PConstants {
             this.sheets.add(sheet);
             sheetsSemaphore.release();
         } catch (InterruptedException ex) {
-            Logger.getLogger(Camera.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("Interrupted !"); 
+           Logger.getLogger(Camera.class.getName()).log(Level.SEVERE, null, ex);
         } catch (NullPointerException e) {
-            throw new RuntimeException("Marker detection not initialized.");
+            throw new RuntimeException("Marker detection not initialized. " + e);
         }
 
     }

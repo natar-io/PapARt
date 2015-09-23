@@ -35,10 +35,15 @@ void settings(){
   size(800, 600, OPENGL);
 }
 
+boolean useKinectOne = true;
+
 void setup(){
 
-    kinectDevice = KinectDevice.createKinectOne(this);
-    // kinectDevice = KinectDevice.createKinect360(this);
+    if(useKinectOne)
+        kinectDevice = KinectDevice.createKinectOne(this);
+    else
+        kinectDevice = KinectDevice.createKinect360(this);
+
     kinectDevice.setStereoCalibration(Papart.kinectStereoCalib);
 
     cameraRGB = kinectDevice.getCameraRGB();

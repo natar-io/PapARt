@@ -639,51 +639,6 @@ public class Utils {
         }
         ret.updatePixels();
     }
-    //                                   int int  12 double  4 double
-    static final int SIZE_OF_PARAM_SET = 4 + 4 + (3 * 4 * 8) + (4 * 8);
-
-    static public void convertARParam(PApplet pa, String inputYAML, String outputDAT, int w, int h) throws Exception {
-
-        CameraDevice cam = null;
-
-        CameraDevice[] c = CameraDevice.read(inputYAML);
-        if (c.length > 0) {
-            cam = c[0];
-        }
-
-        double[] proj = cam.cameraMatrix.get();
-        double[] distort = cam.distortionCoeffs.get();
-
-        OutputStream os = pa.createOutput(outputDAT);
-
-        byte[] buf = new byte[SIZE_OF_PARAM_SET];
-        ByteBuffer bb = ByteBuffer.wrap(buf);
-        bb.order(ByteOrder.BIG_ENDIAN);
-
-        bb.putInt(w);
-        bb.putInt(h);
-
-        //Projection
-        int k = 0;
-        for (int j = 0; j < 3; j++) {
-            for (int i = 0; i < 3; i++) {
-                bb.putDouble(proj[k++]);
-            }
-            bb.putDouble(0);
-        }
-
-        bb.putDouble(proj[2]);
-        bb.putDouble(proj[5]);
-        bb.putDouble(100);
-        bb.putDouble(1d);
-
-        os.write(buf);
-        os.flush();
-        os.close();
-
-        pa.println("Conversion done !");
-        return;
-    }
 
     static public void convertARParam2(PApplet pa, String inputYAML, String outputDAT) throws Exception {
 
@@ -706,8 +661,6 @@ public class Utils {
         double[] proj = cam.cameraMatrix.get();
         double[] distort = cam.distortionCoeffs.get();
 
-        OutputStream os = pa.createOutput(outputDAT);
-
         PrintWriter pw = pa.createWriter(outputDAT);
 
         StringBuffer sb = new StringBuffer();
@@ -721,12 +674,16 @@ public class Utils {
 //http://www.vision.caltech.edu/bouguetj/calib_doc/htmls/parameters.html
         sb.append("ARToolKitPlus_CamCal_Rev02\n");
         sb.append(w).append(" ").append(h).append(" ");
+        
 
         // cx cy  fx fy  
         sb.append(proj[2]).append(" ").append(proj[5])
                 .append(" ").append(proj[0]).
                 append(" ").append(proj[4]).append(" ");
 
+                // alpha_c  // skew factor  
+        sb.append("0 ").append(" ");
+        
         // alpha_c ?  
 //        sb.append("0 ");
         // kc(1 - x)  -> 6 values
@@ -777,11 +734,15 @@ public class Utils {
         sb.append("ARToolKitPlus_CamCal_Rev02\n");
         sb.append(w).append(" ").append(h).append(" ");
 
+ 
         // cx cy  fx fy  
         sb.append(mat[2]).append(" ").append(mat[5])
                 .append(" ").append(mat[0]).
                 append(" ").append(mat[4]).append(" ");
 
+                       // alpha_c  // skew factor  
+        sb.append("0 ").append(" ");
+        
         // alpha_c ?  
 //        sb.append("0 ");
         // kc(1 - x)  -> 6 values
@@ -802,6 +763,7 @@ public class Utils {
 
     static public void convertARParamXML(PApplet pa, String fileName, String outputDAT) throws Exception {
 
+        System.out.println("Convert AR Param XML");
         CameraDevice cam = null;
 
         ProjectiveDeviceP pdp = ProjectiveDeviceP.loadCameraDevice(pa, fileName);
@@ -852,134 +814,4 @@ public class Utils {
         pw.close();
     }
 
-    @Deprecated
-    static public void convertProjParam(PApplet pa, String inputYAML, String outputDAT, int w, int h) throws Exception {
-
-        ProjectorDevice proj = null;
-
-        ProjectorDevice[] p = ProjectorDevice.read(inputYAML);
-        if (p.length > 0) {
-            proj = p[0];
-        }
-
-        double[] projM = proj.cameraMatrix.get();
-        double[] distort = proj.distortionCoeffs.get();
-
-        OutputStream os = pa.createOutput(outputDAT);
-
-        byte[] buf = new byte[SIZE_OF_PARAM_SET];
-        ByteBuffer bb = ByteBuffer.wrap(buf);
-        bb.order(ByteOrder.BIG_ENDIAN);
-
-        bb.putInt(w);
-        bb.putInt(h);
-
-        //projection
-        int k = 0;
-        for (int j = 0; j < 3; j++) {
-            for (int i = 0; i < 3; i++) {
-                bb.putDouble(projM[k++]);
-            }
-            bb.putDouble(0);
-        }
-
-// ARtoolkit distortion
-        bb.putDouble(projM[2]);
-        bb.putDouble(projM[5]);
-        bb.putDouble(0);
-        bb.putDouble(1d);
-
-        os.write(buf);
-        os.flush();
-        os.close();
-
-        pa.println("Conversion done !");
-        return;
-    }
-
-//     static public void convertARParam(PApplet pa, String inputYAML, String outputDAT, int w, int h) throws Exception {
-//
-//        CameraDevice cam = null;
-//
-//        CameraDevice[] c = CameraDevice.read(inputYAML);
-//        if (c.length > 0) {
-//            cam = c[0];
-//        }
-//
-//        double[] proj = cam.cameraMatrix.get();
-//        double[] distort = cam.distortionCoeffs.get();
-//
-//        OutputStream os = pa.createOutput(outputDAT);
-//
-//        byte[] buf = new byte[SIZE_OF_PARAM_SET];
-//        ByteBuffer bb = ByteBuffer.wrap(buf);
-//        bb.order(ByteOrder.BIG_ENDIAN);
-//
-//        bb.putInt(w);
-//        bb.putInt(h);
-//
-//        //Projection
-//        int k = 0;
-//        for (int j = 0; j < 3; j++) {
-//            for (int i = 0; i < 3; i++) {
-//                bb.putDouble(proj[k++]);
-//            }
-//            bb.putDouble(0);
-//        }
-//
-//        //distortion
-//        for (int i = 0; i < 4; i++) {
-//            bb.putDouble(distort[i]);
-//        }
-//
-//        os.write(buf);
-//        os.flush();
-//        os.close();
-//
-//        pa.println("Conversion done !");
-//        return;
-//    }
-//
-//    static public void convertProjParam(PApplet pa, String inputYAML, String outputDAT, int w, int h) throws Exception {
-//
-//        ProjectorDevice proj = null;
-//
-//        ProjectorDevice[] p = ProjectorDevice.read(inputYAML);
-//        if (p.length > 0) {
-//            proj = p[0];
-//        }
-//
-//        double[] projM = proj.cameraMatrix.get();
-//        double[] distort = proj.distortionCoeffs.get();
-//
-//        OutputStream os = pa.createOutput(outputDAT);
-//
-//        byte[] buf = new byte[SIZE_OF_PARAM_SET];
-//        ByteBuffer bb = ByteBuffer.wrap(buf);
-//        bb.order(ByteOrder.BIG_ENDIAN);
-//
-//        bb.putInt(w);
-//        bb.putInt(h);
-//
-//        //projection
-//        int k = 0;
-//        for (int j = 0; j < 3; j++) {
-//            for (int i = 0; i < 3; i++) {
-//                bb.putDouble(projM[k++]);
-//            }
-//            bb.putDouble(0);
-//        }
-//
-//        //distortion
-//        for (int i = 0; i < 4; i++) {
-//            bb.putDouble(distort[i]);
-//        }
-//
-//        os.write(buf);
-//        os.flush();
-//        os.close();
-//
-//        pa.println("Conversion done !");
-//        return;
-//    }
 }

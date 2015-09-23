@@ -125,7 +125,6 @@ class CameraThread extends Thread {
 
         @Override
         public Object call() {
-
             if (markerBoard.useARToolkit()) {
                 markerBoard.updatePosition(camera, grayImage);
             } else {
@@ -166,7 +165,7 @@ class CameraThread extends Thread {
 //            cvConvertScale(image, grayImage, 255 / image.highValue(), 0);
 ////            image = tempImage;
 //        } else if (channels > 1) {
-            cvCvtColor(image, grayImage, channels > 3 ? CV_RGBA2GRAY : CV_BGR2GRAY);
+        cvCvtColor(image, grayImage, channels > 3 ? CV_RGBA2GRAY : CV_BGR2GRAY);
 //            image = tempImage;
 //        }
         /*
