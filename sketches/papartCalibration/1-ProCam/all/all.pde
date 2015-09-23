@@ -166,21 +166,7 @@ boolean isCalibrated = false;
 // Position of the Markerboard from the projector
 public void calibrate(){
 
-    PMatrix3D camPaper = camBoard().get();
-    PMatrix3D projPaper = projBoard().get();
-
-    camPaper.print();
-    projPaper.print();
-
-    projPaper.invert();
-    projPaper.preApply(camPaper);
-    projPaper.print();
-    projPaper.invert();
-
-    papart.saveCalibration(Papart.cameraProjExtrinsics, projPaper);
-    // projPaper.print();
-    projector.setExtrinsics(projPaper);
-
+    calibrateProCam();
 
     if(isKinectOne){
         calibrateKinectOne();
@@ -189,49 +175,70 @@ public void calibrate(){
     if(isKinect360){
         calibrateKinect360();
     }
+}
+
+private void calibrateProCam(){
+    PMatrix3D camPaper = camBoard();
+    PMatrix3D projPaper = projBoard();
+
+    // camPaper.print();
+    // projPaper.print();
+
+    projPaper.invert();
+    projPaper.preApply(camPaper);
+    //    projPaper.print();
+    projPaper.invert();
+
+    papart.saveCalibration(Papart.cameraProjExtrinsics, projPaper);
+    // projPaper.print();
+    projector.setExtrinsics(projPaper);
 
 }
 
 private void calibrateKinectOne(){
-    planeCalibCam = PlaneCalibration.CreatePlaneCalibrationFrom(camBoard().get(),
+    PMatrix3D kinectExtr = kinectDevice.getStereoCalibration().get();
+    kinectExtr.invert();
+
+    PMatrix3D boardViewFromDepth = camBoard();
+    // boardViewFromDepth.apply(kinectExtr);
+
+    // camBoard().print();
+    // boardViewFromDepth.print();
+
+
+
+    planeCalibCam = PlaneCalibration.CreatePlaneCalibrationFrom(boardViewFromDepth,
                                                                 new PVector(297, 210));
     planeCalibCam.flipNormal();
-    kinectCameraExtrinsics.reset();
-    computeScreenPaperIntersection(planeCalibCam);
+
+    kinectCameraExtrinsics.set(kinectExtr);
+    // kinectCameraExtrinsics.reset();
+
+    boolean inter = computeScreenPaperIntersection(planeCalibCam);
+
+    if(!inter){
+        println("No intersection");
+        return;
+    }
 
     // move the plane up a little.
-    planeCalibCam.moveAlongNormal(-10f);
+    planeCalibCam.moveAlongNormal(-7f);
 
     saveKinectCalibration(planeCalibCam);
 }
 
-void saveKinectCalibration(PlaneCalibration planeCalib){
-    planeProjCalib.setPlane(planeCalib);
-    planeProjCalib.setHomography(homographyCalibration);
-
-    planeProjCalib.saveTo(this, Papart.planeAndProjectionCalib);
-    HomographyCalibration.saveMatTo(this,
-                                    kinectCameraExtrinsics,
-                                    Papart.kinectTrackingCalib);
-
-    papart.setTableLocation(camBoard().get());
-    println("Calibration OK");
-    isCalibrated = true;
-}
 
 private void calibrateKinect360(){
     PVector paperSize = new PVector(297, 210);
-    PMatrix3D kinectPaperTransform =  kinect360Board();
 
     PlaneCalibration planeCalibKinect =
-        PlaneCalibration.CreatePlaneCalibrationFrom(kinectPaperTransform, paperSize);
-    planeCalibCam = PlaneCalibration.CreatePlaneCalibrationFrom(camBoard().get(), paperSize);
+        PlaneCalibration.CreatePlaneCalibrationFrom(kinect360Board(), paperSize);
+    planeCalibCam = PlaneCalibration.CreatePlaneCalibrationFrom(camBoard(), paperSize);
     planeCalibCam.flipNormal();
 
-
-    kinectCameraExtrinsics = camBoard().get();
+    kinectCameraExtrinsics = camBoard();
     kinectCameraExtrinsics.invert();
-    kinectCameraExtrinsics.preApply(kinectPaperTransform);
+    kinectCameraExtrinsics.preApply(kinect360Board());
     println("Kinect - Camera extrinsics : ");
     kinectCameraExtrinsics.print();
 
@@ -249,13 +256,29 @@ private void calibrateKinect360(){
     saveKinectCalibration(planeCalibKinect);
 }
 
+
+void saveKinectCalibration(PlaneCalibration planeCalib){
+    planeProjCalib.setPlane(planeCalib);
+    planeProjCalib.setHomography(homographyCalibration);
+
+    planeProjCalib.saveTo(this, Papart.planeAndProjectionCalib);
+    HomographyCalibration.saveMatTo(this,
+                                    kinectCameraExtrinsics,
+                                    Papart.kinectTrackingCalib);
+
+    papart.setTableLocation(camBoard());
+    println("Calibration OK");
+    isCalibrated = true;
+}
+
+
 PMatrix3D camBoard(){
-    return board.getTransfoMat(camera);
+    return board.getTransfoMat(camera).get();
 }
 
 PMatrix3D kinect360Board(){
     assert(isKinect360Activated);
-    return board.getTransfoMat(cameraKinect);
+    return board.getTransfoMat(cameraKinect).get();
 }
 
 PMatrix3D projBoard(){

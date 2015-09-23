@@ -71,6 +71,8 @@ public class Papart {
 
     public static String screenConfig = calibrationFolder + "screenConfiguration.xml";
     public static String cameraConfig = calibrationFolder + "cameraConfiguration.xml";
+    public static String cameraKinectConfig = calibrationFolder + "cameraKinectConfiguration.xml";
+
     public static String tablePosition = calibrationFolder + "tablePosition.xml";
     public static String planeCalib = calibrationFolder + "PlaneCalibration.xml";
     public static String homographyCalib = calibrationFolder + "HomographyCalibration.xml";
@@ -102,6 +104,8 @@ public class Papart {
     private TouchInput touchInput;
     private PVector frameSize = new PVector();
     private boolean isWithoutCamera = false;
+
+    public KinectDevice kinectDevice;
 
     public CameraConfiguration cameraConfiguration;
     public ScreenConfiguration screenConfiguration;
@@ -138,6 +142,12 @@ public class Papart {
     private static CameraConfiguration getDefaultCameraConfiguration(PApplet applet) {
         CameraConfiguration config = new CameraConfiguration();
         config.loadFrom(applet, cameraConfig);
+        return config;
+    }
+
+    private static CameraConfiguration getDefaultKinectConfiguration(PApplet applet) {
+        CameraConfiguration config = new CameraConfiguration();
+        config.loadFrom(applet, cameraKinectConfig);
         return config;
     }
 
@@ -246,6 +256,19 @@ public class Papart {
         return papart;
     }
 
+    public static KinectDevice loadDefaultKinectDevice(PApplet applet) {
+        CameraConfiguration kinectConfiguration = Papart.getDefaultKinectConfiguration(applet);
+
+        if (kinectConfiguration.getCameraType() == Camera.Type.OPEN_KINECT) {
+            return new Kinect360(applet);
+        }
+        if (kinectConfiguration.getCameraType() == Camera.Type.KINECT2_RGB) {
+            return new KinectOne(applet);
+        }
+        System.err.println("Papart: Could not identify default Kinect Device.");
+        return null;
+    }
+
     private boolean shouldSetWindowLocation = false;
     private boolean shouldSetWindowSize = false;
 
@@ -262,7 +285,7 @@ public class Papart {
 
         GLWindow window = (GLWindow) applet.getSurface().getNative();
         window.setUndecorated(false);
-         window.setSize(cameraTracking.width(),
+        window.setSize(cameraTracking.width(),
                 cameraTracking.height());
     }
 
@@ -286,8 +309,9 @@ public class Papart {
     public static void checkWindowLocation() {
         Papart papart = getPapart();
 
-        if(papart == null)
+        if (papart == null) {
             return;
+        }
         if (papart.shouldSetWindowLocation) {
             papart.defaultFrameLocation();
         }
@@ -580,7 +604,7 @@ public class Papart {
     public void loadTouchInputKinectOnly() {
 
         if (this.kinectDevice == null) {
-            loadDefaultCameraKinect();
+            kinectDevice = loadDefaultCameraKinect();
             cameraTracking = kinectDevice.getCameraRGB();
             kinectDevice.getCameraRGB().setThread();
             kinectDevice.getCameraDepth().setThread();
@@ -598,7 +622,8 @@ public class Papart {
      *
      */
     public void loadTouchInput() {
-        loadDefaultCameraKinect();
+        kinectDevice = loadDefaultCameraKinect();
+        kinectDevice.getCameraRGB().setThread();
         kinectDevice.getCameraDepth().setThread();
 
         loadDefaultTouchKinect();
@@ -616,30 +641,21 @@ public class Papart {
      * @return
      */
     public KinectDevice loadDefaultCameraKinect() {
+        CameraConfiguration kinectConfiguration = Papart.getDefaultKinectConfiguration(applet);
 
-        if (cameraConfiguration.getCameraType() == Camera.Type.KINECT2_RGB) {
-            kinectDevice = new KinectOne(applet, cameraTracking);
-
-            if (cameraTracking != null) {
-                kinectDevice = new KinectOne(applet, cameraTracking);
-            } else {
-                kinectDevice = new KinectOne(applet);
-                cameraTracking = kinectDevice.getCameraRGB();
-            }
-
-        } else {
-            kinectDevice = KinectDevice.createKinect360(applet);
-            kinectDevice.getCameraRGB().setThread();
+        if (kinectConfiguration.getCameraType() == Camera.Type.OPEN_KINECT) {
+            return new Kinect360(applet);
         }
-        return kinectDevice;
-    }
+        if (kinectConfiguration.getCameraType() == Camera.Type.KINECT2_RGB) {
 
-    private void loadKinectOne() {
-        kinectDevice = new KinectOne(applet);
-        cameraTracking = kinectDevice.getCameraRGB();
+            if (this.cameraTracking == null) {
+                return new KinectOne(applet);
+            } else {
+                return new KinectOne(applet, cameraTracking);
+            }
+        }
+        return null;
     }
-
-    public KinectDevice kinectDevice;
 
     private void loadDefaultTouchKinect() {
 

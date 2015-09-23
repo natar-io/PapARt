@@ -47,8 +47,8 @@ void setup(){
 
     Papart papart = new Papart(this);
 
-    // kinectDevice = KinectDevice.createKinect360(this);
-    kinectDevice = KinectDevice.createKinectOne(this);
+    kinectDevice = Papart.loadDefaultKinectDevice(this);
+     //kinectDevice = KinectDevice.createKinectOne(this);
 
     cameraRGB = kinectDevice.getCameraRGB();
     cameraDepth = kinectDevice.getCameraDepth();

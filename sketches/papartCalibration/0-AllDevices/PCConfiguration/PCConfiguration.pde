@@ -25,13 +25,14 @@ import org.bytedeco.javacv.CanvasFrame;
 Skatolo skatolo;
 
 CameraConfiguration cameraConfig;
+CameraConfiguration kinectConfig;
 ScreenConfiguration screenConfig;
 
 int nbScreens = 1;
 PImage backgroundImage;
 
 public void settings() {
-    size(800, 600, P3D);
+    size(800, 840, P3D);
 }
 
 void setup(){
@@ -58,9 +59,11 @@ void setup(){
     // Do not modify anything further.
 
     cameraConfig = new CameraConfiguration();
+    kinectConfig = new CameraConfiguration();
     screenConfig = new ScreenConfiguration();
 
     cameraConfig.loadFrom(this, Papart.cameraConfig);
+    kinectConfig.loadFrom(this, Papart.cameraKinectConfig);
     screenConfig.loadFrom(this, Papart.screenConfig);
 
     initUI();
@@ -104,24 +107,15 @@ void testCameraButton(boolean value){
 
 
 void cameraTypeChooser(int value){
+    if(value >= 0){
+        cameraConfig.setCameraType(Camera.Type.values()[value]);
+    }
+}
 
-    if(value == 0)
-	cameraConfig.setCameraType(Camera.Type.OPENCV);
-
-    if(value == 1)
-	cameraConfig.setCameraType(Camera.Type.PROCESSING);
-
-    if(value == 2)
-	cameraConfig.setCameraType(Camera.Type.OPEN_KINECT);
-
-    if(value == 3)
-	cameraConfig.setCameraType(Camera.Type.FLY_CAPTURE);
-
-    if(value == 4)
-	cameraConfig.setCameraType(Camera.Type.KINECT2_RGB);
-
-    if(value == 5)
-	cameraConfig.setCameraType(Camera.Type.KINECT2_IR);
+void kinectTypeChooser(int value){
+    if(value >= 0){
+        kinectConfig.setCameraType(Camera.Type.values()[value]);
+    }
 
 }
 
@@ -155,7 +149,8 @@ void draw(){
     // 	       color(255),
     // 	       color(255));
 
-    // updateStyles();
+     // initCameraUI();
+     // updateStyles();
 
     image(backgroundImage, 0, 0);
 
@@ -168,6 +163,7 @@ void keyPressed() {
 	//The ASCII code for esc is 27, so therefore: 27
      //insert your function here
      }
+
 
 }
 
@@ -191,6 +187,27 @@ void saveCamera(String fileName){
     cameraConfig.saveTo(this, fileName);
     println("Camera saved.");
 }
+
+
+// Todo: custom file chooser.
+void saveKinectAs(){
+    selectOutput("Select a file to write to:", "fileSelectedSaveKinect");
+}
+
+void fileSelectedSaveKinect(File selection) {
+    saveKinect(selection.getAbsolutePath());
+}
+
+void saveDefaultKinect(){
+    saveKinect(Papart.cameraKinectConfig);
+}
+
+void saveKinect(String fileName){
+    kinectConfig.setCameraName(kinectIdText.getText());
+    kinectConfig.saveTo(this, fileName);
+    println("Kinect saved.");
+}
+
 
 
 
