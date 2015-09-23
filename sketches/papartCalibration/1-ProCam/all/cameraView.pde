@@ -18,11 +18,6 @@ public class CameraView extends PApplet {
         frameRate(30);
         cameraImage = createImage(camera.width(), camera.height(), RGB);
 
-        // Corners of the image of the projector
-        corners[0] = new PVector(100, 100);
-        corners[1] = new PVector(200, 100);
-        corners[2] = new PVector(200, 200);
-        corners[3] = new PVector(100, 200);
 
         // it will fail if the calibration file is not present.
         try{

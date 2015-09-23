@@ -1,5 +1,8 @@
 import fr.inria.papart.depthcam.devices.*;
 
+boolean isKinectOne = false;
+boolean isKinect360 = false;
+
 int frameWidth, frameHeight;
 PMatrix3D kinectCameraExtrinsics;
 // TODO: ?! pop-up a new window with Kinect AR view ?
@@ -19,6 +22,23 @@ PlaneCalibration planeCalibCam;
 // camera Kinect360
 Camera cameraKinect;
 
+void checkKinectVersion(){
+    CameraConfiguration kinectConfiguration = Papart.getDefaultKinectConfiguration(this);
+    isKinect360 = kinectConfiguration.getCameraType() == Camera.Type.OPEN_KINECT;
+    isKinectOne = kinectConfiguration.getCameraType() == Camera.Type.KINECT2_RGB;
+}
+
+
+void activateKinect(){
+
+    if(isKinectOne)
+        initKinectOne();
+    if(isKinect360)
+        initKinect360();
+}
+
+
+
 void initKinectOne(){
     if(isKinectOneActivated)
         return;
@@ -36,16 +56,11 @@ void initKinectOne(){
     isKinectOneActivated = true;
 }
 
-void stopKinectOne(){
-}
-void stopKinect360(){
-}
 
 // To implement fully
 void initKinect360(){
 
     kinectDevice = new Kinect360(this);
-
     cameraKinect = kinectDevice.getCameraRGB();
 
     // stop the update...

@@ -1,5 +1,7 @@
 import fr.inria.skatolo.*;
+import fr.inria.skatolo.gui.group.*;
 import fr.inria.skatolo.gui.controllers.*;
+import fr.inria.skatolo.gui.controllers.Slider;
 import fr.inria.skatolo.gui.controllers.Button;
 
 public class ControlFrame extends PApplet {
@@ -10,16 +12,38 @@ public class ControlFrame extends PApplet {
     }
 
     public void settings() {
-	size(300, 500, P3D);
+	size(800, 600, P3D);
     }
 
     Skatolo skatolo;
 
-    public Button kinect360Button, kinectOneButton;
+    RadioButton corners, camRadio, projRadio;
+    Slider objectWidth, objectHeight;
 
-    public void hideKinectButtons(){
-        kinect360Button.hide();
-        kinectOneButton.hide();
+    public void hideCorners(){
+        corners.hide();
+    }
+
+    public void showCorners(){
+        corners.show();
+    }
+
+    public void hideObjectSize(){
+        objectWidth.hide();
+        objectHeight.hide();
+    }
+
+    public void showObjectSize(){
+        objectWidth.show();
+        objectHeight.show();
+    }
+
+    public void resetCamRadio(){
+        camRadio.deactivateAll();
+    }
+
+    public void resetProjRadio(){
+        projRadio.deactivateAll();
     }
 
     public void setup() {
@@ -32,16 +56,37 @@ public class ControlFrame extends PApplet {
             .setPosition(10, 10)
             ;
 
-        kinectOneButton = skatolo.addButton("KinectOne").plugTo(mainApplet, "setKinectOne")
-            .setPosition(10, 60)
+        Mode.add("CamManual");
+        Mode.add("CamView");
+        Mode.add("CamMarker");
+
+        camRadio = skatolo.addRadioButton("Camera calibration").plugTo(mainApplet, "camMode")
+            .setPosition(100, 100)
+            .setItemWidth(20)
+            .setItemHeight(20)
+            .addItem("CamView", 0)
+            .addItem("CamMarker", 1)
+            .addItem("CamManual", 2)
+            .setColorLabel(color(255))
             ;
 
-        kinect360Button = skatolo.addButton("Kinect360").plugTo(mainApplet, "setKinect360")
-            .setPosition(10, 90)
+        Mode.add("ProjManual");
+        Mode.add("ProjMarker");
+        Mode.add("ProjView");
+
+        projRadio = skatolo.addRadioButton("Projector calibration").plugTo(mainApplet, "projMode")
+            .setPosition(100, 250)
+            .setItemWidth(20)
+            .setItemHeight(20)
+            .addItem("ProjManual", 0)
+            .addItem("ProjMarker", 1)
+            .addItem("ProjView", 2)
+            .setColorLabel(color(255))
             ;
 
-        skatolo.addRadioButton("Projection Corners")
-            .setPosition(10,150 )
+
+        corners = skatolo.addRadioButton("Corners")
+            .setPosition(400,50 )
             .setItemWidth(20)
             .setItemHeight(20)
             .addItem("bottom Left", 0) // 0, y
@@ -51,6 +96,26 @@ public class ControlFrame extends PApplet {
             .activate(0)
             .plugTo(mainApplet, "activeCorner")
             ;
+
+        objectWidth = skatolo.addSlider("ObjectWidth")
+            .setPosition(400, 150 )
+            .setValue(420)
+            .setRange(200, 500)
+            .setSize(300, 12)
+        .plugTo(mainApplet, "objectWidth")
+             ;
+
+        objectHeight = skatolo.addSlider("ObjectHeight")
+            .setPosition(400,180 )
+            .setValue(297)
+            .setRange(200, 400)
+            .setSize(200, 12)
+        .plugTo(mainApplet, "objectHeight")
+             ;
+
+
+        hideCorners();
+        hideObjectSize();
 
         // skatolo.addSlider("captureTime").plugTo(mainApplet, "captureTime")
         //     .setPosition(10, 40)
@@ -64,13 +129,13 @@ public class ControlFrame extends PApplet {
         //     .setValue(delay)
         //     ;
 
-  }
+    }
 
-  public void draw() {
-      background(100);
-  }
+    public void draw() {
+        background(100);
+    }
 
-  public Skatolo control() {
-    return skatolo;
-  }
+    public Skatolo control() {
+        return skatolo;
+    }
 }

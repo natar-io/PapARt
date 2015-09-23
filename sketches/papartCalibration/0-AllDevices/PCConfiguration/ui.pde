@@ -180,7 +180,6 @@ void initKinectUI() {
       .activate(currentType)
     ;
 
-  println("Kinect ordinal  " + kinectConfig.getCameraType().ordinal());
 
   kinectIdText = skatolo.addTextfield("KinectId")
     .setPosition(250, 652)
