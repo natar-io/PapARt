@@ -39,10 +39,6 @@ MarkerBoard board;
 TrackedView projectorView;
 
 
-PVector[] corners = new PVector[4];
-PVector[] objectPoints = new PVector[4];
-float objectWidth = 420, objectHeight = 297;
-PMatrix3D objectProjectorTransfo;
 
 // User interface
 ControlFrame controlFrame;
@@ -111,29 +107,15 @@ private void initProjectorAsCamera(){
 
 }
 
-void initCorners() {
-    // Corners of the image of the projector
-    corners[0] = new PVector(100, 100);
-    corners[1] = new PVector(200, 100);
-    corners[2] = new PVector(200, 200);
-    corners[3] = new PVector(100, 200);
-
-    objectPoints[0] = new PVector();
-    objectPoints[1] = new PVector();
-    objectPoints[2] = new PVector();
-    objectPoints[3] = new PVector();
-    updateObjectPointsSizes();
-}
-
-void updateObjectPointsSizes(){
-    objectPoints[0].set(0, 0, 0);
-    objectPoints[1].set(objectWidth, 0, 0);
-    objectPoints[2].set(objectWidth, objectHeight, 0);
-    objectPoints[3].set(0, objectHeight, 0);
-}
 
 
 public void draw(){
+
+    // Automatic modes...
+
+    if(Mode.is("CamMarker")){
+        controlFrame.setText(camBoard());
+    }
 
     //background(0);
 
@@ -155,7 +137,10 @@ public void draw(){
         PImage cameraImage = camera.getPImage();
         if(cameraImage != null){
             image(cameraImage, 0, 0, width, height);
+
+            controlFrame.setText(projBoard());
         }
+
     }
 
     if(Mode.is("ProjManual") || Mode.is("CamManual")){

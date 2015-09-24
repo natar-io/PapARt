@@ -6,6 +6,8 @@ import fr.inria.skatolo.gui.controllers.Button;
 
 public class ControlFrame extends PApplet {
 
+    boolean init = false;
+
     public ControlFrame() {
 	super();
 	PApplet.runSketch(new String[]{this.getClass().getName()}, this);
@@ -18,7 +20,26 @@ public class ControlFrame extends PApplet {
     Skatolo skatolo;
 
     RadioButton corners, camRadio, projRadio;
-    Slider objectWidth, objectHeight;
+    Slider sliderObjectWidth, sliderObjectHeight;
+    Bang saveCameraPaperBang, saveProjectorPaperBang;
+    Textarea textArea;
+
+    public void setText(String text){
+        if(!init)
+            return;
+        textArea.setText(text);
+    }
+
+    public void setText(PMatrix3D matrix){
+        if(!init)
+            return;
+
+        if(matrix == null){
+            println("Null matrix, no display.");
+            return;
+        }
+        textArea.setText(matToString(matrix));
+    }
 
     public void hideCorners(){
         corners.hide();
@@ -29,13 +50,13 @@ public class ControlFrame extends PApplet {
     }
 
     public void hideObjectSize(){
-        objectWidth.hide();
-        objectHeight.hide();
+        sliderObjectWidth.hide();
+        sliderObjectHeight.hide();
     }
 
     public void showObjectSize(){
-        objectWidth.show();
-        objectHeight.show();
+        sliderObjectWidth.show();
+        sliderObjectHeight.show();
     }
 
     public void resetCamRadio(){
@@ -46,13 +67,29 @@ public class ControlFrame extends PApplet {
         projRadio.deactivateAll();
     }
 
+    public void showSaveCameraButton(){
+        saveCameraPaperBang.show();
+    }
+
+    public void hideSaveCameraButton(){
+        saveCameraPaperBang.hide();
+    }
+
+    public void showSaveProjectorButton(){
+        saveProjectorPaperBang.show();
+    }
+
+    public void hideSaveProjectorButton(){
+        saveProjectorPaperBang.hide();
+    }
+
     public void setup() {
         frameRate(25);
         skatolo = new Skatolo(this);
 
         // add a horizontal sliders, the value of this slider will be linked
         // to variable 'sliderValue'
-        skatolo.addBang("calibrate").plugTo(mainApplet, "calibrate")
+        skatolo.addBang("calibrate").plugTo(mainApplet, "calibrateProCam")
             .setPosition(10, 10)
             ;
 
@@ -69,6 +106,20 @@ public class ControlFrame extends PApplet {
             .addItem("CamManual", 2)
             .setColorLabel(color(255))
             ;
+
+        saveCameraPaperBang = skatolo.addBang("Save Cam - Paper Location")
+            .plugTo(mainApplet, "saveCameraPaper")
+            .setPosition(200, 100)
+            .setSize(20, 20)
+            ;
+        saveCameraPaperBang.hide();
+
+        saveProjectorPaperBang = skatolo.addBang("Save Proj - Paper Location")
+            .plugTo(mainApplet, "saveProjectorPaper")
+            .setPosition(200, 250)
+            .setSize(20, 20)
+            ;
+        saveProjectorPaperBang.hide();
 
         Mode.add("ProjManual");
         Mode.add("ProjMarker");
@@ -97,21 +148,32 @@ public class ControlFrame extends PApplet {
             .plugTo(mainApplet, "activeCorner")
             ;
 
-        objectWidth = skatolo.addSlider("ObjectWidth")
+        sliderObjectWidth = skatolo.addSlider("ObjectWidth")
             .setPosition(400, 150 )
-            .setValue(420)
+            .setValue(objectWidth)
             .setRange(200, 500)
             .setSize(300, 12)
         .plugTo(mainApplet, "objectWidth")
              ;
 
-        objectHeight = skatolo.addSlider("ObjectHeight")
+        sliderObjectHeight = skatolo.addSlider("ObjectHeight")
             .setPosition(400,180 )
-            .setValue(297)
+            .setValue(objectHeight)
             .setRange(200, 400)
             .setSize(200, 12)
         .plugTo(mainApplet, "objectHeight")
              ;
+
+        textArea = skatolo.addTextarea("txt")
+            .setPosition(150,400)
+            .setSize(450,200)
+            .setFont(createFont("arial",12))
+            .setLineHeight(14)
+            //.setColor(color(128))
+            ;
+            // .setColorBackground(color(255,100))
+            // .setColorForeground(color(255,100));
+
 
 
         hideCorners();
@@ -128,7 +190,7 @@ public class ControlFrame extends PApplet {
         //     .setRange(0, 300)
         //     .setValue(delay)
         //     ;
-
+        init = true;
     }
 
     public void draw() {

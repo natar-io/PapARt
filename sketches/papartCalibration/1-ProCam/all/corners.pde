@@ -1,5 +1,10 @@
 String cornersFileName;
 
+PVector[] corners = new PVector[4];
+PVector[] objectPoints = new PVector[4];
+float objectWidth = 420, objectHeight = 297;
+PMatrix3D objectProjectorTransfo;
+
 void activateCameraCorners(){
     cornersFileName = "data/cameraCorners.json";
     try{
@@ -10,8 +15,9 @@ void activateCameraCorners(){
 void activateProjectorCornersObject(){
     cornersFileName = "data/projectorCornersObject.json";
     controlFrame.showCorners();
-    areCorners = true;
     controlFrame.showObjectSize();
+
+    areCorners = true;
     isObjectSize = true;
 
     try{
@@ -21,8 +27,12 @@ void activateProjectorCornersObject(){
 
 void activateProjectorCorners(){
 
-    projectorCorners.getSurface().setVisible(true);
+    // second Window
     areProjectorCorners = true;
+    projectorCorners.getSurface().setVisible(true);
+
+    // sliders
+    controlFrame.showCorners();
     areCorners = true;
 
     cornersFileName = "data/projectorCorners.json";
@@ -53,6 +63,8 @@ void draw3DCorners(){
 
     objectProjectorTransfo = pdp.estimateOrientation(objectPoints, corners);
 
+    controlFrame.setText(objectProjectorTransfo);
+
     PGraphicsOpenGL g1 = display.beginDraw();
     g1.background(69, 145, 181, 100);
     g1.modelview.apply(objectProjectorTransfo);
@@ -73,6 +85,27 @@ void draw3DCorners(){
     DrawUtils.drawImage((PGraphicsOpenGL) g,
                         display.render(),
                         0, 0, width, height);
+}
+
+void initCorners() {
+    // Corners of the image of the projector
+    corners[0] = new PVector(100, 100);
+    corners[1] = new PVector(200, 100);
+    corners[2] = new PVector(200, 200);
+    corners[3] = new PVector(100, 200);
+
+    objectPoints[0] = new PVector();
+    objectPoints[1] = new PVector();
+    objectPoints[2] = new PVector();
+    objectPoints[3] = new PVector();
+    updateObjectPointsSizes();
+}
+
+void updateObjectPointsSizes(){
+    objectPoints[0].set(0, 0, 0);
+    objectPoints[1].set(objectWidth, 0, 0);
+    objectPoints[2].set(objectWidth, objectHeight, 0);
+    objectPoints[3].set(0, objectHeight, 0);
 }
 
 

@@ -5,6 +5,7 @@ boolean isARProj= false;
 boolean areCorners = false;
 boolean areProjectorCorners = false;
 boolean isObjectSize = false;
+boolean isSaveButtonShowed = false;
 
 void cameraMode(){
 
@@ -48,6 +49,12 @@ void noMode(){
         isObjectSize = false;
     }
 
+    if(isSaveButtonShowed){
+        controlFrame.hideSaveCameraButton();
+        controlFrame.hideSaveProjectorButton();
+        isSaveButtonShowed = false;
+    }
+
     isCameraMode = false;
     isProjectorMode = false;
 }
@@ -74,6 +81,8 @@ public void camMode(int value){
         Mode.set("CamMarker");
         arDisplay.automaticMode();
         isARCam = true;
+        controlFrame.showSaveCameraButton();
+        isSaveButtonShowed = true;
         break;
     case 2:
         Mode.set("CamManual");
@@ -82,6 +91,8 @@ public void camMode(int value){
         controlFrame.showObjectSize();
         isObjectSize = true;
         areCorners = true;
+        controlFrame.showSaveCameraButton();
+        isSaveButtonShowed = true;
         break;
     }
 }
@@ -104,11 +115,15 @@ public void projMode(int value){
         Mode.set("ProjManual");
         projectorMode();
         activateProjectorCornersObject();
+        controlFrame.showSaveProjectorButton();
+        isSaveButtonShowed = true;
         break;
     case 1:
         Mode.set("ProjMarker");
         cameraMode();
         activateProjectorCorners();
+        controlFrame.showSaveProjectorButton();
+        isSaveButtonShowed = true;
         break;
     case 2:
         Mode.set("ProjView");

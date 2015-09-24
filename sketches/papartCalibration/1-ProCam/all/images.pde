@@ -1,19 +1,20 @@
-PMatrix3D camBoard(){
+PMatrix3D currentCamBoard(){
     return board.getTransfoMat(camera).get();
 }
 
-PMatrix3D kinect360Board(){
+PMatrix3D currentKinect360Board(){
     assert(isKinect360Activated);
     return board.getTransfoMat(cameraKinect).get();
 }
 
-PMatrix3D projBoard(){
+PMatrix3D currentProjBoard(){
     IplImage projImage = projectorImage();
     if(projImage == null)
         return null;
     board.updatePosition(projectorAsCamera, projImage);
     return board.getTransfoMat(projectorAsCamera);
 }
+
 
 IplImage grayImage = null;
 
