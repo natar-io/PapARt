@@ -8,7 +8,7 @@ boolean isCamPaperSet = false;
 boolean isProjPaperSet = false;
 boolean isKinectPaperSet = false;
 
-void saveCameraPaper(){
+public void saveCameraPaper(){
 
     assert(Mode.is("CamMarker") || Mode.is("CamManual"));
 
@@ -27,7 +27,7 @@ void saveCameraPaper(){
     noMode();
 }
 
-void saveProjectorPaper(){
+public void saveProjectorPaper(){
     assert(Mode.is("ProjMarker") || Mode.is("ProjManual"));
 
     if(Mode.is("ProjMarker")){
@@ -45,10 +45,33 @@ void saveProjectorPaper(){
     noMode();
 }
 
+public void saveKinectPaper(){
+    assert(Mode.is("KinectMarker") || Mode.is("KinectManual"));
+
+    if(Mode.is("KinectMarker")){
+        kinectPaperCalibration = currentKinect360Board().get();
+    }
+
+    if(Mode.is("KinectManual")){
+        kinectPaperCalibration = objectProjectorTransfo.get();
+    }
+
+    isKinectPaperSet = true;
+    controlFrame.setKinectPaperLabel("Kinect - Paper OK");
+    checkIfCalibrationPossible();
+
+    noMode();
+}
+
 void checkIfCalibrationPossible(){
     if(isProjPaperSet && isCamPaperSet){
         controlFrame.showCalibrateProCam();
     }
+
+    if(isProjPaperSet && isCamPaperSet && isKinectPaperSet){
+        controlFrame.showCalibrateKinectCam();
+    }
+
 }
 
 
@@ -77,17 +100,15 @@ PMatrix3D projBoard(){
 }
 
 
-public void calibrate(){
-
-    calibrateProCam();
-
+public void calibrateKinectCam(){
     if(isKinectOne){
         calibrateKinectOne();
     }
-
     if(isKinect360){
         calibrateKinect360();
     }
+
+    controlFrame.hideCalibrateProCam();
 }
 
 public void calibrateProCam(){

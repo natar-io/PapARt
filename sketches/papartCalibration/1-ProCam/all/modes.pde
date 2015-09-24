@@ -1,4 +1,5 @@
 boolean isCameraMode = false;
+boolean isCameraKinectMode = false;
 boolean isProjectorMode = false;
 boolean isARCam = false;
 boolean isARProj= false;
@@ -6,9 +7,9 @@ boolean areCorners = false;
 boolean areProjectorCorners = false;
 boolean isObjectSize = false;
 boolean isSaveButtonShowed = false;
+boolean isKinect3DView = false;
 
 void cameraMode(){
-
     papart.forceCameraSize();
     isCameraMode = true;
     isProjectorMode = false;
@@ -52,7 +53,19 @@ void noMode(){
     if(isSaveButtonShowed){
         controlFrame.hideSaveCameraButton();
         controlFrame.hideSaveProjectorButton();
+        controlFrame.hideSaveKinectButton();
         isSaveButtonShowed = false;
+    }
+
+    if(isKinect3DView){
+        pcv.getSurface().setVisible(false);
+        isKinect3DView = false;
+    }
+    // areProjectorCorners = true;
+
+    if(isCameraKinectMode){
+        arDisplayKinect.manualMode();
+        isCameraKinectMode = false;
     }
 
     isCameraMode = false;
@@ -67,6 +80,7 @@ public void camMode(int value){
     }
 
     controlFrame.resetProjRadio();
+    controlFrame.resetKinectRadio();
     noMode();
 
     if(!isCameraMode){
@@ -87,12 +101,6 @@ public void camMode(int value){
     case 2:
         Mode.set("CamManual");
         activateCameraCorners();
-        controlFrame.showCorners();
-        controlFrame.showObjectSize();
-        isObjectSize = true;
-        areCorners = true;
-        controlFrame.showSaveCameraButton();
-        isSaveButtonShowed = true;
         break;
     }
 }
@@ -100,14 +108,13 @@ public void camMode(int value){
 
 
 public void projMode(int value){
-
-
     if(value == -1){
         noMode();
         return;
     }
 
     controlFrame.resetCamRadio();
+    controlFrame.resetKinectRadio();
     noMode();
 
     switch(value) {
@@ -130,6 +137,47 @@ public void projMode(int value){
         projectorMode();
         projector.automaticMode();
         isARProj = true;
+        break;
+    }
+}
+
+public void kinectMode(int value){
+    if(value == -1){
+        noMode();
+        return;
+    }
+
+    controlFrame.resetCamRadio();
+    controlFrame.resetProjRadio();
+    noMode();
+
+    switch(value) {
+    case 0:
+        Mode.set("Kinect3D");
+        isKinect3DView = true;
+        pcv.getSurface().setVisible(true);
+
+        break;
+    case 1:
+        Mode.set("KinectManual");
+        papart.forceCameraSize(arDisplayKinect.getWidth(),
+                               arDisplayKinect.getHeight());
+
+        activateCameraKinectCorners();
+        controlFrame.showSaveKinectButton();
+        isSaveButtonShowed = true;
+
+        break;
+    case 2:
+        Mode.set("KinectMarker");
+        arDisplayKinect.automaticMode();
+        isCameraKinectMode = true;
+
+        papart.forceCameraSize(arDisplayKinect.getWidth(),
+                               arDisplayKinect.getHeight());
+
+        controlFrame.showSaveKinectButton();
+        isSaveButtonShowed = true;
         break;
     }
 }

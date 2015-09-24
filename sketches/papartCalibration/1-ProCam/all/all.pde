@@ -85,6 +85,9 @@ public void setup() {
     projectorCorners = new ProjectorCorners();
     projectorCorners.getSurface().setVisible(false);
 
+    activateKinect();
+
+
     // CameraView cameraView = new CameraView();
     papart.startTracking();
 }
@@ -114,7 +117,11 @@ public void draw(){
     // Automatic modes...
 
     if(Mode.is("CamMarker")){
-        controlFrame.setText(camBoard());
+        controlFrame.setText(currentCamBoard());
+    }
+
+    if(Mode.is("KinectMarker")){
+        controlFrame.setText(currentKinect360Board());
     }
 
     //background(0);
@@ -143,7 +150,17 @@ public void draw(){
 
     }
 
-    if(Mode.is("ProjManual") || Mode.is("CamManual")){
+
+    if(Mode.is("KinectManual")){
+        PImage kinectImg = cameraKinect.getPImage();
+        if(kinectImg != null){
+            image(kinectImg, 0, 0, width, height);
+        }
+
+    }
+
+
+    if(Mode.is("ProjManual") || Mode.is("CamManual") || Mode.is("KinectManual")){
         draw3DCorners();
     }
 

@@ -19,13 +19,13 @@ public class ControlFrame extends PApplet {
 
     Skatolo skatolo;
 
-    RadioButton corners, camRadio, projRadio;
+    RadioButton corners, camRadio, projRadio, kinectRadio = null;
     Slider sliderObjectWidth, sliderObjectHeight;
-    Bang saveCameraPaperBang, saveProjectorPaperBang;
+    Bang saveCameraPaperBang, saveProjectorPaperBang, saveKinectPaperBang;
     Textarea textArea;
     Group cornersGroup;
-    Textlabel cameraPaperLabel, projectorPaperLabel; //, kinectPaperLabel;
-    Bang calibrateProCam;
+    Textlabel cameraPaperLabel, projectorPaperLabel, kinectPaperLabel;
+    Bang calibrateProCam, calibrateKinectCam;
 
     public void setText(String text){
         if(!init)
@@ -72,6 +72,11 @@ public class ControlFrame extends PApplet {
         projRadio.deactivateAll();
     }
 
+    public void resetKinectRadio(){
+        if(kinectRadio != null)
+            kinectRadio.deactivateAll();
+    }
+
     public void showSaveCameraButton(){
         saveCameraPaperBang.show();
     }
@@ -88,12 +93,25 @@ public class ControlFrame extends PApplet {
         saveProjectorPaperBang.hide();
     }
 
+    public void showSaveKinectButton(){
+        saveKinectPaperBang.show();
+    }
+
+    public void hideSaveKinectButton(){
+        saveKinectPaperBang.hide();
+    }
+
+
     public void setCameraPaperLabel(String text){
         cameraPaperLabel.setValue(text);
     }
 
     public void setProjectorPaperLabel(String text){
         projectorPaperLabel.setValue(text);
+    }
+
+    public void setKinectPaperLabel(String text){
+        kinectPaperLabel.setValue(text);
     }
 
     public void showCalibrateProCam(){
@@ -103,6 +121,16 @@ public class ControlFrame extends PApplet {
     public void hideCalibrateProCam(){
         calibrateProCam.hide();
     }
+
+    public void showCalibrateKinectCam(){
+        calibrateKinectCam.show();
+    }
+
+    public void hideCalibrateKinectCam(){
+        calibrateKinectCam.hide();
+    }
+
+
 
     public void setup() {
         frameRate(25);
@@ -115,6 +143,7 @@ public class ControlFrame extends PApplet {
             ;
 
         calibrateProCam.hide();
+
 
         Mode.add("CamManual");
         Mode.add("CamView");
@@ -147,12 +176,15 @@ public class ControlFrame extends PApplet {
                                                    200,
                                                    260);
 
+
         saveProjectorPaperBang = skatolo.addBang("Save Proj - Paper Location")
             .plugTo(mainApplet, "saveProjectorPaper")
             .setPosition(200, 250)
             .setSize(20, 20)
             ;
         saveProjectorPaperBang.hide();
+
+
 
         Mode.add("ProjManual");
         Mode.add("ProjMarker");
@@ -167,6 +199,8 @@ public class ControlFrame extends PApplet {
             .addItem("ProjView", 2)
             .setColorLabel(color(255))
             ;
+
+
 
         cornersGroup = skatolo.addGroup("CornersGroup")
             .setPosition(400,50)
@@ -231,6 +265,57 @@ public class ControlFrame extends PApplet {
             // .setColorBackground(color(255,100))
             // .setColorForeground(color(255,100));
 
+
+
+        // If a Kinect is available
+        if(isKinectOne || isKinect360){
+            // activateKinectBang = skatolo.addBang("activateKinect")
+            //     .setPosition(100,480)
+            //     .setSize(20, 20)
+            //     .plugTo(mainApplet, "activateKinect")
+            //     ;
+
+            Mode.add("Kinect3D");
+
+            kinectRadio = skatolo.addRadioButton("Kinect calibration").plugTo(mainApplet, "kinectMode")
+                .setPosition(100, 450)
+                .setItemWidth(20)
+                .setItemHeight(20)
+                .addItem("Kinect3D", 0)
+                .setColorLabel(color(255))
+                ;
+
+            calibrateKinectCam =  skatolo.addBang("calibrate KinectCam").plugTo(mainApplet, "calibrateKinectCam")
+                .setPosition(120, 10)
+                ;
+
+            calibrateKinectCam.hide();
+
+
+            if(isKinect360){
+                Mode.add("KinectManual");
+                Mode.add("KinectMarker");
+
+                kinectRadio.addItem("KinectManual", 1)
+                    .addItem("KinectMarker", 2)
+                    .setColorLabel(color(255))
+                    ;
+
+                saveKinectPaperBang = skatolo.addBang("Save Kinect - Paper Location")
+                    .plugTo(mainApplet, "saveKinectPaper")
+                    .setPosition(200, 450)
+                    .setSize(20, 20)
+                    ;
+                saveKinectPaperBang.hide();
+
+                kinectPaperLabel = skatolo.addTextlabel("kinectPaperLabel",
+                                                        "Please save the calibration.",
+                                                        200,
+                                                        460);
+
+            }
+
+        }
 
 
         hideCorners();

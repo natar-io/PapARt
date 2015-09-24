@@ -7,6 +7,27 @@ PMatrix3D objectProjectorTransfo;
 
 void activateCameraCorners(){
     cornersFileName = "data/cameraCorners.json";
+
+    controlFrame.showCorners();
+    controlFrame.showObjectSize();
+    isObjectSize = true;
+    areCorners = true;
+    controlFrame.showSaveCameraButton();
+    isSaveButtonShowed = true;
+    try{
+        loadCorners();
+    } catch(Exception e){};
+}
+
+
+void activateCameraKinectCorners(){
+    cornersFileName = "data/cameraKinectCorners.json";
+    controlFrame.showCorners();
+    controlFrame.showObjectSize();
+    isObjectSize = true;
+    areCorners = true;
+    controlFrame.showSaveCameraButton();
+    isSaveButtonShowed = true;
     try{
         loadCorners();
     } catch(Exception e){};
@@ -55,6 +76,10 @@ void draw3DCorners(){
     if(Mode.is("CamManual")){
         display = arDisplay;
     }
+    if(Mode.is("KinectManual")){
+        display = arDisplayKinect;
+    }
+
 
     assert(display != null);
 

@@ -19,6 +19,8 @@ PlaneAndProjectionCalibration planeProjCalib;
 HomographyCalibration homographyCalibration;
 PlaneCalibration planeCalibCam;
 
+ARDisplay arDisplayKinect;
+
 // camera Kinect360
 Camera cameraKinect;
 
@@ -74,6 +76,10 @@ void initKinect360(){
     cameraKinect.trackMarkerBoard(board);
     cameraKinect.trackSheets(true);
 
+    arDisplayKinect = new ARDisplay(this, cameraKinect);
+    arDisplayKinect.init();
+    arDisplayKinect.manualMode();
+
     kinectProjectiveP = cameraKinect.getProjectiveDevice();
     initCommonKinect();
 
@@ -91,6 +97,9 @@ void initCommonKinect(){
     projectorDevice = projector.getProjectiveDeviceP();
     frameWidth = projectorDevice.getWidth();
     frameHeight = projectorDevice.getHeight();
+
+
+
 }
 
 

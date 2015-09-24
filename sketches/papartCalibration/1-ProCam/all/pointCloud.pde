@@ -9,6 +9,7 @@ public class PointCloudVisualization extends PApplet {
     public PointCloudVisualization() {
         super();
         PApplet.runSketch(new String[]{this.getClass().getName()}, this);
+
     }
 
     public void settings() {
@@ -27,6 +28,7 @@ public class PointCloudVisualization extends PApplet {
         cam.setMinimumDistance(0);
         cam.setMaximumDistance(1200);
         cam.setActive(true);
+        this.getSurface().setVisible(false);
     }
 
   public void draw() {
