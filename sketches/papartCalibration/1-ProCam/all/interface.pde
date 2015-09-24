@@ -98,7 +98,8 @@ public class ControlFrame extends PApplet {
     }
 
     public void hideSaveKinectButton(){
-        saveKinectPaperBang.hide();
+        if(saveKinectPaperBang != null)
+            saveKinectPaperBang.hide();
     }
 
 
@@ -145,10 +146,6 @@ public class ControlFrame extends PApplet {
         calibrateProCam.hide();
 
 
-        Mode.add("CamManual");
-        Mode.add("CamView");
-        Mode.add("CamMarker");
-
         camRadio = skatolo.addRadioButton("Camera calibration").plugTo(mainApplet, "camMode")
             .setPosition(100, 100)
             .setItemWidth(20)
@@ -186,9 +183,6 @@ public class ControlFrame extends PApplet {
 
 
 
-        Mode.add("ProjManual");
-        Mode.add("ProjMarker");
-        Mode.add("ProjView");
 
         projRadio = skatolo.addRadioButton("Projector calibration").plugTo(mainApplet, "projMode")
             .setPosition(100, 250)
@@ -267,6 +261,8 @@ public class ControlFrame extends PApplet {
 
 
 
+        // Note : Modes should exist even when not activated.
+
         // If a Kinect is available
         if(isKinectOne || isKinect360){
             // activateKinectBang = skatolo.addBang("activateKinect")
@@ -275,7 +271,7 @@ public class ControlFrame extends PApplet {
             //     .plugTo(mainApplet, "activateKinect")
             //     ;
 
-            Mode.add("Kinect3D");
+
 
             kinectRadio = skatolo.addRadioButton("Kinect calibration").plugTo(mainApplet, "kinectMode")
                 .setPosition(100, 450)
@@ -293,8 +289,6 @@ public class ControlFrame extends PApplet {
 
 
             if(isKinect360){
-                Mode.add("KinectManual");
-                Mode.add("KinectMarker");
 
                 kinectRadio.addItem("KinectManual", 1)
                     .addItem("KinectMarker", 2)

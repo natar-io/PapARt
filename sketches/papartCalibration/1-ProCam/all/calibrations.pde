@@ -66,10 +66,10 @@ public void saveKinectPaper(){
 void checkIfCalibrationPossible(){
     if(isProjPaperSet && isCamPaperSet){
         controlFrame.showCalibrateProCam();
-    }
 
-    if(isProjPaperSet && isCamPaperSet && isKinectPaperSet){
-        controlFrame.showCalibrateKinectCam();
+        if(isKinectPaperSet || isKinectOne){
+            controlFrame.showCalibrateKinectCam();
+        }
     }
 
 }

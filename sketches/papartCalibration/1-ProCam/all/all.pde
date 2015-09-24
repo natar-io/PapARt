@@ -74,8 +74,8 @@ public void setup() {
 
     arDisplay.addScreen(app.getScreen());
 
+    initModes();
 
-    Mode.add("None");
     initProjectorAsCamera();
     checkKinectVersion();
     initCorners();
@@ -90,6 +90,19 @@ public void setup() {
 
     // CameraView cameraView = new CameraView();
     papart.startTracking();
+}
+
+void initModes(){
+    Mode.add("None");
+    Mode.add("CamManual");
+    Mode.add("CamView");
+    Mode.add("CamMarker");
+    Mode.add("ProjManual");
+    Mode.add("ProjMarker");
+    Mode.add("ProjView");
+    Mode.add("KinectManual");
+    Mode.add("KinectMarker");
+    Mode.add("Kinect3D");
 }
 
 private void initProjectorAsCamera(){
