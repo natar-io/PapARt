@@ -20,8 +20,10 @@ void saveCameraPaper(){
         cameraPaperCalibration = objectProjectorTransfo.get();
     }
 
+    controlFrame.setCameraPaperLabel("Camera - Paper OK");
     isCamPaperSet = true;
 
+    checkIfCalibrationPossible();
     noMode();
 }
 
@@ -37,10 +39,17 @@ void saveProjectorPaper(){
     }
 
     isProjPaperSet = true;
+    controlFrame.setProjectorPaperLabel("Projection - Paper OK");
+    checkIfCalibrationPossible();
 
     noMode();
 }
 
+void checkIfCalibrationPossible(){
+    if(isProjPaperSet && isCamPaperSet){
+        controlFrame.showCalibrateProCam();
+    }
+}
 
 
 
@@ -81,7 +90,7 @@ public void calibrate(){
     }
 }
 
-private void calibrateProCam(){
+public void calibrateProCam(){
     PMatrix3D camPaper = camBoard();
     PMatrix3D projPaper = projBoard();
 
@@ -96,7 +105,14 @@ private void calibrateProCam(){
     papart.saveCalibration(Papart.cameraProjExtrinsics, projPaper);
     // projPaper.print();
     projector.setExtrinsics(projPaper);
+    println("ProCam calibrated.");
 
+    // something need to change, to recalibrate.
+    controlFrame.hideCalibrateProCam();
+
+    // Set to projection mode to test.
+    noMode();
+    projMode(2);
 }
 
 private void calibrateKinectOne(){

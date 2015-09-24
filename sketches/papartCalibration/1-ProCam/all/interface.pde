@@ -23,6 +23,9 @@ public class ControlFrame extends PApplet {
     Slider sliderObjectWidth, sliderObjectHeight;
     Bang saveCameraPaperBang, saveProjectorPaperBang;
     Textarea textArea;
+    Group cornersGroup;
+    Textlabel cameraPaperLabel, projectorPaperLabel; //, kinectPaperLabel;
+    Bang calibrateProCam;
 
     public void setText(String text){
         if(!init)
@@ -42,11 +45,13 @@ public class ControlFrame extends PApplet {
     }
 
     public void hideCorners(){
-        corners.hide();
+        cornersGroup.hide();
+//        corners.hide();
     }
 
     public void showCorners(){
-        corners.show();
+        cornersGroup.show();
+//        corners.show();
     }
 
     public void hideObjectSize(){
@@ -83,15 +88,33 @@ public class ControlFrame extends PApplet {
         saveProjectorPaperBang.hide();
     }
 
+    public void setCameraPaperLabel(String text){
+        cameraPaperLabel.setValue(text);
+    }
+
+    public void setProjectorPaperLabel(String text){
+        projectorPaperLabel.setValue(text);
+    }
+
+    public void showCalibrateProCam(){
+        calibrateProCam.show();
+    }
+
+    public void hideCalibrateProCam(){
+        calibrateProCam.hide();
+    }
+
     public void setup() {
         frameRate(25);
         skatolo = new Skatolo(this);
 
         // add a horizontal sliders, the value of this slider will be linked
         // to variable 'sliderValue'
-        skatolo.addBang("calibrate").plugTo(mainApplet, "calibrateProCam")
+        calibrateProCam =  skatolo.addBang("calibrate ProCam").plugTo(mainApplet, "calibrateProCam")
             .setPosition(10, 10)
             ;
+
+        calibrateProCam.hide();
 
         Mode.add("CamManual");
         Mode.add("CamView");
@@ -114,6 +137,16 @@ public class ControlFrame extends PApplet {
             ;
         saveCameraPaperBang.hide();
 
+        cameraPaperLabel = skatolo.addTextlabel("cameraPaperLabel",
+                                                "Please save the calibration.",
+                                                200,
+                                                60);
+
+        projectorPaperLabel = skatolo.addTextlabel("projectorPaperLabel",
+                                                   "Please save the calibration.",
+                                                   200,
+                                                   260);
+
         saveProjectorPaperBang = skatolo.addBang("Save Proj - Paper Location")
             .plugTo(mainApplet, "saveProjectorPaper")
             .setPosition(200, 250)
@@ -135,9 +168,16 @@ public class ControlFrame extends PApplet {
             .setColorLabel(color(255))
             ;
 
+        cornersGroup = skatolo.addGroup("CornersGroup")
+            .setPosition(400,50)
+            // .setWidth(300)
+            // .setHeight(300)
+            .activateEvent(true)
+            .setLabel("Corners.")
+            ;
 
         corners = skatolo.addRadioButton("Corners")
-            .setPosition(400,50 )
+            .setPosition(0,0)
             .setItemWidth(20)
             .setItemHeight(20)
             .addItem("bottom Left", 0) // 0, y
@@ -145,7 +185,22 @@ public class ControlFrame extends PApplet {
             .addItem("top right", 2)  // x, 0
             .addItem("Top Left ", 3)  // 0, 0
             .activate(0)
+            .setGroup("CornersGroup")
             .plugTo(mainApplet, "activeCorner")
+            ;
+
+        skatolo.addBang("Save Corners")
+            .setPosition(100, 100)
+            .setSize(20, 20)
+            .setGroup("CornersGroup")
+            .plugTo(mainApplet, "saveCorners")
+            ;
+
+        skatolo.addBang("Load Corners")
+            .setPosition(100, 50)
+            .setSize(20, 20)
+            .setGroup("CornersGroup")
+            .plugTo(mainApplet, "loadCorners")
             ;
 
         sliderObjectWidth = skatolo.addSlider("ObjectWidth")
@@ -153,6 +208,7 @@ public class ControlFrame extends PApplet {
             .setValue(objectWidth)
             .setRange(200, 500)
             .setSize(300, 12)
+            .setGroup("CornersGroup")
         .plugTo(mainApplet, "objectWidth")
              ;
 
@@ -161,7 +217,8 @@ public class ControlFrame extends PApplet {
             .setValue(objectHeight)
             .setRange(200, 400)
             .setSize(200, 12)
-        .plugTo(mainApplet, "objectHeight")
+            .setGroup("CornersGroup")
+            .plugTo(mainApplet, "objectHeight")
              ;
 
         textArea = skatolo.addTextarea("txt")
