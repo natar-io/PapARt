@@ -116,7 +116,6 @@ void kinectTypeChooser(int value){
     if(value >= 0){
         kinectConfig.setCameraType(Camera.Type.values()[value]);
     }
-
 }
 
 void screenChooserRadio(int value){

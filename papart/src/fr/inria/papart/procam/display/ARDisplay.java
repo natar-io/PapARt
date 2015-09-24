@@ -66,7 +66,7 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
     public void init() {
         this.graphics = (PGraphicsOpenGL) parent.createGraphics((int) (frameWidth * quality),
                 (int) (frameHeight * quality), PApplet.OPENGL);
-        screens = new ArrayList<Screen>();
+//        screens = new ArrayList<Screen>();
         updateIntrinsicsRendering();
 
         if (distort) {

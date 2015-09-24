@@ -139,19 +139,19 @@ public class Papart {
         }
     }
 
-    private static CameraConfiguration getDefaultCameraConfiguration(PApplet applet) {
+    public static CameraConfiguration getDefaultCameraConfiguration(PApplet applet) {
         CameraConfiguration config = new CameraConfiguration();
         config.loadFrom(applet, cameraConfig);
         return config;
     }
 
-    private static CameraConfiguration getDefaultKinectConfiguration(PApplet applet) {
+    public static CameraConfiguration getDefaultKinectConfiguration(PApplet applet) {
         CameraConfiguration config = new CameraConfiguration();
         config.loadFrom(applet, cameraKinectConfig);
         return config;
     }
 
-    private static ScreenConfiguration getDefaultScreenConfiguration(PApplet applet) {
+    public static ScreenConfiguration getDefaultScreenConfiguration(PApplet applet) {
         ScreenConfiguration config = new ScreenConfiguration();
         config.loadFrom(applet, screenConfig);
         return config;
@@ -287,6 +287,17 @@ public class Papart {
         window.setUndecorated(false);
         window.setSize(cameraTracking.width(),
                 cameraTracking.height());
+    }
+    
+    public void forceCameraSize(int w, int h) {
+
+        frameSize.set(w, h);
+//        this.shouldSetWindowSize = true;
+//        registerPost();
+
+        GLWindow window = (GLWindow) applet.getSurface().getNative();
+        window.setUndecorated(false);
+        window.setSize(w, h);
     }
 
     public void forceProjectorSize() {
