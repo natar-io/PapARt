@@ -108,7 +108,7 @@ public void calibrateKinectCam(){
         calibrateKinect360();
     }
 
-    controlFrame.hideCalibrateProCam();
+    controlFrame.hideCalibrateKinectCam();
 }
 
 public void calibrateProCam(){
