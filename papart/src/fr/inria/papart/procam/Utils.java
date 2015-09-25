@@ -51,11 +51,13 @@ public class Utils {
             String papartFolder = getPapartFolder();
             String sketchFolder = "/examples/" + exampleName + "/";
 
+            // On linux only 
+            commandLine.append("nohup ");
+
             // TODO: find processing-java even when not installed !
             // Or make an easy install...
             commandLine.append("processing-java ");
-            
-            
+
             commandLine.append("--sketch=")
                     .append(papartFolder)
                     .append(sketchFolder)
@@ -68,12 +70,13 @@ public class Utils {
 //        commandLine.append("\"");
 // processing-java --sketch=/home/jiii/papart/sketches/papartExamples/Kinect/MultiTouchKinect/ --output=/home/jiii/papart/sketches/papartExamples/Kinect/MultiTouchKinect/build --force --run
 //            println("Starting... \n" + commandLine.toString());
-            String line;
-            
             // TODO: Alternative on Windows... when /bin/sh is not installed. 
-            Process p = Runtime.getRuntime().exec(new String[]{"/bin/sh", "-c", commandLine.toString()});
+            Process p = Runtime.getRuntime().exec(commandLine.toString());
+//            Process p = Runtime.getRuntime().exec(new String[]{"/bin/bash", "-c", commandLine.toString()});
+//            Process p = Runtime.getRuntime().exec(new String[]{"nohup", commandLine.toString()});
 
             if (!silent) {
+                String line;
                 BufferedReader bri = new BufferedReader(new InputStreamReader(p.getInputStream()));
                 BufferedReader bre = new BufferedReader(new InputStreamReader(p.getErrorStream()));
                 while ((line = bri.readLine()) != null) {
@@ -85,7 +88,7 @@ public class Utils {
                 }
                 bre.close();
             }
-            
+
             return p;
             // p.waitFor();
         } catch (Exception e) {

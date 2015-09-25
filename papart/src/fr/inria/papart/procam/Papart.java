@@ -288,7 +288,7 @@ public class Papart {
         window.setSize(cameraTracking.width(),
                 cameraTracking.height());
     }
-    
+
     public void forceCameraSize(int w, int h) {
 
         frameSize.set(w, h);
@@ -310,6 +310,17 @@ public class Papart {
         window.setUndecorated(true);
         window.setSize(projector.getWidth(),
                 projector.getHeight());
+    }
+
+    public void forceProjectorSize(int w, int h, int px, int py) {
+        frameSize.set(w, h);
+//        this.shouldSetWindowSize = true;
+//        registerPost();
+
+        GLWindow window = (GLWindow) applet.getSurface().getNative();
+        window.setUndecorated(true);
+        window.setSize(w, h);
+        window.setPosition(px, py);
     }
 
     /**
@@ -348,6 +359,10 @@ public class Papart {
     public void defaultFrameLocation() {
         System.out.println("Setting the frame location...");
         this.applet.frame.setLocation(screenConfiguration.getProjectionScreenOffsetX(),
+                screenConfiguration.getProjectionScreenOffsetY());
+
+        GLWindow window = (GLWindow) applet.getSurface().getNative();
+        window.setPosition(screenConfiguration.getProjectionScreenOffsetX(),
                 screenConfiguration.getProjectionScreenOffsetY());
     }
 

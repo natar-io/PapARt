@@ -24,6 +24,9 @@ public class Kinect360 extends KinectDevice {
     public static final int KINECT_10BIT = 0;
     private final CameraOpenKinect camera;
 
+    public static final int CAMERA_WIDTH = 640;
+    public static final int CAMERA_HEIGHT = 480;
+
     public Kinect360(PApplet parent) {
         initSizes(parent);
         camera = (CameraOpenKinect) CameraFactory.createCamera(Camera.Type.OPEN_KINECT, 0);
