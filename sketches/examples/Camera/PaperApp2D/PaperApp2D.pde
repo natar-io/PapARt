@@ -1,5 +1,8 @@
+import fr.inria.papart.drawingapp.DrawUtils;
+
 // PapARt library
 import fr.inria.papart.procam.*;
+import fr.inria.papart.procam.display.*;
 import org.bytedeco.javacpp.*;
 import org.bytedeco.javacpp.opencv_core;
 import org.reflections.*;
@@ -10,7 +13,7 @@ import processing.video.*;
 
 boolean useProjector = true;
 Papart papart;
-
+ProjectorDisplay projector;
 
 public void setup() {
 
@@ -21,6 +24,9 @@ public void setup() {
 
     papart.loadSketches();
     papart.startTracking();
+
+    projector = papart.getProjectorDisplay();
+    // projector.manualMode();
 }
 
 
@@ -34,5 +40,12 @@ void settings(){
 }
 
 void draw() {
-
+    background(255);
+    // projector.clear();
+    // projector.drawScreensOver();
+    // System.out.println("main Draw");
+    // stroke(100);
+    // DrawUtils.drawImage((PGraphicsOpenGL)this.g,
+    //                     projector.render(),
+    //                     0, 0, width, height);
 }

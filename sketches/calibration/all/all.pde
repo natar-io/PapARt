@@ -78,6 +78,8 @@ public void setup() {
 
     initProjectorAsCamera();
     checkKinectVersion();
+    initNames();
+
     initCorners();
 
     // Kinect version should be known before the control frame is created.
@@ -90,6 +92,26 @@ public void setup() {
 
     // CameraView cameraView = new CameraView();
     papart.startTracking();
+}
+
+String cameraName, screenName, kinectName;
+void initNames(){
+    CameraConfiguration cameraConfig = Papart.getDefaultCameraConfiguration(this);
+    cameraName = cameraConfig.getCameraType().name()+ " " + cameraConfig.getCameraName();
+
+    ScreenConfiguration screenConfig = Papart.getDefaultScreenConfiguration(this);
+    screenName = screenConfig.getProjectionScreenWidth() + "x" +
+        screenConfig.getProjectionScreenHeight() + " at " +
+        screenConfig.getProjectionScreenOffsetX() + "," +
+        screenConfig.getProjectionScreenOffsetY() + ".";
+
+    if(isKinectOne || isKinect360){
+        CameraConfiguration config = Papart.getDefaultKinectConfiguration(this);
+        kinectName = config.getCameraType().name()+ " " + config.getCameraName();
+    } else{
+        kinectName = "No Kinect";
+    }
+
 }
 
 void initModes(){

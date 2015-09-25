@@ -34,6 +34,7 @@ import static processing.core.PConstants.RGB;
 import processing.opengl.Texture;
 import toxi.geom.Matrix4x4;
 import toxi.geom.Vec3D;
+import java.io.*;
 
 /**
  *
@@ -43,6 +44,61 @@ public class Utils {
 
     static public final String LibraryName = "PapARt";
 
+    static public Process runExample(String exampleName, boolean silent) {
+
+        try {
+            StringBuilder commandLine = new StringBuilder();
+            String papartFolder = getPapartFolder();
+            String sketchFolder = "/examples/" + exampleName + "/";
+
+            // TODO: find processing-java even when not installed !
+            // Or make an easy install...
+            commandLine.append("processing-java ");
+            
+            
+            commandLine.append("--sketch=")
+                    .append(papartFolder)
+                    .append(sketchFolder)
+                    .append(" --output=")
+                    .append(papartFolder)
+                    .append(sketchFolder)
+                    .append("build")
+                    .append(" --force --run");
+
+//        commandLine.append("\"");
+// processing-java --sketch=/home/jiii/papart/sketches/papartExamples/Kinect/MultiTouchKinect/ --output=/home/jiii/papart/sketches/papartExamples/Kinect/MultiTouchKinect/build --force --run
+//            println("Starting... \n" + commandLine.toString());
+            String line;
+            
+            // TODO: Alternative on Windows... when /bin/sh is not installed. 
+            Process p = Runtime.getRuntime().exec(new String[]{"/bin/sh", "-c", commandLine.toString()});
+
+            if (!silent) {
+                BufferedReader bri = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                BufferedReader bre = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+                while ((line = bri.readLine()) != null) {
+                    System.out.println(line);
+                }
+                bri.close();
+                while ((line = bre.readLine()) != null) {
+                    System.out.println(line);
+                }
+                bre.close();
+            }
+            
+            return p;
+            // p.waitFor();
+        } catch (Exception e) {
+            System.out.println("Could not start the Papart example : "
+                    + exampleName
+                    + "\n" + e);
+        };
+        return null;
+
+    }
+// sketchbook
+
+// processing-java --sketch=/home/jiii/papart/sketches/papartExamples/Kinect/MultiTouchKinect/ --output=/home/jiii/papart/sketches/papartExamples/Kinect/MultiTouchKinect/build --force --run
     static public String getSketchbookFolder() {
 
         String sketchbook = java.lang.System.getenv("SKETCHBOOK");
@@ -674,16 +730,15 @@ public class Utils {
 //http://www.vision.caltech.edu/bouguetj/calib_doc/htmls/parameters.html
         sb.append("ARToolKitPlus_CamCal_Rev02\n");
         sb.append(w).append(" ").append(h).append(" ");
-        
 
         // cx cy  fx fy  
         sb.append(proj[2]).append(" ").append(proj[5])
                 .append(" ").append(proj[0]).
                 append(" ").append(proj[4]).append(" ");
 
-                // alpha_c  // skew factor  
+        // alpha_c  // skew factor  
         sb.append("0 ").append(" ");
-        
+
         // alpha_c ?  
 //        sb.append("0 ");
         // kc(1 - x)  -> 6 values
@@ -702,10 +757,9 @@ public class Utils {
         pw.close();
     }
 
-    static public void convertProjParam(PApplet pa, String inputYAML, String outputDAT) throws Exception{
+    static public void convertProjParam(PApplet pa, String inputYAML, String outputDAT) throws Exception {
 
         ProjectorDevice cam = null;
-
 
         ProjectorDevice[] c = ProjectorDevice.read(inputYAML);
         if (c.length > 0) {
@@ -734,15 +788,14 @@ public class Utils {
         sb.append("ARToolKitPlus_CamCal_Rev02\n");
         sb.append(w).append(" ").append(h).append(" ");
 
- 
         // cx cy  fx fy  
         sb.append(mat[2]).append(" ").append(mat[5])
                 .append(" ").append(mat[0]).
                 append(" ").append(mat[4]).append(" ");
 
-                       // alpha_c  // skew factor  
+        // alpha_c  // skew factor  
         sb.append("0 ").append(" ");
-        
+
         // alpha_c ?  
 //        sb.append("0 ");
         // kc(1 - x)  -> 6 values

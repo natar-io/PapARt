@@ -166,7 +166,7 @@ public class ControlFrame extends PApplet {
         cameraPaperLabel = skatolo.addTextlabel("cameraPaperLabel",
                                                 "Please save the calibration.",
                                                 200,
-                                                60);
+                                                90);
 
         projectorPaperLabel = skatolo.addTextlabel("projectorPaperLabel",
                                                    "Please save the calibration.",
@@ -331,6 +331,10 @@ public class ControlFrame extends PApplet {
 
     public void draw() {
         background(100);
+
+        text("Camera : " + cameraName , 100, 70);
+        text("Projector : " + screenName , 100, 230);
+        text("Kinect : " + kinectName , 100, 420);
     }
 
     public Skatolo control() {

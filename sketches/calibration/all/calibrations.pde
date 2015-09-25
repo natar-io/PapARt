@@ -175,9 +175,14 @@ private void calibrateKinect360(){
     planeCalibCam = PlaneCalibration.CreatePlaneCalibrationFrom(camBoard(), paperSize);
     planeCalibCam.flipNormal();
 
+    PMatrix3D kinectExtr = kinectDevice.getStereoCalibration().get();
+    kinectExtr.invert();
+
     kinectCameraExtrinsics = camBoard();
     kinectCameraExtrinsics.invert();
     kinectCameraExtrinsics.preApply(kinect360Board());
+    kinectCameraExtrinsics.preApply(kinectExtr);
+
     println("Kinect - Camera extrinsics : ");
     kinectCameraExtrinsics.print();
 

@@ -26,7 +26,7 @@ void activateCameraKinectCorners(){
     controlFrame.showObjectSize();
     isObjectSize = true;
     areCorners = true;
-    controlFrame.showSaveCameraButton();
+
     isSaveButtonShowed = true;
     try{
         loadCorners();

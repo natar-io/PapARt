@@ -1,5 +1,7 @@
 Textfield cameraIdText, posXText, posYText;
 Textfield kinectIdText;
+Textfield cameraName;
+Textfield kinectName;
 
 RadioButton screenChooser, cameraType, kinectType;
 
