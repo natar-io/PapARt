@@ -9,6 +9,9 @@ Button startCameraButton, saveCameraAsButton, saveDefaultCameraButton;
 Button startKinectButton, saveKinectAsButton, saveDefaultKinectButton;
 Button initButton, saveScreenAsButton, saveDefaultScreenButton;
 Toggle useCalibration;
+Button loadCalibrationCamera, loadCalibrationProjector;
+
+Button switchButton;
 
 PFont myFont;
 ControlFont cFont;
@@ -53,9 +56,10 @@ void initUI() {
   initCameraUI();
   initKinectUI();
 
-  skatolo.addBang("switchToCalibration")
+  switchButton = skatolo.addButton("switchToCalibration")
       .setLabel("Switch to Calibration")
-      .setPosition(400, 20)
+      .setSize(200, 30)
+      .setPosition(400, 10)
       ;
 
   updateStyles();
@@ -102,6 +106,13 @@ void initScreenUI() {
     .setText(Integer.toString(screenConfig.getProjectionScreenOffsetY()))
     ;
 
+  loadCalibrationProjector = skatolo.addButton("loadProjectorCalibration")
+      .setLabel("Load Calibration")
+      .setPosition(200, 197)
+      .setSize(140,20)
+      ;
+
+
   initButton = skatolo.addButton("testProjection")
     .setPosition(611, 102)
     .setLabel("Test Projection")
@@ -138,9 +149,16 @@ void initCameraUI() {
         ;
 
     useCalibration = skatolo.addToggle("useCameraCalibration")
-        .setPosition(250, 397)
-        .setSize(130,50)
+        .setLabel("use calibration")
+        .setPosition(250, 457)
+        // .setSize(130,50)
         .setState(true)
+        ;
+
+    loadCalibrationCamera = skatolo.addButton("loadCalibration")
+        .setLabel("load calibration")
+        .setPosition(250, 397)
+        .setSize(140,20)
         ;
 
 
@@ -238,18 +256,22 @@ void updateStyles() {
   setStyle(initButton);
   setStyle(saveScreenAsButton);
   setStyle(saveDefaultScreenButton);
+  setStyle(loadCalibrationProjector);
 
-  setStyle(cameraType);
+    setStyle(cameraType);
   setStyle(cameraIdText);
   setStyle(startCameraButton);
   setStyle(saveDefaultCameraButton);
   setStyle(saveCameraAsButton);
+  setStyle(loadCalibrationCamera);
 
   setStyle(kinectType);
   setStyle(kinectIdText);
   setStyle(startKinectButton);
   setStyle(saveDefaultKinectButton);
   setStyle(saveKinectAsButton);
+
+  setStyle(switchButton);
 }
 
 void setStyle(Controller controller) {
