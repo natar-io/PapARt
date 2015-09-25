@@ -149,6 +149,8 @@ private void initProjectorAsCamera(){
 
 public void draw(){
 
+    // ellipse(mouseX, mouseY, 10, 10);
+
     // Automatic modes...
 
     if(Mode.is("CamMarker")){

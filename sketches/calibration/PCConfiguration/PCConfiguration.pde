@@ -35,28 +35,9 @@ public void settings() {
     size(800, 840, P3D);
 }
 
+TestView testView;
+
 void setup(){
-
-
-    // Here camera, test it with defaultCameraTest
-    // cc.setCameraName("1");
-    // cc.setCameraType(Camera.Type.OPENCV);
-
-    // Camera.Type.OPENCV, "2"
-    // Camera.Type.PROCESSING, "/dev/video1"
-    // Camera.Type.FLY_CAPTURE, 0
-
-    // TODO: sesizable & movable. Save Size and location !
-
-    // Here Screen resolution
-    // cc.setProjectionScreenWidth(1280);
-    // cc.setProjectionScreenHeight(800);
-
-    // Screen offset, where is the projection screen, relative to the main screen.
-    // cc.setProjectionScreenOffsetX(0);
-    // cc.setProjectionScreenOffsetY(200);
-
-    // Do not modify anything further.
 
     cameraConfig = new CameraConfiguration();
     kinectConfig = new CameraConfiguration();
@@ -69,6 +50,9 @@ void setup(){
     initUI();
     backgroundImage = loadImage("data/background.png");
     tryLoadCameraCalibration();
+
+    // test subApplet.
+    testView = new TestView();
 }
 
 
@@ -89,20 +73,19 @@ void tryLoadCameraCalibration(){
     }
 }
 
+void testProjection(boolean value){
+    if(value){
+	testView.testProjector();
+    }
+}
 
 void testCameraButton(boolean value){
     println("Start pressed " + value);
 
-    cameraConfig.setCameraName(cameraIdText.getText());
-
     if(value){
-	testCamera();
-    } else {
-	if(camera != null){
-	    camera.close();
-	    camera = null;
-	}
+	testView.testCamera();
     }
+
 }
 
 
@@ -116,6 +99,14 @@ void kinectTypeChooser(int value){
     if(value >= 0){
         kinectConfig.setCameraType(Camera.Type.values()[value]);
     }
+}
+
+void testKinectButton(boolean value){
+
+    if(value){
+	testView.testKinect();
+    }
+
 }
 
 void screenChooserRadio(int value){
@@ -133,9 +124,16 @@ PVector getScreenResolution(int screenNo){
     return new PVector(displayMode.getWidth(), displayMode.getHeight());
 }
 
+public void switchToCalibration(){
+    println("Switch !");
+    Utils.runExample("calibration/all", true);
 
+    try{
+         Thread.sleep(12000);
+     }catch(Exception e){}
+    exit();
+}
 
-// TODO: test default camera in here.
 
 int rectSize = 30;
 
@@ -161,9 +159,10 @@ void keyPressed() {
     if (key == 27) {
 	//The ASCII code for esc is 27, so therefore: 27
      //insert your function here
-     }
-
-
+        println("Yoo");
+    }
+    if (key == ESC)
+        key=0;
 }
 
 
@@ -224,13 +223,19 @@ void saveDefaultScreen(){
     saveScreen(Papart.screenConfig);
 }
 
-void saveScreen(String fileName){
+void updateScreenConfig(){
     try{
 	screenConfig.setProjectionScreenOffsetX(Integer.parseInt(posXText.getText()));
 	screenConfig.setProjectionScreenOffsetY(Integer.parseInt(posYText.getText()));
     }catch(java.lang.NumberFormatException e){
 	println("Invalid Position");
     }
+
+}
+
+void saveScreen(String fileName){
+
+    updateScreenConfig();
 
     screenConfig.saveTo(this, fileName);
     println("Default screen saved.");

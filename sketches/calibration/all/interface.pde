@@ -132,10 +132,25 @@ public class ControlFrame extends PApplet {
     }
 
 
+    public void switchToPCConfiguration(){
+        println("Switch !");
+        Utils.runExample("calibration/PCConfiguration", true);
+
+        try{
+            Thread.sleep(8000);
+        }catch(Exception e){}
+        exit();
+    }
 
     public void setup() {
         frameRate(25);
         skatolo = new Skatolo(this);
+
+
+        skatolo.addBang("switchToPCConfiguration")
+            .setLabel("Switch to PCConfiguration")
+            .setPosition(400, 20)
+            ;
 
         // add a horizontal sliders, the value of this slider will be linked
         // to variable 'sliderValue'

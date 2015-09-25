@@ -141,7 +141,6 @@ private void calibrateKinectOne(){
     kinectExtr.invert();
 
     PMatrix3D boardViewFromDepth = camBoard();
-    // boardViewFromDepth.apply(kinectExtr);
 
     // camBoard().print();
     // boardViewFromDepth.print();

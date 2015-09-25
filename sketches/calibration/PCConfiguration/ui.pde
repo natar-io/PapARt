@@ -8,7 +8,7 @@ RadioButton screenChooser, cameraType, kinectType;
 Button startCameraButton, saveCameraAsButton, saveDefaultCameraButton;
 Button startKinectButton, saveKinectAsButton, saveDefaultKinectButton;
 Button initButton, saveScreenAsButton, saveDefaultScreenButton;
-
+Toggle useCalibration;
 
 PFont myFont;
 ControlFont cFont;
@@ -16,6 +16,8 @@ CColor cColor;
 CColor cColorToggle;
 
 PImage testCameraImg;
+
+boolean useCameraCalibration;
 
 void initUI() {
 
@@ -50,6 +52,11 @@ void initUI() {
   initScreenUI();
   initCameraUI();
   initKinectUI();
+
+  skatolo.addBang("switchToCalibration")
+      .setLabel("Switch to Calibration")
+      .setPosition(400, 20)
+      ;
 
   updateStyles();
 }
@@ -95,7 +102,7 @@ void initScreenUI() {
     .setText(Integer.toString(screenConfig.getProjectionScreenOffsetY()))
     ;
 
-  initButton = skatolo.addButton("initSecondApplet")
+  initButton = skatolo.addButton("testProjection")
     .setPosition(611, 102)
     .setLabel("Test Projection")
     .setSize(110, 20)
@@ -130,8 +137,14 @@ void initCameraUI() {
         .activate(cameraConfig.getCameraType().ordinal())
         ;
 
+    useCalibration = skatolo.addToggle("useCameraCalibration")
+        .setPosition(250, 397)
+        .setSize(130,50)
+        .setState(true)
+        ;
 
-  cameraIdText = skatolo.addTextfield("CameraId")
+
+    cameraIdText = skatolo.addTextfield("CameraId")
     .setPosition(250, 358)
     .setSize(200, 20)
     .setFont(myFont)
