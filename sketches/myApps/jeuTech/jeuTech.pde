@@ -16,14 +16,25 @@ boolean noCameraMode = false;
 
 PVector boardSize = new PVector(297, 210);   //  21 * 29.7 cm
 float boardResolution = 1;  // 3 pixels / mm
+int frameSizeX = 640 * 2;
+int frameSizeY = 480 * 2;
 
-void setup(){
 
-    int frameSizeX = 640 * 2;
-    int frameSizeY = 480 * 2;
+void settings(){
 
     if (noCameraMode) {
-	size(frameSizeX, frameSizeY, OPENGL);
+	size(frameSizeX, frameSizeY, P3D);
+    }
+
+    fullScreen(P3D);
+}
+
+PApplet mainApplet;
+
+void setup(){
+    mainApplet = this;
+
+    if (noCameraMode) {
 	papart = new Papart(this);
 	papart.initNoCamera(1);
 	papart.loadTouchInputTUIO();
@@ -31,12 +42,12 @@ void setup(){
 
     } else {
 	if (useProjector) {
-	  
+
 	    papart = Papart.projection(this);
 	    papart.loadTouchInput();
-	  
+
 	} else {
-	    size(frameSizeX, frameSizeY, OPENGL);
+//	    size(frameSizeX, frameSizeY, OPENGL);
 	    papart = new Papart(this);
 	    papart.initKinectCamera(2f);
 	    papart.loadTouchInputKinectOnly();
@@ -44,10 +55,10 @@ void setup(){
 	    display.setDrawingSize(width, height);
 	}
     }
-  
-    // see Physics.pde 
+
+    // see Physics.pde
     initPhysics();
-  
+
     papart.loadSketches();
 
     if (!noCameraMode) {

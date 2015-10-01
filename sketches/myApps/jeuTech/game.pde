@@ -28,7 +28,7 @@ public class Game  extends PaperTouchScreen {
     Border topBorder;
     Border botBorder;
 
-    // DEBUG values 
+    // DEBUG values
     int miniatureSize = 20;
     PImage miniature;
 
@@ -37,9 +37,9 @@ public class Game  extends PaperTouchScreen {
     void setup(){
 	setResolution(3);
 	setDrawingSize( (int) playerBoardSize.x, (int)playerBoardSize.y);
-	loadMarkerBoard(sketchPath + "/data/markers/game.cfg",
+	loadMarkerBoard(sketchPath() + "/data/markers/game.cfg",
 			playerBoardSize.x, playerBoardSize.y);
-	
+
 	PFont font = loadFont("AccanthisADFStd-Bold-48.vlw");
 	Button.setFont(font);
 	Button.setFontSize(20);
@@ -80,15 +80,15 @@ public class Game  extends PaperTouchScreen {
 
     float drawingCaptureWidth = 300;
     float drawingCaptureHeight = 305;
-    int outputCaptureWidth = 128; 
-    int outputCaptureHeight = 128; 
+    int outputCaptureWidth = 128;
+    int outputCaptureHeight = 128;
 
     void createCaptures(){
 	colorDetections[0] = new ColorDetection(this);
 	colorDetections[0].setPosition(new PVector(80, 60));
 	colorDetections[0].setCaptureOffset(offset);
 	colorDetections[0].initialize();
-	
+
 	colorDetections[1] = new ColorDetection(this);
 	colorDetections[1].setPosition(new PVector(120, 60));
 	colorDetections[1].setCaptureOffset(offset);
@@ -112,21 +112,21 @@ public class Game  extends PaperTouchScreen {
 	drawingDetection.setPosition(new PVector(0, -drawingCaptureHeight));
 	drawingDetection.setCaptureOffset(offset);
 	drawingDetection.setCaptureSize(drawingCaptureWidth, drawingCaptureHeight);
-	drawingDetection.setPicSize(outputCaptureWidth,  outputCaptureHeight);  // pixels 
+	drawingDetection.setPicSize(outputCaptureWidth,  outputCaptureHeight);  // pixels
 	drawingDetection.initialize();
     }
-    
+
 
     public boolean checkBounds(PVector v){
 	return (v.x < - 300 || v.x > 550);
     }
 
-    public int getObjectColor(int id){ 
+    public int getObjectColor(int id){
 	return colorDetections[id].getColor();
     }
- 
 
-    // Todo check if this is useful 
+
+    // Todo check if this is useful
     public void resetPos(){
 	screen.resetPos();
     }
@@ -137,7 +137,7 @@ public class Game  extends PaperTouchScreen {
 	if(random(1000) < 1){
 	    robot.mouseMove( (int) random(100), (int) random(100));
 	}
-	
+
 	if(DEBUG_TOUCH){
 	    cameraTracking.getPImageCopyTo(cameraImage);
 	}
@@ -153,7 +153,7 @@ public class Game  extends PaperTouchScreen {
         if(noCameraMode){
 	    setLocation(noCameraLocation.x,
 			noCameraLocation.y,
-			0); 
+			0);
         }
 
 	// We must always step through time!
@@ -161,7 +161,7 @@ public class Game  extends PaperTouchScreen {
 
 	beginDraw3D();
 
-	clear();	
+	clear();
 	background(0);
 
 	if(noCameraMode){
@@ -170,18 +170,18 @@ public class Game  extends PaperTouchScreen {
 	    if(Mode.is("wall")){
 		if(mousePressed){
 		    Wall w = new Wall(mouseX - noCameraLocation.x,
-				      mouseY - noCameraLocation.y, 
+				      mouseY - noCameraLocation.y,
 				      10);
 		    w.lifeTime = 1000000;
 		    walls.add(w);
 		}
 	    }
 
-	    
+
 	} else{
 	    //	    touchList.removeGhosts();
 	}
-	
+
 	drawColorDetection();
 	findTouchColors();
 
@@ -209,7 +209,7 @@ public class Game  extends PaperTouchScreen {
     }
 
     void addTouch(){
-	
+
     }
 
 
@@ -330,7 +330,7 @@ public class Game  extends PaperTouchScreen {
 	    }
 	    ellipse(p.x, p.y, 10, 10);
 	}
-	
+
 	for(PVector p : drawnZone2){
 	    if(test){
 		fill(0, 255, 180);
@@ -352,7 +352,7 @@ public class Game  extends PaperTouchScreen {
 	//	println("Update attractors");
 	for (Touch t : touchList) {
 	    //	    println("touch " + t + " "  + t.touchPoint);
-	    
+
 	    if(isAttractor(t) && isInMiddle(t.position)){
 		noFill();
 
@@ -368,7 +368,7 @@ public class Game  extends PaperTouchScreen {
 		    if(distToObject < attractorDistance){
 			for(PVector p : drawnZone){
 			    float distToDrawing = m.getScreenPos().dist(p);
-			    
+
 			    if(distToDrawing < drawingDistance){
 				noFill();
 				stroke(getObjectColor(1));
@@ -377,25 +377,25 @@ public class Game  extends PaperTouchScreen {
 				push(t, m);
 			    }
 			}
-			
+
 		    }
 		}
 	    }
 	}
 	popMatrix();
     }
-    
+
 
     void findTouchColors(){
 	for (Touch t : touchList) {
 
             if (t.is3D) {
 		continue;
-            } 
+            }
 
 	    if(!noCameraMode && t.position.y > 0)
 		continue;
-	    TouchPoint tp = t.touchPoint; 
+	    TouchPoint tp = t.touchPoint;
 
 	    if(tp == null){
 		println("Null tp in game " );
@@ -415,7 +415,7 @@ public class Game  extends PaperTouchScreen {
 		checkTypeOfTouch(t);
 	    }
 
-	    
+
 	    line(towerLine, 0, towerLine, 200);
 	    if(isTower(t) && isInTowerZone(t.position)){
 		tryAddEnnemi(t);
@@ -433,7 +433,7 @@ public class Game  extends PaperTouchScreen {
 	}
     }
 
-    
+
     void tryAddEnnemi(Touch t){
 	if(ennemies.size() == 0){
 	    Ennemi ennemi = new Ennemi(t.position);
@@ -444,7 +444,7 @@ public class Game  extends PaperTouchScreen {
     }
 
     int towerLine = 250;
-    
+
     boolean isInMiddle(PVector v){
 	return v.x > 0 && v.x < towerLine;
     }
@@ -452,30 +452,30 @@ public class Game  extends PaperTouchScreen {
     boolean isInTowerZone(PVector v){
 	return v.x >= towerLine;
     }
-    
 
-    
+
+
     // TODO: update with all the new detections ?!
     // TODO: tweak these values online with sliders.
     void checkTypeOfTouch(Touch t){
 
-	if(noCameraMode){  
-	    TouchPoint tp = t.touchPoint; 
+	if(noCameraMode){
+	    TouchPoint tp = t.touchPoint;
 	    int id = tp.getID();
 
-	    if(id < 8) 
+	    if(id < 8)
 		tp.attachedValue =  TOWER;
-	    else 
-		if(id < 15) 
+	    else
+		if(id < 15)
 		    tp.attachedValue =  PUSH_UP;
-		else 
-		    if(id < 22) 
+		else
+		    if(id < 22)
 			tp.attachedValue =  PUSH_DOWN;
 
 	} else {
-	    TouchPoint tp = t.touchPoint; 
+	    TouchPoint tp = t.touchPoint;
 
-	    // check only young ones. 
+	    // check only young ones.
 	    if(tp.getAge(millis()) < 2000){
 
 		int[] scores = new int[colorDetections.length];
@@ -518,7 +518,7 @@ public class Game  extends PaperTouchScreen {
 	    Missile m = missiles.get(i);
 	    m.display(currentGraphics);
 	    m.update();
-	    
+
 	    // Missiles that leave the screen, we delete them
 	    // (note they have to be deleted from both the box2d world and our list
 	    if (m.done()) {
@@ -557,7 +557,7 @@ public class Game  extends PaperTouchScreen {
 	//     }
 	// }
 	//	Look at all Walls
-	
+
 	// TODO: create something for the NoCameraMode...
 	if(canCreateWalls() && !noCameraMode){
 	    KinectTouchInput kTouchInput = (KinectTouchInput) touchInput;
@@ -565,14 +565,14 @@ public class Game  extends PaperTouchScreen {
 	    noStroke();
 	    for (Touch t : touchList) {
 		if(!t.is3D && isAttractor(t)){
-		    if(noCameraMode){  
+		    if(noCameraMode){
 			// TODO: no camera mode...
-		    } else { 
+		    } else {
 			TouchPoint tp = t.touchPoint;
 			ArrayList<DepthDataElementKinect> depthDataElements = tp.getDepthDataElements();
 			for(DepthDataElementKinect dde :  depthDataElements){
 			    PVector v = kTouchInput.projectPointToScreen(screen, display, dde);
-			    
+
 			    if(v != null && isInMiddle(v)) {
 
 				// Hack
@@ -617,7 +617,7 @@ public class Game  extends PaperTouchScreen {
 
 	pushMatrix();
 	rect(0, 0, 61, 76);
-	
+
 	stroke(colorDetections[id].getColor());
 	translate(2.5f, 2.5f);
 	strokeWeight(7);
@@ -633,7 +633,7 @@ public class Game  extends PaperTouchScreen {
     void drawColorDetection(){
 
 	pushMatrix();
-	noStroke();	
+	noStroke();
 	translate(120, 12, 0);
 	for(int i = 0; i < colorDetections.length; i++){
 	    colorDetections[i].computeColor();
@@ -650,7 +650,7 @@ public class Game  extends PaperTouchScreen {
 	translate(10, 0, 0);
 
 	popMatrix();
-	
+
 	for(ColorDetection colorDetection : colorDetections){
 	    // colorDetection.drawSelf();
 	    colorDetection.drawCaptureZone();

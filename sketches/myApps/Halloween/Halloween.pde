@@ -17,6 +17,11 @@ KinectTouchInput touchInput;
 PFont font;
 PGraphicsOpenGL bloodGraphics;
 
+void settings(){
+    fullScreen(P3D);
+}
+
+
 void setup(){
 
     Papart papart = Papart.projection2D(this);
@@ -44,7 +49,7 @@ void draw(){
      nTouchs = touchs2D.size();
 
      drawBlood();
-    
+
      image(bloodGraphics, 0, 0);
 }
 
@@ -62,6 +67,3 @@ void keyPressed() {
 	bloodGraphics.endDraw();
     }
 }
-
-
-

@@ -35,11 +35,11 @@ void initPhysics(){
   // Create the empty list
   missiles = new ArrayList<Missile>();
   walls = new ArrayList<Wall>();
-  
+
   // by calling function addControlFrame() a
   // new frame is created and an instance of class
   // ControlFrame is instanziated.
-  cf = addControlFrame("physics", 400,400);
+  cf = new ControlFrame();
 }
 
 
@@ -138,50 +138,45 @@ public void speedUp(Touch t, Missile m){
 // ----------- Physics Frame ----------
 
 
-ControlFrame addControlFrame(String theName, int theWidth, int theHeight) {
-  Frame f = new Frame(theName);
-  ControlFrame p = new ControlFrame(this, theWidth, theHeight);
-  f.add(p);
-  p.init();
-  f.setTitle(theName);
-  f.setSize(p.w, p.h);
-  f.setLocation(100, 100);
-  f.setResizable(false);
-  f.setVisible(true);
-  return p;
-}
 
-
-// the ControlFrame class extends PApplet, so we 
+// the ControlFrame class extends PApplet, so we
 // are creating a new processing applet inside a
 // new frame with a skatolo object loaded
 public class ControlFrame extends PApplet {
-  int w, h;
-  skatolo skatolo;
-  Object parent;
-  
+    int w, h;
+    Skatolo skatolo;
+
+    public ControlFrame() {
+	super();
+	PApplet.runSketch(new String[]{this.getClass().getName()}, this);
+    }
+
+    public void settings() {
+	size(400, 400, P2D);
+    }
+
+
   public void setup() {
-    size(w, h);
     frameRate(25);
     skatolo = new Skatolo(this);
 
-    skatolo.addSlider("attractorPower").plugTo(parent,"attractorPower")
+    skatolo.addSlider("attractorPower").plugTo(mainApplet,"attractorPower")
 	.setRange(0, 10)
 	.setValue(8)
 	.setPosition(20,20);
 
-    skatolo.addSlider("attractorDistance").plugTo(parent,"attractorDistance")
+    skatolo.addSlider("attractorDistance").plugTo(mainApplet,"attractorDistance")
 	.setRange(10, 200)
 	.setValue(60)
 	.setPosition(20,40);
 
-    skatolo.addSlider("drawingDistance").plugTo(parent,"drawingDistance")
+    skatolo.addSlider("drawingDistance").plugTo(mainApplet,"drawingDistance")
 	.setRange(1, 20)
 	.setValue(5)
 	.setPosition(20,50);
 
 
-    skatolo.addSlider("acceleration").plugTo(parent,"acceleration")
+    skatolo.addSlider("acceleration").plugTo(mainApplet,"acceleration")
 	.setRange(-100, 100)
 	.setPosition(20,60);
 
@@ -189,37 +184,37 @@ public class ControlFrame extends PApplet {
     float y = 60;
 
     y+= 20;
-    skatolo.addSlider("colorDistDrawing").plugTo(parent,"colorDistDrawing")
+    skatolo.addSlider("colorDistDrawing").plugTo(mainApplet,"colorDistDrawing")
 	.setRange(0, 255)
 	.setValue(40)
 	.setPosition(20, y);
 
     y+= 20;
-    skatolo.addSlider("colorDistObject").plugTo(parent,"colorDistObject")
+    skatolo.addSlider("colorDistObject").plugTo(mainApplet,"colorDistObject")
 	.setRange(0, 50)
 	.setValue(15)
 	.setPosition(20,y);
 
     y+= 20;
-    skatolo.addSlider("colorNbObject").plugTo(parent,"colorNbObject")
+    skatolo.addSlider("colorNbObject").plugTo(mainApplet,"colorNbObject")
 	.setRange(0, 30)
 	.setValue(5)
 	.setPosition(20, y);
 
     y+= 20;
-    skatolo.addSlider("towerPowerUpThreshold").plugTo(parent,"towerPowerUpThreshold")
+    skatolo.addSlider("towerPowerUpThreshold").plugTo(mainApplet,"towerPowerUpThreshold")
 	.setRange(5, 150)
 	.setValue(75)
 	.setPosition(20, y);
 
     y+= 20;
-    skatolo.addSlider("levelPixelRatio").plugTo(parent,"levelPixelRatio")
+    skatolo.addSlider("levelPixelRatio").plugTo(mainApplet,"levelPixelRatio")
 	.setRange(0, 30)
 	.setValue(17.80f)
 	.setPosition(20, y);
 
     y+= 20;
-    skatolo.addSlider("towerRateRatio").plugTo(parent,"towerRateRatio")
+    skatolo.addSlider("towerRateRatio").plugTo(mainApplet,"towerRateRatio")
 	.setRange(0, 100)
 	.setValue(30)
 	.setPosition(20, y);
@@ -229,16 +224,9 @@ public class ControlFrame extends PApplet {
   public void draw() {
       background(100);
   }
- 
-  private ControlFrame() {
-  }
 
-  public ControlFrame(Object theParent, int theWidth, int theHeight) {
-    parent = theParent;
-    w = theWidth;
-    h = theHeight;
-  }
-  public skatolo control() {
+
+  public Skatolo control() {
     return skatolo;
   }
 }

@@ -5,7 +5,7 @@ float paperOffsetY = -30;
 // float paperOffsetX = -0;
 // float paperOffsetY = -0;
 
-PVector playerBoardSize = new PVector(297, 210); // A4 landscape. 
+PVector playerBoardSize = new PVector(297, 210); // A4 landscape.
 Player1 player1;
 
 PVector playerPaperOffset = new PVector(paperOffsetX, paperOffsetY);
@@ -13,7 +13,7 @@ PVector playerPaperOffset = new PVector(paperOffsetX, paperOffsetY);
 
 // GREEN
 public class Player1  extends PaperTouchScreen {
-   
+
     int maxMissiles = 4;
     int nbMissiles = 0;
 
@@ -27,11 +27,11 @@ public class Player1  extends PaperTouchScreen {
 
 
     ColorDetection shootLookColorDetection;
-    
+
 
     void setup(){
 	setDrawingSize( (int) playerBoardSize.x, (int)playerBoardSize.y);
-	loadMarkerBoard(sketchPath + "/data/markers/player1-big.cfg",
+	loadMarkerBoard(sketchPath() + "/data/markers/player1-big.cfg",
 			playerBoardSize.x, playerBoardSize.y);
 
 	player1 = this;
@@ -44,7 +44,7 @@ public class Player1  extends PaperTouchScreen {
     void prepare(){
     }
 
-    
+
     public void reset(){
 	needReset = false;
     }
@@ -58,7 +58,7 @@ public class Player1  extends PaperTouchScreen {
 
 
     public void updateInternals(){
-	if(needReset)  
+	if(needReset)
 	    reset();
 	checkEnnemi();
     }
@@ -74,18 +74,18 @@ public class Player1  extends PaperTouchScreen {
 	clear();
 
 	setLocation(paperOffsetX, paperOffsetY, 0);
-	
+
 	// stroke(255);
 	// noFill();
 	// rect(drawingSize.x /2 - 20 , drawingSize.y / 2,
 	//      20, 30);
 
-        if(noCameraMode){	
+        if(noCameraMode){
 	    noFill();
 	    stroke(120);
 	    strokeWeight(1);
 	    rect(0, 0, drawingSize.x, drawingSize.y);
-	    setLocation(20, height/2 - 120, 0); 
+	    setLocation(20, height/2 - 120, 0);
         }
 
 	checkTouch();
@@ -94,9 +94,9 @@ public class Player1  extends PaperTouchScreen {
 	endDraw();
     }
 
-    
+
     //   void drawCastle(PGraphicsOpenGL g){
-    //	if(castle == null) 
+    //	if(castle == null)
     //	    return;
     //	g.fill(playerColor);
     //       castle.display(g);
@@ -114,12 +114,12 @@ public class Player1  extends PaperTouchScreen {
 	for (Touch t : touchList) {
             if (t.is3D) {
 		continue;
-            } 
+            }
 
-	    TouchPoint tp = t.touchPoint; 
+	    TouchPoint tp = t.touchPoint;
 	    if(tp == null)
 		continue;
-    
+
 	    if(isMissileTower(tp)){
 		missileTowerAction(t);
 	    } else {
@@ -127,7 +127,7 @@ public class Player1  extends PaperTouchScreen {
 		ellipse(t.position.x,
 			t.position.y,
 			15, 15);
-		
+
 	    }
 	}
 
@@ -136,9 +136,9 @@ public class Player1  extends PaperTouchScreen {
     private boolean isMissileTower(TouchPoint tp){
 	return tp.attachedValue == TOWER;
     }
-    
 
-    // TODO: action without TouchPoint... 
+
+    // TODO: action without TouchPoint...
     // Or with a fake one ?
     private void missileTowerAction(Touch t){
 
@@ -166,7 +166,7 @@ public class Player1  extends PaperTouchScreen {
 	return game.getCoordFrom(this, v);
     }
 
-    // TODO: get a list of targets. 
+    // TODO: get a list of targets.
     // Get a target for aiming...
     //    public PVector getTargetLocation(){
     //	return castle.getPosPxGame();
