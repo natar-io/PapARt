@@ -45,15 +45,14 @@ public class CameraProcessing extends Camera {
         if (this.isClosing()) {
             return;
         }
-
-        if (this.captureIpl.available()) {
-            captureIpl.read();
-            IplImage img = captureIpl.getIplImage();
-            if (img != null) {
-                updateCurrentImage(img);
-            }
-        } else {  // sleep for a short time..
+        while (!this.captureIpl.available()) {
             waitForNextFrame();
+        }
+
+        captureIpl.read();
+        IplImage img = captureIpl.getIplImage();
+        if (img != null) {
+            updateCurrentImage(img);
         }
     }
 
@@ -65,8 +64,9 @@ public class CameraProcessing extends Camera {
     private void waitForNextFrame() {
         try {
             // TimeUnit.MILLISECONDS.sleep((long) (1f / frameRate));
-            TimeUnit.MILLISECONDS.sleep((long) (10));
+            TimeUnit.MILLISECONDS.sleep((long) (5));
         } catch (Exception e) {
+            System.out.println("Sleep interrupted." + e);
         }
     }
 
