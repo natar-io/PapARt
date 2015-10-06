@@ -219,6 +219,13 @@ public class ControlFrame extends PApplet {
             .plugTo(mainApplet, "loadCorners")
             ;
 
+        skatolo.addToggle("Show Zoom")
+            .setPosition(80,73)
+            .setSize(20, 20)
+            .setGroup("CornersGroup")
+            .plugTo(mainApplet, "showCornerZoom")
+            ;
+
         sliderObjectWidth = skatolo.addSlider("ObjectWidth")
             .setPosition(-75, 183 )
             .setValue(objectWidth)

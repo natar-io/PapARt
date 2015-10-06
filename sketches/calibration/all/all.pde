@@ -231,24 +231,26 @@ public void draw(){
         rect(0, 0,15, 15);
         popMatrix();
 
-        PImage currentImage = currentCamera.getPImageCopy();
-        int previewSize = 10;
-        PImage cornerPreview = currentImage.get((int) (corners[currentCorner].x - previewSize),
-                                                (int) (corners[currentCorner].y - previewSize),
-                                                previewSize * 2,
-                                                previewSize * 2);
-        int previewSizeVisu = 5;
-        image(cornerPreview, 0 ,0, previewSize * 2 * previewSizeVisu, previewSize * 2 * previewSizeVisu);
+        if(showCornerZoom && currentCamera != null){
+            PImage currentImage = currentCamera.getPImageCopy();
+            int previewSize = 10;
+            PImage cornerPreview = currentImage.get((int) (corners[currentCorner].x - previewSize),
+                                                    (int) (corners[currentCorner].y - previewSize),
+                                                    previewSize * 2,
+                                                    previewSize * 2);
+            int previewSizeVisu = 5;
+            image(cornerPreview, 0 ,0, previewSize * 2 * previewSizeVisu, previewSize * 2 * previewSizeVisu);
 
-        pushMatrix();
-        translate(previewSize * previewSizeVisu, previewSize * previewSizeVisu, 0);
+            pushMatrix();
+            translate(previewSize * previewSizeVisu, previewSize * previewSizeVisu, 0);
 
-        stroke(255);
-        strokeWeight(1);
-        int crossSize = previewSize * previewSizeVisu / 2;
-        line(-crossSize, 0, crossSize, 0);
-        line(0, -crossSize, 0, crossSize);
-        popMatrix();
+            stroke(255);
+            strokeWeight(1);
+            int crossSize = previewSize * previewSizeVisu / 2;
+            line(-crossSize, 0, crossSize, 0);
+            line(0, -crossSize, 0, crossSize);
+            popMatrix();
+        }
 
         noStroke();
     }

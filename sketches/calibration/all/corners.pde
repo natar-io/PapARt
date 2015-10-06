@@ -153,13 +153,14 @@ void loadCorners(){
 }
 
 
-
+boolean showCornerZoom = false;
 int currentCorner = 0;
 void activeCorner(int value){
     if(value == -1)
         value = 0;
     currentCorner = value;
 }
+
 
 void mouseDragged() {
     if(areCorners){
