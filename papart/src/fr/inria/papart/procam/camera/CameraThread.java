@@ -48,7 +48,13 @@ class CameraThread extends Thread {
     }
 
     private final int nbThreads = 4;
-    private ExecutorService threadPool;
+    private ExecutorService threadPool = null;
+
+    private void tryInitThreadPool() {
+        if (threadPool == null) {
+            this.initThreadPool();
+        }
+    }
 
     private void initThreadPool() {
         threadPool = Executors.newFixedThreadPool(nbThreads);
@@ -98,6 +104,8 @@ class CameraThread extends Thread {
     }
 
     protected void updateParallel() {
+        tryInitThreadPool();
+
         ArrayList<FutureTask<ARTrackingTask>> tasks = new ArrayList<>();
         for (MarkerBoard sheet : camera.getTrackedSheets()) {
             ARTrackingTask depthPixelTask = new ARTrackingTask(sheet);
@@ -194,6 +202,11 @@ class CameraThread extends Thread {
 
     public void setCompute(boolean compute) {
         this.compute = compute;
+        
+        if(compute == false && this.threadPool != null){
+            this.threadPool.shutdown();
+            this.threadPool = null;
+        }
     }
 
     public void stopThread() {
