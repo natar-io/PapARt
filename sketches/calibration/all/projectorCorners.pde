@@ -1,5 +1,5 @@
 import java.awt.Frame;
-
+import com.jogamp.newt.opengl.GLWindow;
 
 public class ProjectorCorners extends PApplet {
 
@@ -12,11 +12,20 @@ public class ProjectorCorners extends PApplet {
 
     // TODO: choose the screen.
     public void settings() {
-	fullScreen(P3D);
+	size(screenWidth, screenHeight, P3D);
+
+    }
+
+    public void setSize(){
+        GLWindow window = (GLWindow) this.getSurface().getNative();
+        window.setUndecorated(true);
+        window.setSize(screenWidth, screenHeight);
+        window.setPosition(screenOffsetX, screenOffsetY);
     }
 
     public void setup() {
         frameRate(2);
+        setSize();
     }
 
     public void draw() {

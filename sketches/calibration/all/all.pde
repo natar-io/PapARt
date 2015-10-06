@@ -95,6 +95,8 @@ public void setup() {
 }
 
 String cameraName, screenName, kinectName;
+int screenWidth, screenHeight, screenOffsetX, screenOffsetY;
+
 void initNames(){
     CameraConfiguration cameraConfig = Papart.getDefaultCameraConfiguration(this);
     cameraName = cameraConfig.getCameraType().name()+ " " + cameraConfig.getCameraName();
@@ -104,6 +106,11 @@ void initNames(){
         screenConfig.getProjectionScreenHeight() + " at " +
         screenConfig.getProjectionScreenOffsetX() + "," +
         screenConfig.getProjectionScreenOffsetY() + ".";
+
+    screenWidth = screenConfig.getProjectionScreenWidth();
+    screenHeight = screenConfig.getProjectionScreenHeight();
+    screenOffsetX = screenConfig.getProjectionScreenOffsetX();
+    screenOffsetY = screenConfig.getProjectionScreenOffsetY();
 
     if(isKinectOne || isKinect360){
         CameraConfiguration config = Papart.getDefaultKinectConfiguration(this);

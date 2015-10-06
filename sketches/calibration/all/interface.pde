@@ -14,7 +14,7 @@ public class ControlFrame extends PApplet {
     }
 
     public void settings() {
-	size(800, 600, P3D);
+	size(800, 800, P3D);
     }
 
     Skatolo skatolo;
@@ -26,6 +26,9 @@ public class ControlFrame extends PApplet {
     Group cornersGroup;
     Textlabel cameraPaperLabel, projectorPaperLabel, kinectPaperLabel;
     Bang calibrateProCam, calibrateKinectCam;
+
+    Slider kinectStereoSliderX, kinectStereoSliderY;
+    Bang kinectStereoBang;
 
     public void setText(String text){
         if(!init)
@@ -131,6 +134,24 @@ public class ControlFrame extends PApplet {
         calibrateKinectCam.hide();
     }
 
+    public void hideKinectStereoSliders(){
+        kinectStereoSliderX.hide();
+        kinectStereoSliderY.hide();
+        kinectStereoBang.hide();
+    }
+
+    public void showKinectStereoSliders(){
+        kinectStereoSliderX.show();
+        kinectStereoSliderY.show();
+    }
+
+    public void showSaveBangKinectStereo(){
+        kinectStereoBang.show();
+    }
+
+    public void hideSaveBangKinectStereo(){
+        kinectStereoBang.hide();
+    }
 
     public void switchToPCConfiguration(){
         println("Switch !");
@@ -302,6 +323,26 @@ public class ControlFrame extends PApplet {
 
             calibrateKinectCam.hide();
 
+
+            kinectStereoBang = skatolo.addBang("saveStereo")
+                .plugTo(mainApplet, "saveStereoKinect")
+                .setPosition(250, 520)
+                ;
+
+             kinectStereoSliderX = skatolo.addSlider("translationX").plugTo(mainApplet, "kinectStereoX")
+                .setPosition(190, 450)
+                .setValue(stereoCalib.m03)
+                .setRange(-80, 50)
+                .setSize(400, 12);
+            // Manual draw.
+
+             kinectStereoSliderY = skatolo.addSlider("translationY").plugTo(mainApplet, "kinectStereoY")
+                .setPosition(190, 480)
+                .setValue(stereoCalib.m13)
+                .setRange(-50, 50)
+                .setSize(400, 12);
+
+             hideKinectStereoSliders();
 
             if(isKinect360){
 

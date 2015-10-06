@@ -44,6 +44,10 @@ public class PointCloudVisualization extends PApplet {
           return;
       }
 
+      stereoCalib.m03 = kinectStereoValueX;
+      stereoCalib.m13 = kinectStereoValueY;
+      kinectDevice.setStereoCalibration(stereoCalib);
+
       if(isCalibrated){
           try{
           kinectAnalysis.update(kinectImgDepth, kinectImg, planeProjCalib, precision);

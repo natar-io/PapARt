@@ -19,6 +19,9 @@ PlaneAndProjectionCalibration planeProjCalib;
 HomographyCalibration homographyCalibration;
 PlaneCalibration planeCalibCam;
 
+PMatrix3D stereoCalib;
+float kinectStereoValueX, kinectStereoValueY;
+
 ARDisplay arDisplayKinect;
 
 // camera Kinect360
@@ -28,6 +31,8 @@ void checkKinectVersion(){
     CameraConfiguration kinectConfiguration = Papart.getDefaultKinectConfiguration(this);
     isKinect360 = kinectConfiguration.getCameraType() == Camera.Type.OPEN_KINECT;
     isKinectOne = kinectConfiguration.getCameraType() == Camera.Type.KINECT2_RGB;
+
+    stereoCalib = HomographyCalibration.getMatFrom(this, Papart.kinectStereoCalib);
 }
 
 
@@ -87,7 +92,9 @@ void initKinect360(){
 }
 
 void initCommonKinect(){
-    kinectDevice.getCameraRGB().setThread();
+
+
+
     kinectDevice.getCameraDepth().setThread();
 
     kinectAnalysis = new KinectProcessing(this, kinectDevice);
@@ -97,9 +104,21 @@ void initCommonKinect(){
     projectorDevice = projector.getProjectiveDeviceP();
     frameWidth = projectorDevice.getWidth();
     frameHeight = projectorDevice.getHeight();
+}
 
+void kinectStereoX(float value){
+    this.kinectStereoValueX = value;
+    controlFrame.showSaveBangKinectStereo();
+}
 
+void kinectStereoY(float value){
+    this.kinectStereoValueY = value;
+    controlFrame.showSaveBangKinectStereo();
+}
 
+void saveStereoKinect(boolean pressed){
+    HomographyCalibration.saveMatTo(this, stereoCalib, Papart.kinectStereoCalib);
+    controlFrame.hideSaveBangKinectStereo();
 }
 
 

@@ -68,6 +68,8 @@ void noMode(){
         isCameraKinectMode = false;
     }
 
+     controlFrame.hideKinectStereoSliders();
+
     isCameraMode = false;
     isProjectorMode = false;
 }
@@ -156,6 +158,7 @@ public void kinectMode(int value){
         Mode.set("Kinect3D");
         isKinect3DView = true;
         pcv.getSurface().setVisible(true);
+        controlFrame.showKinectStereoSliders();
 
         break;
     case 1:
