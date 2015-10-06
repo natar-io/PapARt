@@ -164,76 +164,18 @@ public class ControlFrame extends PApplet {
     }
 
     public void setup() {
-        frameRate(25);
+        frameRate(20);
         skatolo = new Skatolo(this);
+        initInterface();
+        initCorners();
+        
+        hideObjectSize();
+        hideCorners();
+    }
 
-
-        skatolo.addBang("switchToPCConfiguration")
-            .setLabel("Switch to PCConfiguration")
-            .setPosition(400, 20)
-            ;
-
-        // add a horizontal sliders, the value of this slider will be linked
-        // to variable 'sliderValue'
-        calibrateProCam =  skatolo.addBang("calibrate ProCam").plugTo(mainApplet, "calibrateProCam")
-            .setPosition(10, 10)
-            ;
-
-        calibrateProCam.hide();
-
-
-        camRadio = skatolo.addRadioButton("Camera calibration").plugTo(mainApplet, "camMode")
-            .setPosition(100, 100)
-            .setItemWidth(20)
-            .setItemHeight(20)
-            .addItem("CamView", 0)
-            .addItem("CamMarker", 1)
-            .addItem("CamManual", 2)
-            .setColorLabel(color(255))
-            ;
-
-        saveCameraPaperBang = skatolo.addBang("Save Cam - Paper Location")
-            .plugTo(mainApplet, "saveCameraPaper")
-            .setPosition(200, 100)
-            .setSize(20, 20)
-            ;
-        saveCameraPaperBang.hide();
-
-        cameraPaperLabel = skatolo.addTextlabel("cameraPaperLabel",
-                                                "Please save the calibration.",
-                                                200,
-                                                90);
-
-        projectorPaperLabel = skatolo.addTextlabel("projectorPaperLabel",
-                                                   "Please save the calibration.",
-                                                   200,
-                                                   260);
-
-
-        saveProjectorPaperBang = skatolo.addBang("Save Proj - Paper Location")
-            .plugTo(mainApplet, "saveProjectorPaper")
-            .setPosition(200, 250)
-            .setSize(20, 20)
-            ;
-        saveProjectorPaperBang.hide();
-
-
-
-
-        projRadio = skatolo.addRadioButton("Projector calibration").plugTo(mainApplet, "projMode")
-            .setPosition(100, 250)
-            .setItemWidth(20)
-            .setItemHeight(20)
-            .addItem("ProjManual", 0)
-            .addItem("ProjMarker", 1)
-            .addItem("ProjView", 2)
-            .setColorLabel(color(255))
-            ;
-
-
-
+public void initCorners(){
         cornersGroup = skatolo.addGroup("CornersGroup")
-            .setPosition(400,50)
+            .setPosition(499,106)
             // .setWidth(300)
             // .setHeight(300)
             .activateEvent(true)
@@ -241,7 +183,7 @@ public class ControlFrame extends PApplet {
             ;
 
         corners = skatolo.addRadioButton("Corners")
-            .setPosition(0,0)
+            .setPosition(1,73)
             .setItemWidth(20)
             .setItemHeight(20)
             .addItem("bottom Left", 0) // 0, y
@@ -254,21 +196,21 @@ public class ControlFrame extends PApplet {
             ;
 
         skatolo.addBang("Save Corners")
-            .setPosition(100, 100)
+            .setPosition(81, 10)
             .setSize(20, 20)
             .setGroup("CornersGroup")
             .plugTo(mainApplet, "saveCorners")
             ;
 
         skatolo.addBang("Load Corners")
-            .setPosition(100, 50)
+            .setPosition(-2, 10)
             .setSize(20, 20)
             .setGroup("CornersGroup")
             .plugTo(mainApplet, "loadCorners")
             ;
 
         sliderObjectWidth = skatolo.addSlider("ObjectWidth")
-            .setPosition(400, 150 )
+            .setPosition(-75, 183 )
             .setValue(objectWidth)
             .setRange(200, 500)
             .setSize(300, 12)
@@ -277,13 +219,82 @@ public class ControlFrame extends PApplet {
              ;
 
         sliderObjectHeight = skatolo.addSlider("ObjectHeight")
-            .setPosition(400,180 )
+            .setPosition(-75,200 )
             .setValue(objectHeight)
             .setRange(200, 400)
             .setSize(200, 12)
             .setGroup("CornersGroup")
             .plugTo(mainApplet, "objectHeight")
              ;
+
+}
+    public void initInterface(){
+
+
+
+        skatolo.addBang("switchToPCConfiguration")
+            .setLabel("Switch to PCConfiguration")
+            .setPosition(649, 20)
+            ;
+
+        // add a horizontal sliders, the value of this slider will be linked
+        // to variable 'sliderValue'
+        calibrateProCam =  skatolo.addBang("calibrate ProCam").plugTo(mainApplet, "calibrateProCam")
+            .setPosition(10, 10)
+            ;
+
+        calibrateProCam.hide();
+
+
+        camRadio = skatolo.addRadioButton("Camera calibration").plugTo(mainApplet, "camMode")
+            .setPosition(12, 100)
+            .setItemWidth(20)
+            .setItemHeight(20)
+            .addItem("CamView", 0)
+            .addItem("CamMarker", 1)
+            .addItem("CamManual", 2)
+            .setColorLabel(color(255))
+            ;
+
+        saveCameraPaperBang = skatolo.addBang("Save Cam - Paper Location")
+            .plugTo(mainApplet, "saveCameraPaper")
+            .setPosition(214, 123)
+            .setSize(20, 20)
+            ;
+        saveCameraPaperBang.hide();
+
+        cameraPaperLabel = skatolo.addTextlabel("cameraPaperLabel",
+                                                "Please save the calibration.",
+                                                209,
+                                                102);
+
+        projectorPaperLabel = skatolo.addTextlabel("projectorPaperLabel",
+                                                   "Please save the calibration.",
+                                                   209,
+                                                   216);
+
+
+        saveProjectorPaperBang = skatolo.addBang("Save Proj - Paper Location")
+            .plugTo(mainApplet, "saveProjectorPaper")
+            .setPosition(214, 239)
+            .setSize(20, 20)
+            ;
+        saveProjectorPaperBang.hide();
+
+
+
+
+        projRadio = skatolo.addRadioButton("Projector calibration").plugTo(mainApplet, "projMode")
+            .setPosition(12, 212)
+            .setItemWidth(20)
+            .setItemHeight(20)
+            .addItem("ProjManual", 0)
+            .addItem("ProjMarker", 1)
+            .addItem("ProjView", 2)
+            .setColorLabel(color(255))
+            ;
+
+
 
         textArea = skatolo.addTextarea("txt")
             .setPosition(150,400)
@@ -310,7 +321,7 @@ public class ControlFrame extends PApplet {
 
 
             kinectRadio = skatolo.addRadioButton("Kinect calibration").plugTo(mainApplet, "kinectMode")
-                .setPosition(100, 450)
+                .setPosition(13, 318)
                 .setItemWidth(20)
                 .setItemHeight(20)
                 .addItem("Kinect3D", 0)
@@ -367,10 +378,6 @@ public class ControlFrame extends PApplet {
 
         }
 
-
-        hideCorners();
-        hideObjectSize();
-
         // skatolo.addSlider("captureTime").plugTo(mainApplet, "captureTime")
         //     .setPosition(10, 40)
         //     .setRange(30, 1200)
@@ -388,12 +395,18 @@ public class ControlFrame extends PApplet {
     public void draw() {
         background(100);
 
-        text("Camera : " + cameraName , 100, 70);
-        text("Projector : " + screenName , 100, 230);
-        text("Kinect : " + kinectName , 100, 420);
+   // initCorners();
+
+        text("Camera : " + cameraName , 11, 89);
+        text("Projector : " + screenName , 10, 203);
+        text("Kinect : " + kinectName , 12, 306);
     }
 
     public Skatolo control() {
         return skatolo;
+    }
+
+    void keyPressed(){
+               initInterface();
     }
 }

@@ -109,6 +109,10 @@ public void camMode(int value){
 
 
 
+static final int ZERO = 0;
+static final int ONE = 1;
+static final int TWO = 2;
+
 public void projMode(int value){
     if(value == -1){
         noMode();
@@ -120,21 +124,21 @@ public void projMode(int value){
     noMode();
 
     switch(value) {
-    case 0:
+    case ZERO:
         Mode.set("ProjManual");
         projectorMode();
         activateProjectorCornersObject();
         controlFrame.showSaveProjectorButton();
         isSaveButtonShowed = true;
         break;
-    case 1:
+    case ONE:
         Mode.set("ProjMarker");
         cameraMode();
         activateProjectorCorners();
         controlFrame.showSaveProjectorButton();
         isSaveButtonShowed = true;
         break;
-    case 2:
+    case TWO:
         Mode.set("ProjView");
         projectorMode();
         projector.automaticMode();
@@ -154,14 +158,14 @@ public void kinectMode(int value){
     noMode();
 
     switch(value) {
-    case 0:
+    case ZERO:
         Mode.set("Kinect3D");
         isKinect3DView = true;
         pcv.getSurface().setVisible(true);
         controlFrame.showKinectStereoSliders();
 
         break;
-    case 1:
+    case ONE:
         Mode.set("KinectManual");
         papart.forceCameraSize(arDisplayKinect.getWidth(),
                                arDisplayKinect.getHeight());
@@ -171,7 +175,7 @@ public void kinectMode(int value){
         isSaveButtonShowed = true;
 
         break;
-    case 2:
+    case TWO:
         Mode.set("KinectMarker");
         arDisplayKinect.automaticMode();
         isCameraKinectMode = true;
