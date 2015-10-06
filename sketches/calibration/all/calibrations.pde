@@ -8,6 +8,17 @@ boolean isCamPaperSet = false;
 boolean isProjPaperSet = false;
 boolean isKinectPaperSet = false;
 
+boolean useDefautExtrinsics = false;
+
+public void useExtrinsicsFromProjector(){
+
+    useDefautExtrinsics = true;
+   controlFrame.showCalibrateProCam();
+}
+
+
+
+
 public void saveCameraPaper(){
 
     assert(Mode.is("CamMarker") || Mode.is("CamManual"));
@@ -112,6 +123,47 @@ public void calibrateKinectCam(){
 }
 
 public void calibrateProCam(){
+
+    if(useDefautExtrinsics){
+        calibrateWithDefaultFile();
+    } else {
+        calibrateWithProxyPaper();
+    }
+
+    println("ProCam calibrated.");
+
+    // something need to change, to recalibrate.
+    controlFrame.hideCalibrateProCam();
+
+    // Set to projection mode to test.
+    noMode();
+    projMode(2);
+}
+
+private void calibrateWithDefaultFile(){
+    try{
+        ProjectiveDeviceP projectiveDeviceP = ProjectiveDeviceP.loadProjectorDevice(
+            this, Papart.projectorCalib);
+
+        if(!projectiveDeviceP.hasExtrinsics()){
+            println("The projector calibration does not have extrinsic calibration: "  + Papart.projectorCalib);
+            return;
+        }
+        println("Calibrating with " + Papart.projectorCalib);
+        PMatrix3D projPaper = projectiveDeviceP.getExtrinsics();
+
+        projPaper.print();
+
+        papart.saveCalibration(Papart.cameraProjExtrinsics, projPaper);
+
+    } catch(Exception e){
+        println("Could not use the projector calibration: "  + Papart.projectorCalib);
+    }
+
+}
+
+private void calibrateWithProxyPaper(){
+
     PMatrix3D camPaper = camBoard();
     PMatrix3D projPaper = projBoard();
 
@@ -126,14 +178,7 @@ public void calibrateProCam(){
     papart.saveCalibration(Papart.cameraProjExtrinsics, projPaper);
     // projPaper.print();
     projector.setExtrinsics(projPaper);
-    println("ProCam calibrated.");
 
-    // something need to change, to recalibrate.
-    controlFrame.hideCalibrateProCam();
-
-    // Set to projection mode to test.
-    noMode();
-    projMode(2);
 }
 
 private void calibrateKinectOne(){

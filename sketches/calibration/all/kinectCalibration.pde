@@ -68,6 +68,7 @@ void initKinectOne(){
 void initKinect360(){
 
     kinectDevice = new Kinect360(this);
+
     cameraKinect = kinectDevice.getCameraRGB();
 
     // stop the update...
@@ -86,14 +87,13 @@ void initKinect360(){
     arDisplayKinect.manualMode();
 
     kinectProjectiveP = cameraKinect.getProjectiveDevice();
-    initCommonKinect();
+    cameraKinect.setThread();
 
+    initCommonKinect();
     isKinect360Activated = true;
 }
 
 void initCommonKinect(){
-
-
 
     kinectDevice.getCameraDepth().setThread();
 

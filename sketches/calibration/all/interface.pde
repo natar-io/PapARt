@@ -27,6 +27,8 @@ public class ControlFrame extends PApplet {
     Textlabel cameraPaperLabel, projectorPaperLabel, kinectPaperLabel;
     Bang calibrateProCam, calibrateKinectCam;
 
+    Bang useProCamFromIntrinsics;
+
     Slider kinectStereoSliderX, kinectStereoSliderY;
     Bang kinectStereoBang;
 
@@ -168,12 +170,14 @@ public class ControlFrame extends PApplet {
         skatolo = new Skatolo(this);
         initInterface();
         initCorners();
-        
+
         hideObjectSize();
         hideCorners();
+
+        initKinectInterface();
     }
 
-public void initCorners(){
+    public void initCorners(){
         cornersGroup = skatolo.addGroup("CornersGroup")
             .setPosition(499,106)
             // .setWidth(300)
@@ -225,12 +229,10 @@ public void initCorners(){
             .setSize(200, 12)
             .setGroup("CornersGroup")
             .plugTo(mainApplet, "objectHeight")
-             ;
+            ;
+    }
 
-}
     public void initInterface(){
-
-
 
         skatolo.addBang("switchToPCConfiguration")
             .setLabel("Switch to PCConfiguration")
@@ -294,6 +296,11 @@ public void initCorners(){
             .setColorLabel(color(255))
             ;
 
+        useProCamFromIntrinsics = skatolo.addBang("Use default calibration").
+            plugTo(mainApplet,"useExtrinsicsFromProjector")
+            .setPosition(100, 200)
+            .setSize(20, 20)
+            ;
 
 
         textArea = skatolo.addTextarea("txt")
@@ -308,6 +315,24 @@ public void initCorners(){
 
 
 
+
+
+        // skatolo.addSlider("captureTime").plugTo(mainApplet, "captureTime")
+        //     .setPosition(10, 40)
+        //     .setRange(30, 1200)
+        //     .setValue(captureTime)
+        //     ;
+
+        // skatolo.addSlider("delay").plugTo(mainApplet, "delay")
+        //     .setPosition(10, 60)
+        //     .setRange(0, 300)
+        //     .setValue(delay)
+        //     ;
+        init = true;
+    }
+
+    public void initKinectInterface(){
+
         // Note : Modes should exist even when not activated.
 
         // If a Kinect is available
@@ -317,8 +342,6 @@ public void initCorners(){
             //     .setSize(20, 20)
             //     .plugTo(mainApplet, "activateKinect")
             //     ;
-
-
 
             kinectRadio = skatolo.addRadioButton("Kinect calibration").plugTo(mainApplet, "kinectMode")
                 .setPosition(13, 318)
@@ -337,18 +360,18 @@ public void initCorners(){
 
             kinectStereoBang = skatolo.addBang("saveStereo")
                 .plugTo(mainApplet, "saveStereoKinect")
-                .setPosition(250, 520)
+                .setPosition(205, 471)
                 ;
 
              kinectStereoSliderX = skatolo.addSlider("translationX").plugTo(mainApplet, "kinectStereoX")
-                .setPosition(190, 450)
+                .setPosition(38, 431)
                 .setValue(stereoCalib.m03)
                 .setRange(-80, 50)
                 .setSize(400, 12);
             // Manual draw.
 
              kinectStereoSliderY = skatolo.addSlider("translationY").plugTo(mainApplet, "kinectStereoY")
-                .setPosition(190, 480)
+                .setPosition(39, 448)
                 .setValue(stereoCalib.m13)
                 .setRange(-50, 50)
                 .setSize(400, 12);
@@ -364,38 +387,26 @@ public void initCorners(){
 
                 saveKinectPaperBang = skatolo.addBang("Save Kinect - Paper Location")
                     .plugTo(mainApplet, "saveKinectPaper")
-                    .setPosition(200, 450)
+                    .setPosition(213, 343)
                     .setSize(20, 20)
                     ;
                 saveKinectPaperBang.hide();
 
                 kinectPaperLabel = skatolo.addTextlabel("kinectPaperLabel",
                                                         "Please save the calibration.",
-                                                        200,
-                                                        460);
+                                                        212,
+                                                        324);
 
             }
 
         }
-
-        // skatolo.addSlider("captureTime").plugTo(mainApplet, "captureTime")
-        //     .setPosition(10, 40)
-        //     .setRange(30, 1200)
-        //     .setValue(captureTime)
-        //     ;
-
-        // skatolo.addSlider("delay").plugTo(mainApplet, "delay")
-        //     .setPosition(10, 60)
-        //     .setRange(0, 300)
-        //     .setValue(delay)
-        //     ;
-        init = true;
     }
 
     public void draw() {
         background(100);
 
    // initCorners();
+ // initKinectInterface();
 
         text("Camera : " + cameraName , 11, 89);
         text("Projector : " + screenName , 10, 203);
@@ -407,6 +418,6 @@ public void initCorners(){
     }
 
     void keyPressed(){
-               initInterface();
+        //   initInterface();
     }
 }

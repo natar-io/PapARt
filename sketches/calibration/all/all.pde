@@ -199,6 +199,8 @@ public void draw(){
         PImage kinectImg = cameraKinect.getPImage();
         if(kinectImg != null){
             image(kinectImg, 0, 0, width, height);
+        } else {
+            println("No Kinect Image");
         }
 
     }
