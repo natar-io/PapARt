@@ -155,9 +155,8 @@ private void initProjectorAsCamera(){
 
 
 public void draw(){
-
+    Camera currentCamera = null;
     // ellipse(mouseX, mouseY, 10, 10);
-
     // Automatic modes...
 
     if(Mode.is("CamMarker")){
@@ -178,6 +177,7 @@ public void draw(){
     if(Mode.is("CamView") ||
        Mode.is("CamManual")){
 
+        currentCamera = camera;
         PImage cameraImage = camera.getPImage();
         if(cameraImage != null){
             image(cameraImage, 0, 0, width, height);
@@ -186,9 +186,9 @@ public void draw(){
 
     if(Mode.is("ProjMarker")){
         PImage cameraImage = camera.getPImage();
+        currentCamera = camera;
         if(cameraImage != null){
             image(cameraImage, 0, 0, width, height);
-
             controlFrame.setText(projBoard());
         }
 
@@ -197,8 +197,10 @@ public void draw(){
 
     if(Mode.is("KinectManual")){
         PImage kinectImg = cameraKinect.getPImage();
+        currentCamera = cameraKinect;
         if(kinectImg != null){
             image(kinectImg, 0, 0, width, height);
+
         } else {
             println("No Kinect Image");
         }
@@ -216,6 +218,40 @@ public void draw(){
              corners[1].x, corners[1].y,
              corners[2].x, corners[2].y,
              corners[3].x, corners[3].y);
+
+        noFill();
+        rectMode(CENTER);
+        stroke(255);
+        strokeWeight(1);
+
+        pushMatrix();
+        translate(corners[currentCorner].x,
+                  corners[currentCorner].y,
+                  0);
+        rect(0, 0,15, 15);
+        popMatrix();
+
+        PImage currentImage = currentCamera.getPImageCopy();
+        int previewSize = 10;
+        PImage cornerPreview = currentImage.get((int) (corners[currentCorner].x - previewSize),
+                                                (int) (corners[currentCorner].y - previewSize),
+                                                previewSize * 2,
+                                                previewSize * 2);
+        int previewSizeVisu = 5;
+        image(cornerPreview, 0 ,0, previewSize * 2 * previewSizeVisu, previewSize * 2 * previewSizeVisu);
+
+        pushMatrix();
+        translate(previewSize * previewSizeVisu, previewSize * previewSizeVisu, 0);
+
+        stroke(255);
+        strokeWeight(1);
+        int crossSize = previewSize * previewSizeVisu / 2;
+        line(-crossSize, 0, crossSize, 0);
+        line(0, -crossSize, 0, crossSize);
+        popMatrix();
+
+        noStroke();
     }
+
 
 }

@@ -59,6 +59,12 @@ public class ControlFrame extends PApplet {
 //        corners.show();
     }
 
+    public void activateCornerNo(int nb){
+        corners.activate(nb);
+        // TODO: why is this not automatic ?
+        activeCorner(nb);
+    }
+
     public void hideObjectSize(){
         sliderObjectWidth.hide();
         sliderObjectHeight.hide();
@@ -298,7 +304,7 @@ public class ControlFrame extends PApplet {
 
         useProCamFromIntrinsics = skatolo.addBang("Use default calibration").
             plugTo(mainApplet,"useExtrinsicsFromProjector")
-            .setPosition(100, 200)
+            .setPosition(115, 102)
             .setSize(20, 20)
             ;
 
@@ -405,6 +411,7 @@ public class ControlFrame extends PApplet {
     public void draw() {
         background(100);
 
+// initInterface();
    // initCorners();
  // initKinectInterface();
 

@@ -66,8 +66,6 @@ int rectAroundWidth = 10;
 
 void draw3DCorners(){
 
-
-
     ProjectiveDeviceP pdp;
     ARDisplay display = null;
     if(Mode.is("ProjManual")){
@@ -170,10 +168,30 @@ void mouseDragged() {
 }
 
 void keyPressed(){
-    if(key == 'l'){
-        loadCorners();
-    }
-    if(key == 's'){
-        saveCorners();
+
+    if(Mode.is("ProjManual") || Mode.is("CamManual") || Mode.is("KinectManual")){
+        if(key == '1' ){
+            controlFrame.activateCornerNo(1);
+        }
+
+        if(key == '2' ){
+            controlFrame.activateCornerNo(2);
+        }
+
+        if(key == '3' ){
+            controlFrame.activateCornerNo(3);
+        }
+
+        if(key == '0' ){
+            controlFrame.activateCornerNo(0);
+        }
+
+        if(key == 'l'){
+            loadCorners();
+        }
+        if(key == 's'){
+            saveCorners();
+        }
+
     }
 }
