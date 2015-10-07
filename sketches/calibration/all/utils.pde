@@ -43,3 +43,48 @@ String matToString(PMatrix3D matrix){
 
     return output.toString();
  }
+
+
+void addMatrices(PMatrix3D sum, PMatrix3D addedElement){
+    sum.m00 += addedElement.m00;
+    sum.m01 += addedElement.m01;
+    sum.m02 += addedElement.m02;
+    sum.m03 += addedElement.m03;
+
+    sum.m10 += addedElement.m10;
+    sum.m11 += addedElement.m11;
+    sum.m12 += addedElement.m12;
+    sum.m13 += addedElement.m13;
+
+    sum.m20 += addedElement.m20;
+    sum.m21 += addedElement.m21;
+    sum.m22 += addedElement.m22;
+    sum.m23 += addedElement.m23;
+
+    sum.m30 += addedElement.m30;
+    sum.m31 += addedElement.m31;
+    sum.m32 += addedElement.m32;
+    sum.m33 += addedElement.m33;
+}
+
+void multMatrix(PMatrix3D sum, float value){
+    sum.m00 *= value;
+    sum.m01 *= value;
+    sum.m02 *= value;
+    sum.m03 *= value;
+
+    sum.m10 *= value;
+    sum.m11 *= value;
+    sum.m12 *= value;
+    sum.m13 *= value;
+
+    sum.m20 *= value;
+    sum.m21 *= value;
+    sum.m22 *= value;
+    sum.m23 *= value;
+
+    sum.m30 *= value;
+    sum.m31 *= value;
+    sum.m32 *= value;
+    sum.m33 *= value;
+}

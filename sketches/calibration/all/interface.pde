@@ -25,7 +25,8 @@ public class ControlFrame extends PApplet {
     Textarea textArea;
     Group cornersGroup;
     Textlabel cameraPaperLabel, projectorPaperLabel, kinectPaperLabel;
-    Bang calibrateProCam, calibrateKinectCam;
+
+    Bang calibrateProCam, calibrateKinectCam, addProCamCalibration;
 
     Bang useProCamFromIntrinsics;
 
@@ -132,6 +133,14 @@ public class ControlFrame extends PApplet {
 
     public void hideCalibrateProCam(){
         calibrateProCam.hide();
+    }
+
+    public void showAddProCamCalibration(){
+        addProCamCalibration.show();
+    }
+
+    public void hideAddProCamCalibration(){
+        addProCamCalibration.hide();
     }
 
     public void showCalibrateKinectCam(){
@@ -254,11 +263,19 @@ public class ControlFrame extends PApplet {
 
         // add a horizontal sliders, the value of this slider will be linked
         // to variable 'sliderValue'
-        calibrateProCam =  skatolo.addBang("calibrate ProCam").plugTo(mainApplet, "calibrateProCam")
-            .setPosition(10, 10)
+        calibrateProCam =  skatolo.addBang("calibrate ProCam")
+            .plugTo(mainApplet, "calibrateProCam")
+            .setPosition(300, 10)
             ;
 
         calibrateProCam.hide();
+
+        addProCamCalibration =  skatolo.addBang("add ProCam locations")
+            .plugTo(mainApplet, "addProCamCalibrationData")
+            .setPosition(10, 10)
+            ;
+
+        addProCamCalibration.hide();
 
 
         camRadio = skatolo.addRadioButton("Camera calibration").plugTo(mainApplet, "camMode")
@@ -311,7 +328,14 @@ public class ControlFrame extends PApplet {
 
         useProCamFromIntrinsics = skatolo.addBang("Use default calibration").
             plugTo(mainApplet,"useExtrinsicsFromProjector")
-            .setPosition(115, 102)
+            .setPosition(415, 22)
+            .setSize(20, 20)
+            ;
+
+
+        skatolo.addBang("clear calibrations").
+            plugTo(mainApplet,"clearCalibrations")
+            .setPosition(415, 82)
             .setSize(20, 20)
             ;
 
@@ -365,7 +389,7 @@ public class ControlFrame extends PApplet {
                 ;
 
             calibrateKinectCam =  skatolo.addBang("calibrate KinectCam").plugTo(mainApplet, "calibrateKinectCam")
-                .setPosition(120, 10)
+                .setPosition(320, 10)
                 ;
 
             calibrateKinectCam.hide();
@@ -422,9 +446,24 @@ public class ControlFrame extends PApplet {
    // initCorners();
  // initKinectInterface();
 
+        fill(255);
+
         text("Camera : " + cameraName , 11, 89);
         text("Projector : " + screenName , 10, 203);
         text("Kinect : " + kinectName , 12, 306);
+
+
+        pushMatrix();
+        translate(300, 12, 0);
+
+        text("Calibration No : " + calibrationNumber , 0, 0);
+        fill(0, 255, 0);
+        for(int i = 0; i < calibrationNumber; i++){
+            translate(10, 0, 0);
+            rect(0, 0, 10, 10);
+        }
+        popMatrix();
+
     }
 
     public Skatolo control() {

@@ -105,49 +105,14 @@ void draw3DCorners(){
             objectWidth + rectAroundWidth*2,
             objectHeight + rectAroundWidth*2);
 
-    //g1.translate(objectWidth + 100, objectHeight + 100, 0);
-    //g1.fill(0, 191, 100, 100);
-    //g1.rect(150, 80, 100, 100);
-
-    float rectWidth = 15f;
-
     g1.stroke(0);
     g1.strokeWeight(1);
     g1.rectMode(CENTER);
 
-    g1.pushMatrix();
-    g1.translate(-36.5f, -33.125, 0);
-    g1.translate(rectWidth / 2, rectWidth /2);
-    g1.fill(#d0cebc);
-    g1.rect(0,0, rectWidth -2 , rectWidth -2);
-    g1.rect(0,0, rectWidth + 5 , rectWidth +5);
-    g1.popMatrix();
-
-    g1.pushMatrix();
-    g1.translate(313.017f, -33.125, 0);
-    g1.translate(rectWidth / 2, rectWidth /2);
-    g1.fill(#d0bcbc);
-    g1.rect(0,0, rectWidth -2 , rectWidth -2);
-    g1.rect(0,0, rectWidth + 5 , rectWidth +5);
-
-    g1.popMatrix();
-
-    g1.pushMatrix();
-    g1.translate(313.017f, 224.482, 0);
-    g1.translate(rectWidth / 2, rectWidth /2);
-    g1.fill(#bfbcd0);
-    g1.rect(0,0, rectWidth -2 , rectWidth -2);
-    g1.rect(0,0, rectWidth + 5 , rectWidth +5);
-    g1.popMatrix();
-
-    g1.pushMatrix();
-    g1.translate(-36.5f, 224.482, 0);
-    g1.translate(rectWidth / 2, rectWidth /2);
-    g1.fill(#bcd0c0);
-    g1.rect(0,0, rectWidth -2 , rectWidth -2);
-    g1.rect(0,0, rectWidth + 5 , rectWidth +5);
-    g1.popMatrix();
-
+    drawRectAt(g1, -36.5f, -33.125);
+    drawRectAt(g1, 313.017f, -33.125);
+    drawRectAt(g1, 313.017f, 224.482);
+    drawRectAt(g1, -36.5f, 224.482);
 
     display.endDraw();
 
@@ -155,6 +120,19 @@ void draw3DCorners(){
                         display.render(),
                         0, 0, width, height);
 }
+
+void drawRectAt(PGraphicsOpenGL g1, float px, float py){
+    float rectWidth = 15f;
+
+    g1.pushMatrix();
+    g1.translate(px, py, 0);
+    g1.translate(rectWidth / 2, rectWidth /2);
+    g1.fill(#bcd0c0);
+    g1.rect(0,0, rectWidth -2 , rectWidth -2);
+    g1.rect(0,0, rectWidth + 5 , rectWidth +5);
+    g1.popMatrix();
+}
+
 
 void initCorners() {
     // Corners of the image of the projector
@@ -242,6 +220,24 @@ void keyPressed(){
         }
         if(key == 's'){
             saveCorners();
+        }
+
+        if (key == CODED) {
+            if (keyCode == UP) {
+                corners[currentCorner].y += 1;
+            }
+
+            if (keyCode == DOWN) {
+                corners[currentCorner].y -= 1;
+            }
+
+            if (keyCode == LEFT) {
+                corners[currentCorner].x -= 1;
+            }
+
+            if (keyCode == RIGHT) {
+                corners[currentCorner].x += 1;
+            }
         }
 
     }

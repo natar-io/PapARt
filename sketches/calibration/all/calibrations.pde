@@ -10,12 +10,15 @@ boolean isKinectPaperSet = false;
 
 boolean useDefautExtrinsics = false;
 
+ArrayList<PMatrix3D> proCamCalibrations = new ArrayList<PMatrix3D>();
+int calibrationNumber = 0;
+
+
 public void useExtrinsicsFromProjector(){
 
     useDefautExtrinsics = true;
    controlFrame.showCalibrateProCam();
 }
-
 
 
 
@@ -76,7 +79,7 @@ public void saveKinectPaper(){
 
 void checkIfCalibrationPossible(){
     if(isProjPaperSet && isCamPaperSet){
-        controlFrame.showCalibrateProCam();
+        controlFrame.showAddProCamCalibration();
 
         if(isKinectPaperSet || isKinectOne){
             controlFrame.showCalibrateKinectCam();
@@ -122,15 +125,30 @@ public void calibrateKinectCam(){
     controlFrame.hideCalibrateKinectCam();
 }
 
+
+
+public void addProCamCalibrationData(){
+
+    PMatrix3D camPaper = camBoard();
+    PMatrix3D projPaper = projBoard().get();
+    projPaper.invert();
+    projPaper.preApply(camPaper);
+    projPaper.invert();
+    proCamCalibrations.add (projPaper);
+
+    controlFrame.showCalibrateProCam();
+    calibrationNumber = calibrationNumber + 1;
+    isProjPaperSet = false;
+    isCamPaperSet = false;
+}
+
 public void calibrateProCam(){
 
     if(useDefautExtrinsics){
         calibrateWithDefaultFile();
     } else {
-        calibrateWithProxyPaper();
+        computeManualCalibrations();
     }
-
-    println("ProCam calibrated.");
 
     // something need to change, to recalibrate.
     controlFrame.hideCalibrateProCam();
@@ -162,23 +180,23 @@ private void calibrateWithDefaultFile(){
 
 }
 
-private void calibrateWithProxyPaper(){
+private void computeManualCalibrations(){
+    PMatrix3D sum = new PMatrix3D(0, 0, 0, 0,
+                                  0, 0, 0, 0,
+                                  0, 0, 0, 0,
+                                  0, 0, 0, 0);
 
-    PMatrix3D camPaper = camBoard();
-    PMatrix3D projPaper = projBoard();
+    for(PMatrix3D calib : proCamCalibrations){
+        addMatrices(sum, calib);
+    }
+    multMatrix(sum, 1f / (float) proCamCalibrations.size());
+    papart.saveCalibration(Papart.cameraProjExtrinsics, sum);
+    projector.setExtrinsics(sum);
+}
 
-    // camPaper.print();
-    // projPaper.print();
-
-    projPaper.invert();
-    projPaper.preApply(camPaper);
-    //    projPaper.print();
-    projPaper.invert();
-
-    papart.saveCalibration(Papart.cameraProjExtrinsics, projPaper);
-    // projPaper.print();
-    projector.setExtrinsics(projPaper);
-
+public void clearCalibrations(){
+    proCamCalibrations.clear();
+    calibrationNumber = 0;
 }
 
 private void calibrateKinectOne(){
