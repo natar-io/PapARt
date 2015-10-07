@@ -34,17 +34,34 @@ public class ProjectorCorners extends PApplet {
     }
 
     void projectCornersImage(){
-        fill(255);
-        rect(0,0, 5, 5);
 
-        fill(255);
-        rect(width-5,0, 5, 5);
+        int cornerSize = 5;
+        ellipseMode(CENTER);
 
-        fill(255);
-        rect(width-5,height-5, 5, 5);
+        translate(0, 0);
+        drawEllipses();
 
-        fill(255);
-        rect(0, height-5, 5, 5);
+        translate(width, 0);
+        drawEllipses();
+
+        translate(0, height);
+        drawEllipses();
+
+        translate(-width, 0);
+        drawEllipses();
+
+    }
+
+    void drawEllipses(){
+        noStroke();
+        fill(120);
+        ellipse(0, 0, 50, 50);
+
+        fill(160);
+        ellipse(0, 0, 30, 30);
+
+        fill(200);
+        ellipse(0, 0, 2, 2);
     }
 
 }

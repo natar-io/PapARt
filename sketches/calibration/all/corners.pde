@@ -2,7 +2,12 @@ String cornersFileName;
 
 PVector[] corners = new PVector[4];
 PVector[] objectPoints = new PVector[4];
-float objectWidth = 420, objectHeight = 297;
+
+
+// float objectWidth = 420, objectHeight = 297;
+float objectWidth = 297, objectHeight = 210;
+int rectAroundWidth = 10;
+
 PMatrix3D objectProjectorTransfo;
 
 void activateCameraCorners(){
@@ -62,7 +67,7 @@ void activateProjectorCorners(){
     } catch(Exception e){};
 }
 
-int rectAroundWidth = 10;
+
 
 void draw3DCorners(){
 
@@ -92,6 +97,7 @@ void draw3DCorners(){
     g1.background(69, 145, 181, 100);
     g1.modelview.apply(objectProjectorTransfo);
 
+    g1.rectMode(CORNER);
     g1.fill(50, 50, 200, 100);
     // g1.translate(-10, -10, 0);
     g1.rect(-rectAroundWidth,
@@ -99,9 +105,49 @@ void draw3DCorners(){
             objectWidth + rectAroundWidth*2,
             objectHeight + rectAroundWidth*2);
 
-    g1.translate(objectWidth + 100, objectHeight + 100, 0);
-    g1.fill(0, 191, 100, 100);
-    g1.rect(150, 80, 100, 100);
+    //g1.translate(objectWidth + 100, objectHeight + 100, 0);
+    //g1.fill(0, 191, 100, 100);
+    //g1.rect(150, 80, 100, 100);
+
+    float rectWidth = 15f;
+
+    g1.stroke(0);
+    g1.strokeWeight(1);
+    g1.rectMode(CENTER);
+
+    g1.pushMatrix();
+    g1.translate(-36.5f, -33.125, 0);
+    g1.translate(rectWidth / 2, rectWidth /2);
+    g1.fill(#d0cebc);
+    g1.rect(0,0, rectWidth -2 , rectWidth -2);
+    g1.rect(0,0, rectWidth + 5 , rectWidth +5);
+    g1.popMatrix();
+
+    g1.pushMatrix();
+    g1.translate(313.017f, -33.125, 0);
+    g1.translate(rectWidth / 2, rectWidth /2);
+    g1.fill(#d0bcbc);
+    g1.rect(0,0, rectWidth -2 , rectWidth -2);
+    g1.rect(0,0, rectWidth + 5 , rectWidth +5);
+
+    g1.popMatrix();
+
+    g1.pushMatrix();
+    g1.translate(313.017f, 224.482, 0);
+    g1.translate(rectWidth / 2, rectWidth /2);
+    g1.fill(#bfbcd0);
+    g1.rect(0,0, rectWidth -2 , rectWidth -2);
+    g1.rect(0,0, rectWidth + 5 , rectWidth +5);
+    g1.popMatrix();
+
+    g1.pushMatrix();
+    g1.translate(-36.5f, 224.482, 0);
+    g1.translate(rectWidth / 2, rectWidth /2);
+    g1.fill(#bcd0c0);
+    g1.rect(0,0, rectWidth -2 , rectWidth -2);
+    g1.rect(0,0, rectWidth + 5 , rectWidth +5);
+    g1.popMatrix();
+
 
     display.endDraw();
 
@@ -170,7 +216,11 @@ void mouseDragged() {
 
 void keyPressed(){
 
-    if(Mode.is("ProjManual") || Mode.is("CamManual") || Mode.is("KinectManual")){
+    if(Mode.is("ProjManual") ||
+       Mode.is("CamManual") ||
+       Mode.is("KinectManual") ||
+       Mode.is("ProjMarker")
+        ){
         if(key == '1' ){
             controlFrame.activateCornerNo(1);
         }
