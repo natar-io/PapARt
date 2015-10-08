@@ -232,7 +232,7 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics{
      *  For custom calibration. 
      */
     public void setExtrinsics(PMatrix3D extr) {
-        extrinsics = extr;
+        extrinsics = extr.get();
         extrinsicsInv = extr.get();
         extrinsicsInv.invert();
         this.hasExtrinsics = true;

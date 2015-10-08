@@ -238,21 +238,22 @@ private void calibrateKinect360(){
     PVector paperSize = new PVector(297, 210);
 
     PlaneCalibration planeCalibKinect =
-        PlaneCalibration.CreatePlaneCalibrationFrom(kinect360Board(), paperSize);
+        PlaneCalibration.CreatePlaneCalibrationFrom(kinect360Board().get(), paperSize);
 
-    planeCalibCam = PlaneCalibration.CreatePlaneCalibrationFrom(camBoard(), paperSize);
+    planeCalibCam = PlaneCalibration.CreatePlaneCalibrationFrom(camBoard().get(), paperSize);
     planeCalibCam.flipNormal();
 
     PMatrix3D kinectExtr = kinectDevice.getStereoCalibration().get();
     kinectExtr.invert();
 
-    kinectCameraExtrinsics = camBoard();
-    kinectCameraExtrinsics.invert();
-    kinectCameraExtrinsics.preApply(kinect360Board());
+    kinectCameraExtrinsics = camBoard().get();  // cam -> board
+    kinectCameraExtrinsics.invert();  // board -> cam
+    kinectCameraExtrinsics.preApply(kinect360Board().get()); // kinect -> board -> board -> cam
+
     kinectCameraExtrinsics.preApply(kinectExtr);
 
-    println("Kinect - Camera extrinsics : ");
-    kinectCameraExtrinsics.print();
+    // println("Kinect - Camera extrinsics : ");
+    // kinectCameraExtrinsics.print();
 
     boolean inter = computeScreenPaperIntersection(planeCalibCam);
     if(!inter){
