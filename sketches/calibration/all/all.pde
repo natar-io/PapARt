@@ -32,8 +32,7 @@ ProjectorAsCamera  projectorAsCamera;
 // Papart Objects.
 Papart papart;
 MyApp app;
-MyApp appAR;
-MarkerBoard board;
+MarkerBoard board, kinectBoard;
 
 // view of the projector
 TrackedView projectorView;

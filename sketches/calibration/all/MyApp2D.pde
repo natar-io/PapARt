@@ -1,6 +1,14 @@
 public class MyApp  extends PaperScreen {
 
-  void setup() {
+    public MyApp(){
+        super();
+    }
+
+    public MyApp(Camera cam, BaseDisplay proj){
+        super(cam, proj);
+    }
+
+    void setup() {
     setDrawingSize(297, 210);
 //     loadMarkerBoard(Papart.markerFolder + "A3-small1.cfg", 297, 210);
     loadMarkerBoard(Papart.markerFolder + "big-calib.cfg", 297, 210);

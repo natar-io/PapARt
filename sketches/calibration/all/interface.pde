@@ -296,12 +296,12 @@ public class ControlFrame extends PApplet {
         saveCameraPaperBang.hide();
 
         cameraPaperLabel = skatolo.addTextlabel("cameraPaperLabel",
-                                                "Please save the calibration.",
+                                                "Please set the calibration.",
                                                 209,
                                                 102);
 
         projectorPaperLabel = skatolo.addTextlabel("projectorPaperLabel",
-                                                   "Please save the calibration.",
+                                                   "Please set the calibration.",
                                                    209,
                                                    216);
 
@@ -326,9 +326,9 @@ public class ControlFrame extends PApplet {
             .setColorLabel(color(255))
             ;
 
-        useProCamFromIntrinsics = skatolo.addBang("Use default calibration").
-            plugTo(mainApplet,"useExtrinsicsFromProjector")
-            .setPosition(415, 22)
+        useProCamFromIntrinsics = skatolo.addBang("Use previous calibration").
+            plugTo(mainApplet,"useLastExtrinsics")
+            .setPosition(425, 52)
             .setSize(20, 20)
             ;
 
@@ -349,9 +349,6 @@ public class ControlFrame extends PApplet {
             ;
             // .setColorBackground(color(255,100))
             // .setColorForeground(color(255,100));
-
-
-
 
 
         // skatolo.addSlider("captureTime").plugTo(mainApplet, "captureTime")
@@ -388,8 +385,9 @@ public class ControlFrame extends PApplet {
                 .setColorLabel(color(255))
                 ;
 
-            calibrateKinectCam =  skatolo.addBang("calibrate KinectCam").plugTo(mainApplet, "calibrateKinectCam")
-                .setPosition(320, 10)
+            calibrateKinectCam =  skatolo.addBang("calibrate KinectCam")
+                .plugTo(mainApplet, "calibrateKinectCam")
+                .setPosition(320, 250)
                 ;
 
             calibrateKinectCam.hide();

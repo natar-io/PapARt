@@ -224,11 +224,11 @@ void keyPressed(){
 
         if (key == CODED) {
             if (keyCode == UP) {
-                corners[currentCorner].y += 1;
+                corners[currentCorner].y -= 1;
             }
 
             if (keyCode == DOWN) {
-                corners[currentCorner].y -= 1;
+                corners[currentCorner].y += 1;
             }
 
             if (keyCode == LEFT) {

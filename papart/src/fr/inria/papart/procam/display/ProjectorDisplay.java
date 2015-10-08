@@ -81,13 +81,6 @@ public class ProjectorDisplay extends ARDisplay {
         this.endDraw();
     }
 
-    public void drawScreensLegacy() {
-        this.beginDraw();
-        this.graphics.clear();
-        drawScreensProjectionLegacy();
-        this.endDraw();
-    }
-
     @Override
     public void drawScreensOver() {
         this.beginDraw();
@@ -100,28 +93,6 @@ public class ProjectorDisplay extends ARDisplay {
         this.graphics.applyMatrix(getExtrinsics());
 
         super.renderScreens();
-    }
-
-    private void drawScreensProjectionLegacy() {
-
-        // Place the projector to his projection respective to the origin (camera here)
-        this.graphics.applyMatrix(getExtrinsics());
-
-        for (Screen screen : screens) {
-            if (!screen.isDrawing()) {
-                continue;
-            }
-            this.graphics.pushMatrix();
-
-            // Goto to the screen position
-//            this.graphics.modelview.apply(screen.getPos());
-            this.graphics.applyMatrix(screen.getLocation());
-            // Draw the screen image
-
-            this.graphics.image(screen.getTexture(), 0, 0, screen.getSize().x, screen.getSize().y);
-
-            this.graphics.popMatrix();
-        }
     }
 
     protected ReadonlyVec3D projectPointer3DVec3D(Screen screen, float px, float py) {
@@ -206,6 +177,11 @@ public class ProjectorDisplay extends ARDisplay {
 //        System.out.println("Diff " + diff);
 //        out3.y = 1 - out3.y;
         return out;
+    }
+    
+    public void setCamera(Camera camera){
+        this.camera = camera;
+        this.hasCamera = true;
     }
 
 }

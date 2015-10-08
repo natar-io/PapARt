@@ -7,8 +7,12 @@
  */
 package fr.inria.papart.procam.display;
 
+import fr.inria.papart.procam.HasCamera;
+import fr.inria.papart.procam.MarkerBoard;
 import fr.inria.papart.procam.Papart;
+import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.Screen;
+import fr.inria.papart.procam.camera.Camera;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
@@ -23,11 +27,13 @@ import processing.opengl.PGraphicsOpenGL;
  *
  * @author jiii
  */
-public class BaseDisplay {
+public class BaseDisplay implements HasCamera {
 
     Semaphore sem = new Semaphore(1);
     public PGraphicsOpenGL graphics;
     public ArrayList<Screen> screens = new ArrayList<Screen>();
+//    public ArrayList<PaperScreen> paperScreens = new ArrayList<>();
+    
     protected PApplet parent;
     //    public PGraphicsOpenGL graphicsUndist;
     protected static int DEFAULT_SIZE = 200;
@@ -35,6 +41,7 @@ public class BaseDisplay {
     protected int frameWidth = DEFAULT_SIZE, frameHeight = DEFAULT_SIZE;
     protected int drawingSizeX = DEFAULT_SIZE, drawingSizeY = DEFAULT_SIZE;
     protected float quality = 1;
+    protected boolean hasCamera = false;
 
     public BaseDisplay() {
         setParent(Papart.getPapart().getApplet());
@@ -116,8 +123,14 @@ public class BaseDisplay {
     }
 
     public PGraphicsOpenGL beginDrawOnScreen(Screen screen) {
-        // Get the markerboard viewed by the camera
-        PMatrix3D screenPos = screen.getLocation();
+        PMatrix3D screenPos;
+
+        if (this.hasCamera()) {
+            screenPos = screen.getLocation(this.getCamera());
+        } else {
+            // Get the markerboard viewed by the camera
+            screenPos = screen.getExtrinsics();
+        }
         this.beginDraw();
         this.graphics.applyMatrix(screenPos);
         return this.graphics;
@@ -137,7 +150,7 @@ public class BaseDisplay {
         drawScreensOver();
         parent.noStroke();
         parent.g.image(this.render(), 0, 0, this.drawingSizeX, this.drawingSizeY);
-        
+
 //        pxCopy = getPixelsCopy();
     }
 
@@ -165,8 +178,9 @@ public class BaseDisplay {
             if (!screen.isDrawing()) {
                 continue;
             }
+            this.graphics.noStroke();
             this.graphics.pushMatrix();
-            this.graphics.applyMatrix(screen.getLocation());
+            this.graphics.applyMatrix(screen.getLocation(new PMatrix3D()));
             this.graphics.image(screen.getTexture(), 0, 0, screen.getSize().x, screen.getSize().y);
             this.graphics.popMatrix();
         }
@@ -231,10 +245,23 @@ public class BaseDisplay {
     public void addScreen(Screen s) {
         screens.add(s);
     }
+    
+//    public void addPaperScreen(PaperScreen s) {
+//        paperScreens.add(s);
+//    }
+
+    @Override
+    public boolean hasCamera() {
+        return hasCamera;
+    }
+
+    @Override
+    public Camera getCamera() {
+        return Camera.INVALID_CAMERA;
+    }
 
     public PVector projectPointer(Screen screen, float x, float y) {
-
-        PMatrix3D screenMat = screen.getLocation();
+        PMatrix3D screenMat = screen.getLocation(new PMatrix3D());
         screenMat.invert();
         PVector transformed = new PVector();
         screenMat.mult(new PVector(x * drawingSizeX, y * drawingSizeY), transformed);

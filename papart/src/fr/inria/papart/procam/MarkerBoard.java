@@ -199,13 +199,12 @@ public class MarkerBoard {
         tracker.setMarkerMode(ARToolKitPlus.MARKER_ID_BCH);
 
         // TODO: find why  FULL RES is not working with a FULL HD image. 
-        
 //        tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_FULL_RES);
         tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_HALF_RES);
 
         tracker.setUseDetectLite(false);
 //        tracker.setUseDetectLite(true);
-        
+
         // Initialize the tracker, with camera parameters and marker config. 
         if (!tracker.init(camera.getCalibrationARToolkit(), this.getFileName(), 1.0f, 10000.f)) {
             System.err.println("Init ARTOOLKIT Error " + camera.getCalibrationARToolkit() + " " + this.getFileName());
@@ -307,6 +306,10 @@ public class MarkerBoard {
         }
 
         return true;
+    }
+
+    public boolean isTrackedBy(Camera camera) {
+        return cameras.contains(camera);
     }
 
     private PVector getPositionVector(int id) {
@@ -436,7 +439,6 @@ public class MarkerBoard {
         TrackerMultiMarker tracker = (TrackerMultiMarker) trackers.get(id);
 
 //        tracker.getCamera().changeFrameSize(camera.width(), camera.height());
-        
         // Find the markers
         tracker.calc(img.imageData());
 

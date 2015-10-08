@@ -82,7 +82,7 @@ public class PaperTouchScreen extends PaperScreen {
                 return;
             }
         }
-        screen.computeScreenPosTransform();
+        screen.computeScreenPosTransform(cameraTracking);
 
         // Warning TODO: Hack.. V_V 
         // Touch in 2D  mode has boundaries. 
@@ -93,7 +93,7 @@ public class PaperTouchScreen extends PaperScreen {
             touchInput.computeOutsiders(true);
         }
 
-        touchList = touchInput.projectTouchToScreen(screen, display);
+        touchList = touchInput.projectTouchToScreen(screen, getDisplay());
         touchList.sortAlongYAxis();
 
         if (touchInput instanceof KinectTouchInput) {
@@ -220,7 +220,7 @@ public class PaperTouchScreen extends PaperScreen {
      * Unsafe do not use unless you are sure.
      */
     public PVector getCameraViewOf(Touch t) {
-        ProjectorDisplay projector = (ProjectorDisplay) display;
+        ProjectorDisplay projector = (ProjectorDisplay) getDisplay();
 
         TouchPoint tp = t.touchPoint;
         PVector screenPos = tp.getPosition();

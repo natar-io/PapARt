@@ -71,20 +71,20 @@ void initKinect360(){
 
     cameraKinect = kinectDevice.getCameraRGB();
 
-    // stop the update...
-    board.blockUpdate(camera, 3000);
 
     String ARToolkitCalib = sketchPath() + "/data/Kinect.cal";
     cameraKinect.convertARParams(this, cameraKinect.getCalibrationFile(), ARToolkitCalib);
     cameraKinect.initMarkerDetection(ARToolkitCalib);
 
-    // TODO: Find why it updates before camera starts?
-    cameraKinect.trackMarkerBoard(board);
-    cameraKinect.trackSheets(true);
-
     arDisplayKinect = new ARDisplay(this, cameraKinect);
     arDisplayKinect.init();
     arDisplayKinect.manualMode();
+
+    app.addDisplay(arDisplayKinect);
+
+    // TODO: Find why it updates before camera starts?
+    cameraKinect.trackSheets(true);
+
 
     kinectProjectiveP = cameraKinect.getProjectiveDevice();
     cameraKinect.setThread();

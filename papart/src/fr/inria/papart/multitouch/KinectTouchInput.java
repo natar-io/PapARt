@@ -19,7 +19,6 @@ import fr.inria.papart.depthcam.DepthAnalysis;
 import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
 import fr.inria.papart.depthcam.devices.KinectDepthAnalysis;
 import fr.inria.papart.depthcam.devices.KinectDevice;
-import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.procam.camera.CameraOpenKinect;
@@ -319,7 +318,7 @@ public class KinectTouchInput extends TouchInput {
             paperScreenCoord = new PVector();
             PVector pKinectP = new PVector(pKinect.x, pKinect.y, pKinect.z);
 
-            PMatrix3D transfo = screen.getLocation();
+            PMatrix3D transfo = screen.getLocation(display.getCamera());
             transfo.invert();
             transfo.mult(pKinectP, paperScreenCoord);
 

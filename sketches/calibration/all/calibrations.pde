@@ -15,11 +15,9 @@ int calibrationNumber = 0;
 
 
 public void useExtrinsicsFromProjector(){
-
     useDefautExtrinsics = true;
-   controlFrame.showCalibrateProCam();
+    controlFrame.showCalibrateProCam();
 }
-
 
 
 public void saveCameraPaper(){
@@ -81,9 +79,13 @@ void checkIfCalibrationPossible(){
     if(isProjPaperSet && isCamPaperSet){
         controlFrame.showAddProCamCalibration();
 
-        if(isKinectPaperSet || isKinectOne){
-            controlFrame.showCalibrateKinectCam();
-        }
+        checkIfKinectCalibrationPossible();
+    }
+}
+
+void checkIfKinectCalibrationPossible(){
+    if(isKinectPaperSet || isKinectOne){
+        controlFrame.showCalibrateKinectCam();
     }
 
 }
@@ -137,9 +139,12 @@ public void addProCamCalibrationData(){
     proCamCalibrations.add (projPaper);
 
     controlFrame.showCalibrateProCam();
+    controlFrame.hideAddProCamCalibration();
     calibrationNumber = calibrationNumber + 1;
     isProjPaperSet = false;
     isCamPaperSet = false;
+    controlFrame.setProjectorPaperLabel("Please set the calibration.");
+    controlFrame.setCameraPaperLabel("Please set the calibration.");
 }
 
 public void calibrateProCam(){
@@ -234,6 +239,7 @@ private void calibrateKinect360(){
 
     PlaneCalibration planeCalibKinect =
         PlaneCalibration.CreatePlaneCalibrationFrom(kinect360Board(), paperSize);
+
     planeCalibCam = PlaneCalibration.CreatePlaneCalibrationFrom(camBoard(), paperSize);
     planeCalibCam.flipNormal();
 
