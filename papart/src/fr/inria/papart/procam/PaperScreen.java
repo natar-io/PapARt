@@ -117,7 +117,6 @@ public class PaperScreen {
 
     @Deprecated
     public void endDraw() {
-        System.out.println("Do not use endDraw anymore.");
         currentGraphics.endDraw();
     }
 

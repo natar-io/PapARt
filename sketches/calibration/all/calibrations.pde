@@ -14,6 +14,7 @@ ArrayList<PMatrix3D> proCamCalibrations = new ArrayList<PMatrix3D>();
 int calibrationNumber = 0;
 
 
+
 public void useExtrinsicsFromProjector(){
     useDefautExtrinsics = true;
     controlFrame.showCalibrateProCam();
@@ -237,23 +238,21 @@ private void calibrateKinectOne(){
 private void calibrateKinect360(){
     PVector paperSize = new PVector(297, 210);
 
-    PlaneCalibration planeCalibKinect =
-        PlaneCalibration.CreatePlaneCalibrationFrom(kinect360Board().get(), paperSize);
+    PMatrix3D kinectExtr = kinectDevice.getStereoCalibration().get();
+    kinectExtr.invert();
+
+    PMatrix3D boardFromDepth = kinect360Board().get();
+    boardFromDepth.preApply(kinectExtr);
 
     planeCalibCam = PlaneCalibration.CreatePlaneCalibrationFrom(camBoard().get(), paperSize);
     planeCalibCam.flipNormal();
 
-    PMatrix3D kinectExtr = kinectDevice.getStereoCalibration().get();
-    kinectExtr.invert();
-
     kinectCameraExtrinsics = camBoard().get();  // cam -> board
     kinectCameraExtrinsics.invert();  // board -> cam
-    kinectCameraExtrinsics.preApply(kinect360Board().get()); // kinect -> board -> board -> cam
+    kinectCameraExtrinsics.preApply(boardFromDepth); // kinect -> board -> board -> cam
 
-    kinectCameraExtrinsics.preApply(kinectExtr);
-
-    // println("Kinect - Camera extrinsics : ");
-    // kinectCameraExtrinsics.print();
+    // kinectCameraExtrinsics.preApply(kinect360Board().get()); // kinect -> board -> board -> cam
+    // kinectCameraExtrinsics.preApply(kinectExtr);
 
     boolean inter = computeScreenPaperIntersection(planeCalibCam);
     if(!inter){
@@ -262,24 +261,30 @@ private void calibrateKinect360(){
         return;
     }
 
+    PlaneCalibration planeCalibKinect =
+        PlaneCalibration.CreatePlaneCalibrationFrom(boardFromDepth, paperSize);
+
     // move the plane up a little.
     planeCalibKinect.flipNormal();
-    planeCalibKinect.moveAlongNormal(-17f);
+    planeCalibKinect.moveAlongNormal(-18f);
 
-    saveKinectCalibration(planeCalibKinect);
+    saveKinectPlaneCalibration(planeCalibKinect);
+    saveKinectCameraExtrinsics();
 }
 
 
-void saveKinectCalibration(PlaneCalibration planeCalib){
-    planeProjCalib.setPlane(planeCalib);
-    planeProjCalib.setHomography(homographyCalibration);
-
-    planeProjCalib.saveTo(this, Papart.planeAndProjectionCalib);
+void saveKinectCameraExtrinsics(){
     HomographyCalibration.saveMatTo(this,
                                     kinectCameraExtrinsics,
                                     Papart.kinectTrackingCalib);
-
     papart.setTableLocation(camBoard());
+}
+
+void saveKinectPlaneCalibration(PlaneCalibration planeCalib){
+    planeProjCalib.setPlane(planeCalib);
+    planeProjCalib.setHomography(homographyCalibration);
+    planeProjCalib.saveTo(this, Papart.planeAndProjectionCalib);
+
     println("Calibration OK");
     isCalibrated = true;
 }
