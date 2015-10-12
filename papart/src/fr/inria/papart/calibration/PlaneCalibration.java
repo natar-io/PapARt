@@ -91,7 +91,7 @@ public class PlaneCalibration extends Calibration {
         this.height = planeHeight;
     }
 
-    protected void setPlane(Plane plane) {
+    public void setPlane(Plane plane) {
         this.plane = plane;
     }
 

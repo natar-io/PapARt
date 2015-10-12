@@ -1,3 +1,6 @@
+import toxi.geom.Plane;
+import toxi.geom.Triangle3D;
+
 boolean isCalibrated = false;
 
 PMatrix3D  cameraPaperCalibration = null;
@@ -10,9 +13,8 @@ boolean isKinectPaperSet = false;
 
 boolean useDefautExtrinsics = false;
 
-ArrayList<PMatrix3D> proCamCalibrations = new ArrayList<PMatrix3D>();
+ArrayList<CalibrationSnapshot> snapshots = new ArrayList<CalibrationSnapshot>();
 int calibrationNumber = 0;
-
 
 
 public void useExtrinsicsFromProjector(){
@@ -132,20 +134,30 @@ public void calibrateKinectCam(){
 
 public void addProCamCalibrationData(){
 
-    PMatrix3D camPaper = camBoard();
-    PMatrix3D projPaper = projBoard().get();
-    projPaper.invert();
-    projPaper.preApply(camPaper);
-    projPaper.invert();
-    proCamCalibrations.add (projPaper);
+    // PMatrix3D camPaper = camBoard();
+    // PMatrix3D projPaper = projBoard().get();
+    // projPaper.invert();
+    // projPaper.preApply(camPaper);
+    // projPaper.invert();
+    // proCamCalibrations.add (projPaper);
+
+    // snapshots
+    CalibrationSnapshot snapshot =
+        new CalibrationSnapshot(cameraPaperCalibration,
+                                projectorPaperCalibration,
+                                kinectPaperCalibration);
+    snapshots.add(snapshot);
 
     controlFrame.showCalibrateProCam();
     controlFrame.hideAddProCamCalibration();
     calibrationNumber = calibrationNumber + 1;
     isProjPaperSet = false;
     isCamPaperSet = false;
+    isKinectPaperSet = false;
+
     controlFrame.setProjectorPaperLabel("Please set the calibration.");
     controlFrame.setCameraPaperLabel("Please set the calibration.");
+    controlFrame.setKinectPaperLabel("Please set the calibration.");
 }
 
 public void calibrateProCam(){
@@ -192,16 +204,26 @@ private void computeManualCalibrations(){
                                   0, 0, 0, 0,
                                   0, 0, 0, 0);
 
-    for(PMatrix3D calib : proCamCalibrations){
-        addMatrices(sum, calib);
+    for(CalibrationSnapshot snapshot : snapshots){
+        PMatrix3D extr = computeExtrinsics(snapshot.cameraPaper,
+                                           snapshot.projectorPaper);
+        addMatrices(sum, extr);
     }
-    multMatrix(sum, 1f / (float) proCamCalibrations.size());
+    multMatrix(sum, 1f / (float) snapshots.size());
     papart.saveCalibration(Papart.cameraProjExtrinsics, sum);
     projector.setExtrinsics(sum);
 }
 
+private PMatrix3D computeExtrinsics(PMatrix3D camPaper, PMatrix3D projPaper){
+    PMatrix3D extr = projPaper.get();
+     extr.invert();
+     extr.preApply(camPaper);
+     extr.invert();
+     return extr;
+}
+
 public void clearCalibrations(){
-    proCamCalibrations.clear();
+    snapshots.clear();
     calibrationNumber = 0;
 }
 
@@ -231,28 +253,22 @@ private void calibrateKinectOne(){
     // move the plane up a little.
     planeCalibCam.moveAlongNormal(-7f);
 
-    saveKinectCalibration(planeCalibCam);
+    saveKinectPlaneCalibration(planeCalibCam);
+    saveKinectCameraExtrinsics();
 }
 
 
 private void calibrateKinect360(){
-    PVector paperSize = new PVector(297, 210);
 
     PMatrix3D kinectExtr = kinectDevice.getStereoCalibration().get();
     kinectExtr.invert();
 
-    PMatrix3D boardFromDepth = kinect360Board().get();
-    boardFromDepth.preApply(kinectExtr);
+    kinectCameraExtrinsics = computeKinectCamExtrinsics(kinectExtr);
 
-    planeCalibCam = PlaneCalibration.CreatePlaneCalibrationFrom(camBoard().get(), paperSize);
+    planeCalibCam = computeAveragePlaneCam();
+    PlaneCalibration planeCalibKinect = computeAveragePlaneKinect(kinectExtr);
+
     planeCalibCam.flipNormal();
-
-    kinectCameraExtrinsics = camBoard().get();  // cam -> board
-    kinectCameraExtrinsics.invert();  // board -> cam
-    kinectCameraExtrinsics.preApply(boardFromDepth); // kinect -> board -> board -> cam
-
-    // kinectCameraExtrinsics.preApply(kinect360Board().get()); // kinect -> board -> board -> cam
-    // kinectCameraExtrinsics.preApply(kinectExtr);
 
     boolean inter = computeScreenPaperIntersection(planeCalibCam);
     if(!inter){
@@ -261,9 +277,6 @@ private void calibrateKinect360(){
         return;
     }
 
-    PlaneCalibration planeCalibKinect =
-        PlaneCalibration.CreatePlaneCalibrationFrom(boardFromDepth, paperSize);
-
     // move the plane up a little.
     planeCalibKinect.flipNormal();
     planeCalibKinect.moveAlongNormal(-18f);
@@ -271,6 +284,89 @@ private void calibrateKinect360(){
     saveKinectPlaneCalibration(planeCalibKinect);
     saveKinectCameraExtrinsics();
 }
+
+
+private PMatrix3D computeKinectCamExtrinsics(PMatrix3D stereoExtr){
+
+    PMatrix3D sum = new PMatrix3D(0, 0, 0, 0,
+                                  0, 0, 0, 0,
+                                  0, 0, 0, 0,
+                                  0, 0, 0, 0);
+
+    int nbCalib = 0;
+    for(CalibrationSnapshot snapshot : snapshots){
+        if(snapshot.kinectPaper == null)
+            continue;
+
+        PMatrix3D boardFromDepth = snapshot.kinectPaper.get();
+        boardFromDepth.preApply(stereoExtr);
+
+        PMatrix3D extr = snapshot.cameraPaper.get();
+        extr.invert();
+        extr.preApply(boardFromDepth);
+
+        addMatrices(sum, extr);
+        nbCalib++;
+    }
+
+    multMatrix(sum, 1f / (float) nbCalib);
+    return sum;
+    // papart.saveCalibration(Papart.cameraProjExtrinsics, sum);
+    // projector.setExtrinsics(sum);
+}
+
+private PlaneCalibration computeAveragePlaneKinect(PMatrix3D stereoExtr){
+    PVector paperSize = new PVector(297, 210);
+
+    Plane sumKinect = new Plane(new Vec3D(0,0,0),
+                                new Vec3D(0,0,0));
+
+    int nbCalib = 0;
+    for(CalibrationSnapshot snapshot : snapshots){
+        if(snapshot.kinectPaper == null)
+            continue;
+
+        PMatrix3D boardFromDepth = snapshot.kinectPaper.get();
+        boardFromDepth.preApply(stereoExtr);
+
+        PlaneCalibration planeCalibKinect =
+            PlaneCalibration.CreatePlaneCalibrationFrom(boardFromDepth, paperSize);
+        sumPlane(sumKinect, planeCalibKinect.getPlane());
+        nbCalib++;
+    }
+
+    averagePlane(sumKinect, 1f / nbCalib);
+
+    PlaneCalibration calibration = new PlaneCalibration();
+    calibration.setPlane(sumKinect);
+    calibration.setHeight(PlaneCalibration.DEFAULT_PLANE_HEIGHT);
+    return calibration;
+}
+
+private PlaneCalibration computeAveragePlaneCam(){
+    PVector paperSize = new PVector(297, 210);
+
+    Plane sumCam = new Plane(new Vec3D(0,0,0),
+                             new Vec3D(0,0,0));
+
+    for(CalibrationSnapshot snapshot : snapshots){
+        PlaneCalibration cam = PlaneCalibration.CreatePlaneCalibrationFrom(
+            snapshot.cameraPaper.get(), paperSize);
+
+        sumPlane(sumCam, cam.getPlane());
+    }
+
+    averagePlane(sumCam, 1f / snapshots.size());
+
+    PlaneCalibration calibration = new PlaneCalibration();
+    calibration.setPlane(sumCam);
+    calibration.setHeight(PlaneCalibration.DEFAULT_PLANE_HEIGHT);
+
+    return calibration;
+}
+
+
+
 
 
 void saveKinectCameraExtrinsics(){

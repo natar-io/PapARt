@@ -88,3 +88,14 @@ void multMatrix(PMatrix3D sum, float value){
     sum.m32 *= value;
     sum.m33 *= value;
 }
+
+void sumPlane(Plane sum, Plane added){
+    sum.addSelf(added);
+    sum.normal.addSelf(added.normal);
+}
+
+
+void averagePlane(Plane sum, float v){
+    sum.scaleSelf(v);
+    sum.normal.normalize();
+}
