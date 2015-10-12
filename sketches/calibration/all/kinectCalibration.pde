@@ -4,8 +4,6 @@ boolean isKinectOne = false;
 boolean isKinect360 = false;
 
 int frameWidth, frameHeight;
-PMatrix3D kinectCameraExtrinsics;
-// TODO: ?! pop-up a new window with Kinect AR view ?
 
 ProjectiveDeviceP projectorDevice, kinectProjectiveP;
 
@@ -45,7 +43,6 @@ void activateKinect(){
 }
 
 
-
 void initKinectOne(){
     if(isKinectOneActivated)
         return;
@@ -56,9 +53,6 @@ void initKinectOne(){
 
     // Kinect camera is the main tracking Camera
     kinectProjectiveP = camera.getProjectiveDevice();
-
-    // identity - no external camera for ProCam calibration
-    kinectCameraExtrinsics = new PMatrix3D();
 
     isKinectOneActivated = true;
 }
@@ -122,7 +116,8 @@ void saveStereoKinect(boolean pressed){
 }
 
 
-boolean computeScreenPaperIntersection(PlaneCalibration planeCalibCam){
+boolean computeScreenPaperIntersection(PlaneCalibration planeCalibCam,
+                                       PMatrix3D kinectCameraExtrinsics){
 
     // generate coordinates...
     float step = 0.5f;
@@ -142,6 +137,8 @@ boolean computeScreenPaperIntersection(PlaneCalibration planeCalibCam){
             if(inter == null)
                 return false;
 
+            // inter is viewed from tracking.
+            //
             kinectCameraExtrinsics.mult(inter, kinectPoint);
             homographyCreator.addPoint(kinectPoint, screenPoint);
         }

@@ -18,7 +18,7 @@ public class MyApp extends PaperTouchScreen {
 	kinectProjector = papart.loadCalibration(Papart.kinectTrackingCalib);
 	kinectProjector.invert();
 
-	cameraProjector = ((ProjectorDisplay) display).getExtrinsics().get();
+	cameraProjector = ((ProjectorDisplay) getDisplay()).getExtrinsics().get();
 	cameraProjector.invert();
 
 	tablePlane = papart.getTablePlane();
@@ -26,18 +26,18 @@ public class MyApp extends PaperTouchScreen {
 
     PVector pointPos = new PVector();
     PVector posProj = new PVector();
-    
+
     void draw(){
 	println("Frame Rate " + frameRate);
 	beginDraw3D();
 	clear();
 	background(0);
-	
+
 	float ellipseSize = 5;
 
-	// in draw3D Mode the graphics here are the projector's graphics. 
+	// in draw3D Mode the graphics here are the projector's graphics.
 
-	ProjectorDisplay projector = (ProjectorDisplay) display;
+	ProjectorDisplay projector = (ProjectorDisplay) getDisplay();
 	ProjectiveDeviceP pdp = projector.getProjectiveDeviceP();
 
  	projector.loadModelView();
@@ -64,10 +64,10 @@ public class MyApp extends PaperTouchScreen {
 	// popMatrix();
 
 
-	
+
 	for (Touch t : touchList) {
 
-	    // draw the touch. 
+	    // draw the touch.
 	    PVector p = t.position;
 	    // fill(200);
 	    // ellipse(p.x, p.y, ellipseSize, ellipseSize);
@@ -84,9 +84,9 @@ public class MyApp extends PaperTouchScreen {
 
 	    ArrayList<DepthDataElementKinect> depthDataElements = tp.getDepthDataElements();
 	    for(DepthDataElementKinect dde : depthDataElements){
-		    
+
 	    	    Vec3D depthPoint = dde.depthPoint;
-	    
+
 	    	    kinectProjector.mult(new PVector(depthPoint.x,
 	    					     depthPoint.y,
 	    					     depthPoint.z),
@@ -96,20 +96,20 @@ public class MyApp extends PaperTouchScreen {
 		    // PVector out2D = pdp.worldToPixelCoord(pointPos);
 	    	    // println("Out " + out2D);
 		    // ellipse(out2D.x, out2D.y, 10, 10);
-		    
+
 		    // cameraProjector.mult(pointPos,
 	    	    // 			 posProj);
 
 		    float dist = tablePlane.distanceTo(pointPos);
 		    if(dist > 100)
 			continue;
-		    
+
 		    float col = 255 * ((100 - dist) / 100);
 
 		    pushMatrix();
 		    fill(col);
 	    	    translate(pointPos.x -2.2, pointPos.y -2.2 , pointPos.z);
-		    
+
 		    ellipse(0, 0, 3, 3);
 	    	    popMatrix();
 	    }
@@ -118,8 +118,3 @@ public class MyApp extends PaperTouchScreen {
 	endDraw();
     }
 }
-
-
-
-
-

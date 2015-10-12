@@ -52,25 +52,25 @@ void draw(){
     }
 
 
-    fill(255, 0, 0);
-    ArrayList<TouchPoint> touchs3D = new ArrayList<TouchPoint>(touchInput.getTouchPoints3D());
-    for(TouchPoint tp : touchs3D){
+    // fill(255, 0, 0);
+    // ArrayList<TouchPoint> touchs3D = new ArrayList<TouchPoint>(touchInput.getTouchPoints3D());
+    // for(TouchPoint tp : touchs3D){
 
-	ArrayList<DepthDataElementKinect> depthDataElements = tp.getDepthDataElements();
+    //     ArrayList<DepthDataElementKinect> depthDataElements = tp.getDepthDataElements();
 
-	for(DepthDataElementKinect dde : depthDataElements){
-	    Vec3D v = dde.projectedPoint;
-	    noStroke();
-	    setColor(dde.pointColor, 100);
-	    ellipse(v.x * width,
-		    v.y * height,
-		    10, 10);
-	}
+    //     for(DepthDataElementKinect dde : depthDataElements){
+    //         Vec3D v = dde.projectedPoint;
+    //         noStroke();
+    //         setColor(dde.pointColor, 100);
+    //         ellipse(v.x * width,
+    //     	    v.y * height,
+    //     	    10, 10);
+    //     }
 
-	PVector pos = tp.getPosition();
-	ellipse(pos.x * width,
-		pos.y * height, 40, 40);
-    }
+    //     PVector pos = tp.getPosition();
+    //     ellipse(pos.x * width,
+    //     	pos.y * height, 40, 40);
+    // }
 }
 
 void setColor(int rgb, float intens){
