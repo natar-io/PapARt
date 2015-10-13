@@ -62,9 +62,7 @@ void initKinectOne(){
 void initKinect360(){
 
     kinectDevice = new Kinect360(this);
-
     cameraKinect = kinectDevice.getCameraRGB();
-
 
     String ARToolkitCalib = sketchPath() + "/data/Kinect.cal";
     cameraKinect.convertARParams(this, cameraKinect.getCalibrationFile(), ARToolkitCalib);
@@ -80,11 +78,11 @@ void initKinect360(){
     cameraKinect.trackSheets(true);
 
 
-    kinectProjectiveP = cameraKinect.getProjectiveDevice();
-    cameraKinect.setThread();
+     kinectProjectiveP = cameraKinect.getProjectiveDevice();
+     cameraKinect.setThread();
 
-    initCommonKinect();
-    isKinect360Activated = true;
+     initCommonKinect();
+     isKinect360Activated = true;
 }
 
 void initCommonKinect(){
@@ -94,7 +92,8 @@ void initCommonKinect(){
     kinectAnalysis = new KinectProcessing(this, kinectDevice);
     planeProjCalib = new PlaneAndProjectionCalibration();
     homographyCalibration = new HomographyCalibration();
-    pcv = new PointCloudVisualization();
+    // init is done later now.
+// pcv = new PointCloudVisualization();
     projectorDevice = projector.getProjectiveDeviceP();
     frameWidth = projectorDevice.getWidth();
     frameHeight = projectorDevice.getHeight();

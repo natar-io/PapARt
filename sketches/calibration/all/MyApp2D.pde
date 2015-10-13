@@ -11,8 +11,8 @@ public class MyApp  extends PaperScreen {
     void setup() {
     setDrawingSize(297, 210);
 //     loadMarkerBoard(Papart.markerFolder + "A3-small1.cfg", 297, 210);
-     loadMarkerBoard(Papart.markerFolder + "big-calib.cfg", 297, 210);
-     // loadMarkerBoard(Papart.markerFolder + "mega-calib.cfg", 297, 210);
+    loadMarkerBoard(Papart.markerFolder + "big-calib.cfg", 297, 210);
+//    loadMarkerBoard(Papart.markerFolder + "mega-calib.cfg", 297, 210);
     // loadMarkerBoard(Papart.markerFolder + "rocks.jpg", 140, 200);
   }
 

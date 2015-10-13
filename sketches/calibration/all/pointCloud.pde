@@ -6,6 +6,10 @@ int precision = 2;
 
 public class PointCloudVisualization extends PApplet {
 
+    // TODO: When the main sketch closes, it
+    // forces this one to close at the wrong time,
+    // and everything crashes :(
+
     public PointCloudVisualization() {
         super();
         PApplet.runSketch(new String[]{this.getClass().getName()}, this);
@@ -61,6 +65,5 @@ public class PointCloudVisualization extends PApplet {
       pointCloud.updateWith(kinectAnalysis);
       pointCloud.drawSelf((PGraphicsOpenGL) g);
   }
-
 
 }

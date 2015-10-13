@@ -259,9 +259,12 @@ private void calibrateKinectOne(){
     saveKinectCameraExtrinsics(kinectCameraExtrinsics);
 }
 
-
 private void calibrateKinect360(){
+    calibrateKinect360Extr();
+    calibrateKinect360Plane();
+}
 
+private void calibrateKinect360Extr(){
     // Depth -> color  extrinsics
     PMatrix3D kinectExtr = kinectDevice.getStereoCalibration().get();
 
@@ -273,10 +276,21 @@ private void calibrateKinect360(){
 
     // tracking -> depth
     kinectCameraExtrinsics.invert();
+    saveKinectCameraExtrinsics(kinectCameraExtrinsics);
+}
+
+private void calibrateKinect360Plane(){
+    // Depth -> color  extrinsics
+    PMatrix3D kinectExtr = kinectDevice.getStereoCalibration().get();
+
+    // color -> depth  extrinsics
+    kinectExtr.invert();
 
     planeCalibCam = computeAveragePlaneCam();
     PlaneCalibration planeCalibKinect = computeAveragePlaneKinect(kinectExtr);
     planeCalibCam.flipNormal();
+
+    PMatrix3D kinectCameraExtrinsics = papart.loadCalibration(Papart.kinectTrackingCalib);
 
     boolean inter = computeScreenPaperIntersection(planeCalibCam,
                                                    kinectCameraExtrinsics);
@@ -291,7 +305,6 @@ private void calibrateKinect360(){
     planeCalibKinect.moveAlongNormal(-20f);
 
     saveKinectPlaneCalibration(planeCalibKinect);
-    saveKinectCameraExtrinsics(kinectCameraExtrinsics);
 }
 
 
@@ -344,7 +357,6 @@ private PlaneCalibration computeAveragePlaneKinect(PMatrix3D stereoExtr){
         if(snapshot.kinectPaper == null)
             continue;
 
-
         //  color -> paper
         PMatrix3D boardFromDepth = snapshot.kinectPaper.get();
 
@@ -371,14 +383,20 @@ private PlaneCalibration computeAveragePlaneCam(){
     Plane sumCam = new Plane(new Vec3D(0,0,0),
                              new Vec3D(0,0,0));
 
+    int nbPlanes = 0;
     for(CalibrationSnapshot snapshot : snapshots){
+
+        if(snapshot.cameraPaper == null)
+            continue;
+
         PlaneCalibration cam = PlaneCalibration.CreatePlaneCalibrationFrom(
             snapshot.cameraPaper.get(), paperSize);
 
         sumPlane(sumCam, cam.getPlane());
+        nbPlanes++;
     }
 
-    averagePlane(sumCam, 1f / snapshots.size());
+    averagePlane(sumCam, 1f / nbPlanes);
 
     PlaneCalibration calibration = new PlaneCalibration();
     calibration.setPlane(sumCam);
@@ -392,9 +410,7 @@ private PlaneCalibration computeAveragePlaneCam(){
 
 
 void saveKinectCameraExtrinsics(PMatrix3D kinectCameraExtrinsics){
-    HomographyCalibration.saveMatTo(this,
-                                    kinectCameraExtrinsics,
-                                    Papart.kinectTrackingCalib);
+    papart.saveCalibration(Papart.kinectTrackingCalib, kinectCameraExtrinsics);
     papart.setTableLocation(camBoard());
 }
 

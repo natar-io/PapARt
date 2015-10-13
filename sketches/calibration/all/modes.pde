@@ -161,6 +161,9 @@ public void kinectMode(int value){
     case ZERO:
         Mode.set("Kinect3D");
         isKinect3DView = true;
+        if(pcv == null){
+            pcv = new PointCloudVisualization();
+        }
         pcv.getSurface().setVisible(true);
         controlFrame.showKinectStereoSliders();
 

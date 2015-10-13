@@ -1,4 +1,7 @@
 import java.awt.Frame;
+import java.awt.Canvas;
+import processing.awt.*;
+import processing.awt.PSurfaceAWT.*;
 import com.jogamp.newt.opengl.GLWindow;
 
 public class ProjectorCorners extends PApplet {
@@ -12,15 +15,20 @@ public class ProjectorCorners extends PApplet {
 
     // TODO: choose the screen.
     public void settings() {
-	size(screenWidth, screenHeight, P3D);
+	size(screenWidth, screenHeight);
 
     }
 
     public void setSize(){
-        GLWindow window = (GLWindow) this.getSurface().getNative();
-        window.setUndecorated(true);
-        window.setSize(screenWidth, screenHeight);
-        window.setPosition(screenOffsetX, screenOffsetY);
+        // println("AWT ? " + (this.getSurface() instanceof PSurfaceAWT));
+        PSurfaceAWT surface = (PSurfaceAWT) this.getSurface();
+        SmoothCanvas canvas = (SmoothCanvas) surface.getNative();
+        Frame frame = ((SmoothCanvas) canvas).getFrame();
+        frame.removeNotify();
+        frame.setUndecorated(true);
+        frame.addNotify();
+        surface.setLocation(screenOffsetX, screenOffsetY);
+        surface.setSize(screenWidth, screenHeight);
     }
 
     public void setup() {
@@ -62,6 +70,10 @@ public class ProjectorCorners extends PApplet {
 
         fill(200);
         ellipse(0, 0, 2, 2);
+    }
+
+    void keyPressed(){
+        println("Key pressed in Corners.");
     }
 
 }

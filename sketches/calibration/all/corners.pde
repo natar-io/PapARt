@@ -4,9 +4,9 @@ PVector[] corners = new PVector[4];
 PVector[] objectPoints = new PVector[4];
 
 
-// float objectWidth = 420, objectHeight = 297;
+float objectWidth = 420, objectHeight = 297;
 //float objectWidth = 350, objectHeight = 250;
-float objectWidth = 297, objectHeight = 210;
+//float objectWidth = 297, objectHeight = 210;
 int rectAroundWidth = 10;
 
 PMatrix3D objectProjectorTransfo;
@@ -194,6 +194,8 @@ void mouseDragged() {
 }
 
 void keyPressed(){
+
+    println("key Pressed in main.");
 
     if(Mode.is("ProjManual") ||
        Mode.is("CamManual") ||

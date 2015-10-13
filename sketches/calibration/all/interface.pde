@@ -14,7 +14,7 @@ public class ControlFrame extends PApplet {
     }
 
     public void settings() {
-	size(800, 800, P3D);
+	size(800, 800);
     }
 
     Skatolo skatolo;
@@ -27,6 +27,7 @@ public class ControlFrame extends PApplet {
     Textlabel cameraPaperLabel, projectorPaperLabel, kinectPaperLabel;
 
     Bang calibrateProCam, calibrateKinectCam, addProCamCalibration;
+    Bang calibratePlaneTouch;
 
     Bang useProCamFromIntrinsics;
 
@@ -393,6 +394,12 @@ public class ControlFrame extends PApplet {
             calibrateKinectCam.hide();
 
 
+            calibratePlaneTouch = skatolo.addBang("calibrate KinectPlane")
+                .plugTo(mainApplet, "calibrateKinect360Plane")
+                .setPosition(320, 290);
+                ;
+// TODO: hide / show etc..
+
             kinectStereoBang = skatolo.addBang("saveStereo")
                 .plugTo(mainApplet, "saveStereoKinect")
                 .setPosition(205, 471)
@@ -452,12 +459,12 @@ public class ControlFrame extends PApplet {
 
 
         pushMatrix();
-        translate(300, 12, 0);
+        translate(300, 12);
 
         text("Calibration No : " + calibrationNumber , 0, 0);
         fill(0, 255, 0);
         for(int i = 0; i < calibrationNumber; i++){
-            translate(10, 0, 0);
+            translate(10, 0);
             rect(0, 0, 10, 10);
         }
         popMatrix();

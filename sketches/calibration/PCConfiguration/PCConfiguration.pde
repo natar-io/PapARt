@@ -36,7 +36,7 @@ int nbScreens = 1;
 PImage backgroundImage;
 
 public void settings() {
-    size(800, 840, P3D);
+    size(800, 840);
 }
 
 TestView testView;
