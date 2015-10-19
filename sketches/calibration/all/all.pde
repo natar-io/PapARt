@@ -87,9 +87,6 @@ public void setup() {
     projectorCorners.getSurface().setVisible(false);
 
     activateKinect();
-
-
-    // CameraView cameraView = new CameraView();
     papart.startTracking();
 }
 

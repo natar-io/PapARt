@@ -76,6 +76,7 @@ public class CameraOpenKinectDepth extends Camera {
 
     @Override
     public void close() {
+        setClosing();
     }
 
     public KinectTouchInput getTouchInput() {

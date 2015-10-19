@@ -35,7 +35,7 @@ public class Kinect360 extends KinectDevice {
         camera.getDepthCamera().setCalibration(Papart.kinectIRCalib);
         camera.start();
     }
-
+    
     private void initSizes(PApplet parent) {
         this.parent = parent;
         WIDTH = 640;

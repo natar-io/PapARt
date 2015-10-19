@@ -277,6 +277,7 @@ private void calibrateKinect360Extr(){
     // tracking -> depth
     kinectCameraExtrinsics.invert();
     saveKinectCameraExtrinsics(kinectCameraExtrinsics);
+
 }
 
 private void calibrateKinect360Plane(){
@@ -404,9 +405,6 @@ private PlaneCalibration computeAveragePlaneCam(){
 
     return calibration;
 }
-
-
-
 
 
 void saveKinectCameraExtrinsics(PMatrix3D kinectCameraExtrinsics){
