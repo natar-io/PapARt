@@ -139,6 +139,7 @@ boolean computeScreenPaperIntersection(PlaneCalibration planeCalibCam,
             // inter is viewed from tracking.
             //
             kinectCameraExtrinsics.mult(inter, kinectPoint);
+
             homographyCreator.addPoint(kinectPoint, screenPoint);
         }
     }

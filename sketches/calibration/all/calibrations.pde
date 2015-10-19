@@ -274,8 +274,9 @@ private void calibrateKinect360Extr(){
     // depth -> tracking
     PMatrix3D kinectCameraExtrinsics = computeKinectCamExtrinsics(kinectExtr);
 
-    // tracking -> depth
+    // // tracking -> depth
     kinectCameraExtrinsics.invert();
+
     saveKinectCameraExtrinsics(kinectCameraExtrinsics);
 
 }
@@ -321,21 +322,13 @@ private PMatrix3D computeKinectCamExtrinsics(PMatrix3D stereoExtr){
         if(snapshot.kinectPaper == null)
             continue;
 
-        //  color -> Paper
+        // Color -> Paper
         PMatrix3D boardFromDepth = snapshot.kinectPaper.get();
 
-        // depth -> color -> color -> Paper
+        /// depth -> color -> color -> Paper
         boardFromDepth.preApply(stereoExtr);
 
-        // tracking  -> paper
-        PMatrix3D extr = snapshot.cameraPaper.get();
-
-        // paper -> tracking
-        extr.invert();
-
-        //     depth -> color -> color -> paper -> paper -> tracking
-        //     depth -> tracking
-        extr.preApply(boardFromDepth);
+        PMatrix3D extr = computeExtrinsics(boardFromDepth, snapshot.cameraPaper);
 
         addMatrices(sum, extr);
         nbCalib++;
@@ -343,8 +336,6 @@ private PMatrix3D computeKinectCamExtrinsics(PMatrix3D stereoExtr){
 
     multMatrix(sum, 1f / (float) nbCalib);
     return sum;
-    // papart.saveCalibration(Papart.cameraProjExtrinsics, sum);
-    // projector.setExtrinsics(sum);
 }
 
 private PlaneCalibration computeAveragePlaneKinect(PMatrix3D stereoExtr){
@@ -375,6 +366,10 @@ private PlaneCalibration computeAveragePlaneKinect(PMatrix3D stereoExtr){
     PlaneCalibration calibration = new PlaneCalibration();
     calibration.setPlane(sumKinect);
     calibration.setHeight(PlaneCalibration.DEFAULT_PLANE_HEIGHT);
+
+    System.out.println("Plane viewed by the kinect");
+    println(sumKinect);
+
     return calibration;
 }
 
@@ -403,6 +398,8 @@ private PlaneCalibration computeAveragePlaneCam(){
     calibration.setPlane(sumCam);
     calibration.setHeight(PlaneCalibration.DEFAULT_PLANE_HEIGHT);
 
+    System.out.println("Plane viewed by the camera");
+    println(sumCam);
     return calibration;
 }
 
