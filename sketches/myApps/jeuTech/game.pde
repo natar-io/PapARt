@@ -34,11 +34,15 @@ public class Game  extends PaperTouchScreen {
 
     Robot robot;
 
-    void setup(){
+    void settings(){
 	setResolution(3);
 	setDrawingSize( (int) playerBoardSize.x, (int)playerBoardSize.y);
 	loadMarkerBoard(sketchPath() + "/data/markers/game.cfg",
 			playerBoardSize.x, playerBoardSize.y);
+        setDrawAroundPaper();
+    }
+
+    void setup(){
 
 	PFont font = loadFont("AccanthisADFStd-Bold-48.vlw");
 	Button.setFont(font);
@@ -132,7 +136,7 @@ public class Game  extends PaperTouchScreen {
     }
 
 
-    public void draw(){
+    public void drawAroundPaper(){
 
 	if(random(1000) < 1){
 	    robot.mouseMove( (int) random(100), (int) random(100));
@@ -159,10 +163,9 @@ public class Game  extends PaperTouchScreen {
 	// We must always step through time!
 	box2d.step();
 
-	beginDraw3D();
-
-	clear();
-	background(0);
+//	beginDraw3D();
+	// clear();
+//	background(0);
 
 	if(noCameraMode){
 	    rect(0, 0, 20, 30);
@@ -205,7 +208,7 @@ public class Game  extends PaperTouchScreen {
 	//	drawPlayerInfos();
 	//	displayBorders();
 	noStroke();
-	endDraw();
+//	endDraw();
     }
 
     void addTouch(){
@@ -571,7 +574,7 @@ public class Game  extends PaperTouchScreen {
 			TouchPoint tp = t.touchPoint;
 			ArrayList<DepthDataElementKinect> depthDataElements = tp.getDepthDataElements();
 			for(DepthDataElementKinect dde :  depthDataElements){
-			    PVector v = kTouchInput.projectPointToScreen(screen, display, dde);
+			    PVector v = kTouchInput.projectPointToScreen(screen, getDisplay(), dde);
 
 			    if(v != null && isInMiddle(v)) {
 

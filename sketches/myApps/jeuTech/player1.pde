@@ -28,18 +28,17 @@ public class Player1  extends PaperTouchScreen {
 
     ColorDetection shootLookColorDetection;
 
-
-    void setup(){
-	setDrawingSize( (int) playerBoardSize.x, (int)playerBoardSize.y);
+    void settings(){
+        setDrawingSize( (int) playerBoardSize.x, (int)playerBoardSize.y);
 	loadMarkerBoard(sketchPath() + "/data/markers/player1-big.cfg",
 			playerBoardSize.x, playerBoardSize.y);
+    }
 
+    void setup(){
 	player1 = this;
 	playerColor = #FA1414; //color(159, 168, 143);
 	prepare();
     }
-
-
 
     void prepare(){
     }
@@ -63,14 +62,13 @@ public class Player1  extends PaperTouchScreen {
 	checkEnnemi();
     }
 
-    public void draw(){
+    public void drawOnPaper(){
 	updateInternals();
 
 	if(fixBoards){
 	    markerBoard.blockUpdate(cameraTracking, trackingFixDuration);
 	}
 
-	beginDraw2D();
 	clear();
 
 	setLocation(paperOffsetX, paperOffsetY, 0);
@@ -91,7 +89,6 @@ public class Player1  extends PaperTouchScreen {
 	checkTouch();
 	drawButtons();
 
-	endDraw();
     }
 
 

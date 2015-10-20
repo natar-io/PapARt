@@ -11,10 +11,14 @@ public class MyApp extends PaperTouchScreen {
     PMatrix3D cameraProjector;
     PlaneCalibration tablePlane;
 
-    void setup() {
+    void settings(){
+        setDrawOnDisplay();
 	setDrawingSize(297, 210);
-	loadMarkerBoard(sketchPath() + "/data/A3-small1.cfg", 297, 210);
+	loadMarkerBoard(Papart.markerFolder + "A3-small1.cfg", 297, 210);
 
+    }
+
+    void setup() {
 	kinectProjector = papart.loadCalibration(Papart.kinectTrackingCalib);
 	kinectProjector.invert();
 
@@ -27,11 +31,9 @@ public class MyApp extends PaperTouchScreen {
     PVector pointPos = new PVector();
     PVector posProj = new PVector();
 
-    void draw(){
-	println("Frame Rate " + frameRate);
-	beginDraw3D();
-	clear();
-	background(0);
+    void drawAroundPaper(){
+
+	// background(0);
 
 	float ellipseSize = 5;
 
@@ -56,7 +58,7 @@ public class MyApp extends PaperTouchScreen {
 //println(cx + " " + cy + " " + focal);
 //	translate(-782, -1383, 1000);
 
- // rectMode(CENTER);
+        // rectMode(CENTER);
 //	rect(0, 0, 200, 200);
 	// pushMatrix();
 
@@ -85,33 +87,33 @@ public class MyApp extends PaperTouchScreen {
 	    ArrayList<DepthDataElementKinect> depthDataElements = tp.getDepthDataElements();
 	    for(DepthDataElementKinect dde : depthDataElements){
 
-	    	    Vec3D depthPoint = dde.depthPoint;
+                Vec3D depthPoint = dde.depthPoint;
 
-	    	    kinectProjector.mult(new PVector(depthPoint.x,
-	    					     depthPoint.y,
-	    					     depthPoint.z),
-	    				 pointPos);
+                kinectProjector.mult(new PVector(depthPoint.x,
+                                                 depthPoint.y,
+                                                 depthPoint.z),
+                                     pointPos);
 
 
-		    // PVector out2D = pdp.worldToPixelCoord(pointPos);
-	    	    // println("Out " + out2D);
-		    // ellipse(out2D.x, out2D.y, 10, 10);
+                // PVector out2D = pdp.worldToPixelCoord(pointPos);
+                // println("Out " + out2D);
+                // ellipse(out2D.x, out2D.y, 10, 10);
 
-		    // cameraProjector.mult(pointPos,
-	    	    // 			 posProj);
+                // cameraProjector.mult(pointPos,
+                // 			 posProj);
 
-		    float dist = tablePlane.distanceTo(pointPos);
-		    if(dist > 100)
-			continue;
+                float dist = tablePlane.distanceTo(pointPos);
+                if(dist > 100)
+                    continue;
 
-		    float col = 255 * ((100 - dist) / 100);
+                float col = 255 * ((100 - dist) / 100);
 
-		    pushMatrix();
-		    fill(col);
-	    	    translate(pointPos.x -2.2, pointPos.y -2.2 , pointPos.z);
+                pushMatrix();
+                fill(col);
+                translate(pointPos.x -2.2, pointPos.y -2.2 , pointPos.z);
 
-		    ellipse(0, 0, 3, 3);
-	    	    popMatrix();
+                ellipse(0, 0, 3, 3);
+                popMatrix();
 	    }
 
 	}

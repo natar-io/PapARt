@@ -60,7 +60,7 @@ public class PaperScreen {
     protected PGraphicsOpenGL currentGraphics;
 
     protected boolean isDrawingOnScreen = true;
-    protected boolean isDrawingOnDisplay = true;
+    protected boolean isDrawingOnDisplay = false;
 
     private boolean isInitialized = false;
     private boolean isRegistered = false;
@@ -110,7 +110,7 @@ public class PaperScreen {
     public void addDisplay(BaseDisplay display) {
         this.displays.add(display);
         display.addScreen(this.screen);
-        if(display.hasCamera()){
+        if (display.hasCamera()) {
             display.getCamera().trackMarkerBoard(markerBoard);
         }
     }
@@ -134,38 +134,84 @@ public class PaperScreen {
         this.resolution = resolution;
     }
 
-    public void init() {
-        init(this.parent);
+    /**
+     * This method must be overloaded in the child class. For example to load
+     * images, 3D models etc...
+     */
+    protected void setup() {
+        System.out.println("PaperScreen setup. You should not see this unless for debug.");
     }
 
-    public void init(PApplet parent) {
-        if (isInitialized) {
-            System.err.println("PaperScreen: init, already initalized.");
-            return;
+    protected void settings() {
+        setDrawStandard();
+        System.out.println("PaperScreen settings. You should not see this unless for debug.");
+    }
+
+    public void pre() {
+        if (!isInitialized) {
+            settings();
+            checkInitErrors();
+            // check if papart is around...
+
+            if (this.markerBoard == null) {
+                this.isWithoutCamera = true;
+            }
+
+            initScreen();
+
+            if (isDrawingOnDisplay) {
+                for (BaseDisplay display : this.displays) {
+                    if (display.hasCamera()) {
+                        this.cameraTracking = display.getCamera();
+                    }
+                    this.currentGraphics = display.getGraphics();
+                    setup();
+                    tryInitTracking();
+                }
+            }
+
+            if (isDrawingOnScreen) {
+                this.currentGraphics = screen.getGraphics();
+                setup();
+                tryInitTracking();
+            }
+
+            isInitialized = true;
         }
+//        assert (isInitialized);
+//        if (this.isWithoutCamera || useManualLocation) {
+//            return;
+//        }
+//        checkCorners();
+    }
+
+    private void initScreen() {
+        this.screen = new Screen(parent);
+
+        for (BaseDisplay display : displays) {
+            display.addScreen(screen);
+        }
+
+        if (markerBoard != null) {
+            this.screen.linkTo(markerBoard);
+        }
+
+        // resolution and drawingSize are set in settings() now...
+        this.screen.setScale(resolution);
+        this.screen.setSize(drawingSize);
+    }
+
+    private boolean checkInitErrors() {
         if (parent == null) {
             String message = "This PaperScreen cannot be initialized without "
                     + "the current PApplet, use PapARt or pass it as an arugment "
                     + "to init. ";
             throw new RuntimeException(message);
         }
+        return true;
+    }
 
-        if (this.markerBoard == null) {
-            this.isWithoutCamera = true;
-        } else {
-            this.screen.linkTo(markerBoard);
-        }
-
-        this.parent = parent;
-        DrawUtils.applet = parent; // For Touch -> Check for removal ?
-        this.screen.setScale(resolution);
-        this.screen.setSize(drawingSize);
-
-        // register the draw (public, overridable)  & pre (protected) methods. 
-        if (!isRegistered) {
-            this.register();
-        }
-
+    private void tryInitTracking() {
         // If there is really a camera tracking. 
         if (!isWithoutCamera) {
             // automatic update of the paper screen, regarding the camera. 
@@ -175,8 +221,6 @@ public class PaperScreen {
             markerBoard.setDrawingMode(cameraTracking, true, 20);
             markerBoard.setFiltering(cameraTracking, 30, 4);
         }
-
-        isInitialized = true;
     }
 
     private void trackCurrentMarkerBoard() {
@@ -199,42 +243,10 @@ public class PaperScreen {
     }
 
     /**
-     * This method must be overloaded in the child class. For example to load
-     * images, 3D models etc...
-     */
-    protected void setup() {
-        System.out.println("PaperScreen setup. You should not see this unless for debug.");
-    }
-
-    public void pre() {
-        if (!isInitialized) {
-            initScreen();
-            setup();
-            init();
-        }
-        assert (isInitialized);
-
-        if (this.isWithoutCamera || useManualLocation) {
-            return;
-        }
-
-//        checkCorners();
-    }
-
-    private void initScreen() {
-        this.screen = new Screen(parent);
-
-        for (BaseDisplay display : displays) {
-            display.addScreen(screen);
-        }
-    }
-
-    /**
      * Do not override anymore Change to drawOnPaper or drawAroundPaper.
      *
      */
     public void draw() {
-
         Camera mainCamera = cameraTracking;
 
         if (isDrawingOnScreen) {
@@ -278,22 +290,18 @@ public class PaperScreen {
 //        System.out.println("drawAroundPaper default, you should not see this.");
     }
 
-    public void drawOnDisplayOnly() {
-        screen.setDrawing(false);
+    public void setDrawAroundPaper() {
         this.isDrawingOnScreen = false;
         this.isDrawingOnDisplay = true;
     }
 
-    public void drawOnPaperOnly() {
-        screen.setDrawing(true);
+    public void setDrawOnPaper() {
         this.isDrawingOnScreen = true;
         this.isDrawingOnDisplay = false;
     }
 
-    public void drawStandard() {
-        screen.setDrawing(true);
-        this.isDrawingOnScreen = true;
-        this.isDrawingOnDisplay = true;
+    public void setDrawStandard() {
+        setDrawOnPaper();
     }
 
     public void useManualLocation(boolean manual) {

@@ -64,7 +64,7 @@ public class PaperTouchScreen extends PaperScreen {
 
         updateTouch();
     }
-
+    
     @Override
     public void setLocation(PVector v) {
         setLocation(v.x, v.y, v.z);
@@ -137,16 +137,6 @@ public class PaperTouchScreen extends PaperScreen {
         for (Button b : buttons) {
             b.drawSelf(getGraphics());
         }
-    }
-
-    // Example Draw.
-    @Override
-    public void draw() {
-        beginDraw2D();
-        clear();
-        background(0, 200, 100);
-        drawTouch(10);
-        endDraw();
     }
 
     static private final int DEFAULT_TOUCH_SIZE = 15;

@@ -9,15 +9,18 @@ import fr.inria.papart.procam.display.*;
 
 public class MyApp extends PaperTouchScreen {
 
-    void setup() {
+    void settings(){
 	setDrawingSize(297, 210);
-	loadMarkerBoard(sketchPath() + "/data/A3-small1.cfg", 297, 210);
+	loadMarkerBoard(Papart.markerFolder + "A3-small1.cfg", 297, 210);
     }
 
-    void draw(){
-	beginDraw2D();
-	clear();
-	background(0);
+    void setup() {
+
+    }
+
+    public void drawOnPaper(){
+
+	background(100);
 	noStroke();
 
 	ArrayList<DepthPoint> points = ((KinectTouchInput) touchInput).projectDepthData((ARDisplay ) getDisplay(), screen);
