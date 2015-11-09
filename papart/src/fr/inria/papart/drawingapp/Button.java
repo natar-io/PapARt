@@ -131,7 +131,7 @@ public class Button extends InteractiveZone {
             return;
         }
 
-        checkCooldown();
+        checkCooldown(g.parent);
 
         // TODO: remove this null check
         if (img != null) {
@@ -203,19 +203,19 @@ public class Button extends InteractiveZone {
         }
     }
 
-    protected void checkCooldown() {
-        if ((DrawUtils.applet.millis() - lastPressedTime) > BUTTON_COOLDOWN) {
+    protected void checkCooldown(PApplet applet) {
+        if ((applet.millis() - lastPressedTime) > BUTTON_COOLDOWN) {
             setNotTouched();
             isCooldownDone = true;
             currentTP = null;
         }
     }
 
-    public void reset() {
+    public void reset(int time) {
         isActive = false;
         currentTP = null;
         setNotTouched();
-        lastPressedTime = DrawUtils.applet.millis();
+        lastPressedTime = time;
         isCooldownDone = false;
     }
 

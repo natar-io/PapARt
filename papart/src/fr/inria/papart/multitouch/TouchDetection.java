@@ -366,7 +366,7 @@ public abstract class TouchDetection {
 
             float d1 = calibration.getPlane().distanceTo(points[(Integer) tp1]);
             float d2 = calibration.getPlane().distanceTo(points[(Integer) tp2]);
-            if (d1 > d2) {
+            if (d1 < d2) {
                 return 1;
             }
             if (d1 == d2) {

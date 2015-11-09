@@ -67,6 +67,10 @@ public class PaperScreen {
     protected boolean isWithoutCamera = false;
     protected boolean useManualLocation = false;
 
+    private float filteringDistance = 20;
+    private float filteringFreq = 30;
+    private float filteringCutoff = 4;
+
     /**
      * Create a new PaperScreen, a Papart object has to be created first.
      */
@@ -213,14 +217,33 @@ public class PaperScreen {
 
     private void tryInitTracking() {
         // If there is really a camera tracking. 
+        // There can be multiple camera tracking !!
         if (!isWithoutCamera) {
             // automatic update of the paper screen, regarding the camera. 
             trackCurrentMarkerBoard();
-
-            // default filtering
-            markerBoard.setDrawingMode(cameraTracking, true, 20);
-            markerBoard.setFiltering(cameraTracking, 30, 4);
+            updateBoardFiltering();
         }
+    }
+
+    private void updateBoardFiltering() {
+        if (filteringDistance != 0) {
+            markerBoard.setDrawingMode(cameraTracking, true, filteringDistance);
+        } else {
+            markerBoard.setDrawingMode(cameraTracking, false, 0);
+        }
+        markerBoard.setFiltering(cameraTracking, filteringFreq, filteringCutoff);
+    }
+
+    protected void setDrawingFilter(float distance) {
+        if (distance <= 0) {
+            distance = 0;
+        }
+        this.filteringDistance = distance;
+    }
+
+    protected void setTrackingFilter(float freq, float cutOff) {
+        this.filteringFreq = freq;
+        this.filteringCutoff = cutOff;
     }
 
     private void trackCurrentMarkerBoard() {

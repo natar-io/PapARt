@@ -136,6 +136,7 @@ public class Papart {
         // TODO: singleton -> Better implementation. 
         if (Papart.singleton == null) {
             Papart.singleton = this;
+            fr.inria.papart.drawingapp.DrawUtils.applet = (PApplet) applet;
         }
     }
 
