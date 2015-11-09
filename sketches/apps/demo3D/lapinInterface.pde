@@ -17,15 +17,17 @@ public class LapinInterface extends PaperTouchScreen{
 
     //    Button rotateButton, lockButton, lightButton;
     PVector paperSize = new PVector(160, 160);
-    
-    void setup(){
-	setDrawingSize((int) paperSize.x, (int) paperSize.y);
-	loadMarkerBoard(sketchPath() + "/data/markers/lapinInterface.cfg", 
-			paperSize.x, paperSize.y);
 
+    public void settings(){
+	setDrawingSize((int) paperSize.x, (int) paperSize.y);
+	loadMarkerBoard(sketchPath() + "/data/markers/lapinInterface.cfg",
+			paperSize.x, paperSize.y);
+    }
+
+    public void setup(){
 	createButtons();
     }
-    
+
     void createButtons(){
 	PImage glow = loadImage("glow.png");
 	PImage glowDark = loadImage("glow-dark.png");
@@ -36,8 +38,8 @@ public class LapinInterface extends PaperTouchScreen{
 
 	rotateButton = new Button(glowDark, glow,
 					 buttonSize / 2,
-					 button2PosY + buttonSize / 2, 
-					 buttonSize, 
+					 button2PosY + buttonSize / 2,
+					 buttonSize,
 					 buttonSize);
 
 	rotateButton.addListener(new ButtonListener() {
@@ -51,8 +53,8 @@ public class LapinInterface extends PaperTouchScreen{
 
 	lockButton = new Button(glowDark, glow,
 					 button2PosX + buttonSize / 2,
-					 button2PosY + buttonSize / 2, 
-					 buttonSize, 
+					 button2PosY + buttonSize / 2,
+					 buttonSize,
 					 buttonSize);
 
 	lockButton.addListener(new ButtonListener() {
@@ -67,7 +69,7 @@ public class LapinInterface extends PaperTouchScreen{
 
 	lightButton = new Button(glowDark, glow,
 					button2PosX + buttonSize / 2,
-					0 + buttonSize / 2, 
+					0 + buttonSize / 2,
 					buttonSize,
 					buttonSize);
 
@@ -99,7 +101,7 @@ public class LapinInterface extends PaperTouchScreen{
 
     void resetButtons(){
 	for(Button b : buttons){
-	    b.reset();
+	    b.reset(millis());
 	}
     }
 
@@ -107,15 +109,20 @@ public class LapinInterface extends PaperTouchScreen{
 	screen.resetPos();
     }
 
-    public void draw(){
+    public void drawOnPaper(){
 	// setLocation(0, -90, 0);
-	beginDraw2D();
-	clear();
-	background(0);
+//	clear();
 
-	noStroke();
-	drawButtons();
-	endDraw();
+        try{
+        background(0);
+
+        updateTouch();
+        noStroke();
+        drawButtons();
+        } catch(Exception e){
+            println("eexception " +e );
+            e.printStackTrace();
+        }
     }
 
 }
