@@ -10,33 +10,34 @@ import processing.video.*;
 
 
 Camera camera;
+int resX = 1920;
+int resY = 1080;
+
+
+void settings(){
+    size(800, 600, OPENGL);
+    // size(resX, resY, OPENGL);
+}
 
 public void setup() {
 
-
-    int resX = 1920;
-    int resY = 1080;
-
-    // size(resX, resY, OPENGL);
-    size(800, 600, OPENGL);
-    
     if (surface != null) {
 	surface.setResizable(true);
     }
-    
 
-    // camera = CameraFactory.createCamera(Camera.Type.OPEN_KINECT, "0");    
-    camera = CameraFactory.createCamera(Camera.Type.OPENCV, "0");    
+
+    // camera = CameraFactory.createCamera(Camera.Type.OPEN_KINECT, "0");
+    camera = CameraFactory.createCamera(Camera.Type.OPENCV, "0");
     // camera = CameraFactory.createCamera(Camera.Type.PROCESSING, "/dev/video1");
     // camera = CameraFactory.createCamera(Camera.Type.FLY_CAPTURE, 0);
 
-    
+
     camera.setParent(this);
     camera.setSize(resX, resY);
     //    ((CameraFlyCapture) camera).setBayerDecode(true);
     camera.start();
     camera.setThread();
-    
+
 }
 
 void draw() {
@@ -45,5 +46,3 @@ void draw() {
 	image(im, 0, 0, width, height);
 
 }
-
-

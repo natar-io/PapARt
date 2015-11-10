@@ -7,13 +7,16 @@ import fr.inria.papart.procam.display.*;
 
 public class MyApp extends PaperTouchScreen {
 
-    void setup() {
+    void settings(){
 	setDrawingSize(297, 210);
 	loadMarkerBoard(Papart.markerFolder + "A3-small1.cfg", 297, 210);
     }
 
-    void draw(){
-	beginDraw2D();
+    void setup() {
+    }
+
+    void drawOnPaper(){
+
 	clear();
 	background(0);
 
@@ -51,6 +54,5 @@ public class MyApp extends PaperTouchScreen {
 		}
 	    }
 	}
-	endDraw();
     }
 }

@@ -7,15 +7,16 @@ import de.fhpotsdam.unfolding.mapdisplay.*;
 
 
 public class MyApp  extends PaperTouchScreen {
-    
+
 
     UnfoldingMap map;
 
-    
+    void settings(){
+        setDrawingSize(1000, 800);
+	loadMarkerBoard(Papart.markerFolder + "A3-small1.cfg", 1000, 800);
+    }
 
     void setup() {
-	setDrawingSize(1000, 800);
-	loadMarkerBoard(sketchPath + "/data/A3-small1.cfg", 1000, 800);
 
 	map = new UnfoldingMap(parent, 0, 0, 1000, 800);
        	map.zoomAndPanTo(new Location(52.5f, 13.4f), 10);
@@ -23,7 +24,7 @@ public class MyApp  extends PaperTouchScreen {
 
 	map.switchTweening();
     }
-    
+
     void draw() {
 
 	// setLocation(mouseX, mouseY,0 );
@@ -40,7 +41,7 @@ public class MyApp  extends PaperTouchScreen {
 
 
 	beginDraw2D();
-	
+
 	background(100);
 
 
@@ -56,4 +57,3 @@ public class MyApp  extends PaperTouchScreen {
 	endDraw();
     }
 }
-

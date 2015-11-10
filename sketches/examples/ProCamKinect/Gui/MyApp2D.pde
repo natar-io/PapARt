@@ -10,21 +10,18 @@ import fr.inria.papart.multitouch.*;
 public class MyApp  extends PaperTouchScreen {
 
     Skatolo skatolo;
-    
+
     int hello = 10;
+
+    void settings() {
+
+        setDrawingSize(297, 210);
+	loadMarkerBoard(Papart.markerFolder + "A3-small1.cfg", 297, 210);
+
+    }
 
     void setup() {
 
-	setDrawingSize(297, 210);
-	loadMarkerBoard(sketchPath + "/data/A3-small1.cfg", 297, 210);
-
-	// init() to create the screen...
-	init();
-
-	// set the graphics context
-	currentGraphics = screen.getGraphics();
-
-	// now the graphics are OK. 
 	skatolo = new Skatolo(this.parent, this);
 
 	skatolo.getMousePointer().disable();
@@ -59,25 +56,21 @@ public class MyApp  extends PaperTouchScreen {
 	//     .setScrollSensitivity(0.1)
 	//     .setValue(50)
 	//     ;
-  
     }
 
     // TODO: Full integration !
     // TODO: use the pointerList ?
     ArrayList<Integer> pointers = new ArrayList();
 
-    void draw() {
+    void drawOnPaper(){
 
-	beginDraw2D();
+        background(150);
 
-	background(150);
-
-	skatolo.draw();
-	//	skatolo.draw(getGraphics());
+        skatolo.draw();
 
 	for (Touch t : touchList.get2DTouchs()) {
 
-	    // draw the touch. 
+	    // draw the touch.
 	    PVector p = t.position;
 
 	    colorMode(HSB, 30, 100, 100);
@@ -129,7 +122,6 @@ public class MyApp  extends PaperTouchScreen {
 
 	fill(200, 100, 20);
 	rect(10, 10, 100, 30);
-	endDraw();
-  }
+    }
 
 }

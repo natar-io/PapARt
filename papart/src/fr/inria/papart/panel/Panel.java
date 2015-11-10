@@ -81,7 +81,7 @@ public class Panel {
             background(100, random(50) + 50, 100);
             println("draw in second..");
 
-            DepthAnalysis kinect = Papart.getPapart().getKinect();
+//            DepthAnalysis kinect = Papart.getPapart().getKinect();
 
             // Camera OK !
 //            try {

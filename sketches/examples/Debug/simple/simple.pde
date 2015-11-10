@@ -5,8 +5,11 @@ import org.reflections.*;
 import TUIO.*;
 import toxi.geom.*;
 
-public void setup(){
+void settings(){
     size(640, 480, OPENGL);
+}
+
+public void setup(){
     Papart papart = new Papart(this);
 
     papart.initDebug();

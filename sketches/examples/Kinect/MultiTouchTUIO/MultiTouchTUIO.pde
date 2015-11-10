@@ -15,12 +15,15 @@ KinectTouchInput touchInput;
 int frameSizeX = 1280;
 int frameSizeY = 800;
 
+void settings(){
+    size(800, 600, P3D);
+}
+
 void setup(){
-    size(800, 600, OPENGL);
 
     Papart papart = new Papart(this);
 
-    // arguments are 2D and 2D precising in that order. 
+    // arguments are 2D and 2D precising in that order.
     papart.loadTouchInputKinectOnly();
     touchInput = (KinectTouchInput) papart.getTouchInput();
     server = new TuioServer(this, 12000, "127.0.0.1", 3333);
@@ -39,10 +42,5 @@ void draw(){
 	ellipse(pos.x * width,
 		pos.y * height, 20, 20);
     }
-	
-
-
-
     // TODO: text for nb points ?
 }
-

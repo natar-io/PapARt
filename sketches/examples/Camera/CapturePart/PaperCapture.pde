@@ -5,6 +5,10 @@ import org.reflections.*;
 import TUIO.*;
 import toxi.geom.*;
 
+void settings(){
+    size(200, 200, P3D);
+}
+
 public void setup(){
     Papart papart = Papart.seeThrough(this);
     papart.loadSketches();

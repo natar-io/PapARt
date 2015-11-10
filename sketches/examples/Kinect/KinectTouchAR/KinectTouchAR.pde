@@ -5,12 +5,11 @@ import org.reflections.*;
 import TUIO.*;
 import toxi.geom.*;
 
+void settings(){
+    size(200, 200, P3D);
+}
+
 void setup(){
-    int cameraX = 640;
-    int cameraY = 480;
-
-    size(cameraX, cameraY, OPENGL);
-
     Papart papart = new Papart(this);
     papart.initKinectCamera(1);
     papart.loadTouchInputKinectOnly();
@@ -22,4 +21,3 @@ void setup(){
 
 void draw(){
 }
-

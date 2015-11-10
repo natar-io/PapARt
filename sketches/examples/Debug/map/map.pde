@@ -5,11 +5,15 @@ import org.reflections.*;
 import TUIO.*;
 import toxi.geom.*;
 
+
+void settings(){
+    size(1200, 900, P3D);
+}
+
 public void setup(){
-    size(1200, 900, OPENGL);
     Papart papart = new Papart(this);
 
-    papart.initDebug(1);
+    papart.initDebug();
     papart.loadTouchInputTUIO();
     papart.loadSketches();
 }

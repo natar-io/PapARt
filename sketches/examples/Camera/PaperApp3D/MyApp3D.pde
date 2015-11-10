@@ -4,7 +4,7 @@ public class MyApp  extends PaperScreen {
 
 
     void settings(){
-        setDrawOnAroundPaper(); // no drawing on a 2D virtual screen
+        // setDrawAroundPaper(); // no drawing on a 2D virtual screen
         setDrawingSize(297, 210);
         loadMarkerBoard(Papart.markerFolder + "A3-small1.cfg", 297, 210);
     }

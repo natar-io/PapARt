@@ -7,11 +7,16 @@ import TUIO.*;
 import toxi.geom.*;
 import fr.inria.papart.depthcam.*;
 import fr.inria.papart.procam.display.*;
+import fr.inria.papart.procam.camera.*;
 
 
 boolean useProjector = false;
 float renderQuality = 1.5f;
 Papart papart;
+
+void settings(){
+    size(200, 200, P3D);
+}
 
 void setup(){
 
@@ -20,16 +25,14 @@ void setup(){
 	papart.loadTouchInput();
     } else {
 
-	size((int) (Kinect.WIDTH * renderQuality),
-	     (int) (Kinect.HEIGHT * renderQuality),
-	     OPENGL);
-
-	papart = new Papart(this);
-
+        try{
+        papart = new Papart(this);
 	papart.initKinectCamera(renderQuality);
 	papart.loadTouchInputKinectOnly();
-	BaseDisplay display = papart.getDisplay();
-	display.setDrawingSize(width, height);
+        } catch(Exception e){
+            println("Exception " + e);
+            e.printStackTrace();
+        }
     }
 
     papart.loadSketches();
@@ -46,5 +49,3 @@ void keyPressed() {
     if(key == 't')
 	test = !test;
 }
-
-

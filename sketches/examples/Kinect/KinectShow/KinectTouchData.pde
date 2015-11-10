@@ -7,20 +7,24 @@ float boardResolution = 3;  // 3 pixels / mm
 
 
 public class MyApp extends PaperTouchScreen {
-    
-    void setup() {
-	setDrawingSize(297, 210);
-	loadMarkerBoard(sketchPath + "/data/A3-small1.cfg", 297, 210);
+
+    void settings(){
+        setDrawAroundPaper();
+        setDrawingSize(297, 210);
+	loadMarkerBoard(Papart.markerFolder + "A3-small1.cfg", 297, 210);
     }
-    
-    void draw(){
-	beginDraw3D();
-	clear();
+
+    void setup() {
+    }
+
+    void drawAroundPaper(){
+        clear();
 	noStroke();
 
-	ArrayList<DepthPoint> points = ((KinectTouchInput) touchInput).projectDepthData3D((ARDisplay )display, screen);
+	ArrayList<DepthPoint> points = ((KinectTouchInput) touchInput).projectDepthData3D((ARDisplay ) getDisplay(), screen);
 
 	int k = 0;
+
 	for(DepthPoint depthPoint : points) {
 	    PVector pos = depthPoint.getPosition();
 
@@ -29,9 +33,9 @@ public class MyApp extends PaperTouchScreen {
 				      pos.z);
 
 
-	    if(p1.x < 0 
+	    if(p1.x < 0
 	       || p1.x >= drawingSize.x
-	       || p1.y < 0 
+	       || p1.y < 0
 	       || p1.y >= drawingSize.y)
 	    	continue;
 
@@ -42,7 +46,7 @@ public class MyApp extends PaperTouchScreen {
 	    } else {
 	    	fill(red(c), green(c), blue(c));
 	    }
-	    
+
 	    pushMatrix();
 	    translate(p1.x, p1.y, p1.z);
 	    ellipse(0, 0, ellipseSize, ellipseSize);
@@ -52,8 +56,3 @@ public class MyApp extends PaperTouchScreen {
 	endDraw();
     }
 }
-
-
-
-
-

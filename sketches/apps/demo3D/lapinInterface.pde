@@ -12,6 +12,8 @@ public boolean isLightMode(){
     return lightButton.isActive();
 }
 
+// TODO: change the modes to the Mode library.
+// TODO: change the Button to the "first" Skatolo buttons !
 
 public class LapinInterface extends PaperTouchScreen{
 

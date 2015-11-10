@@ -530,15 +530,18 @@ public class Papart {
 
     public void initKinectCamera(float quality) {
         assert (!cameraInitialized);
-
-        loadDefaultCameraKinect();
+        kinectDevice = loadDefaultCameraKinect();
         cameraTracking = kinectDevice.getCameraRGB();
         loadTracking(kinectRGBCalib);
         cameraTracking.setThread();
-
         initARDisplay(quality);
-
         checkInitialization();
+    }
+
+    public void startDefaultKinectCamera() {
+        assert (!cameraInitialized);
+        kinectDevice = loadDefaultCameraKinect();
+        cameraTracking = kinectDevice.getCameraRGB();
     }
 
     /**
@@ -682,6 +685,7 @@ public class Papart {
                 return new KinectOne(applet, cameraTracking);
             }
         }
+        System.err.println("Could not load the Kinect !" + "Camera Type " + kinectConfiguration.getCameraType() );
         return null;
     }
 
@@ -838,12 +842,12 @@ public class Papart {
         return this.isWithoutCamera;
     }
 
-    public DepthAnalysis getKinect() {
-        return kinectDepthAnalysis;
-    }
-
     public Camera getKinectCamera() {
         return this.kinectDevice.getCameraRGB();
+    }
+    
+    public KinectDevice getKinectDevice(){
+        return kinectDevice;
     }
 
     public PApplet getApplet() {
