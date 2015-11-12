@@ -167,6 +167,12 @@ public class TouchPoint extends DepthPoint {
         filter();
         return true;
     }
+    
+    public void updateAlone() {
+        updatePosition(this);
+        // TODO: check performance ?!
+        filter();
+    }
 
     private void checkAndSetID() {
         // The touchPoint gets an ID, it is a grown up now. 

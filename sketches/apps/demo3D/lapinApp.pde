@@ -52,9 +52,8 @@ public class LapinApp extends PaperTouchScreen{
 	}
 
 	if(Mode.is("rotate")){
-
             float d = markerBoard.lastMovementDistance(cameraTracking);
-            println("dist " + d);
+//            println("dist " + d);
             if(d < 3){
                 try{
                     rst.update(touchList, millis());
@@ -74,8 +73,8 @@ public class LapinApp extends PaperTouchScreen{
 	    test = false;
 	}
 
-	drawMono();
-        // drawAnaglyph();
+//	drawMono();
+        drawAnaglyph();
 
 // 	drawTouch(3);
 
@@ -86,8 +85,6 @@ public class LapinApp extends PaperTouchScreen{
     void drawMono(){
 	pushMatrix();
 	screen.initDraw(cameraTracking, userPos, 20, 5000, false, false, true);
-	pointLight(255, 255, 255,
-		      -lightPos.x, -lightPos.y, -lightPos.z);
 
 	drawScene();
 	popMatrix();
@@ -98,8 +95,6 @@ public class LapinApp extends PaperTouchScreen{
 	pushMatrix();
 	screen.initDraw(cameraTracking, userPos, 20, 5000, true, false, false);
 
-	pointLight(255, 255, 255,
-		   -lightPos.x, -lightPos.y, lightPos.z);
 
 	// pushMatrix();
 	// translate(-lightPos.x, -lightPos.y, lightPos.z);
@@ -129,9 +124,9 @@ public class LapinApp extends PaperTouchScreen{
     protected void drawScene(){
 
 	// The first call is ignored ?!...
-	rect(0, 0, 10, 10);
 
-	drawLight();
+        if(Mode.is("light"))
+            drawLight();
 	drawLines();
 
         drawTouchPoints();
@@ -140,6 +135,8 @@ public class LapinApp extends PaperTouchScreen{
 
     private void drawTouchPoints(){
         TouchList touchList2D = touchList.get2DTouchs();
+
+        noLights();
         fill(255);
         noStroke();
 
@@ -148,12 +145,18 @@ public class LapinApp extends PaperTouchScreen{
 		  -drawingSize.y /2,
 		  0);
 
+        int ellipseSize = 10;
+
         for(Touch touch : touchList2D){
-            ellipse(touch.position.x, touch.position.y, 10, 10);
+
+            if(touch.touchPoint.attachedObject != null){
+                fill(255);
+                ellipse(touch.position.x, touch.position.y, ellipseSize * 2, ellipseSize * 2);
+            }
+
+            fill(100);
+            ellipse(touch.position.x, touch.position.y, ellipseSize, ellipseSize);
         }
-
-
-        rect(100, 100, 100, 100);
 
         popMatrix();
     }
@@ -169,6 +172,10 @@ public class LapinApp extends PaperTouchScreen{
 
     private void drawRabbit(){
 	pushMatrix();
+
+        lights();
+        pointLight(255, 255, 255,
+		   -lightPos.x, -lightPos.y, -lightPos.z);
 
         scale(resolution);
         rst.applyTransformationTo(this);
