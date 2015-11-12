@@ -16,7 +16,7 @@ public class LapinApp extends PaperTouchScreen{
 
     void settings(){
 	setDrawingSize(297, 210);
-	loadMarkerBoard(sketchPath() + "/data/markers/A3-small1.cfg", 297, 210);
+	loadMarkerBoard(Papart.markerFolder + "A3-small1.cfg", 297, 210);
     }
 
     void setup(){
@@ -37,6 +37,8 @@ public class LapinApp extends PaperTouchScreen{
 	screen.resetPos();
     }
 
+    boolean isRSTBlocked = false;
+
     void drawOnPaper(){
         userPos = new PVector(0, 400, 900);
 
@@ -54,7 +56,9 @@ public class LapinApp extends PaperTouchScreen{
 	if(Mode.is("rotate")){
             float d = markerBoard.lastMovementDistance(cameraTracking);
 //            println("dist " + d);
-            if(d < 3){
+
+            isRSTBlocked = d > 3;
+            if(!isRSTBlocked){
                 try{
                     rst.update(touchList, millis());
                 }catch(Exception e){ e.printStackTrace(); }
@@ -150,7 +154,11 @@ public class LapinApp extends PaperTouchScreen{
         for(Touch touch : touchList2D){
 
             if(touch.touchPoint.attachedObject != null){
-                fill(255);
+                if(isRSTBlocked){
+                    fill(255, 0, 0);
+                } else{
+                    fill(255);
+                }
                 ellipse(touch.position.x, touch.position.y, ellipseSize * 2, ellipseSize * 2);
             }
 
@@ -164,7 +172,7 @@ public class LapinApp extends PaperTouchScreen{
 
     private void drawLight(){
 	pushMatrix();
-	translate(lightPos.x, lightPos.y, lightPos.z);
+	translate(-lightPos.x, -lightPos.y, -lightPos.z);
 	scale(5);
 	shape(sphereM);
 	popMatrix();
@@ -173,6 +181,7 @@ public class LapinApp extends PaperTouchScreen{
     private void drawRabbit(){
 	pushMatrix();
 
+        noLights();
         lights();
         pointLight(255, 255, 255,
 		   -lightPos.x, -lightPos.y, -lightPos.z);
