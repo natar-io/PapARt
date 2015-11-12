@@ -2,6 +2,7 @@ import fr.inria.papart.multitouch.metaphors.*;
 import processing.opengl.PGL;
 import processing.opengl.PGraphicsOpenGL;
 import com.jogamp.opengl.GL;
+import fr.inria.guimodes.Mode;
 
 public class LapinApp extends PaperTouchScreen{
 
@@ -11,7 +12,7 @@ public class LapinApp extends PaperTouchScreen{
     PGraphicsOpenGL pg;
     Button b;
     PVector lightPos = new PVector(0, 0, 600);
-    TwoFingersRST3D rst;
+    TwoFingersRST rst;
 
     void settings(){
 	setDrawingSize(297, 210);
@@ -25,10 +26,11 @@ public class LapinApp extends PaperTouchScreen{
 	b = new Button("pos", 30, 20, 30, 20);
 	buttons.add(b);
 
-	rst = new TwoFingersRST3D(new PVector());
+	rst = new TwoFingersRST(new PVector());
+        rst.setFiltering(false);
 	rst.setDisabledYZone(50);
 
-        setDrawingFilter(0);
+        setDrawingFilter(3);
     }
 
     public void resetPos(){
@@ -41,24 +43,30 @@ public class LapinApp extends PaperTouchScreen{
         //   screen.setDrawing(true);
         updateTouch();
 
-	if(isLightMode()){
+	if(Mode.is("light")){
 	    updateLightPos();
 	}
 
-	if(isLockMode()){
+	if(Mode.is("lock")){
 
 	}
 
-	//	if(isRotateMode()){
-	//rst.update(touchList, millis());
-	//	}
+	if(Mode.is("rotate")){
+
+            float d = markerBoard.lastMovementDistance(cameraTracking);
+            println("dist " + d);
+            if(d < 3){
+                try{
+                    rst.update(touchList, millis());
+                }catch(Exception e){ e.printStackTrace(); }
+            }
+        }
 
 	background(0);
 	noStroke();
 	fill(140);
 
-	//drawTouch(3);
-	// drawButtons();
+
 
 	if(test){
 	    resetPos();
@@ -66,23 +74,20 @@ public class LapinApp extends PaperTouchScreen{
 	    test = false;
 	}
 
-	// if(b.isTouched()){
-	//     resetPos();
-	// }
+	drawMono();
+        // drawAnaglyph();
 
-
-	// drawMono();
-        drawAnaglyph();
+// 	drawTouch(3);
 
 	screen.endDrawPerspective();
-	endDraw();
+
     }
 
     void drawMono(){
 	pushMatrix();
 	screen.initDraw(cameraTracking, userPos, 20, 5000, false, false, true);
 	pointLight(255, 255, 255,
-		      lightPos.x, lightPos.y, lightPos.z);
+		      -lightPos.x, -lightPos.y, -lightPos.z);
 
 	drawScene();
 	popMatrix();
@@ -128,8 +133,31 @@ public class LapinApp extends PaperTouchScreen{
 
 	drawLight();
 	drawLines();
-	drawRabbit();
+
+        drawTouchPoints();
+        drawRabbit();
     }
+
+    private void drawTouchPoints(){
+        TouchList touchList2D = touchList.get2DTouchs();
+        fill(255);
+        noStroke();
+
+        pushMatrix();
+	translate(-drawingSize.x /2,
+		  -drawingSize.y /2,
+		  0);
+
+        for(Touch touch : touchList2D){
+            ellipse(touch.position.x, touch.position.y, 10, 10);
+        }
+
+
+        rect(100, 100, 100, 100);
+
+        popMatrix();
+    }
+
 
     private void drawLight(){
 	pushMatrix();
@@ -142,9 +170,10 @@ public class LapinApp extends PaperTouchScreen{
     private void drawRabbit(){
 	pushMatrix();
 
-	//	scale(resolution);
-	// rst.applyTransformationTo(this);
-	// scale(1f / resolution);
+        scale(resolution);
+        rst.applyTransformationTo(this);
+        scale(1f / resolution);
+
 	translate(0, 0, 0);
 	rotateX(HALF_PI);
 	rotateY(PI);

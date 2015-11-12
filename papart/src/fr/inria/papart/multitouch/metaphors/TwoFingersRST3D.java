@@ -21,12 +21,14 @@ public class TwoFingersRST3D extends TwoFingersRST{
         super(size);
     }
     
+    
+    // TODO: BROKEN -> TO CHECK
     @Override
-     protected void twoFingerMovement(TouchList touchList2D) {
+     protected void twoFingerMovement() {
 
-        assert (touchList2D.size() >= 2);
-        Touch touch0 = touchList2D.get(0);
-        Touch touch1 = touchList2D.get(1);
+        assert (touchList.size() >= 2);
+        Touch touch0 = touchList.get(0);
+        Touch touch1 = touchList.get(1);
 
         if (!validBounds(touch0) || !validBounds(touch1)) {
             emptyUpdate();

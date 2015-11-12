@@ -1,24 +1,19 @@
-Button rotateButton, lockButton, lightButton;
-
-public boolean isRotateMode(){
-    return rotateButton.isActive();
-}
-
-public boolean isLockMode(){
-    return lockButton.isActive();
-}
-
-public boolean isLightMode(){
-    return lightButton.isActive();
-}
-
 // TODO: change the modes to the Mode library.
 // TODO: change the Button to the "first" Skatolo buttons !
 
+import fr.inria.skatolo.*;
+import fr.inria.skatolo.events.*;
+import fr.inria.skatolo.gui.controllers.*;
+import fr.inria.skatolo.gui.Pointer;
+
 public class LapinInterface extends PaperTouchScreen{
 
-    //    Button rotateButton, lockButton, lightButton;
     PVector paperSize = new PVector(160, 160);
+    Skatolo skatolo;
+
+    // TODO: Full integration !
+    // TODO: use the pointerList ?
+    ArrayList<Integer> pointers = new ArrayList();
 
     public void settings(){
 	setDrawingSize((int) paperSize.x, (int) paperSize.y);
@@ -27,84 +22,59 @@ public class LapinInterface extends PaperTouchScreen{
     }
 
     public void setup(){
-	createButtons();
+        Mode.add("rotate");
+        Mode.add("light");
+        Mode.add("lock");
+        createButtons();
     }
 
     void createButtons(){
-	PImage glow = loadImage("glow.png");
-	PImage glowDark = loadImage("glow-dark.png");
 
 	int button2PosX = 87;
 	int button2PosY = 100;
 	int buttonSize = 64;
 
-	rotateButton = new Button(glowDark, glow,
-					 buttonSize / 2,
-					 button2PosY + buttonSize / 2,
-					 buttonSize,
-					 buttonSize);
+        skatolo = new Skatolo(this.parent, this);
 
-	rotateButton.addListener(new ButtonListener() {
-		public void ButtonPressed(){
-		    rotateMode();
-		}
-		public void ButtonReleased(){
-		}
-	    });
-	buttons.add(rotateButton);
+	skatolo.getMousePointer().disable();
+	skatolo.setAutoDraw(false);
 
-	lockButton = new Button(glowDark, glow,
-					 button2PosX + buttonSize / 2,
-					 button2PosY + buttonSize / 2,
-					 buttonSize,
-					 buttonSize);
+	// skatolo.addSlider("Sliiiide")
+	//     .setPosition(0, 0)
+	//     .setSize(130, 10)
+	//     ;
 
-	lockButton.addListener(new ButtonListener() {
-		public void ButtonPressed(){
-		    lockMode();
-		}
-		public void ButtonReleased(){
-		}
-	    });
-	buttons.add(lockButton);
+	skatolo.addHoverButton("rotate")
+	    .setPosition(0, button2PosY)
+	    .setSize(buttonSize,buttonSize)
+	    ;
 
+        skatolo.addHoverButton("lock")
+	    .setPosition(button2PosX, button2PosY)
+	    .setSize(buttonSize,buttonSize)
+	    ;
 
-	lightButton = new Button(glowDark, glow,
-					button2PosX + buttonSize / 2,
-					0 + buttonSize / 2,
-					buttonSize,
-					buttonSize);
+	skatolo.addHoverButton("light")
+	    .setPosition(button2PosX, 0)
+	    .setSize(buttonSize,buttonSize)
+	    ;
 
-	lightButton.addListener(new ButtonListener() {
-		public void ButtonPressed(){
-		    lightMode();
-		}
-		public void ButtonReleased(){
-		}
-	    });
-
-	buttons.add(lightButton);
+        // PImage glow = loadImage("glow.png");
+	// PImage glowDark = loadImage("glow-dark.png");
     }
 
-    void rotateMode(){
-	resetButtons();
-	rotateButton.setActive();
+    public void rotate(){
+        Mode.set("rotate");
+        println("Mode is rotate !");
     }
 
-    void lightMode(){
-	resetButtons();
-	lightButton.setActive();
+    public void light(){
+        Mode.set("light");
+        println("Mode is light !");
     }
 
-    void lockMode(){
-	resetButtons();
-	lockButton.setActive();
-    }
-
-    void resetButtons(){
-	for(Button b : buttons){
-	    b.reset(millis());
-	}
+    public void lock(){
+        Mode.set("lock");
     }
 
     public void resetPos(){
@@ -116,15 +86,64 @@ public class LapinInterface extends PaperTouchScreen{
 //	clear();
 
         try{
-        background(0);
+            background(0);
 
-        updateTouch();
-        noStroke();
-        drawButtons();
+            updateTouch();
+
+            updateButtons();
+
+            noStroke();
+
         } catch(Exception e){
             println("eexception " +e );
             e.printStackTrace();
         }
     }
+
+    void updateButtons(){
+
+        skatolo.draw();
+
+	for (Touch t : touchList.get2DTouchs()) {
+
+	    // draw the touch.
+	    PVector p = t.position;
+
+	    // colorMode(HSB, 30, 100, 100);
+//	    fill(t.id % 30, 100, 100);
+
+	    if(t.id != TouchPoint.NO_ID){
+
+		if(!pointers.contains(t.id)){
+//		    ellipse(p.x, p.y, 100, 100);
+		    Pointer pointer = skatolo.addPointer(t.id);
+                    pointer.setType(Pointer.Type.TOUCH);
+
+		    pointers.add(t.id);
+		    skatolo.updatePointerPress(t.id, true);
+		} else {
+		    skatolo.updatePointer(t.id, (int) p.x, (int) p.y);
+		}
+
+		skatolo.updatePointerPress(t.id, true);
+//		ellipse(p.x, p.y, 10, 10);
+	    }
+	}
+
+	ArrayList<Integer> currentTouchIds = touchList.get2DTouchs().getIds();
+
+	ArrayList<Integer> toDelete = (ArrayList<Integer>)pointers.clone();
+	toDelete.removeAll(currentTouchIds);
+
+	for(Integer pointerId : toDelete){
+	    // skatolo.updatePointerPress(pointerId, false);
+	    // skatolo.updatePointer(pointerId, 0, 0);
+	    skatolo.removePointer(pointerId);
+	    pointers.remove(pointerId);
+	}
+
+    }
+
+
 
 }

@@ -38,14 +38,28 @@ public abstract class RSTTransform {
     protected static int ROTATE_Z = 5;
     protected static int NbFilters = 6;
 
+    boolean useFiltering = true;
+    boolean filteringInit = false;
+
     protected OneEuroFilter[] filters;
-    public static float filterFreq = 30f;
-    public static float filterCut = 0.2f;
-    public static float filterBeta = 8.000f;
+    public static float filterFreq = 60f;
+    public static float filterCut = 0.4f;
+    public static float filterBeta = 0.007f;
 
     public RSTTransform(PVector size) {
         this.sceneTranslate = size.get();
         this.sceneTranslate.mult(0.5f);
+    }
+
+    public void setFiltering(boolean useIt) {
+        this.useFiltering = useIt;
+        if (useFiltering && !filteringInit) {
+            initFiltering();
+        }
+    }
+
+    private void initFiltering() {
+        filteringInit = true;
         try {
             filters = new OneEuroFilter[NbFilters];
             for (int i = 0; i < filters.length; i++) {
@@ -54,56 +68,80 @@ public abstract class RSTTransform {
         } catch (Exception e) {
             System.out.println("OneEuro Exception. Pay now." + e);
         }
-
     }
 
     public void addRotation(float rot) {
-        try {
-            float rotationFiltered = (float) filters[ROTATE_Z].filter(rot);
-            sceneRotateZ += rotationFiltered;
-        } catch (Exception ex) {
-            Logger.getLogger(RSTTransform.class.getName()).log(Level.SEVERE, null, ex);
+        if (useFiltering) {
+            try {
+                float rotationFiltered = (float) filters[ROTATE_Z].filter(rot);
+                sceneRotateZ += rotationFiltered;
+
+            } catch (Exception ex) {
+                Logger.getLogger(RSTTransform.class
+                        .getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            sceneRotateZ += rot;
         }
     }
-    
+
     public void addRotationY(float rot) {
-        try {
-            float rotationFiltered = (float) filters[ROTATE_Y].filter(rot);
-            sceneRotateY += rotationFiltered;
-        } catch (Exception ex) {
-            Logger.getLogger(RSTTransform.class.getName()).log(Level.SEVERE, null, ex);
+        if (useFiltering) {
+            try {
+                float rotationFiltered = (float) filters[ROTATE_Y].filter(rot);
+                sceneRotateY += rotationFiltered;
+
+            } catch (Exception ex) {
+                Logger.getLogger(RSTTransform.class
+                        .getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            sceneRotateY += rot;
         }
     }
 
     public void addTranslation(PVector translate) {
-        try {
-            float translationXFiltered = (float) filters[TRANSLATE_X].filter(translate.x);
-            float translationYFiltered = (float) filters[TRANSLATE_Y].filter(translate.y);
-            sceneTranslate.x += translationXFiltered;
-            sceneTranslate.y += translationYFiltered;
+        if (useFiltering) {
+            try {
+                float translationXFiltered = (float) filters[TRANSLATE_X].filter(translate.x);
+                float translationYFiltered = (float) filters[TRANSLATE_Y].filter(translate.y);
+                sceneTranslate.x += translationXFiltered;
+                sceneTranslate.y += translationYFiltered;
 
-        } catch (Exception ex) {
-            Logger.getLogger(RSTTransform.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (Exception ex) {
+                Logger.getLogger(RSTTransform.class
+                        .getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            sceneTranslate.x += translate.x;
+            sceneTranslate.y += translate.y;
         }
     }
 
     public void multScale(float sc) {
-        try {
-            float scaleFiltered = (float) filters[SCALE].filter(sc);
-            sceneScale *= scaleFiltered;
-        } catch (Exception ex) {
-            Logger.getLogger(RSTTransform.class.getName()).log(Level.SEVERE, null, ex);
+        if (useFiltering) {
+            try {
+                float scaleFiltered = (float) filters[SCALE].filter(sc);
+                sceneScale *= scaleFiltered;
+
+            } catch (Exception ex) {
+                Logger.getLogger(RSTTransform.class
+                        .getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            sceneScale *= sc;
         }
     }
 
     public abstract void update(TouchList touchList, int currentTime);
 
-    protected void emptyUpdate(){
-          addRotation(0);
-          addTranslation(new PVector());
-          multScale(1);
+    protected void emptyUpdate() {
+//        System.out.println("EmptyUpdate");
+        addRotation(0);
+        addTranslation(new PVector());
+        multScale(1);
     }
-    
+
     protected PVector computeTranslate(Touch touch) {
         return touch.speed;
     }

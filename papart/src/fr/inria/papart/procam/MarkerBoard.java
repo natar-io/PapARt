@@ -41,6 +41,7 @@ public class MarkerBoard {
     protected ArrayList trackers;
     protected ArrayList<OneEuroFilter[]> filters;
     protected ArrayList<PVector> lastPos;
+    protected ArrayList<Float> lastDistance;
     protected ArrayList<Integer> nextTimeEvent;
     protected ArrayList<Integer> updateStatus;
     protected PApplet applet;
@@ -102,6 +103,7 @@ public class MarkerBoard {
         drawingMode = new ArrayList<Boolean>();
         minDistanceDrawingMode = new ArrayList<Float>();
         lastPos = new ArrayList<PVector>();
+        lastDistance = new ArrayList<Float>();
         nextTimeEvent = new ArrayList<Integer>();
         updateStatus = new ArrayList<Integer>();
 
@@ -132,6 +134,7 @@ public class MarkerBoard {
 
         this.drawingMode.add(false);
         this.lastPos.add(new PVector());
+        this.lastDistance.add(0f);
         this.minDistanceDrawingMode.add(2f);
         this.nextTimeEvent.add(0);
         this.updateStatus.add(NORMAL);
@@ -308,6 +311,11 @@ public class MarkerBoard {
         return true;
     }
 
+    public float lastMovementDistance(Camera camera) {
+        int id = getId(camera);
+        return lastDistance.get(id);
+    }
+
     public boolean isTrackedBy(Camera camera) {
         return cameras.contains(camera);
     }
@@ -398,11 +406,13 @@ public class MarkerBoard {
         }
 
         float distance = currentPos.dist(lastPos.get(id));
+
         System.out.println("Distance " + distance);
         if (distance > 1500) // 1 meter~?
         {
             return;
         }
+        lastDistance.set(id, distance);
 
         // if the update is forced 
         if (mode == FORCE_UPDATE && currentTime < endTime) {
@@ -469,9 +479,11 @@ public class MarkerBoard {
             updateStatus.set(id, NORMAL);
         }
 
+        float distance = currentPos.dist(lastPos.get(id));
+        lastDistance.set(id, distance);
+
         // if it is a drawing mode
         if (drawingMode.get(id)) {
-            float distance = currentPos.dist(lastPos.get(id));
 
             if (distance > this.minDistanceDrawingMode.get(id)) {
                 update(multiMarkerConfig, id);
@@ -484,6 +496,7 @@ public class MarkerBoard {
 
         } else {
             update(multiMarkerConfig, id);
+
         }
     }
 
