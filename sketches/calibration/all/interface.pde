@@ -4,6 +4,9 @@ import fr.inria.skatolo.gui.controllers.*;
 import fr.inria.skatolo.gui.controllers.Slider;
 import fr.inria.skatolo.gui.controllers.Button;
 
+import fr.inria.papart.procam.Utils;
+
+
 public class ControlFrame extends PApplet {
 
     boolean init = false;

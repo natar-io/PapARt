@@ -23,7 +23,8 @@ import toxi.geom.Vec3D;
 public class HomographyCalibration extends Calibration {
 
     static final String HOMOGRAPHY_XML_NAME = "Homography";
-
+    static final HomographyCalibration INVALID = new HomographyCalibration();
+    
     protected Matrix4x4 mat;
     protected PMatrix3D pmatrix;
     protected PMatrix3D invPmatrix;

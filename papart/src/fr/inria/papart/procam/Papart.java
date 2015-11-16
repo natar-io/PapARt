@@ -8,6 +8,7 @@
 package fr.inria.papart.procam;
 
 import com.jogamp.newt.opengl.GLWindow;
+import fr.inria.papart.calibration.CalibrationPopup;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.calibration.CameraConfiguration;
 import fr.inria.papart.calibration.HomographyCalibration;
@@ -156,6 +157,20 @@ public class Papart {
         ScreenConfiguration config = new ScreenConfiguration();
         config.loadFrom(applet, screenConfig);
         return config;
+    }
+
+    private CalibrationPopup calibrationPopup;
+
+    public void calibration() {
+        if (calibrationPopup == null) {
+            calibrationPopup = new CalibrationPopup();
+        } else {
+            if (calibrationPopup.isHidden()) {
+                calibrationPopup.show();
+            } else {
+                calibrationPopup.hide();
+            }
+        }
     }
 
     /**
@@ -685,7 +700,7 @@ public class Papart {
                 return new KinectOne(applet, cameraTracking);
             }
         }
-        System.err.println("Could not load the Kinect !" + "Camera Type " + kinectConfiguration.getCameraType() );
+        System.err.println("Could not load the Kinect !" + "Camera Type " + kinectConfiguration.getCameraType());
         return null;
     }
 
@@ -732,7 +747,8 @@ public class Papart {
         // Sketches are not within a package.
         Reflections reflections = new Reflections("");
 
-        Set<Class<? extends PaperTouchScreen>> paperTouchScreenClasses = reflections.getSubTypesOf(PaperTouchScreen.class);
+        Set<Class<? extends PaperTouchScreen>> paperTouchScreenClasses = reflections.getSubTypesOf(PaperTouchScreen.class
+        );
         for (Class<? extends PaperTouchScreen> klass : paperTouchScreenClasses) {
             try {
                 Class[] ctorArgs2 = new Class[1];
@@ -845,9 +861,13 @@ public class Papart {
     public Camera getKinectCamera() {
         return this.kinectDevice.getCameraRGB();
     }
-    
-    public KinectDevice getKinectDevice(){
+
+    public KinectDevice getKinectDevice() {
         return kinectDevice;
+    }
+
+    public KinectDepthAnalysis getKinectAnalysis() {
+        return this.kinectDepthAnalysis;
     }
 
     public PApplet getApplet() {

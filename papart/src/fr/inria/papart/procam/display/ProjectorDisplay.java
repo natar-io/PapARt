@@ -48,11 +48,22 @@ public class ProjectorDisplay extends ARDisplay {
 
     @Override
     public void draw() {
+
+        if (isCalibrationMode) {
+            projectCornersImage();
+        }
+
         drawScreensOver();
         parent.noStroke();
         DrawUtils.drawImage((PGraphicsOpenGL) parent.g,
                 this.render(),
                 0, 0, this.frameWidth, this.frameHeight);
+    }
+
+    private boolean isCalibrationMode = false;
+
+    public void setCalibrationMode(boolean isCalibration) {
+        this.isCalibrationMode = isCalibration;
     }
 
     public PGraphicsOpenGL beginDrawOnBoard(Camera camera, MarkerBoard board) {
@@ -178,10 +189,48 @@ public class ProjectorDisplay extends ARDisplay {
 //        out3.y = 1 - out3.y;
         return out;
     }
-    
-    public void setCamera(Camera camera){
+
+    public void setCamera(Camera camera) {
         this.camera = camera;
         this.hasCamera = true;
+    }
+
+    private int cornerS = 2, cornerM = 30, cornerL = 50;
+    public void setCalibrationSize(int small, int med, int large){
+        this.cornerS = small;
+        this.cornerM = med;
+        this.cornerL = large;
+    }
+    
+    void projectCornersImage() {
+
+        PGraphicsOpenGL g = (PGraphicsOpenGL) parent.g;
+        g.background(0);
+        g.ellipseMode(PApplet.CENTER);
+
+        g.translate(0, 0);
+        drawEllipses(g);
+
+        g.translate(g.width, 0);
+        drawEllipses(g);
+
+        g.translate(0, g.height);
+        drawEllipses(g);
+
+        g.translate(-g.width, 0);
+        drawEllipses(g);
+    }
+
+    void drawEllipses(PGraphicsOpenGL g) {
+        g.noStroke();
+        g.fill(120);
+        g.ellipse(0, 0, cornerL, cornerL);
+
+        g.fill(160);
+        g.ellipse(0, 0, cornerM, cornerM);
+
+        g.fill(200);
+        g.ellipse(0, 0, cornerS, cornerS);
     }
 
 }

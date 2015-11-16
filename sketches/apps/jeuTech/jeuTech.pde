@@ -83,8 +83,12 @@ boolean test = false;
 boolean DEBUG_TOUCH = false;
 
 void keyPressed() {
+      if(key == 'c'){
+           papart.calibration();
+        }
 
-    if (key == 'c') {
+
+    if (key == 'f') {
 	fixBoards = !fixBoards;
 	papart.getCameraTracking().trackSheets(!fixBoards);
     }

@@ -52,7 +52,7 @@ public class KinectTouchInput extends TouchInput {
     // List of TouchPoints, given to the user
     private final KinectDevice kinectDevice;
 
-    private final PlaneAndProjectionCalibration calibration;
+    private PlaneAndProjectionCalibration planeAndProjCalibration;
 
     // List of TouchPoints, given to the user
     private final ArrayList<TouchPoint> touchPoints2D = new ArrayList<>();
@@ -67,9 +67,13 @@ public class KinectTouchInput extends TouchInput {
         this.parent = applet;
         this.depthAnalysis = depthAnalysis;
         this.kinectDevice = kinectDevice;
-        this.calibration = calibration;
+        this.planeAndProjCalibration = calibration;
         this.touchDetection2D = new TouchDetectionSimple2D(depthAnalysis.getDepthSize());
         this.touchDetection3D = new TouchDetectionSimple3D(depthAnalysis.getDepthSize());
+    }
+    
+    public void setPlaneAndProjCalibration(PlaneAndProjectionCalibration papc){
+        this.planeAndProjCalibration = papc;
     }
 
     public void setTouchDetectionCalibration(PlanarTouchCalibration touchCalib) {
@@ -94,16 +98,16 @@ public class KinectTouchInput extends TouchInput {
             touch2DPrecision = touchDetection2D.getPrecision();
             touch3DPrecision = touchDetection3D.getPrecision();
             if (touch2DPrecision > 0 && touch3DPrecision > 0) {
-                depthAnalysis.updateMT(depthImage, colImage, calibration, touch2DPrecision, touch3DPrecision);
+                depthAnalysis.updateMT(depthImage, colImage, planeAndProjCalibration, touch2DPrecision, touch3DPrecision);
                 findAndTrack2D();
                 findAndTrack3D();
             } else {
                 if (touch2DPrecision > 0) {
-                    depthAnalysis.updateMT2D(depthImage, colImage, calibration, touch2DPrecision);
+                    depthAnalysis.updateMT2D(depthImage, colImage, planeAndProjCalibration, touch2DPrecision);
                     findAndTrack2D();
                 }
                 if (touch3DPrecision > 0) {
-                    depthAnalysis.updateMT3D(depthImage, colImage, calibration, touch3DPrecision);
+                    depthAnalysis.updateMT3D(depthImage, colImage, planeAndProjCalibration, touch3DPrecision);
                     findAndTrack3D();
                 }
             }
@@ -406,7 +410,7 @@ public class KinectTouchInput extends TouchInput {
     }
 
     public PlaneAndProjectionCalibration getCalibration() {
-        return calibration;
+        return planeAndProjCalibration;
     }
 
     public boolean isUseRawDepth() {

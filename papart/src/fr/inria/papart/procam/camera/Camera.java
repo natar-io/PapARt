@@ -131,7 +131,7 @@ public abstract class Camera extends Node implements PConstants {
 
     public PImage getPImageCopy() {
         PImage out = parent.createImage(this.width, this.height, RGB);
-        Utils.IplImageToPImage(currentImage, out);
+        Utils.IplImageToPImage(currentImage, false, out);
         return out;
     }
 
