@@ -44,9 +44,9 @@ public class PaperApp2D extends PApplet {
 //        println("frameRate " + frameRate);
     }
     
-    public void keyPressed(){
-        if(key == 'c'){
-           papart.calibration();
-        }
-    }
+//    public void keyPressed(){
+//        if(key == 'c'){
+//           papart.calibration();
+//        }
+//    }
 }

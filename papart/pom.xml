@@ -192,6 +192,12 @@
             <artifactId>toxiclibscore</artifactId>
             <version>0022</version>
         </dependency>
+        
+        <dependency>
+            <groupId>fr.inria.potioc</groupId>
+            <artifactId>skatolo</artifactId>
+            <version>1.0</version>
+        </dependency>
     </dependencies>
     
     <reporting>

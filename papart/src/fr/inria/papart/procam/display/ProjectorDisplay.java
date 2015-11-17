@@ -15,7 +15,6 @@ import fr.inria.papart.procam.MarkerBoard;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.procam.Screen;
 import processing.core.PApplet;
-import static processing.core.PApplet.println;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.opengl.PGraphicsOpenGL;
@@ -191,16 +190,15 @@ public class ProjectorDisplay extends ARDisplay {
 //        out3.y = 1 - out3.y;
         return out;
     }
-    
-    
-    /** 
-     * Computes the 3D coordinates of a projected pixel in the tracking camera 
-     * coordinate system.  
-     * 
+
+    /**
+     * Computes the 3D coordinates of a projected pixel in the tracking camera
+     * coordinate system.
+     *
      * @param planeCalibCam projection plane
      * @param px x axis in pixel coordinates
      * @param py x axis in pixel coordinates
-     * @return 
+     * @return
      */
     public PVector getProjectedPointOnPlane(PlaneCalibration planeCalibCam, float px, float py) {
         // Create ray from the projector (origin / viewed pixel)
@@ -242,12 +240,13 @@ public class ProjectorDisplay extends ARDisplay {
     }
 
     private int cornerS = 2, cornerM = 30, cornerL = 50;
-    public void setCalibrationSize(int small, int med, int large){
+
+    public void setCalibrationSize(int small, int med, int large) {
         this.cornerS = small;
         this.cornerM = med;
         this.cornerL = large;
     }
-    
+
     void projectCornersImage() {
 
         PGraphicsOpenGL g = (PGraphicsOpenGL) parent.g;

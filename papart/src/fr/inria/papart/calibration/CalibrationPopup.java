@@ -498,8 +498,7 @@ public class CalibrationPopup extends PApplet {
 
         if (key == 27) { //The ASCII code for esc is 27, so therefore: 27
             this.hide();
-        }
-        if (key == ESC) {
+            // do not kill the app...
             key = 0;
         }
 

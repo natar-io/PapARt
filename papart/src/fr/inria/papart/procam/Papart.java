@@ -43,6 +43,7 @@ import processing.core.PConstants;
 import processing.core.PFont;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
+import processing.event.KeyEvent;
 import processing.opengl.PSurfaceJOGL;
 import toxi.geom.Plane;
 
@@ -193,7 +194,8 @@ public class Papart {
         papart.shouldSetWindowSize = true;
         papart.registerPost();
         papart.initProjectorCamera();
-
+        papart.registerKey();
+        
         return papart;
     }
 
@@ -290,6 +292,16 @@ public class Papart {
 
     private void registerPost() {
         applet.registerMethod("post", this);
+    }
+
+    private void registerKey() {
+        applet.registerMethod("keyEvent", this);
+    }
+
+    public void keyEvent(KeyEvent e) {
+        if (e.getKey() == 'c') {
+            calibration();
+        }
     }
 
     public void forceCameraSize() {
