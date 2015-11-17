@@ -116,4 +116,9 @@ public final class KinectOne extends KinectDevice {
         ((CameraOpenCVDepth) cameraDepth).setTouchInput(kinectTouchInput);
     }
 
+    @Override
+    public Type type() {
+        return Type.ONE;
+    }
+
 }

@@ -70,4 +70,9 @@ public class Kinect360 extends KinectDevice {
     public void setTouch(KinectTouchInput kinectTouchInput) {
         ((CameraOpenKinect) this.getCameraRGB()).setTouch(kinectTouchInput);
     }
+
+    @Override
+    public Type type() {
+        return Type.X360;
+    }
 }

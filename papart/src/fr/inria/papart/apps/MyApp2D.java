@@ -2,8 +2,9 @@ package fr.inria.papart.apps;
 
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.PaperScreen;
+import fr.inria.papart.procam.PaperTouchScreen;
 
-public class MyApp2D extends PaperScreen {
+public class MyApp2D extends PaperTouchScreen {
 
     @Override
     public void settings() {
@@ -21,5 +22,6 @@ public class MyApp2D extends PaperScreen {
         background(100, 0, 0);
         fill(200, 100, 20);
         rect(10, 10, 100, 30);
+        drawTouch();
     }
 }

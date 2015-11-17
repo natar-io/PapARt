@@ -204,6 +204,14 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
         return result;
     }
 
+    public PVector pixelToWorldNormalized(float x, float y) {
+        PVector result = new PVector();
+        result.x = (x * this.w - cx) / fx;
+        result.y = (y * this.h - cy) / fy;
+        result.z = 1;
+        return result;
+    }
+
     public PVector pixelToWorldNormPMM(int x, int y, float sizeX) {
 
         PVector result = pixelToWorldNormP(x, y);

@@ -8,6 +8,7 @@ package fr.inria.papart.calibration;
 import fr.inria.papart.depthcam.devices.Kinect360;
 import fr.inria.papart.depthcam.devices.KinectDepthAnalysis;
 import fr.inria.papart.depthcam.devices.KinectDevice;
+import fr.inria.papart.depthcam.devices.KinectDevice.Type;
 import fr.inria.papart.depthcam.devices.KinectOne;
 import fr.inria.papart.depthcam.devices.KinectProcessing;
 import fr.inria.papart.multitouch.KinectTouchInput;
@@ -24,6 +25,7 @@ import fr.inria.skatolo.gui.group.Group;
 import fr.inria.skatolo.gui.group.RadioButton;
 import fr.inria.skatolo.gui.group.Textarea;
 import java.util.ArrayList;
+import org.bytedeco.javacpp.opencv_core;
 import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
@@ -64,34 +66,25 @@ public class CalibrationPopup extends PApplet {
     static final String CORNERS_NAME = "cornersProj.json";
 
     // projector rendering.
-    ProjectorDisplay projector;
-    ProjectorAsCamera projectorAsCamera;
+    private ProjectorDisplay projector;
+    private ProjectorAsCamera projectorAsCamera;
     static final String PROJECTOR_ARTOOLKIT_NAME = "projectorCalibration.cal";
     static final String KINECT_ARTOOLKIT_NAME = "kinectCalibration.cal";
 
     // calibration App / board 
-    CalibrationApp calibrationApp;
-    MarkerBoard board;
+    private CalibrationApp calibrationApp;
+    private MarkerBoard board;
 
     // Matrices 
     Textarea cameraMatrixText, projectorMatrixText, kinectMatrixText;
 
     // Cameras
-    Camera cameraTracking;
-    Camera cameraKinect;
-    TrackedView projectorView;
+    private Camera cameraTracking;
+    private Camera cameraKinect;
+    private TrackedView projectorView;
 
     // Kinect
-    boolean isKinectOne = false;
-    boolean isKinect360 = false;
-    boolean isKinectOneActivated = false;
-    boolean isKinect360Activated = false;
-
-    private KinectDevice kinectDevice;
-    private ProjectiveDeviceP projectorDevice;
-
-    private PlaneCalibration planeCalibCam;
-    private int frameWidth, frameHeight;
+    private KinectDevice.Type kinectType;
 
     // calibrations
     ArrayList<CalibrationSnapshot> snapshots = new ArrayList<CalibrationSnapshot>();
@@ -101,6 +94,8 @@ public class CalibrationPopup extends PApplet {
     private static final String COMPUTING = "Computing...";
     private static final String OK = "OK";
     private static final String NOTHING = "";
+
+    private CalibrationExtrinsic calibrationExtrinsic;
 
     public CalibrationPopup() {
         super();
@@ -121,25 +116,64 @@ public class CalibrationPopup extends PApplet {
 
         cameraTracking = Papart.getPapart().getCameraTracking();
         projector = Papart.getPapart().getProjectorDisplay();
-        projectorDevice = projector.getProjectiveDeviceP();
-        frameWidth = projectorDevice.getWidth();
-        frameHeight = projectorDevice.getHeight();
+        projector.setCalibrationMode(true);
 
+        calibrationExtrinsic = new CalibrationExtrinsic(this);
         initProjectorAsCamera();
-        checkKinectVersion();
-        activateKinect();
+        calibrationExtrinsic.setProjector(projector);
+
+        kinectType = papart.getKinectType();
+        if (kinectType != Type.NONE) {
+            if (kinectType == Type.X360) {
+                initKinect360(papart.getKinectDevice());
+            }
+            calibrationExtrinsic.setKinect(papart.getKinectDevice(), kinectType);
+        }
 
         initCorners();
         loadCorners();
 
         skatolo = new Skatolo(this, this);
         initMainGui();
-
         initMatrixGui();
-
         initCornersGUI();
 
         frameRate(10);
+    }
+
+    private void initProjectorAsCamera() {
+        projectorView = new TrackedView();
+        projectorView.setImageWidthPx(projector.getWidth());
+        projectorView.setImageHeightPx(projector.getHeight());
+        projectorView.init();
+
+        projectorAsCamera = new ProjectorAsCamera();
+        projectorAsCamera.setCalibration(Papart.projectorCalib);
+        projectorAsCamera.setParent(this);
+
+        String ARToolkitCalibFile = Papart.calibrationFolder + "projector.cal";
+        ProjectorAsCamera.convertARProjParams(this, projectorAsCamera.getCalibrationFile(),
+                ARToolkitCalibFile);
+        projectorAsCamera.initMarkerDetection(ARToolkitCalibFile);
+        projectorAsCamera.trackMarkerBoard(board);
+    }
+
+    private void initKinect360(KinectDevice kinectDevice) {
+        cameraKinect = kinectDevice.getCameraRGB();
+
+        String ARToolkitCalib = Papart.calibrationFolder + KINECT_ARTOOLKIT_NAME;
+        Camera.convertARParams(this, cameraKinect.getCalibrationFile(), ARToolkitCalib);
+        cameraKinect.initMarkerDetection(ARToolkitCalib);
+
+        // No display for now...
+//        arDisplayKinect = new ARDisplay(this, cameraKinect);
+//        arDisplayKinect.init();
+//        arDisplayKinect.manualMode();
+//        app.addDisplay(arDisplayKinect);
+        cameraKinect.trackSheets(true);
+
+        // as it does not comes with the display:
+        cameraKinect.trackMarkerBoard(board);
     }
 
     void reset() {
@@ -172,7 +206,7 @@ public class CalibrationPopup extends PApplet {
                 //                .setCaptionLabel("Calibration ProCam")
                 .plugTo(this, "calibrateProCam");
 
-        if (this.isKinect360 || this.isKinectOne) {
+        if (kinectType != Type.NONE) {
             skatolo.addBang("calibrateKinect")
                     .setPosition(200, DO_CALIBRATION_HEIGHT)
                     .setCaptionLabel("Plane Calibration");
@@ -185,8 +219,7 @@ public class CalibrationPopup extends PApplet {
                 new CalibrationSnapshot(
                         currentCamBoard(),
                         currentProjBoard(),
-                        isKinect360Activated ? currentKinect360Board() : null));
-
+                        (kinectType == Type.X360) ? currentKinect360Board() : null));
     }
 
     public void clearCalibrations() {
@@ -196,19 +229,62 @@ public class CalibrationPopup extends PApplet {
 
     public void calibrateProCam() {
         this.isProCamCalibrated = COMPUTING;
-        computeManualCalibrations();
-        if (isKinectOne) {
-            calibrateKinectOne();
-        }
-        if (isKinect360) {
-            calibrateKinect360();
-        }
+        calibrationExtrinsic.computeProjectorCameraExtrinsics(snapshots);
+        calibrationExtrinsic.calibrateKinect(snapshots);
         this.isProCamCalibrated = OK;
+        this.isKinectCalibrated = OK;
     }
 
     public void calibrateKinect() {
-        calibrateKinect360Plane();
+        boolean isCalibOK = calibrationExtrinsic.calibrateKinect360Plane(snapshots);
+        if (isCalibOK) {
+            this.isKinectCalibrated = OK;
+        }
     }
+
+    private PMatrix3D currentKinect360Board() {
+        return board.getTransfoMat(cameraKinect).get();
+    }
+
+    private PMatrix3D currentCamBoard() {
+        return board.getTransfoMat(cameraTracking).get();
+    }
+
+    private PMatrix3D currentProjBoard() {
+        opencv_core.IplImage projImage = projectorImage();
+        if (projImage == null) {
+            return new PMatrix3D();
+        }
+        board.updatePosition(projectorAsCamera, projImage);
+        return board.getTransfoMat(projectorAsCamera);
+    }
+
+    private opencv_core.IplImage grayImage = null;
+
+    private opencv_core.IplImage projectorImage() {
+        projectorView.setCorners(corners);
+        opencv_core.IplImage projImage = projectorView.getIplViewOf(cameraTracking);
+        if (board.useARToolkit()) {
+            projImage = greyProjectorImage(projImage);
+        }
+        return projImage;
+    }
+
+    private opencv_core.IplImage greyProjectorImage(opencv_core.IplImage projImage) {
+        if (grayImage == null) {
+            grayImage = opencv_core.IplImage.create(projector.getWidth(),
+                    projector.getHeight(),
+                    IPL_DEPTH_8U, 1);
+        }
+        cvCvtColor(projImage, grayImage, CV_BGR2GRAY);
+
+        // if(test){
+        //     cvSaveImage( sketchPath() + "/data/projImage.jpg", grayImage);
+        //     cvSaveImage( sketchPath() + "/data/camImage.jpg", camera.getIplImage());
+        // }
+        return grayImage;
+    }
+    //// Calibrations 
 
     void initMatrixGui() {
 
@@ -225,7 +301,7 @@ public class CalibrationPopup extends PApplet {
                 .setFont(arial)
                 .setLineHeight(14);
 
-        if (isKinect360Activated) {
+        if (this.kinectType == Type.X360) {
             System.out.println("Kinect 360 OK...");
             kinectMatrixText = skatolo.addTextarea("Kinect")
                     .setPosition(600, MATRICES_HEIGHT)
@@ -237,47 +313,6 @@ public class CalibrationPopup extends PApplet {
             System.out.println("Kinect 360 NOT Activated !");
         }
 
-    }
-
-    private void computeManualCalibrations() {
-        PMatrix3D sum = new PMatrix3D(0, 0, 0, 0,
-                0, 0, 0, 0,
-                0, 0, 0, 0,
-                0, 0, 0, 0);
-
-        for (CalibrationSnapshot snapshot : snapshots) {
-            PMatrix3D extr = computeExtrinsics(snapshot.cameraPaper,
-                    snapshot.projectorPaper);
-            Utils.addMatrices(sum, extr);
-        }
-        Utils.multMatrix(sum, 1f / (float) snapshots.size());
-        Papart.getPapart().saveCalibration(Papart.cameraProjExtrinsics, sum);
-        projector.setExtrinsics(sum);
-    }
-
-    private PMatrix3D computeExtrinsics(PMatrix3D camPaper, PMatrix3D projPaper) {
-        PMatrix3D extr = projPaper.get();
-        extr.invert();
-        extr.preApply(camPaper);
-        extr.invert();
-        return extr;
-    }
-
-    private void initProjectorAsCamera() {
-        projectorView = new TrackedView();
-        projectorView.setImageWidthPx(projector.getWidth());
-        projectorView.setImageHeightPx(projector.getHeight());
-        projectorView.init();
-
-        projectorAsCamera = new ProjectorAsCamera();
-        projectorAsCamera.setCalibration(Papart.projectorCalib);
-        projectorAsCamera.setParent(this);
-
-        String ARToolkitCalibFile = Papart.calibrationFolder + "projector.cal";
-        ProjectorAsCamera.convertARProjParams(this, projectorAsCamera.getCalibrationFile(),
-                ARToolkitCalibFile);
-        projectorAsCamera.initMarkerDetection(ARToolkitCalibFile);
-        projectorAsCamera.trackMarkerBoard(board);
     }
 
     public void cornerCalibration(boolean toggleValue) {
@@ -295,12 +330,10 @@ public class CalibrationPopup extends PApplet {
         }
         videoPopup.getSurface().setVisible(true);
         cornersGroup.show();
-        projector.setCalibrationMode(true);
         cornerToggle.activate();
     }
 
     public void stopCornerCalibration() {
-        projector.setCalibrationMode(false);
         videoPopup.getSurface().setVisible(false);
         cornersGroup.hide();
         cornerToggle.deactivate();
@@ -407,359 +440,6 @@ public class CalibrationPopup extends PApplet {
 
     }
 
-    void checkKinectVersion() {
-        kinectDevice = Papart.getPapart().getKinectDevice();
-        // if the program does not have a Kinect, we should not try to calibrate it... 
-        if (kinectDevice == null) {
-            return;
-        }
-        isKinect360 = kinectDevice instanceof Kinect360;
-        isKinectOne = kinectDevice instanceof KinectOne;
-    }
-
-    void activateKinect() {
-        if (isKinectOne) {
-            initKinectOne();
-        }
-        if (isKinect360) {
-            initKinect360();
-        }
-    }
-
-    void initKinectOne() {
-        initCommonKinect();
-
-        // Kinect camera is the main tracking Camera
-        isKinectOneActivated = true;
-    }
-
-    void initKinect360() {
-        cameraKinect = kinectDevice.getCameraRGB();
-
-        String ARToolkitCalib = Papart.calibrationFolder + KINECT_ARTOOLKIT_NAME;
-        cameraKinect.convertARParams(this, cameraKinect.getCalibrationFile(), ARToolkitCalib);
-        cameraKinect.initMarkerDetection(ARToolkitCalib);
-
-        // No display for now...
-//        arDisplayKinect = new ARDisplay(this, cameraKinect);
-//        arDisplayKinect.init();
-//        arDisplayKinect.manualMode();
-//        app.addDisplay(arDisplayKinect);
-        cameraKinect.trackSheets(true);
-
-        // as it does not comes with the display:
-        cameraKinect.trackMarkerBoard(board);
-
-        initCommonKinect();
-        isKinect360Activated = true;
-        System.out.println("Kinect 360 Activated !");
-    }
-
-    void initCommonKinect() {
-//        kinectAnalysis = Papart.getPapart().getKinectAnalysis(); // new KinectProcessing(this, kinectDevice);
-
-        // init is done later now.
-
-    }
-
-    private PMatrix3D currentKinect360Board() {
-        return board.getTransfoMat(cameraKinect).get();
-    }
-
-    private PMatrix3D currentCamBoard() {
-        return board.getTransfoMat(cameraTracking).get();
-    }
-
-    private PMatrix3D currentProjBoard() {
-        IplImage projImage = projectorImage();
-        if (projImage == null) {
-            return new PMatrix3D();
-        }
-        board.updatePosition(projectorAsCamera, projImage);
-        return board.getTransfoMat(projectorAsCamera);
-    }
-
-    private IplImage grayImage = null;
-
-    private IplImage projectorImage() {
-        projectorView.setCorners(corners);
-        IplImage projImage = projectorView.getIplViewOf(cameraTracking);
-        if (board.useARToolkit()) {
-            projImage = greyProjectorImage(projImage);
-        }
-        return projImage;
-    }
-
-    private IplImage greyProjectorImage(IplImage projImage) {
-        if (grayImage == null) {
-            grayImage = IplImage.create(projector.getWidth(),
-                    projector.getHeight(),
-                    IPL_DEPTH_8U, 1);
-        }
-        cvCvtColor(projImage, grayImage, CV_BGR2GRAY);
-
-        // if(test){
-        //     cvSaveImage( sketchPath() + "/data/projImage.jpg", grayImage);
-        //     cvSaveImage( sketchPath() + "/data/camImage.jpg", camera.getIplImage());
-        // }
-        return grayImage;
-    }
-    //// Calibrations 
-
-    private void calibrateKinectOne() {
-        PMatrix3D kinectExtr = kinectDevice.getStereoCalibration().get();
-        kinectExtr.invert();
-
-        planeCalibCam = computeAveragePlaneCam();
-        planeCalibCam.flipNormal();
-
-        // identity - no external camera for ProCam calibration
-        PMatrix3D kinectCameraExtrinsics = new PMatrix3D();
-        // Depth -> Color calibration.
-        kinectCameraExtrinsics.set(kinectExtr);
-
-        HomographyCalibration homography = computeScreenPaperIntersection(planeCalibCam, kinectCameraExtrinsics);
-
-        if (homography == HomographyCalibration.INVALID) {
-            System.err.println("No intersection");
-            return;
-        }
-
-
-        // move the plane up a little.
-        planeCalibCam.moveAlongNormal(-7f);
-
-        saveKinectPlaneCalibration(planeCalibCam, homography);
-        saveKinectCameraExtrinsics(kinectCameraExtrinsics);
-    }
-
-    private void calibrateKinect360() {
-        calibrateKinect360Extr();
-        calibrateKinect360Plane();
-    }
-
-    private void calibrateKinect360Extr() {
-        // Depth -> color  extrinsics
-        PMatrix3D kinectExtr = kinectDevice.getStereoCalibration().get();
-
-        // color -> depth  extrinsics
-        kinectExtr.invert();
-
-        // depth -> tracking
-        PMatrix3D kinectCameraExtrinsics = computeKinectCamExtrinsics(kinectExtr);
-
-        // // tracking -> depth
-        kinectCameraExtrinsics.invert();
-
-        saveKinectCameraExtrinsics(kinectCameraExtrinsics);
-    }
-
-    private void calibrateKinect360Plane() {
-        // Depth -> color  extrinsics
-        PMatrix3D kinectExtr = kinectDevice.getStereoCalibration().get();
-
-        // color -> depth  extrinsics
-        kinectExtr.invert();
-
-        planeCalibCam = computeAveragePlaneCam();
-        PlaneCalibration planeCalibKinect = computeAveragePlaneKinect(kinectExtr);
-        planeCalibCam.flipNormal();
-
-        // Tracking --> depth
-        PMatrix3D kinectCameraExtrinsics = papart.loadCalibration(Papart.kinectTrackingCalib);
-
-        HomographyCalibration homography = computeScreenPaperIntersection(planeCalibCam,
-                kinectCameraExtrinsics);
-        if (homography == HomographyCalibration.INVALID) {
-            System.err.println("No intersection");
-            return;
-        }
-
-        // move the plane up a little.
-        planeCalibKinect.flipNormal();
-        planeCalibKinect.moveAlongNormal(-20f);
-
-        saveKinectPlaneCalibration(planeCalibKinect, homography);
-        this.isKinectCalibrated = OK;
-    }
-
-    private PMatrix3D computeKinectCamExtrinsics(PMatrix3D stereoExtr) {
-        PMatrix3D sum = new PMatrix3D(0, 0, 0, 0,
-                0, 0, 0, 0,
-                0, 0, 0, 0,
-                0, 0, 0, 0);
-
-        int nbCalib = 0;
-        for (CalibrationSnapshot snapshot : snapshots) {
-            if (snapshot.kinectPaper == null) {
-                continue;
-            }
-
-            // Color -> Paper
-            PMatrix3D boardFromDepth = snapshot.kinectPaper.get();
-
-            /// depth -> color -> color -> Paper
-            boardFromDepth.preApply(stereoExtr);
-
-            PMatrix3D extr = computeExtrinsics(boardFromDepth, snapshot.cameraPaper);
-
-            Utils.addMatrices(sum, extr);
-            nbCalib++;
-        }
-
-        Utils.multMatrix(sum, 1f / (float) nbCalib);
-        return sum;
-    }
-
-    private PlaneCalibration computeAveragePlaneKinect(PMatrix3D stereoExtr) {
-        PVector paperSize = new PVector(297, 210);
-
-        Plane sumKinect = new Plane(new Vec3D(0, 0, 0),
-                new Vec3D(0, 0, 0));
-
-        int nbCalib = 0;
-        for (CalibrationSnapshot snapshot : snapshots) {
-            if (snapshot.kinectPaper == null) {
-                continue;
-            }
-
-            //  color -> paper
-            PMatrix3D boardFromDepth = snapshot.kinectPaper.get();
-
-            // Depth -> color -> color -> paper
-            boardFromDepth.preApply(stereoExtr);
-
-            PlaneCalibration planeCalibKinect
-                    = PlaneCalibration.CreatePlaneCalibrationFrom(boardFromDepth, paperSize);
-            Utils.sumPlane(sumKinect, planeCalibKinect.getPlane());
-            nbCalib++;
-        }
-
-        Utils.averagePlane(sumKinect, 1f / nbCalib);
-
-        PlaneCalibration calibration = new PlaneCalibration();
-        calibration.setPlane(sumKinect);
-        calibration.setHeight(PlaneCalibration.DEFAULT_PLANE_HEIGHT);
-
-//        System.out.println("Plane viewed by the kinect");
-//        println(sumKinect);
-        return calibration;
-    }
-
-    private PlaneCalibration computeAveragePlaneCam() {
-        PVector paperSize = new PVector(297, 210);
-
-        Plane sumCam = new Plane(new Vec3D(0, 0, 0),
-                new Vec3D(0, 0, 0));
-
-        int nbPlanes = 0;
-        for (CalibrationSnapshot snapshot : snapshots) {
-
-            if (snapshot.cameraPaper == null) {
-                continue;
-            }
-
-            PlaneCalibration cam = PlaneCalibration.CreatePlaneCalibrationFrom(
-                    snapshot.cameraPaper.get(), paperSize);
-
-            Utils.sumPlane(sumCam, cam.getPlane());
-            nbPlanes++;
-        }
-
-        Utils.averagePlane(sumCam, 1f / nbPlanes);
-
-        PlaneCalibration calibration = new PlaneCalibration();
-        calibration.setPlane(sumCam);
-        calibration.setHeight(PlaneCalibration.DEFAULT_PLANE_HEIGHT);
-
-//        System.out.println("Plane viewed by the camera");
-//        println(sumCam);
-        return calibration;
-    }
-
-    PMatrix3D lastKinectCamExtrinsics = null;
-    void saveKinectCameraExtrinsics(PMatrix3D kinectCameraExtrinsics) {
-        lastKinectCamExtrinsics = kinectCameraExtrinsics;
-        papart.saveCalibration(Papart.kinectTrackingCalib, kinectCameraExtrinsics);
-    }
-
-    void saveKinectPlaneCalibration(PlaneCalibration planeCalib, HomographyCalibration homography) {
-        PlaneAndProjectionCalibration planeProjCalib = new PlaneAndProjectionCalibration();
-        planeProjCalib.setPlane(planeCalib);
-        planeProjCalib.setHomography(homography);
-        planeProjCalib.saveTo(this, Papart.planeAndProjectionCalib);
-
-        ((KinectTouchInput) papart.getTouchInput()).setPlaneAndProjCalibration(planeProjCalib);
-    }
-
-    private HomographyCalibration computeScreenPaperIntersection(PlaneCalibration planeCalibCam,
-            PMatrix3D kinectCameraExtrinsics) {
-
-        // generate coordinates...
-        float step = 0.5f;
-        int nbPoints = (int) ((1 + 1f / step) * (1 + 1f / step));
-        HomographyCreator homographyCreator = new HomographyCreator(3, 2, nbPoints);
-
-        // Creates 3D points on the corner of the screen
-        int k = 0;
-        for (float i = 0; i <= 1.0; i += step) {
-            for (float j = 0; j <= 1.0; j += step, k++) {
-
-                PVector screenPoint = new PVector(i, j);
-                PVector kinectPoint = new PVector();
-
-                // where the point is on the table. viewed by the tracking.
-                PVector inter = computeIntersection(planeCalibCam, i, j);
-                if (inter == null) {
-                    return HomographyCalibration.INVALID;
-                }
-
-                // inter is viewed from tracking.
-                // depth --> tracking
-                kinectCameraExtrinsics.mult(inter, kinectPoint);
-
-                homographyCreator.addPoint(kinectPoint, screenPoint);
-            }
-        }
-        return homographyCreator.getHomography();
-    }
-
-    PVector computeIntersection(PlaneCalibration planeCalibCam, float px, float py) {
-
-        // Create ray from the projector (origin / viewed pixel)
-        // Intersect this ray with the piece of paper.
-        // Compute the Two points for the ray
-        PVector originP = new PVector(0, 0, 0);
-        PVector viewedPtP = projectorDevice.pixelToWorldNormP((int) (px * frameWidth), (int) (py * frameHeight));
-
-        // Pass it to the camera point of view (origin)
-        PMatrix3D proCamExtrinsics = projector.getExtrinsicsInv();
-        PVector originC = new PVector();
-        PVector viewedPtC = new PVector();
-        proCamExtrinsics.mult(originP, originC);
-        proCamExtrinsics.mult(viewedPtP, viewedPtC);
-
-        // Second argument is a direction
-        viewedPtC.sub(originC);
-
-        Ray3D ray = new Ray3D(new Vec3D(originC.x,
-                originC.y,
-                originC.z),
-                new Vec3D(viewedPtC.x,
-                        viewedPtC.y,
-                        viewedPtC.z));
-
-        // Intersect ray with Plane
-        ReadonlyVec3D inter = planeCalibCam.getPlane().getIntersectionWithRay(ray);
-
-        if (inter == null) {
-            println("No intersection :( check stuff");
-            return null;
-        }
-
-        return new PVector(inter.x(), inter.y(), inter.z());
-    }
-
     @Override
     public void draw() {
         background(0);
@@ -792,12 +472,11 @@ public class CalibrationPopup extends PApplet {
             projectorMatrixText.setText(Utils.matToString(currentProjBoard()));
         }
 
-        if (isKinect360Activated) {
+        if (this.kinectType == Type.X360) {
             if (this.isKinectCalibrated == OK) {
                 cameraMatrixText.setColor(color(0, 255, 0));
-                cameraMatrixText.setText(Utils.matToString(lastKinectCamExtrinsics));
+                cameraMatrixText.setText(Utils.matToString(calibrationExtrinsic.getKinectCamExtrinsics()));
             } else {
-
                 kinectMatrixText.setText(Utils.matToString(currentKinect360Board()));
             }
         }
@@ -831,33 +510,17 @@ public class CalibrationPopup extends PApplet {
     public void hide() {
         this.isHidden = true;
         this.getSurface().setVisible(false);
+        projector.setCalibrationMode(false);
     }
 
     public void show() {
         this.isHidden = false;
+        projector.setCalibrationMode(true);
         this.getSurface().setVisible(true);
     }
 
     public boolean isHidden() {
         return this.isHidden;
-    }
-
-    class CalibrationSnapshot {
-
-        PMatrix3D cameraPaper = null;
-        PMatrix3D projectorPaper = null;
-        PMatrix3D kinectPaper = null;
-
-        public CalibrationSnapshot(PMatrix3D cameraPaperCalibration,
-                PMatrix3D projectorPaperCalibration,
-                PMatrix3D kinectPaperCalibration) {
-            cameraPaper = cameraPaperCalibration.get();
-            projectorPaper = projectorPaperCalibration.get();
-            if (kinectPaperCalibration != null) {
-                kinectPaper = kinectPaperCalibration.get();
-            }
-        }
-
     }
 
 }

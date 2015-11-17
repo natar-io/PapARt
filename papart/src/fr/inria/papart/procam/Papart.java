@@ -870,6 +870,14 @@ public class Papart {
         return this.kinectDepthAnalysis;
     }
 
+    public KinectDevice.Type getKinectType() {
+        if (kinectDevice == null) {
+            return KinectDevice.Type.NONE;
+
+        }
+        return kinectDevice.type();
+    }
+
     public PApplet getApplet() {
         return applet;
     }

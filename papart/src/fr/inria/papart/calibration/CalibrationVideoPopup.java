@@ -65,15 +65,28 @@ public class CalibrationVideoPopup extends PApplet {
         return calibrationPopup.currentCorner;
     }
 
+    @Override
     public void draw() {
         image(cameraTracking.getPImageCopy(this), 0, 0, cameraTracking.width(), cameraTracking.height());
 
+        drawProjectionZone();
+        drawRectAroundCurrentCorner();
+        if (calibrationPopup.showZoom) {
+            drawZoom();
+        }
+        noStroke();
+    }
+
+    private void drawProjectionZone() {
         fill(0, 180, 0, 100);
         quad(corners(0).x, corners(0).y,
                 corners(1).x, corners(1).y,
                 corners(2).x, corners(2).y,
                 corners(3).x, corners(3).y);
 
+    }
+
+    private void drawRectAroundCurrentCorner() {
         noFill();
         rectMode(CENTER);
         stroke(255);
@@ -84,28 +97,25 @@ public class CalibrationVideoPopup extends PApplet {
                 corners(currentCorner()).y);
         rect(0, 0, 15, 15);
         popMatrix();
+    }
 
-        if (calibrationPopup.showZoom) {
-            PImage currentImage = cameraTracking.getPImageCopy();
-            PImage cornerPreview = currentImage.get((int) (corners(currentCorner()).x - previewSize),
-                    (int) (corners(currentCorner()).y - previewSize),
-                    previewSize * 2,
-                    previewSize * 2);
-            image(cornerPreview, 0, 0, previewSize * 2 * previewSizeVisu, previewSize * 2 * previewSizeVisu);
+    private void drawZoom() {
+        PImage currentImage = cameraTracking.getPImageCopy();
+        PImage cornerPreview = currentImage.get((int) (corners(currentCorner()).x - previewSize),
+                (int) (corners(currentCorner()).y - previewSize),
+                previewSize * 2,
+                previewSize * 2);
+        image(cornerPreview, 0, 0, previewSize * 2 * previewSizeVisu, previewSize * 2 * previewSizeVisu);
 
-            pushMatrix();
-            translate(previewSize * previewSizeVisu, previewSize * previewSizeVisu);
+        pushMatrix();
+        translate(previewSize * previewSizeVisu, previewSize * previewSizeVisu);
 
-            stroke(255);
-            strokeWeight(1);
-            int crossSize = previewSize * previewSizeVisu / 2;
-            line(-crossSize, 0, crossSize, 0);
-            line(0, -crossSize, 0, crossSize);
-            popMatrix();
-        }
-
-        noStroke();
-
+        stroke(255);
+        strokeWeight(1);
+        int crossSize = previewSize * previewSizeVisu / 2;
+        line(-crossSize, 0, crossSize, 0);
+        line(0, -crossSize, 0, crossSize);
+        popMatrix();
     }
 
     @Override
@@ -163,8 +173,8 @@ public class CalibrationVideoPopup extends PApplet {
         }
 
         if (key == 27) { //The ASCII code for esc is 27, so therefore: 27
-             calibrationPopup.stopCornerCalibration();
-          
+            calibrationPopup.stopCornerCalibration();
+
         }
         if (key == ESC) {
             key = 0;

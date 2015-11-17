@@ -270,6 +270,10 @@ public class PaperScreen {
      *
      */
     public void draw() {
+        
+        if(!isInitialized)
+            return;
+            
         Camera mainCamera = cameraTracking;
 
         if (isDrawingOnScreen) {

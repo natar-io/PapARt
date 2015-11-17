@@ -19,6 +19,9 @@ import toxi.geom.Vec3D;
  */
 public abstract class KinectDevice implements DepthCameraDevice {
 
+    public enum Type {
+        ONE, X360, NONE
+    }
     // IR and Depth image size 
     public static int WIDTH;
     public static int HEIGHT;
@@ -32,9 +35,9 @@ public abstract class KinectDevice implements DepthCameraDevice {
             0, 1, 0, 0,
             0, 0, 1, 0,
             0, 0, 0, 1);
-    
+
     protected PApplet parent;
-    
+
     abstract public Camera getCameraRGB();
 
     abstract public Camera getCameraIR();
@@ -43,21 +46,24 @@ public abstract class KinectDevice implements DepthCameraDevice {
 
     abstract public int rawDepthSize();
     
+    abstract public Type type();
+
     abstract public void setTouch(KinectTouchInput kinectTouchInput);
-    
-    public void close(){
+
+    public void close() {
         getCameraDepth().close();
         getCameraRGB().close();
     }
-    
-    public static KinectDevice createKinect360(PApplet parent){
+
+    public static KinectDevice createKinect360(PApplet parent) {
         return new Kinect360(parent);
     }
-    public static KinectDevice createKinectOne(PApplet parent){
+
+    public static KinectDevice createKinectOne(PApplet parent) {
         return new KinectOne(parent);
     }
-    
-     public void setStereoCalibration(String fileName) {
+
+    public void setStereoCalibration(String fileName) {
         HomographyCalibration calib = new HomographyCalibration();
         calib.loadFrom(parent, fileName);
         setStereoCalibration(calib.getHomography());
@@ -70,8 +76,7 @@ public abstract class KinectDevice implements DepthCameraDevice {
     public PMatrix3D getStereoCalibration() {
         return KinectRGBIRCalibration;
     }
-    
-    
+
     public int findColorOffset(Vec3D v) {
         return findColorOffset(v.x, v.y, v.z);
     }
@@ -92,7 +97,6 @@ public abstract class KinectDevice implements DepthCameraDevice {
         return getCameraRGB().getProjectiveDevice().worldToPixel(vt2.x, vt2.y, vt2.z);
     }
 
-    
     @Override
     public int colorWidth() {
         return RGB_WIDTH;
