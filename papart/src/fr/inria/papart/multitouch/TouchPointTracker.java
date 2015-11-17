@@ -29,6 +29,7 @@ public class TouchPointTracker {
         deleteOldPoints(currentList, currentTime);
         updatePoints(currentList, newPoints);
         addNewPoints(currentList, newPoints);
+        setNonUpdatedPointsSpeed(currentList);
     }
 
     public static void updatePoints(ArrayList<TouchPoint> currentList, ArrayList<TouchPoint> newPoints) {
@@ -60,6 +61,17 @@ public class TouchPointTracker {
             if (!tp.isToDelete()) {
                 currentList.add(tp);
             }
+        }
+    }
+
+    public static void setNonUpdatedPointsSpeed(ArrayList<TouchPoint> currentList) {
+
+        // Add the new ones ?
+        for (TouchPoint tp : currentList) {
+            if (tp.isUpdated()) {
+                continue;
+            }
+            tp.updateAlone();
         }
     }
 

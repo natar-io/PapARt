@@ -52,8 +52,8 @@ public class DepthData {
     public DepthAnalysis source;
 
     public DepthData(DepthAnalysis source) {
-        int width = source.getWidth();
-        int height = source.getHeight();
+        int width = source.getDepthWidth();
+        int height = source.getDepthHeight();
         this.source = source;
         int size = width * height;
         depthPoints = new Vec3D[size];
@@ -90,18 +90,18 @@ public class DepthData {
         connexity.reset();
     }
 
-    void clearColor() {
+    public void clearColor() {
         Arrays.fill(this.pointColors, INVALID_COLOR);
     }
 
-    void clearDepth() {
+    public void clearDepth() {
         for (Vec3D pt : depthPoints) {
             pt.clear();
         }
 //        Arrays.fill(this.depthPoints, INVALID_POINT);
     }
 
-    void clear2D() {
+    public void clear2D() {
         Arrays.fill(this.validPointsMask, false);
         this.validPointsList.clear();
     }

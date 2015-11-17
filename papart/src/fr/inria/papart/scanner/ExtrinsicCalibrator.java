@@ -38,15 +38,18 @@ public class ExtrinsicCalibrator {
 
     private final PVector paperSize = new PVector(100, 100); // does not matter...
 
-    public ExtrinsicCalibrator(PMatrix3D cameraPaperTransform, DecodedCode code,
+    public ExtrinsicCalibrator(DecodedCode code,
             ProjectorDisplay projector, Camera cameraTracking) {
         this.decodedCode = code;
-        this.cameraPaperTransform = cameraPaperTransform;
+        this.cameraPaperTransform = new PMatrix3D();
         this.projector = projector;
         this.cameraTracking = cameraTracking;
-
     }
 
+    public void setTransform(PMatrix3D transform){
+        this.cameraPaperTransform.set(transform);
+    }
+    
     public PMatrix3D compute() {
 
         planeCalibCam = PlaneCalibration.CreatePlaneCalibrationFrom(cameraPaperTransform, paperSize);
@@ -79,12 +82,17 @@ public class ExtrinsicCalibrator {
         }
         if (k > 100) {
             // TODO: Repair ransac !
+            
+            try{
 //            PMatrix3D orientation = projectorDevice.estimateOrientationRansac(objectPoints, imagePoints);
             PMatrix3D orientation = projectorDevice.estimateOrientation(objectPoints, imagePoints);
 
             orientation.print();
             return orientation;
-        } else {
+            }catch(Exception e ){e.printStackTrace();}
+            return new PMatrix3D();
+            
+            } else {
             if (k > 3) {
                 PMatrix3D orientation = projectorDevice.estimateOrientation(objectPoints, imagePoints);
                 orientation.print();

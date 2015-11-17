@@ -92,8 +92,12 @@ public class CameraOpenKinect extends Camera implements Displayable {
         setClosing();
         if (grabber != null) {
             try {
+                System.out.println("Stopping KinectGrabber");
                 this.stopThread();
                 grabber.stop();
+                if(this.isGrabbingDepth){
+                    depthCamera.close();
+                }
             } catch (Exception e) {
             }
         }

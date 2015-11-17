@@ -146,7 +146,7 @@ public class GrayCode implements PConstants {
 
         id -= nbRows;
 
-        System.out.println("NbCols " + nbCols + " nbRows " + nbRows + " id " + id);
+//        System.out.println("NbCols " + nbCols + " nbRows " + nbRows + " id " + id);
         if (id == 0) {
             pg.fill(blackColor);
             pg.noStroke();

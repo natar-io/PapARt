@@ -7,6 +7,9 @@
  */
 package fr.inria.papart.procam.camera;
 
+import fr.inria.papart.depthcam.DepthAnalysis;
+import fr.inria.papart.depthcam.devices.KinectDepthAnalysis;
+import fr.inria.papart.depthcam.PixelOffset;
 import fr.inria.papart.procam.MarkerBoard;
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
@@ -39,6 +42,9 @@ class CameraThread extends Thread {
     public CameraThread(Camera camera) {
         this.camera = camera;
         stop = false;
+
+        // Thread version... No bonus whatsoever for now.
+        initThreadPool();
     }
 
     private final int nbThreads = 4;
@@ -100,10 +106,10 @@ class CameraThread extends Thread {
     protected void updateParallel() {
         tryInitThreadPool();
 
-        ArrayList<FutureTask<DepthPixelTask>> tasks = new ArrayList<>();
+        ArrayList<FutureTask<ARTrackingTask>> tasks = new ArrayList<>();
         for (MarkerBoard sheet : camera.getTrackedSheets()) {
-            DepthPixelTask depthPixelTask = new DepthPixelTask(sheet);
-            FutureTask<DepthPixelTask> task = new FutureTask<DepthPixelTask>(depthPixelTask);
+            ARTrackingTask depthPixelTask = new ARTrackingTask(sheet);
+            FutureTask<ARTrackingTask> task = new FutureTask<ARTrackingTask>(depthPixelTask);
             threadPool.submit(task);
             tasks.add(task);
         }
@@ -117,17 +123,16 @@ class CameraThread extends Thread {
 
     }
 
-    class DepthPixelTask implements Callable {
+    class ARTrackingTask implements Callable {
 
         private final MarkerBoard markerBoard;
 
-        public DepthPixelTask(MarkerBoard markerBoard) {
+        public ARTrackingTask(MarkerBoard markerBoard) {
             this.markerBoard = markerBoard;
         }
 
         @Override
         public Object call() {
-
             if (markerBoard.useARToolkit()) {
                 markerBoard.updatePosition(camera, grayImage);
             } else {

@@ -91,7 +91,7 @@ public class PlaneCalibration extends Calibration {
         this.height = planeHeight;
     }
 
-    protected void setPlane(Plane plane) {
+    public void setPlane(Plane plane) {
         this.plane = plane;
     }
 
@@ -180,13 +180,14 @@ public class PlaneCalibration extends Calibration {
      * @return 
      */
     public static PlaneCalibration CreatePlaneCalibrationFrom(PMatrix3D mat, PVector size) {
+        PMatrix3D matrix = mat.get();
         PlaneCreator planeCreator = new PlaneCreator();
-
-        planeCreator.addPoint(new Vec3D(mat.m03, mat.m13, mat.m23));
-        mat.translate(size.x, 0, 0);
-        planeCreator.addPoint(new Vec3D(mat.m03, mat.m13, mat.m23));
-        mat.translate(0, size.y, 0);
-        planeCreator.addPoint(new Vec3D(mat.m03, mat.m13, mat.m23));
+        
+        planeCreator.addPoint(new Vec3D(matrix.m03, matrix.m13, matrix.m23));
+        matrix.translate(size.x, 0, 0);
+        planeCreator.addPoint(new Vec3D(matrix.m03, matrix.m13, matrix.m23));
+        matrix.translate(0, size.y, 0);
+        planeCreator.addPoint(new Vec3D(matrix.m03, matrix.m13, matrix.m23));
 
         planeCreator.setHeight(DEFAULT_PLANE_HEIGHT);
         assert (planeCreator.isComputed());

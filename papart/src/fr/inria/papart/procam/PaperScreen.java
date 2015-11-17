@@ -15,6 +15,7 @@ import fr.inria.papart.drawingapp.DrawUtils;
 import static fr.inria.papart.procam.Papart.tablePosition;
 import fr.inria.papart.tracking.ObjectFinder;
 import java.awt.Image;
+import java.util.ArrayList;
 import processing.opengl.PGraphicsOpenGL;
 import processing.core.PApplet;
 import processing.core.PFont;
@@ -40,10 +41,17 @@ public class PaperScreen {
 
     protected PApplet parent;
 
-    protected Screen screen;
-    protected BaseDisplay display;
+    // many
+    // current
+//    protected BaseDisplay display;
     protected Camera cameraTracking;
+    // list
+    protected ArrayList<BaseDisplay> displays = new ArrayList<BaseDisplay>();
+    protected BaseDisplay mainDisplay;
+
+    // only one. 
     protected MarkerBoard markerBoard;
+    protected Screen screen;
 
     protected PVector drawingSize
             = new PVector(DEFAULT_DRAWING_SIZE, DEFAULT_DRAWING_SIZE, 1);
@@ -51,11 +59,17 @@ public class PaperScreen {
 
     protected PGraphicsOpenGL currentGraphics;
 
-    protected boolean isDrawingOnScreen;
+    protected boolean isDrawingOnScreen = true;
+    protected boolean isDrawingOnDisplay = false;
+
     private boolean isInitialized = false;
     private boolean isRegistered = false;
     protected boolean isWithoutCamera = false;
     protected boolean useManualLocation = false;
+
+    private float filteringDistance = 20;
+    private float filteringFreq = 30;
+    private float filteringCutoff = 4;
 
     /**
      * Create a new PaperScreen, a Papart object has to be created first.
@@ -73,64 +87,44 @@ public class PaperScreen {
         if (!this.isWithoutCamera) {
             this.cameraTracking = papart.getCameraTracking();
         }
-        this.display = papart.getDisplay();
+        mainDisplay = papart.getDisplay();
+        displays.add(papart.getDisplay());
 
         // Default to projector graphics. 
-        currentGraphics = this.display.getGraphics();
+        // currentGraphics = this.display.getGraphics();
         register();
     }
 
     public PaperScreen(Camera cam, BaseDisplay proj) {
+        Papart papart = Papart.getPapart();
+        this.parent = papart.getApplet();
         this.cameraTracking = cam;
-        this.display = proj;
-        currentGraphics = this.display.getGraphics();
+        mainDisplay = proj;
+        displays.add(proj);
+        register();
     }
 
     public PaperScreen(BaseDisplay display) {
         this.isWithoutCamera = true;
-        this.display = display;
-        currentGraphics = this.display.getGraphics();
+        mainDisplay = display;
+        displays.add(display);
+        register();
     }
 
-    /**
-     * Load a Markerboard with the given configuration file and size. The
-     * configuration file can end with ".cfg" for an ARToolKitPlus tracking
-     * technique. (faster) The configuration file can end with ".jpg" or ".png"
-     * to track "images" using SURF features. (slower)
-     *
-     * @param configFile
-     * @param width width of the markerboard in millimeters.
-     * @param height height of the markerboard in millimeters.
-     */
-    public void loadMarkerBoard(String configFile, float width, float height) {
-        this.markerBoard = new MarkerBoard(configFile, width, height);
-        trackCurrentMarkerBoard();
+    public void addDisplay(BaseDisplay display) {
+        this.displays.add(display);
+        display.addScreen(this.screen);
+        if (display.hasCamera()) {
+            display.getCamera().trackMarkerBoard(markerBoard);
+        }
     }
 
-    /**
-     * Assign an existing markerboard to this PaperScreen.
-     *
-     * @param markerboard
-     */
-    public final void setMarkerBoard(MarkerBoard markerboard) {
-        this.markerBoard = markerboard;
-        trackCurrentMarkerBoard();
+    @Deprecated
+    public void endDraw() {
+        currentGraphics.endDraw();
     }
 
-    /**
-     * Sets the drawing size in millimeters. To get the resolution you must
-     * multiply the drawing size by the resolution.
-     *
-     * @see setResolution
-     * @param width
-     * @param height
-     */
-    public final void setDrawingSize(float width, float height) {
-        this.drawingSize.x = width;
-        this.drawingSize.y = height;
-    }
-    
-    public void setDrawing(boolean drawing){
+    public void setDrawing(boolean drawing) {
         screen.setDrawing(drawing);
     }
 
@@ -144,57 +138,112 @@ public class PaperScreen {
         this.resolution = resolution;
     }
 
-    public void init() {
-        init(this.parent);
+    /**
+     * This method must be overloaded in the child class. For example to load
+     * images, 3D models etc...
+     */
+    protected void setup() {
+        System.out.println("PaperScreen setup. You should not see this unless for debug.");
     }
 
-    public void init(PApplet parent) {
-        if (isInitialized) {
-            System.err.println("PaperScreen: init, already initalized.");
-            return;
+    protected void settings() {
+        setDrawStandard();
+        System.out.println("PaperScreen settings. You should not see this unless for debug.");
+    }
+
+    public void pre() {
+        if (!isInitialized) {
+            settings();
+            checkInitErrors();
+            // check if papart is around...
+
+            if (this.markerBoard == null) {
+                this.isWithoutCamera = true;
+            }
+
+            initScreen();
+
+            if (isDrawingOnDisplay) {
+                for (BaseDisplay display : this.displays) {
+                    if (display.hasCamera()) {
+                        this.cameraTracking = display.getCamera();
+                    }
+                    this.currentGraphics = display.getGraphics();
+                    setup();
+                    tryInitTracking();
+                }
+            }
+
+            if (isDrawingOnScreen) {
+                this.currentGraphics = screen.getGraphics();
+                setup();
+                tryInitTracking();
+            }
+
+            isInitialized = true;
         }
+//        assert (isInitialized);
+//        if (this.isWithoutCamera || useManualLocation) {
+//            return;
+//        }
+//        checkCorners();
+    }
+
+    private void initScreen() {
+        this.screen = new Screen(parent);
+
+        for (BaseDisplay display : displays) {
+            display.addScreen(screen);
+        }
+
+        if (markerBoard != null) {
+            this.screen.linkTo(markerBoard);
+        }
+
+        // resolution and drawingSize are set in settings() now...
+        this.screen.setScale(resolution);
+        this.screen.setSize(drawingSize);
+    }
+
+    private boolean checkInitErrors() {
         if (parent == null) {
             String message = "This PaperScreen cannot be initialized without "
                     + "the current PApplet, use PapARt or pass it as an arugment "
                     + "to init. ";
             throw new RuntimeException(message);
         }
+        return true;
+    }
 
-        if (this.markerBoard == null) {
-            this.isWithoutCamera = true;
-        }
-//        if (this.markerBoard == null) {
-//            String message = "This PaperScreen cannot be initialized without "
-//                    + "a markerboard. See loadMarkerBoard and setMarkerboard "
-//                    + "methods. ";
-//            throw new RuntimeException(message);
-//        }
-
-        this.parent = parent;
-        DrawUtils.applet = parent; // For Touch -> Check for removal ?
-
-        // register the draw (public, overridable)  & pre (protected) methods. 
-        if (!isRegistered) {
-            this.register();
-        }
-
-        // Create a screen
-        this.screen = new Screen(parent, drawingSize, resolution);
-        // add it to the display
-        display.addScreen(screen);
-
+    private void tryInitTracking() {
         // If there is really a camera tracking. 
+        // There can be multiple camera tracking !!
         if (!isWithoutCamera) {
             // automatic update of the paper screen, regarding the camera. 
-//            screen.setAutoUpdatePos(cameraTracking, markerBoard);
             trackCurrentMarkerBoard();
-
-            // default filtering
-            markerBoard.setDrawingMode(cameraTracking, true, 20);
-            markerBoard.setFiltering(cameraTracking, 30, 4);
+            updateBoardFiltering();
         }
+    }
 
-        isInitialized = true;
+    private void updateBoardFiltering() {
+        if (filteringDistance != 0) {
+            markerBoard.setDrawingMode(cameraTracking, true, filteringDistance);
+        } else {
+            markerBoard.setDrawingMode(cameraTracking, false, 0);
+        }
+        markerBoard.setFiltering(cameraTracking, filteringFreq, filteringCutoff);
+    }
+
+    protected void setDrawingFilter(float distance) {
+        if (distance <= 0) {
+            distance = 0;
+        }
+        this.filteringDistance = distance;
+    }
+
+    protected void setTrackingFilter(float freq, float cutOff) {
+        this.filteringFreq = freq;
+        this.filteringCutoff = cutOff;
     }
 
     private void trackCurrentMarkerBoard() {
@@ -211,106 +260,101 @@ public class PaperScreen {
         this.isRegistered = true;
         parent.registerMethod("pre", this);
         parent.registerMethod("draw", this);
-        display.registerAgain();
+
+        // Do this so that the display is the last rendered. 
+        mainDisplay.registerAgain();
     }
 
     /**
-     * This method must be overloaded in the child class. For example to load
-     * images, 3D models etc...
+     * Do not override anymore Change to drawOnPaper or drawAroundPaper.
+     *
      */
-    protected void setup() {
-        System.out.println("PaperScreen setup. You should not see this unless for debug.");
+    public void draw() {
+        
+        if(!isInitialized)
+            return;
+            
+        Camera mainCamera = cameraTracking;
+
+        if (isDrawingOnScreen) {
+            screen.setDrawing(true);
+            PGraphicsOpenGL g = screen.getGraphics();
+            this.currentGraphics = g;
+            g.beginDraw();
+            g.scale(resolution);
+            this.drawOnPaper();
+            g.endDraw();
+        }
+
+        if (isDrawingOnDisplay) {
+            for (BaseDisplay display : this.displays) {
+
+                if (display.hasCamera()) {
+                    this.cameraTracking = display.getCamera();
+                }
+                PGraphicsOpenGL g = display.beginDrawOnScreen(this.screen);
+                this.currentGraphics = g;
+                this.drawAroundPaper();
+                g.endDraw();
+            }
+        }
+
+        cameraTracking = mainCamera;
     }
 
-    public void pre() {
-        if (!isInitialized) {
-            setup();
-            init();
-        }
-        assert (isInitialized);
+    /**
+     * Method to override.
+     */
+    public void drawOnPaper() {
+        background(0, 100, 200);
+//        System.out.println("drawOnPaper default, you should not see this.");
+    }
 
-        if (this.isWithoutCamera || useManualLocation) {
-            return;
-        }
+    /**
+     * Method to override.
+     */
+    public void drawAroundPaper() {
+//        System.out.println("drawAroundPaper default, you should not see this.");
+    }
 
-        screen.updatePos(cameraTracking, markerBoard);
-        checkCorners();
+    public void setDrawAroundPaper() {
+        this.isDrawingOnScreen = false;
+        this.isDrawingOnDisplay = true;
+    }
+
+    public void setDrawOnPaper() {
+        this.isDrawingOnScreen = true;
+        this.isDrawingOnDisplay = false;
+    }
+
+    public void setDrawStandard() {
+        setDrawOnPaper();
     }
 
     public void useManualLocation(boolean manual) {
         this.useManualLocation = manual;
     }
 
-    /**
-     * Experimental
-     */
-    private void checkCorners() {
-        //        // check if drawing is required... 
-
-        if (!(display instanceof ARDisplay)) {
-            return;
-        }
-
-        ARDisplay arDisplay = (ARDisplay) display;
-
-        PVector[] corners = screen.getCornerPos();
-
-        if (arDisplay.getProjectiveDeviceP() == null) {
-            return;
-        }
-
-        int nbOut = 0;
-        if (arDisplay.hasExtrinsics()) {
-            PMatrix3D extr = arDisplay.getExtrinsics();
-            nbOut = checkCornerExtr(corners, arDisplay, extr);
-        } else {
-            nbOut = checkCorner(corners, arDisplay);
-        }
-
-        if (nbOut >= 3) {
-            screen.setDrawing(false);
-        } else {
-            screen.setDrawing(true);
-        }
-    }
-
-    private int checkCornerExtr(PVector[] corners,
-            ARDisplay arDisplay, PMatrix3D extr) {
-        int nbOut = 0;
-        for (PVector corner : corners) {
-            // Corners are on the camera Point of view. 
-            PVector projC = new PVector();
-            extr.mult(corner, projC);
-            PVector screenCoord = arDisplay.getProjectiveDeviceP().worldToPixelReal(projC);
-            if (screenCoord.x < 0 || screenCoord.x > arDisplay.getWidth()
-                    || screenCoord.y < 0 || screenCoord.y > arDisplay.getHeight()) {
-                nbOut++;
-            }
-        }
-        return nbOut;
-    }
-
-    private int checkCorner(PVector[] corners,
-            ARDisplay arDisplay) {
-        int nbOut = 0;
-        for (PVector corner : corners) {
-            // Corners are on the camera Point of view. 
-            PVector screenCoord = arDisplay.getProjectiveDeviceP().worldToPixelReal(corner);
-            if (screenCoord.x < 0 || screenCoord.x > arDisplay.getWidth()
-                    || screenCoord.y < 0 || screenCoord.y > arDisplay.getHeight()) {
-                nbOut++;
-            }
-        }
-        return nbOut;
-    }
-
     // TODO: check this !
     public PVector getScreenPos() {
 
         if (this.isWithoutCamera) {
-            return screen.getCornerPos()[0];
+            PMatrix3D mat = screen.getExtrinsics();
+            return new PVector(mat.m03, mat.m13, mat.m23);
         } else {
-            return markerBoard.getBoardLocation(cameraTracking, (ARDisplay) display);
+            if (mainDisplay.hasCamera()) {
+                return markerBoard.getBoardLocation(cameraTracking, (ARDisplay) mainDisplay);
+            } else {
+                System.out.println("Could not find the screen Position for the main display.");
+                System.out.println("Looking into secondary displays...");
+                for (BaseDisplay display : displays) {
+                    if (display.hasCamera()) {
+                        return markerBoard.getBoardLocation(cameraTracking, (ARDisplay) display);
+                    }
+                }
+                System.out.println("Could not find where the Screen is...");
+                return new PVector();
+            }
         }
     }
 
@@ -322,6 +366,7 @@ public class PaperScreen {
         pg.endDraw();
     }
 
+    @Deprecated
     public PGraphicsOpenGL beginDraw2D() {
         screen.setDrawing(true);
         PGraphicsOpenGL g = screen.getGraphics();
@@ -332,14 +377,16 @@ public class PaperScreen {
         return g;
     }
 
+    @Deprecated
     public PGraphicsOpenGL beginDraw3D() {
         screen.setDrawing(false);
-        PGraphicsOpenGL g = display.beginDrawOnScreen(this.screen);
+        this.currentGraphics = getDisplay().getGraphics();
+        PGraphicsOpenGL g = getDisplay().beginDrawOnScreen(this.screen);
         this.isDrawingOnScreen = false;
-        this.currentGraphics = g;
         return g;
     }
 
+    @Deprecated
     public PGraphicsOpenGL beginDraw3DProjected() {
         screen.setDrawing(true);
         PGraphicsOpenGL g = screen.getGraphics();
@@ -351,22 +398,7 @@ public class PaperScreen {
     }
 
     public boolean isDraw2D() {
-        return currentGraphics != this.display.getGraphics();
-    }
-
-    /**
-     * Method to override in your class. Default implementation is a blue
-     * rectangle.
-     */
-    public void draw() {
-        screen.setDrawing(true);
-        beginDraw2D();
-        background(0, 100, 200);
-        endDraw();
-    }
-
-    public void endDraw() {
-        currentGraphics.endDraw();
+        return this.isDrawingOnScreen;
     }
 
     /**
@@ -445,7 +477,7 @@ public class PaperScreen {
     }
 
     public void setMainLocation(PMatrix3D location) {
-        screen.setMainLocation(location);
+        screen.setMainLocation(location, cameraTracking);
     }
 
     public void setLocation(PVector v) {
@@ -465,18 +497,18 @@ public class PaperScreen {
     }
 
     public PVector getLocationVector() {
-        PMatrix3D p = screen.getLocation();
+        PMatrix3D p = screen.getLocation(cameraTracking);
         return new PVector(p.m03, p.m13, p.m23);
     }
 
     public PMatrix3D getLocation() {
-        return this.screen.getLocation();
+        return this.screen.getLocation(cameraTracking);
     }
 
     public void saveLocationTo(String filename) {
         HomographyCalibration.saveMatTo(
                 Papart.getPapart().getApplet(),
-                screen.getLocation(),
+                screen.getLocation(cameraTracking),
                 filename);
     }
 
@@ -484,10 +516,10 @@ public class PaperScreen {
         this.useManualLocation(true);
         setMainLocation(HomographyCalibration.getMatFrom(Papart.getPapart().getApplet(), filename));
     }
-    
-    public ObjectFinder getObjectTracking(){
-        if(markerBoard.useJavaCVFinder()){
-        return markerBoard.getObjectTracking(cameraTracking);
+
+    public ObjectFinder getObjectTracking() {
+        if (markerBoard.useJavaCVFinder()) {
+            return markerBoard.getObjectTracking(cameraTracking);
         } else {
             System.err.println("getObjectTracking is only accessible with image-based tracking.");
             return null;
@@ -507,7 +539,11 @@ public class PaperScreen {
     }
 
     public BaseDisplay getDisplay() {
-        return display;
+        return displays.get(0);
+    }
+
+    public ArrayList<BaseDisplay> getDisplays() {
+        return displays;
     }
 
     public float getResolution() {
@@ -522,8 +558,109 @@ public class PaperScreen {
 
     }
 
-    //////// Automatic generation of delegated methods...
+    /**
+     * Load a Markerboard with the given configuration file and size. The
+     * configuration file can end with ".cfg" for an ARToolKitPlus tracking
+     * technique. (faster) The configuration file can end with ".jpg" or ".png"
+     * to track "images" using SURF features. (slower)
+     *
+     * @param configFile
+     * @param width width of the markerboard in millimeters.
+     * @param height height of the markerboard in millimeters.
+     */
+    public void loadMarkerBoard(String configFile, float width, float height) {
+        this.markerBoard = new MarkerBoard(configFile, width, height);
+        trackCurrentMarkerBoard();
+    }
 
+    /**
+     * Assign an existing markerboard to this PaperScreen.
+     *
+     * @param markerboard
+     */
+    public final void setMarkerBoard(MarkerBoard markerboard) {
+        this.markerBoard = markerboard;
+        trackCurrentMarkerBoard();
+    }
+
+    /**
+     * Sets the drawing size in millimeters. To get the resolution you must
+     * multiply the drawing size by the resolution.
+     *
+     * @see setResolution
+     * @param width
+     * @param height
+     */
+    public final void setDrawingSize(float width, float height) {
+        this.drawingSize.x = width;
+        this.drawingSize.y = height;
+    }
+
+//    /**
+//     * Experimental.
+//     */
+//    @Deprecated
+//    private void checkCorners() {
+//        //        // check if drawing is required... 
+//
+//        if (!(display instanceof ARDisplay)) {
+//            return;
+//        }
+//
+//        ARDisplay arDisplay = (ARDisplay) display;
+//
+//        PVector[] corners = screen.getCornerPos();
+//
+//        if (arDisplay.getProjectiveDeviceP() == null) {
+//            return;
+//        }
+//
+//        int nbOut = 0;
+//        if (arDisplay.hasExtrinsics()) {
+//            PMatrix3D extr = arDisplay.getExtrinsics();
+//            nbOut = checkCornerExtr(corners, arDisplay, extr);
+//        } else {
+//            nbOut = checkCorner(corners, arDisplay);
+//        }
+//
+//        if (nbOut >= 3) {
+//            screen.setDrawing(false);
+//        } else {
+//            screen.setDrawing(true);
+//        }
+//    }
+//    private int checkCornerExtr(PVector[] corners,
+//            ARDisplay arDisplay, PMatrix3D extr) {
+//        int nbOut = 0;
+//        for (PVector corner : corners) {
+//            // Corners are on the camera Point of view. 
+//            PVector projC = new PVector();
+//            extr.mult(corner, projC);
+//            PVector screenCoord = arDisplay.getProjectiveDeviceP().worldToPixelReal(projC);
+//            if (screenCoord.x < 0 || screenCoord.x > arDisplay.getWidth()
+//                    || screenCoord.y < 0 || screenCoord.y > arDisplay.getHeight()) {
+//                nbOut++;
+//            }
+//        }
+//        return nbOut;
+//    }
+//
+//    private int checkCorner(PVector[] corners,
+//            ARDisplay arDisplay) {
+//        int nbOut = 0;
+//        for (PVector corner : corners) {
+//            // Corners are on the camera Point of view. 
+//            PVector screenCoord = arDisplay.getProjectiveDeviceP().worldToPixelReal(corner);
+//            if (screenCoord.x < 0 || screenCoord.x > arDisplay.getWidth()
+//                    || screenCoord.y < 0 || screenCoord.y > arDisplay.getHeight()) {
+//                nbOut++;
+//            }
+//        }
+//        return nbOut;
+//    }
+    /////////////////////////////////
+    //////// Automatic generation of delegated methods...
+    /////////////////////////////
     public void setPrimary(boolean primary) {
         currentGraphics.setPrimary(primary);
     }
@@ -559,7 +696,6 @@ public class PaperScreen {
 //    public void endDraw() {
 //        currentGraphics.endDraw();
 //    }
-
     public PGL beginPGL() {
         return currentGraphics.beginPGL();
     }
@@ -1795,7 +1931,5 @@ public class PaperScreen {
     public void blend(PImage src, int sx, int sy, int sw, int sh, int dx, int dy, int dw, int dh, int mode) {
         currentGraphics.blend(src, sx, sy, sw, sh, dx, dy, dw, dh, mode);
     }
-    
-    
-    
+
 }

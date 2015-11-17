@@ -278,7 +278,7 @@ public class PointCloud {
     }
     protected static boolean BIG_ENDIAN = ByteOrder.nativeOrder() == ByteOrder.BIG_ENDIAN;
 
-    protected static int javaToNativeARGB(int color) {
+    public static int javaToNativeARGB(int color) {
         if (BIG_ENDIAN) { // ARGB to RGBA
             return ((color >> 24) & 0xFF) | ((color << 8) & 0xFFFFFF00);
         } else { // ARGB to ABGR

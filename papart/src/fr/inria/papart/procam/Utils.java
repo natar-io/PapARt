@@ -16,7 +16,6 @@ import fr.inria.papart.procam.display.ARDisplay;
 import org.bytedeco.javacpp.opencv_imgproc.*;
 
 import org.bytedeco.javacv.CameraDevice;
-import org.bytedeco.javacv.CameraDevice.Settings;
 import org.bytedeco.javacv.ProjectorDevice;
 import org.bytedeco.javacpp.opencv_imgproc;
 import static org.bytedeco.javacpp.opencv_core.*;
@@ -35,6 +34,7 @@ import static processing.core.PConstants.RGB;
 import processing.opengl.Texture;
 import toxi.geom.Matrix4x4;
 import toxi.geom.Vec3D;
+import java.io.*;
 
 /**
  *
@@ -44,6 +44,64 @@ public class Utils {
 
     static public final String LibraryName = "PapARt";
 
+    static public Process runExample(String exampleName, boolean silent) {
+
+        try {
+            StringBuilder commandLine = new StringBuilder();
+            String papartFolder = getPapartFolder();
+            String sketchFolder = "/examples/" + exampleName + "/";
+
+            // On linux only 
+            commandLine.append("nohup ");
+
+            // TODO: find processing-java even when not installed !
+            // Or make an easy install...
+            commandLine.append("processing-java ");
+
+            commandLine.append("--sketch=")
+                    .append(papartFolder)
+                    .append(sketchFolder)
+                    .append(" --output=")
+                    .append(papartFolder)
+                    .append(sketchFolder)
+                    .append("build")
+                    .append(" --force --run");
+
+//        commandLine.append("\"");
+// processing-java --sketch=/home/jiii/papart/sketches/papartExamples/Kinect/MultiTouchKinect/ --output=/home/jiii/papart/sketches/papartExamples/Kinect/MultiTouchKinect/build --force --run
+//            println("Starting... \n" + commandLine.toString());
+            // TODO: Alternative on Windows... when /bin/sh is not installed. 
+            Process p = Runtime.getRuntime().exec(commandLine.toString());
+//            Process p = Runtime.getRuntime().exec(new String[]{"/bin/bash", "-c", commandLine.toString()});
+//            Process p = Runtime.getRuntime().exec(new String[]{"nohup", commandLine.toString()});
+
+            if (!silent) {
+                String line;
+                BufferedReader bri = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                BufferedReader bre = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+                while ((line = bri.readLine()) != null) {
+                    System.out.println(line);
+                }
+                bri.close();
+                while ((line = bre.readLine()) != null) {
+                    System.out.println(line);
+                }
+                bre.close();
+            }
+
+            return p;
+            // p.waitFor();
+        } catch (Exception e) {
+            System.out.println("Could not start the Papart example : "
+                    + exampleName
+                    + "\n" + e);
+        };
+        return null;
+
+    }
+// sketchbook
+
+// processing-java --sketch=/home/jiii/papart/sketches/papartExamples/Kinect/MultiTouchKinect/ --output=/home/jiii/papart/sketches/papartExamples/Kinect/MultiTouchKinect/build --force --run
     static public String getSketchbookFolder() {
 
         String sketchbook = java.lang.System.getenv("SKETCHBOOK");
@@ -640,74 +698,27 @@ public class Utils {
         }
         ret.updatePixels();
     }
-    //                                   int int  12 double  4 double
-    static final int SIZE_OF_PARAM_SET = 4 + 4 + (3 * 4 * 8) + (4 * 8);
 
-    static public void convertARParam(PApplet pa, String inputYAML, String outputDAT, int w, int h) throws Exception {
-
-        CameraDevice cam = null;
-
-        CameraDevice[] c = CameraDevice.read(inputYAML);
-        if (c.length > 0) {
-            cam = c[0];
-        }
-
-        double[] proj = cam.cameraMatrix.get();
-        double[] distort = cam.distortionCoeffs.get();
-
-        OutputStream os = pa.createOutput(outputDAT);
-
-        byte[] buf = new byte[SIZE_OF_PARAM_SET];
-        ByteBuffer bb = ByteBuffer.wrap(buf);
-        bb.order(ByteOrder.BIG_ENDIAN);
-
-        bb.putInt(w);
-        bb.putInt(h);
-
-        //Projection
-        int k = 0;
-        for (int j = 0; j < 3; j++) {
-            for (int i = 0; i < 3; i++) {
-                bb.putDouble(proj[k++]);
-            }
-            bb.putDouble(0);
-        }
-
-        bb.putDouble(proj[2]);
-        bb.putDouble(proj[5]);
-        bb.putDouble(100);
-        bb.putDouble(1d);
-
-        os.write(buf);
-        os.flush();
-        os.close();
-
-        pa.println("Conversion done !");
-        return;
-    }
-    
     static public void convertARParam2(PApplet pa, String inputYAML, String outputDAT) throws Exception {
 
         CameraDevice cam = null;
 
         // Hack 
-        if(inputYAML.endsWith(".xml")){
+        if (inputYAML.endsWith(".xml")) {
             convertARParamXML(pa, inputYAML, outputDAT);
             return;
         }
-            
+
         CameraDevice[] c = CameraDevice.read(inputYAML);
         if (c.length > 0) {
             cam = c[0];
         }
-        Settings camSettings = (org.bytedeco.javacv.CameraDevice.Settings) cam.getSettings();
+        CameraDevice.Settings camSettings = (org.bytedeco.javacv.CameraDevice.Settings) cam.getSettings();
         int w = camSettings.getImageWidth();
         int h = camSettings.getImageHeight();
 
         double[] proj = cam.cameraMatrix.get();
         double[] distort = cam.distortionCoeffs.get();
-
-        OutputStream os = pa.createOutput(outputDAT);
 
         PrintWriter pw = pa.createWriter(outputDAT);
 
@@ -727,6 +738,66 @@ public class Utils {
         sb.append(proj[2]).append(" ").append(proj[5])
                 .append(" ").append(proj[0]).
                 append(" ").append(proj[4]).append(" ");
+
+        // alpha_c  // skew factor  
+        sb.append("0 ").append(" ");
+
+        // alpha_c ?  
+//        sb.append("0 ");
+        // kc(1 - x)  -> 6 values
+        for (int i = 0; i < distort.length; i++) {
+            sb.append(distort[i]).append(" ");
+        }
+        for (int i = distort.length; i < 6; i++) {
+            sb.append("0 ");
+        }
+
+        // undist iterations
+        sb.append("10\n");
+
+        pw.print(sb);
+        pw.flush();
+        pw.close();
+    }
+
+    static public void convertProjParam(PApplet pa, String inputYAML, String outputDAT) throws Exception {
+
+        ProjectorDevice cam = null;
+
+        ProjectorDevice[] c = ProjectorDevice.read(inputYAML);
+        if (c.length > 0) {
+            cam = c[0];
+        }
+        ProjectorDevice.Settings projSettings = (org.bytedeco.javacv.ProjectorDevice.Settings) cam.getSettings();
+        int w = projSettings.getImageWidth();
+        int h = projSettings.getImageHeight();
+
+        double[] mat = cam.cameraMatrix.get();
+        double[] distort = cam.distortionCoeffs.get();
+
+        OutputStream os = pa.createOutput(outputDAT);
+
+        PrintWriter pw = pa.createWriter(outputDAT);
+
+        StringBuffer sb = new StringBuffer();
+
+//        byte[] buf = new byte[SIZE_OF_PARAM_SET];
+//        ByteBuffer bb = ByteBuffer.wrap(buf);
+//        bb.order(ByteOrder.BIG_ENDIAN);
+//        bb.putInt(w);
+//        bb.putInt(h);
+        // From ARToolkitPlus...
+//http://www.vision.caltech.edu/bouguetj/calib_doc/htmls/parameters.html
+        sb.append("ARToolKitPlus_CamCal_Rev02\n");
+        sb.append(w).append(" ").append(h).append(" ");
+
+        // cx cy  fx fy  
+        sb.append(mat[2]).append(" ").append(mat[5])
+                .append(" ").append(mat[0]).
+                append(" ").append(mat[4]).append(" ");
+
+        // alpha_c  // skew factor  
+        sb.append("0 ").append(" ");
 
         // alpha_c ?  
 //        sb.append("0 ");
@@ -748,6 +819,7 @@ public class Utils {
 
     static public void convertARParamXML(PApplet pa, String fileName, String outputDAT) throws Exception {
 
+        System.out.println("Convert AR Param XML");
         CameraDevice cam = null;
 
         ProjectiveDeviceP pdp = ProjectiveDeviceP.loadCameraDevice(pa, fileName);
@@ -772,7 +844,7 @@ public class Utils {
 
         // alpha_c  // skew factor  
         sb.append("0 ").append(" ");
-        
+
         // kc(1 - x)  -> 6 values
         if (pdp.handleDistorsions()) {
             double[] distort = ((CameraDevice) pdp.getDevice()).distortionCoeffs.get();
@@ -798,132 +870,4 @@ public class Utils {
         pw.close();
     }
 
-    static public void convertProjParam(PApplet pa, String inputYAML, String outputDAT, int w, int h) throws Exception {
-
-        ProjectorDevice proj = null;
-
-        ProjectorDevice[] p = ProjectorDevice.read(inputYAML);
-        if (p.length > 0) {
-            proj = p[0];
-        }
-
-        double[] projM = proj.cameraMatrix.get();
-        double[] distort = proj.distortionCoeffs.get();
-
-        OutputStream os = pa.createOutput(outputDAT);
-
-        byte[] buf = new byte[SIZE_OF_PARAM_SET];
-        ByteBuffer bb = ByteBuffer.wrap(buf);
-        bb.order(ByteOrder.BIG_ENDIAN);
-
-        bb.putInt(w);
-        bb.putInt(h);
-
-        //projection
-        int k = 0;
-        for (int j = 0; j < 3; j++) {
-            for (int i = 0; i < 3; i++) {
-                bb.putDouble(projM[k++]);
-            }
-            bb.putDouble(0);
-        }
-
-// ARtoolkit distortion
-        bb.putDouble(projM[2]);
-        bb.putDouble(projM[5]);
-        bb.putDouble(0);
-        bb.putDouble(1d);
-
-        os.write(buf);
-        os.flush();
-        os.close();
-
-        pa.println("Conversion done !");
-        return;
-    }
-//     static public void convertARParam(PApplet pa, String inputYAML, String outputDAT, int w, int h) throws Exception {
-//
-//        CameraDevice cam = null;
-//
-//        CameraDevice[] c = CameraDevice.read(inputYAML);
-//        if (c.length > 0) {
-//            cam = c[0];
-//        }
-//
-//        double[] proj = cam.cameraMatrix.get();
-//        double[] distort = cam.distortionCoeffs.get();
-//
-//        OutputStream os = pa.createOutput(outputDAT);
-//
-//        byte[] buf = new byte[SIZE_OF_PARAM_SET];
-//        ByteBuffer bb = ByteBuffer.wrap(buf);
-//        bb.order(ByteOrder.BIG_ENDIAN);
-//
-//        bb.putInt(w);
-//        bb.putInt(h);
-//
-//        //Projection
-//        int k = 0;
-//        for (int j = 0; j < 3; j++) {
-//            for (int i = 0; i < 3; i++) {
-//                bb.putDouble(proj[k++]);
-//            }
-//            bb.putDouble(0);
-//        }
-//
-//        //distortion
-//        for (int i = 0; i < 4; i++) {
-//            bb.putDouble(distort[i]);
-//        }
-//
-//        os.write(buf);
-//        os.flush();
-//        os.close();
-//
-//        pa.println("Conversion done !");
-//        return;
-//    }
-//
-//    static public void convertProjParam(PApplet pa, String inputYAML, String outputDAT, int w, int h) throws Exception {
-//
-//        ProjectorDevice proj = null;
-//
-//        ProjectorDevice[] p = ProjectorDevice.read(inputYAML);
-//        if (p.length > 0) {
-//            proj = p[0];
-//        }
-//
-//        double[] projM = proj.cameraMatrix.get();
-//        double[] distort = proj.distortionCoeffs.get();
-//
-//        OutputStream os = pa.createOutput(outputDAT);
-//
-//        byte[] buf = new byte[SIZE_OF_PARAM_SET];
-//        ByteBuffer bb = ByteBuffer.wrap(buf);
-//        bb.order(ByteOrder.BIG_ENDIAN);
-//
-//        bb.putInt(w);
-//        bb.putInt(h);
-//
-//        //projection
-//        int k = 0;
-//        for (int j = 0; j < 3; j++) {
-//            for (int i = 0; i < 3; i++) {
-//                bb.putDouble(projM[k++]);
-//            }
-//            bb.putDouble(0);
-//        }
-//
-//        //distortion
-//        for (int i = 0; i < 4; i++) {
-//            bb.putDouble(distort[i]);
-//        }
-//
-//        os.write(buf);
-//        os.flush();
-//        os.close();
-//
-//        pa.println("Conversion done !");
-//        return;
-//    }
 }

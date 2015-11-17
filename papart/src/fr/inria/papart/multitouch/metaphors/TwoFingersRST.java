@@ -9,6 +9,8 @@ package fr.inria.papart.multitouch.metaphors;
 
 import fr.inria.papart.multitouch.Touch;
 import fr.inria.papart.multitouch.TouchList;
+import fr.inria.papart.multitouch.TouchPoint;
+import fr.inria.papart.multitouch.TouchPointEventHandler;
 import static processing.core.PApplet.acos;
 import processing.core.PVector;
 
@@ -18,19 +20,38 @@ import processing.core.PVector;
  */
 public class TwoFingersRST extends RSTTransform {
 
+    protected Touch[] touchs = new Touch[2];
+    protected TouchList touchList;
+
+    class TouchHandler implements TouchPointEventHandler {
+
+        public Touch touch;
+        public int id;
+
+        public TouchHandler(int id) {
+            this.id = id;
+        }
+
+        @Override
+        public void delete() {
+//            System.out.println("Touch " + id + " delete()" + touchs[id]);
+            touchs[id] = Touch.INVALID;
+        }
+
+    }
+
     public TwoFingersRST(PVector size) {
         super(size);
+        touchs[0] = Touch.INVALID;
+        touchs[1] = Touch.INVALID;
     }
 
     @Override
-    public void update(TouchList touchList, int currentTime) {
-        TouchList touchList2D = touchList.get2DTouchs();
-        TouchList oldList = touchList2D.getOldOnes(currentTime);
-        if (oldList.size() >= 2) {
-            twoFingerMovement(oldList);
-        } else {
-            emptyUpdate();
-        }
+    public void update(TouchList globalList, int currentTime) {
+        TouchList touchList2D = globalList.get2DTouchs();
+
+        touchList = touchList2D.getOldOnes(currentTime);
+        twoFingerMovement();
     }
 
     private int minY = 0;
@@ -43,32 +64,91 @@ public class TwoFingersRST extends RSTTransform {
         return touch.position.y > minY;
     }
 
-    protected void twoFingerMovement(TouchList touchList2D) {
+    private boolean getValidTouchs() {
 
-        assert (touchList2D.size() >= 2);
-        Touch touch0 = touchList2D.get(0);
-        Touch touch1 = touchList2D.get(1);
+        for (int i = 0; i < touchs.length; i++) {
 
-        if (!validBounds(touch0) || !validBounds(touch1)) {
+            if (touchs[i] != Touch.INVALID) {
+                if (isInValidTouch(touchs[i])) {
+                    touchs[i].touchPoint.attachedObject = null;
+//                    System.out.println("Touch " + i + " not valid anymore." + touchs[i]);
+                    touchs[i] = Touch.INVALID;
+                }
+            }
+
+            if (touchs[i] == Touch.INVALID) {
+                touchs[i] = getNewTouch(i);
+                if (touchs[i] != Touch.INVALID) {
+//                    System.out.println("Touch " + i + " is new !." + touchs[i]);
+                }
+            }
+        }
+
+        if (touchs[0] == Touch.INVALID || touchs[1] == Touch.INVALID) {
+            return false;
+        }
+
+//        System.out.println("touch speed " + touchs[0].speed.mag());
+
+        if (touchs[0].speed.mag() > 10) {
+//            System.out.println("Jump filtered !");
+            return false;
+        }
+        if (touchs[1].speed.mag() > 10) {
+//             System.out.println("Jump filtered !");
+            return false;
+        }
+
+        // check other...
+        return true;
+    }
+
+    private boolean isInValidTouch(Touch t) {
+        return t.isGhost || t.isObject || !validBounds(t);
+    }
+
+    private Touch getNewTouch(int id) {
+        for (Touch touch : touchList) {
+
+            if (!validBounds(touch)
+                    || touch.touchPoint.attachedObject != null
+                    || touch.isGhost) {
+                continue;
+            }
+
+            // touch without "attachment"
+            if (touch.touchPoint.attachedObject == null) {
+                // tag it.
+                touch.touchPoint.attachedObject = new TouchHandler(id);
+                return touch;
+            }
+        }
+        return Touch.INVALID;
+    }
+
+    protected void twoFingerMovement() {
+
+        if (!getValidTouchs()) {
             emptyUpdate();
             return;
         }
 
+//        System.out.println("Full Update");
         // Every values needs to be divided by 2... for some reason.
-        float rot = computeRotation(touch0, touch1);
+        float rot = computeRotation(touchs[0], touchs[1]);
         if (!Float.isNaN(rot)) // &&  abs(rot) > PI / 90f)
         {
             addRotation(rot / 2f);
         }
 
-        float scale = computeScale(touch0, touch1);
+        float scale = computeScale(touchs[0], touchs[1]);
         if (!Float.isNaN(scale)) //  &&  abs(scale) > 0.8)
         {
             float halfScale = (scale - 1f) / 2f + 1;
             multScale(halfScale);
         }
 
-        PVector translate = computeTranslate(touch0, touch1);
+        PVector translate = computeTranslate(touchs[0], touchs[1]);
         translate.mult(0.5f);
         addTranslation(translate);
     }
@@ -93,7 +173,7 @@ public class TwoFingersRST extends RSTTransform {
         PVector distT0 = touch0.pposition.get();
         distT0.sub(touch1.pposition);
 
-        PVector distT1 = touch0.position.get();
+        PVector distT1 = touchs[0].position.get();
         distT1.sub(touch1.position);
 
         return distT1.mag() / distT0.mag();

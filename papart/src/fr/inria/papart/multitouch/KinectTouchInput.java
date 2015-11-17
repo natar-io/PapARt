@@ -8,7 +8,7 @@
 package fr.inria.papart.multitouch;
 
 import fr.inria.papart.calibration.PlanarTouchCalibration;
-import fr.inria.papart.depthcam.KinectDepthData;
+import fr.inria.papart.depthcam.devices.KinectDepthData;
 import fr.inria.papart.depthcam.DepthDataElementKinect;
 import fr.inria.papart.depthcam.DepthPoint;
 import org.bytedeco.javacpp.opencv_core.IplImage;
@@ -17,8 +17,8 @@ import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.procam.Screen;
 import fr.inria.papart.depthcam.DepthAnalysis;
 import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
-import fr.inria.papart.depthcam.KinectDepthAnalysis;
-import fr.inria.papart.procam.camera.Camera;
+import fr.inria.papart.depthcam.devices.KinectDepthAnalysis;
+import fr.inria.papart.depthcam.devices.KinectDevice;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.procam.camera.CameraOpenKinect;
@@ -50,9 +50,9 @@ public class KinectTouchInput extends TouchInput {
     private final Semaphore depthDataSem = new Semaphore(1);
 
     // List of TouchPoints, given to the user
-    private final CameraOpenKinect kinectCamera;
+    private final KinectDevice kinectDevice;
 
-    private final PlaneAndProjectionCalibration calibration;
+    private PlaneAndProjectionCalibration planeAndProjCalibration;
 
     // List of TouchPoints, given to the user
     private final ArrayList<TouchPoint> touchPoints2D = new ArrayList<>();
@@ -61,15 +61,19 @@ public class KinectTouchInput extends TouchInput {
     private final TouchDetectionSimple3D touchDetection3D;
 
     public KinectTouchInput(PApplet applet,
-            CameraOpenKinect kinectCamera,
+            KinectDevice kinectDevice,
             KinectDepthAnalysis depthAnalysis,
             PlaneAndProjectionCalibration calibration) {
         this.parent = applet;
         this.depthAnalysis = depthAnalysis;
-        this.kinectCamera = kinectCamera;
-        this.calibration = calibration;
-        this.touchDetection2D = new TouchDetectionSimple2D(depthAnalysis.getSize());
-        this.touchDetection3D = new TouchDetectionSimple3D(depthAnalysis.getSize());
+        this.kinectDevice = kinectDevice;
+        this.planeAndProjCalibration = calibration;
+        this.touchDetection2D = new TouchDetectionSimple2D(depthAnalysis.getDepthSize());
+        this.touchDetection3D = new TouchDetectionSimple3D(depthAnalysis.getDepthSize());
+    }
+    
+    public void setPlaneAndProjCalibration(PlaneAndProjectionCalibration papc){
+        this.planeAndProjCalibration = papc;
     }
 
     public void setTouchDetectionCalibration(PlanarTouchCalibration touchCalib) {
@@ -83,10 +87,10 @@ public class KinectTouchInput extends TouchInput {
     @Override
     public void update() {
         try {
-            IplImage depthImage = kinectCamera.getDepthCamera().getIplImage();
-            IplImage colImage = kinectCamera.getIplImage();
-            depthDataSem.acquire();
+            IplImage depthImage = kinectDevice.getCameraDepth().getIplImage();
+            IplImage colImage = kinectDevice.getCameraRGB().getIplImage();
 
+            depthDataSem.acquire();
             if (colImage == null || depthImage == null) {
                 return;
             }
@@ -94,16 +98,16 @@ public class KinectTouchInput extends TouchInput {
             touch2DPrecision = touchDetection2D.getPrecision();
             touch3DPrecision = touchDetection3D.getPrecision();
             if (touch2DPrecision > 0 && touch3DPrecision > 0) {
-                depthAnalysis.updateMT(depthImage, colImage, calibration, touch2DPrecision, touch3DPrecision);
+                depthAnalysis.updateMT(depthImage, colImage, planeAndProjCalibration, touch2DPrecision, touch3DPrecision);
                 findAndTrack2D();
                 findAndTrack3D();
             } else {
                 if (touch2DPrecision > 0) {
-                    depthAnalysis.updateMT2D(depthImage, colImage, calibration, touch2DPrecision);
+                    depthAnalysis.updateMT2D(depthImage, colImage, planeAndProjCalibration, touch2DPrecision);
                     findAndTrack2D();
                 }
                 if (touch3DPrecision > 0) {
-                    depthAnalysis.updateMT3D(depthImage, colImage, calibration, touch3DPrecision);
+                    depthAnalysis.updateMT3D(depthImage, colImage, planeAndProjCalibration, touch3DPrecision);
                     findAndTrack3D();
                 }
             }
@@ -162,12 +166,12 @@ public class KinectTouchInput extends TouchInput {
     }
 
     // TODO: Raw Depth is for Kinect Only, find a cleaner solution.
-    private ProjectiveDeviceP pdp;
+//    private ProjectiveDeviceP pdp;
     private boolean useRawDepth = false;
 
-    public void useRawDepth(Camera camera) {
+    public void useRawDepth() {
         this.useRawDepth = true;
-        this.pdp = camera.getProjectiveDevice();
+//        this.pdp = camera.getProjectiveDevice();
     }
 
     private boolean projectPositionAndSpeed(Screen screen,
@@ -318,7 +322,7 @@ public class KinectTouchInput extends TouchInput {
             paperScreenCoord = new PVector();
             PVector pKinectP = new PVector(pKinect.x, pKinect.y, pKinect.z);
 
-            PMatrix3D transfo = screen.getLocation();
+            PMatrix3D transfo = screen.getLocation(display.getCamera());
             transfo.invert();
             transfo.mult(pKinectP, paperScreenCoord);
 
@@ -361,7 +365,7 @@ public class KinectTouchInput extends TouchInput {
         ByteBuffer cBuff = colorImage.getByteBuffer();
 
         for (TouchPoint tp : touchPointList) {
-            int offset = 3 * depthAnalysis.findColorOffset(tp.getPositionKinect());
+            int offset = 3 * depthAnalysis.kinectDevice().findColorOffset(tp.getPositionKinect());
 
             tp.setColor((255 & 0xFF) << 24
                     | (cBuff.get(offset + 2) & 0xFF) << 16
@@ -406,10 +410,10 @@ public class KinectTouchInput extends TouchInput {
     }
 
     public PlaneAndProjectionCalibration getCalibration() {
-        return calibration;
+        return planeAndProjCalibration;
     }
 
-    public boolean useRawDepth() {
+    public boolean isUseRawDepth() {
         return useRawDepth;
     }
 

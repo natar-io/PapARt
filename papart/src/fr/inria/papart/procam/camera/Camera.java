@@ -44,12 +44,12 @@ public abstract class Camera extends Node implements PConstants {
 
     public enum Type {
 
-        OPENCV, PROCESSING, OPEN_KINECT, FLY_CAPTURE
+        OPENCV, OPENCV_DEPTH, PROCESSING, OPEN_KINECT, FLY_CAPTURE, KINECT2_RGB, KINECT2_IR, FAKE
     }
 
     public enum PixelFormat {
 
-        RGB, BGR, ARGB, RGBA, GRAY, DEPTH_KINECT_MM
+        RGB, BGR, ARGB, RGBA, GRAY, DEPTH_KINECT_MM, DEPTH_KINECT_RAW
     }
 
     protected PixelFormat format;
@@ -65,10 +65,10 @@ public abstract class Camera extends Node implements PConstants {
     private boolean isClosing = false;
     protected boolean isConnected = false;
 
-    private boolean undistort = false;
+    protected boolean undistort = false;
 
     // Properties files
-    private String calibrationFile = null;
+    protected String calibrationFile = null;
 
     // Properties (instanciated)
     protected ProjectiveDeviceP pdp = null;
@@ -88,6 +88,11 @@ public abstract class Camera extends Node implements PConstants {
 
     abstract public void start();
 
+    @Override
+    public String toString(){
+        return "Camera, res " + width() + "x"+ height() + " calibration " + this.calibrationFile ;
+    }
+    
     public PImage getImage() {
         return getPImage();
     }
@@ -126,7 +131,7 @@ public abstract class Camera extends Node implements PConstants {
 
     public PImage getPImageCopy() {
         PImage out = parent.createImage(this.width, this.height, RGB);
-        Utils.IplImageToPImage(currentImage, out);
+        Utils.IplImageToPImage(currentImage, false, out);
         return out;
     }
 
@@ -216,6 +221,7 @@ public abstract class Camera extends Node implements PConstants {
         // Marker Detection and view
         this.calibrationARToolkit = calibrationARToolkit;
         this.sheets = Collections.synchronizedList(new ArrayList<MarkerBoard>());
+        System.out.println("Init MARKER DETECTION " + this + " " + this.sheets);
     }
 
     public String getCalibrationARToolkit() {
@@ -234,9 +240,10 @@ public abstract class Camera extends Node implements PConstants {
             this.sheets.add(sheet);
             sheetsSemaphore.release();
         } catch (InterruptedException ex) {
-            Logger.getLogger(Camera.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("Interrupted !"); 
+           Logger.getLogger(Camera.class.getName()).log(Level.SEVERE, null, ex);
         } catch (NullPointerException e) {
-            throw new RuntimeException("Marker detection not initialized.");
+            throw new RuntimeException("Marker detection not initialized. " + e);
         }
 
     }
@@ -344,7 +351,8 @@ public abstract class Camera extends Node implements PConstants {
     protected boolean isPixelFormatGray() {
         PixelFormat pixelFormat = getPixelFormat();
         return pixelFormat == PixelFormat.GRAY
-                || pixelFormat == PixelFormat.DEPTH_KINECT_MM;
+                || pixelFormat == PixelFormat.DEPTH_KINECT_MM
+                || pixelFormat == PixelFormat.DEPTH_KINECT_RAW;
     }
 
     protected boolean isPixelFormatColor() {
@@ -420,6 +428,7 @@ public abstract class Camera extends Node implements PConstants {
             String calibrationARtoolkit) {
         convertARParams(parent, calibrationFile, calibrationARtoolkit, 0, 0);
     }
+    
 
     static public void convertARParams(PApplet parent, String calibrationFile,
             String calibrationARtoolkit, int width, int height) {

@@ -7,6 +7,7 @@
  */
 package fr.inria.papart.procam.display;
 
+import fr.inria.papart.calibration.PlaneCalibration;
 import fr.inria.papart.drawingapp.DrawUtils;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.procam.camera.Camera;
@@ -48,11 +49,22 @@ public class ProjectorDisplay extends ARDisplay {
 
     @Override
     public void draw() {
+
+        if (isCalibrationMode) {
+            projectCornersImage();
+        }
+
         drawScreensOver();
         parent.noStroke();
         DrawUtils.drawImage((PGraphicsOpenGL) parent.g,
                 this.render(),
                 0, 0, this.frameWidth, this.frameHeight);
+    }
+
+    private boolean isCalibrationMode = false;
+
+    public void setCalibrationMode(boolean isCalibration) {
+        this.isCalibrationMode = isCalibration;
     }
 
     public PGraphicsOpenGL beginDrawOnBoard(Camera camera, MarkerBoard board) {
@@ -81,13 +93,6 @@ public class ProjectorDisplay extends ARDisplay {
         this.endDraw();
     }
 
-    public void drawScreensLegacy() {
-        this.beginDraw();
-        this.graphics.clear();
-        drawScreensProjectionLegacy();
-        this.endDraw();
-    }
-
     @Override
     public void drawScreensOver() {
         this.beginDraw();
@@ -100,28 +105,6 @@ public class ProjectorDisplay extends ARDisplay {
         this.graphics.applyMatrix(getExtrinsics());
 
         super.renderScreens();
-    }
-
-    private void drawScreensProjectionLegacy() {
-
-        // Place the projector to his projection respective to the origin (camera here)
-        this.graphics.applyMatrix(getExtrinsics());
-
-        for (Screen screen : screens) {
-            if (!screen.isDrawing()) {
-                continue;
-            }
-            this.graphics.pushMatrix();
-
-            // Goto to the screen position
-//            this.graphics.modelview.apply(screen.getPos());
-            this.graphics.applyMatrix(screen.getLocation());
-            // Draw the screen image
-
-            this.graphics.image(screen.getTexture(), 0, 0, screen.getSize().x, screen.getSize().y);
-
-            this.graphics.popMatrix();
-        }
     }
 
     protected ReadonlyVec3D projectPointer3DVec3D(Screen screen, float px, float py) {
@@ -206,6 +189,93 @@ public class ProjectorDisplay extends ARDisplay {
 //        System.out.println("Diff " + diff);
 //        out3.y = 1 - out3.y;
         return out;
+    }
+
+    /**
+     * Computes the 3D coordinates of a projected pixel in the tracking camera
+     * coordinate system.
+     *
+     * @param planeCalibCam projection plane
+     * @param px x axis in pixel coordinates
+     * @param py x axis in pixel coordinates
+     * @return
+     */
+    public PVector getProjectedPointOnPlane(PlaneCalibration planeCalibCam, float px, float py) {
+        // Create ray from the projector (origin / viewed pixel)
+        // Intersect this ray with the piece of paper.
+        // Compute the Two points for the ray
+        PVector originP = new PVector(0, 0, 0);
+        PVector viewedPtP = getProjectiveDeviceP().pixelToWorldNormalized(px, py);
+
+        // Pass it to the camera point of view (origin)
+        PMatrix3D proCamExtrinsics = getExtrinsicsInv();
+        PVector originC = new PVector();
+        PVector viewedPtC = new PVector();
+        proCamExtrinsics.mult(originP, originC);
+        proCamExtrinsics.mult(viewedPtP, viewedPtC);
+
+        // Second argument is a direction
+        viewedPtC.sub(originC);
+
+        Ray3D ray = new Ray3D(new Vec3D(originC.x,
+                originC.y,
+                originC.z),
+                new Vec3D(viewedPtC.x,
+                        viewedPtC.y,
+                        viewedPtC.z));
+
+        // Intersect ray with Plane
+        ReadonlyVec3D inter = planeCalibCam.getPlane().getIntersectionWithRay(ray);
+
+        if (inter == null) {
+            return null;
+        }
+
+        return new PVector(inter.x(), inter.y(), inter.z());
+    }
+
+    public void setCamera(Camera camera) {
+        this.camera = camera;
+        this.hasCamera = true;
+    }
+
+    private int cornerS = 2, cornerM = 30, cornerL = 50;
+
+    public void setCalibrationSize(int small, int med, int large) {
+        this.cornerS = small;
+        this.cornerM = med;
+        this.cornerL = large;
+    }
+
+    void projectCornersImage() {
+
+        PGraphicsOpenGL g = (PGraphicsOpenGL) parent.g;
+        g.background(0);
+        g.ellipseMode(PApplet.CENTER);
+
+        g.translate(0, 0);
+        drawEllipses(g);
+
+        g.translate(g.width, 0);
+        drawEllipses(g);
+
+        g.translate(0, g.height);
+        drawEllipses(g);
+
+        g.translate(-g.width, 0);
+        drawEllipses(g);
+    }
+
+    void drawEllipses(PGraphicsOpenGL g) {
+        g.noStroke();
+        g.fill(120);
+        g.ellipse(0, 0, cornerL, cornerL);
+
+        g.fill(160);
+        g.ellipse(0, 0, cornerM, cornerM);
+
+        g.fill(200);
+        g.ellipse(0, 0, cornerS, cornerS);
     }
 
 }

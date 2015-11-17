@@ -85,7 +85,7 @@ public class CameraOpenCV extends Camera {
         if (grabber != null) {
             try {
                 grabber.stop();
-                System.out.println("Stopping grabber");
+                System.out.println("Stopping grabber (OpencV)");
                
             } catch (Exception e) {
                 System.out.println("Impossible to close " + e);

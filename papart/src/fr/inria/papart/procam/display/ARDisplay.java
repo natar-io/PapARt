@@ -11,8 +11,10 @@ import processing.opengl.PGraphicsOpenGL;
 import org.bytedeco.javacv.ProjectiveDevice;
 import fr.inria.papart.drawingapp.DrawUtils;
 import fr.inria.papart.multitouch.TouchInput;
+import fr.inria.papart.procam.HasCamera;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.HasExtrinsics;
+import fr.inria.papart.procam.MarkerBoard;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.procam.Screen;
 import java.util.ArrayList;
@@ -29,7 +31,7 @@ import toxi.geom.Vec3D;
  *
  * @author jeremy
  */
-public class ARDisplay extends BaseDisplay implements HasExtrinsics {
+public class ARDisplay extends BaseDisplay implements HasExtrinsics{
 
 //    public PGraphicsOpenGL graphicsUndist;
     private PImage mapImg;
@@ -44,7 +46,7 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
     // TODO...
     protected PShader lensFilter;
     protected PMatrix3D invProjModelView;
-    private Camera camera = null;
+    protected Camera camera = null;
 
     protected float zNear = 20, zFar = 10000;
 
@@ -58,15 +60,15 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
     public ARDisplay(PApplet parent, Camera camera) {
         super(parent);
         this.camera = camera;
+        this.hasCamera = true;
         setCalibration(camera.getProjectiveDevice());
-        System.out.println("ARDisplay Created");
     }
 
     @Override
     public void init() {
         this.graphics = (PGraphicsOpenGL) parent.createGraphics((int) (frameWidth * quality),
                 (int) (frameHeight * quality), PApplet.OPENGL);
-        screens = new ArrayList<Screen>();
+//        screens = new ArrayList<Screen>();
         updateIntrinsicsRendering();
 
         if (distort) {
@@ -187,7 +189,7 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
             this.graphics.pushMatrix();
 
             // Goto to the screen position
-            this.graphics.applyMatrix(screen.getLocation());
+            this.graphics.applyMatrix(screen.getLocation(this.getCamera()));
             // Draw the screen image
 
             // If it is openGL renderer, use the standard  (0, 0) is bottom left
@@ -230,7 +232,7 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
      *  For custom calibration. 
      */
     public void setExtrinsics(PMatrix3D extr) {
-        extrinsics = extr;
+        extrinsics = extr.get();
         extrinsicsInv = extr.get();
         extrinsicsInv.invert();
         this.hasExtrinsics = true;
@@ -250,7 +252,6 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
     /**
      * @return
      */
-    @Deprecated
     public PMatrix3D getExtrinsicsInv() {
         assert (hasExtrinsics());
         return extrinsicsInv.get();
@@ -353,7 +354,7 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
 
     @Override
     public PGraphicsOpenGL beginDrawOnScreen(Screen screen) {
-        PMatrix3D screenPos = screen.getLocation();
+        PMatrix3D screenPos = screen.getLocation(this.camera);
 
         this.beginDraw();
         if (this.hasExtrinsics()) {
@@ -487,6 +488,11 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
     @Override
     public boolean hasExtrinsics() {
         return this.hasExtrinsics;
+    }
+
+    @Override
+    public Camera getCamera() {
+        return this.camera;
     }
 
 }

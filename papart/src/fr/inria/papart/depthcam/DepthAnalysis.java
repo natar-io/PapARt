@@ -7,6 +7,7 @@
  */
 package fr.inria.papart.depthcam;
 
+import fr.inria.papart.depthcam.devices.KinectDepthData;
 import fr.inria.papart.calibration.HomographyCalibration;
 import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
 import org.bytedeco.javacpp.opencv_core.IplImage;
@@ -31,10 +32,6 @@ public abstract class DepthAnalysis {
     protected int[] connexity;  // TODO: check for Byte instead of int
     protected KinectDepthData depthData;
 
-    protected int width = 640;
-    protected int height = 480;
-    protected int size = width * height;
-
     public static PApplet papplet;
 
     public static final Vec3D INVALID_POINT = new Vec3D(0,0,0);
@@ -47,6 +44,11 @@ public abstract class DepthAnalysis {
     
     public abstract void update(IplImage depth);
 
+    public abstract int getDepthSize();
+    public abstract int getDepthWidth();
+    public abstract int getDepthHeight();
+        
+    
     public interface InvalidPointManiplation {
 
         public void execute(PixelOffset px);
@@ -200,7 +202,7 @@ public abstract class DepthAnalysis {
         return normal;
     }
 
-    class DoNothing implements DepthPointManiplation {
+    public class DoNothing implements DepthPointManiplation {
 
         @Override
         public void execute(Vec3D p, PixelOffset px) {
@@ -214,18 +216,6 @@ public abstract class DepthAnalysis {
 
     public int[] getConnexity() {
         return this.connexity;
-    }
-
-    public int getWidth() {
-        return width;
-    }
-
-    public int getHeight() {
-        return height;
-    }
-
-    public int getSize() {
-        return size;
     }
 
     /**

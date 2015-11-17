@@ -1,24 +1,21 @@
-#!/bin/bash 
+#!/bin/bash
 
 SKETCHBOOK=sketches
 TMP=tmp
 NAME=PapARt
 
-## NAME must match 
+## NAME must match
 ## fr.inria.papart.procam.Utils.LibraryName = "ProCam";
 
 
 mkdir $TMP
-mkdir $TMP/$NAME 
+mkdir $TMP/$NAME
 mkdir $TMP/$NAME/library
 mkdir $TMP/$NAME/examples
-mkdir $TMP/$NAME/examples/examples
-mkdir $TMP/$NAME/examples/calib
-mkdir $TMP/$NAME/examples/apps
 
 
 echo "Cleaning previous versions"
-rm -rf libraries/$NAME 
+rm -rf libraries/$NAME
 echo "Create archive of depedencies"
 tar -zcf libs.tgz libraries
 
@@ -36,7 +33,7 @@ cp papart/target/$NAME.jar $TMP/$NAME/library/$NAME.jar
 # cp libs/* $NAME/library/
 
 
-echo "Copy the sources" 
+echo "Copy the sources"
 # copy the source also
 cp -R papart/src $TMP/$NAME/
 cp -R papart/pom.xml $TMP/$NAME/
@@ -44,31 +41,31 @@ cp -R papart/deps $TMP/$NAME/
 
 cp -R papart/test $TMP/$NAME/
 
-echo "Copy the JavaDoc" 
+echo "Copy the JavaDoc"
 cp -R papart/target/site/apidocs $TMP/$NAME/
 
-echo "Copy the Data" 
+echo "Copy the Data"
 cp -R papart/data $TMP/$NAME/
 
 
-echo "Copy Examples, Calibration & Apps" 
+echo "Copy Examples, Calibration & Apps"
 # Examples
-cp -R $SKETCHBOOK/papartExamples/* $TMP/$NAME/examples/examples/
+cp -R sketches/examples $TMP/$NAME/examples/examples
 
 # Calibration stuff
-cp -R $SKETCHBOOK/papartCalibration/* $TMP/$NAME/examples/calib/
+cp -R sketches/calibration $TMP/$NAME/examples/calib
 
-# Apps 
-cp -R $SKETCHBOOK/papartApps/* $TMP/$NAME/examples/apps/
+# Apps
+cp -R sketches/apps $TMP/$NAME/examples/apps
 
 
-echo "Create the archive..." 
+echo "Create the archive..."
 cd $TMP
 
 tar -zcf $NAME.tgz $NAME
 
-mv $NAME.tgz  .. 
-cd .. 
+mv $NAME.tgz  ..
+cd ..
 
 
 
@@ -77,8 +74,8 @@ cp -r $TMP/$NAME libraries/
 echo "Create full archive : Papart & Deps"
 tar -zcf papart-complete.tgz libraries
 
-echo "Clean " 
+echo "Clean "
 rm -rf $TMP
 
 
-echo "Creation OK" 
+echo "Creation OK"

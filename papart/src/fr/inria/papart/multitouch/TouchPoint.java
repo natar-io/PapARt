@@ -7,7 +7,7 @@
  */
 package fr.inria.papart.multitouch;
 
-import fr.inria.papart.depthcam.KinectDepthData;
+import fr.inria.papart.depthcam.devices.KinectDepthData;
 import fr.inria.papart.depthcam.DepthDataElementKinect;
 import fr.inria.papart.depthcam.DepthPoint;
 import java.util.ArrayList;
@@ -166,6 +166,12 @@ public class TouchPoint extends DepthPoint {
         checkAndSetID();
         filter();
         return true;
+    }
+    
+    public void updateAlone() {
+        updatePosition(this);
+        // TODO: check performance ?!
+        filter();
     }
 
     private void checkAndSetID() {

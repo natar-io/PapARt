@@ -9,7 +9,7 @@ package fr.inria.papart.multitouch;
 
 import fr.inria.papart.depthcam.DepthAnalysis;
 import fr.inria.papart.depthcam.DepthData;
-import fr.inria.papart.depthcam.KinectDepthData;
+import fr.inria.papart.depthcam.devices.KinectDepthData;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -61,7 +61,9 @@ public class TouchDetectionSimple3D extends TouchDetection {
 
     @Override
     protected TouchPoint createTouchPoint(ConnectedComponent connectedComponent) {
-        ClosestComparatorY closestComparator = new ClosestComparatorY(depthData.projectedPoints);
+        
+//        ClosestComparatorY closestComparator = new ClosestComparatorY(depthData.projectedPoints);
+        ClosestComparatorHeight closestComparator = new ClosestComparatorHeight(depthData.projectedPoints, depthData.planeAndProjectionCalibration.getPlaneCalibration());
 
         // get a subset of the points.
         Collections.sort(connectedComponent, closestComparator);

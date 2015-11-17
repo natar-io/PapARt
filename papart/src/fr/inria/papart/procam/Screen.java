@@ -24,7 +24,7 @@ import toxi.geom.*;
  *
  * @author jeremylaviole
  */
-public class Screen {
+public class Screen implements HasExtrinsics {
 
     private PApplet parent;
     // The current graphics
@@ -34,15 +34,13 @@ public class Screen {
 
     // Either one, or the other is unique to this object. 
     // The other one is unique to the camera/markerboard couple. 
-    private float[] posFloat;
-    private PMatrix3D transformation = new PMatrix3D(); // init to avoid nullPointerExceptions 
-    private PMatrix3D secondTransformation = null;
-
-    private boolean isFloatArrayUpdating;
+//    private PMatrix3D transformation = new PMatrix3D(); // init to avoid nullPointerExceptions 
+    private PMatrix3D extrinsics = new PMatrix3D();
+    private MarkerBoard markerBoard = MarkerBoard.INVALID_MARKERBOARD;
 
     ////////////
-    private PVector size;
-    private float scale;
+    private PVector size = new PVector(200, 200);
+    private float scale = 1;
     protected Plane plane = new Plane();
 
     private static final int nbPaperPosRender = 4;
@@ -55,15 +53,33 @@ public class Screen {
     private boolean isDrawing = true;
     private boolean isOpenGL = false;
 
-    public Screen(PApplet parent, PVector size, float scale) {
-        this(parent, size, scale, false, 1);
-    }
-
-    public Screen(PApplet parent, PVector size, float scale, boolean useAA, int AAValue) {
-        this.size = size.get();
-        this.scale = scale;
+    public Screen(PApplet parent) {
         this.parent = parent;
         initHomography();
+    }
+
+    public void setSize(PVector size) {
+        this.size = size;
+    }
+
+    public void setScale(float scale) {
+        this.scale = scale;
+    }
+
+
+    public void linkTo(MarkerBoard board) {
+        this.markerBoard = board;
+    }
+
+    public boolean hasMarkerBoard() {
+        return this.markerBoard == MarkerBoard.INVALID_MARKERBOARD;
+    }
+
+    public MarkerBoard getMarkerBoard() {
+        if (!this.hasMarkerBoard()) {
+            System.err.println("The screen " + this + " does not a markerboard...");
+        }
+        return this.markerBoard;
     }
 
     // Get the texture to display...
@@ -73,7 +89,7 @@ public class Screen {
 
     public PGraphicsOpenGL getGraphics() {
         if (thisGraphics == null) {
-            thisGraphics = (PGraphicsOpenGL) parent.createGraphics((int) (size.x * scale), (int) (size.y * scale), PApplet.OPENGL);
+            thisGraphics = (PGraphicsOpenGL) parent.createGraphics((int) (size.x * scale), (int) (size.y * scale), PApplet.P3D);
         }
 
         return thisGraphics;
@@ -101,7 +117,6 @@ public class Screen {
 //            posFloat = new float[12];
 //        }
 //    }
-
     public boolean isOpenGL() {
         return isOpenGL;
     }
@@ -127,25 +142,15 @@ public class Screen {
     }
 
     /**
-     * Set the main position (override tracking system). Use only after the call
-     * of paperScreen.useManualLocation(false);
-     *
-     * @param position
-     */
-    public void setMainLocation(PMatrix3D position) {
-        transformation.set(position);
-    }
-
-    /**
      * Set a second transformation applied after tracking transform.
      *
      * @param tr
      */
     public void setTransformation(PMatrix3D tr) {
-        if (secondTransformation == null) {
-            this.secondTransformation = new PMatrix3D(tr);
+        if (extrinsics == null) {
+            this.extrinsics = new PMatrix3D(tr);
         } else {
-            this.secondTransformation.set(tr);
+            this.extrinsics.set(tr);
         }
     }
 
@@ -166,18 +171,11 @@ public class Screen {
      * @param z
      */
     public void setTranslation(float x, float y, float z) {
-        if (secondTransformation == null) {
-            secondTransformation = new PMatrix3D();
+        if (extrinsics == null) {
+            extrinsics = new PMatrix3D();
         }
-        secondTransformation.reset();
-        secondTransformation.translate(x, y, z);
-    }
-
-    /**
-     * @deprecated @return
-     */
-    public PMatrix3D getPosition() {
-        return getLocation();
+        extrinsics.reset();
+        extrinsics.translate(x, y, z);
     }
 
     /**
@@ -186,14 +184,26 @@ public class Screen {
      *
      * @return
      */
-    public PMatrix3D getLocation() {
-        if (secondTransformation == null) {
-            return transformation.get();
-        } else {
-            PMatrix3D combinedTransfos = transformation.get();
-            combinedTransfos.apply(secondTransformation);
-            return combinedTransfos;
+    public PMatrix3D getLocation(Camera camera) {
+        if (!markerBoard.isTrackedBy(camera)) {
+            return extrinsics.get();
         }
+
+        PMatrix3D combinedTransfos = markerBoard.getTransfoMat(camera).get();
+        combinedTransfos.apply(extrinsics);
+        return combinedTransfos;
+    }
+
+    /**
+     * Get a copy of the overall transform (after tracking and second
+     * transform).
+     *
+     * @return
+     */
+    public PMatrix3D getLocation(PMatrix3D trackedLocation) {
+        PMatrix3D combinedTransfos = trackedLocation.get();
+        combinedTransfos.apply(extrinsics);
+        return combinedTransfos;
     }
 
     public float getScale() {
@@ -203,14 +213,20 @@ public class Screen {
     /**
      * update the internals of the screen to match the tracking.
      */
+    @Deprecated
     public void updatePos(Camera camera, MarkerBoard board) {
-        transformation.set(board.getTransfoMat(camera));
+        System.err.println("ERROR Depracted call updatePos. ");
+//        transformation.set(board.getTransfoMat(camera));
     }
 
-    public void computeScreenPosTransform() {
+    protected void updatePos() {
+
+    }
+
+    public void computeScreenPosTransform(Camera camera) {
 
         ///////////////////// PLANE COMPUTATION  //////////////////
-        PMatrix3D mat = this.getLocation();
+        PMatrix3D mat = this.getLocation(camera);
 
         paperPosCorners3D[0] = new PVector(mat.m03, mat.m13, mat.m23);
         mat.translate(size.x, 0, 0);
@@ -229,8 +245,8 @@ public class Screen {
         worldToScreen = homography.getHomography();
     }
 
-    public PVector[] getCornerPos() {
-        computeScreenPosTransform();
+    public PVector[] getCornerPos(Camera camera) {
+        computeScreenPosTransform(camera);
         return paperPosCorners3D;
     }
 
@@ -241,16 +257,16 @@ public class Screen {
 
     }
 
-    public void initDraw(PVector userPos) {
-        initDraw(userPos, 40, 5000);
+    public void initDraw(Camera cam, PVector userPos) {
+        initDraw(cam, userPos, 40, 5000);
     }
 
-    public void initDraw(PVector userPos, float nearPlane, float farPlane) {
-        initDraw(userPos, nearPlane, farPlane, false, false, true);
+    public void initDraw(Camera cam, PVector userPos, float nearPlane, float farPlane) {
+        initDraw(cam, userPos, nearPlane, farPlane, false, false, true);
     }
     // TODO: optionnal args.
 
-    public void initDraw(PVector userPos, float nearPlane, float farPlane, boolean isAnaglyph, boolean isLeft, boolean isOnly) {
+    public void initDraw(Camera cam, PVector userPos, float nearPlane, float farPlane, boolean isAnaglyph, boolean isLeft, boolean isOnly) {
 
         PGraphicsOpenGL graphics = getGraphics();
 
@@ -258,7 +274,7 @@ public class Screen {
             this.isOpenGL = true;
             // Transformation  Camera -> Marker
 
-            initPosM = this.getLocation();
+            initPosM = this.getLocation(cam);
 
             initPosM.translate(this.getDrawSizeX() / 2, this.getDrawSizeY() / 2);
             // All is relative to the paper's center. not the corner. 
@@ -267,7 +283,7 @@ public class Screen {
         }
 
         // get the current transformation... 
-        PMatrix3D newPos = this.getLocation();
+        PMatrix3D newPos = this.getLocation(cam);
 
         newPos.translate(this.getDrawSizeX() / 2, this.getDrawSizeY() / 2);
         newPos.scale(-1, 1, -1);
@@ -300,6 +316,7 @@ public class Screen {
         graphics.projection.m11 = -graphics.projection.m11;
 
         // No detection?
+        PMatrix3D transformation = this.getLocation(cam);
         if (transformation.m03 == 0 && transformation.m13 == 0 && transformation.m23 == 0) {
             resetPos();
         }
@@ -369,6 +386,59 @@ public class Screen {
 
     public HomographyCalibration getWorldToScreen() {
         return worldToScreen;
+    }
+
+    /**
+     * Set the main position (override tracking system). Use only after the call
+     * of paperScreen.useManualLocation(false);
+     *
+     * @param position
+     */
+    public void setMainLocation(PMatrix3D position, Camera cam) {
+        this.markerBoard.setFakeLocation(cam, position);
+        this.blockUpdate(cam, Integer.MAX_VALUE);
+    }
+
+    public void forceUpdate(Camera camera, int time) {
+        markerBoard.forceUpdate(camera, time);
+    }
+
+    public void blockUpdate(Camera camera, int time) {
+        markerBoard.blockUpdate(camera, time);
+    }
+
+    public void setFiltering(Camera camera, double freq, double minCutOff) {
+        markerBoard.setFiltering(camera, freq, minCutOff);
+    }
+
+    public void setDrawingMode(Camera camera, boolean dm) {
+        markerBoard.setDrawingMode(camera, dm);
+    }
+
+    public void setDrawingMode(Camera camera, boolean dm, float dist) {
+        markerBoard.setDrawingMode(camera, dm, dist);
+    }
+
+    public void setFakeLocation(Camera camera, PMatrix3D location) {
+        markerBoard.setFakeLocation(camera, location);
+    }
+
+    public boolean isMoving(Camera camera) {
+        return markerBoard.isMoving(camera);
+    }
+
+    public boolean isSeenBy(Camera camera, ProjectorDisplay projector, float error) {
+        return markerBoard.isSeenBy(camera, projector, error);
+    }
+
+    @Override
+    public boolean hasExtrinsics() {
+        return true;
+    }
+
+    @Override
+    public PMatrix3D getExtrinsics() {
+        return this.extrinsics;
     }
 
 }
