@@ -52,6 +52,7 @@ public class ProjectorDisplay extends ARDisplay {
 
         if (isCalibrationMode) {
             projectCornersImage();
+            return;
         }
 
         drawScreensOver();
@@ -239,12 +240,13 @@ public class ProjectorDisplay extends ARDisplay {
         this.hasCamera = true;
     }
 
-    private int cornerS = 2, cornerM = 30, cornerL = 50;
+    private int cornerS = 2, cornerM = 30, cornerL = 50, cornerXL = 100;
 
-    public void setCalibrationSize(int small, int med, int large) {
+    public void setCalibrationSize(int small, int med, int large, int xl) {
         this.cornerS = small;
         this.cornerM = med;
         this.cornerL = large;
+        this.cornerXL = xl;
     }
 
     void projectCornersImage() {
@@ -253,21 +255,33 @@ public class ProjectorDisplay extends ARDisplay {
         g.background(0);
         g.ellipseMode(PApplet.CENTER);
 
+        g.noStroke();
+        // corner 4
+        g.fill(255, 255, 50);
         g.translate(0, 0);
+
         drawEllipses(g);
 
+        // corner 3
         g.translate(g.width, 0);
+        g.fill(50, 255, 50);
         drawEllipses(g);
 
+        // Corner 2
+        g.fill(255, 50, 55);
         g.translate(0, g.height);
         drawEllipses(g);
 
+        // Corner 1
+        g.fill(255);
         g.translate(-g.width, 0);
         drawEllipses(g);
     }
 
     void drawEllipses(PGraphicsOpenGL g) {
-        g.noStroke();
+
+        g.ellipse(0, 0, cornerXL, cornerXL);
+
         g.fill(120);
         g.ellipse(0, 0, cornerL, cornerL);
 

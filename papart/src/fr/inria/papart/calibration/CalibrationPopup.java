@@ -24,6 +24,7 @@ import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
 import static org.bytedeco.javacpp.opencv_imgproc.cvCvtColor;
 import processing.core.PApplet;
+import processing.core.PImage;
 import processing.core.PFont;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
@@ -60,11 +61,11 @@ public class CalibrationPopup extends PApplet {
     static final String PROJECTOR_ARTOOLKIT_NAME = "projectorCalibration.cal";
     static final String KINECT_ARTOOLKIT_NAME = "kinectCalibration.cal";
 
-    // calibration App / board 
+    // calibration App / board
     private CalibrationApp calibrationApp;
     private MarkerBoard board;
 
-    // Matrices 
+    // Matrices
     private Textarea cameraMatrixText, projectorMatrixText, kinectMatrixText;
 
     // Cameras
@@ -85,6 +86,8 @@ public class CalibrationPopup extends PApplet {
     private static final String NOTHING = "";
 
     private CalibrationExtrinsic calibrationExtrinsic;
+    private PImage backgroundImg;
+
 
     public CalibrationPopup() {
         super();
@@ -129,6 +132,7 @@ public class CalibrationPopup extends PApplet {
         initMatrixGui();
         initCornersGUI();
 
+        backgroundImg = loadImage(Papart.calibrationFolder + "ressources/background.png");
         this.isReady = true;
         frameRate(10);
     }
@@ -178,9 +182,9 @@ public class CalibrationPopup extends PApplet {
         cameraMatrixText.setColor(color(255));
     }
 
-    static final int ADD_CALIBRATION_HEIGHT = 180;
-    static final int DO_CALIBRATION_HEIGHT = 380;
-    static final int MATRICES_HEIGHT = 250;
+    static final int ADD_CALIBRATION_HEIGHT = 250;
+    static final int DO_CALIBRATION_HEIGHT = 250;
+    static final int MATRICES_HEIGHT = 450;
 
     void initMainGui() {
         cornerToggle = skatolo.addToggle("cornerCalibration")
@@ -192,17 +196,17 @@ public class CalibrationPopup extends PApplet {
                 .setCaptionLabel("Add Calibration (a)");
 
         skatolo.addBang("clearCalibrations")
-                .setPosition(DO_CALIBRATION_HEIGHT, ADD_CALIBRATION_HEIGHT)
+                .setPosition(320, ADD_CALIBRATION_HEIGHT)
                 .setCaptionLabel("clear Calibration");
 
         skatolo.addBang("calibrate procam")
-                .setPosition(20, DO_CALIBRATION_HEIGHT)
+                .setPosition(530, DO_CALIBRATION_HEIGHT)
                 //                .setCaptionLabel("Calibration ProCam")
                 .plugTo(this, "calibrateProCam");
 
         if (kinectType != Type.NONE) {
             skatolo.addBang("calibrateKinect")
-                    .setPosition(200, DO_CALIBRATION_HEIGHT)
+                    .setPosition(720, DO_CALIBRATION_HEIGHT)
                     .setCaptionLabel("Plane Calibration");
         }
 
@@ -278,7 +282,7 @@ public class CalibrationPopup extends PApplet {
         // }
         return grayImage;
     }
-    //// Calibrations 
+    //// Calibrations
 
     void initMatrixGui() {
 
@@ -436,7 +440,8 @@ public class CalibrationPopup extends PApplet {
 
     @Override
     public void draw() {
-        background(0);
+
+        image(backgroundImg, 0, 0, backgroundImg.width, backgroundImg.height);
 
         pushMatrix();
         translate(130, ADD_CALIBRATION_HEIGHT);
@@ -461,7 +466,7 @@ public class CalibrationPopup extends PApplet {
             projectorMatrixText.setText("");
         } else {
 
-            // compute the Paper location... 
+            // compute the Paper location...
             cameraMatrixText.setText(Utils.matToString(currentCamBoard()));
             projectorMatrixText.setText(Utils.matToString(currentProjBoard()));
         }

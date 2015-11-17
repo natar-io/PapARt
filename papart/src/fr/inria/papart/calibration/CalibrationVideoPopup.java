@@ -55,6 +55,7 @@ public class CalibrationVideoPopup extends PApplet {
 
     public void setup() {
         setSize();
+
     }
 
     public PVector corners(int id) {
