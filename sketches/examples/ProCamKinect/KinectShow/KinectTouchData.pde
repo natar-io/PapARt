@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import toxi.geom.Vec3D;
 import fr.inria.papart.depthcam.*;
 import fr.inria.papart.procam.display.*;
-
+import fr.inria.skatolo.Skatolo;
 
 
 public class MyApp extends PaperTouchScreen {

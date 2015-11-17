@@ -160,7 +160,7 @@ public class Papart {
         return config;
     }
 
-    private CalibrationPopup calibrationPopup;
+    private CalibrationPopup calibrationPopup = null;
 
     public void calibration() {
         if (calibrationPopup == null) {

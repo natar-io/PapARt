@@ -4,6 +4,7 @@ import org.bytedeco.javacpp.*;
 import org.reflections.*;
 import TUIO.*;
 import toxi.geom.*;
+import fr.inria.skatolo.Skatolo;
 
 Papart papart;
 

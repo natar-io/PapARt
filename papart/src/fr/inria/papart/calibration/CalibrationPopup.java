@@ -5,16 +5,10 @@
  */
 package fr.inria.papart.calibration;
 
-import fr.inria.papart.depthcam.devices.Kinect360;
-import fr.inria.papart.depthcam.devices.KinectDepthAnalysis;
 import fr.inria.papart.depthcam.devices.KinectDevice;
 import fr.inria.papart.depthcam.devices.KinectDevice.Type;
-import fr.inria.papart.depthcam.devices.KinectOne;
-import fr.inria.papart.depthcam.devices.KinectProcessing;
-import fr.inria.papart.multitouch.KinectTouchInput;
 import fr.inria.papart.procam.MarkerBoard;
 import fr.inria.papart.procam.Papart;
-import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.ProjectorAsCamera;
 import fr.inria.papart.procam.camera.TrackedView;
@@ -27,7 +21,6 @@ import fr.inria.skatolo.gui.group.Textarea;
 import java.util.ArrayList;
 import org.bytedeco.javacpp.opencv_core;
 import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;
-import org.bytedeco.javacpp.opencv_core.IplImage;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
 import static org.bytedeco.javacpp.opencv_imgproc.cvCvtColor;
 import processing.core.PApplet;
@@ -36,10 +29,6 @@ import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.data.JSONArray;
 import processing.data.JSONObject;
-import toxi.geom.Plane;
-import toxi.geom.Ray3D;
-import toxi.geom.ReadonlyVec3D;
-import toxi.geom.Vec3D;
 
 /**
  *
@@ -52,17 +41,17 @@ public class CalibrationPopup extends PApplet {
     // todo: setTableLocation ?
     // GUI
     private Skatolo skatolo;
-    Group cornersGroup;
-    RadioButton cornersRadio;
-    Toggle cornerToggle;
+    private Group cornersGroup;
+    private RadioButton cornersRadio;
+    private Toggle cornerToggle;
     protected Toggle zoomToggle;
 
     // Corners
-    CalibrationVideoPopup videoPopup;
+    private CalibrationVideoPopup videoPopup;
     protected PVector[] corners;
     protected int currentCorner = 0;
     protected boolean showZoom = false;
-    String cornersFileName;
+    private String cornersFileName;
     static final String CORNERS_NAME = "cornersProj.json";
 
     // projector rendering.
@@ -76,7 +65,7 @@ public class CalibrationPopup extends PApplet {
     private MarkerBoard board;
 
     // Matrices 
-    Textarea cameraMatrixText, projectorMatrixText, kinectMatrixText;
+    private Textarea cameraMatrixText, projectorMatrixText, kinectMatrixText;
 
     // Cameras
     private Camera cameraTracking;
@@ -87,7 +76,7 @@ public class CalibrationPopup extends PApplet {
     private KinectDevice.Type kinectType;
 
     // calibrations
-    ArrayList<CalibrationSnapshot> snapshots = new ArrayList<CalibrationSnapshot>();
+    private ArrayList<CalibrationSnapshot> snapshots = new ArrayList<CalibrationSnapshot>();
     private String isProCamCalibrated = NOTHING;
     private String isKinectCalibrated = NOTHING;
 
@@ -102,10 +91,12 @@ public class CalibrationPopup extends PApplet {
         PApplet.runSketch(new String[]{this.getClass().getName()}, this);
     }
 
+    @Override
     public void settings() {
         size(900, 600);
     }
 
+    @Override
     public void setup() {
 
         papart = Papart.getPapart();
@@ -138,8 +129,11 @@ public class CalibrationPopup extends PApplet {
         initMatrixGui();
         initCornersGUI();
 
+        this.isReady = true;
         frameRate(10);
     }
+
+    boolean isReady = false;
 
     private void initProjectorAsCamera() {
         projectorView = new TrackedView();
@@ -507,12 +501,20 @@ public class CalibrationPopup extends PApplet {
     private boolean isHidden = false;
 
     public void hide() {
+
+        if (!isReady) {
+            return;
+        }
         this.isHidden = true;
         this.getSurface().setVisible(false);
+        System.out.println("Projector: " + projector);
         projector.setCalibrationMode(false);
     }
 
     public void show() {
+        if (!isReady) {
+            return;
+        }
         this.isHidden = false;
         projector.setCalibrationMode(true);
         this.getSurface().setVisible(true);

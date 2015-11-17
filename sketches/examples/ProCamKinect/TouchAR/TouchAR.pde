@@ -7,7 +7,7 @@ import TUIO.*;
 import toxi.geom.*;
 import fr.inria.papart.depthcam.*;
 import fr.inria.papart.procam.display.*;
-
+import fr.inria.skatolo.Skatolo;
 
 boolean useProjector = true;
 float renderQuality = 1.5f;

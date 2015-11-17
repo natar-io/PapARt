@@ -2,10 +2,11 @@ import fr.inria.papart.procam.*;
 import fr.inria.papart.procam.camera.*;
 import fr.inria.papart.drawingapp.*;
 import fr.inria.papart.multitouch.*;
-import fr.inria.papart.drawingapp.Button; 
+import fr.inria.papart.drawingapp.Button;
 import org.bytedeco.javacpp.*;
 import processing.opengl.*;
 import org.reflections.*;
+import fr.inria.skatolo.Skatolo;
 
 import toxi.geom.*;
 
@@ -20,7 +21,7 @@ PVector interfaceSize = new PVector(60, 40);   //  6 * 4 cm
 
 MarkerBoard markerBoardDrawing ;
 
-Papart papart; 
+Papart papart;
 
 public void settings(){
     fullScreen(P3D);
@@ -28,7 +29,7 @@ public void settings(){
 
 public void setup(){
 
-    papart = Papart.projection(this); 
+    papart = Papart.projection(this);
     papart.loadTouchInput();
 
     papart.loadSketches() ;
@@ -40,8 +41,7 @@ void draw(){
 
 boolean test = false;
 void keyPressed() {
-    if(key == 't') 
+    if(key == 't')
 	test = !test;
 
 }
- 

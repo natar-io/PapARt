@@ -3,7 +3,7 @@ import static org.bytedeco.javacpp.lept.*;
 import static org.bytedeco.javacpp.tesseract.*;
 import org.bytedeco.javacpp.opencv_core.CvMat;
 import org.bytedeco.javacpp.opencv_core.IplImage;
-
+import fr.inria.skatolo.Skatolo;
 
 public class MyApp  extends PaperScreen {
 

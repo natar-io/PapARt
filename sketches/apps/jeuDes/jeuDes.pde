@@ -7,7 +7,7 @@ import TUIO.*;
 import toxi.geom.*;
 import fr.inria.papart.depthcam.*;
 import fr.inria.papart.procam.display.*;
-
+import fr.inria.skatolo.Skatolo;
 import fr.inria.guimodes.Mode;
 
 boolean useProjector = true;
@@ -18,7 +18,7 @@ KinectTouchInput touchInput;
 
 boolean noCamera = false;
 
-    
+
 void setup(){
 
 
@@ -31,7 +31,7 @@ void setup(){
 	return;
     }
 
-    
+
     if(useProjector){
 	papart = Papart.projection(this);
 	papart.loadTouchInput();
@@ -49,7 +49,7 @@ void setup(){
     }
 
     touchInput = (KinectTouchInput) papart.getTouchInput();
-    
+
     papart.loadSketches();
     papart.startTracking();
 }
@@ -58,7 +58,7 @@ void setup(){
 void draw(){
   //  println("FrameRate " + frameRate);
 
-    
+
 }
 
 boolean test = false;
@@ -91,13 +91,13 @@ void keyPressed() {
     if(key == 's')
 	myStatus.loadLocationFrom("myStatus.xml");
 
-    
+
     if(key == 't')
 	test = !test;
 
     if(key == 'r')
 	removeLastToken();
-    
+
     if(key == 'n')
 	nextPlayer();
 
@@ -107,10 +107,8 @@ void keyPressed() {
 	    undo();
 	}
     }
-    
+
     if(key == ' ')
 	action();
-    
+
 }
-
-

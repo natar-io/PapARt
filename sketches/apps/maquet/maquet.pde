@@ -5,6 +5,7 @@ import fr.inria.papart.procam.display.*;
 import org.reflections.*;
 import org.bytedeco.javacpp.*;
 import toxi.geom.*;
+import fr.inria.skatolo.Skatolo;
 
 PVector boardSize = new PVector(297, 210);   //  21 * 29.7 cm
 float boardResolution = 3;  // 3 pixels / mm
@@ -45,10 +46,8 @@ void draw(){
 boolean test = false;
 
 void keyPressed() {
-    
+
   if(key == 't')
       test = !test;
 
 }
-
-
