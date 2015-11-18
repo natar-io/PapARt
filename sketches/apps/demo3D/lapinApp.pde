@@ -6,7 +6,7 @@ import fr.inria.guimodes.Mode;
 
 public class LapinApp extends PaperTouchScreen{
 
-    PVector userPos = new PVector(0, 200, 500);
+    PVector userPos = new PVector(0, 200, 700);
     PShape rabbit;
     PShape sphereM;
     PGraphicsOpenGL pg;

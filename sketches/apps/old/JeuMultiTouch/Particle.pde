@@ -1,8 +1,6 @@
-
-
 class Particle {
-  /* 
-  Global class variables 
+  /*
+  Global class variables
   These are kept track of, and aren't lost when the class particle is finished operating.
   */
   /* the x and y are our coordinates for each particles */
@@ -10,7 +8,7 @@ class Particle {
   float y;
   /* vx and vy are the velocities along each axis the particles are traveling */
   float vx;
-  float vy; 
+  float vy;
   /* Particle initialization. We define the beginning properties of each particle here. */
   Particle() {
     x = random(10,width-10);
@@ -18,7 +16,7 @@ class Particle {
   }
   /* These are called everytime we check with the other particle's distances  */
   float getx() {
-    return x; 
+    return x;
   }
   float gety() {
     return y;
@@ -30,10 +28,10 @@ class Particle {
    /* Here, every particle is looped through and checked to see if they're close enough to have effect on the current particle. */
    for (int i = particleCount; i >= 0; i--)  {
      /* Check to see if the particle we're checking isn't the current particle. */
-     if (i != num) { 
+     if (i != num) {
         /* drawthis boolean is initialized. it determines whether the particle is close enough to the other particles for relationship lines to be drawn, assuming it's enabled */
         boolean drawthis = false;
-        /* 
+        /*
         Integers are used to keep track of the shade for each particle
         The red shade shows opposition
         The blue shade shows attraction
@@ -48,16 +46,16 @@ class Particle {
         /* The radius or distance between both particles are determined */
         float radius = dist(x,y,tx,ty);
         /* Is the radius small enough for the particle to have an effect on our current one? */
-        if (radius < 35) { 
+        if (radius < 35) {
            /* We've the determine that the particle is close enough for relationship lines, so we set drawthis to true. */
-           drawthis = true; 
+           drawthis = true;
            /* If so, we proceed to calculate the angle. */
            float angle = atan2(y-ty,x-tx);
            /* Is the radius close enough to be deflected? */
            if (radius < 30) {
              /* Is relationship lines toggled? */
              if (lines) {
-               /* 
+               /*
                Redshade is increased by the distance * 5. The distance is multiplied by 10 because our radius will be within 40 pixels,
                30 * 13.33... is 400
                We invert it so it gets redder as the particle approaches the current particle, rather than vice versa.
@@ -71,12 +69,12 @@ class Particle {
              vx += (30 - radius) * 0.07 * cos(angle);
              vy += (30 - radius) * 0.07 * sin(angle);
            }
-           /* 
-           Here we see if the particle is within 25 and 35 pixels of the current particle 
+           /*
+           Here we see if the particle is within 25 and 35 pixels of the current particle
            (we already know that the particle is under 35 pixels distance, since this if statement is nested
            in if (radius < 35), so rechecking is unnecessary
            */
-           if (radius > 25) { 
+           if (radius > 25) {
              /* check to see if relationship lines are toggled */
              if (lines) {
                /* The blue shade, between 0 and 400, is used to show how much each particle is attracted */
@@ -99,8 +97,14 @@ class Particle {
         }
       }
     }
-    /* Check to see if the user is clicking */
-    if (hasPointer) {
+
+   for(PVector pointer : pointers){
+
+       pointerX = (int) pointer.x;
+       pointerY = (int) pointer.y;
+
+/* Check to see if the user is clicking */
+       // if (hasPointer) {
       /* The cursor's x and y coordinates. */
       float tx = pointerX;
       float ty = pointerY;
@@ -120,14 +124,17 @@ class Particle {
         else {
           /* If right, the particles are attracted. */
           vx += radius * 0.07 * cos(angle);
-          vy += radius * 0.07 * sin(angle); 
+          vy += radius * 0.07 * sin(angle);
           /* The stroke color is blue */
           stroke(0,0,radius * 4);
         }
         /* If line relationships are enabled, the lines are drawn. */
-        if (lines) line (x,y,tx,ty); 
+        if (lines) line (x,y,tx,ty);
       }
-    }   
+    }
+
+
+
     /* Previox x and y coordinates are set, for drawing the trail */
     int px = (int)x;
     int py = (int)y;
@@ -135,7 +142,7 @@ class Particle {
     x += vx;
     y += vy;
     /* Gravity is applied. */
-    if (gravity == true) vy += gravityValue;
+    if (gravity == true) vy -= gravityValue;
     /* Border collisions */
     if (x > width-11) {
       /* Reverse the velocity if towards wall */
@@ -164,5 +171,4 @@ class Particle {
       line(px,py,int(x),int(y));
     }
   }
-}  
-
+}
