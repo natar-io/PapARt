@@ -3,10 +3,10 @@ require 'base64'
 
 
 class Marker
-  attr_reader :mat, :width, :height
+  attr_reader :mat, :width, :height, :id
 
-  def initialize (mat, width, height)
-    @mat, @width, @height = mat, width, height
+  def initialize (mat, width, height, id)
+    @mat, @width, @height, @id = mat, width, height, id
   end
 end
 
@@ -20,14 +20,43 @@ class MarkerBoard
   attr_accessor :markers, :pshape, :svg, :transform
   attr_accessor :width, :height, :matrix
 
+  ## Inkscape is 90 DPI -> we should downscale to 25.40 DPI to get
+  ##  1 pixel per mm...
+  def pixel_to_mm ; (25.4 / 90.0) ; end
+  def mm_to_pixel ; 1.0 / pixel_to_mm ; end
+
   ## Parse the Imagse
 
   def initialize (url)
     @url = url
-    @svg = Nokogiri::XML(open(@url)).children[1];
+    @svg = Nokogiri::XML(open(@url)).children[1]
 
+    @height = compute_height
+    p "Height " + @height.to_s
     load_markers
   end
+
+
+  def compute_height
+    height_text = @svg.attributes["height"].value
+
+    ## convert
+    if height_text.end_with? "mm"
+      height = (height_text.split "mm")[0].to_f
+      return height * mm_to_pixel
+    else
+
+      height = (height_text.split "px")[0].to_f
+      return height
+
+    end
+
+    p "Error: finding the height of the SVG, create it with Inkscape "
+    p "Error: save as an Inkscape SVG file with size in pixels or millimeters."
+    exit
+  end
+
+  def set_offset (x,y) ; @offset_x, @offset_y = x,y ; end
 
   def save_as file_name
 
@@ -35,18 +64,22 @@ class MarkerBoard
 
       output.puts "# multimarker definition file for ARToolKit (format defined by ARToolKit)\n"
       output.puts "# Papart MarkerBoard please fill the marker IDs. "
-      output.write "\nNumber of Markers\n"
+      output.write "\n#Number of Markers\n"
       output.puts @markers.length.to_s + "\n"
 
       @markers.each do |marker|
         output.puts "\n# marker"
-        output.puts "0 ## FILL THE ID manually"
+        output.puts marker.id.to_s
 
         w = marker.width
-        half_width = -w/2
+        half_width = w/2
 
         output.puts w.to_s
-        output.puts half_width.to_s + " " + half_width.to_s
+
+        offset_x = half_width - @offset_x
+        offset_y = half_width - @offset_y
+
+        output.puts offset_x.to_s + " " + offset_y.to_s
 
         m = marker.mat
 
@@ -60,34 +93,38 @@ class MarkerBoard
     p file_name + " saved !"
   end
 
+
   def load_markers
 
-    ## Inkscape is 90 DPI -> we should downscale to 25.40 DPI to get
-    ##  1 pixel per mm...
-    $scale = (25.4 / 90.0)
+    scale = pixel_to_mm
     @markers = []
-
-    scale = 1
 
     puts "Loading the markers..."
 
     @svg.css("image").each do |marker|
 
+      id_text = marker.attributes["id"].value
+      next if not id_text.start_with? "marker"
+
+      ## get as is int
+      id = (id_text.split("marker")[1]).to_i
+
       # Get the transformation
       transform, w, h = get_global_transform marker
 
       transform.m03 = (transform.m03 * scale).round(3)
-      transform.m13 = (transform.m13 * scale).round(3)
+      transform.m13 = ((@height - transform.m13 - h) * scale ).round(3)
       transform.m23 = (transform.m23 * scale).round(3)
       w = (w * scale).round(3)
       h = (h * scale).round(3)
 
-      transform.print
-      @markers.push Marker.new(transform, w, h)
+      @markers.push Marker.new(transform, w, h, id)
     end
 
 
-    @markers = @markers.sort_by { |marker| marker.mat.m03 }
+    @markers = @markers.sort_by { |marker| marker.id }
+    # @markers = @markers.sort_by { |marker| marker.mat.m03 }
+
 
   end
 

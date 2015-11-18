@@ -1,3 +1,15 @@
+#! /bin/jruby
+
+
+## To make it work:
+# install jruby 9.0.x.x ,
+# linux:   apt-get install jruby // yaourt -S jruby etc...
+# windows: install from the website.
+
+# install the required gems:
+# jgem install nokogiri jruby_art
+
+
 require 'nokogiri'  # for XML.
 require 'jruby_art' # for matrices
 require 'jruby_art/app'
@@ -15,8 +27,11 @@ require_relative 'utils'
 check_arguments
 input_name = ARGV[0]
 
-output_name = "output.cfg"
-output_name = ARGV[1] if ARGV[1] != nil
+output_name = (ARGV[0].split ".svg")[0] + ".cfg"
+
+offset_x = ARGV[1].to_f if ARGV[1] != nil
+offset_y = ARGV[2].to_f if ARGV[2] != nil
 
 board = MarkerBoard.new input_name
+board.set_offset(offset_x, offset_y)
 board.save_as output_name
