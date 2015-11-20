@@ -1,6 +1,10 @@
 # coding: utf-8
 ## re-open the class
 
+## Spirograph
+## http://www.openprocessing.org/sketch/192792
+
+
 class SobyPlayer
   attr_accessor :main_presentation, :timeline_presentation
 
@@ -11,8 +15,6 @@ class SobyPlayer
     @inria_logo_white = loadImage sketchPath + "/data/inria-logo-white.png"
 
     @font = loadFont sketchPath + "/data/LinLibertine-30.vlw"
-
-    @footer = "Jérémy Laviole  -  Lundi 23 Novembre 2015."
 
 
     @black_line_animation_duration = 300
@@ -35,7 +37,6 @@ class SobyPlayer
     @do_once = true
   end
 
-
   def custom_pre_draw
     background 0
     return unless @setup_done
@@ -45,9 +46,9 @@ class SobyPlayer
 
     # draw_logo if @draw_logo
 
-    textFont(@font, 25)
-    fill(255)
-    text(@footer, 100, @height - 30)
+    # textFont(@font, 25)
+    # fill(255)
+
 
   end
 
