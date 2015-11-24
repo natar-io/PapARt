@@ -29,7 +29,7 @@ class SobyPlayer
 
     @green = color(22, 107, 30)
     init_spiro
-    @use_debug = true
+    @use_debug = false
   end
 
 
@@ -223,7 +223,7 @@ class SobyPlayer
     @frame = 0 if @frame == nil
 
     if key == 's'
-      saveFrame("data/artik-" + @frame.to_s.rjust(3, "0") + ".png")
+      saveFrame("data/slides/papart-" + @frame.to_s.rjust(3, "0") + ".png")
       @frame = @frame + 1
     end
 
