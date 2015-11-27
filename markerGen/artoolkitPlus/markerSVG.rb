@@ -112,11 +112,48 @@ class MarkerBoard
       # Get the transformation
       transform, w, h = get_global_transform marker
 
-      transform.m03 = (transform.m03 * scale).round(3)
-      transform.m13 = ((@height - transform.m13 - h) * scale ).round(3)
-      transform.m23 = (transform.m23 * scale).round(3)
+      # pos = PVector.new transform.m03, @height -transform.m13 - h, transform.m23
+
+
+      ## Good one...
+      ## transform.translate(0, @height - h - (transform.m13*2), 0)
+
+#      transform.translate(0, @height - h - (transform.m13*2), 0)
+
+
+      transform.translate(0, h / 2.0, 0)
+      transform.scale(1, -1, 1)
+      transform.translate(0, -h / 2.0, 0)
+
+      # transform.m03 = 10
+      # transform.m13 = 0
+      # transform.m23 = 0
+
+#      transform.translate(0, @height - h, 0)
+
+       # transform.rotate((150.0 / 180.0) * PApplet::PI)
+
+      # transform.invert
+
+#     transform.translate(-pos.x, -pos.y, -pos.z)
+
+#      puts "Marker " + id.to_s
+
+      # transform.m13 = @height -transform.m13 - h
+
+
+      ## Going to mm sizes instead of pixels
+      transform.m03 = transform.m03 * scale
+      transform.m13 = transform.m13 * scale
+      transform.m23 = transform.m23 * scale
+
+      # round to obtain human-readable text file.
+      transform.m03 = transform.m03.round(3)
+      transform.m13 = transform.m13.round(3)
+      transform.m23 = transform.m23.round(3)
       w = (w * scale).round(3)
       h = (h * scale).round(3)
+
 
       @markers.push Marker.new(transform, w, h, id)
     end
