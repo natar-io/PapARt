@@ -61,10 +61,11 @@ public class PaperTouchScreen extends PaperScreen {
         if (this.touchInput == null) {
             this.touchInput = Papart.getPapart().getTouchInput();
         }
-
-        updateTouch();
+        if (this.touchInput != null) {
+            updateTouch();
+        }
     }
-    
+
     @Override
     public void setLocation(PVector v) {
         setLocation(v.x, v.y, v.z);

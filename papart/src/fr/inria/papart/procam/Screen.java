@@ -36,7 +36,7 @@ public class Screen implements HasExtrinsics {
     // The other one is unique to the camera/markerboard couple. 
 //    private PMatrix3D transformation = new PMatrix3D(); // init to avoid nullPointerExceptions 
     private PMatrix3D extrinsics = new PMatrix3D();
-    private MarkerBoard markerBoard = MarkerBoard.INVALID_MARKERBOARD;
+    private MarkerBoard markerBoard = MarkerBoardInvalid.board;
 
     ////////////
     private PVector size = new PVector(200, 200);
@@ -72,7 +72,7 @@ public class Screen implements HasExtrinsics {
     }
 
     public boolean hasMarkerBoard() {
-        return this.markerBoard == MarkerBoard.INVALID_MARKERBOARD;
+        return this.markerBoard == MarkerBoardInvalid.board;
     }
 
     public MarkerBoard getMarkerBoard() {
