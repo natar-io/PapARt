@@ -13,6 +13,7 @@ import fr.inria.papart.calibration.PlaneCalibration;
 import fr.inria.papart.calibration.PlaneCreator;
 import fr.inria.papart.procam.camera.Camera.PixelFormat;
 import fr.inria.papart.procam.display.ARDisplay;
+import fr.inria.papart.tracking.MarkerSvg;
 import org.bytedeco.javacpp.opencv_imgproc.*;
 
 import org.bytedeco.javacv.CameraDevice;
@@ -35,6 +36,9 @@ import processing.opengl.Texture;
 import toxi.geom.Matrix4x4;
 import toxi.geom.Vec3D;
 import java.io.*;
+import java.util.ArrayList;
+import static processing.core.PApplet.println;
+import processing.data.XML;
 
 /**
  *
@@ -194,6 +198,8 @@ public class Utils {
         }
         return target;
     }
+
+    
 
     static public Vec3D toVec(PVector p) {
         return new Vec3D(p.x, p.y, p.z);

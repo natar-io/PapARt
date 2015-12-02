@@ -4,7 +4,7 @@ import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.PaperTouchScreen;
 
-public class MyApp2D extends PaperTouchScreen {
+public class MyApp2DTouch extends PaperTouchScreen {
 
     @Override
     public void settings() {

@@ -54,7 +54,7 @@ public abstract class MarkerBoard {
     
     public enum MarkerType {
 
-        ARTOOLKITPLUS, JAVACV_FINDER, INVALID
+        ARTOOLKITPLUS, JAVACV_FINDER, SVG, INVALID
     }
     
     protected MarkerBoard(){
@@ -295,7 +295,7 @@ public abstract class MarkerBoard {
     }
 
     public boolean useARToolkit() {
-        return this.type == MarkerType.ARTOOLKITPLUS;
+        return this.type == MarkerType.ARTOOLKITPLUS || this.type == MarkerType.SVG;
     }
 
     public String getFileName() {
