@@ -52,7 +52,6 @@ public class MarkerSvg implements Cloneable {
 //            PVector c2 = PVector.add(pos, new PVector(size.x, 0));
 //            PVector c3 = PVector.add(pos, new PVector(size.x, size.y));
 //            PVector c4 = PVector.add(pos, new PVector(0, size.y));
-
             PVector c1T = new PVector();
             PVector c2T = new PVector();
             PVector c3T = new PVector();
@@ -110,16 +109,30 @@ public class MarkerSvg implements Cloneable {
             int id = Integer.parseInt(markerSvg.getName().substring(6));
 
             float[] params = markerSvg.getParams();
+
             PVector size = new PVector(params[2], params[3]);
 
             PMatrix2D matrix = (PMatrix2D) getMatrix(markerSvg);
+            matrix.scale(1, -1);
+//            matrix.translate(0, -size.y);
 
             matrix.m02 = matrix.m02 * pixelToMm();
-            matrix.m12 = (pageHeight - matrix.m12) * pixelToMm();
+            matrix.m12 = matrix.m12 * pixelToMm();
+//            matrix.m12 = (pageHeight - matrix.m12) * pixelToMm();
 
             size.x = size.x * pixelToMm();
             size.y = size.y * pixelToMm();
-            MarkerSvg marker = new MarkerSvg(id, matrix, size);
+            MarkerSvg marker = new MarkerSvg(id, matrix.get(), size);
+
+            marker.corners[0] = new PVector(matrix.m02, matrix.m12);
+            matrix.translate(size.x, 0);
+            marker.corners[1] = new PVector(matrix.m02, matrix.m12);
+            matrix.translate(0, -size.y);
+            marker.corners[2] = new PVector(matrix.m02, matrix.m12);
+            matrix.translate(-size.x, 0);
+            marker.corners[3] = new PVector(matrix.m02, matrix.m12);
+            marker.cornersSet = true;
+
             markers.put(id, marker);
         }
         return markers;
@@ -140,9 +153,10 @@ public class MarkerSvg implements Cloneable {
 
         if (matrix == null) {
             matrix = new PMatrix2D();
-            if (useParams) {
-                matrix.translate(params[0], params[1]);
-            }
+
+        }
+        if (useParams) {
+            matrix.translate(params[0], params[1]);
         }
 
         // is root.
