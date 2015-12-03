@@ -92,7 +92,7 @@ public class MarkerSvg implements Cloneable {
         }
     }
 
-    static public HashMap<Integer, MarkerSvg> getMarkersFromSVG(XML xml) {
+    static public MarkerList getMarkersFromSVG(XML xml) {
 
         float pageHeight = xml.getFloat("height");
 //        System.out.println("Height : " + pageHeight);
@@ -102,7 +102,8 @@ public class MarkerSvg implements Cloneable {
         findMarkers((PShapeSVG) svg, markersSVG);
 
 //        ArrayList<MarkerSvg> markers = new ArrayList<>();
-        HashMap<Integer, MarkerSvg> markers = new HashMap<>();
+        MarkerList markers = new MarkerList();
+        markers.setSheetHeight(pageHeight * pixelToMm());
 
         for (PShape markerSvg : markersSVG) {
 
@@ -112,6 +113,7 @@ public class MarkerSvg implements Cloneable {
 
             PVector size = new PVector(params[2], params[3]);
 
+            // SVG standard has a going down Y axis. 
             PMatrix2D matrix = (PMatrix2D) getMatrix(markerSvg);
             matrix.scale(1, -1);
 //            matrix.translate(0, -size.y);
@@ -134,6 +136,7 @@ public class MarkerSvg implements Cloneable {
             marker.cornersSet = true;
 
             markers.put(id, marker);
+
         }
         return markers;
     }

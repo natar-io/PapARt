@@ -15,12 +15,11 @@ public class MyApp2D extends PaperScreen {
 
     @Override
     public void setup() {
-
     }
 
     @Override
     public void drawOnPaper() {
-//        setLocation(61.4f, 44.4f, 0);
+        setLocation(61.4f, 44.4f, 0);
         background(100, 0, 0);
         fill(200, 100, 20);
         rect(10, 10, 100, 30);

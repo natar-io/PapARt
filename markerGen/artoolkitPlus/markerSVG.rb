@@ -32,7 +32,6 @@ class MarkerBoard
     @svg = Nokogiri::XML(open(@url)).children[1]
 
     @height = compute_height
-    p "Height " + @height.to_s
     load_markers
   end
 
@@ -56,8 +55,6 @@ class MarkerBoard
     exit
   end
 
-  def set_offset (x,y) ; @offset_x, @offset_y = x,y ; end
-
   def save_as file_name
 
     File.open(file_name, 'w') do |output|
@@ -76,8 +73,8 @@ class MarkerBoard
 
         output.puts w.to_s
 
-        offset_x = half_width - @offset_x
-        offset_y = half_width - @offset_y
+        offset_x = half_width
+        offset_y = half_width
 
         output.puts offset_x.to_s + " " + offset_y.to_s
 
@@ -101,6 +98,37 @@ class MarkerBoard
 
     puts "Loading the markers..."
 
+    @svg.css("rect").each do |rect|
+
+      id_text = rect.attributes["id"].value
+      # next if not id_text.start_with? "rect"
+
+      ## get as is int
+      #      id = (id_text.split("rect")[1]).to_i
+
+      # Get the transformation
+      transform, w, h = get_global_transform rect
+
+      transform.scale(1, -1, 1)
+      transform.translate(0, -h, 0)
+
+
+      ## Going to mm sizes instead of pixels
+      transform.m03 = transform.m03 * scale
+      transform.m13 = transform.m13 * scale
+      transform.m23 = transform.m23 * scale
+
+      # round to obtain human-readable text file.
+      transform.m03 = transform.m03.round(3)
+      transform.m13 = transform.m13.round(3)
+      transform.m23 = transform.m23.round(3)
+
+      p "Rect " + id_text.to_s + " found in "
+      transform.print
+    end
+
+
+
     @svg.css("image").each do |marker|
 
       id_text = marker.attributes["id"].value
@@ -112,9 +140,9 @@ class MarkerBoard
       # Get the transformation
       transform, w, h = get_global_transform marker
 
-      transform.translate(0, h / 2.0, 0)
       transform.scale(1, -1, 1)
-      transform.translate(0, -h / 2.0, 0)
+      transform.translate(0, -h, 0)
+
 
       ## Going to mm sizes instead of pixels
       transform.m03 = transform.m03 * scale
@@ -134,7 +162,7 @@ class MarkerBoard
 
     @markers = @markers.sort_by { |marker| marker.id }
     # @markers = @markers.sort_by { |marker| marker.mat.m03 }
-
+    puts @markers.size.to_s + " marker(s) found"
 
   end
 

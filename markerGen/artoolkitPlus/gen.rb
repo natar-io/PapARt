@@ -1,6 +1,3 @@
-#! /bin/jruby
-
-
 ## To make it work:
 # install jruby 9.0.x.x ,
 # linux:   apt-get install jruby // yaourt -S jruby etc...
@@ -29,9 +26,6 @@ input_name = ARGV[0]
 
 output_name = (ARGV[0].split ".svg")[0] + ".cfg"
 
-offset_x = ARGV[1].to_f if ARGV[1] != nil
-offset_y = ARGV[2].to_f if ARGV[2] != nil
-
 board = MarkerBoard.new input_name
-board.set_offset(offset_x, offset_y)
+#board.set_offset(offset_x, offset_y)
 board.save_as output_name

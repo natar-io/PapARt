@@ -10,6 +10,7 @@ import static fr.inria.papart.procam.MarkerBoard.FORCE_UPDATE;
 import static fr.inria.papart.procam.MarkerBoard.NORMAL;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.tracking.DetectedMarker;
+import fr.inria.papart.tracking.MarkerList;
 import fr.inria.papart.tracking.MarkerSvg;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,7 +49,7 @@ import processing.data.XML;
 public class MarkerBoardSvg extends MarkerBoard {
 
     private final int subPixelWindow = 11;
-    private HashMap<Integer, MarkerSvg> markersFromSVG;
+    private MarkerList markersFromSVG;
 
     public MarkerBoardSvg(String fileName, float width, float height) {
         super(fileName, width, height);
@@ -282,6 +283,10 @@ public class MarkerBoardSvg extends MarkerBoard {
             }
         }
         
+        float pageHeight = markersFromSVG.getSheetHeight();
+        
+        transfo.scale(1, -1, 1);
+        transfo.translate(0, -pageHeight, 0);        
     }
 
 }
