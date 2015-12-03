@@ -52,7 +52,7 @@ public class PaperApp2D extends PApplet {
         PaperScreen app = new MyApp2D();
         papart.startTracking();
 
-        markerDetector = new MarkerDetector();
+//        markerDetector = new MarkerDetector();
         camera = papart.getCameraTracking();
 //        papart.getARDisplay().manualMode();
 //

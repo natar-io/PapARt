@@ -50,6 +50,7 @@ public abstract class MarkerBoard {
     static public final int NORMAL = 1;
     static public final int BLOCK_UPDATE = 2;
     static public final int FORCE_UPDATE = 3;
+    static public final PMatrix3D INVALID_LOCATION = new PMatrix3D();
 
     
     public enum MarkerType {
