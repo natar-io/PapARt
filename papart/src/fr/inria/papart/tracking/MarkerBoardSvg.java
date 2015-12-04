@@ -136,6 +136,7 @@ public class MarkerBoardSvg extends MarkerBoard {
 
         ProjectiveDeviceP pdp = camera.getProjectiveDevice();
         return pdp.estimateOrientation(objectArray, imageArray);
+//        return pdp.estimateOrientationRansac(objectArray, imageArray);
 
     }
 

@@ -15,10 +15,7 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
-   sodipodi:docname="A3-small1.svg"
-   inkscape:export-filename="/home/jiii/papart/markerGen/artoolkitPlus/A3-small1.png"
-   inkscape:export-xdpi="89.969025"
-   inkscape:export-ydpi="89.969025">
+   sodipodi:docname="A3-small1.svg">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -29,18 +26,17 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.49497475"
-     inkscape:cx="868.98484"
-     inkscape:cy="492.90568"
-     inkscape:document-units="px"
+     inkscape:cx="734.02942"
+     inkscape:cy="66.29877"
+     inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
-     units="px"
+     units="mm"
      inkscape:window-width="1920"
-     inkscape:window-height="1179"
+     inkscape:window-height="1200"
      inkscape:window-x="0"
      inkscape:window-y="0"
-     inkscape:window-maximized="0"
-     showguides="false" />
+     inkscape:window-maximized="0" />
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -49,7 +45,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -57,9 +53,9 @@
      inkscape:label="Calque 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,1.1834646e-4)">
+     transform="translate(0,1.1595097e-4)">
     <image
-       y="816.25146"
+       y="722.83453"
        x="53.149605"
        id="marker0"
        xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAA3NCSVQICAjb4U/gAAAAKElEQVQI mWNgwAP+//+PzIZwGZElGBkZCevGqYMJmQ9RgWwlKgc/AACR0hrzbGjF5QAAAABJRU5ErkJggg== "
@@ -67,7 +63,7 @@
        width="124.01575"
        inkscape:label="#image3002" />
     <image
-       y="816.25146"
+       y="722.83453"
        x="1293.3079"
        id="marker5"
        xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAA3NCSVQICAjb4U/gAAAALElEQVQI mWNgwAP+//+PzIZwWdDkGBkZkdVh0c2EzIEw0HXATcdiAnYdaAAA3XEp4CP20e0AAAAASUVORK5C YII= "
@@ -75,7 +71,7 @@
        width="124.01575"
        inkscape:label="#image3068" />
     <image
-       y="113.38533"
+       y="201.96837"
        x="53.149605"
        id="marker7"
        xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAA3NCSVQICAjb4U/gAAAAKUlEQVQI mWNgwAP+//+PzIZwWTDl0DXB5SAMJjiLkZERux3IJE7T8AEAd1Mm46tH7YkAAAAASUVORK5CYII= "
@@ -83,7 +79,7 @@
        width="124.01575"
        inkscape:label="#image3090" />
     <image
-       y="113.38533"
+       y="201.96837"
        x="1293.3071"
        id="marker11"
        xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAA3NCSVQICAjb4U/gAAAAKklEQVQI mWNgwAP+//+PzIZwmTDlIIAFTSsjIyOEzUSCHegScGsx7UMBANy3IOszmCY3AAAAAElFTkSuQmCC  "
@@ -91,7 +87,7 @@
        width="124.01575"
        inkscape:label="#image3134" />
     <image
-       y="362.83414"
+       y="361.41718"
        x="53.149605"
        id="marker12"
        xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAA3NCSVQICAjb4U/gAAAAMklEQVQI mWNgwAP+//+PzEZw4RxkFYwQPiMjI4ooIyMTmmmMjIwQBhOcAxdCSGAqxwcA8Wod/A30M+YAAAAA SUVORK5CYII= "
@@ -99,7 +95,7 @@
        width="124.01575"
        inkscape:label="#image3145" />
     <image
-       y="539.99945"
+       y="538.58252"
        x="53.149605"
        id="marker13"
        xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAA3NCSVQICAjb4U/gAAAAMUlEQVQI mWNgwAP+//+PzIZwmZDl/v//z8jIiK4Jrg/CYESWg7NR9CFLYHEFPmkIAABrOiPmCXZJbgAAAABJ RU5ErkJggg== "
@@ -107,7 +103,7 @@
        width="124.01575"
        inkscape:label="#image3156" />
     <image
-       y="362.83414"
+       y="361.41718"
        x="1293.3071"
        id="marker14"
        xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAA3NCSVQICAjb4U/gAAAAK0lEQVQI mWNgwAP+//+PzIZwmZDlICQjIyNCAg4gogyYyrEYhaIWUwdhAAC6HyPsBWdIxgAAAABJRU5ErkJg gg== "
@@ -115,7 +111,7 @@
        width="124.01575"
        inkscape:label="#image3167" />
     <image
-       y="539.99945"
+       y="538.58252"
        x="1293.3071"
        id="marker15"
        xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAA3NCSVQICAjb4U/gAAAAK0lEQVQI mWNgwAP+//+PzIZwmZDlkFXg041iAooc3BxkaUasJjAyMuK0DACltCndxQuWnQAAAABJRU5ErkJg gg== "
@@ -123,18 +119,18 @@
        width="124.01575"
        inkscape:label="#image3178" />
     <rect
-       style="fill:none;stroke:#bababa;stroke-width:1.25787401;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:2.0999999;stroke-dasharray:5.03149606, 5.03149606;stroke-dashoffset:0;stroke-opacity:1"
+       style="fill:none;stroke:#bababa;stroke-width:1.25787402000000004;stroke-linecap:round;stroke-miterlimit:2.09999989999999981;stroke-opacity:1;stroke-dasharray:5.03149606000000027, 5.03149606000000027;stroke-dashoffset:0;stroke-linejoin:round;"
        id="rect3181"
        width="1048.2705"
        height="740.00281"
-       x="218.18758"
-       y="155.82483"
+       x="218.18756"
+       y="154.40787"
        rx="0"
        ry="0" />
     <flowRoot
        xml:space="preserve"
        id="flowRoot3970"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;line-height:125%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none"
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Liberation Sans;-inkscape-font-specification:Liberation Sans"
        transform="matrix(16.219762,0,0,14.715287,-4050.1215,-16196.668)"><flowRegion
          id="flowRegion3972"><rect
            id="rect3974"

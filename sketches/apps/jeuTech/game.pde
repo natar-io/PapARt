@@ -138,9 +138,9 @@ public class Game  extends PaperTouchScreen {
 
     public void drawAroundPaper(){
 
-	if(random(1000) < 1){
-	    robot.mouseMove( (int) random(100), (int) random(100));
-	}
+	// if(random(1000) < 1){
+	//     robot.mouseMove( (int) random(100), (int) random(100));
+	// }
 
 	if(DEBUG_TOUCH){
 	    cameraTracking.getPImageCopyTo(cameraImage);

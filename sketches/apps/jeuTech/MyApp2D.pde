@@ -5,11 +5,12 @@ public class MyAppDessin  extends PaperScreen {
     void settings(){
 	setDrawingSize(297, 210);
 	setResolution(3);
-	loadMarkerBoard(sketchPath() + "/data/A3-small1.cfg", 297, 210);
+	loadMarkerBoard(Papart.markerFolder + "A3-small1.cfg", 297, 210);
     }
 
     void setup() {
 	dessin = loadImage("dessin1.png");
+        setLocation(61.4, 44.4, 0);
     }
 
     void drawOnPaper() {

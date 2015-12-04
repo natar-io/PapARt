@@ -9,7 +9,14 @@ import static fr.inria.papart.tracking.MarkerBoard.BLOCK_UPDATE;
 import static fr.inria.papart.tracking.MarkerBoard.FORCE_UPDATE;
 import static fr.inria.papart.tracking.MarkerBoard.NORMAL;
 import fr.inria.papart.procam.camera.Camera;
+import static fr.inria.papart.tracking.MarkerSvg.pixelToMm;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.bytedeco.javacpp.ARToolKitPlus;
 import org.bytedeco.javacpp.opencv_core;
 import processing.core.PMatrix3D;
@@ -20,6 +27,8 @@ import processing.core.PVector;
  * @author Jérémy Laviole - jeremy.laviole@inria.fr
  */
 public class MarkerBoardARToolKitPlus extends MarkerBoard {
+
+    private PVector markerBoardSize = new PVector();
 
     public MarkerBoardARToolKitPlus(String fileName, float width, float height) {
         super(fileName, width, height);
@@ -97,6 +106,7 @@ public class MarkerBoardARToolKitPlus extends MarkerBoard {
             System.err.println("Init ARTOOLKIT Error " + camera.getCalibrationARToolkit() + " " + this.getFileName());
         }
 
+        loadSizeConfig();
 //        float[] transfo = new float[16];
 //        for (int i = 0; i < 3; i++) {
 //            transfo[12 + i] = 0;
@@ -105,6 +115,21 @@ public class MarkerBoardARToolKitPlus extends MarkerBoard {
         PMatrix3D tr = new PMatrix3D();
         this.trackers.add(tracker);
         this.transfos.add(tr);
+    }
+
+    private void loadSizeConfig() {
+        try {
+            List<String> lines = Files.readAllLines(Paths.get(this.getFileName()));
+            String[] split = lines.get(2).split("x");
+
+            float w = Float.parseFloat(split[0].substring(7)) * pixelToMm();
+            float h = Float.parseFloat(split[1]) * pixelToMm();
+            System.out.println("Width: " + w + " Heigth " + h);
+            markerBoardSize.set(w, h);
+        } catch (IOException ex) {
+            Logger.getLogger(MarkerBoardARToolKitPlus.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
     }
 
     public int MIN_ARTOOLKIT_MARKER_DETECTED = 1;
@@ -209,9 +234,12 @@ public class MarkerBoardARToolKitPlus extends MarkerBoard {
             }
         }
 
-        inputMatrix.translate(0, height / 2, 0);
+//        inputMatrix.translate(0, height / 2, 0);
+//        inputMatrix.scale(1, -1, 1);
+//        inputMatrix.translate(0, -height / 2, 0);
+        // Invert the scales so that it fits Inkscape's view. 
         inputMatrix.scale(1, -1, 1);
-        inputMatrix.translate(0, -height / 2, 0);
+        inputMatrix.translate(0, -markerBoardSize.y, 0);
 
         PMatrix3D transfo = transfos.get(id);
         transfo.set(inputMatrix);

@@ -31,13 +31,14 @@ class MarkerBoard
     @url = url
     @svg = Nokogiri::XML(open(@url)).children[1]
 
-    @height = compute_height
+    @height = compute_size "height"
+    @width= compute_size "width"
     load_markers
   end
 
 
-  def compute_height
-    height_text = @svg.attributes["height"].value
+  def compute_size(name)
+    height_text = @svg.attributes[name].value
 
     ## convert
     if height_text.end_with? "mm"
@@ -61,6 +62,7 @@ class MarkerBoard
 
       output.puts "# multimarker definition file for ARToolKit (format defined by ARToolKit)\n"
       output.puts "# Papart MarkerBoard please fill the marker IDs. "
+      output.puts "# size:" + @width.to_s + "x" + @height.to_s
       output.write "\n#Number of Markers\n"
       output.puts @markers.length.to_s + "\n"
 
@@ -142,7 +144,6 @@ class MarkerBoard
 
       transform.scale(1, -1, 1)
       transform.translate(0, -h, 0)
-
 
       ## Going to mm sizes instead of pixels
       transform.m03 = transform.m03 * scale

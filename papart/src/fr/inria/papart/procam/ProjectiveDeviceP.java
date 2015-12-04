@@ -8,27 +8,19 @@
 package fr.inria.papart.procam;
 
 import fr.inria.papart.calibration.ProjectiveDeviceCalibration;
-import java.nio.FloatBuffer;
 import org.bytedeco.javacv.CameraDevice;
 import org.bytedeco.javacv.ProjectiveDevice;
 import org.bytedeco.javacv.ProjectorDevice;
-import org.bytedeco.javacpp.ARToolKitPlus.ARMarkerInfo;
-import org.bytedeco.javacpp.FloatPointer;
-import org.bytedeco.javacpp.IntPointer;
-import org.bytedeco.javacpp.indexer.DoubleIndexer;
 import org.bytedeco.javacpp.indexer.FloatIndexer;
 import org.bytedeco.javacpp.opencv_calib3d;
-import org.bytedeco.javacpp.opencv_core.CvMat;
 
 import static org.bytedeco.javacpp.opencv_calib3d.*;
 import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_imgproc.*;
 
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
-import toxi.geom.Ray3D;
 import toxi.geom.Vec3D;
 
 /**
@@ -321,45 +313,9 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
         Mat rotation = new Mat(3, 1, CV_64FC1);
         Mat translation = new Mat(3, 1, CV_64FC1);
 
-        if (intrinsicsMat == null) {
-            intrinsicsMat = new Mat(3, 3, CV_32FC1);
-            FloatIndexer intrinsicIdx = intrinsicsMat.createIndexer(true);
+        initNativeIntrinsic();
+        fillNative(objectPoints, imagePoints, op, ip);
 
-            // init to 0
-            int k = 0;
-            for (int i = 0; i < 3; i++) {
-                for (int j = 0; j < 3; j++) {
-                    intrinsicIdx.put(k++, 0);
-                }
-            }
-
-            // set the values
-            intrinsicIdx.put(0, 0, intrinsics.m00);
-            intrinsicIdx.put(1, 1, intrinsics.m11);
-            intrinsicIdx.put(0, 2, intrinsics.m02);
-            intrinsicIdx.put(1, 2, intrinsics.m12);
-            intrinsicIdx.put(2, 2, 1);
-        }
-
-        FloatIndexer opIdx = op.createIndexer();
-        FloatIndexer ipIdx = ip.createIndexer();
-
-        // Fill the object and image matrices.
-        for (int i = 0; i < objectPoints.length; i++) {
-            opIdx.put(i, 0, objectPoints[i].x);
-            opIdx.put(i, 1, objectPoints[i].y);
-            opIdx.put(i, 2, objectPoints[i].z);
-
-            ipIdx.put(i, 0, imagePoints[i].x);
-            ipIdx.put(i, 1, imagePoints[i].y);
-        }
-
-        //  cv::SOLVEPNP_ITERATIVE = 0, 
-        //  cv::SOLVEPNP_EPNP = 1, 
-//  cv::SOLVEPNP_P3P = 2, 
-//  cv::SOLVEPNP_DLS = 3, 
-//  cv::SOLVEPNP_UPNP = 4 
-// Convert all to Mat, instead of CvMat
         boolean solved = opencv_calib3d.solvePnP(op,
                 ip,
                 intrinsicsMat, new Mat(),
@@ -392,7 +348,60 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
 
         assert (objectPoints.length == imagePoints.length);
 
-     
+        Mat op = new Mat(objectPoints.length, 3, CV_32FC1);
+        Mat ip = new Mat(imagePoints.length, 2, CV_32FC1);
+        Mat rotation = new Mat(3, 1, CV_64FC1);
+        Mat translation = new Mat(3, 1, CV_64FC1);
+
+        initNativeIntrinsic();
+        fillNative(objectPoints, imagePoints, op, ip);
+
+//        Mat distorsions = new Mat(4, 1, CV_32FC1);
+//        FloatIndexer distort = distorsions.createIndexer();
+//        distort.put(0, 0, 0);
+//        distort.put(1, 0, 0);
+//        distort.put(2, 0, 0);
+//        distort.put(3, 0, 0);
+        boolean solvePnPRansac = opencv_calib3d.solvePnPRansac(
+                op,
+                ip,
+                intrinsicsMat,
+                new Mat(),
+                rotation,
+                translation,
+                false, // extrinsic guess
+                100, // iterationsCount
+                8.0f, // reprojError
+                0.99, // confidence
+                new Mat(), // outputArray
+                opencv_calib3d.SOLVEPNP_ITERATIVE);
+//        boolean solvePnPRansac = opencv_calib3d.solvePnPRansac(
+//                op,
+//                ip,
+//                intrinsicsMat, new Mat(),
+//                rotation, translation);
+        
+//        @Namespace("cv") public static native @Cast("bool") boolean solvePnPRansac( @ByVal Mat objectPoints, @ByVal Mat imagePoints,
+//                                  @ByVal Mat cameraMatrix, @ByVal Mat distCoeffs,
+//                                  @ByVal Mat rvec, @ByVal Mat tvec,
+//                                  @Cast("bool") boolean useExtrinsicGuess/*=false*/, int iterationsCount/*=100*/,
+//                                  float reprojectionError/*=8.0*/, double confidence/*=0.99*/,
+//                                  @ByVal(nullValue = "cv::noArray()") Mat inliers/*=cv::noArray()*/, int flags/*=cv::SOLVEPNP_ITERATIVE*/ );
+        Mat rotMat = new Mat(3, 3, CV_64FC1);
+        Rodrigues(rotation, rotMat);
+
+        double[] rotationIndex = (double[]) rotMat.createIndexer(false).array();
+        double[] translationIndex = (double[]) translation.createIndexer(false).array();
+
+        PMatrix3D mat = new PMatrix3D((float) rotationIndex[0], (float) rotationIndex[1], (float) rotationIndex[2], (float) translationIndex[0],
+                (float) rotationIndex[3], (float) rotationIndex[4], (float) rotationIndex[5], (float) translationIndex[1],
+                (float) rotationIndex[6], (float) rotationIndex[7], (float) rotationIndex[8], (float) translationIndex[2],
+                0, 0, 0, 1f);
+//        mat.set(RTMat);
+        return mat;
+    }
+
+    private void initNativeIntrinsic() {
         if (intrinsicsMat == null) {
             intrinsicsMat = new Mat(3, 3, CV_32FC1);
             FloatIndexer intrinsicIdx = intrinsicsMat.createIndexer(true);
@@ -412,12 +421,11 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
             intrinsicIdx.put(1, 2, intrinsics.m12);
             intrinsicIdx.put(2, 2, 1);
         }
-        
-           Mat op = new Mat(objectPoints.length, 3, CV_32FC1);
-        Mat ip = new Mat(imagePoints.length, 2, CV_32FC1);
-        Mat rotation = new Mat(3, 1, CV_64FC1);
-        Mat translation = new Mat(3, 1, CV_64FC1);
+    }
 
+    private void fillNative(PVector[] objectPoints,
+            PVector[] imagePoints,
+            Mat op, Mat ip) {
 
         FloatIndexer opIdx = op.createIndexer();
         FloatIndexer ipIdx = ip.createIndexer();
@@ -427,67 +435,10 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
             opIdx.put(i, 0, objectPoints[i].x);
             opIdx.put(i, 1, objectPoints[i].y);
             opIdx.put(i, 2, objectPoints[i].z);
-            
+
             ipIdx.put(i, 0, imagePoints[i].x);
             ipIdx.put(i, 1, imagePoints[i].y);
         }
-
-        //  cv::SOLVEPNP_ITERATIVE = 0, 
-        //  cv::SOLVEPNP_EPNP = 1, 
-//  cv::SOLVEPNP_P3P = 2, 
-//  cv::SOLVEPNP_DLS = 3, 
-//  cv::SOLVEPNP_UPNP = 4 
-// Convert all to Mat, instead of CvMat
-//        Mat inliners = new Mat();
-//        opencv_calib3d.solvePnPRansac(
-//                op,
-//                ip,
-//                intrinsicsMat,
-//                new Mat(), // distorsions. 
-//                rotation,
-//                translation,
-//                false, // extrinsic guess
-//                100, // iterationsCount
-//                8.0f, // reprojError
-//                0.99, // confidence
-//                inliners, // outputArray
-//                opencv_calib3d.SOLVEPNP_ITERATIVE);
-         Mat distorsions = new Mat(4, 1, CV_32FC1);
-
-         opencv_calib3d.solvePnPRansac(
-                op,
-                ip,
-                intrinsicsMat,
-                distorsions,
-                rotation,
-                translation, 
-                false, // extrinsic guess
-                100, // iterationsCount
-                8.0f, // reprojError
-                0.99, // confidence
-                new Mat(), // outputArray
-                opencv_calib3d.SOLVEPNP_ITERATIVE);
-                
-        
-//        @Namespace("cv") public static native @Cast("bool") boolean solvePnPRansac( @ByVal Mat objectPoints, @ByVal Mat imagePoints,
-//                                  @ByVal Mat cameraMatrix, @ByVal Mat distCoeffs,
-//                                  @ByVal Mat rvec, @ByVal Mat tvec,
-//                                  @Cast("bool") boolean useExtrinsicGuess/*=false*/, int iterationsCount/*=100*/,
-//                                  float reprojectionError/*=8.0*/, double confidence/*=0.99*/,
-//                                  @ByVal(nullValue = "cv::noArray()") Mat inliers/*=cv::noArray()*/, int flags/*=cv::SOLVEPNP_ITERATIVE*/ );
-        
-        Mat rotMat = new Mat(3, 3, CV_64FC1);
-        Rodrigues(rotation, rotMat);
-
-        double[] rotationIndex = (double[]) rotMat.createIndexer(false).array();
-        double[] translationIndex = (double[]) translation.createIndexer(false).array();
-
-        PMatrix3D mat = new PMatrix3D((float) rotationIndex[0], (float) rotationIndex[1], (float) rotationIndex[2], (float) translationIndex[0],
-                (float) rotationIndex[3], (float) rotationIndex[4], (float) rotationIndex[5], (float) translationIndex[1],
-                (float) rotationIndex[6], (float) rotationIndex[7], (float) rotationIndex[8], (float) translationIndex[2],
-                0, 0, 0, 1f);
-//        mat.set(RTMat);
-        return mat;
     }
 
     public void saveTo(PApplet applet, String filename) {

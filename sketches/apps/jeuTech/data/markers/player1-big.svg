@@ -14,8 +14,8 @@
    height="744.09448"
    id="svg2"
    version="1.1"
-   inkscape:version="0.48.4 r9939"
-   sodipodi:docname="player1.svg">
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="player1-big.svg">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -32,10 +32,10 @@
      inkscape:current-layer="layer1"
      showgrid="false"
      units="mm"
-     inkscape:window-width="1488"
-     inkscape:window-height="908"
-     inkscape:window-x="95"
-     inkscape:window-y="122"
+     inkscape:window-width="1920"
+     inkscape:window-height="1200"
+     inkscape:window-x="1920"
+     inkscape:window-y="0"
      inkscape:window-maximized="0" />
   <metadata
      id="metadata7">
@@ -216,17 +216,19 @@
     <image
        y="857.48029"
        x="35.433071"
-       id="image2997-2"
+       id="marker210"
        xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAA3NCSVQICAjb4U/gAAAAIUlEQVQI mWNgwAP+//+PKciEJo1FEVwIIYfVKMKWEa0bAO6FF+uANN+GAAAAAElFTkSuQmCC "
        height="159.44882"
-       width="159.44882" />
+       width="159.44882"
+       inkscape:label="#image2997-2" />
     <image
        y="325.98422"
        x="35.433071"
-       id="image3008-0"
+       id="marker211"
        xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAA3NCSVQICAjb4U/gAAAAMUlEQVQI mWNgwAP+//+PKciEJv3//38IgxGrDkZGRnTT0BXBTYDLMcFZjIyMWF2BDgBB9SPofwKgywAAAABJ RU5ErkJggg== "
        height="159.44882"
-       width="159.44882" />
+       width="159.44882"
+       inkscape:label="#image3008-0" />
     <text
        xml:space="preserve"
        style="font-size:67.21756744px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Serif;-inkscape-font-specification:Serif"
@@ -245,10 +247,11 @@
     <image
        y="325.98422"
        x="868.11023"
-       id="image3019-2"
+       id="marker212"
        xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAA3NCSVQICAjb4U/gAAAAK0lEQVQI mWNgwAP+//+PKciELI2sAiHByMiI3TSIchR9yEIo9sEl8LgFAQCDeyne8A4uMAAAAABJRU5ErkJg gg== "
        height="159.44882"
-       width="159.44882" />
+       width="159.44882"
+       inkscape:label="#image3019-2" />
     <text
        xml:space="preserve"
        style="font-size:67.21756744px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Serif;-inkscape-font-specification:Serif"
@@ -263,10 +266,11 @@
     <image
        y="857.48029"
        x="868.11023"
-       id="image3030-7"
+       id="marker213"
        xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAA3NCSVQICAjb4U/gAAAALUlEQVQI mWNgwAP+//+PKciELA1RgaIOzsEiiibHBOcwMjIiSzNimgBRgRMAAGM7I+gAJf0SAAAAAElFTkSu QmCC "
        height="159.44882"
-       width="159.44882" />
+       width="159.44882"
+       inkscape:label="#image3030-7" />
     <text
        xml:space="preserve"
        style="font-size:67.21756744px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Serif;-inkscape-font-specification:Serif"
