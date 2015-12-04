@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package fr.inria.papart.procam;
+package fr.inria.papart.tracking;
 
 import fr.inria.papart.procam.camera.Camera;
 import org.bytedeco.javacpp.opencv_core;
@@ -25,6 +25,6 @@ public class MarkerBoardInvalid extends MarkerBoard {
     }
 
     @Override
-    protected void updatePositionImpl(int id, int currentTime, int endTime, int mode, Camera camera, opencv_core.IplImage img) {
+    protected void updatePositionImpl(int id, int currentTime, int endTime, int mode, Camera camera, opencv_core.IplImage img, Object globalTracking) {
     }
 }

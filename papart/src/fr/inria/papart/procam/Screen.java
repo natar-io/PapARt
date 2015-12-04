@@ -7,6 +7,8 @@
  */
 package fr.inria.papart.procam;
 
+import fr.inria.papart.tracking.MarkerBoardInvalid;
+import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.calibration.HomographyCalibration;
 import fr.inria.papart.calibration.HomographyCreator;
 import fr.inria.papart.procam.camera.Camera;
@@ -182,6 +184,7 @@ public class Screen implements HasExtrinsics {
      * Get a copy of the overall transform (after tracking and second
      * transform).
      *
+     * @param camera
      * @return
      */
     public PMatrix3D getLocation(Camera camera) {
@@ -189,9 +192,13 @@ public class Screen implements HasExtrinsics {
             return extrinsics.get();
         }
 
-        PMatrix3D combinedTransfos = markerBoard.getTransfoMat(camera).get();
+        PMatrix3D combinedTransfos = getMainLocation(camera);
         combinedTransfos.apply(extrinsics);
         return combinedTransfos;
+    }
+    
+    protected PMatrix3D getMainLocation(Camera camera){
+        return markerBoard.getTransfoMat(camera).get();
     }
 
     /**
@@ -391,12 +398,13 @@ public class Screen implements HasExtrinsics {
     /**
      * Set the main position (override tracking system). Use only after the call
      * of paperScreen.useManualLocation(false);
-     *
+     * Lock for 10hours. 
      * @param position
+     * @param cam
      */
     public void setMainLocation(PMatrix3D position, Camera cam) {
-        this.markerBoard.setFakeLocation(cam, position);
-        this.blockUpdate(cam, Integer.MAX_VALUE);
+        this.setFakeLocation(cam, position);
+        this.blockUpdate(cam, 10 * 60 * 60 * 1000); // ms
     }
 
     public void forceUpdate(Camera camera, int time) {

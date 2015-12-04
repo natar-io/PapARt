@@ -26,7 +26,7 @@ import toxi.geom.*;
 
 import processing.video.*;
 
-public class PaperApp2D extends PApplet {
+public class MarkerDetectionDebug extends PApplet {
 
     boolean useProjector = false;
     Papart papart;
@@ -38,7 +38,7 @@ public class PaperApp2D extends PApplet {
     }
 
     public static void main(String args[]) {
-        PApplet.main(new String[]{"--present", "fr.inria.papart.apps.PaperApp2D"});
+        PApplet.main(new String[]{"--present", "fr.inria.papart.apps.MarkerDetectionDebug"});
     }
 
     @Override
@@ -50,7 +50,7 @@ public class PaperApp2D extends PApplet {
         PaperScreen app = new MyApp2D();
         papart.startTracking();
         
-//        papart.getARDisplay().manualMode();
+        papart.getARDisplay().manualMode();
 
     }
 

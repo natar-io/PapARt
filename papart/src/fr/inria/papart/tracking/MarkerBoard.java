@@ -5,7 +5,7 @@
  *
  * No licence yet.
  */
-package fr.inria.papart.procam;
+package fr.inria.papart.tracking;
 
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.display.ProjectorDisplay;
@@ -212,7 +212,7 @@ public abstract class MarkerBoard {
                 || px.y > (projector.getHeight() + error));
     }
 
-    public synchronized void updatePosition(Camera camera, IplImage img) {
+    public synchronized void updateLocation(Camera camera, IplImage img, Object globalTracking) {
 
         int id = cameras.indexOf(camera);
         if (id == -1) {
@@ -229,41 +229,12 @@ public abstract class MarkerBoard {
             return;
         }
         
-        updatePositionImpl(id, currentTime, endTime, mode, camera, img);
+        updatePositionImpl(id, currentTime, endTime, mode, camera, img, globalTracking);
 
     }
-
-    protected abstract void updatePositionImpl(int id, int currentTime, int endTime, int mode, Camera camera, IplImage img);
+    protected abstract void updatePositionImpl(int id, int currentTime, int endTime, int mode, Camera camera, IplImage img, Object globalTracking);
     
-//    public void filter(Camera camera) {
-//        int id = cameras.indexOf(camera);
-//        PMatrix3D transfo = (PMatrix3D) transfos.get(id);
-//        OneEuroFilter filter[] = filters.get(id);
-//
-//        PMatrix3D newPos = transfo;
-//        assert (filter != null);
-//
-//        try {
-//            // Rotation
-//            transfo.m00 = (float) filter[0].filter(newPos.m00);
-//            transfo.m01 = (float) filter[1].filter(newPos.m01);
-//            transfo.m02 = (float) filter[2].filter(newPos.m02);
-//            transfo.m10 = (float) filter[3].filter(newPos.m10);
-//            transfo.m11 = (float) filter[4].filter(newPos.m11);
-//            transfo.m12 = (float) filter[5].filter(newPos.m12);
-//            transfo.m20 = (float) filter[6].filter(newPos.m20);
-//            transfo.m21 = (float) filter[7].filter(newPos.m21);
-//            transfo.m22 = (float) filter[8].filter(newPos.m22);
-//
-//            // Translation
-//            transfo.m03 = (float) filter[9].filter(newPos.m03);
-//            transfo.m13 = (float) filter[10].filter(newPos.m13);
-//            transfo.m23 = (float) filter[11].filter(newPos.m23);
-//
-//        } catch (Exception e) {
-//            System.out.println("Filtering error " + e);
-//        }
-//    }
+
     public PMatrix3D getTransfoMat(Camera camera) {
         return transfos.get(cameras.indexOf(camera));
     }
@@ -283,7 +254,7 @@ public abstract class MarkerBoard {
     }
 
     public ARToolKitPlus.TrackerMultiMarker getARToolkitTracking(Camera camera) {
-        assert (this.useARToolkit());
+        assert (this.useGrayscaleImages());
         return (ARToolKitPlus.TrackerMultiMarker) getTracking(camera);
     }
 
@@ -295,8 +266,12 @@ public abstract class MarkerBoard {
         return this.type == MarkerType.JAVACV_FINDER;
     }
 
-    public boolean useARToolkit() {
+    public boolean useGrayscaleImages() {
         return this.type == MarkerType.ARTOOLKITPLUS || this.type == MarkerType.SVG;
+    }
+  
+    public boolean useCustomARToolkitBoard() {
+        return this.type == MarkerType.SVG;
     }
 
     public String getFileName() {

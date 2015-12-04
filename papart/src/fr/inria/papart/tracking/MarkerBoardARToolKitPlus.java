@@ -3,11 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package fr.inria.papart.procam;
+package fr.inria.papart.tracking;
 
-import static fr.inria.papart.procam.MarkerBoard.BLOCK_UPDATE;
-import static fr.inria.papart.procam.MarkerBoard.FORCE_UPDATE;
-import static fr.inria.papart.procam.MarkerBoard.NORMAL;
+import static fr.inria.papart.tracking.MarkerBoard.BLOCK_UPDATE;
+import static fr.inria.papart.tracking.MarkerBoard.FORCE_UPDATE;
+import static fr.inria.papart.tracking.MarkerBoard.NORMAL;
 import fr.inria.papart.procam.camera.Camera;
 import java.util.ArrayList;
 import org.bytedeco.javacpp.ARToolKitPlus;
@@ -21,7 +21,6 @@ import processing.core.PVector;
  */
 public class MarkerBoardARToolKitPlus extends MarkerBoard {
 
-    
     public MarkerBoardARToolKitPlus(String fileName, float width, float height) {
         super(fileName, width, height);
         trackers = new ArrayList<ARToolKitPlus.TrackerMultiMarker>();
@@ -90,8 +89,8 @@ public class MarkerBoardARToolKitPlus extends MarkerBoard {
 //        tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_FULL_RES);
         tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_HALF_RES);
 
-        tracker.setUseDetectLite(false);
-//        tracker.setUseDetectLite(true);
+//        tracker.setUseDetectLite(false);
+        tracker.setUseDetectLite(true);
 
         // Initialize the tracker, with camera parameters and marker config. 
         if (!tracker.init(camera.getCalibrationARToolkit(), this.getFileName(), 1.0f, 10000.f)) {
@@ -111,7 +110,8 @@ public class MarkerBoardARToolKitPlus extends MarkerBoard {
     public int MIN_ARTOOLKIT_MARKER_DETECTED = 1;
 
     @Override
-    protected void updatePositionImpl(int id, int currentTime, int endTime, int mode, Camera camera, opencv_core.IplImage img) {
+    protected void updatePositionImpl(int id, int currentTime, int endTime, int mode,
+            Camera camera, opencv_core.IplImage img, Object globalTracking) {
 
         ARToolKitPlus.TrackerMultiMarker tracker = (ARToolKitPlus.TrackerMultiMarker) trackers.get(id);
 
@@ -209,10 +209,10 @@ public class MarkerBoardARToolKitPlus extends MarkerBoard {
             }
         }
 
-        inputMatrix.translate(0,  height /2, 0);
+        inputMatrix.translate(0, height / 2, 0);
         inputMatrix.scale(1, -1, 1);
-        inputMatrix.translate(0, - height /2, 0);
-        
+        inputMatrix.translate(0, -height / 2, 0);
+
         PMatrix3D transfo = transfos.get(id);
         transfo.set(inputMatrix);
 //    Z negation ?

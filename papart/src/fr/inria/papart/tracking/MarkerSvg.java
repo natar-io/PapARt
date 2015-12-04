@@ -82,9 +82,12 @@ public class MarkerSvg implements Cloneable {
     }
 
     static private void findMarkers(PShapeSVG shape, ArrayList<PShape> markers) {
-
-        for (PShape child : shape.getChildren()) {
-            findMarkers((PShapeSVG) child, markers);
+        try {
+            for (PShape child : shape.getChildren()) {
+                findMarkers((PShapeSVG) child, markers);
+            }
+        } catch (NullPointerException npe) {
+            // Sometimes no child causes a null pointer exception.
         }
 
         if (shape.getKind() == RECT && shape.getName().startsWith("marker")) {
@@ -92,9 +95,20 @@ public class MarkerSvg implements Cloneable {
         }
     }
 
+    static private float computeSize(String heightText) {
+
+        if (heightText.endsWith("mm")) {
+            String value = heightText.substring(0, heightText.indexOf("mm"));
+            return Float.parseFloat(value) * mmToPixel();
+        } else {
+            return Float.parseFloat(heightText);
+        }
+
+    }
+
     static public MarkerList getMarkersFromSVG(XML xml) {
 
-        float pageHeight = xml.getFloat("height");
+        float pageHeight = computeSize(xml.getString("height"));
 //        System.out.println("Height : " + pageHeight);
 
         PShape svg = new PShapeSVG(xml);
@@ -103,8 +117,11 @@ public class MarkerSvg implements Cloneable {
 
 //        ArrayList<MarkerSvg> markers = new ArrayList<>();
         MarkerList markers = new MarkerList();
-        markers.setSheetHeight(pageHeight * pixelToMm());
-
+        
+        float sheetWidth =  computeSize(xml.getString("width"))  * pixelToMm();
+        float sheetHeight =  computeSize(xml.getString("height")) * pixelToMm();
+        markers.setSheetSize(sheetWidth, sheetHeight);
+        
         for (PShape markerSvg : markersSVG) {
 
             int id = Integer.parseInt(markerSvg.getName().substring(6));

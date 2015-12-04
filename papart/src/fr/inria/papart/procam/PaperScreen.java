@@ -7,6 +7,9 @@
  */
 package fr.inria.papart.procam;
 
+import fr.inria.papart.tracking.MarkerBoardFactory;
+import fr.inria.papart.tracking.MarkerBoardInvalid;
+import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.calibration.HomographyCalibration;
 import fr.inria.papart.procam.display.BaseDisplay;
@@ -488,7 +491,6 @@ public class PaperScreen {
 
     // TODO: Bug here, without this call, the rendering is different. 
     public void setLocation(float x, float y, float z) {
-        assert (isInitialized);
         screen.setTranslation(x, y, z);
     }
 
@@ -510,7 +512,7 @@ public class PaperScreen {
     public void saveLocationTo(String filename) {
         HomographyCalibration.saveMatTo(
                 Papart.getPapart().getApplet(),
-                screen.getLocation(cameraTracking),
+                screen.getMainLocation(cameraTracking),
                 filename);
     }
 

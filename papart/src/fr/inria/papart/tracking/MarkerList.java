@@ -6,22 +6,27 @@
 package fr.inria.papart.tracking;
 
 import java.util.HashMap;
+import processing.core.PVector;
 
 /**
  *
  * @author Jérémy Laviole - jeremy.laviole@inria.fr
  */
-public class MarkerList extends HashMap<Integer, MarkerSvg>{
-    
-    private float sheetHeight = 0;
+public class MarkerList extends HashMap<Integer, MarkerSvg> {
+
+    private final PVector sheetSize = new PVector();
 
     public float getSheetHeight() {
-        return sheetHeight;
+        return sheetSize.y;
     }
 
-    public void setSheetHeight(float sheetHeight) {
-        this.sheetHeight = sheetHeight;
+    public void setSheetSize(PVector size) {
+        setSheetSize(size.x, size.y);
     }
-    
-    
+
+    public void setSheetSize(float x, float y) {
+        this.sheetSize.x = x;
+        this.sheetSize.y = y;
+    }
+
 }

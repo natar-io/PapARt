@@ -7,7 +7,7 @@ package fr.inria.papart.calibration;
 
 import fr.inria.papart.depthcam.devices.KinectDevice;
 import fr.inria.papart.depthcam.devices.KinectDevice.Type;
-import fr.inria.papart.procam.MarkerBoard;
+import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.ProjectorAsCamera;
@@ -253,7 +253,7 @@ public class CalibrationPopup extends PApplet {
         if (projImage == null) {
             return new PMatrix3D();
         }
-        board.updatePosition(projectorAsCamera, projImage);
+        board.updateLocation(projectorAsCamera, projImage, null);
         return board.getTransfoMat(projectorAsCamera);
     }
 
@@ -262,7 +262,7 @@ public class CalibrationPopup extends PApplet {
     private opencv_core.IplImage projectorImage() {
         projectorView.setCorners(corners);
         opencv_core.IplImage projImage = projectorView.getIplViewOf(cameraTracking);
-        if (board.useARToolkit()) {
+        if (board.useGrayscaleImages()) {
             projImage = greyProjectorImage(projImage);
         }
         return projImage;

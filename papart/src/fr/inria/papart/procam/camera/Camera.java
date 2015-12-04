@@ -12,12 +12,14 @@ package fr.inria.papart.procam.camera;
  * @author jeremylaviole
  */
 import fr.inria.papart.graph.Node;
-import fr.inria.papart.procam.MarkerBoard;
+import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.procam.Utils;
 import fr.inria.papart.procam.camera.CamImage;
 import fr.inria.papart.procam.camera.CamImageColor;
 import fr.inria.papart.procam.camera.CamImageGray;
+import fr.inria.papart.tracking.DetectedMarker;
+import fr.inria.papart.tracking.MarkerList;
 import org.bytedeco.javacpp.opencv_core.CvMat;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import java.util.ArrayList;
@@ -41,6 +43,7 @@ public abstract class Camera extends Node implements PConstants {
     protected IplImage currentImage, copyUndist;
 
     protected CamImage camImage = null;
+    protected DetectedMarker[] lastMarkers = null;
 
     public enum Type {
 
@@ -89,16 +92,24 @@ public abstract class Camera extends Node implements PConstants {
     abstract public void start();
 
     @Override
-    public String toString(){
-        return "Camera, res " + width() + "x"+ height() + " calibration " + this.calibrationFile ;
+    public String toString() {
+        return "Camera, res " + width() + "x" + height() + " calibration " + this.calibrationFile;
     }
-    
+
     public PImage getImage() {
         return getPImage();
     }
 
     public abstract PImage getPImage();
 
+    void setMarkers(DetectedMarker[] detectedMarkers) {
+        this.lastMarkers = detectedMarkers;
+    }
+
+    public DetectedMarker[] getDetectedMarkers() {
+        return this.lastMarkers;
+    }
+    
     protected void checkParameters() {
         if (width == 0 || height == 0) {
             throw new RuntimeException("Camera: Width or Height are 0, set them or load a calibration.");
@@ -240,8 +251,8 @@ public abstract class Camera extends Node implements PConstants {
             this.sheets.add(sheet);
             sheetsSemaphore.release();
         } catch (InterruptedException ex) {
-            System.out.println("Interrupted !"); 
-           Logger.getLogger(Camera.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("Interrupted !");
+            Logger.getLogger(Camera.class.getName()).log(Level.SEVERE, null, ex);
         } catch (NullPointerException e) {
             throw new RuntimeException("Marker detection not initialized. " + e);
         }
@@ -428,7 +439,6 @@ public abstract class Camera extends Node implements PConstants {
             String calibrationARtoolkit) {
         convertARParams(parent, calibrationFile, calibrationARtoolkit, 0, 0);
     }
-    
 
     static public void convertARParams(PApplet parent, String calibrationFile,
             String calibrationARtoolkit, int width, int height) {

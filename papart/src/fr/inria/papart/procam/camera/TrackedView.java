@@ -7,8 +7,8 @@
  */
 package fr.inria.papart.procam.camera;
 
-import fr.inria.papart.procam.MarkerBoard;
-import fr.inria.papart.procam.MarkerBoardInvalid;
+import fr.inria.papart.tracking.MarkerBoard;
+import fr.inria.papart.tracking.MarkerBoardInvalid;
 import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.Utils;
 import fr.inria.papart.procam.camera.Camera;

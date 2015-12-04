@@ -8,7 +8,7 @@
 package fr.inria.papart.procam.display;
 
 import fr.inria.papart.procam.HasCamera;
-import fr.inria.papart.procam.MarkerBoard;
+import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.Screen;

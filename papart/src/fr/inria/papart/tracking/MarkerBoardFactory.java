@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package fr.inria.papart.procam;
+package fr.inria.papart.tracking;
 
-import fr.inria.papart.procam.MarkerBoard.MarkerType;
+import fr.inria.papart.tracking.MarkerBoard.MarkerType;
 
 /**
  *
