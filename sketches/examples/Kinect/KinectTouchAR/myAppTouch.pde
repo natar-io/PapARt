@@ -3,7 +3,7 @@ public class MyApp  extends PaperTouchScreen {
 
     void settings(){
 	setDrawingSize(297, 210);
-	loadMarkerBoard(Papart.markerFolder + "big.cfg", 297, 210);
+	loadMarkerBoard(Papart.markerFolder + "big-calib.svg", 297, 210);
     }
 
     void setup(){
