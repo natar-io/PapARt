@@ -1,7 +1,7 @@
 // import java.util.*;
 
-float paperOffsetX = -22;
-float paperOffsetY = -30;
+float paperOffsetX = 0;
+float paperOffsetY = 0;
 // float paperOffsetX = -0;
 // float paperOffsetY = -0;
 
