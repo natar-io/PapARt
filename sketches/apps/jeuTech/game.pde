@@ -7,9 +7,10 @@ import java.awt.Robot;
 Game game;
 
 PVector gameBoardSize = new PVector(297, 90);
-float gameOffsetX = -17;
-float gameOffsetY = -20;
+float gameOffsetX = 0;
+float gameOffsetY = 0;
 
+float colorCaptureY = 55;
 
 PImage cameraImage;
 
@@ -89,17 +90,17 @@ public class Game  extends PaperTouchScreen {
 
     void createCaptures(){
 	colorDetections[0] = new ColorDetection(this);
-	colorDetections[0].setPosition(new PVector(80, 60));
+	colorDetections[0].setPosition(new PVector(80, colorCaptureY));
 	colorDetections[0].setCaptureOffset(offset);
 	colorDetections[0].initialize();
 
 	colorDetections[1] = new ColorDetection(this);
-	colorDetections[1].setPosition(new PVector(120, 60));
+	colorDetections[1].setPosition(new PVector(120, colorCaptureY));
 	colorDetections[1].setCaptureOffset(offset);
 	colorDetections[1].initialize();
 
 	colorDetections[2] = new ColorDetection(this);
-	colorDetections[2].setPosition(new PVector(160, 60));
+	colorDetections[2].setPosition(new PVector(160, colorCaptureY));
 	colorDetections[2].setCaptureOffset(offset);
 	colorDetections[2].initialize();
 
@@ -108,7 +109,7 @@ public class Game  extends PaperTouchScreen {
 	// colorDetections[3].initialize();
 
 	colorDrawingDetection = new ColorDetection(this);
-	colorDrawingDetection.setPosition(new PVector(200, 60));
+	colorDrawingDetection.setPosition(new PVector(200, colorCaptureY));
 	colorDrawingDetection.setCaptureOffset(offset);
 	colorDrawingDetection.initialize();
 

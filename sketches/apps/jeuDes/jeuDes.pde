@@ -19,11 +19,15 @@ KinectTouchInput touchInput;
 boolean noCamera = false;
 
 
+void settings(){
+    fullScreen(P3D);
+}
+
 void setup(){
 
 
     if(noCamera) {
-	size(800, 600, OPENGL);
+
 	Papart papart = new Papart(this);
 	papart.initNoCamera(1);
 	papart.loadTouchInputTUIO();
@@ -36,9 +40,6 @@ void setup(){
 	papart = Papart.projection(this);
 	papart.loadTouchInput();
     } else {
-	size((int) (640 * renderQuality),
-	     (int) (480 * renderQuality),
-	     OPENGL);
 
 	papart = new Papart(this);
 
@@ -68,6 +69,8 @@ boolean saveOrangeColor = false;
 
 void keyPressed() {
 
+    println("key " + key);
+
     if(key == 'd'){
 	saveDiceColors = true;
 	println("SaveDiceColor");
@@ -81,9 +84,9 @@ void keyPressed() {
     if(key == 'b')
 	board.loadLocationFrom("board.xml");
 
-    if(key == 'C')
+    if(key == 'K')
 	counter.saveLocationTo("counter.xml");
-    if(key == 'c')
+    if(key == 'k')
 	counter.loadLocationFrom("counter.xml");
 
     if(key == 'S')

@@ -7,32 +7,34 @@ public class MyStatus  extends PaperTouchScreen {
   int height = 50;
 
   PFont font;
-  void setup() {
-    setDrawingSize(width, height);
-    //	loadMarkerBoard(sketchPath + "/data/A3-small1.cfg", 297, 210);
-    loadMarkerBoard(sketchPath + "/data/drawing.cfg", width, height);
 
+    void settings(){
+        setDrawingSize(width, height);
+        loadMarkerBoard(sketchPath() + "/data/status.svg", width, height);
+        myStatus = this;
+    }
+
+    void setup() {
     font = loadFont("DejaVuSansMono-Bold-25.vlw");
-    myStatus = this;
   }
 
-  void draw() {
+  void drawOnPaper() {
 
     if (noCamera) {
       setLocation(100, 10, 0);
     }
 
+    setLocation(13, 193.3, 0);
 
     beginDraw2D();
     colorMode(RGB, 255);
     clear();
 
-background(100);
+    background(100);
     // stroke(255);
     // noFill();
     // rect(0, 0, width, height);
     noStroke();
-
 
     fill(currentPlayer.getColor());
     drawPlayer(currentPlayer.id);
@@ -42,7 +44,7 @@ background(100);
 
 
     drawMode();
-    
+
     fill(255);
     stroke(255);
     int textWidth = 41;
@@ -52,17 +54,17 @@ background(100);
     textFont(font, 10);
     fill(200);
     noStroke();
-    
+
     translate(182, 10, 0);
     text("Points ", 3, 0);
-   
+
     translate(px, 15, 0);
     for (Player player : playerList) {
 
-      text("J" + player.id + ":" + player.nbPoints +" ", 0, 0); 
+      text("J" + player.id + ":" + player.nbPoints +" ", 0, 0);
       translate(textWidth, 0, 0);
     }
-    endDraw();
+
   }
 
 
@@ -71,18 +73,18 @@ background(100);
 	    fill(0, 100, 0);
 	    rect(1, 14, 69, 23);
 	}
-	
+
 	if(Mode.is("AddTower")){
 	    fill(0, 0, 100);
 	    rect(78, 26, 43, 11);
 	}
-	
+
 	if(Mode.is("SpecialAttack")){
 	    fill(0, 100, 1);
 	    rect(122, 27, 52, 14);
 	}
     }
-    
+
 //  int beginningOfNumbers = 60;
 //  int playerNoWidth = 10;
 //  int playerHighlightWidth = 7;
@@ -92,9 +94,9 @@ background(100);
       int beginningOfNumbers = 68;
   int playerNoWidth = 10;
   int playerHighlightWidth = 7;
-  
-      rect( beginningOfNumbers + nb * playerNoWidth, 
-	    4, 
+
+      rect( beginningOfNumbers + nb * playerNoWidth,
+	    4,
 	    playerHighlightWidth, playerHighlightWidth);
   }
 
@@ -106,4 +108,3 @@ background(100);
   }
 
 }
-

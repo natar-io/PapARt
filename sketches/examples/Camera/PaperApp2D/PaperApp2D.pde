@@ -11,7 +11,7 @@ import toxi.geom.*;
 
 import processing.video.*;
 
-boolean useProjector = true;
+boolean useProjector = false;
 Papart papart;
 ProjectorDisplay projector;
 

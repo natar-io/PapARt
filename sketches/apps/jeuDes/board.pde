@@ -7,23 +7,25 @@ int NEW_TOUCH = -1;
 
 public class MyBoard  extends PaperTouchScreen {
 
-    int width = 390;
-    int height = 270;
-    
-    void setup() {
-	setDrawingSize(width, height);
-	//	loadMarkerBoard(sketchPath + "/data/A3-small1.cfg", 297, 210);
-	loadMarkerBoard(sketchPath + "/data/drawing.cfg", width, height);
+    int width = 297;
+    int height = 210;
 
-	Player p1 = new Player();
+    void settings(){
+        setDrawingSize(width, height);
+	loadMarkerBoard(Papart.markerFolder + "A3-small1.svg", 297, 210);
+	board = this;
+    }
+
+    void setup() {
+		Player p1 = new Player();
 	Player p2 = new Player();
 	Player p3 = new Player();
 	Player p4 = new Player();
 
 	currentPlayer = p1;
-	board = this;
 
-	// Modes are for placement of Attacks or Towers only. 
+
+	// Modes are for placement of Attacks or Towers only.
 	Mode.add("PlaceDice");
 	Mode.add("AddTower");
 	Mode.add("SpecialAttack");
@@ -33,7 +35,7 @@ public class MyBoard  extends PaperTouchScreen {
 	// Mode.set("SpecialAttack");
         // Mode.set("ChooseAction");
         // Mode.set("AddTower");
-  
+
     }
 
     int maxAmount = 255;
@@ -41,21 +43,18 @@ public class MyBoard  extends PaperTouchScreen {
 
     int lastAction = 0;
     int actionTimeout = 500;
-    
-    void draw() {
+
+    void drawOnPaper() {
 
 	if(noCamera){
 	    setLocation(100, 100, 0);
 	}
-	
-	beginDraw2D();
+
+        // background(120);
 
 	if(millis() > lastAction + actionTimeout)  {
-
 	    colorMode(RGB, 255);
-
 	    clear();
-	
 	    noFill();
 	    stroke(200);
 	    strokeWeight(3);
@@ -65,37 +64,36 @@ public class MyBoard  extends PaperTouchScreen {
 
 	    if(animationAmount < 1)
 		fill(animationAmount * maxAmount);
-	
-	    rect(0, 0, drawingSize.x , drawingSize.y);
+
+            noFill();
+            stroke(200);
+            rect(0, 0, drawingSize.x , drawingSize.y);
 
 
 	    rectMode(CENTER);
 	    ellipseMode(CENTER);
 
-	
 	    // for reasons... touch needs to be updated -> was fixed ?
 	    updateTouch();
-		
+
 	    drawAttacks();
 	    drawPlayers();
-		
+
 	    // TODO: not always
 	    countPoints();
-		
+
 	    if(Mode.is("AddTower"))
 		checkAddTower();
 	    if(Mode.is("SpecialAttack"))
 		checkSpecialAttack();
 
 	    lastAction = millis();
-		
+
 	}
-	
-	endDraw();
 
     }
 
-    
+
     void countPoints(){
 	loadPixels();
 	for(Player player : playerList){
@@ -115,7 +113,7 @@ public class MyBoard  extends PaperTouchScreen {
 	}
 
     }
-    
+
     void drawPlayers(){
 	noStroke();
 	for(Player player : playerList){
@@ -124,7 +122,7 @@ public class MyBoard  extends PaperTouchScreen {
 	    }
 	}
     }
-    
+
     void drawAttacks(){
 	noStroke();
 	for(SpecialAttack attack : allAttacks){
@@ -137,10 +135,10 @@ public class MyBoard  extends PaperTouchScreen {
 
 	int offsetX = 7;
 	int offsetY = -17;
-	
+
 	if(player == currentPlayer){
 
-	    fill(player.getTempColor());	
+	    fill(player.getTempColor());
 	    offsetX = 7;
 	    offsetY = -17;
 	    rect(pos.x + offsetX,
@@ -152,14 +150,14 @@ public class MyBoard  extends PaperTouchScreen {
 	    rect(pos.x + offsetX,
 		 pos.y + offsetY,
 		 player.HP, player.HP);
-	    
+
 	} else {
 	    fill(player.getColor());
 	    rect(pos.x + offsetX,
 		 pos.y + offsetY,
 		 player.HP, player.HP);
 
-	    fill(player.getTempColor());	
+	    fill(player.getTempColor());
 	    offsetX = 7;
 	    offsetY = -17;
 	    rect(pos.x + offsetX,
@@ -176,8 +174,8 @@ public class MyBoard  extends PaperTouchScreen {
 
 
 	if(player == currentPlayer){
-	    
-	    fill(player.getTempColor());	
+
+	    fill(player.getTempColor());
 	    offsetX = 7;
 	    offsetY = -17;
 	    ellipse(pos.x + offsetX,
@@ -187,31 +185,31 @@ public class MyBoard  extends PaperTouchScreen {
 
 	    fill(player.getColor());
 	    ellipse(pos.x + offsetX,
-		    pos.y + offsetY, 
+		    pos.y + offsetY,
 		    player.HP * attackHPRatio,
 		    player.HP * attackHPRatio);
-	    
+
 
 	} else {
-	    fill(player.getTempColor());	
+	    fill(player.getTempColor());
 	    offsetX = 7;
 	    offsetY = -17;
 
 	    fill(player.getColor());
 	    ellipse(pos.x + offsetX,
-		    pos.y + offsetY, 
+		    pos.y + offsetY,
 		    player.HP * attackHPRatio,
 		    player.HP * attackHPRatio);
-	    
+
 	    ellipse(pos.x + offsetX,
 		    pos.y + offsetY,
 		    (player.HP* attackHPRatio) - damageAmount(),
 		    (player.HP* attackHPRatio) - damageAmount());
 
 
-	    
+
 	}
-	
+
     }
 
 
@@ -226,13 +224,13 @@ public class MyBoard  extends PaperTouchScreen {
 		continue;
 	    }
 
-	    // new touch. 
+	    // new touch.
 	    if(tp.attachedValue == NEW_TOUCH){
 		if(isCloseToAToken(p))
 		    continue;
-		
+
 		drawAttack(currentPlayer, p);
-		
+
 		// Bimanual !
 		if(tryAddElement){
 		    currentPlayer.addAttack(p);
@@ -244,7 +242,7 @@ public class MyBoard  extends PaperTouchScreen {
 	}
 
     }
-    
+
     void checkAddTower(){
 
 	TouchList touch2D = touchList.get2DTouchs();
@@ -275,5 +273,5 @@ public class MyBoard  extends PaperTouchScreen {
 	    }
 	}
     }
-    
+
 }

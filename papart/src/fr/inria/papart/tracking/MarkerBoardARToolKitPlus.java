@@ -238,6 +238,7 @@ public class MarkerBoardARToolKitPlus extends MarkerBoard {
 //        inputMatrix.scale(1, -1, 1);
 //        inputMatrix.translate(0, -height / 2, 0);
         // Invert the scales so that it fits Inkscape's view. 
+        
         inputMatrix.scale(1, -1, 1);
         inputMatrix.translate(0, -markerBoardSize.y, 0);
 
