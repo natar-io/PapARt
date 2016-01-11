@@ -181,7 +181,8 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics{
 
     @Override
     public void renderScreens() {
-
+        this.graphics.noStroke();
+        
         for (Screen screen : screens) {
             if (!screen.isDrawing()) {
                 continue;

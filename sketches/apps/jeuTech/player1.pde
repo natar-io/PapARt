@@ -30,7 +30,7 @@ public class Player1  extends PaperTouchScreen {
 
     void settings(){
         setDrawingSize( (int) playerBoardSize.x, (int)playerBoardSize.y);
-	loadMarkerBoard(sketchPath() + "/data/markers/player1-big.cfg",
+	loadMarkerBoard(sketchPath() + "/data/markers/player1-big.svg",
 			playerBoardSize.x, playerBoardSize.y);
     }
 

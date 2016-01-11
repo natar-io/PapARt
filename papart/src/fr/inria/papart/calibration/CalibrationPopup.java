@@ -13,12 +13,17 @@ import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.ProjectorAsCamera;
 import fr.inria.papart.procam.camera.TrackedView;
 import fr.inria.papart.procam.display.ProjectorDisplay;
+import fr.inria.papart.tracking.DetectedMarker;
 import fr.inria.skatolo.Skatolo;
 import fr.inria.skatolo.gui.controllers.Toggle;
 import fr.inria.skatolo.gui.group.Group;
 import fr.inria.skatolo.gui.group.RadioButton;
 import fr.inria.skatolo.gui.group.Textarea;
 import java.util.ArrayList;
+import org.bytedeco.javacpp.ARToolKitPlus;
+import static org.bytedeco.javacpp.ARToolKitPlus.MARKER_ID_BCH;
+import static org.bytedeco.javacpp.ARToolKitPlus.PIXEL_FORMAT_LUM;
+import static org.bytedeco.javacpp.ARToolKitPlus.UNDIST_NONE;
 import org.bytedeco.javacpp.opencv_core;
 import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
@@ -154,6 +159,13 @@ public class CalibrationPopup extends PApplet {
                 ARToolkitCalibFile);
         projectorAsCamera.initMarkerDetection(ARToolkitCalibFile);
         projectorAsCamera.trackMarkerBoard(board);
+        initMarkerTrackingFromProjector();
+    }
+    
+     private ARToolKitPlus.MultiTracker projectorTracker = null; 
+     
+    private void initMarkerTrackingFromProjector() {
+        projectorTracker = DetectedMarker.createDetector(projector.getWidth(), projector.getHeight());
     }
 
     private void initKinect360(KinectDevice kinectDevice) {
@@ -253,7 +265,10 @@ public class CalibrationPopup extends PApplet {
         if (projImage == null) {
             return new PMatrix3D();
         }
-        board.updateLocation(projectorAsCamera, projImage, null);
+        // Detection from Projector's view...
+        DetectedMarker[] markers = DetectedMarker.detect(this.projectorTracker, projImage);
+        
+        board.updateLocation(projectorAsCamera, projImage, markers);
         return board.getTransfoMat(projectorAsCamera);
     }
 
@@ -512,6 +527,7 @@ public class CalibrationPopup extends PApplet {
         }
         this.isHidden = true;
         this.getSurface().setVisible(false);
+        calibrationApp.setDrawing(false);
         System.out.println("Projector: " + projector);
         projector.setCalibrationMode(false);
     }
@@ -521,6 +537,7 @@ public class CalibrationPopup extends PApplet {
             return;
         }
         this.isHidden = false;
+        calibrationApp.setDrawing(true);
         projector.setCalibrationMode(true);
         this.getSurface().setVisible(true);
     }

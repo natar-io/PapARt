@@ -94,6 +94,29 @@ public class DetectedMarker implements Cloneable {
         return getImage(id);
     }
 
+    public static ARToolKitPlus.MultiTracker createDetector(int width, int height) {
+        ARToolKitPlus.MultiTracker tracker = new ARToolKitPlus.MultiTracker(width, height);
+
+        tracker.setPixelFormat(PIXEL_FORMAT_LUM);
+        tracker.setBorderWidth(0.125f);
+//        tracker.setThreshold(128);
+        tracker.activateAutoThreshold(true);
+//        tracker.setNumAutoThresholdRetries(10);
+
+        tracker.setUndistortionMode(UNDIST_NONE);
+
+//      tracker.setPoseEstimator(POSE_ESTIMATOR_RPP);
+//      tracker.setPoseEstimator(ARToolKitPlus.POSE_ESTIMATOR_RPP);
+//      tracker.setPoseEstimator(ARToolKitPlus.POSE_ESTIMATOR_ORIGINAL_CONT);
+        tracker.setMarkerMode(MARKER_ID_BCH);
+//        tracker.setImageProcessingMode(IMAGE_HALF_RES);
+        tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_FULL_RES);
+
+        tracker.setMarkerMode(ARToolKitPlus.MARKER_ID_BCH);
+        tracker.setUseDetectLite(false);
+        return tracker;
+    }
+
     private static IplImage imageCache[] = new IplImage[4096];
 
     public static IplImage getImage(int id) {

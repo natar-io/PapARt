@@ -1,5 +1,6 @@
 import fr.inria.papart.procam.*;
 import fr.inria.papart.procam.camera.*;
+import fr.inria.papart.tracking.*;
 import fr.inria.papart.procam.display.*;
 import fr.inria.papart.calibration.*;
 import fr.inria.papart.drawingapp.*;
@@ -130,6 +131,8 @@ void initModes(){
     Mode.add("Kinect3D");
 }
 
+ARToolKitPlus.MultiTracker projectorTracker = null;
+
 private void initProjectorAsCamera(){
     projectorView = new TrackedView();
     projectorView.setImageWidthPx(projector.getWidth());
@@ -145,7 +148,7 @@ private void initProjectorAsCamera(){
                                           ARToolkitCalibFile);
     projectorAsCamera.initMarkerDetection(ARToolkitCalibFile);
     projectorAsCamera.trackMarkerBoard(board);
-
+    projectorTracker = DetectedMarker.createDetector(projector.getWidth(), projector.getHeight());
 }
 
 

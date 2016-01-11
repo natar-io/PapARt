@@ -38,7 +38,7 @@ public class Game  extends PaperTouchScreen {
     void settings(){
 	setResolution(3);
 	setDrawingSize( (int) playerBoardSize.x, (int)playerBoardSize.y);
-	loadMarkerBoard(sketchPath() + "/data/markers/game.cfg",
+	loadMarkerBoard(sketchPath() + "/data/markers/game.svg",
 			playerBoardSize.x, playerBoardSize.y);
         setDrawAroundPaper();
     }
