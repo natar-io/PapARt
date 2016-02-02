@@ -14,13 +14,13 @@ public class MyApp extends PaperTouchScreen {
     void settings(){
         setDrawAroundPaper();
 	setDrawingSize(297, 210);
-	loadMarkerBoard(Papart.markerFolder + "A3-small1.cfg", 297, 210);
+	loadMarkerBoard(Papart.markerFolder + "A3-small1.svg", 297, 210);
 
     }
 
     void setup() {
 	kinectProjector = papart.loadCalibration(Papart.kinectTrackingCalib);
-//	kinectProjector.invert();
+	kinectProjector.invert();
 
 	cameraProjector = ((ProjectorDisplay) getDisplay()).getExtrinsics().get();
 	cameraProjector.invert();

@@ -265,10 +265,13 @@ public class Game  extends PaperTouchScreen {
     }
 
     boolean canDoColorAnalysis(){
+      if(doColorAnalysis){
+      
 	if(millis() > colorAnalysisCreationEvent + lastColorAnalysisCreation){
 	    lastColorAnalysisCreation = millis();
 	    return true;
 	}
+      }
 	return false;
     }
 

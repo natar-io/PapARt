@@ -82,13 +82,15 @@ int trackingFixDuration = 2000;
 boolean test = false;
 
 boolean DEBUG_TOUCH = false;
+boolean doColorAnalysis = false;
 
 void keyPressed() {
-      if(key == 'c'){
-           papart.calibration();
-        }
 
-
+  
+    if(key =='a'){
+       doColorAnalysis = !doColorAnalysis; 
+    }
+  
     if (key == 'f') {
 	fixBoards = !fixBoards;
 	papart.getCameraTracking().trackSheets(!fixBoards);
