@@ -73,10 +73,15 @@ public class MarkerBoardJavaCV extends MarkerBoard {
             return null;
         }
 
-        imagePoints[0] = botLeft;
-        imagePoints[1] = botRight;
-        imagePoints[2] = topRight;
-        imagePoints[3] = topLeft;
+//        imagePoints[0] = botLeft;
+//        imagePoints[1] = botRight;
+//        imagePoints[2] = topRight;
+//        imagePoints[3] = topLeft;
+        
+        imagePoints[0] = topLeft;
+        imagePoints[1] = topRight;
+        imagePoints[2] = botRight;
+        imagePoints[3] = botLeft;
 
 //      objectPoints[0] = new PVector(0, 0, 0);
 //      objectPoints[1] = new PVector(width, 0, 0);
@@ -117,13 +122,13 @@ public class MarkerBoardJavaCV extends MarkerBoard {
 
         float distance = currentPos.dist(lastPos.get(id));
 
-        System.out.println("Distance " + distance);
-        if (distance > 1500) // 1 meter~?
+//        System.out.println("Distance " + distance);
+        if (distance > 5000) // 1 meter~?
         {
             return;
         }
+        
         lastDistance.set(id, distance);
-
         // if the update is forced 
         if (mode == FORCE_UPDATE && currentTime < endTime) {
             update(newPos, id);
