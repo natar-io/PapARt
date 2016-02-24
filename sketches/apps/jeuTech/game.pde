@@ -233,14 +233,19 @@ public class Game  extends PaperTouchScreen {
     ArrayList<PVector> drawnZone2 = new ArrayList<PVector>();
 
     void doColorAnalysis(){
-	if(canDoColorAnalysis()){
+
+
+        if(canDoColorAnalysis()){
 	    drawnZone.clear();
 	    drawnZone2.clear();
+
+
 
 	    PImage battleZone = drawingDetection.getImage();
 	    if(battleZone != null){
 		battleZone.loadPixels();
 		int[] px=  battleZone.pixels;
+
 
 		int colorToFind = colorDrawingDetection.getColor();
 		int colorToFind2 = colorDetections[2].getColor();
@@ -248,8 +253,9 @@ public class Game  extends PaperTouchScreen {
 		for(int y = 0; y < outputCaptureHeight; y++){
 		    for(int x = 0; x < outputCaptureWidth; x++){
 			int offset = y * outputCaptureWidth + x;
-			if(Utils.colorDist(px[offset], colorToFind, colorDistDrawing)){
-			    PVector p = pxToMM(x, y);
+
+                        if(Utils.colorDist(px[offset], colorToFind, colorDistDrawing)){
+                            PVector p = pxToMM(x, y);
 			    drawnZone.add(p);
 			}
 
@@ -265,8 +271,8 @@ public class Game  extends PaperTouchScreen {
     }
 
     boolean canDoColorAnalysis(){
-      if(doColorAnalysis){
-      
+        if(doColorAnalysis){
+
 	if(millis() > colorAnalysisCreationEvent + lastColorAnalysisCreation){
 	    lastColorAnalysisCreation = millis();
 	    return true;
