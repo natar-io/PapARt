@@ -29,7 +29,7 @@ class SobyPlayer
 
     @green = color(22, 107, 30)
     init_spiro
-    @use_debug = true
+    @use_debug = false
   end
 
 
