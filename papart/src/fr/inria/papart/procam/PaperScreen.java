@@ -74,11 +74,12 @@ public class PaperScreen {
     private float filteringFreq = 30;
     private float filteringCutoff = 4;
 
+    protected Papart papart = null;
     /**
      * Create a new PaperScreen, a Papart object has to be created first.
      */
     public PaperScreen() {
-        Papart papart = Papart.getPapart();
+        papart = Papart.getPapart();
 
         if (papart == null) {
             throw new RuntimeException("Cannot create the PaperScreen, "
@@ -99,7 +100,7 @@ public class PaperScreen {
     }
 
     public PaperScreen(Camera cam, BaseDisplay proj) {
-        Papart papart = Papart.getPapart();
+        papart = Papart.getPapart();
         this.parent = papart.getApplet();
         this.cameraTracking = cam;
         mainDisplay = proj;
