@@ -26,16 +26,16 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.35"
-     inkscape:cx="623.78406"
-     inkscape:cy="341.47588"
+     inkscape:zoom="0.7"
+     inkscape:cx="401.20413"
+     inkscape:cy="397.37193"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1261"
-     inkscape:window-height="436"
-     inkscape:window-x="2565"
-     inkscape:window-y="729"
+     inkscape:window-width="1920"
+     inkscape:window-height="1200"
+     inkscape:window-x="1920"
+     inkscape:window-y="0"
      inkscape:window-maximized="0" />
   <metadata
      id="metadata4304">
@@ -45,7 +45,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -55,44 +55,44 @@
      id="layer1"
      transform="translate(0,-308.26772)">
     <image
-       y="892.91339"
+       y="765.77985"
        x="35.433071"
        id="marker203"
        xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEUAAAD///+l2Z/dAAAAFklE QVR42mNgYHBgSGNQYwhh0GIAAgAMJgFLFxnoNwAAAABJRU5ErkJggg== "
        style="image-rendering:optimizeSpeed"
        preserveAspectRatio="none"
-       height="124.01575"
-       width="124.01575"
+       height="251.14929"
+       width="251.14929"
        inkscape:label="#image4177" />
     <image
-       y="892.91339"
-       x="890.13702"
+       y="721.4848"
+       x="718.70844"
        id="marker204"
        xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEUAAAD///+l2Z/dAAAAGElE QVR42mNgYHBgyGAQYHBjcGGwYGAAAAw+AXtalATrAAAAAElFTkSuQmCC "
        style="image-rendering:optimizeSpeed"
        preserveAspectRatio="none"
-       height="124.01575"
-       width="124.01575"
+       height="295.44431"
+       width="295.44431"
        inkscape:label="#image4188" />
     <image
-       y="641.7641"
-       x="890.13702"
+       y="413.47839"
+       x="735.85132"
        id="marker205"
        xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEUAAAD///+l2Z/dAAAAGElE QVR42mNgYHBgyGKoYVBiqGMIY2AAABCgAh2LrQxfAAAAAElFTkSuQmCC "
        style="image-rendering:optimizeSpeed"
        preserveAspectRatio="none"
-       height="124.01575"
-       width="124.01575"
+       height="278.30145"
+       width="278.30145"
        inkscape:label="#image4199" />
     <image
-       y="641.7641"
+       y="396.90695"
        x="35.433071"
        id="marker206"
        xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEUAAAD///+l2Z/dAAAAGElE QVR42mNgYHBgyGFQY8hi4GDgYmAAAAx2AU99TGhKAAAAAElFTkSuQmCC "
        style="image-rendering:optimizeSpeed"
        preserveAspectRatio="none"
-       height="124.01575"
-       width="124.01575"
+       height="286.87289"
+       width="286.87289"
        inkscape:label="#image4210" />
   </g>
 </svg>
