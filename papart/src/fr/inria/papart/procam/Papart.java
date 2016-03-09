@@ -218,7 +218,7 @@ public class Papart {
         papart.shouldSetWindowLocation = true;
         papart.shouldSetWindowSize = true;
         papart.registerPost();
-        papart.initProjectorDisplay(1);
+        papart.initProjectorDisplay(1.5f);
 
         return papart;
     }
