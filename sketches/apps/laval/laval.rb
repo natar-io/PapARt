@@ -25,6 +25,7 @@ require_relative 'lego'
 require_relative 'garden'
 require_relative 'house'
 require_relative 'video'
+require_relative 'houseControl'
 
 class Sketch < Processing::App
 
@@ -58,6 +59,7 @@ class Sketch < Processing::App
     @color_screen = MyColorPicker.new
     @garden = Garden.new
     @cinema = Cinema.new
+    @house_control = HouseControl.new
     @papart.startTracking
   end
 
