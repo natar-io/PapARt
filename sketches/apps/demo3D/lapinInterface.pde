@@ -1,6 +1,7 @@
 // TODO: change the modes to the Mode library.
 // TODO: change the Button to the "first" Skatolo buttons !
 
+
 import fr.inria.skatolo.*;
 import fr.inria.skatolo.events.*;
 import fr.inria.skatolo.gui.controllers.*;
@@ -17,7 +18,7 @@ public class LapinInterface extends PaperTouchScreen{
 
     public void settings(){
 	setDrawingSize((int) paperSize.x, (int) paperSize.y);
-	loadMarkerBoard(sketchPath() + "/data/markers/lapinInterface.cfg",
+	loadMarkerBoard(sketchPath() + "/data/markers/lapinInterface.svg",
 			paperSize.x, paperSize.y);
     }
 
@@ -101,49 +102,8 @@ public class LapinInterface extends PaperTouchScreen{
     }
 
     void updateButtons(){
-
         skatolo.draw();
-
-	for (Touch t : touchList.get2DTouchs()) {
-
-	    // draw the touch.
-	    PVector p = t.position;
-
-	    // colorMode(HSB, 30, 100, 100);
-//	    fill(t.id % 30, 100, 100);
-
-	    if(t.id != TouchPoint.NO_ID){
-
-		if(!pointers.contains(t.id)){
-//		    ellipse(p.x, p.y, 100, 100);
-		    Pointer pointer = skatolo.addPointer(t.id);
-                    pointer.setType(Pointer.Type.TOUCH);
-
-		    pointers.add(t.id);
-		    skatolo.updatePointerPress(t.id, true);
-		} else {
-		    skatolo.updatePointer(t.id, (int) p.x, (int) p.y);
-		}
-
-		skatolo.updatePointerPress(t.id, true);
-//		ellipse(p.x, p.y, 10, 10);
-	    }
-	}
-
-	ArrayList<Integer> currentTouchIds = touchList.get2DTouchs().getIds();
-
-	ArrayList<Integer> toDelete = (ArrayList<Integer>)pointers.clone();
-	toDelete.removeAll(currentTouchIds);
-
-	for(Integer pointerId : toDelete){
-	    // skatolo.updatePointerPress(pointerId, false);
-	    // skatolo.updatePointer(pointerId, 0, 0);
-	    skatolo.removePointer(pointerId);
-	    pointers.remove(pointerId);
-	}
-
+        SkatoloLink.updateTouch(touchList, skatolo);
     }
-
-
 
 }

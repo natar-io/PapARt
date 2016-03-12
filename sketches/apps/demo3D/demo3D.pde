@@ -6,6 +6,8 @@ import fr.inria.papart.drawingapp.Button;
 import org.bytedeco.javacpp.*;
 import processing.opengl.*;
 import org.reflections.*;
+
+import fr.inria.papart.tracking.*;
 import fr.inria.skatolo.Skatolo;
 
 import toxi.geom.*;
