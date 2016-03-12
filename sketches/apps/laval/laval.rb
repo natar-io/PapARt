@@ -9,6 +9,7 @@ Processing::App::load_library :PapARt, :javacv, :toxiclibscore, :skatolo, :video
 module Papartlib
   include_package 'fr.inria.papart.procam'
   include_package 'fr.inria.papart.procam.camera'
+  include_package 'fr.inria.papart.multitouch'
 end
 
 module Processing
@@ -56,9 +57,9 @@ class Sketch < Processing::App
     end
 
     @lego_house = LegoHouse.new
-    @color_screen = MyColorPicker.new
+    # @color_screen = MyColorPicker.new
     @garden = Garden.new
-    @cinema = Cinema.new
+#    @cinema = Cinema.new
     @house_control = HouseControl.new
     @papart.startTracking
   end
@@ -73,47 +74,6 @@ class Sketch < Processing::App
     @move_house_location = true if key == 'm'
   end
 end
-
-
-
-class MyColorPicker < Papartlib::PaperScreen
-  include Lego
-
-  def settings
-    setDrawingSize 100, 100
-    loadMarkerBoard($app.sketchPath + "/cap1.svg", 100, 100)
-
-  end
-
-  def setup
-
-    @boardView = Papartlib::TrackedView.new self
-    @boardView.setCaptureSizeMM Processing::PVector.new(lego_size*2, lego_size*2)
-
-    picSize = 16
-    @boardView.setImageWidthPx(picSize);
-    @boardView.setImageHeightPx(picSize);
-
-    origin = Processing::PVector.new 10, 55
-    @boardView.setBottomLeftCorner(origin);
-    @boardView.init
-  end
-
-  def drawOnPaper
-    background 0, 0, 0
-
-    fill 255
-    noStroke
-    rect(10-2, 100 - 55 - 20, 20, 20)
-
-    out = @boardView.getViewOf cameraTracking
-    # out.filter Processing::PConstants::INVERT
-    image(out, 28, 25, 16, 16) if out != nil
-    $floor = out if out != nil
-  end
-
-end
-
 
 
 

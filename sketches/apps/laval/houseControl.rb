@@ -15,30 +15,76 @@ class HouseControl < Papartlib::PaperTouchScreen
   def settings
     setDrawingSize 210, 297
     loadMarkerBoard($app.sketchPath + "/house-control.svg", 210, 297)
-    #    setDrawAroundPaper
   end
 
   def setup
+    create_buttons
+    init_capture
+  end
 
+  def init_capture
+    @boardView = Papartlib::TrackedView.new self
+    @boardView.setCaptureSizeMM Processing::PVector.new(150, 100)
+
+    picSize = 16
+    @boardView.setImageWidthPx(110 * 2);
+    @boardView.setImageHeightPx(60 * 2);
+
+    origin = Processing::PVector.new 30, 170
+    @boardView.setBottomLeftCorner(origin);
+    @boardView.init
   end
 
   def create_buttons
     @skatolo = Skatolo.new $app, self
 
-    @level0_button = @skatolo.addHoverButton("level0_button")
-                     .setPosition(40, 200)
-                     .setSize(280, 40)
+    @skatolo.getMousePointer.disable
+    @skatolo.setAutoDraw false
+
+    @level0_button = @skatolo.addHoverButton("rdc")
+                     .setPosition(61, 200)
+                     .setSize(36, 22)
+    $touch_light = Processing::PVector.new
   end
 
   def level0_button
     puts "button pressed"
   end
 
-  def drawOnPaper
-    background 100
 
+
+  def drawOnPaper
+    background 80, 80, 80
     updateTouch
-    updateButtons
+#    drawTouch
+
+    rect_w = 150
+    rect_h = 100
+    rect_offset_x = 30
+    rect_offset_y = 9.7
+
+    $touch_light.x = -1
+
+    touchList.get2DTouchs.each do |touch|
+      next if touch.position.x < rect_offset_x || touch.position.x > rect_offset_x + rect_w
+      next if touch.position.y < rect_offset_y || touch.position.y > rect_offset_y + rect_h
+
+      $touch_light.x = (touch.position.x - rect_offset_x) / rect_w
+      $touch_light.y = (touch.position.y - rect_offset_y) / rect_h
+
+      ellipse touch.position.x, touch.position.y, 10, 10
+    end
+
+
+    Papartlib::SkatoloLink.updateTouch touchList, @skatolo
+    @skatolo.draw getGraphics
+
+    out = @boardView.getViewOf cameraTracking
+    $video_capture = out
+
+    # out.filter Processing::PConstants::INVERT
+    image(out, 28, 25, 16, 16) if out != nil
+
 
   end
 

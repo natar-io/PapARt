@@ -1,3 +1,7 @@
+###### Warning #########
+### NOT USED ANYMORE ###
+###### Warning #########
+
 class Cinema < Papartlib::PaperTouchScreen
 
   include_package 'processing.video'
@@ -26,11 +30,11 @@ class Cinema < Papartlib::PaperTouchScreen
     # fill 0, 200, 0
     # rect 0, 0, drawingSize.x, drawingSize.y
     @movie.read
-#    image @movie, 0, 0, 30, 30
+    #    image @movie, 0, 0, 30, 30
     # imageMode Processing::PConstants::CENTER
     # translate drawingSize.x/2, drawingSize.y/2
     # rotateX Processing::PConstants::PI
-     imageMode Processing::PConstants::CORNER
+    imageMode Processing::PConstants::CORNER
     image @movie, 0, 0, drawingSize.x , drawingSize.y
   end
 
