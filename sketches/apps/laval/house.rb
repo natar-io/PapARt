@@ -5,17 +5,70 @@ class LegoHouse < Papartlib::PaperScreen
   include_package 'org.gestreamer.elements'
 
 
+  attr_accessor :mode
+  FIRST_FLOOR_LIGHT = 1
+  FIRST_FLOOR_LIGHT_TOUCH = 2
+  ALL_OFF = 3
+  SECOND_FLOOR_CINEMA = 4
+  SECOND_FLOOR_CAPTURE = 5
+
+  def self.modes
+    [FIRST_FLOOR_LIGHT, FIRST_FLOOR_LIGHT_TOUCH, ALL_OFF, SECOND_FLOOR_CINEMA, SECOND_FLOOR_CAPTURE]
+  end
+
   def settings
     setDrawingSize lego_size*32, lego_size*32
     # loadMarkerBoard(Papartlib::Papart::markerFolder + "A3-small1.svg", 297, 210)
     loadMarkerBoard($app.sketchPath + "/house.svg", 297, 210)
     setDrawAroundPaper
+    @mode = FIRST_FLOOR_LIGHT
+    @last_mode_change = 0
+    @transition_duration = 1000
+    @max_volume = 1.0
+    @volume_amt = 0.1
+  end
+
+  def volume_up ; volume true ; end
+  def volume_down ; volume false ; end
+
+  def volume(direction)
+    @max_volume = @max_volume + (direction ? @volume_amt : -@volume_amt)
+    @max_volume = 0 if @max_volume <= 0
+    @max_volume = 1.0 if @max_volume >= 1.0
   end
 
   def setup
     @lego_shader = loadShader($app.sketchPath + "/pixLightFrag.glsl",
                               $app.sketchPath + "/pixLightVert.glsl")
     init_video
+  end
+
+  def mode=(new_mode)
+    @last_mode_change = $app.millis
+
+    if @mode == ALL_OFF and new_mode == ALL_OFF
+      @mode = FIRST_FLOOR_LIGHT
+      return
+    end
+
+    @mode = new_mode
+
+    if @mode ==  SECOND_FLOOR_CAPTURE
+      @capture_ground = $app.color($app.random(255).to_i, $app.random(255).to_i, $app.random(255).to_i)
+      @capture_wall = $app.color($app.random(255).to_i, $app.random(255).to_i, $app.random(255).to_i)
+    end
+
+
+  end
+
+  def is_animated
+    return animation_ratio < 1.0
+  end
+
+  def animation_ratio
+    elapsed_time = $app.millis - @last_mode_change
+    ratio = 1 + (elapsed_time - @transition_duration).to_f / @transition_duration.to_f
+    ratio
   end
 
   def drawAroundPaper
@@ -33,21 +86,42 @@ class LegoHouse < Papartlib::PaperScreen
 
     shader @lego_shader
 
-    touch_light
+    touch_light if @mode == FIRST_FLOOR_LIGHT_TOUCH
 
-    @first_floor_drawn = true
-    @second_floor_drawn = false
+    @first_floor_drawn = (@mode == FIRST_FLOOR_LIGHT or @mode == FIRST_FLOOR_LIGHT_TOUCH)
+    @second_floor_drawn = (@mode == SECOND_FLOOR_CINEMA or @mode == SECOND_FLOOR_CAPTURE)
+
+    if @mode == ALL_OFF
+      @first_floor_drawn = false
+      @second_floor_drawn = false
+    end
+
+    if @mode == SECOND_FLOOR_CINEMA
+      if is_animated
+        @movie.volume animation_ratio * @max_volume
+      else
+        @movie.volume  @max_volume
+      end
+    else
+      @movie.volume 0.0
+    end
 
     # draw_around_house
+    resetShader
+
+    light_intensity = 255
+    light_intensity = animation_ratio * 255.0 if is_animated
+    ambientLight(light_intensity, light_intensity, light_intensity) unless @mode == FIRST_FLOOR_LIGHT_TOUCH
+
     first_floor_ground
-    couch
+    couch  unless @mode == ALL_OFF
     first_floor_walls
 
 
     second_floor_ground
     second_floor_walls
 
-    resetShader
+
   end
 
   def touch_light
@@ -111,6 +185,7 @@ class LegoHouse < Papartlib::PaperScreen
     nb_tiles_h = 12.0
     tiling_w = nb_tiles_w / tile_w
     tiling_h = nb_tiles_h / tile_h
+
     if @floor_texture
       textureWrap Processing::PConstants::REPEAT
       beginShape
@@ -173,10 +248,14 @@ class LegoHouse < Papartlib::PaperScreen
   end
 
   def second_floor_ground_color
-    @second_floor_drawn ? $app.color(39, 113, 201) : 0
+    return $app.color(20, 50, 101) if @mode == SECOND_FLOOR_CINEMA
+    return @capture_ground if @mode == SECOND_FLOOR_CAPTURE
+    0
   end
-  def second_floor_ground_wall
-    @second_floor_drawn ? $app.color(39, 113, 201) : 0
+  def second_floor_wall_color
+    return $app.color(201, 201, 211) if @mode == SECOND_FLOOR_CINEMA
+    return @capture_wall if @mode == SECOND_FLOOR_CAPTURE
+    0
   end
 
 
@@ -208,7 +287,7 @@ class LegoHouse < Papartlib::PaperScreen
     move(-1, 21)
 
     # |
-    fill second_floor_ground_wall
+    fill second_floor_wall_color
     brick 1, 12, 2
 
     # ----
@@ -218,7 +297,7 @@ class LegoHouse < Papartlib::PaperScreen
     move_up_small 2
     move(2, -1)
     draw_tv
-    draw_logo
+    draw_logo unless @mode == ALL_OFF
 
     popMatrix
   end
@@ -226,19 +305,21 @@ class LegoHouse < Papartlib::PaperScreen
   def draw_tv
     pushMatrix
     ## Movie
-    @movie.volume 0.0
+
     @movie.read
 
     screen_w = 100
     screen_h = 50
 
+    fill 255
     rotateX -Processing::PConstants::HALF_PI
     imageMode Processing::PConstants::CENTER
     translate screen_w/2, 50/2
 
     scale(1, -1, 1)
-    image @movie, 0, 0, screen_w, 50
-#    image $video_capture, 0, 0, screen_w, 50 if $video_capture
+
+    image @movie, 0, 0, screen_w, 50 if @mode == SECOND_FLOOR_CINEMA
+    image $video_capture, 0, 0, screen_w, 50 if ($video_capture and @mode == SECOND_FLOOR_CAPTURE)
     scale(1, -1, 1)
     imageMode Processing::PConstants::CORNER
     popMatrix
@@ -248,7 +329,7 @@ class LegoHouse < Papartlib::PaperScreen
   def draw_logo
     pushMatrix
     ## Movie
-    @movie.volume 0.0
+    # @movie.volume 0.0
     @movie.read
 
     screen_w = lego_size * 8

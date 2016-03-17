@@ -1,5 +1,13 @@
 # -*- coding: utf-8 -*-
 
+
+## Linux drivers Blueman
+## Bluetooth remote https://weblog.sh/~maarten/unified-remote-with-bluetooth-on-arch-4JFboT57g
+## sudo modprobe btusb
+## sudo blueman-applet
+## son avec pavucontrol
+
+
 require 'jruby_art'
 require 'jruby_art/app'
 
@@ -10,6 +18,7 @@ module Papartlib
   include_package 'fr.inria.papart.procam'
   include_package 'fr.inria.papart.procam.camera'
   include_package 'fr.inria.papart.multitouch'
+  include_package 'fr.inria.papart.drawingapp'
 end
 
 module Processing
@@ -58,13 +67,42 @@ class Sketch < Processing::App
 
     @lego_house = LegoHouse.new
     # @color_screen = MyColorPicker.new
+    #    @cinema = Cinema.new
     @garden = Garden.new
-#    @cinema = Cinema.new
     @house_control = HouseControl.new
     @papart.startTracking
+
+    @projector = @papart.getDisplay
+    @projector.manualMode
   end
 
   def draw
+
+    noStroke
+
+    imageMode Processing::PConstants::CENTER
+    @projector.graphics.clear
+    @projector.graphics.background 0
+
+    # @projector.drawScreens
+    @projector.drawScreensOver
+     Papartlib::DrawUtils::drawImage(self.g,
+                                     @projector.render, width/2, height/2, width, height)
+
+    # Papartlib::DrawUtils::drawImage(self.g,
+    #                                 @projector.render, 0, 0, width, height)
+
+
+     $screenPos_many.each do |id|
+       next if id == nil
+       id.each do |pos|
+         rect(pos.x, pos.y, 12, 12)
+         #       p pos.to_s
+       end
+     end
+     #background 0
+     rect(0, 0, 300, 300)
+
 
   end
 
@@ -72,7 +110,31 @@ class Sketch < Processing::App
     @save_house_location = true if key == 'h'
     @load_house_location = true if key == 'H'
     @move_house_location = true if key == 'm'
+
+    # Key to control the house
+    if key == 'a'
+      @lego_house.mode = LegoHouse::FIRST_FLOOR_LIGHT
+    end
+
+    LegoHouse.modes.each do |mode|
+      @lego_house.mode = mode if key == mode.to_s
+    end
+
+    if key == '+'
+      @lego_house.volume_up
+    end
+
+    if key == '-'
+      @lego_house.volume_down
+    end
+
+    # if key == LegoHouse::FIRST_FLOOR_LIGHT.to_s
+    #   @lego_house.mode = LegoHouse::FIRST_FLOOR_LIGHT_TOUCH
+    # end
+
   end
+
+
 end
 
 

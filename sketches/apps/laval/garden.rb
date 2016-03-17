@@ -1,21 +1,33 @@
+# coding: utf-8
 class Garden < Papartlib::PaperTouchScreen
   include Lego
 
   def settings
-    setDrawingSize 400, 400
-    loadMarkerBoard($app.sketchPath + "/garden.svg", 400, 400)
+    @tile_width = 20
+    @tile_height = 20
+    @tile_size = duplo_size / 2
+    setDrawingSize @tile_width * @tile_size, @tile_height*@tile_size
+    loadMarkerBoard($app.sketchPath + "/garden.svg",
+                    @tile_width * @tile_size,
+                    @tile_height * @tile_size)
     setDrawAroundPaper
   end
 
   def setup
     @kinect_projector = $app.papart.loadCalibration Papartlib::Papart::kinectTrackingCalib
     @kinect_projector.invert
+
+    @projectorDevice = getDisplay.getProjectiveDeviceP
     @vector = Processing::PVector.new
+    @vector_proj = Processing::PVector.new
     @fountain = $app.loadImage($app.sketchPath + "/data/fountain.png")
     @last_seen_fountain = 0
     @garden_tiles = $app.loadImage($app.sketchPath + "/data/tiles.png")
 
     @grass_texture = []
+    $screenPos_many = []
+    @current_id = 0
+    @nb_id = 10
   end
 
 
@@ -90,82 +102,118 @@ class Garden < Papartlib::PaperTouchScreen
     endShape
   end
 
-  def tile_width ; (drawingSize.x / @tile_size).to_i  ; end
-  def tile_height ; (drawingSize.y / @tile_size).to_i  ; end
-
   def drawAroundPaper
     # background 0, 0, 0
 
     updateTouch  ## TODO: why is this necessary
-#     touch_and_object_detection
 
-    draw_tree
-#    draw_grass
+    @touchList = touchList.select do |touch|
+      touch.position.x <= drawingSize.x and
+        touch.position.x >= 0 and
+        touch.position.y <= drawingSize.y and
+        touch.position.y >= 0
+    end
 
-    pushMatrix
+    fill 200
     noStroke
 
-    @tile_size = 30
+    @touchList.each do |touch|
+      next if touch.touchPoint == nil
+      #p drawingSize.x
+      #p touch.position.x
+
+      fill 255, 255, 255
+
+      fill 255, 0, 0 if touch.position.x > drawingSize.x
+      fill 255, 0, 0 if touch.position.x < 0
+      fill 255, 255, 0 if touch.position.y > drawingSize.y
+      fill 255, 255, 0 if touch.position.y < 0
+
+      ellipse touch.position.x, touch.position.y, 10, 10
+    end
+
+    #     touch_and_object_detection
+
+#    draw_grass
+
+    noStroke
+
+
+    try_allocate_tiles
+    draw_all_tiles
+
+    #p tile_height
+    #   x,w,y,h = grass_coord
+#   draw_texture x,w,y,h, 30
+    # draw_texture 0.1473, 0.0638 , 0, 0.12, 30
+
+    @black_pixels = [] if @black_pixels == nil
+
+    if(@fountain_pos)
+      image(@fountain, @fountain_pos.x-50, @fountain_pos.y-50, 100, 100)
+    end
+
+    # hide hands & objects
+    # Projector POV
+    projector = getDisplay
+    projector.loadModelView
+    applyMatrix(projector.getExtrinsics)
+    fill(0)
+
+    $screenPos_many = []
+    $screenPos = []
+    @touchList.each do |touch|
+      #p "ok" if touch.is3D
+      size = touch.is3D ? 10 : 5
+      touch.touchPoint.getDepthDataElements.map do |dde|
+        @kinect_projector.mult(Processing::PVector.new(dde.depthPoint.x,
+                                                       dde.depthPoint.y,
+                                                       dde.depthPoint.z),
+                               @vector)
+
+        projector.getExtrinsics.mult(@vector, @vector_proj)
+        $screenPos << @projectorDevice.worldToPixelCoord(@vector_proj)
+
+        # translate(@vector.x, @vector.y, @vector.z)
+        # rect(-10, -10, size, size)
+        # translate(-@vector.x, -@vector.y, -@vector.z)
+      end
+    end
+
+    $screenPos_many[@current_id] = $screenPos
+    @current_id = @current_id + 1
+    @current_id = 0 if @current_id >= @nb_id
+    ## Draw in Projector screen Space -» Waahhahah
+
+  end
+
+  def try_allocate_tiles
     if not @grass_texture_init
       @grass_texture = []
 
-      (0..tile_height).each do |y|
-        (0..tile_width).each do |x|
+      (0..@tile_height).each do |y|
+        (0..@tile_width).each do |x|
           @grass_texture << grass_coord
         end
       end
       @grass_texture_init = true
     end
+  end
 
-    (1..tile_height).each do |y_coord|
-      (1..tile_width).each do |x_coord|
+  def draw_all_tiles
+    (1..@tile_height).each do |y_coord|
+      (1..@tile_width).each do |x_coord|
         translate(x_coord * @tile_size,
                   y_coord * @tile_size)
-        x,w,y,h = @grass_texture[y_coord * tile_width + x_coord]
+        x,w,y,h = @grass_texture[y_coord * @tile_width + x_coord]
 
-#        p x,w,y,h
+        #        p x,w,y,h
         draw_texture x,w,y,h, @tile_size
 
         translate(-x_coord * @tile_size,
                   -y_coord * @tile_size)
       end
     end
-
-    #p tile_height
-    #   x,w,y,h = grass_coord
-#   draw_texture x,w,y,h, 30
-
-    draw_texture 0.1473, 0.0638 , 0, 0.12, 30
-    popMatrix
-
-    if(@fountain_pos)
-      image(@fountain, @fountain_pos.x-50, @fountain_pos.y-50, 100, 100)
-    end
-
-
-    # hide hands & objects
-    # Projector POV
-
-    # projector = getDisplay
-    # projector.loadModelView
-    # applyMatrix(projector.getExtrinsics)
-
-    # fill(0)
-    # touchList.each do |touch|
-    #   #p "ok" if touch.is3D
-
-    #   size = touch.is3D ? 15 : 5
-    #   touch.touchPoint.getDepthDataElements.map do |dde|
-    #     @kinect_projector.mult(Processing::PVector.new(dde.depthPoint.x,
-    #                                                    dde.depthPoint.y,
-    #                                                    dde.depthPoint.z),
-    #                            @vector)
-    #     translate(@vector.x, @vector.y, @vector.z)
-    #     rect(0, 0, size, size)
-    #     translate(-@vector.x, -@vector.y, -@vector.z)
-    #   end
-    # end
-
   end
 
   def touch_and_object_detection
@@ -238,8 +286,6 @@ class Garden < Papartlib::PaperTouchScreen
     hues = colored.map do |c|
       h = hue(c)
     end
-
-
 
     if @debug_color
       pushMatrix

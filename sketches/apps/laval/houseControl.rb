@@ -1,3 +1,4 @@
+# coding: utf-8
 require_relative 'skatolo'
 
 class HouseControl < Papartlib::PaperTouchScreen
@@ -44,11 +45,20 @@ class HouseControl < Papartlib::PaperTouchScreen
     @level0_button = @skatolo.addHoverButton("rdc")
                      .setPosition(61, 200)
                      .setSize(36, 22)
+
+    @level0_toggle = @skatolo.addHoverToggle("toggle")
+                     .setPosition(61, 220)
+                     .setSize(36, 22)
+
     $touch_light = Processing::PVector.new
   end
 
-  def level0_button
+  def rdc
     puts "button pressed"
+  end
+
+  def toggle(value)
+    puts "toggle pressed", value
   end
 
 
@@ -56,7 +66,7 @@ class HouseControl < Papartlib::PaperTouchScreen
   def drawOnPaper
     background 80, 80, 80
     updateTouch
-#    drawTouch
+    drawTouch
 
     rect_w = 150
     rect_h = 100
