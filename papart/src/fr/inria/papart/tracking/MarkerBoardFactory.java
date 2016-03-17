@@ -40,7 +40,7 @@ public class MarkerBoardFactory {
         if (name.endsWith("svg")) {
             return MarkerType.SVG;
         }
-        if (name.endsWith("png") || name.endsWith("jpg")) {
+        if (name.endsWith("png") || name.endsWith("jpg") || name.endsWith("bmp")) {
             return MarkerType.JAVACV_FINDER;
         }
         return MarkerType.INVALID;
