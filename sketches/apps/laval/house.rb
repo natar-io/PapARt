@@ -44,7 +44,10 @@ class LegoHouse < Papartlib::PaperScreen
   end
 
   def mode=(new_mode)
+
+    return if @mode == new_mode and @mode != SECOND_FLOOR_CAPTURE
     @last_mode_change = $app.millis
+
 
     if @mode == ALL_OFF and new_mode == ALL_OFF
       @mode = FIRST_FLOOR_LIGHT

@@ -5,7 +5,7 @@ class Garden < Papartlib::PaperTouchScreen
   def settings
     @tile_width = 20
     @tile_height = 20
-    @tile_size = duplo_size / 2
+    @tile_size = duplo_size / 1.5
     setDrawingSize @tile_width * @tile_size, @tile_height*@tile_size
     loadMarkerBoard($app.sketchPath + "/garden.svg",
                     @tile_width * @tile_size,
@@ -28,8 +28,114 @@ class Garden < Papartlib::PaperTouchScreen
     $screenPos_many = []
     @current_id = 0
     @nb_id = 10
+    $screenPos_many = []
+
+    @grass = Array.new(@tile_width){ Array.new(@tile_height) }
+    allocate_tiles
   end
 
+
+  def drawAroundPaper
+    background 0, 0, 0
+    @nb_id = 2
+    #$screenPos_many = []
+
+    updateTouch  ## TODO: why is this necessary
+
+    @touchList = touchList.select do |touch|
+      touch.position.x <= drawingSize.x and
+        touch.position.x >= 0 and
+        touch.position.y <= drawingSize.y and
+        touch.position.y >= 0
+    end
+
+    fill 200
+    noStroke
+
+    touch_and_object_detection
+#    draw_debug_grass
+
+    noStroke
+
+    draw_grass
+
+
+    #     draw_all_tiles
+
+    #p tile_height
+    #   x,w,y,h = grass_coord
+#   draw_texture x,w,y,h, 30
+    # draw_texture 0.1473, 0.0638 , 0, 0.12, 30
+
+    @black_pixels = [] if @black_pixels == nil
+
+    if(@fountain_pos)
+      image(@fountain, @fountain_pos.x-50, @fountain_pos.y-50, 100, 100)
+    end
+
+    # hide hands & objects
+    # Projector POV
+    projector = getDisplay
+    projector.loadModelView
+    applyMatrix(projector.getExtrinsics)
+    fill(0)
+
+
+    $screenPos = []
+    @touchList.each do |touch|
+      #p "ok" if touch.is3D
+      size = touch.is3D ? 10 : 5
+      touch.touchPoint.getDepthDataElements.map do |dde|
+        @kinect_projector.mult(Processing::PVector.new(dde.depthPoint.x,
+                                                       dde.depthPoint.y,
+                                                       dde.depthPoint.z),
+                               @vector)
+
+        projector.getExtrinsics.mult(@vector, @vector_proj)
+        $screenPos << @projectorDevice.worldToPixelCoord(@vector_proj)
+
+        # translate(@vector.x, @vector.y, @vector.z)
+        # rect(-10, -10, size, size)
+        # translate(-@vector.x, -@vector.y, -@vector.z)
+      end
+    end
+
+    return if $screenPos.size < 5
+    $screenPos_many[@current_id] = $screenPos
+    @current_id = @current_id + 1
+    @current_id = 0 if @current_id >= @nb_id
+    ## Draw in Projector screen Space -» Waahhahah
+
+  end
+
+  def draw_grass
+
+    @grass.each_with_index do |row, x|
+      row.each_with_index  do |col, y|
+        next if @grass[x][y] == nil
+
+#        p "draw", x.to_s , y.to_s
+        translate(x * @tile_size,
+                  y * @tile_size)
+
+        draw_x,w, draw_y,h = @grass_texture[y * @tile_width + x]
+
+        draw_texture draw_x,w,draw_y,h, @tile_size
+
+        translate(-x * @tile_size,
+                  -y * @tile_size)
+
+      end
+    end
+  end
+
+  def reset_grass
+    @grass.each_with_index do |row, x|
+      row.each_with_index  do |col, y|
+        @grass[x][y] = nil
+      end
+    end
+  end
 
   def draw_tree
     pushMatrix
@@ -40,7 +146,7 @@ class Garden < Papartlib::PaperTouchScreen
     popMatrix
   end
 
-  def draw_grass
+  def draw_debug_grass
     pushMatrix
     translate 150, 0
     noStroke
@@ -102,92 +208,8 @@ class Garden < Papartlib::PaperTouchScreen
     endShape
   end
 
-  def drawAroundPaper
-    # background 0, 0, 0
 
-    updateTouch  ## TODO: why is this necessary
-
-    @touchList = touchList.select do |touch|
-      touch.position.x <= drawingSize.x and
-        touch.position.x >= 0 and
-        touch.position.y <= drawingSize.y and
-        touch.position.y >= 0
-    end
-
-    fill 200
-    noStroke
-
-    @touchList.each do |touch|
-      next if touch.touchPoint == nil
-      #p drawingSize.x
-      #p touch.position.x
-
-      fill 255, 255, 255
-
-      fill 255, 0, 0 if touch.position.x > drawingSize.x
-      fill 255, 0, 0 if touch.position.x < 0
-      fill 255, 255, 0 if touch.position.y > drawingSize.y
-      fill 255, 255, 0 if touch.position.y < 0
-
-      ellipse touch.position.x, touch.position.y, 10, 10
-    end
-
-    #     touch_and_object_detection
-
-#    draw_grass
-
-    noStroke
-
-
-    try_allocate_tiles
-    draw_all_tiles
-
-    #p tile_height
-    #   x,w,y,h = grass_coord
-#   draw_texture x,w,y,h, 30
-    # draw_texture 0.1473, 0.0638 , 0, 0.12, 30
-
-    @black_pixels = [] if @black_pixels == nil
-
-    if(@fountain_pos)
-      image(@fountain, @fountain_pos.x-50, @fountain_pos.y-50, 100, 100)
-    end
-
-    # hide hands & objects
-    # Projector POV
-    projector = getDisplay
-    projector.loadModelView
-    applyMatrix(projector.getExtrinsics)
-    fill(0)
-
-    $screenPos_many = []
-    $screenPos = []
-    @touchList.each do |touch|
-      #p "ok" if touch.is3D
-      size = touch.is3D ? 10 : 5
-      touch.touchPoint.getDepthDataElements.map do |dde|
-        @kinect_projector.mult(Processing::PVector.new(dde.depthPoint.x,
-                                                       dde.depthPoint.y,
-                                                       dde.depthPoint.z),
-                               @vector)
-
-        projector.getExtrinsics.mult(@vector, @vector_proj)
-        $screenPos << @projectorDevice.worldToPixelCoord(@vector_proj)
-
-        # translate(@vector.x, @vector.y, @vector.z)
-        # rect(-10, -10, size, size)
-        # translate(-@vector.x, -@vector.y, -@vector.z)
-      end
-    end
-
-    $screenPos_many[@current_id] = $screenPos
-    @current_id = @current_id + 1
-    @current_id = 0 if @current_id >= @nb_id
-    ## Draw in Projector screen Space -» Waahhahah
-
-  end
-
-  def try_allocate_tiles
+  def allocate_tiles
     if not @grass_texture_init
       @grass_texture = []
 
@@ -216,28 +238,52 @@ class Garden < Papartlib::PaperTouchScreen
     end
   end
 
+
   def touch_and_object_detection
 
     fill 200
     noStroke
 
-    touchList.get2DTouchs.each do |touch|
+    @touchList.each do |touch|
+      next if touch.is3D
       next if touch.touchPoint == nil
       is_grass = check_grass touch
-      ellipse touch.position.x, touch.position.y, 10, 10 if is_grass
 
-      is_finger = check_finger touch
-      fill 200, 0, 0
-      ellipse touch.position.x, touch.position.y, 10, 10 if is_finger
+#      ellipse touch.position.x, touch.position.y, 40, 40 if is_grass
+      add_grass touch.position if is_grass
+
+      # ellipse touch.position.x, touch.position.y, 40, 40
+
+       # is_finger = check_finger touch
+      # fill 200, 0, 0
+
+#       ellipse touch.position.x, touch.position.y, 30, 3G0 if is_finger
 
     end
 
-    touchList.get3DTouchs.each do |touch|
+    @touchList.each do |touch|
+      next if not touch.is3D
       next if touch.touchPoint == nil
 #      ellipse(touch.position.x, touch.position.y, 20, 20)
       check_fountain touch
     end
   end
+
+  def add_grass(position)
+    tile_x = (position.x / drawingSize.x * @tile_width).to_i
+    tile_y = (position.y / drawingSize.y * @tile_height).to_i
+
+
+    @grass[tile_x][tile_y] = true
+    # (3..5).each do |x|
+    #   (3..5).each do |y|
+    #     @grass[tile_x +x ][tile_y +y] = true
+    #   end
+    # end
+
+
+  end
+
 
   def get_touch_heights(touch)
     touch.touchPoint.getDepthDataElements.map do |dde|

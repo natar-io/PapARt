@@ -41,7 +41,7 @@ class Sketch < Processing::App
 
   attr_reader :papart, :paper_screen
   attr_accessor :save_house_location, :load_house_location, :move_house_location
-
+  attr_reader :lego_house
 
   java_signature 'void movieEvent(processing.video.Movie)'
   def movieEvent(movie)
@@ -65,11 +65,12 @@ class Sketch < Processing::App
       @papart = Papartlib::Papart.seeThrough self
     end
 
-    @lego_house = LegoHouse.new
+
     # @color_screen = MyColorPicker.new
     #    @cinema = Cinema.new
     @garden = Garden.new
     @house_control = HouseControl.new
+    @lego_house = LegoHouse.new
     @papart.startTracking
 
     @projector = @papart.getDisplay
@@ -80,9 +81,10 @@ class Sketch < Processing::App
 
     noStroke
 
+    background 0
     imageMode Processing::PConstants::CENTER
-    @projector.graphics.clear
-    @projector.graphics.background 0
+
+    # @projector.clear
 
     # @projector.drawScreens
     @projector.drawScreensOver
@@ -92,7 +94,9 @@ class Sketch < Processing::App
     # Papartlib::DrawUtils::drawImage(self.g,
     #                                 @projector.render, 0, 0, width, height)
 
+#     p $screenPos_many.size
 
+     fill 0
      $screenPos_many.each do |id|
        next if id == nil
        id.each do |pos|
@@ -100,8 +104,6 @@ class Sketch < Processing::App
          #       p pos.to_s
        end
      end
-     #background 0
-     rect(0, 0, 300, 300)
 
 
   end

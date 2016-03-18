@@ -24,65 +24,93 @@ class HouseControl < Papartlib::PaperTouchScreen
   end
 
   def init_capture
-    @boardView = Papartlib::TrackedView.new self
-    @boardView.setCaptureSizeMM Processing::PVector.new(150, 100)
 
-    picSize = 16
+    @rect_w = 150
+    @rect_h = 100
+    @rect_offset_x = 30
+    @rect_offset_y = 9.7
+
+    @boardView = Papartlib::TrackedView.new self
+    @boardView.setCaptureSizeMM Processing::PVector.new(@rect_w, @rect_h)
+
     @boardView.setImageWidthPx(110 * 2);
     @boardView.setImageHeightPx(60 * 2);
 
-    origin = Processing::PVector.new 30, 170
+    origin = Processing::PVector.new @rect_offset_x,  @rect_offset_y
     @boardView.setBottomLeftCorner(origin);
     @boardView.init
   end
 
   def create_buttons
-    @skatolo = Skatolo.new $app, self
 
-    @skatolo.getMousePointer.disable
-    @skatolo.setAutoDraw false
+    if @skatolo == nil
+      @skatolo = Skatolo.new $app, self
+      @skatolo.getMousePointer.disable
+      @skatolo.setAutoDraw false
+    end
 
     @level0_button = @skatolo.addHoverButton("rdc")
-                     .setPosition(61, 200)
+                     .setPosition(12.5, 135)
                      .setSize(36, 22)
 
-    @level0_toggle = @skatolo.addHoverToggle("toggle")
-                     .setPosition(61, 220)
-                     .setSize(36, 22)
+    @skatolo.addHoverButton("touch")
+      .setPosition(62.5, 135)
+      .setSize(36, 22)
+    @skatolo.addHoverButton("cinema")
+      .setPosition(112.5, 135)
+      .setSize(36, 22)
+    @skatolo.addHoverButton("perso")
+      .setPosition(162.5, 135)
+      .setSize(36, 22)
+
+      # @level0_toggle = @skatolo.addHoverToggle("toggle")
+      #                  .setPosition(61, 220)
+      #                  .setSize(36, 22)
 
     $touch_light = Processing::PVector.new
   end
 
   def rdc
-    puts "button pressed"
+    $app.lego_house.mode=LegoHouse::FIRST_FLOOR_LIGHT
   end
 
-  def toggle(value)
-    puts "toggle pressed", value
+  def touch
+    $app.lego_house.mode=LegoHouse::FIRST_FLOOR_LIGHT_TOUCH
   end
 
+  def cinema
+    $app.lego_house.mode=LegoHouse::SECOND_FLOOR_CINEMA
+  end
+
+  def perso
+    $app.lego_house.mode=LegoHouse::SECOND_FLOOR_CAPTURE
+  end
+
+
+  # def toggle(value)
+  #   puts "toggle pressed", value
+  # end
 
 
   def drawOnPaper
-    background 80, 80, 80
+    background 50
     updateTouch
     drawTouch
 
-    rect_w = 150
-    rect_h = 100
-    rect_offset_x = 30
-    rect_offset_y = 9.7
 
     $touch_light.x = -1
 
     touchList.get2DTouchs.each do |touch|
-      next if touch.position.x < rect_offset_x || touch.position.x > rect_offset_x + rect_w
-      next if touch.position.y < rect_offset_y || touch.position.y > rect_offset_y + rect_h
+      next if touch.position.x < @rect_offset_x || touch.position.x > @rect_offset_x + @rect_w
+      next if touch.position.y > drawingSize.y - @rect_offset_y || touch.position.y <
+                                                                   drawingSize.y - @rect_offset_y - @rect_h
 
-      $touch_light.x = (touch.position.x - rect_offset_x) / rect_w
-      $touch_light.y = (touch.position.y - rect_offset_y) / rect_h
+      #next if touch.position.y < drawingSize.y - @rect_offset_y || touch.position.y > drawingSize.y - @rect_offset_y + @rect_h
+      $touch_light.x = (touch.position.x - @rect_offset_x) / @rect_w
+      $touch_light.y = (drawingSize.y - touch.position.y + @rect_offset_y) / @rect_h
 
-      ellipse touch.position.x, touch.position.y, 10, 10
+
+      ellipse touch.position.x, touch.position.y, 50, 50
     end
 
 
