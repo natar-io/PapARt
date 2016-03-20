@@ -3,14 +3,14 @@ class Garden < Papartlib::PaperTouchScreen
   include Lego
 
   def settings
-    @tile_width = 20
-    @tile_height = 20
+    @tile_width = 16
+    @tile_height = 12
     @tile_size = duplo_size / 1.5
     setDrawingSize @tile_width * @tile_size, @tile_height*@tile_size
     loadMarkerBoard($app.sketchPath + "/garden.svg",
                     @tile_width * @tile_size,
                     @tile_height * @tile_size)
-    setDrawAroundPaper
+    setDrawOnPaper
   end
 
   def setup
@@ -35,8 +35,9 @@ class Garden < Papartlib::PaperTouchScreen
   end
 
 
-  def drawAroundPaper
-    background 0, 0, 0
+  def drawOnPaper
+    background 100
+    setLocation 0, 100, 0
     @nb_id = 2
     #$screenPos_many = []
 

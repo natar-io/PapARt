@@ -7,7 +7,6 @@
 ## sudo blueman-applet
 ## son avec pavucontrol
 
-
 require 'jruby_art'
 require 'jruby_art/app'
 
@@ -68,9 +67,10 @@ class Sketch < Processing::App
 
     # @color_screen = MyColorPicker.new
     #    @cinema = Cinema.new
-    @garden = Garden.new
-    @house_control = HouseControl.new
+
     @lego_house = LegoHouse.new
+    @house_control = HouseControl.new
+    @garden = Garden.new
     @papart.startTracking
 
     @projector = @papart.getDisplay
@@ -84,19 +84,20 @@ class Sketch < Processing::App
     background 0
     imageMode Processing::PConstants::CENTER
 
-    # @projector.clear
+#     @projector.clear
 
     # @projector.drawScreens
     @projector.drawScreensOver
      Papartlib::DrawUtils::drawImage(self.g,
                                      @projector.render, width/2, height/2, width, height)
-
+     #p "draw hous"
     # Papartlib::DrawUtils::drawImage(self.g,
     #                                 @projector.render, 0, 0, width, height)
 
 #     p $screenPos_many.size
 
      fill 0
+     return unless defined? $screenPos_many
      $screenPos_many.each do |id|
        next if id == nil
        id.each do |pos|

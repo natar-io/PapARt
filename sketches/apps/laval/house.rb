@@ -82,6 +82,8 @@ class LegoHouse < Papartlib::PaperScreen
       @logo_texture =  $app.loadImage($app.sketchPath + "/data/logo.png")
       @load_texture = true
     end
+    background 0
+
 
     check_location
     setLocation 0, 0 , 0
@@ -453,7 +455,7 @@ class LegoHouse < Papartlib::PaperScreen
     @movie = Movie.new $app, "data/videos/" + id
     @movie.loop
     @movie.volume 0
-  end
+    end
 
 
 
