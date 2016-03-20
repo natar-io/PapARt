@@ -17,7 +17,9 @@ class LegoHouse < Papartlib::PaperScreen
   end
 
   def settings
-    setDrawingSize lego_size*32, lego_size*32
+#    setDrawingSize lego_size*32, lego_size*32
+## Not used in drawAroundPaper
+    setDrawingSize 50, 50
     # loadMarkerBoard(Papartlib::Papart::markerFolder + "A3-small1.svg", 297, 210)
     loadMarkerBoard($app.sketchPath + "/house.svg", 297, 210)
     setDrawAroundPaper
@@ -41,6 +43,7 @@ class LegoHouse < Papartlib::PaperScreen
     @lego_shader = loadShader($app.sketchPath + "/pixLightFrag.glsl",
                               $app.sketchPath + "/pixLightVert.glsl")
     init_video
+    @y_offset_global = 0
   end
 
   def mode=(new_mode)
@@ -111,7 +114,7 @@ class LegoHouse < Papartlib::PaperScreen
       @movie.volume 0.0
     end
 
-    # draw_around_house
+   # draw_around_house
     resetShader
 
     light_intensity = 255
@@ -133,11 +136,11 @@ class LegoHouse < Papartlib::PaperScreen
     return if $touch_light == nil or $touch_light.x == -1
     pushMatrix
     move_up_small 2
-    move 2, 18
+    move 2, @y_offset_global
     move_up_small 2
     #    rect(0, 0, 20, 20)
-    px = lego_size * 20 * $touch_light.x
-    py = lego_size * 12 * (1.0-$touch_light.y)
+    px = lego_size * 20 * $touch_light.y
+    py = lego_size * 12 * (1.0-$touch_light.x) - 3
 
     pushMatrix
     translate px, py, 80
@@ -169,7 +172,7 @@ class LegoHouse < Papartlib::PaperScreen
     pushMatrix
     # go to beginning of house
     move_up_small 1
-    move 2, 18
+    move 2, @y_offset_global
 
     # house floor
     noStroke
@@ -211,7 +214,7 @@ class LegoHouse < Papartlib::PaperScreen
   def table
     pushMatrix
     move_up_small 1
-    move 10, 18
+    move 10, @y_offset_global
     translate -12, 11, -25
     fill 0, 200, 0
     rect 0, 0, 38, 38
@@ -227,7 +230,7 @@ class LegoHouse < Papartlib::PaperScreen
     noStroke
     fill ground_wall_color
 
-    move 0, 20
+    move 0, @y_offset_global + 2
     brick 2, 10, 5
 
     draw_fireplace
@@ -269,7 +272,7 @@ class LegoHouse < Papartlib::PaperScreen
     # go to beginning of house
     move_up_small 3  ## ground + 1st floor
     move_up 5        ## wall height
-    move 0, 21
+    move 0, @y_offset_global + 3
 
     noStroke
     # house floor
@@ -289,7 +292,7 @@ class LegoHouse < Papartlib::PaperScreen
     move_up_small 2  ## ground + 1st floor + 2ndfloor height
     move_up 5        ## wall height
     move_up_small 1
-    move(-1, 21)
+    move(-1, @y_offset_global + 3)
 
     # |
     fill second_floor_wall_color
@@ -359,7 +362,7 @@ class LegoHouse < Papartlib::PaperScreen
     move_up 1       # feet
     move_up_small 2 # cushions
 
-    move 2, 18
+    move 2, @y_offset_global
     move 16, 2
 
     if @first_floor_drawn

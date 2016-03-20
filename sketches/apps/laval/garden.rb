@@ -36,7 +36,7 @@ class Garden < Papartlib::PaperTouchScreen
 
 
   def drawOnPaper
-    background 100
+    background 0
     setLocation 0, 100, 0
     @nb_id = 2
     #$screenPos_many = []

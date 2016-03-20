@@ -112,6 +112,7 @@ class HouseControl < Papartlib::PaperTouchScreen
       #next if touch.position.y < drawingSize.y - @rect_offset_y || touch.position.y > drawingSize.y - @rect_offset_y + @rect_h
       $touch_light.x = (touch.position.x - @rect_offset_x) / @rect_w
       $touch_light.y = (drawingSize.y - touch.position.y + @rect_offset_y) / @rect_h
+
       # debug
       if $app.lego_house.mode == LegoHouse::FIRST_FLOOR_LIGHT_TOUCH
         ellipse touch.position.x, touch.position.y, 10, 10
@@ -126,7 +127,7 @@ class HouseControl < Papartlib::PaperTouchScreen
     $video_capture = out
 
     # out.filter Processing::PConstants::INVERT
-    image(out, 28, 25, 16, 16) if out != nil
+    # image(out, 28, 25, 16, 16) if out != nil
 
 
   end
