@@ -40,7 +40,7 @@ class Sketch < Processing::App
 
   attr_reader :papart, :paper_screen
   attr_accessor :save_house_location, :load_house_location, :move_house_location
-  attr_reader :lego_house
+  attr_reader :lego_house, :garden
 
   java_signature 'void movieEvent(processing.video.Movie)'
   def movieEvent(movie)
@@ -78,7 +78,7 @@ class Sketch < Processing::App
   end
 
   def draw
-
+    noCursor
     noStroke
 
     background 0
@@ -101,7 +101,7 @@ class Sketch < Processing::App
      $screenPos_many.each do |id|
        next if id == nil
        id.each do |pos|
-         rect(pos.x, pos.y, 12, 12)
+         rect(pos.x, pos.y, 16, 16)
          #       p pos.to_s
        end
      end
@@ -117,6 +117,10 @@ class Sketch < Processing::App
     # Key to control the house
     if key == 'a'
       @lego_house.mode = LegoHouse::FIRST_FLOOR_LIGHT
+    end
+
+    if key == 'g'
+      @garden.reset_grass
     end
 
     LegoHouse.modes.each do |mode|

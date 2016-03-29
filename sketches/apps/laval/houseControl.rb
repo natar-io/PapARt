@@ -63,7 +63,12 @@ class HouseControl < Papartlib::PaperTouchScreen
       .setPosition(162.5, 135)
       .setSize(36, 22)
 
-      # @level0_toggle = @skatolo.addHoverToggle("toggle")
+    @skatolo.addHoverButton("grass")
+      .setPosition(90, 70)
+      .setSize(36, 22)
+
+
+    # @level0_toggle = @skatolo.addHoverToggle("toggle")
       #                  .setPosition(61, 220)
       #                  .setSize(36, 22)
 
@@ -86,6 +91,10 @@ class HouseControl < Papartlib::PaperTouchScreen
     $app.lego_house.mode=LegoHouse::SECOND_FLOOR_CAPTURE
   end
 
+
+  def grass
+    $app.garden.reset_grass
+  end
 
   # def toggle(value)
   #   puts "toggle pressed", value
