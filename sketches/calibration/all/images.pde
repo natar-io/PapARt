@@ -11,7 +11,11 @@ PMatrix3D currentProjBoard(){
     IplImage projImage = projectorImage();
     if(projImage == null)
         return null;
-    board.updatePosition(projectorAsCamera, projImage);
+
+
+    DetectedMarker[] markers = DetectedMarker.detect(this.projectorTracker, projImage);
+    board.updateLocation(projectorAsCamera, projImage, markers);
+
     return board.getTransfoMat(projectorAsCamera);
 }
 
@@ -23,7 +27,7 @@ IplImage projectorImage(){
     projectorView.setCorners(corners);
     IplImage projImage = projectorView.getIplViewOf(camera);
 
-    if(board.useARToolkit()){
+    if(board.useGrayscaleImages()){
         projImage =  greyProjectorImage(projImage);
     }
 

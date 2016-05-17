@@ -34,6 +34,7 @@ public class CameraOpenCV extends Camera {
         OpenCVFrameGrabber grabberCV = new OpenCVFrameGrabber(this.systemNumber);
         grabberCV.setImageWidth(width());
         grabberCV.setImageHeight(height());
+        grabberCV.setFrameRate(60);
         grabberCV.setImageMode(FrameGrabber.ImageMode.COLOR);
  
         try {

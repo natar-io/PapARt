@@ -14,7 +14,7 @@ import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.procam.HasCamera;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.HasExtrinsics;
-import fr.inria.papart.procam.MarkerBoard;
+import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.procam.Screen;
 import java.util.ArrayList;
@@ -181,7 +181,8 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics{
 
     @Override
     public void renderScreens() {
-
+        this.graphics.noStroke();
+        
         for (Screen screen : screens) {
             if (!screen.isDrawing()) {
                 continue;

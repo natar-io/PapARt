@@ -7,7 +7,8 @@
  */
 package fr.inria.papart.procam.camera;
 
-import fr.inria.papart.procam.MarkerBoard;
+import fr.inria.papart.tracking.MarkerBoard;
+import fr.inria.papart.tracking.MarkerBoardInvalid;
 import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.Utils;
 import fr.inria.papart.procam.camera.Camera;
@@ -33,7 +34,7 @@ public class TrackedView {
     private final PVector[] imagePixelCoordinates = new PVector[4];
 
     // external information
-    private MarkerBoard board = MarkerBoard.INVALID_MARKERBOARD;
+    private MarkerBoard board = MarkerBoardInvalid.board;
     private PaperScreen paperScreen = null; // todo : invalid one...
 
     private boolean useBoardLocation = false;

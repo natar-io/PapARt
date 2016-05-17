@@ -7,6 +7,9 @@
  */
 package fr.inria.papart.procam;
 
+import fr.inria.papart.tracking.MarkerBoardFactory;
+import fr.inria.papart.tracking.MarkerBoardInvalid;
+import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.calibration.HomographyCalibration;
 import fr.inria.papart.procam.display.BaseDisplay;
@@ -50,7 +53,7 @@ public class PaperScreen {
     protected BaseDisplay mainDisplay;
 
     // only one. 
-    protected MarkerBoard markerBoard;
+    protected MarkerBoard markerBoard = MarkerBoardInvalid.board;
     protected Screen screen;
 
     protected PVector drawingSize
@@ -71,11 +74,12 @@ public class PaperScreen {
     private float filteringFreq = 30;
     private float filteringCutoff = 4;
 
+    protected Papart papart = null;
     /**
      * Create a new PaperScreen, a Papart object has to be created first.
      */
     public PaperScreen() {
-        Papart papart = Papart.getPapart();
+        papart = Papart.getPapart();
 
         if (papart == null) {
             throw new RuntimeException("Cannot create the PaperScreen, "
@@ -96,7 +100,7 @@ public class PaperScreen {
     }
 
     public PaperScreen(Camera cam, BaseDisplay proj) {
-        Papart papart = Papart.getPapart();
+        papart = Papart.getPapart();
         this.parent = papart.getApplet();
         this.cameraTracking = cam;
         mainDisplay = proj;
@@ -157,11 +161,12 @@ public class PaperScreen {
             checkInitErrors();
             // check if papart is around...
 
-            if (this.markerBoard == null) {
+            if (this.markerBoard == MarkerBoardInvalid.board) {
                 this.isWithoutCamera = true;
             }
 
             initScreen();
+            linkMarkerBoardToScreen();
 
             if (isDrawingOnDisplay) {
                 for (BaseDisplay display : this.displays) {
@@ -196,13 +201,13 @@ public class PaperScreen {
             display.addScreen(screen);
         }
 
-        if (markerBoard != null) {
-            this.screen.linkTo(markerBoard);
-        }
-
         // resolution and drawingSize are set in settings() now...
         this.screen.setScale(resolution);
         this.screen.setSize(drawingSize);
+    }
+
+    private void linkMarkerBoardToScreen() {
+        this.screen.linkTo(markerBoard);
     }
 
     private boolean checkInitErrors() {
@@ -247,7 +252,7 @@ public class PaperScreen {
     }
 
     private void trackCurrentMarkerBoard() {
-        if (isWithoutCamera) {
+        if (isWithoutCamera || this.markerBoard == MarkerBoardInvalid.board) {
             return;
         }
 
@@ -270,10 +275,11 @@ public class PaperScreen {
      *
      */
     public void draw() {
-        
-        if(!isInitialized)
+
+        if (!isInitialized) {
             return;
-            
+        }
+
         Camera mainCamera = cameraTracking;
 
         if (isDrawingOnScreen) {
@@ -486,7 +492,6 @@ public class PaperScreen {
 
     // TODO: Bug here, without this call, the rendering is different. 
     public void setLocation(float x, float y, float z) {
-        assert (isInitialized);
         screen.setTranslation(x, y, z);
     }
 
@@ -508,7 +513,7 @@ public class PaperScreen {
     public void saveLocationTo(String filename) {
         HomographyCalibration.saveMatTo(
                 Papart.getPapart().getApplet(),
-                screen.getLocation(cameraTracking),
+                screen.getMainLocation(cameraTracking),
                 filename);
     }
 
@@ -569,7 +574,7 @@ public class PaperScreen {
      * @param height height of the markerboard in millimeters.
      */
     public void loadMarkerBoard(String configFile, float width, float height) {
-        this.markerBoard = new MarkerBoard(configFile, width, height);
+        this.markerBoard = MarkerBoardFactory.create(configFile, width, height);
         trackCurrentMarkerBoard();
     }
 
@@ -578,8 +583,9 @@ public class PaperScreen {
      *
      * @param markerboard
      */
-    public final void setMarkerBoard(MarkerBoard markerboard) {
+    public void setMarkerBoard(MarkerBoard markerboard) {
         this.markerBoard = markerboard;
+        linkMarkerBoardToScreen();
         trackCurrentMarkerBoard();
     }
 

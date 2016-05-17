@@ -1,17 +1,11 @@
 def check_arguments
 
-  if ARGV.length != 3
+  if ARGV.length != 1
     p "Requires a svg file as argument, no argument passed."
-    p "Usage jruby gen.rb <input.svg> <offsetX> <offsetY> "
-    p "  e.g. : jruby gen.rb board1.svg 61.0 44.0"
+    p "Usage jruby gen.rb <input.svg> "
+    p "  e.g. : jruby gen.rb board1.svg"
     exit
   end
-
-  if not ARGV[0].end_with? ".svg"
-    p "Requires a svg file as argument (ends with .svg)."
-    exit
-  end
-
 
   if not ARGV[0].end_with? ".svg"
     p "Requires a svg file as argument (ends with .svg)."

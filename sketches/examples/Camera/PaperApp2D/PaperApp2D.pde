@@ -1,5 +1,6 @@
 import fr.inria.papart.drawingapp.DrawUtils;
 
+import fr.inria.skatolo.*;
 // PapARt library
 import fr.inria.papart.procam.*;
 import fr.inria.papart.procam.display.*;

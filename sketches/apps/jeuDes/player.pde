@@ -1,4 +1,3 @@
-
 static int NB_PLAYERS = 0;
 static int MAX_PLAYERS = 5;
 static Player currentPlayer;
@@ -20,6 +19,8 @@ class SpecialAttack extends PVector {
     public Player owner;
     public SpecialAttack(float x, float y){
 	super(x,y);
+
+
     }
 }
 
@@ -39,7 +40,7 @@ void action(){
     if(Mode.is("PlaceDice")){
 	nextPlayer();
     }
-    
+
     if(Mode.is("SpecialAttack") || Mode.is("AddTower")){
 	tryAddElement = true;
     	return;
@@ -88,7 +89,7 @@ float lastNextPlayer = 0;
 void nextPlayer(){
 
     resolveHealAttack();
-    
+
     println("Next player");
     if(currentPlayer.id == NB_PLAYERS -1){
 	currentPlayer = playerList.get(0);
@@ -123,11 +124,11 @@ void removeLastToken(){
 
     if(allTokens.isEmpty())
 	return;
-    
+
     Token token = allTokens.get(allTokens.size() - 1);
     token.owner.tokens.remove(token);
     allTokens.remove(token);
-    
+
 }
 
 boolean isCloseToAToken(PVector pos){
@@ -158,7 +159,7 @@ public class Player {
     int HP = 40;
     int lastHP = 40;
     int nbPoints = 0;
-    
+
     public Player(){
 	createID();
 	this.drawingColor = getColor();
@@ -168,7 +169,7 @@ public class Player {
     public void heal(){
 	HP += healAmount();
     }
-    
+
     public void receiveDamage(){
 	HP -= damageAmount();
     }
@@ -181,7 +182,7 @@ public class Player {
 	HP = lastHP;
     }
 
-    
+
     public void addToken(PVector pos){
 
 	Token token = new Token(pos.x, pos.y);
@@ -192,10 +193,10 @@ public class Player {
 	println("Adding a token, total " + allTokens.size());
     }
 
-    
+
 
     public void addAttack(PVector pos){
-	
+
 	SpecialAttack attack = new SpecialAttack(pos.x, pos.y);
 	attack.owner = this;
 	allAttacks.add(attack);
@@ -204,18 +205,18 @@ public class Player {
 	println("Adding a specialattack, total " + allAttacks.size());
     }
 
-    
+
 
     public int getColor(){
 	if(this.id == 0)
-	    return #2856D1; // bleus. 
+	    return #2856D1; // bleus.
 
 	if(this.id == 1)
 	    return #3FB75A; // verts
 
 	if(this.id == 2)
 	    return #E81014; // rouges
-	
+
 	if(this.id == 3)
 	    return #E0E039; // jaunes
 
@@ -228,14 +229,14 @@ public class Player {
 
     public int getTempColor(){
 	if(this.id == 0)
-	    return #507EF7; // bleus. 
+	    return #507EF7; // bleus.
 
 	if(this.id == 1)
 	    return #5EE37B; // verts
 
 	if(this.id == 2)
 	    return #FA5356; // rouges
-	
+
 	if(this.id == 3)
 	    return #EAEA63; // jaunes
 
@@ -244,7 +245,7 @@ public class Player {
 
 	return #479D81;
     }
-    
+
     private void createID(){
 	this.id = NB_PLAYERS++;
     }

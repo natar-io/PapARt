@@ -7,6 +7,8 @@
  */
 package fr.inria.papart.procam;
 
+import fr.inria.papart.calibration.PlaneCalibration;
+import fr.inria.papart.depthcam.DepthDataElementKinect;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.display.BaseDisplay;
 import processing.opengl.PGraphicsOpenGL;
@@ -23,7 +25,9 @@ import java.util.ArrayList;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import processing.core.PApplet;
 import processing.core.PImage;
+import processing.core.PMatrix3D;
 import processing.core.PVector;
+import toxi.geom.Vec3D;
 
 public class PaperTouchScreen extends PaperScreen {
 
@@ -61,10 +65,11 @@ public class PaperTouchScreen extends PaperScreen {
         if (this.touchInput == null) {
             this.touchInput = Papart.getPapart().getTouchInput();
         }
-
-        updateTouch();
+        if (this.touchInput != null) {
+            updateTouch();
+        }
     }
-    
+
     @Override
     public void setLocation(PVector v) {
         setLocation(v.x, v.y, v.z);
@@ -99,13 +104,9 @@ public class PaperTouchScreen extends PaperScreen {
         if (touchInput instanceof KinectTouchInput) {
             if (((KinectTouchInput) (touchInput)).isUseRawDepth()) {
                 touchList.invertY(drawingSize);
-            } else {
-
-                if (this.isDraw2D()) {
-                    touchList.invertY(drawingSize);
-                }
-//                touchList.scaleBy(drawingSize);
-            }
+            } else if (this.isDraw2D()) {
+                touchList.invertY(drawingSize);
+            } //                touchList.scaleBy(drawingSize);
         }
 
         if (!buttons.isEmpty()) {
@@ -286,6 +287,27 @@ public class PaperTouchScreen extends PaperScreen {
             }
         }
         return k;
+    }
+
+    public int getColorFrom3D(PVector point){
+        return getColorAt(getPxCoordinates(point));
+    }
+    
+    /**
+     * Unsafe do not use unless you are sure.
+     */
+    public PVector getPxCoordinates(PVector cameraTracking3DCoord) {
+        ProjectiveDeviceP pdp = cameraTracking.getProjectiveDevice();
+        PVector coord = pdp.worldToPixelCoord(cameraTracking3DCoord);
+        return coord;
+    }
+
+    public int getColorAt(PVector coord) {
+        int x = (int) coord.x;
+        int y = (int) coord.y;
+        ByteBuffer buff = cameraTracking.getIplImage().getByteBuffer();
+        int offset = x + y * cameraTracking.width();
+        return getColor(buff, offset);
     }
 
     private int getColor(ByteBuffer buff, int offset) {

@@ -92,7 +92,8 @@ public class ObjectFinder {
         double distanceThreshold = 0.75;
         int matchesMin = 4;
         double ransacReprojThreshold = 2.0;
-        boolean useFLANN = true;
+//        boolean useFLANN = true;
+        boolean useFLANN = false;
 
         public IplImage getObjectImage() {
             return objectImage;

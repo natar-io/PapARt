@@ -11,7 +11,7 @@ import fr.inria.papart.depthcam.devices.KinectDevice;
 import fr.inria.papart.depthcam.devices.KinectDevice.Type;
 import fr.inria.papart.depthcam.devices.KinectOne;
 import fr.inria.papart.multitouch.KinectTouchInput;
-import fr.inria.papart.procam.MarkerBoard;
+import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.procam.camera.Camera;

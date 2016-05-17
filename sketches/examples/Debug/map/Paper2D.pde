@@ -25,35 +25,22 @@ public class MyApp  extends PaperTouchScreen {
 	map.switchTweening();
     }
 
-    void draw() {
+    void drawOnPaper() {
+//        setLocation(mouseX, mouseY,0 );
+        OpenGLMapDisplay mapDisplay = (OpenGLMapDisplay) map.mapDisplay;
+// mapDisplay.innerOffsetX = mouseX;
+// mapDisplay.innerOffsetY = mouseY;
+        PGraphics inner =  mapDisplay.getInnerPG();
+        PGraphics outer = mapDisplay.getOuterPG();
 
-	// setLocation(mouseX, mouseY,0 );
+        map.draw();
+//	mapDisplay.draw();
+        background(100);
+        image(inner, 0, 0, drawingSize.x, drawingSize.y);
 
-	OpenGLMapDisplay mapDisplay = (OpenGLMapDisplay) map.mapDisplay;
-	// mapDisplay.innerOffsetX = mouseX;
-	// mapDisplay.innerOffsetY = mouseY;
+        fill(255);
 
-	PGraphics inner =  mapDisplay.getInnerPG();
-	PGraphics outer = mapDisplay.getOuterPG();
-
-	map.draw();
-	//	mapDisplay.draw();
-
-
-	beginDraw2D();
-
-	background(100);
-
-
-       	image(inner, 0, 0, drawingSize.x, drawingSize.y);
-
-	fill(255);
-	translate(mouseX, mouseY);
 	rect(0, 0, 100, 100);
 	//	image(outer, width /2, 0, width / 2, height);
-
-
-
-	endDraw();
     }
 }
