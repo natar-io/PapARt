@@ -49,6 +49,7 @@ public class BaseDisplay implements HasCamera {
 
     public BaseDisplay(PApplet applet) {
         setParent(applet);
+        this.setDrawingSize(applet.width, applet.height);
     }
 
     public BaseDisplay(PApplet applet, int quality) {

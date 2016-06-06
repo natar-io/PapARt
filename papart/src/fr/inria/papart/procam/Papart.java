@@ -1,7 +1,7 @@
 /*
  *
  * Copyright Inria, Bordeaux University.
- * Author : Jeremy Laviole. 
+ * Author : Jeremy Laviole.
  *
  * No licence yet.
  */
@@ -135,7 +135,7 @@ public class Papart {
         PFont font = this.applet.loadFont(defaultFont);
         Button.setFont(font);
         Button.setFontSize(defaultFontSize);
-        // TODO: singleton -> Better implementation. 
+        // TODO: singleton -> Better implementation.
         if (Papart.singleton == null) {
             Papart.singleton = this;
             fr.inria.papart.drawingapp.DrawUtils.applet = (PApplet) applet;
@@ -165,12 +165,10 @@ public class Papart {
     public void calibration() {
         if (calibrationPopup == null) {
             calibrationPopup = new CalibrationPopup();
+        } else if (calibrationPopup.isHidden()) {
+            calibrationPopup.show();
         } else {
-            if (calibrationPopup.isHidden()) {
-                calibrationPopup.show();
-            } else {
-                calibrationPopup.hide();
-            }
+            calibrationPopup.hide();
         }
     }
 
@@ -195,7 +193,7 @@ public class Papart {
         papart.registerPost();
         papart.initProjectorCamera();
         papart.registerKey();
-        
+
         return papart;
     }
 
@@ -230,6 +228,16 @@ public class Papart {
      * @return
      */
     public static Papart seeThrough(PApplet applet) {
+        return seeThrough(applet, 1);
+    }
+
+    /**
+     * Start a see through AR application, it replaces size().
+     *
+     * @param applet
+     * @return
+     */
+    public static Papart seeThrough(PApplet applet, float quality) {
 
         CameraConfiguration cameraConfiguration = getDefaultCameraConfiguration(applet);
 
@@ -245,8 +253,8 @@ public class Papart {
         papart.shouldSetWindowSize = true;
         papart.registerPost();
 
-        papart.initCamera();
-
+        papart.initCamera(quality);
+        
         return papart;
     }
 
@@ -305,20 +313,11 @@ public class Papart {
     }
 
     public void forceCameraSize() {
-
-        frameSize.set(cameraTracking.width(),
-                cameraTracking.height());
-//        this.shouldSetWindowSize = true;
-//        registerPost();
-
-        GLWindow window = (GLWindow) applet.getSurface().getNative();
-        window.setUndecorated(false);
-        window.setSize(cameraTracking.width(),
+        forceWindowSize(cameraTracking.width(),
                 cameraTracking.height());
     }
 
-    public void forceCameraSize(int w, int h) {
-
+    public void forceWindowSize(int w, int h) {
         frameSize.set(w, h);
 //        this.shouldSetWindowSize = true;
 //        registerPost();
@@ -398,7 +397,6 @@ public class Papart {
      * Set the frame to current valid location.
      */
     public void setFrameSize() {
-        System.out.println("Trying to set the size of the frame... " + frameSize.x);
         this.applet.getSurface().setSize((int) frameSize.x, (int) frameSize.y);
     }
 
@@ -578,6 +576,17 @@ public class Papart {
     public void initCamera() {
         initCamera(cameraConfiguration.getCameraName(),
                 cameraConfiguration.getCameraType(), 1);
+    }
+
+    /**
+     * Initialize the default camera for object tracking.
+     *
+     * @param quality default is 1, to downscale go below 1, try 0.8, for better
+     * quality go higher like 2.
+     */
+    public void initCamera(float quality) {
+        initCamera(cameraConfiguration.getCameraName(),
+                cameraConfiguration.getCameraType(), quality);
     }
 
     /**
@@ -824,7 +833,7 @@ public class Papart {
     }
 
     public void setDisplay(BaseDisplay display) {
-        // todo check this . 
+        // todo check this .
         displayInitialized = true;
         this.display = display;
     }

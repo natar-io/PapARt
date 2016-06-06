@@ -151,14 +151,14 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics{
         parent.noStroke();
 
         if (camera != null && camera.getPImage() != null) {
-            parent.image(camera.getPImage(), 0, 0, this.drawingSizeX, this.drawingSizeY);
+            parent.image(camera.getPImage(), 0, 0, parent.width, parent.height);
 //            ((PGraphicsOpenGL) (parent.g)).image(camera.getPImage(), 0, 0, frameWidth, frameHeight);
         }
 
         // TODO: Distorsion problems with higher image space distorisions (useless ?)
         DrawUtils.drawImage((PGraphicsOpenGL) parent.g,
                 this.render(),
-                0, 0, this.drawingSizeX, this.drawingSizeY);
+                0, 0, parent.width, parent.height);
     }
 
     /**

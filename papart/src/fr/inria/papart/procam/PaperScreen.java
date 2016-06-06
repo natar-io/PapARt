@@ -58,7 +58,7 @@ public class PaperScreen {
 
     protected PVector drawingSize
             = new PVector(DEFAULT_DRAWING_SIZE, DEFAULT_DRAWING_SIZE, 1);
-    protected float resolution = DEFAULT_RESOLUTION;
+    protected float quality = DEFAULT_RESOLUTION;
 
     protected PGraphicsOpenGL currentGraphics;
 
@@ -75,6 +75,7 @@ public class PaperScreen {
     private float filteringCutoff = 4;
 
     protected Papart papart = null;
+
     /**
      * Create a new PaperScreen, a Papart object has to be created first.
      */
@@ -133,13 +134,13 @@ public class PaperScreen {
     }
 
     /**
-     * Set the resolution of the drawing in px/mm . e.g.: A board with 100mm
-     * width and 2 resolution will have 200 pixels.
+     * Set the quality (resolution) of the drawing in px/mm . e.g.: A board with
+     * 100mm width and 2 resolution will have 200 pixels.
      *
-     * @param resolution
+     * @param quality
      */
-    public void setResolution(float resolution) {
-        this.resolution = resolution;
+    public void setQuality(float quality) {
+        this.quality = quality;
     }
 
     /**
@@ -197,12 +198,14 @@ public class PaperScreen {
     private void initScreen() {
         this.screen = new Screen(parent);
 
-        for (BaseDisplay display : displays) {
-            display.addScreen(screen);
+        if (this.isDrawingOnScreen) {
+            for (BaseDisplay display : displays) {
+                display.addScreen(screen);
+            }
         }
 
         // resolution and drawingSize are set in settings() now...
-        this.screen.setScale(resolution);
+        this.screen.setScale(quality);
         this.screen.setSize(drawingSize);
     }
 
@@ -287,7 +290,7 @@ public class PaperScreen {
             PGraphicsOpenGL g = screen.getGraphics();
             this.currentGraphics = g;
             g.beginDraw();
-            g.scale(resolution);
+            g.scale(quality);
             this.drawOnPaper();
             g.endDraw();
         }
@@ -301,7 +304,7 @@ public class PaperScreen {
                 PGraphicsOpenGL g = display.beginDrawOnScreen(this.screen);
                 this.currentGraphics = g;
                 this.drawAroundPaper();
-                g.endDraw();
+                display.endDraw();
             }
         }
 
@@ -347,20 +350,18 @@ public class PaperScreen {
         if (this.isWithoutCamera) {
             PMatrix3D mat = screen.getExtrinsics();
             return new PVector(mat.m03, mat.m13, mat.m23);
+        } else if (mainDisplay.hasCamera()) {
+            return markerBoard.getBoardLocation(cameraTracking, (ARDisplay) mainDisplay);
         } else {
-            if (mainDisplay.hasCamera()) {
-                return markerBoard.getBoardLocation(cameraTracking, (ARDisplay) mainDisplay);
-            } else {
-                System.out.println("Could not find the screen Position for the main display.");
-                System.out.println("Looking into secondary displays...");
-                for (BaseDisplay display : displays) {
-                    if (display.hasCamera()) {
-                        return markerBoard.getBoardLocation(cameraTracking, (ARDisplay) display);
-                    }
+            System.out.println("Could not find the screen Position for the main display.");
+            System.out.println("Looking into secondary displays...");
+            for (BaseDisplay display : displays) {
+                if (display.hasCamera()) {
+                    return markerBoard.getBoardLocation(cameraTracking, (ARDisplay) display);
                 }
-                System.out.println("Could not find where the Screen is...");
-                return new PVector();
             }
+            System.out.println("Could not find where the Screen is...");
+            return new PVector();
         }
     }
 
@@ -378,7 +379,7 @@ public class PaperScreen {
         PGraphicsOpenGL g = screen.getGraphics();
         this.currentGraphics = g;
         g.beginDraw();
-        g.scale(resolution);
+        g.scale(quality);
         this.isDrawingOnScreen = true;
         return g;
     }
@@ -398,7 +399,7 @@ public class PaperScreen {
         PGraphicsOpenGL g = screen.getGraphics();
         this.currentGraphics = g;
         g.beginDraw();
-        g.scale(resolution);
+        g.scale(quality);
         this.isDrawingOnScreen = true;
         return g;
     }
@@ -552,7 +553,7 @@ public class PaperScreen {
     }
 
     public float getResolution() {
-        return resolution;
+        return quality;
     }
 
     public boolean isIsDrawingOnScreen() {
@@ -593,7 +594,7 @@ public class PaperScreen {
      * Sets the drawing size in millimeters. To get the resolution you must
      * multiply the drawing size by the resolution.
      *
-     * @see setResolution
+     * @see setResolution#setQuality
      * @param width
      * @param height
      */
