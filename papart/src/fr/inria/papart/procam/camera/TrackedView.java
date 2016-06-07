@@ -42,11 +42,14 @@ public class TrackedView {
     private boolean useManualConrers = false;
 
     private PVector bottomLeftCorner = new PVector(0, 0), captureSizeMM = new PVector(100, 100);
+    private PVector topLeftCorner = new PVector(0, 0);
+    private boolean isYUp = true;
+
     private int imageWidthPx = 128, imageHeightPx = 128;
 
     // temporary variables
-    private IplImage mainImage;
     private Camera camera;
+    private IplImage mainImage;
 
     // Public constructor for capturing the whole markerboard 
     public TrackedView(MarkerBoard board) {
@@ -150,10 +153,10 @@ public class TrackedView {
 
         PMatrix3D pos = null;
 
-        if(useManualConrers){
-            return ;
+        if (useManualConrers) {
+            return;
         }
-        
+
         if (usePaperLocation) {
             pos = paperScreen.getLocation();
         }
@@ -170,29 +173,58 @@ public class TrackedView {
 
         tmp.apply(pos);
 
-        // bottom left
-        tmp.translate(bottomLeftCorner.x, bottomLeftCorner.y);
-        corner3DPos[0].x = tmp.m03;
-        corner3DPos[0].y = tmp.m13;
-        corner3DPos[0].z = tmp.m23;
+        if (isYUp) {
 
-        // bottom right
-        tmp.translate(captureSizeMM.x, 0);
-        corner3DPos[1].x = tmp.m03;
-        corner3DPos[1].y = tmp.m13;
-        corner3DPos[1].z = tmp.m23;
+            // bottom left
+            tmp.translate(bottomLeftCorner.x, bottomLeftCorner.y);
+            corner3DPos[0].x = tmp.m03;
+            corner3DPos[0].y = tmp.m13;
+            corner3DPos[0].z = tmp.m23;
 
-        // top right
-        tmp.translate(0, captureSizeMM.y, 0);
-        corner3DPos[2].x = tmp.m03;
-        corner3DPos[2].y = tmp.m13;
-        corner3DPos[2].z = tmp.m23;
+            // bottom right
+            tmp.translate(captureSizeMM.x, 0);
+            corner3DPos[1].x = tmp.m03;
+            corner3DPos[1].y = tmp.m13;
+            corner3DPos[1].z = tmp.m23;
 
-        // top left
-        tmp.translate(-captureSizeMM.x, 0, 0);
-        corner3DPos[3].x = tmp.m03;
-        corner3DPos[3].y = tmp.m13;
-        corner3DPos[3].z = tmp.m23;
+            // top right
+            tmp.translate(0, captureSizeMM.y, 0);
+            corner3DPos[2].x = tmp.m03;
+            corner3DPos[2].y = tmp.m13;
+            corner3DPos[2].z = tmp.m23;
+
+            // top left
+            tmp.translate(-captureSizeMM.x, 0, 0);
+            corner3DPos[3].x = tmp.m03;
+            corner3DPos[3].y = tmp.m13;
+            corner3DPos[3].z = tmp.m23;
+
+        } else {
+
+            // top left
+            tmp.translate(topLeftCorner.x, paperScreen.getDrawingSize().y - topLeftCorner.y);
+            corner3DPos[3].x = tmp.m03;
+            corner3DPos[3].y = tmp.m13;
+            corner3DPos[3].z = tmp.m23;
+
+            // top right
+            tmp.translate(captureSizeMM.x, 0);
+            corner3DPos[2].x = tmp.m03;
+            corner3DPos[2].y = tmp.m13;
+            corner3DPos[2].z = tmp.m23;
+
+            // bottom right
+            tmp.translate(0, -captureSizeMM.y, 0);
+            corner3DPos[1].x = tmp.m03;
+            corner3DPos[1].y = tmp.m13;
+            corner3DPos[1].z = tmp.m23;
+
+            // bottom left
+            tmp.translate(-captureSizeMM.x, 0, 0);
+            corner3DPos[0].x = tmp.m03;
+            corner3DPos[0].y = tmp.m13;
+            corner3DPos[0].z = tmp.m23;
+        }
 
         for (int i = 0; i < 4; i++) {
             screenPixelCoordinates[i] = camera.pdp.worldToPixel(corner3DPos[i], true);
@@ -204,21 +236,41 @@ public class TrackedView {
     }
 
     public PVector getBottomLeftCorner() {
-        return bottomLeftCorner;
+        return bottomLeftCorner.get();
     }
 
-    public TrackedView setBottomLeftCorner(PVector bottomLeftCorner) {
-        this.bottomLeftCorner = bottomLeftCorner;
-        return this;
+    public PVector getTopLeftCorner() {
+        return topLeftCorner.get();
+    }
+
+    /**
+     * Use either TopLeftCorner OR BottomLeftCorner. Calling one will discard
+     * the other.
+     *
+     * @param bottomLeftCorner
+     */
+    public void setBottomLeftCorner(PVector bottomLeftCorner) {
+        this.bottomLeftCorner.set(bottomLeftCorner);
+        this.isYUp = true;
+    }
+
+    /**
+     * Use either TopLeftCorner OR BottomLeftCorner. Calling one will discard
+     * the other.
+     *
+     * @param topLeftCorner
+     */
+    public void setTopLeftCorner(PVector topLeftCorner) {
+        this.topLeftCorner.set(topLeftCorner);
+        this.isYUp = false;
     }
 
     public PVector getCaptureSizeMM() {
-        return captureSizeMM;
+        return captureSizeMM.copy();
     }
 
-    public TrackedView setCaptureSizeMM(PVector captureSizeMM) {
-        this.captureSizeMM = captureSizeMM;
-        return this;
+    public void setCaptureSizeMM(PVector captureSizeMM) {
+        this.captureSizeMM.set(captureSizeMM);
     }
 
     public int getImageWidthPx() {

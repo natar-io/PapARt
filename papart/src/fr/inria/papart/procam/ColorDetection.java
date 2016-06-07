@@ -36,7 +36,7 @@ public class ColorDetection {
     protected int col;
 
     public ColorDetection(PaperScreen paperScreen) {
-        this.invY = false;
+        this.invY = paperScreen.isIsDrawingOnScreen();
         this.paperScreen = paperScreen;
         setCaptureOffset(new PVector());
     }
@@ -197,13 +197,23 @@ public class ColorDetection {
     }
 
     public PVector getCaptureSize() {
-        return captureSize;
+        return captureSize.copy();
     }
 
+    /**
+     * Set the capture size in millimeters. 
+     * @param x
+     * @param y 
+     */
     public void setCaptureSize(float x, float y) {
         this.captureSize.set(x, y);
     }
 
+    /**
+     * Set the picture size for analysis in pixels.
+     * @param picWidth
+     * @param picHeight 
+     */
     public void setPicSize(int picWidth, int picHeight) {
         this.picWidth = picWidth;
         this.picHeight = picHeight;
