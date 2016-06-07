@@ -53,9 +53,9 @@ import toxi.geom.Plane;
  */
 public class Papart {
 
-    public final static String folder = fr.inria.papart.procam.Utils.getPapartFolder();
-    public final static String calibrationFolder = folder + "/data/calibration/";
-    public final static String markerFolder = folder + "/data/markers/";
+    public final static String folder = fr.inria.papart.procam.Utils.getPapartFolder() + "/data/";
+    public final static String calibrationFolder = folder + "calibration/";
+    public final static String markerFolder = folder + "markers/";
 
     public static String cameraCalibName = "camera.yaml";
     public static String projectorCalibName = "projector.yaml";
@@ -81,7 +81,7 @@ public class Papart {
     public static String planeAndProjectionCalib = calibrationFolder + "PlaneProjectionCalibration.xml";
     public static String touchCalib = calibrationFolder + "Touch2DCalibration.xml";
     public static String touchCalib3D = calibrationFolder + "Touch3DCalibration.xml";
-    public static String defaultFont = folder + "/data/Font/" + "GentiumBookBasic-48.vlw";
+    public static String defaultFont = folder + "Font/" + "GentiumBookBasic-48.vlw";
     public int defaultFontSize = 12;
 
     protected static Papart singleton = null;
@@ -419,6 +419,15 @@ public class Papart {
 
     public void saveCalibration(String fileName, PMatrix3D mat) {
         HomographyCalibration.saveMatTo(applet, mat, Papart.calibrationFolder + fileName);
+    }
+
+    /**
+     * Saves a 3D transformation matrix (such as a paper location). 
+     * @param fileName
+     * @param mat 
+     */
+    public void saveLocationTo(String fileName, PMatrix3D mat) {
+        HomographyCalibration.saveMatTo(applet, mat, fileName);
     }
 
     /**
