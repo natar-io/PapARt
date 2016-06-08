@@ -15,7 +15,12 @@
             <id>clojars.org</id>
             <url>http://clojars.org/repo</url>
         </repository>
-        
+
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </repository>
+
         <repository>
             <id>central</id>
             <name>Maven Repository Switchboard</name>
