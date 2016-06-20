@@ -134,6 +134,7 @@ public class ProjectorDisplay extends ARDisplay {
                                 viewedPtC.z));
 
         // Intersect ray with Plane 
+        // TODO: Do no use screen.getPlane !!!
         ReadonlyVec3D inter = screen.getPlane().getIntersectionWithRay(ray);
 
         // It may not intersect.

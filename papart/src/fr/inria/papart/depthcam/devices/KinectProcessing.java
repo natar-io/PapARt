@@ -186,7 +186,7 @@ public class KinectProcessing extends KinectDepthAnalysis {
 //        int low= depthRaw[offset * 3] & 0xFF;
 //        System.out.println("high " + high + " low " + low );
 //        System.out.println("depth " + this.getDepth(offset) );
-        Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 255));
+        Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 0));
 
 //        computeDepthAndDo(skip, new DoNothing());
         // TODO: get the color with Kinect2... 

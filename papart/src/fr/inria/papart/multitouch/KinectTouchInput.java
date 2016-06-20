@@ -236,6 +236,8 @@ public class KinectTouchInput extends TouchInput {
         }
     }
 
+    // TODO: Do the same without the Display, use the extrinsics instead! 
+    
     // TODO: Do the same with DepthDataElement  instead of  DepthPoint ?
     public ArrayList<DepthPoint> projectDepthData(ARDisplay display, Screen screen) {
         ArrayList<DepthPoint> list = projectDepthData2D(display, screen);
@@ -322,6 +324,8 @@ public class KinectTouchInput extends TouchInput {
             paperScreenCoord = new PVector();
             PVector pKinectP = new PVector(pKinect.x, pKinect.y, pKinect.z);
 
+            // TODO: Here change the display.getCamera() to 
+            // another way to get the screen location... 
             PMatrix3D transfo = screen.getLocation(display.getCamera());
             transfo.invert();
             transfo.mult(pKinectP, paperScreenCoord);

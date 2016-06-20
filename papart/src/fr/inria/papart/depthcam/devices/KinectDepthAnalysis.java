@@ -15,6 +15,7 @@ import fr.inria.papart.depthcam.TouchAttributes;
 import static fr.inria.papart.depthcam.DepthAnalysis.INVALID_POINT;
 import static fr.inria.papart.depthcam.DepthAnalysis.papplet;
 import fr.inria.papart.procam.ProjectiveDeviceP;
+import fr.inria.papart.procam.Utils;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.CameraOpenKinect;
 import java.nio.ByteBuffer;
@@ -91,15 +92,11 @@ public class KinectDepthAnalysis extends DepthAnalysis {
     }
 
     private void initMemory() {
-
-        System.out.println("Init color memory " + kinectDevice.colorSize());
         colorRaw = new byte[kinectDevice.colorSize() * 3];
         depthRaw = new byte[kinectDevice.rawDepthSize()];
 
         depthData = new KinectDepthData(this);
         depthData.projectiveDevice = this.calibIR;
-
-        System.out.println("Width " + kinectDevice.depthWidth());
 
         if (kinectDevice instanceof Kinect360) {
             depthComputationMethod = new Kinect360Depth();
@@ -110,6 +107,22 @@ public class KinectDepthAnalysis extends DepthAnalysis {
         }
 
         PixelOffset.initStaticMode(kinectDevice.depthWidth(), kinectDevice.depthHeight());
+    }
+    
+    public PVector findDepthAtRGB(PVector v){
+        return findDepthAtRGB(v.x, v.y, v.z);
+    }
+    
+    public PVector findDepthAtRGB(float x, float y, float z){
+        PVector v = new PVector(x, y, z);
+        PVector v2 = new PVector();
+
+        kinectDevice.getStereoCalibrationInv().mult(v, v2);
+        // v2 is now the location in KinectDepth instead of KinectRGB coordinates.
+
+        int worldToPixel = kinectDevice().getCameraDepth().getProjectiveDevice().worldToPixel(v2);
+
+        return Utils.toPVector(depthData.depthPoints[worldToPixel]);
     }
 
     public void update(IplImage depth) {

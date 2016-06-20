@@ -20,8 +20,13 @@ public class CalibrationSnapshot {
     public CalibrationSnapshot(PMatrix3D cameraPaperCalibration,
             PMatrix3D projectorPaperCalibration,
             PMatrix3D kinectPaperCalibration) {
-        cameraPaper = cameraPaperCalibration.get();
-        projectorPaper = projectorPaperCalibration.get();
+
+        if (cameraPaperCalibration != null) {
+            cameraPaper = cameraPaperCalibration.get();
+        }
+        if (projectorPaperCalibration != null) {
+            projectorPaper = projectorPaperCalibration.get();
+        }
         if (kinectPaperCalibration != null) {
             kinectPaper = kinectPaperCalibration.get();
         }

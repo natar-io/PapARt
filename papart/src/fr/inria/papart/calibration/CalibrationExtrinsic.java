@@ -60,7 +60,11 @@ public class CalibrationExtrinsic {
         this.projector = projector;
     }
 
-    void setKinect(KinectDevice device, Type type) {
+    public void setDefaultKinect() {
+        this.kinectType = papart.getKinectType();
+        this.kinectDevice = papart.getKinectDevice();
+    }
+    public void setKinect(KinectDevice device, Type type) {
         this.kinectType = type;
         this.kinectDevice = device;
     }
@@ -148,6 +152,37 @@ public class CalibrationExtrinsic {
     }
 
     public boolean calibrateKinect360Plane(ArrayList<CalibrationSnapshot> snapshots) {
+        // Depth -> color  extrinsics
+        PMatrix3D kinectExtr = kinectDevice.getStereoCalibration().get();
+
+        // color -> depth  extrinsics
+        kinectExtr.invert();
+
+        PlaneCalibration planeCalibCam = computeAveragePlaneCam(snapshots);
+        PlaneCalibration planeCalibKinect = computeAveragePlaneKinect(snapshots, kinectExtr);
+        planeCalibCam.flipNormal();
+
+        // Tracking --> depth
+        PMatrix3D kinectCameraExtr = papart.loadCalibration(Papart.kinectTrackingCalib);
+
+        HomographyCalibration homography = CalibrationExtrinsic.computeScreenPaperIntersection(projector,
+                planeCalibCam,
+                kinectCameraExtr);
+        if (homography == HomographyCalibration.INVALID) {
+            System.err.println("No intersection");
+            return false;
+        }
+
+        // move the plane up a little.
+        planeCalibKinect.flipNormal();
+        planeCalibKinect.moveAlongNormal(-20f);
+
+        saveKinectPlaneCalibration(planeCalibKinect, homography);
+        return true;
+    }
+    
+    
+    public boolean calibrateKinect360PlaneOnly(ArrayList<CalibrationSnapshot> snapshots) {
         // Depth -> color  extrinsics
         PMatrix3D kinectExtr = kinectDevice.getStereoCalibration().get();
 

@@ -7,10 +7,12 @@
  */
 package fr.inria.papart.procam.display;
 
+import fr.inria.papart.calibration.PlaneCalibration;
 import processing.opengl.PGraphicsOpenGL;
 import org.bytedeco.javacv.ProjectiveDevice;
 import fr.inria.papart.drawingapp.DrawUtils;
 import fr.inria.papart.multitouch.TouchInput;
+import fr.inria.papart.multitouch.TouchPoint;
 import fr.inria.papart.procam.HasCamera;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.HasExtrinsics;
@@ -23,6 +25,7 @@ import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.opengl.PShader;
+import toxi.geom.Plane;
 import toxi.geom.Ray3D;
 import toxi.geom.ReadonlyVec3D;
 import toxi.geom.Vec3D;
@@ -460,6 +463,49 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics{
                 1f - (res.y() / res.z()), 1);
         return out;
     }
+            
+     /**
+     * Computes the 3D coordinates of a projected pixel in the tracking camera
+     * coordinate system.
+     *
+     * @param planeCalibCam projection plane
+     * @param px x axis in pixel coordinates
+     * @param py x axis in pixel coordinates
+     * @return
+     */
+    public PVector getProjectedPointOnPlane(PlaneCalibration planeCalibCam, float px, float py) {
+        // Create ray from the projector (origin / viewed pixel)
+        // Intersect this ray with the piece of paper.
+        // Compute the Two points for the ray
+        PVector originP = new PVector(0, 0, 0);
+        PVector viewedPtP = getProjectiveDeviceP().pixelToWorldNormalized(px, py);
+
+        // Pass it to the camera point of view (origin)
+        PMatrix3D proCamExtrinsics = getExtrinsicsInv();
+        PVector originC = new PVector();
+        PVector viewedPtC = new PVector();
+        proCamExtrinsics.mult(originP, originC);
+        proCamExtrinsics.mult(viewedPtP, viewedPtC);
+
+        // Second argument is a direction
+        viewedPtC.sub(originC);
+
+        Ray3D ray = new Ray3D(new Vec3D(originC.x,
+                originC.y,
+                originC.z),
+                new Vec3D(viewedPtC.x,
+                        viewedPtC.y,
+                        viewedPtC.z));
+
+        // Intersect ray with Plane
+        ReadonlyVec3D inter = planeCalibCam.getPlane().getIntersectionWithRay(ray);
+
+        if (inter == null) {
+            return TouchInput.NO_INTERSECTION;
+        }
+
+        return new PVector(inter.x(), inter.y(), inter.z());
+    }    
 
     protected PMatrix3D createProjection(PVector nearFar) {
 

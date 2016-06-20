@@ -205,6 +205,10 @@ public class Utils {
         return new Vec3D(p.x, p.y, p.z);
     }
 
+    static public PVector toPVector(Vec3D p) {
+        return new PVector(p.x, p.y, p.z);
+    }
+
     static public boolean colorDist(int c1, int c2, int threshold) {
         int r1 = c1 >> 16 & 0xFF;
         int g1 = c1 >> 8 & 0xFF;

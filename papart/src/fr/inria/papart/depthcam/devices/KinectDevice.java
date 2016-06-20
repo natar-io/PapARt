@@ -19,6 +19,8 @@ import toxi.geom.Vec3D;
  */
 public abstract class KinectDevice implements DepthCameraDevice {
 
+    
+
     public enum Type {
         ONE, X360, NONE
     }
@@ -35,6 +37,7 @@ public abstract class KinectDevice implements DepthCameraDevice {
             0, 1, 0, 0,
             0, 0, 1, 0,
             0, 0, 0, 1);
+    private PMatrix3D KinectRGBIRCalibrationInv;
 
     protected PApplet parent;
 
@@ -45,7 +48,7 @@ public abstract class KinectDevice implements DepthCameraDevice {
     abstract public Camera getCameraDepth();
 
     abstract public int rawDepthSize();
-    
+
     abstract public Type type();
 
     abstract public void setTouch(KinectTouchInput kinectTouchInput);
@@ -71,10 +74,16 @@ public abstract class KinectDevice implements DepthCameraDevice {
 
     public void setStereoCalibration(PMatrix3D matrix) {
         KinectRGBIRCalibration.set(matrix);
+        KinectRGBIRCalibrationInv = KinectRGBIRCalibration.get();
+        KinectRGBIRCalibrationInv.invert();
     }
 
     public PMatrix3D getStereoCalibration() {
         return KinectRGBIRCalibration;
+    }
+    
+    public PMatrix3D getStereoCalibrationInv() {
+        return KinectRGBIRCalibrationInv;
     }
 
     public int findColorOffset(Vec3D v) {
@@ -88,6 +97,14 @@ public abstract class KinectDevice implements DepthCameraDevice {
     private PVector vt = new PVector();
     private PVector vt2 = new PVector();
 
+    /**
+     * Warning not thread safe.
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @return
+     */
     public int findColorOffset(float x, float y, float z) {
         vt.set(x, y, z);
         vt2.set(0, 0, 0);

@@ -340,45 +340,6 @@ public class Screen implements HasExtrinsics {
         initPosM = null;
     }
 
-    ///////////////////// POINTER PROJECTION  ////////////////
-    // GluUnproject
-    // TODO: not working ???
-    /**
-     * UNSAFE DO NOT USE
-     *
-     * @param projector
-     * @param mouseX
-     * @param mouseY
-     * @param width
-     * @param height
-     * @return
-     */
-    public ReadonlyVec3D projectMouse(ProjectorDisplay projector, int mouseX, int mouseY, int width, int height) {
-
-        PGraphicsOpenGL projGraphics = projector.getGraphics();
-        PMatrix3D projMat = projector.getProjectionInit().get();
-        PMatrix3D modvw = projGraphics.modelview.get();
-
-        double[] mouseDist = projector.getProjectiveDevice().undistort(mouseX, mouseY);
-        float x = 2 * (float) mouseDist[0] / (float) width - 1;
-        float y = 2 * (float) mouseDist[1] / (float) height - 1;
-
-        PVector vect = new PVector(x, y, 1);
-        PVector transformVect = new PVector();
-        PVector transformVect2 = new PVector();
-        projMat.apply(modvw);
-        projMat.invert();
-        projMat.mult(vect, transformVect);
-        vect.z = (float) 0.85;
-        projMat.mult(vect, transformVect2);
-        //    println(skip / 10f);
-        Ray3D ray = new Ray3D(new Vec3D(transformVect.x, transformVect.y, transformVect.z),
-                new Vec3D(transformVect2.x, transformVect2.y, transformVect2.z));
-
-        ReadonlyVec3D res = plane.getIntersectionWithRay(ray);
-        return res;
-    }
-
     public float getHalfEyeDist() {
         return halfEyeDist;
     }

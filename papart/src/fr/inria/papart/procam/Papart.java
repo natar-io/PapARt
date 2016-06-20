@@ -163,6 +163,7 @@ public class Papart {
     private CalibrationPopup calibrationPopup = null;
 
     public void calibration() {
+        System.out.println("Calirbtaino");
         if (calibrationPopup == null) {
             calibrationPopup = new CalibrationPopup();
         } else if (calibrationPopup.isHidden()) {
