@@ -5,15 +5,18 @@
  *
  * No licence yet.
  */
-package fr.inria.papart.depthcam.devices;
+package fr.inria.papart.depthcam.analysis;
 
 import fr.inria.papart.calibration.HomographyCalibration;
 import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
-import fr.inria.papart.depthcam.DepthAnalysis;
 import fr.inria.papart.depthcam.PixelOffset;
 import fr.inria.papart.depthcam.TouchAttributes;
-import static fr.inria.papart.depthcam.DepthAnalysis.INVALID_POINT;
-import static fr.inria.papart.depthcam.DepthAnalysis.papplet;
+import fr.inria.papart.depthcam.devices.Kinect360;
+import fr.inria.papart.depthcam.devices.KinectDepthData;
+import fr.inria.papart.depthcam.devices.KinectDevice;
+import fr.inria.papart.depthcam.devices.KinectOne;
+import static fr.inria.papart.depthcam.analysis.DepthAnalysis.INVALID_POINT;
+import static fr.inria.papart.depthcam.analysis.DepthAnalysis.papplet;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.procam.Utils;
 import fr.inria.papart.procam.camera.Camera;

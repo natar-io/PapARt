@@ -10,7 +10,7 @@ package fr.inria.papart.multitouch;
 import fr.inria.papart.calibration.PlanarTouchCalibration;
 import fr.inria.papart.calibration.PlaneCalibration;
 import fr.inria.papart.depthcam.devices.KinectDepthData;
-import fr.inria.papart.depthcam.DepthAnalysis;
+import fr.inria.papart.depthcam.analysis.DepthAnalysis;
 import fr.inria.papart.depthcam.DepthData;
 import java.util.ArrayList;
 import java.util.Arrays;

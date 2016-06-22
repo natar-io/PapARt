@@ -12,6 +12,7 @@ package fr.inria.papart.procam.camera;
  * @author jeremylaviole
  */
 import fr.inria.papart.graph.Node;
+import fr.inria.papart.procam.HasExtrinsics;
 import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.procam.Utils;
@@ -35,7 +36,7 @@ import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 
-public abstract class Camera extends Node implements PConstants {
+public abstract class Camera extends Node implements PConstants, HasExtrinsics {
 
     public static Camera INVALID_CAMERA = new CameraOpenCV(-1);
 
@@ -44,6 +45,12 @@ public abstract class Camera extends Node implements PConstants {
 
     protected CamImage camImage = null;
     protected DetectedMarker[] lastMarkers = null;
+
+    private final PMatrix3D extrinsics = new PMatrix3D(1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1);
+    private boolean hasExtrinsics = false;
 
     public enum Type {
 
@@ -109,7 +116,7 @@ public abstract class Camera extends Node implements PConstants {
     public DetectedMarker[] getDetectedMarkers() {
         return this.lastMarkers;
     }
-    
+
     protected void checkParameters() {
         if (width == 0 || height == 0) {
             throw new RuntimeException("Camera: Width or Height are 0, set them or load a calibration.");
@@ -402,6 +409,21 @@ public abstract class Camera extends Node implements PConstants {
 
     public void setPixelFormat(PixelFormat format) {
         this.format = format;
+    }
+
+    @Override
+    public boolean hasExtrinsics() {
+        return this.hasExtrinsics;
+    }
+
+    @Override
+    public PMatrix3D getExtrinsics() {
+        return this.extrinsics;
+    }
+
+    public void setExtrinsics(PMatrix3D extrinsics) {
+        this.extrinsics.set(extrinsics);
+        this.hasExtrinsics = true;
     }
 
     /**

@@ -13,6 +13,7 @@ import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.CameraFactory;
 import fr.inria.papart.procam.camera.CameraOpenKinect;
 import processing.core.PApplet;
+import processing.core.PMatrix3D;
 
 /**
  *
@@ -35,7 +36,7 @@ public class Kinect360 extends KinectDevice {
         camera.getDepthCamera().setCalibration(Papart.kinectIRCalib);
         camera.start();
     }
-    
+
     private void initSizes(PApplet parent) {
         this.parent = parent;
         WIDTH = 640;

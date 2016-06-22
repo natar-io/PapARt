@@ -5,14 +5,16 @@
  *
  * No licence yet.
  */
-package fr.inria.papart.depthcam.devices;
+package fr.inria.papart.depthcam.analysis;
 
-import static fr.inria.papart.depthcam.DepthAnalysis.papplet;
+import static fr.inria.papart.depthcam.analysis.DepthAnalysis.papplet;
 import fr.inria.papart.calibration.HomographyCalibration;
 import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
 import fr.inria.papart.calibration.PlaneCalibration;
 import fr.inria.papart.depthcam.PixelOffset;
-import static fr.inria.papart.depthcam.DepthAnalysis.papplet;
+import fr.inria.papart.depthcam.devices.KinectDevice;
+import fr.inria.papart.depthcam.devices.KinectOne;
+import static fr.inria.papart.depthcam.analysis.DepthAnalysis.papplet;
 import fr.inria.papart.procam.camera.CameraOpenKinect;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -57,6 +59,31 @@ public class KinectProcessing extends KinectDepthAnalysis {
 
     }
 
+    @Override
+    public void updateMT(opencv_core.IplImage depth, opencv_core.IplImage color, PlaneAndProjectionCalibration calib, int skip2D, int skip3D) {
+        updateRawDepth(depth);
+        // optimisation no Color. 
+        updateRawColor(color);
+        depthData.clear();
+        depthData.timeStamp = papplet.millis();
+        depthData.planeAndProjectionCalibration = calib;
+
+        computeDepthAndDo(1, new DoNothing());
+
+        validPointsPImage.loadPixels();
+//        Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 255));
+        doForEachPoint(1, new SetImageData());
+        validPointsPImage.updatePixels();
+
+        doForEachPoint(skip2D, new Select2DPointPlaneProjection());
+
+//        erodePoints(depthData.validPointsMask);
+//        erodePoints2(depthData.validPointsList, depthData.validPointsMask, skip2D);
+        doForEachPoint(skip3D, new Select3DPointPlaneProjection());
+//        erodePoints(depthData.validPointsMask3D);
+
+    }
+
     public void updateMT(opencv_core.IplImage depth, opencv_core.IplImage color, PlaneAndProjectionCalibration calib, int skip2D) {
         updateRawDepth(depth);
         // optimisation no Color. 
@@ -67,14 +94,13 @@ public class KinectProcessing extends KinectDepthAnalysis {
         computeDepthAndDo(skip2D, new Select2DPointPlaneProjection());
 
 //        erodePoints(depthData.validPointsMask);
-        erodePoints2(depthData.validPointsList, depthData.validPointsMask, skip2D);
-
+//        erodePoints2(depthData.validPointsList, depthData.validPointsMask, skip2D);
         doForEachPoint(skip2D, new Select3DPointPlaneProjection());
 //        erodePoints(depthData.validPointsMask3D);
 
         validPointsPImage.loadPixels();
         Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 255));
-
+        System.out.println("updateMT good");
         doForEachValidPoint(skip2D, new SetImageData());
         validPointsPImage.updatePixels();
     }
@@ -82,7 +108,7 @@ public class KinectProcessing extends KinectDepthAnalysis {
     private void erodePoints2(ArrayList<Integer> validList, boolean[] arrayToErode, int skip) {
 
         Arrays.fill(validCopy, false);
-        
+
         for (Integer idx : validList) {
             PixelOffset po = PixelOffset.get(idx);
             int sum = 0;
@@ -93,7 +119,7 @@ public class KinectProcessing extends KinectDepthAnalysis {
             for (int j = y * kinectDevice.depthWidth() - skip;
                     j <= y * kinectDevice.depthWidth() + skip;
                     j += kinectDevice.depthWidth() * skip) {
-                for (int i = x-skip; i <= x+skip; i += skip) {
+                for (int i = x - skip; i <= x + skip; i += skip) {
 
                     int currentIdx = i + j;
                     sum += arrayToErode[currentIdx] ? 1 : 0;
@@ -140,6 +166,8 @@ public class KinectProcessing extends KinectDepthAnalysis {
 
     public PImage update(IplImage depth, IplImage color,
             PlaneAndProjectionCalibration planeProjCalibration, int skip) {
+        System.out.println("update good");
+
         updateRawDepth(depth);
         updateRawColor(color);
         depthData.clear();

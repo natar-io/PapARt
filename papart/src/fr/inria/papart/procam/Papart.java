@@ -18,12 +18,12 @@ import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
 import org.bytedeco.javacpp.freenect;
 import fr.inria.papart.drawingapp.Button;
-import fr.inria.papart.depthcam.DepthAnalysis;
+import fr.inria.papart.depthcam.analysis.DepthAnalysis;
 import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
 import fr.inria.papart.calibration.PlaneCalibration;
 import fr.inria.papart.calibration.ScreenConfiguration;
 import fr.inria.papart.depthcam.devices.Kinect360;
-import fr.inria.papart.depthcam.devices.KinectDepthAnalysis;
+import fr.inria.papart.depthcam.analysis.KinectDepthAnalysis;
 import fr.inria.papart.depthcam.devices.KinectDevice;
 import fr.inria.papart.depthcam.devices.KinectOne;
 import fr.inria.papart.multitouch.TouchInput;
@@ -255,7 +255,7 @@ public class Papart {
         papart.registerPost();
 
         papart.initCamera(quality);
-        
+
         return papart;
     }
 
@@ -423,9 +423,10 @@ public class Papart {
     }
 
     /**
-     * Saves a 3D transformation matrix (such as a paper location). 
+     * Saves a 3D transformation matrix (such as a paper location).
+     *
      * @param fileName
-     * @param mat 
+     * @param mat
      */
     public void saveLocationTo(String fileName, PMatrix3D mat) {
         HomographyCalibration.saveMatTo(applet, mat, fileName);
@@ -686,10 +687,15 @@ public class Papart {
             kinectDevice.getCameraRGB().setThread();
             kinectDevice.getCameraDepth().setThread();
             cameraInitialized = true;
+
             checkInitialization();
         }
 
         loadDefaultTouchKinect();
+
+        PMatrix3D extr = kinectDevice.getStereoCalibration();
+        kinectDevice.setExtrinsics(extr);
+
         ((KinectTouchInput) this.touchInput).useRawDepth();
     }
 
@@ -704,6 +710,10 @@ public class Papart {
         kinectDevice.getCameraDepth().setThread();
 
         loadDefaultTouchKinect();
+
+        // setExtrinsics must after the kinect stereo calibration is loaded
+        PMatrix3D extr = (Papart.getPapart()).loadCalibration(Papart.kinectTrackingCalib);
+        kinectDevice.setExtrinsics(extr);
     }
 
     private boolean useKinectOne = true;

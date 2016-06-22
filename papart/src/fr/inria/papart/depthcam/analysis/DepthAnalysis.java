@@ -5,11 +5,12 @@
  *
  * No licence yet.
  */
-package fr.inria.papart.depthcam;
+package fr.inria.papart.depthcam.analysis;
 
 import fr.inria.papart.depthcam.devices.KinectDepthData;
 import fr.inria.papart.calibration.HomographyCalibration;
 import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
+import fr.inria.papart.depthcam.PixelOffset;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import java.nio.ByteBuffer;

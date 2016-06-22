@@ -7,6 +7,7 @@ package fr.inria.papart.depthcam.devices;
 
 import fr.inria.papart.calibration.HomographyCalibration;
 import fr.inria.papart.multitouch.KinectTouchInput;
+import fr.inria.papart.procam.HasExtrinsics;
 import fr.inria.papart.procam.camera.Camera;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
@@ -18,8 +19,6 @@ import toxi.geom.Vec3D;
  * @author Jérémy Laviole - jeremy.laviole@inria.fr
  */
 public abstract class KinectDevice implements DepthCameraDevice {
-
-    
 
     public enum Type {
         ONE, X360, NONE
@@ -37,7 +36,10 @@ public abstract class KinectDevice implements DepthCameraDevice {
             0, 1, 0, 0,
             0, 0, 1, 0,
             0, 0, 0, 1);
-    private PMatrix3D KinectRGBIRCalibrationInv;
+    private PMatrix3D KinectRGBIRCalibrationInv = new PMatrix3D(1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1);
 
     protected PApplet parent;
 
@@ -78,12 +80,28 @@ public abstract class KinectDevice implements DepthCameraDevice {
         KinectRGBIRCalibrationInv.invert();
     }
 
+    /**
+     * Depth -> color extrinsics
+     */
     public PMatrix3D getStereoCalibration() {
         return KinectRGBIRCalibration;
     }
-    
+
+    /**
+     * Color -> Depth extrinsics
+     */
     public PMatrix3D getStereoCalibrationInv() {
         return KinectRGBIRCalibrationInv;
+    }
+
+    public void setExtrinsics(PMatrix3D extr) {
+        getCameraRGB().setExtrinsics(extr);
+
+        // Get color -> Depth 
+        PMatrix3D stereo = getStereoCalibrationInv();
+        PMatrix3D tmp = extr.get();
+        tmp.apply(stereo);
+        getCameraDepth().setExtrinsics(tmp);
     }
 
     public int findColorOffset(Vec3D v) {

@@ -15,9 +15,9 @@ import org.bytedeco.javacpp.opencv_core.IplImage;
 
 import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.procam.Screen;
-import fr.inria.papart.depthcam.DepthAnalysis;
+import fr.inria.papart.depthcam.analysis.DepthAnalysis;
 import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
-import fr.inria.papart.depthcam.devices.KinectDepthAnalysis;
+import fr.inria.papart.depthcam.analysis.KinectDepthAnalysis;
 import fr.inria.papart.depthcam.devices.KinectDevice;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.ProjectiveDeviceP;
@@ -87,17 +87,20 @@ public class KinectTouchInput extends TouchInput {
     @Override
     public void update() {
         try {
+         
             IplImage depthImage = kinectDevice.getCameraDepth().getIplImage();
             IplImage colImage = kinectDevice.getCameraRGB().getIplImage();
 
             depthDataSem.acquire();
             if (colImage == null || depthImage == null) {
+                 System.out.println("No Image.");
                 return;
             }
 
             touch2DPrecision = touchDetection2D.getPrecision();
             touch3DPrecision = touchDetection3D.getPrecision();
             if (touch2DPrecision > 0 && touch3DPrecision > 0) {
+                
                 depthAnalysis.updateMT(depthImage, colImage, planeAndProjCalibration, touch2DPrecision, touch3DPrecision);
                 findAndTrack2D();
                 findAndTrack3D();
@@ -235,7 +238,7 @@ public class KinectTouchInput extends TouchInput {
             return null;
         }
     }
-
+    
     // TODO: Do the same without the Display, use the extrinsics instead! 
     
     // TODO: Do the same with DepthDataElement  instead of  DepthPoint ?

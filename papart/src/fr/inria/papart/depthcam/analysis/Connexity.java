@@ -5,8 +5,9 @@
  *
  * No licence yet.
  */
-package fr.inria.papart.depthcam;
+package fr.inria.papart.depthcam.analysis;
 
+import fr.inria.papart.depthcam.analysis.DepthAnalysis;
 import java.util.Arrays;
 import toxi.geom.Vec3D;
 

@@ -9,8 +9,8 @@ package fr.inria.papart.depthcam.devices;
 
 import fr.inria.papart.depthcam.DepthDataElementKinect;
 import fr.inria.papart.depthcam.PointCloud;
-import fr.inria.papart.depthcam.devices.KinectProcessing;
-import fr.inria.papart.depthcam.devices.KinectDepthAnalysis;
+import fr.inria.papart.depthcam.analysis.KinectProcessing;
+import fr.inria.papart.depthcam.analysis.KinectDepthAnalysis;
 import static fr.inria.papart.depthcam.PointCloud.javaToNativeARGB;
 import fr.inria.papart.multitouch.TouchPoint;
 import java.util.ArrayList;

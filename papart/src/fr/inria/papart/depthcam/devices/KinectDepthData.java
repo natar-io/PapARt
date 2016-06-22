@@ -7,13 +7,13 @@
  */
 package fr.inria.papart.depthcam.devices;
 
-import static fr.inria.papart.depthcam.DepthAnalysis.INVALID_COLOR;
-import static fr.inria.papart.depthcam.DepthAnalysis.INVALID_POINT;
+import static fr.inria.papart.depthcam.analysis.DepthAnalysis.INVALID_COLOR;
+import static fr.inria.papart.depthcam.analysis.DepthAnalysis.INVALID_POINT;
 import fr.inria.papart.calibration.HomographyCalibration;
 import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
 import fr.inria.papart.calibration.PlaneCalibration;
-import fr.inria.papart.depthcam.Connexity;
-import fr.inria.papart.depthcam.DepthAnalysis;
+import fr.inria.papart.depthcam.analysis.Connexity;
+import fr.inria.papart.depthcam.analysis.DepthAnalysis;
 import fr.inria.papart.depthcam.DepthData;
 import fr.inria.papart.depthcam.DepthDataElementKinect;
 import fr.inria.papart.depthcam.TouchAttributes;

@@ -7,7 +7,7 @@
  */
 package fr.inria.papart.panel;
 
-import fr.inria.papart.depthcam.DepthAnalysis;
+import fr.inria.papart.depthcam.analysis.DepthAnalysis;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.CameraOpenKinect;
