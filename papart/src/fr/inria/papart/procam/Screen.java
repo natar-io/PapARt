@@ -365,8 +365,15 @@ public class Screen implements HasExtrinsics {
      */
     public void setMainLocation(PMatrix3D position, Camera cam) {
         this.setFakeLocation(cam, position);
-        this.blockUpdate(cam, 10 * 60 * 60 * 1000); // ms
     }
+    
+//    /**
+//     * Set the main position by the tracking system. 
+//     * @param cam
+//     */
+//    public void setTrackedLocation(Camera cam) {
+//        this.blockUpdate(cam, 0); // ms
+//    }
 
     public void forceUpdate(Camera camera, int time) {
         markerBoard.forceUpdate(camera, time);

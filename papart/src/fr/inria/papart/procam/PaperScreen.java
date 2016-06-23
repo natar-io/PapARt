@@ -342,6 +342,12 @@ public class PaperScreen {
 
     public void useManualLocation(boolean manual) {
         this.useManualLocation = manual;
+
+        if (this.useManualLocation) {
+            screen.blockUpdate(cameraTracking, 10 * 60 * 60 * 1000); // ms
+        } else {
+            screen.blockUpdate(cameraTracking, 0); // ms
+        }
     }
 
     // TODO: check this !
