@@ -170,8 +170,7 @@ public void kinectMode(int value){
         break;
     case ONE:
         Mode.set("KinectManual");
-        papart.forceCameraSize(arDisplayKinect.getWidth(),
-                               arDisplayKinect.getHeight());
+        papart.forceCameraSize();
 
         activateCameraKinectCorners();
         controlFrame.showSaveKinectButton();
@@ -183,8 +182,7 @@ public void kinectMode(int value){
         arDisplayKinect.automaticMode();
         isCameraKinectMode = true;
 
-        papart.forceCameraSize(arDisplayKinect.getWidth(),
-                               arDisplayKinect.getHeight());
+        papart.forceCameraSize();
 
         controlFrame.showSaveKinectButton();
         isSaveButtonShowed = true;

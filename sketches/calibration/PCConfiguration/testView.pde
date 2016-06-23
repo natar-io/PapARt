@@ -71,7 +71,7 @@ class TestView extends PApplet {
             h = KinectOne.CAMERA_HEIGHT;
         }
 
-        papart.forceCameraSize(w, h);
+        papart.forceWindowSize(w, h);
         camera.setSize(w, h);
         camera.start();
         camera.setThread();
@@ -102,7 +102,7 @@ class TestView extends PApplet {
         camera = kinect.getCameraRGB();
         camera.setThread();
 
-        papart.forceCameraSize(camera.width(), camera.height());
+        papart.forceWindowSize(camera.width(), camera.height());
 
         this.isTestingKinect = true;
         show();
