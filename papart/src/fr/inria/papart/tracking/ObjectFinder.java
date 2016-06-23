@@ -71,8 +71,11 @@ public class ObjectFinder {
     public static class Settings extends BaseChildSettings {
         IplImage objectImage = null;
 //        ORB detector = ORB.create();
-        ORB detector = ORB.create(500/*=500*/, 1.6f /*=1.2f*/, 6 /*=8*/, 31/*=31*/,
-            0/*=0*/, 2/*=2*/, ORB.HARRIS_SCORE/*=cv::ORB::HARRIS_SCORE*/, 31 /*=31*/, 20/*=20*/);
+
+//        ORB detector = ORB.create(500/*=500*/, 1.6f /*=1.2f*/, 6 /*=8*/, 31/*=31*/,
+//            0/*=0*/, 2/*=2*/, ORB.HARRIS_SCORE/*=cv::ORB::HARRIS_SCORE*/, 31 /*=31*/, 20/*=20*/);
+
+
 //        AKAZE detector = AKAZE.create();  // -> CRAZY memory leaks ?!
 //        AKAZE detector = AKAZE.create(AKAZE.DESCRIPTOR_KAZE,
 //                    0, 3, 0.001f, 
@@ -83,7 +86,9 @@ public class ObjectFinder {
 //                                         float threshold/*=0.001f*/, int nOctaves/*=4*/,
 //                                         int nOctaveLayers/*=4*/, int diffusivity/*=cv::KAZE::DIFF_PM_G2*/);
         
-//        BRISK detector = BRISK.create(); 
+        // default
+//        BRISK detector = BRISK.create(30, 3, 1); 
+        BRISK detector = BRISK.create(15, 4, 1f); 
 
 //        MSER detector = MSER.create();  // -> Not implemented. 
 //        FastFeatureDetector detector = FastFeatureDetector.create();  // -> Not implemented. 
@@ -357,8 +362,8 @@ public class ObjectFinder {
 //        Logger.getLogger("org.bytedeco.javacv").setLevel(Level.OFF);
 
 //        String objectFilename = args.length == 2 ? args[0] : "/home/jiii/sketchbook/libraries/PapARt/data/markers/dlink.png";
-        String objectFilename = args.length == 2 ? args[0] : "/home/jiii/sketchbook/libraries/PapARt/data/markers/rocks.jpg";
-        String sceneFilename  = args.length == 2 ? args[1] : "/home/jiii/my_photo-4.jpg";
+        String objectFilename = args.length == 2 ? args[0] : "/home/jiii/repos/Papart-github/papart-examples/Camera/ExtractPlanarObjectForTracking/ExtractedView.bmp";
+        String sceneFilename  = args.length == 2 ? args[1] : "/home/jiii/my_photo-7.jpg";
 
         IplImage object = cvLoadImage(objectFilename, CV_LOAD_IMAGE_GRAYSCALE);
         IplImage image  = cvLoadImage(sceneFilename,  CV_LOAD_IMAGE_GRAYSCALE);
