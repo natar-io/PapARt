@@ -7,28 +7,19 @@
  */
 package fr.inria.papart.procam;
 
-import fr.inria.papart.calibration.HomographyCalibration;
-import fr.inria.papart.calibration.HomographyCreator;
-import fr.inria.papart.calibration.PlaneCalibration;
-import fr.inria.papart.calibration.PlaneCreator;
 import fr.inria.papart.procam.camera.Camera.PixelFormat;
-import fr.inria.papart.procam.display.ARDisplay;
-import fr.inria.papart.tracking.MarkerSvg;
-import org.bytedeco.javacpp.opencv_imgproc.*;
 
 import org.bytedeco.javacv.CameraDevice;
 import org.bytedeco.javacv.ProjectorDevice;
 import org.bytedeco.javacpp.opencv_imgproc;
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_calib3d.*;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import processing.core.*;
 import static processing.core.PConstants.ARGB;
 import static processing.core.PConstants.RGB;
@@ -36,9 +27,6 @@ import processing.opengl.Texture;
 import toxi.geom.Matrix4x4;
 import toxi.geom.Vec3D;
 import java.io.*;
-import java.util.ArrayList;
-import static processing.core.PApplet.println;
-import processing.data.XML;
 
 /**
  *
