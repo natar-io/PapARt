@@ -100,7 +100,6 @@ public class KinectProcessing extends KinectDepthAnalysis {
 
         validPointsPImage.loadPixels();
         Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 255));
-        System.out.println("updateMT good");
         doForEachValidPoint(skip2D, new SetImageData());
         validPointsPImage.updatePixels();
     }

@@ -132,7 +132,7 @@ public class DetectedMarker implements Cloneable {
         int cameraWidth = image.width();
         int cameraHeight = image.height();
         // TODO: check imgWith and init width.
-
+        
         opencv_core.CvPoint2D32f corners = new opencv_core.CvPoint2D32f(4);
         opencv_core.CvMemStorage memory = opencv_core.CvMemStorage.create();
         opencv_core.CvSize subPixelSize = null, subPixelZeroZone = null;
@@ -197,7 +197,6 @@ public class DetectedMarker implements Cloneable {
 
             markers2[n++] = new DetectedMarker(id, d, confidence);
         }
-
         return Arrays.copyOf(markers2, n);
     }
 
