@@ -1,4 +1,5 @@
 import fr.inria.papart.depthcam.devices.*;
+import fr.inria.papart.depthcam.analysis.*;
 
 boolean isKinectOne = false;
 boolean isKinect360 = false;
