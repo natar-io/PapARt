@@ -4,6 +4,7 @@ import fr.inria.papart.procam.camera.*;
 import fr.inria.papart.multitouch.*;
 import fr.inria.papart.depthcam.*;
 import fr.inria.papart.depthcam.devices.*;
+import fr.inria.papart.depthcam.analysis.*;
 
 import fr.inria.papart.calibration.*;
 
