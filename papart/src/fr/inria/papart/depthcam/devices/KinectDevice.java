@@ -81,14 +81,14 @@ public abstract class KinectDevice implements DepthCameraDevice {
     }
 
     /**
-     * Depth -> color extrinsics
+     * Depth to color extrinsics
      */
     public PMatrix3D getStereoCalibration() {
         return KinectRGBIRCalibration;
     }
 
     /**
-     * Color -> Depth extrinsics
+     * Color to Depth extrinsics
      */
     public PMatrix3D getStereoCalibrationInv() {
         return KinectRGBIRCalibrationInv;

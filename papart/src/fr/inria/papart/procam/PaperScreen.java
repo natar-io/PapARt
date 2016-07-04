@@ -136,8 +136,6 @@ public class PaperScreen {
     /**
      * Set the quality (resolution) of the drawing in px/mm . e.g.: A board with
      * 100mm width and 2 resolution will have 200 pixels.
-     *
-     * @param quality
      */
     public void setQuality(float quality) {
         this.quality = quality;
@@ -572,11 +570,11 @@ public class PaperScreen {
 
     /**
      * Load a Markerboard with the given configuration file and size. The
-     * configuration file can end with ".cfg" for an ARToolKitPlus tracking
+     * configuration file can end with ".svg" for an ARToolKitPlus tracking
      * technique. (faster) The configuration file can end with ".jpg" or ".png"
      * to track "images" using SURF features. (slower)
      *
-     * @param configFile
+     * @param configFile svg filename
      * @param width width of the markerboard in millimeters.
      * @param height height of the markerboard in millimeters.
      */
@@ -587,8 +585,6 @@ public class PaperScreen {
 
     /**
      * Assign an existing markerboard to this PaperScreen.
-     *
-     * @param markerboard
      */
     public void setMarkerBoard(MarkerBoard markerboard) {
         this.markerBoard = markerboard;
@@ -600,9 +596,6 @@ public class PaperScreen {
      * Sets the drawing size in millimeters. To get the resolution you must
      * multiply the drawing size by the resolution.
      *
-     * @see setResolution#setQuality
-     * @param width
-     * @param height
      */
     public final void setDrawingSize(float width, float height) {
         this.drawingSize.x = width;
