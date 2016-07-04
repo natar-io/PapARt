@@ -23,6 +23,8 @@ tar -zcf libs.tgz libraries
 echo "Cleaning sketches"
 sh $SKETCHBOOK/clean.sh
 
+
+
 echo "Copy Library"
 # Library
 cp papart/target/$NAME.jar $TMP/$NAME/library/$NAME.jar
@@ -48,16 +50,29 @@ echo "Copy the Data"
 cp -R papart/data $TMP/$NAME/
 
 
-echo "Copy Examples, Calibration & Apps"
-# Examples
-cp -R sketches/examples $TMP/$NAME/examples/examples
+
+echo "Download the examples"
+wget https://github.com/potioc/Papart-examples/archive/master.zip
+unzip master.zip
+
+mv Papart-examples-master/apps $TMP/$NAME/examples/
+mv Papart-examples-master/papart-examples $TMP/$NAME/examples/
+
+echo "cleaning the examples"
+rm master.zip
+rm -rf Papart-examples-master
+
 
 # Calibration stuff
 cp -R sketches/calibration $TMP/$NAME/examples/calib
 
-# Apps
-cp -R sketches/apps $TMP/$NAME/examples/apps
+# Now working with github examples and apps.
 
+# echo "Copy Examples, Calibration & Apps"
+# Examples
+# cp -R sketches/examples $TMP/$NAME/examples/examples
+# Apps
+# cp -R sketches/apps $TMP/$NAME/examples/apps
 
 echo "Create the archive..."
 cd $TMP
@@ -66,7 +81,6 @@ tar -zcf $NAME.tgz $NAME
 
 mv $NAME.tgz  ..
 cd ..
-
 
 
 cp -r $TMP/$NAME libraries/
