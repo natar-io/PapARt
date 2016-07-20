@@ -23,7 +23,7 @@ import processing.core.PImage;
 public class CameraFlyCapture extends Camera {
 
     private FrameGrabber grabber;
-    private boolean useBayerDecode = false;
+    private boolean useBayerDecode = true;
     private final OpenCVFrameConverter.ToIplImage converter;
 
     protected CameraFlyCapture(int cameraNo) {
