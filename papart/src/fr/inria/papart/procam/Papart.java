@@ -180,6 +180,16 @@ public class Papart {
      * @return
      */
     public static Papart projection(PApplet applet) {
+        return projection(applet, 1f);
+    }
+
+    /**
+     * Start a projection with a procam, it replaces size().
+     *
+     * @param applet
+     * @return
+     */
+    public static Papart projection(PApplet applet, float quality) {
 
         ScreenConfiguration screenConfiguration = getDefaultScreenConfiguration(applet);
 
@@ -192,7 +202,7 @@ public class Papart {
         papart.shouldSetWindowLocation = true;
         papart.shouldSetWindowSize = true;
         papart.registerPost();
-        papart.initProjectorCamera();
+        papart.initProjectorCamera(quality);
         papart.registerKey();
 
         return papart;
@@ -528,6 +538,11 @@ public class Papart {
     public void initProjectorCamera() {
         initProjectorCamera(cameraConfiguration.getCameraName(),
                 cameraConfiguration.getCameraType(), 1);
+    }
+
+    public void initProjectorCamera(float quality) {
+        initProjectorCamera(cameraConfiguration.getCameraName(),
+                cameraConfiguration.getCameraType(), quality);
     }
 
     public void initProjectorCamera(String cameraNo, Camera.Type cameraType) {
