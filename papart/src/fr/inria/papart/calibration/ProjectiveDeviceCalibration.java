@@ -30,6 +30,7 @@ public class ProjectiveDeviceCalibration extends Calibration {
     protected final PMatrix3D extrinsics = new PMatrix3D();
     private int width, height;
     private boolean hasExtrinsics = false;
+    private boolean isCamera;
 
     @Override
     public void addTo(XML xml) {
@@ -41,13 +42,92 @@ public class ProjectiveDeviceCalibration extends Calibration {
         }
     }
 
+    @Override
+    public void addTo(StringBuilder yaml) {
+
+        if (this.isCamera) {
+            yaml.append("Cameras:\n   - Camera  0\n");
+            yaml.append("Camera  0:\n");
+
+        } else {
+            yaml.append("Projectors:  \n   - Projector 0\n");
+            yaml.append("Projector 0:\n");
+        }
+
+        yaml.append("   imageWidth: " + Integer.toString(width) + "\n");
+        yaml.append("   imageHeight: " + Integer.toString(height) + "\n");
+        yaml.append("   responseGamma: 0.\n");
+
+        yaml.append("   cameraMatrix: !!opencv-matrix\n");
+        yaml.append("      rows: 3\n");
+        yaml.append("      cols: 3\n");
+        yaml.append("      dt: d\n");
+        yaml.append("      data: [");
+        
+        yaml.append(Float.toString(intrinsics.m00) + ", ");
+        yaml.append(Float.toString(intrinsics.m01) + ", ");
+        yaml.append(Float.toString(intrinsics.m02) + ", ");
+        
+        yaml.append(Float.toString(intrinsics.m10) + ", ");
+        yaml.append(Float.toString(intrinsics.m11) + ", ");
+        yaml.append(Float.toString(intrinsics.m12) + ", ");
+        
+        yaml.append(Float.toString(intrinsics.m20) + ", ");
+        yaml.append(Float.toString(intrinsics.m21) + ", ");
+        yaml.append(Float.toString(intrinsics.m22) + " ]\n");
+        
+    }
+        
+//x       %YAML:1.0
+//x Cameras:
+//x   - Camera  0
+//xProjectors:
+//x   []
+//xCamera  0:
+//x   imageWidth: 1920
+//x   imageHeight: 1080
+// x  responseGamma: 0.
+//   cameraMatrix: !!opencv-matrix
+//      rows: 3
+//      cols: 3
+//      dt: d
+//      data: [ 1.6246585547708776e+03, 0., 9.8597508076737813e+02, 0.,
+//          1.6243998128297719e+03, 4.7161319611021008e+02, 0., 0., 1. ]
+//   distortionCoeffs: !!opencv-matrix
+//      rows: 1
+//      cols: 4
+//      dt: d
+//      data: [ 1.7632444304289237e-02, -1.6174386935444651e-01,
+//          -3.9711000431226348e-03, 1.4023625659419674e-03 ]
+//   extrParams: !!opencv-matrix
+//      rows: 20
+//      cols: 6
+//      dt: d
+//      data: [ -4.3244266294843653e-01, -5.
+//        
+//   R: !!opencv-matrix
+//      rows: 3
+//      cols: 3
+//      dt: d
+//      data: [ 9.9982646476206072e-01, 5.1573525372682521e-03,
+//          1.7900895960986062e-02, -3.6903720890462477e-03,
+//          9.9670431223524325e-01, -8.1036381493223425e-02,
+//          -1.8259833384894363e-02, 8.0956257858655928e-02,
+//          9.9655038146512132e-01 ]
+//   T: !!opencv-matrix
+//      rows: 3
+//      cols: 1
+//      dt: d
+//      data: [ -1.0030940723190477e+02, -6.6307072972750172e+00,
+//          8.5795561307515520e+00 ]
+
     private XML resolutionNode() {
         XML node = new XML(RESOLUTION_XML_NAME);
         node.setInt(WIDTH_XML_NAME, width);
         node.setInt(HEIGHT_XML_NAME, height);
         return node;
     }
-    
+
     private XML intrinsicNode() {
         XML node = new XML(INTRINSICS_XML_NAME);
         setXmlTo(node, intrinsics);
@@ -119,13 +199,12 @@ public class ProjectiveDeviceCalibration extends Calibration {
         XML resolutionNode = root.getChild(RESOLUTION_XML_NAME);
         this.width = resolutionNode.getInt(WIDTH_XML_NAME);
         this.height = resolutionNode.getInt(HEIGHT_XML_NAME);
-        
-        
+
         XML intrinsicsNode = root.getChild(INTRINSICS_XML_NAME);
         getMatFrom(intrinsicsNode, intrinsics);
 
         XML extrinsicsNode = root.getChild(EXTRINSICS_XML_NAME);
-        if(extrinsicsNode == null){
+        if (extrinsicsNode == null) {
             this.hasExtrinsics = false;
             return;
         }
@@ -153,39 +232,39 @@ public class ProjectiveDeviceCalibration extends Calibration {
         this.extrinsics.set(mat);
         checkExtrinsics();
     }
-    
+
     public void setIntrinsics(PMatrix3D mat) {
         this.intrinsics.set(mat);
     }
-    
-    public PMatrix3D getExtrinsics(){
+
+    public PMatrix3D getExtrinsics() {
         return this.extrinsics.get();
     }
-    
-    public PMatrix3D getIntrinsics(){
+
+    public PMatrix3D getIntrinsics() {
         return this.intrinsics.get();
     }
-    
-    public boolean hasExtrinsics(){
+
+    public boolean hasExtrinsics() {
         return this.hasExtrinsics;
     }
-    
-    public int getWidth(){
+
+    public int getWidth() {
         return width;
     }
-    
-    public int getHeight(){
+
+    public int getHeight() {
         return height;
     }
 
-    public void setWidth(int width){
+    public void setWidth(int width) {
         this.width = width;
     }
-    
-    public void setHeight(int height){
+
+    public void setHeight(int height) {
         this.height = height;
     }
-    
+
     @Override
     public boolean isValid() {
         return true;
@@ -195,6 +274,10 @@ public class ProjectiveDeviceCalibration extends Calibration {
     @Override
     public String toString() {
         return this.intrinsics.toString() + this.extrinsics.toString();
+    }
+
+    public void isCamera(boolean b) {
+        this.isCamera = b;
     }
 
 }

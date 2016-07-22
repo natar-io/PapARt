@@ -22,19 +22,35 @@ public abstract class Calibration {
     public abstract boolean isValid();
 
     public abstract void addTo(XML xml);
+    public abstract void addTo(StringBuilder yaml);
 
     public abstract void replaceIn(XML xml);
 
-    public void saveTo(PApplet parent, String fileName) {
-        assert(isValid());
+    public void saveToXML(PApplet parent, String fileName) {
+        assert (isValid());
         XML root = new XML(Calibration.CALIBRATION_XML_NAME);
         this.addTo(root);
         parent.saveXML(root, fileName);
     }
+    public void saveToYAML(PApplet parent, String fileName) {
+        assert (isValid());
+        StringBuilder builder = new StringBuilder("%YAML:1.0\n");
+        this.addTo(builder);
+        
+        parent.saveStrings(fileName, new String[] {builder.toString()});
+    }
 
-    
+    public void saveTo(PApplet parent, String fileName) {
+        if (fileName.endsWith(".xml")) {
+            saveToXML(parent, fileName);
+        }
+        if (fileName.endsWith(".yaml")) {
+            saveToYAML(parent, fileName);
+        }
+    }
+
     public void replaceIn(PApplet parent, String fileName) {
-        assert(isValid());
+        assert (isValid());
         XML root = parent.loadXML(fileName);
         this.replaceIn(root);
         parent.saveXML(root, fileName);

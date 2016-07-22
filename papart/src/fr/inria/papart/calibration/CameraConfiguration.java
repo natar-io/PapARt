@@ -86,4 +86,9 @@ public class CameraConfiguration  extends Calibration {
     public void setCameraType(Camera.Type cameraType) {
         this.cameraType = cameraType;
     }
+
+    @Override
+    public void addTo(StringBuilder yaml) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

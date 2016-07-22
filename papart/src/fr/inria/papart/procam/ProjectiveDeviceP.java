@@ -281,7 +281,7 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
         int px = PApplet.constrain(PApplet.round((pt.x * invZ * fx) + cx), 0, w - 1);
         int py = PApplet.constrain(PApplet.round((pt.y * invZ * fy) + cy), 0, h - 1);
 
-        if (undistort) {
+        if (undistort && this.handleDistorsion) {
             double[] out = device.distort(px, py);
             return new PVector((float) out[0], (float) out[1]);
         } else {
@@ -442,16 +442,29 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
     }
 
     public void saveTo(PApplet applet, String filename) {
+        saveTo(applet, filename, true);
+    }
+    
+    public void saveTo(PApplet applet, String filename, boolean isCamera) {
         ProjectiveDeviceCalibration calib = new ProjectiveDeviceCalibration();
         calib.setWidth(this.w);
         calib.setHeight(this.h);
         calib.setIntrinsics(intrinsics);
+        calib.isCamera(isCamera);
         if (this.hasExtrinsics()) {
             calib.setExtrinsics(extrinsics);
         }
         calib.saveTo(applet, filename);
     }
 
+    public void saveCameraTo(PApplet applet, String filename) {
+        saveTo(applet, filename, true);
+    }
+    
+    public void saveProjectorTo(PApplet applet, String filename) {
+      saveTo(applet, filename, false);
+    }
+    
     public static ProjectiveDeviceP loadCameraDevice(PApplet parent, String filename) throws Exception {
         return loadCameraDevice(parent, filename, 0);
     }
@@ -528,7 +541,7 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
     private static void loadParameters(ProjectiveDevice dev, ProjectiveDeviceP p) {
         double[] camMat = dev.cameraMatrix.get();
 
-        p.handleDistorsion = true;
+        p.handleDistorsion = dev.distortionCoeffs != null;
 
         p.intrinsics = new PMatrix3D((float) camMat[0], (float) camMat[1], (float) camMat[2], 0,
                 (float) camMat[3], (float) camMat[4], (float) camMat[5], 0,

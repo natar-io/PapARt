@@ -213,6 +213,10 @@ void loadCalibration(){
 // TODO custom file chooser...
 void fileSelectedLoadCalibration(File selection){
 
+    if(selection == null){
+        return;
+    }
+
     if(selection.getName().endsWith(".yaml")){
         File defaultCameraCalibration = new File(Papart.cameraCalib);
         try{
@@ -283,6 +287,9 @@ void loadProjectorCalibration(){
 // TODO custom file chooser...
 void fileSelectedLoadProjectorCalibration(File selection){
 
+    if(selection == null){
+        return;
+    }
     if(selection.getName().endsWith(".yaml")){
         File defaultProjectorCalibration = new File(Papart.projectorCalib);
         try{

@@ -172,4 +172,9 @@ public class HomographyCalibration extends Calibration {
         return homographyCreator.getHomography();
     }
 
+    @Override
+    public void addTo(StringBuilder yaml) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
 }
