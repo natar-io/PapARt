@@ -163,7 +163,6 @@ public class Papart {
     private CalibrationPopup calibrationPopup = null;
 
     public void calibration() {
-        System.out.println("Calirbtaino");
         if (calibrationPopup == null) {
             calibrationPopup = new CalibrationPopup();
         } else if (calibrationPopup.isHidden()) {
@@ -318,9 +317,10 @@ public class Papart {
     }
 
     public void keyEvent(KeyEvent e) {
-        if (e.getKey() == 'c') {
-            calibration();
-        }
+        // disabled for now.
+//        if (e.getKey() == 'c') {
+//            calibration();
+//        }
     }
 
     public void forceCameraSize() {
