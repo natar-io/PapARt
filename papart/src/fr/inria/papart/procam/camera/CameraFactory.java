@@ -54,7 +54,7 @@ public class CameraFactory {
 
     /**
      *
-     * @param type must be PROCESSING_VIDEO
+     * @param type must be PROCESSING_VIDEO or FFMPEG
      * @param description device of the camera (/dev/video0) or name. see the
      * Processing GettingStartedCamera example to get the name.
      * @return
@@ -62,15 +62,20 @@ public class CameraFactory {
     public static Camera createCamera(Camera.Type type, String description) {
         Camera camera;
 
-        if (type != Type.PROCESSING) {
-            boolean isInt = checkInt(description);
-            if (!isInt) {
-                throw new RuntimeException("The description must be a numbrer for this type.");
-            }
-            camera = createCamera(type, Integer.parseInt(description));
-        } else {
-            camera = new CameraProcessing(description);
+        switch (type) {
+            case FFMPEG:
+                camera = new CameraFFMPEG(description);
+                break;
+            case PROCESSING:
+                camera = new CameraProcessing(description);
+            default:
+                boolean isInt = checkInt(description);
+                if (!isInt) {
+                    throw new RuntimeException("The description must be a number for this type.");
+                }
+                return createCamera(type, Integer.parseInt(description));
         }
+
         return camera;
     }
 
