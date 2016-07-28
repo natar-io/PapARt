@@ -277,6 +277,9 @@ public class CalibrationPopup extends PApplet {
     private opencv_core.IplImage projectorImage() {
         projectorView.setCorners(corners);
         opencv_core.IplImage projImage = projectorView.getIplViewOf(cameraTracking);
+        if(projImage == null)
+            return null;
+        
         if (board.useGrayscaleImages()) {
             projImage = greyProjectorImage(projImage);
         }
@@ -289,6 +292,8 @@ public class CalibrationPopup extends PApplet {
                     projector.getHeight(),
                     IPL_DEPTH_8U, 1);
         }
+        
+        System.out.println(projImage + " "  + grayImage);
         cvCvtColor(projImage, grayImage, CV_BGR2GRAY);
 
         // if(test){

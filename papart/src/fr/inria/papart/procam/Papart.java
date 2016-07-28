@@ -253,7 +253,8 @@ public class Papart {
 
         Camera cameraTracking = CameraFactory.createCamera(
                 cameraConfiguration.getCameraType(),
-                cameraConfiguration.getCameraName());
+                cameraConfiguration.getCameraName(),
+                cameraConfiguration.getCameraFormat());
         cameraTracking.setParent(applet);
         cameraTracking.setCalibration(cameraCalib);
 
@@ -537,16 +538,20 @@ public class Papart {
 
     public void initProjectorCamera() {
         initProjectorCamera(cameraConfiguration.getCameraName(),
-                cameraConfiguration.getCameraType(), 1);
+                cameraConfiguration.getCameraType(),
+                cameraConfiguration.getCameraFormat(),
+                1);
     }
 
     public void initProjectorCamera(float quality) {
         initProjectorCamera(cameraConfiguration.getCameraName(),
-                cameraConfiguration.getCameraType(), quality);
+                cameraConfiguration.getCameraType(), 
+                cameraConfiguration.getCameraFormat(), 
+                quality);
     }
 
-    public void initProjectorCamera(String cameraNo, Camera.Type cameraType) {
-        initProjectorCamera(cameraNo, cameraType, 1);
+    public void initProjectorCamera(String cameraNo, Camera.Type cameraType, String cameraFormat) {
+        initProjectorCamera(cameraNo, cameraType, cameraFormat, 1);
     }
 
     /**
@@ -556,11 +561,11 @@ public class Papart {
      * @param cameraNo
      * @param cameraType
      */
-    public void initProjectorCamera(String cameraNo, Camera.Type cameraType, float quality) {
+    public void initProjectorCamera(String cameraNo, Camera.Type cameraType, String cameraFormat, float quality) {
         assert (!cameraInitialized);
         initProjectorDisplay(quality);
         tryLoadExtrinsics();
-        cameraTracking = CameraFactory.createCamera(cameraType, cameraNo);
+        cameraTracking = CameraFactory.createCamera(cameraType, cameraNo, cameraFormat);
         cameraTracking.setParent(applet);
         cameraTracking.setCalibration(cameraCalib);
         cameraTracking.start();
@@ -600,8 +605,7 @@ public class Papart {
      *
      */
     public void initCamera() {
-        initCamera(cameraConfiguration.getCameraName(),
-                cameraConfiguration.getCameraType(), 1);
+        initCamera(1);
     }
 
     /**
@@ -612,21 +616,23 @@ public class Papart {
      */
     public void initCamera(float quality) {
         initCamera(cameraConfiguration.getCameraName(),
-                cameraConfiguration.getCameraType(), quality);
+                cameraConfiguration.getCameraType(), 
+                cameraConfiguration.getCameraFormat(), 
+                quality);
     }
 
     /**
      * Initialize a camera for object tracking.
      *
      */
-    public void initCamera(String cameraNo, Camera.Type cameraType) {
-        initCamera(cameraNo, cameraType, 1);
+    public void initCamera(String cameraNo, Camera.Type cameraType, String cameraFormat) {
+        initCamera(cameraNo, cameraType, cameraFormat, 1);
     }
 
-    public void initCamera(String cameraNo, Camera.Type cameraType, float quality) {
+    public void initCamera(String cameraNo, Camera.Type cameraType, String cameraFormat, float quality) {
         assert (!cameraInitialized);
 
-        cameraTracking = CameraFactory.createCamera(cameraType, cameraNo);
+        cameraTracking = CameraFactory.createCamera(cameraType, cameraNo, cameraFormat);
         cameraTracking.setParent(applet);
         cameraTracking.setCalibration(cameraCalib);
         cameraTracking.start();

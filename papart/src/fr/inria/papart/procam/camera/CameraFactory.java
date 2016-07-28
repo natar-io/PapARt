@@ -52,6 +52,10 @@ public class CameraFactory {
         return camera;
     }
 
+    public static Camera createCamera(Camera.Type type, String description) {
+        return createCamera(type, description, "");
+    }
+
     /**
      *
      * @param type must be PROCESSING_VIDEO or FFMPEG
@@ -59,12 +63,12 @@ public class CameraFactory {
      * Processing GettingStartedCamera example to get the name.
      * @return
      */
-    public static Camera createCamera(Camera.Type type, String description) {
+    public static Camera createCamera(Camera.Type type, String description, String format) {
         Camera camera;
 
         switch (type) {
             case FFMPEG:
-                camera = new CameraFFMPEG(description);
+                camera = new CameraFFMPEG(description, format);
                 break;
             case PROCESSING:
                 camera = new CameraProcessing(description);

@@ -1,6 +1,4 @@
-
 package fr.inria.papart.procam.camera;
-
 
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
@@ -16,10 +14,12 @@ public class CameraFFMPEG extends Camera {
 
     private FFmpegFrameGrabber grabber;
     private final OpenCVFrameConverter.ToIplImage converter;
-
-    protected CameraFFMPEG(String description) {
+    private String imageFormat;
+    
+    protected CameraFFMPEG(String description, String imFormat) {
         this.cameraDescription = description;
         this.setPixelFormat(Camera.PixelFormat.BGR);
+        this.imageFormat = imFormat;
         converter = new OpenCVFrameConverter.ToIplImage();
     }
 
@@ -30,7 +30,8 @@ public class CameraFFMPEG extends Camera {
         grabberFF.setImageHeight(height());
 //        grabberCV.setFrameRate(60);
         grabberFF.setImageMode(FrameGrabber.ImageMode.COLOR);
- 
+        grabberFF.setFormat(this.imageFormat);
+        
         try {
             grabberFF.start();
             this.grabber = grabberFF;
@@ -81,7 +82,7 @@ public class CameraFFMPEG extends Camera {
             try {
                 grabber.stop();
                 System.out.println("Stopping grabber (OpencV)");
-               
+
             } catch (Exception e) {
                 System.out.println("Impossible to close " + e);
             }
