@@ -12,21 +12,16 @@ import toxi.geom.*;
 import fr.inria.guimodes.Mode;
 import fr.inria.papart.scanner.GrayCode;
 
-// Undecorated frame 
-public void init() {
-  frame.removeNotify(); 
-  frame.setUndecorated(true); 
-  frame.addNotify(); 
-  super.init();
-}
-
 int sc = 2;
 
 int displayTime = 200;
 int captureTime = 180;
 int delay = 70;
-
 int decodeValue = 120;
+int decodeType = 1;
+
+int whiteColor = 200;
+int blackColor = 0;
 
 
 PImage imageOut;
@@ -37,42 +32,46 @@ PImage projectorView = null;
 Camera cameraTracking;
 ProjectorDisplay projector;
 
-int frameSizeX = 1920;
-int frameSizeY = 1080;
+int frameSizeX;
+int frameSizeY;
 int framePosX = 0;
 int framePosY = 0;
-int cameraX; 
+int cameraX;
 int cameraY;
 
-int decodeType = 1;
 
 
+Papart papart;
 PGraphics decodedImage;
 
+void settings(){
+    fullScreen(P3D);
 
-public void setup(){
-    size(frameSizeX + 400, frameSizeY, OPENGL);
-  
+}
+
+void setup(){
+
+    frameSizeX = width;
+    frameSizeY = height;
+
     initGui();
 
-    Papart papart = new Papart(this);
-    papart.initProjectorCamera("0", Camera.Type.OPENCV);
-    
+    papart = Papart.projection(this);
+
     cameraTracking = papart.getCameraTracking();
     cameraX = cameraTracking.width();
     cameraY = cameraTracking.height();
 
-    
     decodedImage = createGraphics(cameraX, cameraY);
 
     projector = (ProjectorDisplay) papart.getDisplay();
     projector.manualMode();
-    
 
+    frameSizeX = projector.getWidth();
+    frameSizeY = projector.getHeight();
 
     imageOut = createImage(cameraX, cameraY, RGB);
 
- 
     frameRate(100);
 }
 
@@ -104,7 +103,7 @@ void draw(){
 
     // decoded !
     drawResult();
-}  
+}
 
 void drawWait(){
     if(Mode.is("wait")){
@@ -116,19 +115,19 @@ void drawWait(){
 void drawCode(){
     if(Mode.is("code")){
 	updateCodes();
-	
+
 	// Display the gray code to capture
 	// Other possibility.
 	// 	image(grayCodes[code], 0, 0, frameSizeX, frameSizeY);
 
 	grayCode.display((PGraphicsOpenGL) this.g, code);
 	tryCaptureImage();
-	
+
 	if(allCodesCaptured()){
 	    Mode.set("result");
 	    decodeBang.show();
 	}
-	
+
     }
 }
 
@@ -137,16 +136,16 @@ PVector imVisu = new PVector(400, 300);
 
 void drawResult(){
     if(Mode.is("result")){
-	
+
 	if(!grayCode.isDecoded())
 	    decode();
 
 	updateCodes();
 
 	image(decodedImage, 0, 0, cameraX / 2f, cameraY /2f);
-	
+
 	// Draw each captured image bone by one.
-	image(grayCodesCaptures[code], cameraX, 0, 
+	image(grayCodesCaptures[code], cameraX, 0,
 	      (int) imVisu.x, (int) imVisu.y);
 
 
@@ -155,9 +154,9 @@ void drawResult(){
 
 	image(decodedIm, cameraX /2f, (int) imVisu.y,
 	      (int) imVisu.x, (int) imVisu.y);
-	
-	image(projectorView, 
-	      0, cameraY/2, 
+
+	image(projectorView,
+	      0, cameraY/2,
 	      frameSizeX / 3,
 	      frameSizeY / 3);
 
@@ -185,14 +184,14 @@ void decode(){
 void tryCaptureImage(){
     if(captureOK()){
 
-    	if(grayCodesCaptures[codeProjected] == null){		
+    	if(grayCodesCaptures[codeProjected] == null){
 
 	    setNextCaptureTime();
-    	
+
 	    // Create an image
 	    PImage im = cameraTracking.getPImageCopy();
 	    addCapturedImage(im);
-	    
+
 	    if(codeProjected == nbCodes){
 		grayCode.setRefImage(im);
 	    }
@@ -212,7 +211,7 @@ void startCapture(){
     Mode.set("code");
 
     grayCode = new GrayCode(this, frameSizeX, frameSizeY, sc);
-    grayCode.setBlackWhiteColors(0, 200);
+    grayCode.setBlackWhiteColors(blackColor, whiteColor);
 
     nbCodes = grayCode.nbCodes();
     grayCodesCaptures = new PImage[nbCodes];
@@ -230,13 +229,10 @@ void startCapture(){
 boolean test = false;
 
 void keyPressed() {
-  
+
   if(key == 't')
     test = !test;
 
-  // Placed here, bug if it is placed in setup().
-  if(key == ' ')
-    frame.setLocation(framePosX, framePosY);
 }
 
 
@@ -252,8 +248,8 @@ void checkStart(){
 void drawDecoded(){
     int[] decodedX = grayCode.decodedX();
     int[] decodedY = grayCode.decodedY();
-    boolean[] mask = grayCode.mask(); 
-    
+    boolean[] mask = grayCode.mask();
+
     decodedImage.beginDraw();
     decodedImage.background(0);
     decodedImage.colorMode(RGB, frameSizeX, frameSizeY, 255);
