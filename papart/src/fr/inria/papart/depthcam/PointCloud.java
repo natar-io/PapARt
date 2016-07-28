@@ -157,7 +157,7 @@ public class PointCloud {
 //        }
 //        loadVerticesToNative();
 //    }
-    private void addPoint(DepthPoint pce) {
+    public void addPoint(DepthPoint pce) {
 
         if (pce == null || pce.position == null) {
             return;
@@ -176,7 +176,7 @@ public class PointCloud {
         colorsJava[nbColors++] = c2;
     }
 
-    private void loadVerticesToNative() {
+    public void loadVerticesToNative() {
         nbVertices = currentVertNo / 4;
         verticesNative.rewind();
         verticesNative.put(verticesJava, 0, currentVertNo);

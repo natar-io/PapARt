@@ -7,6 +7,8 @@
  */
 package fr.inria.papart.scanner;
 
+import fr.inria.papart.depthcam.DepthPoint;
+import fr.inria.papart.depthcam.PointCloud;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.procam.display.ProjectorDisplay;
@@ -24,7 +26,7 @@ public class Scanner3D implements PConstants {
 
     private final PMatrix3D extrinsics, extrinsicsInv;
     private final PVector projPos, camPos;
-    private final ProjectiveDeviceP projDev, camDev;
+    private final ProjectiveDeviceP projectorDevice, cameraDevice;
 
     private float cx, cy, fx, fy;
     private final ProjectorDisplay projector;
@@ -42,8 +44,8 @@ public class Scanner3D implements PConstants {
 //        backgroundRemover = new BackgroundRemover(
 //                camera.width(), camera.height());
         // Projective device 
-        projDev = projector.getProjectiveDeviceP();
-        camDev = camera;
+        projectorDevice = projector.getProjectiveDeviceP();
+        cameraDevice = camera;
 
         // Projector --> Camera (Origin)
         extrinsics = projector.getExtrinsics();
@@ -68,9 +70,9 @@ public class Scanner3D implements PConstants {
 
     ArrayList<PVector> scannedPoints = new ArrayList<PVector>();
     ArrayList<PVector> scannedPointsColors = new ArrayList<PVector>();
+    ArrayList<Integer> scannedPointsColorsInt = new ArrayList<>();
 
-    public void compute3DPos(DecodedCode decodedCode, int scale) {
-
+    public void compute3DPos(DecodedCode decodedCode, int scale, float errorXMax, float errorYMax) {
 
         int cameraX = decodedCode.getWidth();
         int cameraY = decodedCode.getHeight();
@@ -81,14 +83,18 @@ public class Scanner3D implements PConstants {
 
         decodedCode.refImage.loadPixels();
 
-        scannedPoints.clear();
-        scannedPointsColors.clear();
+        clear();
+        
+        // TODO: One point per observed Pixels. 
+        // Solution ? List of valid points, and select the one with lowest error ?
 
+        // Iterate in the camera image
         for (int y = 0; y < cameraY; y += scale) {
             for (int x = 0; x < cameraX; x += scale) {
 
                 int offset = x + y * cameraX;
 
+                // select only points where the data is retreived
                 if (!myMask[offset]) {
                     continue;
                 }
@@ -102,17 +108,17 @@ public class Scanner3D implements PConstants {
                 }
 
                 // TODO: Error in configuration file 
-                if (intersection.z < 200 || intersection.z > 2000) {
-//		println("Intersection too far");
-                    continue;
-                }
+//                if (intersection.z < 200 || intersection.z > 2000) {
+////		println("Intersection too far");
+//                    continue;
+//                }
 
                 PVector error = lastError();
                 float errX = error.x;
                 float errY = error.y;
                 PVector p2 = projector2DViewOf(intersection);
 
-                if (errX > 2 || errY > 2) {
+                if (errX > errorXMax || errY > errorYMax) {
                     continue;
                 }
 
@@ -123,12 +129,12 @@ public class Scanner3D implements PConstants {
                         c >> 16 & 0xFF,
                         c >> 8 & 0xFF,
                         c >> 0 & 0xFF));
-                
+                scannedPointsColorsInt.add(c);
+
                 // Error as color. 
 //                scannedPointsColors.add(new PVector(errX * 255f / 20f,
 //                        errY * 255f / 20f,
 //                        0));
-
                 // noStroke();
                 // fill(errX *2, errY*2, 100);
                 // rect(p2.x, p2.y, sc, sc);
@@ -137,8 +143,8 @@ public class Scanner3D implements PConstants {
             }
 
         }
-        
-        System.out.println("3D points recovered : " + scannedPoints.size() );
+
+        System.out.println("3D points recovered : " + scannedPoints.size());
     }
 
     public void savePoints(PApplet applet, String name) {
@@ -157,8 +163,30 @@ public class Scanner3D implements PConstants {
 
         // Writes the strings to a file, each on a separate line
         applet.saveStrings(name, vertices);
-        scannedPoints.clear();
+     
+    }
+    
+    public void clear(){
+           scannedPoints.clear();
         scannedPointsColors.clear();
+        scannedPointsColorsInt.clear();
+    }
+
+    public PointCloud asPointCloud(PApplet parent) {
+        PointCloud cloud = new PointCloud(parent, scannedPoints.size());
+
+        for (int i = 0; i < scannedPoints.size(); i++) {
+            float x = scannedPoints.get(i).x;
+            float y = scannedPoints.get(i).y;
+            float z = scannedPoints.get(i).z;
+            int c = scannedPointsColorsInt.get(i);
+            DepthPoint pt = new DepthPoint(x, y, z, c);
+            cloud.addPoint(pt);
+        }
+        
+        cloud.loadVerticesToNative();
+        
+        return cloud;
     }
 
     public float focalDistance() {
@@ -166,13 +194,13 @@ public class Scanner3D implements PConstants {
     }
 
     public PVector sceenTo3D(int x, int y) {
-        return projDev.pixelToWorldNormP(x, y);
+        return projectorDevice.pixelToWorldNormP(x, y);
     }
 
     public PVector projector2DViewOf(PVector p) {
         PVector out = new PVector();
         extrinsics.mult(p, out);
-        PVector projPixels = projDev.worldToPixel(out, false);
+        PVector projPixels = projectorDevice.worldToPixel(out, false);
         return projPixels;
     }
 
@@ -191,34 +219,39 @@ public class Scanner3D implements PConstants {
      */
     public PVector compute3DPoint(PVector projectedPoint, PVector detectedPoint) {
 
-        // Get the projected point relative to the camera coordinate system. 
-        // So that we have a vector from the projector, to this point in the 
-        // camera coordinate system. 
-        PVector projectedPointCam = new PVector();
+        // We create two diffent "rays", so 4 different locations: 
+        // Projector location,  point seen by the projector.  
+        // Camera location, point seen by the camera. 
+        // The origin is the camera as always.
 
-        // projectedPoint = projDev.pixelToWorldP((int) projectedPoint.x, (int) projectedPoint.y);
+        // point seen by the projector. 
+        PVector projectedPointCam = new PVector();
         extrinsicsInv.mult(projectedPoint, projectedPointCam);
         projectedPointCam.sub(projPos);
 
-        //    PVector observedPoint = camDev.pixelToWorldP((int) detectedPoint.x, (int) detectedPoint.y);
-        PVector observedPoint = camDev.pixelToWorldNormP((int) detectedPoint.x, (int) detectedPoint.y);
+        // point seen the camera.
+        PVector observedPoint = cameraDevice.pixelToWorldNormP((int) detectedPoint.x, (int) detectedPoint.y);
 
         PVector intersection = intersectLineWithLine3D(projPos, projectedPointCam,
                 camPos, observedPoint);
 
         // We have the point, we can compute its error !
-        //////// Error computation //////////
+        
+        //////// Error computation ////////
         // Intersection from the Projector's coordinate system. 
         PVector interProj = new PVector();
         extrinsics.mult(intersection, interProj);
 
         int w = projector.getWidth();
-        int projCoord = projDev.worldToPixel(interProj);
-        PVector projPixels = new PVector((projCoord % w), projCoord / w);
+//        int projCoord = projectorDevice.worldToPixel(interProj, true);
+//        PVector projPixels = new PVector((projCoord % w), projCoord / w);
 
+        PVector projPixels = projectorDevice.worldToPixel(interProj, true);
+        
         // Need Lens distorsions ?!
-        int projCoordOrig = projDev.worldToPixel(projectedPoint);
-        PVector projPixelsOrig = new PVector((projCoordOrig % w), projCoordOrig / w);
+//        int projCoordOrig = projectorDevice.worldToPixel(projectedPoint);
+//        PVector projPixelsOrig = new PVector((projCoordOrig % w), projCoordOrig / w);
+        PVector projPixelsOrig = projectorDevice.worldToPixel(projectedPoint, false);
 
         // TODO : specify error || or create a struct ?
         float errX = Math.abs(projPixelsOrig.x - projPixels.x);

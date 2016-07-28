@@ -187,8 +187,6 @@ public class Utils {
         return target;
     }
 
-    
-
     static public Vec3D toVec(PVector p) {
         return new Vec3D(p.x, p.y, p.z);
     }
@@ -631,33 +629,31 @@ public class Utils {
                 }
 
             }
-        } else {
-            if (img.nChannels() == 1) {
+        } else if (img.nChannels() == 1) {
 
-                ////////////// Kinect Depth //////////////
-                ByteBuffer buff = img.getByteBuffer();
+            ////////////// Kinect Depth //////////////
+            ByteBuffer buff = img.getByteBuffer();
 
-                if (Utils.kinectByteArray == null) {
-                    kinectByteArray = new byte[2 * img.width() * img.height()];
-                }
+            if (Utils.kinectByteArray == null) {
+                kinectByteArray = new byte[2 * img.width() * img.height()];
+            }
 //                else {
 //                    Arrays.fill(kinectByteArray, (byte) 0);
 //                }
 
-                buff.get(kinectByteArray);
+            buff.get(kinectByteArray);
 
-                for (int i = 0; i < img.width() * img.height() * 2; i += 2) {
-                    int d = (kinectByteArray[i] & 0xFF) << 8
-                            | (kinectByteArray[i + 1] & 0xFF);
+            for (int i = 0; i < img.width() * img.height() * 2; i += 2) {
+                int d = (kinectByteArray[i] & 0xFF) << 8
+                        | (kinectByteArray[i + 1] & 0xFF);
 
-                    ret.pixels[i / 2] = d;
+                ret.pixels[i / 2] = d;
 //                    ret.pixels[i] =
 //                            (buff.get(i) & 0xFF) << 16
 //                            | (buff.get(i) & 0xFF) << 8
 //                            | (buff.get(i) & 0xFF);
-                }
-
             }
+
         }
 
 //        buff = null;
@@ -716,7 +712,6 @@ public class Utils {
         int h = camSettings.getImageHeight();
 
         double[] proj = cam.cameraMatrix.get();
-        double[] distort = cam.distortionCoeffs.get();
 
         PrintWriter pw = pa.createWriter(outputDAT);
 
@@ -740,16 +735,22 @@ public class Utils {
         // alpha_c  // skew factor  
         sb.append("0 ").append(" ");
 
-        // alpha_c ?  
+        if (cam.distortionCoeffs != null) {
+            double[] distort = cam.distortionCoeffs.get();
+            // alpha_c ?  
 //        sb.append("0 ");
-        // kc(1 - x)  -> 6 values
-        for (int i = 0; i < distort.length; i++) {
-            sb.append(distort[i]).append(" ");
+            // kc(1 - x)  -> 6 values
+            for (int i = 0; i < distort.length; i++) {
+                sb.append(distort[i]).append(" ");
+            }
+            for (int i = distort.length; i < 6; i++) {
+                sb.append("0 ");
+            }
+        } else {
+            for (int i = 0; i < 6; i++) {
+                sb.append("0 ");
+            }
         }
-        for (int i = distort.length; i < 6; i++) {
-            sb.append("0 ");
-        }
-
         // undist iterations
         sb.append("10\n");
 

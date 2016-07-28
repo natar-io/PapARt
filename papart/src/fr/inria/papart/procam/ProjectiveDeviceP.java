@@ -127,64 +127,6 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
         result.z = depth;
     }
 
-    // without depth value, focal distance is assumed
-    @Deprecated
-    public Vec3D pixelToWorld(int x, int y) {
-
-        Vec3D result = new Vec3D();
-        float depth = fx;
-//        float depth = 1000 * depthLookUp[depthValue]; 
-        result.x = (float) (x - cx);
-        result.y = (float) (y - cy);
-        result.z = depth;
-        return result;
-    }
-
-    @Deprecated
-    public PVector pixelToWorldP(int x, int y) {
-        PVector result = new PVector();
-        float depth = (fx + fy) / 2;
-        result.x = (float) x - cx;
-        result.y = (float) y - cy;
-        result.z = depth;
-        return result;
-    }
-
-    // To use with a projector...
-    @Deprecated
-    public PVector pixelToWorldPDistort(int x, int y, boolean distort) {
-        PVector result = new PVector();
-
-        if (distort) {
-            double[] out = device.distort(x, y);
-            result.x = (float) out[0];
-            result.y = (float) out[1];
-        }
-
-        float depth = (fx + fy) / 2;
-        result.x = (float) x - cx;
-        result.y = (float) y - cy;
-        result.z = depth;
-        return result;
-    }
-
-    @Deprecated
-    public PVector pixelToWorldPUndistort(int x, int y, boolean distort) {
-        PVector result = new PVector();
-
-        if (distort) {
-            double[] out = device.undistort(x, y);
-            result.x = (float) out[0];
-            result.y = (float) out[1];
-        }
-
-        float depth = fx;
-        result.x = (float) x - cx;
-        result.y = (float) y - cy;
-        result.z = depth;
-        return result;
-    }
-
     /* * Working, use this one for Low error !
         
      */
@@ -196,21 +138,33 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
         return result;
     }
 
+//    public PVector pixelToWorldNormPDistort(int x, int y) {
+//
+//        if (this.handleDistorsion) {
+//            double[] out = device.distort(x, y);
+//            x = (int) out[0];
+//            y = (int) out[1];
+//        }
+//
+//        PVector result = new PVector();
+//        result.x = ((float) x - cx) / fx;
+//        result.y = ((float) y - cy) / fy;
+//        result.z = 1;
+//        return result;
+//    }
+
+//    public PVector pixelToWorldNormP(int x, int y) {
+//        PVector result = new PVector();
+//        result.x = ((float) x - cx) / fx;
+//        result.y = ((float) y - cy) / fy;
+//        result.z = 1;
+//        return result;
+//    }
     public PVector pixelToWorldNormalized(float x, float y) {
         PVector result = new PVector();
         result.x = (x * this.w - cx) / fx;
         result.y = (y * this.h - cy) / fy;
         result.z = 1;
-        return result;
-    }
-
-    public PVector pixelToWorldNormPMM(int x, int y, float sizeX) {
-
-        PVector result = pixelToWorldNormP(x, y);
-
-        float sizeY = sizeX * ((float) h / (float) w);
-        result.x *= (float) sizeX / (float) w;
-        result.y *= (float) sizeY / (float) h;
         return result;
     }
 
@@ -380,7 +334,7 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
 //                ip,
 //                intrinsicsMat, new Mat(),
 //                rotation, translation);
-        
+
 //        @Namespace("cv") public static native @Cast("bool") boolean solvePnPRansac( @ByVal Mat objectPoints, @ByVal Mat imagePoints,
 //                                  @ByVal Mat cameraMatrix, @ByVal Mat distCoeffs,
 //                                  @ByVal Mat rvec, @ByVal Mat tvec,
@@ -444,7 +398,7 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
     public void saveTo(PApplet applet, String filename) {
         saveTo(applet, filename, true);
     }
-    
+
     public void saveTo(PApplet applet, String filename, boolean isCamera) {
         ProjectiveDeviceCalibration calib = new ProjectiveDeviceCalibration();
         calib.setWidth(this.w);
@@ -460,11 +414,11 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
     public void saveCameraTo(PApplet applet, String filename) {
         saveTo(applet, filename, true);
     }
-    
+
     public void saveProjectorTo(PApplet applet, String filename) {
-      saveTo(applet, filename, false);
+        saveTo(applet, filename, false);
     }
-    
+
     public static ProjectiveDeviceP loadCameraDevice(PApplet parent, String filename) throws Exception {
         return loadCameraDevice(parent, filename, 0);
     }

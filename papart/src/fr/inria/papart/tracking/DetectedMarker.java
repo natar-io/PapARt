@@ -10,7 +10,6 @@ import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacpp.opencv_core;
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.cvFindCornerSubPix;
-import static org.bytedeco.javacpp.opencv_imgproc.cvMinAreaRect2;
 import processing.core.PGraphics;
 import processing.core.PVector;
 
@@ -133,10 +132,13 @@ public class DetectedMarker implements Cloneable {
         int cameraHeight = image.height();
         // TODO: check imgWith and init width.
         
-        opencv_core.CvPoint2D32f corners = new opencv_core.CvPoint2D32f(4);
-        opencv_core.CvMemStorage memory = opencv_core.CvMemStorage.create();
-        opencv_core.CvSize subPixelSize = null, subPixelZeroZone = null;
-        opencv_core.CvTermCriteria subPixelTermCriteria = null;
+        CvPoint2D32f corners = new CvPoint2D32f(4);
+        CvMemStorage memory = CvMemStorage.create();
+//        CvMat points = CvMat.create(1, 4, CV_32F, 2);
+        Mat points = new Mat(1, 4, CV_32F, 2);
+        
+        CvSize subPixelSize = null, subPixelZeroZone = null;
+        CvTermCriteria subPixelTermCriteria = null;
         int subPixelWindow = 11;
 
         subPixelSize = cvSize(subPixelWindow / 2, subPixelWindow / 2);
@@ -173,17 +175,18 @@ public class DetectedMarker implements Cloneable {
                 continue;
             }
 
-            opencv_core.CvMat points = opencv_core.CvMat.create(1, 4, CV_32F, 2);
-            points.getFloatBuffer().put(vertex);
-            opencv_core.CvBox2D box = cvMinAreaRect2(points, memory);
-
-            float bw = box.size().width();
-            float bh = box.size().height();
-            cvClearMemStorage(memory);
-            if (bw <= 0 || bh <= 0 || bw / bh < 0.1 || bw / bh > 10) {
-                // marker is too "flat" to have been IDed correctly...
-                continue;
-            }
+            // TODO: major bug here -> free error...
+//            opencv_core.CvMat points = opencv_core.CvMat.create(1, 4, CV_32F, 2);
+//            points.getFloatBuffer().put(vertex);
+//            opencv_core.CvBox2D box = cvMinAreaRect2(points, memory);
+//
+//            float bw = box.size().width();
+//            float bh = box.size().height();
+//            cvClearMemStorage(memory);
+//            if (bw <= 0 || bh <= 0 || bw / bh < 0.1 || bw / bh > 10) {
+//                // marker is too "flat" to have been IDed correctly...
+//                continue;
+//            }
 
             for (int j = 0; j < 4; j++) {
                 corners.position(j).put(vertex[2 * j], vertex[2 * j + 1]);
