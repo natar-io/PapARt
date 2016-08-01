@@ -30,7 +30,7 @@ import toxi.geom.Vec3D;
  */
 public class PointCloud {
 
-    private final PApplet parentApplet;
+    protected final PApplet parentApplet;
     protected int nbColors = 0;
     protected int nbVertices = 0;
     // OpenGL values  -- Point rendering.

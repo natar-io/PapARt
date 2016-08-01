@@ -67,7 +67,7 @@ public class KinectPointCloud extends PointCloud implements PConstants {
         colorsNative.put(colorsJava, 0, nbColors);
     }
 
-    public void updateWith(KinectProcessing kinect, ArrayList<TouchPoint> touchs) {
+    public void updateWithFakeColors(KinectProcessing kinect, ArrayList<TouchPoint> touchs) {
 
         boolean[] valid = kinect.getValidPoints();
         Vec3D[] points = kinect.getDepthPoints();
@@ -77,13 +77,12 @@ public class KinectPointCloud extends PointCloud implements PConstants {
         nbColors = 0;
         int k = 0;
 
+        parentApplet.pushStyle();
+        parentApplet.colorMode(HSB, 8, 100, 100);
         int id = 0;
         for (TouchPoint touch : touchs) {
 
-            int c = (((id + 1) % 5) * (255 / 5) & 0xFF) << 16
-                    | (255 - (id % 10 * 255) & 0xFF) << 8
-                    | (100 & 0xFF);
-
+            int c = this.parentApplet.color(id % 8, 100, 100);
             id++;
             int c2 = javaToNativeARGB(c);
 
@@ -101,6 +100,7 @@ public class KinectPointCloud extends PointCloud implements PConstants {
             }
         }
 
+        parentApplet.popStyle();
         verticesNative.rewind();
         verticesNative.put(verticesJava, 0, nbVertices * 4);
 

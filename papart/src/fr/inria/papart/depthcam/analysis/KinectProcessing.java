@@ -84,9 +84,11 @@ public class KinectProcessing extends KinectDepthAnalysis {
 
     }
 
+    
     public void updateMT(opencv_core.IplImage depth, opencv_core.IplImage color, PlaneAndProjectionCalibration calib, int skip2D) {
         updateRawDepth(depth);
-        // optimisation no Color. 
+        
+// optimisation no Color. 
         updateRawColor(color);
         depthData.clear();
         depthData.timeStamp = papplet.millis();
@@ -103,7 +105,7 @@ public class KinectProcessing extends KinectDepthAnalysis {
         doForEachValidPoint(skip2D, new SetImageData());
         validPointsPImage.updatePixels();
     }
-
+    
     private void erodePoints2(ArrayList<Integer> validList, boolean[] arrayToErode, int skip) {
 
         Arrays.fill(validCopy, false);
