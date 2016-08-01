@@ -329,14 +329,26 @@ public class Papart {
                 cameraTracking.height());
     }
 
+    public void forceDepthCameraSize() {
+        forceWindowSize(kinectDevice.depthWidth(),
+                kinectDevice.depthHeight());
+    }
+
     public void forceWindowSize(int w, int h) {
+
+        Papart papart = Papart.getPapart();
+
+        papart.shouldSetWindowLocation = true;
+        papart.shouldSetWindowSize = true;
+        papart.registerPost();
+        
         frameSize.set(w, h);
 //        this.shouldSetWindowSize = true;
 //        registerPost();
-
-        GLWindow window = (GLWindow) applet.getSurface().getNative();
-        window.setUndecorated(false);
-        window.setSize(w, h);
+//
+//        GLWindow window = (GLWindow) applet.getSurface().getNative();
+//        window.setUndecorated(false);
+//        window.setSize(w, h);
     }
 
     public void forceProjectorSize() {
