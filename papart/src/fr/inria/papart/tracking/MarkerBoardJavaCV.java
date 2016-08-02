@@ -123,10 +123,10 @@ public class MarkerBoardJavaCV extends MarkerBoard {
         float distance = currentPos.dist(lastPos.get(id));
 
 //        System.out.println("Distance " + distance);
-        if (distance > 5000) // 1 meter~?
-        {
-            return;
-        }
+//        if (distance > 5000) // 1 meter~?
+//        {
+//            return;
+//        }
         
         lastDistance.set(id, distance);
         // if the update is forced 
