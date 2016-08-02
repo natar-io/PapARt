@@ -16,7 +16,7 @@ import org.bytedeco.javacv.OpenCVFrameGrabber;
 import processing.core.PImage;
 
 /**
- *
+ * WARNING, THIS IS NOT USED, AND MAYBE NOT WORKING AT ALL.
  * @author jiii
  */
 public class CameraOpenCVDepth extends Camera {
@@ -28,7 +28,7 @@ public class CameraOpenCVDepth extends Camera {
     
     protected CameraOpenCVDepth(int cameraNo) {
         this.systemNumber = cameraNo;
-        this.setPixelFormat(PixelFormat.RGB);
+//        this.setPixelFormat(PixelFormat.RGB);
         converter = new OpenCVFrameConverter.ToIplImage();
     }
 
