@@ -312,6 +312,8 @@ public class KinectDepthAnalysis extends DepthAnalysis {
         }
     }
 
+    public static final float KINECT_ONE_DEPTH_RATIO = 10f;
+    
     class KinectOneDepth implements DepthComputation {
 
         @Override
@@ -319,7 +321,7 @@ public class KinectDepthAnalysis extends DepthAnalysis {
             float d = (depthRaw[offset * 3 + 1] & 0xFF) * 256 + 
                      (depthRaw[offset * 3] & 0xFF);
             
-            return d / 10f; // / 65535f * 10000f;
+            return d / KINECT_ONE_DEPTH_RATIO; // / 65535f * 10000f;
         }
     }
 
