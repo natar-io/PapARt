@@ -59,6 +59,11 @@ import org.bytedeco.javacv.OpenCVFrameConverter;
  * 3. In your project, define empty classes BaseChildSettings and BaseSettings under the org.bytedeco.javacv package name
  */
 public class ObjectFinder {
+
+    public static int briskParam1 = 15;
+    public static int briskParam2 = 4;
+    public static float briskParam3 = 1;
+
     public ObjectFinder(IplImage objectImage) {
         settings = new Settings();
         settings.objectImage = objectImage;
@@ -78,20 +83,20 @@ public class ObjectFinder {
 
 //        AKAZE detector = AKAZE.create();  // -> CRAZY memory leaks ?!
 //        AKAZE detector = AKAZE.create(AKAZE.DESCRIPTOR_KAZE,
-//                    0, 3, 0.001f, 
+//                    0, 3, 0.001f,
 //                    4, 4, KAZE.DIFF_CHARBONNIER);
-//        
+//
 //         create(int descriptor_type/*=cv::AKAZE::DESCRIPTOR_MLDB*/,
 //                                         int descriptor_size/*=0*/, int descriptor_channels/*=3*/,
 //                                         float threshold/*=0.001f*/, int nOctaves/*=4*/,
 //                                         int nOctaveLayers/*=4*/, int diffusivity/*=cv::KAZE::DIFF_PM_G2*/);
-        
-        // default
-//        BRISK detector = BRISK.create(30, 3, 1); 
-        BRISK detector = BRISK.create(15, 4, 1f); 
 
-//        MSER detector = MSER.create();  // -> Not implemented. 
-//        FastFeatureDetector detector = FastFeatureDetector.create();  // -> Not implemented. 
+        // default
+//        BRISK detector = BRISK.create(30, 3, 1);
+        BRISK detector = BRISK.create(briskParam1, briskParam2, briskParam3);
+
+//        MSER detector = MSER.create();  // -> Not implemented.
+//        FastFeatureDetector detector = FastFeatureDetector.create();  // -> Not implemented.
 //        AgastFeatureDetector detector = AgastFeatureDetector.create(); // -> not implemented
 
         double distanceThreshold = 0.75;

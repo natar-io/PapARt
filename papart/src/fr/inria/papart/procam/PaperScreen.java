@@ -529,7 +529,7 @@ public class PaperScreen {
 
     public void loadLocationFrom(PMatrix3D mat){
         this.useManualLocation(true);
-        setMainLocation(mat.copy());
+        setMainLocation(mat.get());
     }
 
     public ObjectFinder getObjectTracking() {
