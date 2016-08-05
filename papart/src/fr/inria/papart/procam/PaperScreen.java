@@ -527,7 +527,7 @@ public class PaperScreen {
         setMainLocation(HomographyCalibration.getMatFrom(Papart.getPapart().getApplet(), filename));
     }
 
-    public void loadLocationFrom(PMatrix3D mat)
+    public void loadLocationFrom(PMatrix3D mat){
         this.useManualLocation(true);
         setMainLocation(mat.copy());
     }
