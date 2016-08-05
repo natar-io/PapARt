@@ -1,7 +1,7 @@
 /*
  *
  * Copyright Inria, Bordeaux University.
- * Author : Jeremy Laviole. 
+ * Author : Jeremy Laviole.
  *
  * No licence yet.
  */
@@ -52,7 +52,7 @@ public class PaperScreen {
     protected ArrayList<BaseDisplay> displays = new ArrayList<BaseDisplay>();
     protected BaseDisplay mainDisplay;
 
-    // only one. 
+    // only one.
     protected MarkerBoard markerBoard = MarkerBoardInvalid.board;
     protected Screen screen;
 
@@ -95,7 +95,7 @@ public class PaperScreen {
         mainDisplay = papart.getDisplay();
         displays.add(papart.getDisplay());
 
-        // Default to projector graphics. 
+        // Default to projector graphics.
         // currentGraphics = this.display.getGraphics();
         register();
     }
@@ -222,10 +222,10 @@ public class PaperScreen {
     }
 
     private void tryInitTracking() {
-        // If there is really a camera tracking. 
+        // If there is really a camera tracking.
         // There can be multiple camera tracking !!
         if (!isWithoutCamera) {
-            // automatic update of the paper screen, regarding the camera. 
+            // automatic update of the paper screen, regarding the camera.
             trackCurrentMarkerBoard();
             updateBoardFiltering();
         }
@@ -267,7 +267,7 @@ public class PaperScreen {
         parent.registerMethod("pre", this);
         parent.registerMethod("draw", this);
 
-        // Do this so that the display is the last rendered. 
+        // Do this so that the display is the last rendered.
         mainDisplay.registerAgain();
     }
 
@@ -458,21 +458,21 @@ public class PaperScreen {
     }
 
 //  public PVector getCoordOf(PaperScreen paperScreen, PVector point) {
-// 
+//
 //        PMatrix3D thisLocation = this.getLocation();
 //        PVector cameraViewOfPoint = new PVector();
 //        thisLocation.mult(point, cameraViewOfPoint);
 //
 //        PMatrix3D otherLocationInv = paperScreen.getLocation().get();
 //        otherLocationInv.invert();
-//        
+//
 //        PVector otherViewOfPoint = new PVector();
 //        otherLocationInv.mult(cameraViewOfPoint, otherViewOfPoint);
 //
 //        if(Float.isNaN(otherViewOfPoint.x)){
 //            return  INVALID_VECTOR;
 //        }
-//        
+//
 //        return otherViewOfPoint;
 //    }
     public PGraphicsOpenGL getGraphics() {
@@ -495,12 +495,12 @@ public class PaperScreen {
         setLocation(v.x, v.y, v.z);
     }
 
-    // TODO: Bug here, without this call, the rendering is different. 
+    // TODO: Bug here, without this call, the rendering is different.
     public void setLocation(float x, float y, float z) {
         screen.setTranslation(x, y, z);
     }
 
-// TODO: Bug here, without this call, the rendering is different. 
+// TODO: Bug here, without this call, the rendering is different.
     public void setLocation(PMatrix3D matrix) {
         assert (isInitialized);
         screen.setTransformation(matrix);
@@ -525,6 +525,11 @@ public class PaperScreen {
     public void loadLocationFrom(String filename) {
         this.useManualLocation(true);
         setMainLocation(HomographyCalibration.getMatFrom(Papart.getPapart().getApplet(), filename));
+    }
+
+    public void loadLocationFrom(PMatrix3D mat)
+        this.useManualLocation(true);
+        setMainLocation(mat.copy());
     }
 
     public ObjectFinder getObjectTracking() {
@@ -607,7 +612,7 @@ public class PaperScreen {
 //     */
 //    @Deprecated
 //    private void checkCorners() {
-//        //        // check if drawing is required... 
+//        //        // check if drawing is required...
 //
 //        if (!(display instanceof ARDisplay)) {
 //            return;
@@ -639,7 +644,7 @@ public class PaperScreen {
 //            ARDisplay arDisplay, PMatrix3D extr) {
 //        int nbOut = 0;
 //        for (PVector corner : corners) {
-//            // Corners are on the camera Point of view. 
+//            // Corners are on the camera Point of view.
 //            PVector projC = new PVector();
 //            extr.mult(corner, projC);
 //            PVector screenCoord = arDisplay.getProjectiveDeviceP().worldToPixelReal(projC);
@@ -655,7 +660,7 @@ public class PaperScreen {
 //            ARDisplay arDisplay) {
 //        int nbOut = 0;
 //        for (PVector corner : corners) {
-//            // Corners are on the camera Point of view. 
+//            // Corners are on the camera Point of view.
 //            PVector screenCoord = arDisplay.getProjectiveDeviceP().worldToPixelReal(corner);
 //            if (screenCoord.x < 0 || screenCoord.x > arDisplay.getWidth()
 //                    || screenCoord.y < 0 || screenCoord.y > arDisplay.getHeight()) {

@@ -33,17 +33,17 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.5"
-     inkscape:cx="723.78311"
-     inkscape:cy="480.81019"
+     inkscape:zoom="0.25"
+     inkscape:cx="87.456839"
+     inkscape:cy="539.85414"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
      units="mm"
-     inkscape:window-width="1672"
-     inkscape:window-height="1103"
-     inkscape:window-x="101"
-     inkscape:window-y="0"
+     inkscape:window-width="1366"
+     inkscape:window-height="726"
+     inkscape:window-x="0"
+     inkscape:window-y="20"
      inkscape:window-maximized="0" />
   <metadata
      id="metadata7">
@@ -72,17 +72,19 @@
     <image
        y="366.73218"
        x="217.91339"
-       id="image3002"
+       id="marker0"
        xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAA3NCSVQICAjb4U/gAAAAKElEQVQI mWNgwAP+//+PzIZwGZElGBkZCevGqYMJmQ9RgWwlKgc/AACR0hrzbGjF5QAAAABJRU5ErkJggg== "
        height="531.49603"
-       width="531.49603" />
+       width="531.49603"
+       inkscape:label="#image3002" />
     <image
        y="366.73218"
        x="868.11023"
-       id="image3013"
+       id="marker1"
        xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAA3NCSVQICAjb4U/gAAAAKUlEQVQI mWNgwAP+//+PzIZwmdD4jIyMDJiqkLWiG4hdDqfl/2EAn2oAr7cp3K+S6SIAAAAASUVORK5CYII= "
        height="531.49603"
-       width="531.49603" />
+       width="531.49603"
+       inkscape:label="#image3013" />
     <flowRoot
        xml:space="preserve"
        id="flowRoot3970"
@@ -274,5 +276,5 @@
            height="39.59798"
            x="127.27922"
            y="1213.5825" /></flowRegion><flowPara
-         id="flowPara4184"></flowPara></flowRoot>  </g>
+         id="flowPara4184" /></flowRoot>  </g>
 </svg>

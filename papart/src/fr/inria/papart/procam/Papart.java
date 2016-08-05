@@ -57,6 +57,8 @@ public class Papart {
     public final static String calibrationFolder = folder + "calibration/";
     public final static String markerFolder = folder + "markers/";
 
+    public static String calibrationFileName = "big-calib.svg";
+
     public static String cameraCalibName = "camera.yaml";
     public static String projectorCalibName = "projector.yaml";
 
@@ -341,7 +343,7 @@ public class Papart {
         papart.shouldSetWindowLocation = true;
         papart.shouldSetWindowSize = true;
         papart.registerPost();
-        
+
         frameSize.set(w, h);
 //        this.shouldSetWindowSize = true;
 //        registerPost();
@@ -557,8 +559,8 @@ public class Papart {
 
     public void initProjectorCamera(float quality) {
         initProjectorCamera(cameraConfiguration.getCameraName(),
-                cameraConfiguration.getCameraType(), 
-                cameraConfiguration.getCameraFormat(), 
+                cameraConfiguration.getCameraType(),
+                cameraConfiguration.getCameraFormat(),
                 quality);
     }
 
@@ -628,8 +630,8 @@ public class Papart {
      */
     public void initCamera(float quality) {
         initCamera(cameraConfiguration.getCameraName(),
-                cameraConfiguration.getCameraType(), 
-                cameraConfiguration.getCameraFormat(), 
+                cameraConfiguration.getCameraType(),
+                cameraConfiguration.getCameraFormat(),
                 quality);
     }
 
