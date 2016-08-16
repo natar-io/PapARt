@@ -29,8 +29,6 @@ import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
 import org.bytedeco.javacpp.freenect;
-import fr.inria.papart.drawingapp.Button;
-import fr.inria.papart.depthcam.analysis.DepthAnalysis;
 import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
 import fr.inria.papart.calibration.PlaneCalibration;
 import fr.inria.papart.calibration.ScreenConfiguration;
@@ -41,23 +39,16 @@ import fr.inria.papart.depthcam.devices.KinectOne;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.multitouch.TUIOTouchInput;
 import fr.inria.papart.multitouch.KinectTouchInput;
-import fr.inria.papart.panel.Panel;
 import fr.inria.papart.procam.camera.CameraFactory;
-import fr.inria.papart.procam.camera.CameraOpenKinect;
-import java.awt.Robot;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.util.Set;
 import org.reflections.Reflections;
-import processing.awt.PSurfaceAWT;
 import processing.core.PApplet;
-import processing.core.PConstants;
 import processing.core.PFont;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.event.KeyEvent;
-import processing.opengl.PSurfaceJOGL;
-import toxi.geom.Plane;
 
 /**
  *
@@ -147,8 +138,6 @@ public class Papart {
 
         this.appletClass = applet.getClass();
         PFont font = this.applet.loadFont(defaultFont);
-        Button.setFont(font);
-        Button.setFontSize(defaultFontSize);
         // TODO: singleton -> Better implementation.
         if (Papart.singleton == null) {
             Papart.singleton = this;

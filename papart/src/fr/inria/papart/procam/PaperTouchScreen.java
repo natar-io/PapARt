@@ -19,12 +19,8 @@
  */
 package fr.inria.papart.procam;
 
-import fr.inria.papart.calibration.PlaneCalibration;
-import fr.inria.papart.depthcam.DepthDataElementKinect;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.display.BaseDisplay;
-import processing.opengl.PGraphicsOpenGL;
-import fr.inria.papart.drawingapp.Button;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.multitouch.Touch;
 import fr.inria.papart.multitouch.KinectTouchInput;
@@ -34,18 +30,14 @@ import fr.inria.papart.multitouch.TouchPoint;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import org.bytedeco.javacpp.opencv_core.IplImage;
 import processing.core.PApplet;
 import processing.core.PImage;
-import processing.core.PMatrix3D;
 import processing.core.PVector;
-import toxi.geom.Vec3D;
 
 public class PaperTouchScreen extends PaperScreen {
 
     protected TouchList touchList = new TouchList();
     protected TouchInput touchInput;
-    protected ArrayList<Button> buttons = new ArrayList<Button>();
     public boolean isTranslated = false;
 
     /**
@@ -121,35 +113,6 @@ public class PaperTouchScreen extends PaperScreen {
             } //                touchList.scaleBy(drawingSize);
         }
 
-        if (!buttons.isEmpty()) {
-            updateButtons();
-        }
-    }
-
-    public void updateButtons() {
-        if (!touchList.isEmpty()) {
-            for (Touch t : touchList) {
-                if (t.is3D) {
-                    continue;
-                }
-                PVector p = t.position;
-                checkButtons(p.x, p.y);
-            }
-        }
-    }
-
-    protected void checkButtons(float x, float y) {
-        for (Button b : buttons) {
-            if (b.isSelected(x, y, null)) {
-                return;
-            }
-        }
-    }
-
-    protected void drawButtons() {
-        for (Button b : buttons) {
-            b.drawSelf(getGraphics());
-        }
     }
 
     static private final int DEFAULT_TOUCH_SIZE = 15;
@@ -209,10 +172,6 @@ public class PaperTouchScreen extends PaperScreen {
 
     public TouchInput getTouchInput() {
         return touchInput;
-    }
-
-    public ArrayList<Button> getButtons() {
-        return buttons;
     }
 
     public boolean isIsTranslated() {
