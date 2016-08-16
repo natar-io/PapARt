@@ -85,11 +85,6 @@
         </dependency>
         <dependency>
             <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>libfreenect</artifactId>
-            <version>0.5.2-1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
             <artifactId>videoinput</artifactId>
             <version>0.200-1.0</version>
         </dependency>
@@ -153,7 +148,7 @@
         <dependency>
             <groupId>org.processing</groupId>
             <artifactId>core</artifactId>
-            <version>3.1.1-papart-SNAPSHOT</version>
+            <version>3.1.2-papart-SNAPSHOT</version>
         </dependency>
 
         <dependency>

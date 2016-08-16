@@ -1,14 +1,40 @@
+/*
+ * Part of the PapARt project - https://project.inria.fr/papart/
+ *
+ * Copyright (C) 2014-2016 Inria
+ * Copyright (C) 2011-2013 Bordeaux University
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation, version 2.1.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; If not, see
+ * <http://www.gnu.org/licenses/>.
+ */
 package fr.inria.papart.procam.camera;
 
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
+import static org.bytedeco.javacpp.avutil.AV_PIX_FMT_GRAY16BE;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
+import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.OpenCVFrameConverter;
 import processing.core.PImage;
 
 /**
  *
- * @author jiii
+ * @author Jeremy Laviole
  */
 public class CameraFFMPEG extends Camera {
 
@@ -29,7 +55,12 @@ public class CameraFFMPEG extends Camera {
         grabberFF.setImageWidth(width());
         grabberFF.setImageHeight(height());
 //        grabberCV.setFrameRate(60);
-        grabberFF.setImageMode(FrameGrabber.ImageMode.COLOR);
+        
+//        grabberFF.setImageMode(FrameGrabber.ImageMode.COLOR);
+        grabberFF.setImageMode(FrameGrabber.ImageMode.RAW);
+        
+        this.setPixelFormat(PixelFormat.RGB);
+        
         grabberFF.setFormat(this.imageFormat);
         
         try {
@@ -54,12 +85,29 @@ public class CameraFFMPEG extends Camera {
             return;
         }
         try {
-            IplImage img = converter.convertToIplImage(grabber.grab());
-            if (img != null) {
-                this.updateCurrentImage(img);
+            
+            if(parent.millis() > 5000){
+            Frame frame = grabber.grab();
+            Buffer b = frame.image[0];
+//            byte[] arr = ((ByteBuffer) b).array();
+//            System.out.println("Data: " + arr[0]);
+//            System.out.println("Data: " + arr[1]);
             }
+//            IplImage img = converter.convertToIplImageDepth(grabber.grab());
+//
+//            
+//            if (img != null) {
+//            System.out.println(img.asByteBuffer().get(100));
+//            System.out.println(img.asByteBuffer().get(101));
+//            
+//                System.out.println("ipl depth: " + img.depth());
+//            System.out.println("ipl channels: " + img.nChannels());
+//                
+//                this.updateCurrentImage(img);
+//            }
         } catch (Exception e) {
             System.err.println("Camera: OpenCV Grab() Error ! " + e);
+            e.printStackTrace();
         }
     }
 
