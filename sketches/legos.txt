@@ -1,5 +1,0 @@
-taille d'un point :
-
-32/4 : 8mm
-Hauteur: 10mm
-hauteur : 0.33mm
