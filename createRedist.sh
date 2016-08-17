@@ -19,12 +19,6 @@ rm -rf libraries/$NAME
 echo "Create archive of depedencies"
 tar -zcf libs.tgz libraries
 
-
-echo "Cleaning sketches"
-sh $SKETCHBOOK/clean.sh
-
-
-
 echo "Copy Library"
 # Library
 cp papart/target/$NAME.jar $TMP/$NAME/library/$NAME.jar
@@ -39,8 +33,6 @@ echo "Copy the sources"
 # copy the source also
 cp -R papart/src $TMP/$NAME/
 cp -R papart/pom.xml $TMP/$NAME/
-cp -R papart/deps $TMP/$NAME/
-
 cp -R papart/test $TMP/$NAME/
 
 echo "Copy the JavaDoc"
@@ -48,7 +40,6 @@ cp -R papart/target/site/apidocs $TMP/$NAME/
 
 echo "Copy the Data"
 cp -R papart/data $TMP/$NAME/
-
 
 
 echo "Download the examples"
@@ -64,7 +55,7 @@ rm -rf Papart-examples-master
 
 
 # Calibration stuff
-cp -R sketches/calibration $TMP/$NAME/examples/calib
+# cp -R sketches/calibration $TMP/$NAME/examples/calib
 
 # Now working with github examples and apps.
 
@@ -82,7 +73,6 @@ tar -zcf $NAME.tgz $NAME
 mv $NAME.tgz  ..
 cd ..
 
-
 cp -r $TMP/$NAME libraries/
 
 echo "Create full archive : Papart & Deps"
@@ -90,6 +80,5 @@ tar -zcf papart-complete.tgz libraries
 
 echo "Clean "
 rm -rf $TMP
-
 
 echo "Creation OK"
