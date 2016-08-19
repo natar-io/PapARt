@@ -36,13 +36,12 @@ public class CamImageColor extends CamImage {
 
     protected ByteBuffer argbBuffer;
 
-        
     public CamImageColor(PApplet parent, Image img) {
         super(parent, img);
     }
-    
-    public CamImageColor(PApplet parent, int width, int height) {
-        super(parent, width, height, ARGB);
+
+    public CamImageColor(PApplet parent, int width, int height, Camera.PixelFormat format) {
+        super(parent, width, height, ARGB, format);
     }
 
     @Override
@@ -65,8 +64,16 @@ public class CamImageColor extends CamImage {
     public void update(IplImage iplImage) {
         Texture tex = ((PGraphicsOpenGL) parent.g).getTexture(this);
         ByteBuffer bgrBuffer = iplImage.getByteBuffer();
-        Utils.byteBufferBRGtoARGB(bgrBuffer, argbBuffer);
+
+        if (this.incomingFormat == Camera.PixelFormat.BGR) {
+            Utils.byteBufferBRGtoARGB(bgrBuffer, argbBuffer);
+        }
+        if (this.incomingFormat == Camera.PixelFormat.RGB) {
+            System.out.println("Here!");
+            Utils.byteBufferRGBtoARGB(bgrBuffer, argbBuffer);
+        }
         tex.copyBufferFromSource(null, argbBuffer, width, height);
+
     }
 
 }

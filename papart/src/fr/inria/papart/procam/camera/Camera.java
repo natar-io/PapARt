@@ -339,9 +339,7 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
      * @param img
      */
     protected void updateCurrentImage(IplImage img) {
-
         if (undistort) {
-
             if (pdp == null || !pdp.handleDistorsions()) {
                 System.err.println("I cannot distort the image for processing. The "
                         + "calibration did not contain information. ");
@@ -368,12 +366,15 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
      */
     protected void checkCamImage() {
         if (camImage == null) {
-
             if (this.isPixelFormatGray()) {
-                camImage = new CamImageGray(parent, width(), height());
+                camImage = new CamImageGray(parent, width(), height(), this.format);
             }
             if (this.isPixelFormatColor()) {
-                camImage = new CamImageColor(parent, width(), height());
+                camImage = new CamImageColor(parent, width(), height(), this.format);
+            }
+            
+            if(!this.isPixelFormatColor() && !this.isPixelFormatGray()){
+                System.out.println("Error: No pixel format set for the camera!");
             }
         }
     }

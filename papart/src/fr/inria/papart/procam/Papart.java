@@ -36,10 +36,12 @@ import fr.inria.papart.depthcam.devices.Kinect360;
 import fr.inria.papart.depthcam.analysis.KinectDepthAnalysis;
 import fr.inria.papart.depthcam.devices.KinectDevice;
 import fr.inria.papart.depthcam.devices.KinectOne;
+import fr.inria.papart.depthcam.devices.RealSense;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.multitouch.TUIOTouchInput;
 import fr.inria.papart.multitouch.KinectTouchInput;
 import fr.inria.papart.procam.camera.CameraFactory;
+import fr.inria.papart.procam.camera.CameraRealSense;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.util.Set;
@@ -599,6 +601,7 @@ public class Papart {
         }
     }
 
+    @Deprecated
     public void initKinectCamera(float quality) {
         assert (!cameraInitialized);
         kinectDevice = loadDefaultCameraKinect();
@@ -609,6 +612,8 @@ public class Papart {
         checkInitialization();
     }
 
+    //really deprecated ?
+    @Deprecated
     public void startDefaultKinectCamera() {
         assert (!cameraInitialized);
         kinectDevice = loadDefaultCameraKinect();
@@ -765,6 +770,13 @@ public class Papart {
      */
     public KinectDevice loadDefaultCameraKinect() {
         CameraConfiguration kinectConfiguration = Papart.getDefaultKinectConfiguration(applet);
+        if (kinectConfiguration.getCameraType() == Camera.Type.REALSENSE) {
+            if (cameraTracking != null && cameraTracking instanceof CameraRealSense) {
+                return new RealSense(applet, (CameraRealSense)cameraTracking);
+            } else {
+                return new RealSense(applet);
+            }
+        }
 
         if (kinectConfiguration.getCameraType() == Camera.Type.OPEN_KINECT) {
             return new Kinect360(applet);

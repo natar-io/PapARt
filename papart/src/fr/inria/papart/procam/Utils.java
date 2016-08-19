@@ -590,10 +590,22 @@ public class Utils {
 
         for (int i = 0; i < bgr.capacity(); i += 3) {
             bgr.get(tmpArr);
-
             argb.put(tmpArr[2]);
             argb.put(tmpArr[1]);
             argb.put(tmpArr[0]);
+            argb.put((byte) 255);
+        }
+        argb.rewind();
+    }
+    
+    static public void byteBufferRGBtoARGB(ByteBuffer bgr, ByteBuffer argb) {
+        byte[] tmpArr = new byte[3];
+
+        for (int i = 0; i < bgr.capacity(); i += 3) {
+            bgr.get(tmpArr);
+            argb.put(tmpArr[0]);
+            argb.put(tmpArr[1]);
+            argb.put(tmpArr[2]);
             argb.put((byte) 255);
         }
         argb.rewind();

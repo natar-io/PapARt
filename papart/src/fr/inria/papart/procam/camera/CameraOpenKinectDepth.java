@@ -30,7 +30,7 @@ import processing.core.PImage;
  *
  * @author Jeremy Laviole
  */
-public class CameraOpenKinectDepth extends Camera {
+public class CameraOpenKinectDepth extends Camera implements WithTouchInput{
 
     private CameraOpenKinect parent;
     private int depthFormat = freenect.FREENECT_DEPTH_MM;
@@ -91,10 +91,12 @@ public class CameraOpenKinectDepth extends Camera {
         setClosing();
     }
 
+    @Override
     public KinectTouchInput getTouchInput() {
         return touchInput;
     }
-
+    
+    @Override
     public void setTouchInput(KinectTouchInput touchInput) {
         this.touchInput = touchInput;
     }

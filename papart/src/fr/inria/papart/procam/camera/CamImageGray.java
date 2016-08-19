@@ -19,6 +19,7 @@
  */
 package fr.inria.papart.procam.camera;
 
+import fr.inria.papart.procam.camera.Camera.PixelFormat;
 import java.awt.Image;
 import java.nio.ByteBuffer;
 import org.bytedeco.javacpp.opencv_core;
@@ -36,8 +37,8 @@ public class CamImageGray extends CamImage {
         super(parent, img);
     }
 
-    public CamImageGray(PApplet parent, int width, int height) {
-        super(parent, width, height, GRAY);
+    public CamImageGray(PApplet parent, int width, int height, PixelFormat incomingFormat) {
+        super(parent, width, height, GRAY, incomingFormat);
     }
 
     @Override

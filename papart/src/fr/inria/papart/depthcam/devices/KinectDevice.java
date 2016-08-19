@@ -35,7 +35,7 @@ import toxi.geom.Vec3D;
 public abstract class KinectDevice implements DepthCameraDevice {
 
     public enum Type {
-        ONE, X360, NONE
+        ONE, X360, REALSENSE, NONE
     }
     // IR and Depth image size 
     public static int WIDTH;
@@ -80,6 +80,10 @@ public abstract class KinectDevice implements DepthCameraDevice {
 
     public static KinectDevice createKinectOne(PApplet parent) {
         return new KinectOne(parent);
+    }
+    
+    public static KinectDevice createRealSense(PApplet parent) {
+        return new RealSense(parent);
     }
 
     public void setStereoCalibration(String fileName) {

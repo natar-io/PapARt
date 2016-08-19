@@ -19,6 +19,7 @@
  */
 package fr.inria.papart.procam.camera;
 
+import fr.inria.papart.procam.camera.Camera.PixelFormat;
 import java.awt.Image;
 import java.nio.ByteBuffer;
 import org.bytedeco.javacpp.opencv_core.IplImage;
@@ -33,9 +34,11 @@ public abstract class CamImage extends PImage {
 
     protected Object bufferSink = null;
     protected ByteBuffer natBuffer = null;
+    protected Camera.PixelFormat incomingFormat;
 
-    protected CamImage(PApplet parent, int width, int height, int format) {
+    protected CamImage(PApplet parent, int width, int height, int format, PixelFormat incomingFormat) {
         super(width, height, format);
+        this.incomingFormat = incomingFormat;
         camInit(parent);
     }
 
