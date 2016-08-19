@@ -66,7 +66,7 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
 
     public enum Type {
 
-        OPENCV, FFMPEG, OPENCV_DEPTH, PROCESSING, OPEN_KINECT, FLY_CAPTURE, KINECT2_RGB, KINECT2_IR, FAKE
+        OPENCV, FFMPEG, OPENCV_DEPTH, PROCESSING, OPEN_KINECT, FLY_CAPTURE, KINECT2_RGB, KINECT2_IR, REALSENSE, FAKE
     }
 
     public enum PixelFormat {

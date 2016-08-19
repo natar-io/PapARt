@@ -19,6 +19,7 @@
  */
 package fr.inria.papart.procam.camera;
 
+import fr.inria.papart.procam.Papart;
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 import org.bytedeco.javacpp.BytePointer;
@@ -33,6 +34,8 @@ import org.bytedeco.javacpp.opencv_core.IplImage;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.OpenCVFrameConverter;
 import org.bytedeco.javacv.OpenCVFrameGrabber;
+import processing.core.PApplet;
+import processing.core.PConstants;
 import processing.core.PImage;
 
 /**
@@ -41,7 +44,7 @@ import processing.core.PImage;
  */
 public class CameraRealSense extends Camera {
 
-        public static void main(String[] args) {
+    public static void main(String[] args) {
 
         context context = new context();
 
@@ -51,36 +54,36 @@ public class CameraRealSense extends Camera {
 
         System.out.println("Using device 0, an " + device.get_name());
         System.out.println(" Serial number: " + device.get_serial());
-        
+
         device.enable_stream(RealSense.depth, 640, 480, RealSense.z16, 60);
         device.enable_stream(RealSense.color, 640, 480, RealSense.rgb8, 60);
-        
+
         device.start();
-        
-        while(true){
+
+        while (true) {
             device.wait_for_frames();
-            
+
             System.out.println("Depth scale " + device.get_depth_scale());
 //            glPixelTransferf(GL_RED_SCALE, 0xFFFF * dev->get_depth_scale() / 2.0f);
 
             float scale = device.get_depth_scale();
             Pointer data = (Pointer) device.get_frame_data(RealSense.depth);
             ShortBuffer bb = data.position(0).limit(640 * 480 * 2).asByteBuffer().asShortBuffer();
-            
+
             System.out.println("Capacity :" + bb.capacity());
 //            UShortIndexer indexer = new UShortBufferIndexer(_frame_data.asByteBuffer().asShortBuffer());
-            
-            for(int i = 0 ; i < bb.capacity(); i++){
+
+            for (int i = 0; i < bb.capacity(); i++) {
                 float value = bb.get(i);
-                if(value != 0){
+                if (value != 0) {
                     value = value * scale;
                     System.out.print(value + " ");
                 }
             }
 //System.out.println("Data : "+ bb.get(100));
         }
-        
-        }
+
+    }
 //        try{
 //            
 //        }catch(Exception e){
@@ -128,19 +131,32 @@ public class CameraRealSense extends Camera {
 //            glRasterPos2f(0, 0);
 //            glDrawPixels(640, 480, GL_LUMINANCE, GL_UNSIGNED_BYTE, dev->get_frame_data(rs::stream::infrared2));
 //        }
-    
-    
-    private OpenCVFrameGrabber grabber;
-    private final OpenCVFrameConverter.ToIplImage converter;
+
+    private device device;
+    private context context;
+    PImage testImage;
 
     protected CameraRealSense(int cameraNo) {
-//        this.systemNumber = cameraNo;
+        
+        this.systemNumber = cameraNo;
 //        this.setPixelFormat(PixelFormat.BGR);
-//        converter = new OpenCVFrameConverter.ToIplImage();
+
+        context = new context();
+        device = context.get_device(cameraNo);
+
+        // debug depth image
+        parent = Papart.getPapart().getApplet();
+        
+        testImage = parent.createImage(640, 480, PApplet.RGB);
+        device.enable_stream(RealSense.depth, 640, 480, RealSense.z16, 60);
+        device.enable_stream(RealSense.color, 640, 480, RealSense.rgb8, 60);
     }
 
     @Override
     public void start() {
+        device.start();
+    }
+
 //        OpenCVFrameGrabber grabberCV = new OpenCVFrameGrabber(this.systemNumber);
 //        grabberCV.setImageWidth(width());
 //        grabberCV.setImageHeight(height());
@@ -160,34 +176,51 @@ public class CameraRealSense extends Camera {
 //
 //            this.grabber = null;
 //        }
-    }
-
     @Override
     public void grab() {
+        System.out.println("Wait for frames...");
+ 
+        device.wait_for_frames();
 
-//        if (this.isClosing()) {
-//            return;
+        
+        System.out.println("frames ok");
+        testImage.loadPixels();
+        int[] pixels = testImage.pixels;
+
+//        float scale = device.get_depth_scale();
+//        Pointer data = (Pointer) device.get_frame_data(RealSense.depth);
+//        ShortBuffer bb = data.position(0).limit(640 * 480 * 2).asByteBuffer().asShortBuffer();
+//        System.out.println("Sizes: " + pixels.length + " " + bb.limit());
+
+//              for (int i = 0; i < bb.capacity(); i++) {
+//            float value = bb.get(i);
+//            pixels[i] = (int) (value * scale * 1000f);
 //        }
-//        try {
-//            IplImage img = converter.convertToIplImage(grabber.grab());
-//            if (img != null) {
-//                this.updateCurrentImage(img);
-//            }
-//        } catch (Exception e) {
-//            System.err.println("Camera: OpenCV Grab() Error ! " + e);
-//        }
+              
+        Pointer data_color = (Pointer) device.get_frame_data(RealSense.color);
+        ByteBuffer bb_color = data_color.position(0).limit(640 * 480 * 3).asByteBuffer();
+        
+        System.out.println("Sizes " + bb_color.capacity() + " " + pixels.length * 3);
+                
+        for (int i = 0; i < bb_color.capacity() / 3; i++) {
+            pixels[i] =  (bb_color.get(i*3 + 0) & 0xFF) >> 0 |
+                         (bb_color.get(i*3 + 1) & 0xFF) << 8 |
+                         (bb_color.get(i*3 + 2) & 0xFF) << 16;
+        }
+        testImage.updatePixels();
     }
 
     @Override
     public PImage getPImage() {
 
+        return testImage;
 //        if (currentImage != null) {
 //            this.checkCamImage();
 //            camImage.update(currentImage);
 //            return camImage;
 //        }
 //        // TODO: exceptions !!!
-        return null;
+//        return null;
     }
 
     @Override
