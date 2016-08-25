@@ -795,7 +795,6 @@ public class Papart {
 
     private void loadDefaultTouchKinect() {
 
-        kinectDevice.setStereoCalibration(kinectStereoCalib);
         kinectDepthAnalysis = new KinectDepthAnalysis(this.applet, kinectDevice);
 
         PlaneAndProjectionCalibration calibration = new PlaneAndProjectionCalibration();

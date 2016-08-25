@@ -135,13 +135,13 @@
         <dependency>
             <groupId>org.bytedeco.javacpp-presets</groupId>
             <artifactId>librealsense</artifactId>
-            <version>1.9.6-1.2.2</version>
+            <version>1.9.6-1.2</version>
         </dependency>
         
         <dependency>
             <groupId>org.bytedeco.javacpp-presets</groupId>
             <artifactId>librealsense</artifactId>
-            <version>1.9.6-1.2.2</version>
+            <version>1.9.6-1.2</version>
             <classifier>${platform}</classifier>
             <scope>runtime</scope>
         </dependency>

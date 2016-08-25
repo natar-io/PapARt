@@ -45,7 +45,8 @@ public final class RealSense extends KinectDevice {
         initDepth();
 
         // get the stereo ?
-        setStereoCalibration(Papart.kinectStereoCalib);
+                setStereoCalibration(cameraRGB.getHardwareExtrinsics());
+//        setStereoCalibration(Papart.kinectStereoCalib);
     }
 
     public RealSense(PApplet parent, CameraRealSense cameraRGB) {
@@ -55,8 +56,8 @@ public final class RealSense extends KinectDevice {
         initDepth();
 
         // TODO: get the extrinsics !
-//        setStereoCalibration(cameraRGB.getHardwareExtrinsics());
-        setStereoCalibration(Papart.kinectStereoCalib);
+        setStereoCalibration(cameraRGB.getHardwareExtrinsics());
+//        setStereoCalibration(Papart.kinectStereoCalib);
     }
     
     public static final int CAMERA_WIDTH = 640;

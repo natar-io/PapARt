@@ -19,6 +19,7 @@
  */
 package fr.inria.papart.procam.camera;
 
+import java.nio.FloatBuffer;
 import org.bytedeco.javacpp.RealSense;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import org.bytedeco.javacv.RealSenseFrameGrabber;
@@ -34,29 +35,33 @@ public class CameraRealSense extends Camera {
     protected RealSenseFrameGrabber grabber;
     protected CameraRealSenseDepth depthCamera;
     private boolean useDepth = true;
-    
+
     protected CameraRealSense(int cameraNo) {
         this.systemNumber = cameraNo;
         setPixelFormat(PixelFormat.RGB);
         depthCamera = new CameraRealSenseDepth(this);
     }
-    
-    public CameraRealSenseDepth getDepthCamera(){
+
+    public CameraRealSenseDepth getDepthCamera() {
         return this.depthCamera;
     }
-    
-    public PMatrix3D getHardwareExtrinsics(){
-        
-        RealSense.extrinsics _extrinsics = grabber.getRealSenseDevice().get_extrinsics(RealSense.depth, RealSense.color);
-        // TODO: read this and convert to PMatrix3D
-        return new PMatrix3D();
+
+    public PMatrix3D getHardwareExtrinsics() {
+        RealSense.extrinsics extrinsics = grabber.getRealSenseDevice().get_extrinsics(RealSense.color, RealSense.depth);
+        FloatBuffer fb = extrinsics.position(0).asByteBuffer().asFloatBuffer();
+        return new PMatrix3D(
+                fb.get(0),fb.get(1),fb.get(2), fb.get(9) * 1000f,
+                fb.get(3),fb.get(4),fb.get(5), fb.get(10)* 1000f,
+                fb.get(6),fb.get(7),fb.get(8), fb.get(11)* 1000f,
+                0, 0, 0, 1);
     }
-    
-    public float getDepthScale(){
+
+    public float getDepthScale() {
         return grabber.getDepthScale();
-        
+
     }
-    public void useDepth(boolean useDepth){
+
+    public void useDepth(boolean useDepth) {
         this.useDepth = useDepth;
     }
 
@@ -66,11 +71,11 @@ public class CameraRealSense extends Camera {
         grabber.setImageWidth(width());
         grabber.setImageHeight(height());
         grabber.enableColorStream();
-        
-        if(useDepth){
+
+        if (useDepth) {
             depthCamera.start();
         }
-        
+
         try {
             grabber.start();
             this.isConnected = true;
@@ -99,8 +104,8 @@ public class CameraRealSense extends Camera {
 //            updateCurrentImage(img);
 
             currentImage = img;
-            
-            if(useDepth){
+
+            if (useDepth) {
 //                depthCamera.grab();
             }
 
@@ -109,12 +114,12 @@ public class CameraRealSense extends Camera {
             e.printStackTrace();
         }
     }
-    
-    public IplImage getDepthImage(){
+
+    public IplImage getDepthImage() {
         return depthCamera.getIplImage();
     }
-    
-    public PImage getDepthPImage(){
+
+    public PImage getDepthPImage() {
         return depthCamera.getPImage();
     }
 
@@ -147,7 +152,6 @@ public class CameraRealSense extends Camera {
 //        }
 //        testImage.updatePixels();
 //    }
-    
     @Override
     public PImage getPImage() {
         this.checkCamImage();
@@ -159,7 +163,6 @@ public class CameraRealSense extends Camera {
         return null;
     }
 
-
     @Override
     public void close() {
         this.setClosing();
@@ -167,7 +170,7 @@ public class CameraRealSense extends Camera {
             try {
                 grabber.stop();
                 System.out.println("Stopping grabber (RealSense)");
-               
+
             } catch (Exception e) {
                 System.out.println("Impossible to close " + e);
             }

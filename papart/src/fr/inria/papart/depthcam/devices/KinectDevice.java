@@ -93,6 +93,8 @@ public abstract class KinectDevice implements DepthCameraDevice {
     }
 
     public void setStereoCalibration(PMatrix3D matrix) {
+        System.out.println("Set stereo calib " + this);
+        matrix.print();
         KinectRGBIRCalibration.set(matrix);
         KinectRGBIRCalibrationInv = KinectRGBIRCalibration.get();
         KinectRGBIRCalibrationInv.invert();
