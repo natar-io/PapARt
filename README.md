@@ -3,8 +3,8 @@
 
 The research project is described here:
 
-[[http://projets.inria.fr/papart]]
 
+#### https://project.inria.fr/papart/
 
 
 ### Copyright note
