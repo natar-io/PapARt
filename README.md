@@ -23,7 +23,7 @@ More information about the research project here:
 
 The examples are in a [dedicated repository](https://github.com/poqudrof/Papart-examples). 
 PapARt is large library, and work with many different systems:
-- webcams and professionnal cameras (like PointGrey cameras). 
+- webcams and professionnal cameras ([PointGrey](https://www.ptgrey.com/) cameras). 
 - depthCameras: [Kinect Xbox360](https://github.com/OpenKinect/libfreenect), [Kinect xbox one](https://github.com/OpenKinect/libfreenect2), Intel [Realsense](https://github.com/IntelRealSense/librealsense).  
 - Projector/camera/depth camera systems (the main purpose of the library).  
 
