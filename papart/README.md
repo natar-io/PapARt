@@ -1,8 +1,5 @@
 ## Compilation guide
 
-PapARt uses Maven 
-
-
 ### Clone the library. 
 
 Clone the library or download the sources from this repository. 
