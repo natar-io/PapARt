@@ -42,36 +42,54 @@ public final class RealSense extends KinectDevice {
         initSize();
         this.parent = parent;
         initRGB();
-        initDepth();
+
+        cameraRGB.start();
+        
+        cameraDepth = cameraRGB.getDepthCamera();
+        
+        // TODO: setSize is not working on camera side... 
+        //cameraDepth.setSize(WIDTH, HEIGHT);
+        cameraDepth.setParent(parent);
+        
+        // TODO: calibration... 
+//               cameraDepth.useHarwareIntrinsics();
 
         // get the stereo ?
         setStereoCalibration(cameraRGB.getHardwareExtrinsics());
 //        setStereoCalibration(Papart.kinectStereoCalib);
 
-        try {
-            cameraRGB.useHarwareIntrinsics();
-            cameraDepth.useHarwareIntrinsics();
-        } catch (Exception e) {
-            System.out.println("Hardware intrinsics problem: " + e);
-            e.printStackTrace();
-        }
+        cameraRGB.useHarwareIntrinsics();
+        cameraDepth.useHarwareIntrinsics();
+        
+//    cameraDepth.setCalibration(Papart.calibrationFolder + "camera-kinect2-IR.yaml");
+
+//        cameraRGB.getProjectiveDevice().getIntrinsics().print();
+        
+        // Warning Start both depth & color camera for now.
+      
     }
 
     public RealSense(PApplet parent, CameraRealSense cameraRGB) {
-        initSize();
-        this.parent = parent;
-        this.cameraRGB = cameraRGB;
-        initDepth();
-
-        // TODO: get the extrinsics !
-        setStereoCalibration(cameraRGB.getHardwareExtrinsics());
-//        setStereoCalibration(Papart.kinectStereoCalib);
+        throw new UnsupportedOperationException("Not supported yet: RealSense(PApplet parent, CameraRealSense cameraRGB)");
+//        initSize();
+//        this.parent = parent;
+//        this.cameraRGB = cameraRGB;
+//
+//        cameraDepth = cameraRGB.getDepthCamera();
+//        cameraDepth.setParent(parent);
+//        // TODO: calibration... 
+//        cameraDepth.setCalibration(Papart.calibrationFolder + "camera-kinect2-IR.yaml");
+//
+//        // TODO: get the extrinsics !
+//        setStereoCalibration(cameraRGB.getHardwareExtrinsics());
+////        setStereoCalibration(Papart.kinectStereoCalib);
     }
 
     public static final int CAMERA_WIDTH = 640;
-    public static final int CAMERA_WIDTH_RGB = 1920;
     public static final int CAMERA_HEIGHT = 480;
-    public static final int CAMERA_HEIGHT_RGB = 1080;
+
+//    public static final int CAMERA_WIDTH_RGB = 1920;
+//    public static final int CAMERA_HEIGHT_RGB = 1080;
 
     private void initSize() {
         // IR and Depth image size 
@@ -80,14 +98,13 @@ public final class RealSense extends KinectDevice {
         SIZE = WIDTH * HEIGHT;
 
         // RGB image size
-        RGB_WIDTH = 1920;
-        RGB_HEIGHT = 1080;
+        RGB_WIDTH = 960;
+        RGB_HEIGHT = 540;
         RGB_SIZE = RGB_WIDTH * RGB_HEIGHT;
     }
 
     public void close() {
         cameraRGB.close();
-//        cameraIR.close();
         cameraDepth.close();
     }
 
@@ -96,6 +113,7 @@ public final class RealSense extends KinectDevice {
         Papart papart = Papart.getPapart();
 
         if (papart.cameraConfiguration.getCameraType() == Camera.Type.REALSENSE) {
+            System.out.println("REALSENSE: Using configuration ID & Resolution.");
             // use the ID
             int id = Integer.parseInt(papart.cameraConfiguration.getCameraName());
 
@@ -104,12 +122,14 @@ public final class RealSense extends KinectDevice {
             // use the calibration
             cameraRGB.setCalibration(Papart.cameraCalib);
         } else {
+
+            System.out.println("REALSENSE: Using DEFAULT configuration.");
             cameraRGB = (CameraRealSense) CameraFactory.createCamera(Camera.Type.REALSENSE, 0);
             cameraRGB.setSize(RGB_WIDTH, RGB_HEIGHT);
             cameraRGB.setParent(parent);
             cameraRGB.setCalibration(Papart.calibrationFolder + "saved/camera-SR300.yaml");
         }
-        cameraRGB.start();
+
     }
 
     final void initIR() {
@@ -120,13 +140,6 @@ public final class RealSense extends KinectDevice {
 ////        cameraIR.setSize(WIDTH, HEIGHT);
 //        cameraIR.setCalibration(Papart.calibrationFolder + "camera-kinect2-IR.yaml");
 //        cameraIR.start();
-    }
-
-    final void initDepth() {
-        cameraDepth = cameraRGB.getDepthCamera();
-        cameraDepth.setParent(parent);
-        // TODO: calibration... 
-        cameraDepth.setCalibration(Papart.calibrationFolder + "camera-kinect2-IR.yaml");
     }
 
     @Override

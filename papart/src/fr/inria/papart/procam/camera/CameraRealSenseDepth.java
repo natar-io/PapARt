@@ -36,8 +36,8 @@ public class CameraRealSenseDepth extends Camera implements WithTouchInput {
     protected CameraRealSenseDepth(CameraRealSense colorCamera) {
         this.colorCamera = colorCamera;
     }
-    
-        public void useHarwareIntrinsics(){
+
+    public void useHarwareIntrinsics() {
         RealSense.intrinsics intrinsics = colorCamera.grabber.getRealSenseDevice().get_stream_intrinsics(RealSense.depth);
         FloatBuffer fb = intrinsics.position(0).asByteBuffer().asFloatBuffer();
         float cx = fb.get(2);

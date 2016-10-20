@@ -47,6 +47,7 @@ public class CameraRealSense extends Camera {
         }
         this.systemNumber = cameraNo;
         setPixelFormat(PixelFormat.RGB);
+        grabber = new RealSenseFrameGrabber(this.systemNumber);
         depthCamera = new CameraRealSenseDepth(this);
     }
 
@@ -85,7 +86,6 @@ public class CameraRealSense extends Camera {
 
     @Override
     public void start() {
-        grabber = new RealSenseFrameGrabber(this.systemNumber);
         grabber.setImageWidth(width());
         grabber.setImageHeight(height());
         grabber.enableColorStream();

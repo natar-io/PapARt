@@ -142,7 +142,7 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
     }
 
     public void setSimpleCalibration(float fx, float fy, float cx, float cy, int w, int h) {
-        this.calibrationFile = "noFile";
+        this.calibrationFile = "manual calibration";
         pdp = ProjectiveDeviceP.createSimpleDevice(fx, fy, cx, cy, w, h);
         updateCalibration();
     }
