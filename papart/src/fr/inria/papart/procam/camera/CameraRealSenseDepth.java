@@ -45,16 +45,12 @@ public class CameraRealSenseDepth extends Camera implements WithTouchInput {
 
     @Override
     public void grab() {
-     System.out.println("grab in realSense depth ");
         if (this.isClosing()) {
             return;
         }
-
         // update the images.
         try {
             currentImage = colorCamera.grabber.grabDepth();
-            
-            System.out.println("Raw DepthImage " + currentImage);
             if (touchInput != null) {
                 touchInput.lock();
                 touchInput.update();

@@ -20,8 +20,11 @@
 package fr.inria.papart.procam.camera;
 
 import java.nio.FloatBuffer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.bytedeco.javacpp.RealSense;
 import org.bytedeco.javacpp.opencv_core.IplImage;
+import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.RealSenseFrameGrabber;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
@@ -37,6 +40,11 @@ public class CameraRealSense extends Camera {
     private boolean useDepth = true;
 
     protected CameraRealSense(int cameraNo) {
+        try {
+            RealSenseFrameGrabber.tryLoad();
+        } catch (FrameGrabber.Exception ex) {
+            Logger.getLogger(CameraRealSense.class.getName()).log(Level.SEVERE, null, ex);
+        }
         this.systemNumber = cameraNo;
         setPixelFormat(PixelFormat.RGB);
         depthCamera = new CameraRealSenseDepth(this);
