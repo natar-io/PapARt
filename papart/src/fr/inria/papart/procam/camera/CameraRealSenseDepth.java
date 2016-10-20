@@ -20,6 +20,8 @@
 package fr.inria.papart.procam.camera;
 
 import fr.inria.papart.multitouch.KinectTouchInput;
+import java.nio.FloatBuffer;
+import org.bytedeco.javacpp.RealSense;
 import processing.core.PImage;
 
 /**
@@ -33,6 +35,16 @@ public class CameraRealSenseDepth extends Camera implements WithTouchInput {
 
     protected CameraRealSenseDepth(CameraRealSense colorCamera) {
         this.colorCamera = colorCamera;
+    }
+    
+        public void useHarwareIntrinsics(){
+        RealSense.intrinsics intrinsics = colorCamera.grabber.getRealSenseDevice().get_stream_intrinsics(RealSense.depth);
+        FloatBuffer fb = intrinsics.position(0).asByteBuffer().asFloatBuffer();
+        float cx = fb.get(2);
+        float cy = fb.get(3);
+        float fx = fb.get(4);
+        float fy = fb.get(5);
+        setSimpleCalibration(fx, fy, cx, cy, width(), height());
     }
 
     @Override

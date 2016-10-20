@@ -58,12 +58,22 @@ public class CameraRealSense extends Camera {
         RealSense.extrinsics extrinsics = grabber.getRealSenseDevice().get_extrinsics(RealSense.color, RealSense.depth);
         FloatBuffer fb = extrinsics.position(0).asByteBuffer().asFloatBuffer();
         return new PMatrix3D(
-                fb.get(0),fb.get(1),fb.get(2), fb.get(9) * 1000f,
-                fb.get(3),fb.get(4),fb.get(5), fb.get(10)* 1000f,
-                fb.get(6),fb.get(7),fb.get(8), fb.get(11)* 1000f,
+                fb.get(0),fb.get(3),fb.get(6), -fb.get(9) * 1000f,
+                fb.get(1),fb.get(4),fb.get(7), fb.get(10)* 1000f,
+                fb.get(2),fb.get(5),fb.get(8), fb.get(11)* 1000f,
                 0, 0, 0, 1);
     }
-
+    
+    public void useHarwareIntrinsics(){
+        RealSense.intrinsics intrinsics = grabber.getRealSenseDevice().get_stream_intrinsics(RealSense.color);
+        FloatBuffer fb = intrinsics.position(0).asByteBuffer().asFloatBuffer();
+        float cx = fb.get(2);
+        float cy = fb.get(3);
+        float fx = fb.get(4);
+        float fy = fb.get(5);
+        this.setSimpleCalibration(fx, fy, cx, cy, this.width, this.height);
+    }
+    
     public float getDepthScale() {
         return grabber.getDepthScale();
 

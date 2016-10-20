@@ -139,24 +139,31 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
         if (this.systemNumber == -1 && cameraDescription == null) {
             throw new RuntimeException("Camera: initalization failed");
         }
+    }
 
+    public void setSimpleCalibration(float fx, float fy, float cx, float cy, int w, int h) {
+        this.calibrationFile = "noFile";
+        pdp = ProjectiveDeviceP.createSimpleDevice(fx, fy, cx, cy, w, h);
+        updateCalibration();
     }
 
     public void setCalibration(String fileName) {
         try {
             this.calibrationFile = fileName;
-
             pdp = ProjectiveDeviceP.loadCameraDevice(parent, fileName);
-            camIntrinsicsP3D = pdp.getIntrinsics();
-            this.width = pdp.getWidth();
-            this.height = pdp.getHeight();
-            this.undistort = pdp.handleDistorsions();
+            updateCalibration();
         } catch (Exception e) {
             e.printStackTrace();
-
             System.err.println("Camera: error reading the calibration " + pdp
                     + "file" + fileName + " \n" + e);
         }
+    }
+
+    private void updateCalibration() {
+        camIntrinsicsP3D = pdp.getIntrinsics();
+        this.width = pdp.getWidth();
+        this.height = pdp.getHeight();
+        this.undistort = pdp.handleDistorsions();
     }
 
     public PImage getPImageCopy() {
@@ -372,8 +379,8 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
             if (this.isPixelFormatColor()) {
                 camImage = new CamImageColor(parent, width(), height(), this.format);
             }
-            
-            if(!this.isPixelFormatColor() && !this.isPixelFormatGray()){
+
+            if (!this.isPixelFormatColor() && !this.isPixelFormatGray()) {
                 System.out.println("Error: No pixel format set for the camera!");
             }
         }

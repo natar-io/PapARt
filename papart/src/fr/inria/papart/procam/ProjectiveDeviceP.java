@@ -430,7 +430,20 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
     public void saveProjectorTo(PApplet applet, String filename) {
         saveTo(applet, filename, false);
     }
-
+    
+    public static ProjectiveDeviceP createSimpleDevice(float fx, float fy, float cx, float cy, int w, int h) {
+        ProjectiveDeviceP p = new ProjectiveDeviceP();
+        p.handleDistorsion = false;
+        p.w = w;
+        p.h = h;
+        p.intrinsics = new PMatrix3D(fx, 0,  cx, 0,
+                                   0,  fy, cy, 0,
+                                   0,  0,  0,  0,
+                                   0,  0,  0,  0);
+        p.updateFromIntrinsics();
+        p.device = null;
+        return p;
+    }
     public static ProjectiveDeviceP loadCameraDevice(PApplet parent, String filename) throws Exception {
         return loadCameraDevice(parent, filename, 0);
     }

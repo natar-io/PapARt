@@ -612,7 +612,7 @@ public class Papart {
         checkInitialization();
     }
 
-    //really deprecated ?
+    //WARNING not really deprecated !!!
     @Deprecated
     public void startDefaultKinectCamera() {
         assert (!cameraInitialized);
