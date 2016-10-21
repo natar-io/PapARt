@@ -120,7 +120,7 @@ public class MarkerBoardARToolKitPlus extends MarkerBoard {
             System.err.println("Init ARTOOLKIT Error " + camera.getCalibrationARToolkit() + " " + this.getFileName());
         }
 
-        loadSizeConfig();
+	//        loadSizeConfig();
 //        float[] transfo = new float[16];
 //        for (int i = 0; i < 3; i++) {
 //            transfo[12 + i] = 0;
