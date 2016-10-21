@@ -27,7 +27,6 @@ import processing.core.PMatrix;
 import processing.core.PMatrix2D;
 import processing.core.PMatrix3D;
 import processing.core.PShape;
-import processing.core.PShapeSVG;
 import processing.core.PVector;
 import processing.data.XML;
 
@@ -98,10 +97,10 @@ public class MarkerSvg implements Cloneable {
         return 1.0f / pixelToMm();
     }
 
-    static private void findMarkers(PShapeSVG shape, ArrayList<PShape> markers) {
+    static private void findMarkers(PShapeSVGExtended shape, ArrayList<PShape> markers) {
         try {
             for (PShape child : shape.getChildren()) {
-                findMarkers((PShapeSVG) child, markers);
+                findMarkers((PShapeSVGExtended) child, markers);
             }
         } catch (NullPointerException npe) {
             // Sometimes no child causes a null pointer exception.
@@ -128,9 +127,9 @@ public class MarkerSvg implements Cloneable {
         float pageHeight = computeSize(xml.getString("height"));
 //        System.out.println("Height : " + pageHeight);
 
-        PShape svg = new PShapeSVG(xml);
+        PShape svg = new PShapeSVGExtended(xml);
         ArrayList<PShape> markersSVG = new ArrayList<>();
-        findMarkers((PShapeSVG) svg, markersSVG);
+        findMarkers((PShapeSVGExtended) svg, markersSVG);
 
 //        ArrayList<MarkerSvg> markers = new ArrayList<>();
         MarkerList markers = new MarkerList();
@@ -177,7 +176,7 @@ public class MarkerSvg implements Cloneable {
 
     private static PMatrix getMatrix(PShape shape) {
 
-        PMatrix matrix = shape.getMatrix();
+        PMatrix matrix = ((PShapeSVGExtended)shape).getMatrix();
 
         boolean useParams = true;
         float[] params = null;
