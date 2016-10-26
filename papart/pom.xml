@@ -55,6 +55,12 @@
     <dependencies>
 
         <dependency>
+            <groupId>tech.lity.rea</groupId>
+            <artifactId>SVGExtended</artifactId>
+            <version>3.2.1</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacpp</artifactId>
             <version>1.2</version>
