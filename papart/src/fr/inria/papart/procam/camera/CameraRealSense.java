@@ -38,7 +38,11 @@ public class CameraRealSense extends Camera {
 
     protected RealSenseFrameGrabber grabber;
     protected CameraRealSenseDepth depthCamera;
+    protected CameraRealSenseColor colorCamera;
+    protected CameraRealSenseIR IRCamera;
+    private boolean useIR = true;
     private boolean useDepth = true;
+    private boolean useColor = true;
 
     protected CameraRealSense(int cameraNo) {
         try {
@@ -47,18 +51,23 @@ public class CameraRealSense extends Camera {
             Logger.getLogger(CameraRealSense.class.getName()).log(Level.SEVERE, null, ex);
         }
         this.systemNumber = cameraNo;
-        setPixelFormat(PixelFormat.RGB);
+
         grabber = new RealSenseFrameGrabber(this.systemNumber);
+
         depthCamera = new CameraRealSenseDepth(this);
+        colorCamera = new CameraRealSenseColor(this);
+        IRCamera = new CameraRealSenseIR(this);
     }
-    
+
     @Override
-    public void setParent(PApplet parent){
+    public void setParent(PApplet parent) {
         super.setParent(parent);
         depthCamera.setParent(parent);
+        IRCamera.setParent(parent);
+        colorCamera.setParent(parent);
     }
-    
-    public RealSenseFrameGrabber getFrameGrabber(){
+
+    public RealSenseFrameGrabber getFrameGrabber() {
         return this.grabber;
     }
 
@@ -66,43 +75,51 @@ public class CameraRealSense extends Camera {
         return this.depthCamera;
     }
 
+    public CameraRealSenseIR getIRCamera() {
+        return this.IRCamera;
+    }
+
+    public CameraRealSenseColor getColorCamera() {
+        return this.colorCamera;
+    }
+
     public PMatrix3D getHardwareExtrinsics() {
         RealSense.extrinsics extrinsics = grabber.getRealSenseDevice().get_extrinsics(RealSense.color, RealSense.depth);
         FloatBuffer fb = extrinsics.position(0).asByteBuffer().asFloatBuffer();
         return new PMatrix3D(
-                fb.get(0),fb.get(3),fb.get(6), -fb.get(9) * 1000f,
-                fb.get(1),fb.get(4),fb.get(7), fb.get(10)* 1000f,
-                fb.get(2),fb.get(5),fb.get(8), fb.get(11)* 1000f,
+                fb.get(0), fb.get(3), fb.get(6), -fb.get(9) * 1000f,
+                fb.get(1), fb.get(4), fb.get(7), fb.get(10) * 1000f,
+                fb.get(2), fb.get(5), fb.get(8), fb.get(11) * 1000f,
                 0, 0, 0, 1);
-    }
-    
-    public void useHarwareIntrinsics(){
-        RealSense.intrinsics intrinsics = grabber.getRealSenseDevice().get_stream_intrinsics(RealSense.color);
-        FloatBuffer fb = intrinsics.position(0).asByteBuffer().asFloatBuffer();
-        float cx = fb.get(2);
-        float cy = fb.get(3);
-        float fx = fb.get(4);
-        float fy = fb.get(5);
-        this.setSimpleCalibration(fx, fy, cx, cy, this.width, this.height);
-    }
-    
-    public float getDepthScale() {
-        return grabber.getDepthScale();
-
     }
 
     public void useDepth(boolean useDepth) {
         this.useDepth = useDepth;
     }
 
+    public void useIR(boolean useIR) {
+        this.useIR = useIR;
+    }
+
+    public void useColor(boolean useColor) {
+        this.useColor = useColor;
+    }
+
+    public void setSize(int w, int h) {
+        colorCamera.setSize(w, h);
+    }
+
     @Override
     public void start() {
-        grabber.setImageWidth(width());
-        grabber.setImageHeight(height());
-        grabber.enableColorStream();
 
         if (useDepth) {
             depthCamera.start();
+        }
+        if (useColor) {
+            colorCamera.start();
+        }
+        if (useIR) {
+            IRCamera.start();
         }
 
         try {
@@ -129,15 +146,20 @@ public class CameraRealSense extends Camera {
             grabber.grab();
 
             // get the color
-            IplImage img = grabber.grabVideo();
+//            IplImage img = grabber.grabVideo();
 //            updateCurrentImage(img);
-
-            currentImage = img;
-
+//            currentImage = img;
+//             Auto grab ? 
+//            
             if (useDepth) {
-//                depthCamera.grab();
+                depthCamera.grab();
             }
-
+            if (useColor) {
+                colorCamera.grab();
+            }
+            if (useIR) {
+                IRCamera.grab();
+            }
         } catch (Exception e) {
             System.out.println("Exception :" + e);
             e.printStackTrace();
@@ -152,43 +174,22 @@ public class CameraRealSense extends Camera {
         return depthCamera.getPImage();
     }
 
-//    public void grab() {
-//        System.out.println("Wait for frames...");
-//        device.wait_for_frames();
-//        System.out.println("frames ok");
-//        testImage.loadPixels();
-//        int[] pixels = testImage.pixels;
-//
-////        float scale = device.get_depth_scale();
-////        Pointer data = (Pointer) device.get_frame_data(RealSense.depth);
-////        ShortBuffer bb = data.position(0).limit(640 * 480 * 2).asByteBuffer().asShortBuffer();
-////        System.out.println("Sizes: " + pixels.length + " " + bb.limit());
-//
-////              for (int i = 0; i < bb.capacity(); i++) {
-////            float value = bb.get(i);
-////            pixels[i] = (int) (value * scale * 1000f);
-////        }
-//              
-//        Pointer data_color = (Pointer) device.get_frame_data(RealSense.color);
-//        ByteBuffer bb_color = data_color.position(0).limit(640 * 480 * 3).asByteBuffer();
-//        
-//        System.out.println("Sizes " + bb_color.capacity() + " " + pixels.length * 3);
-//                
-//        for (int i = 0; i < bb_color.capacity() / 3; i++) {
-//            pixels[i] =  (bb_color.get(i*3 + 0) & 0xFF) >> 0 |
-//                         (bb_color.get(i*3 + 1) & 0xFF) << 8 |
-//                         (bb_color.get(i*3 + 2) & 0xFF) << 16;
-//        }
-//        testImage.updatePixels();
-//    }
+    public PImage getColorImage() {
+        return colorCamera.getPImage();
+    }
+
+    public PImage getIRImage() {
+        return IRCamera.getPImage();
+    }
+
     @Override
     public PImage getPImage() {
-        this.checkCamImage();
-        if (currentImage != null) {
-            camImage.update(currentImage);
-            return camImage;
+        if (useColor) {
+            return colorCamera.getPImage();
         }
-        // TODO: exceptions !!!
+        if (useDepth) {
+            return IRCamera.getPImage();
+        }
         return null;
     }
 

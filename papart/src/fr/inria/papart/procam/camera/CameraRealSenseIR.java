@@ -19,7 +19,6 @@
  */
 package fr.inria.papart.procam.camera;
 
-import fr.inria.papart.multitouch.KinectTouchInput;
 import java.nio.FloatBuffer;
 import org.bytedeco.javacpp.RealSense;
 import processing.core.PImage;
@@ -28,17 +27,19 @@ import processing.core.PImage;
  *
  * @author Jeremy Laviole
  */
-public class CameraRealSenseDepth extends Camera implements WithTouchInput {
+public class CameraRealSenseIR extends Camera {
 
-    CameraRealSense mainCamera;
-    private KinectTouchInput touchInput;
+    CameraRealSense colorCamera;
 
-    protected CameraRealSenseDepth(CameraRealSense colorCamera) {
-        this.mainCamera = colorCamera;
+    protected CameraRealSenseIR(CameraRealSense colorCamera) {
+        this.colorCamera = colorCamera;
+        this.width = 640;
+        this.height = 480;
+        setPixelFormat(PixelFormat.GRAY);
     }
 
     public void useHarwareIntrinsics() {
-        RealSense.intrinsics intrinsics = mainCamera.grabber.getRealSenseDevice().get_stream_intrinsics(RealSense.depth);
+        RealSense.intrinsics intrinsics = colorCamera.grabber.getRealSenseDevice().get_stream_intrinsics(RealSense.infrared);
         FloatBuffer fb = intrinsics.position(0).asByteBuffer().asFloatBuffer();
         float cx = fb.get(2);
         float cy = fb.get(3);
@@ -49,14 +50,10 @@ public class CameraRealSenseDepth extends Camera implements WithTouchInput {
 
     @Override
     public void start() {
-        mainCamera.grabber.setDepthImageWidth(width());
-        mainCamera.grabber.setDepthImageHeight(height());
-        mainCamera.grabber.enableDepthStream();
+        colorCamera.grabber.setIRImageWidth(width());
+        colorCamera.grabber.setIRImageHeight(height());
+        colorCamera.grabber.enableIRStream();
         this.isConnected = true;
-    }
-
-    public float getDepthScale() {
-        return mainCamera.grabber.getDepthScale();
     }
 
     @Override
@@ -66,15 +63,7 @@ public class CameraRealSenseDepth extends Camera implements WithTouchInput {
         }
         // update the images.
         try {
-            currentImage = mainCamera.grabber.grabDepth();
-            if (touchInput != null) {
-                touchInput.lock();
-                touchInput.update();
-                touchInput.getTouch2DColors(mainCamera.currentImage);
-                touchInput.unlock();
-            } else if (touchInput != null) {
-                System.err.println("Error, the TouchInput is set, but no DepthImg is grabbed.");
-            }
+            currentImage = colorCamera.grabber.grabIR();
         } catch (Exception e) {
             System.out.println("Exception :" + e);
             e.printStackTrace();
@@ -93,20 +82,10 @@ public class CameraRealSenseDepth extends Camera implements WithTouchInput {
     }
 
     @Override
-    public KinectTouchInput getTouchInput() {
-        return touchInput;
-    }
-
-    @Override
-    public void setTouchInput(KinectTouchInput touchInput) {
-        this.touchInput = touchInput;
-    }
-
-    @Override
     public void close() {
         this.setClosing();
-        mainCamera.useDepth(false);
-        mainCamera.grabber.disableDepthStream();
+        colorCamera.useIR(false);
+        colorCamera.grabber.disableIRStream();
 
     }
 

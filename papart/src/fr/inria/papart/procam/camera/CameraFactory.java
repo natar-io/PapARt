@@ -39,6 +39,7 @@ public class CameraFactory {
         }
 
         Camera camera;
+        CameraRealSense camRS; 
         switch (type) {
             case OPENCV:
                 camera = new CameraOpenCV(cameraNo);
@@ -53,7 +54,9 @@ public class CameraFactory {
                 camera = new CameraOpenCVDepth(cameraNo);
                 break;
             case REALSENSE:
-                camera = new CameraRealSense(cameraNo);
+                camRS = new CameraRealSense(cameraNo);
+                camRS.useColor(true);
+                camera = camRS;
                 break;
             case OPEN_KINECT:
                 camera = new CameraOpenKinect(cameraNo);

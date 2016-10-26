@@ -19,6 +19,7 @@
  */
 package fr.inria.papart.procam.camera;
 
+import fr.inria.papart.procam.Utils;
 import fr.inria.papart.procam.camera.Camera.PixelFormat;
 import java.awt.Image;
 import java.nio.ByteBuffer;
@@ -33,6 +34,8 @@ import processing.opengl.Texture;
  */
 public class CamImageGray extends CamImage {
 
+    protected ByteBuffer argbBuffer;
+    
     public CamImageGray(PApplet parent, Image img) {
         super(parent, img);
     }
@@ -53,18 +56,21 @@ public class CamImageGray extends CamImage {
         // Second time with bufferSource.
         tex = ((PGraphicsOpenGL) parent.g).getTexture(this);
 
-//        imageBuffer = ByteBuffer.allocateDirect(this.pixels.length);
+         argbBuffer = ByteBuffer.allocateDirect(this.pixels.length * 4);
     }
 
     @Override
     public void update(opencv_core.IplImage iplImage) {
 
         Texture tex = ((PGraphicsOpenGL) parent.g).getTexture(this);
-        ByteBuffer buffer = iplImage.getByteBuffer();
+        ByteBuffer imageBuffer = iplImage.getByteBuffer();
+
+        // P5 does not know real Gray textures, we need to convert it... 
+        Utils.byteBufferGRAYtoARGB(imageBuffer, argbBuffer);
         
 //         Utils.byteBufferBRGtoARGB(bgrBuffer, argbBuffer);
-        tex.copyBufferFromSource(null, buffer, width, height);
-        buffer.rewind();
+        tex.copyBufferFromSource(null, argbBuffer, width, height);
+        imageBuffer.rewind();
     }
 
 }
