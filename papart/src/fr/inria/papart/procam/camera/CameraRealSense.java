@@ -26,6 +26,7 @@ import org.bytedeco.javacpp.RealSense;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.RealSenseFrameGrabber;
+import processing.core.PApplet;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
 
@@ -49,6 +50,16 @@ public class CameraRealSense extends Camera {
         setPixelFormat(PixelFormat.RGB);
         grabber = new RealSenseFrameGrabber(this.systemNumber);
         depthCamera = new CameraRealSenseDepth(this);
+    }
+    
+    @Override
+    public void setParent(PApplet parent){
+        super.setParent(parent);
+        depthCamera.setParent(parent);
+    }
+    
+    public RealSenseFrameGrabber getFrameGrabber(){
+        return this.grabber;
     }
 
     public CameraRealSenseDepth getDepthCamera() {
