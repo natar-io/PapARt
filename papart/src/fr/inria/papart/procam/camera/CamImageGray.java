@@ -56,6 +56,7 @@ public class CamImageGray extends CamImage {
         // Second time with bufferSource.
         tex = ((PGraphicsOpenGL) parent.g).getTexture(this);
 
+     System.out.println("Allocating.. " + this.pixels.length * 4);
          argbBuffer = ByteBuffer.allocateDirect(this.pixels.length * 4);
     }
 
@@ -65,8 +66,15 @@ public class CamImageGray extends CamImage {
         Texture tex = ((PGraphicsOpenGL) parent.g).getTexture(this);
         ByteBuffer imageBuffer = iplImage.getByteBuffer();
 
+        
+        if(incomingFormat == PixelFormat.GRAY){
         // P5 does not know real Gray textures, we need to convert it... 
-        Utils.byteBufferGRAYtoARGB(imageBuffer, argbBuffer);
+            Utils.byteBufferGRAYtoARGB(imageBuffer, argbBuffer);
+        } 
+        if(incomingFormat == PixelFormat.REALSENSE_Z16){
+            
+            Utils.byteBufferZ16toARGB(imageBuffer, argbBuffer);
+        }
         
 //         Utils.byteBufferBRGtoARGB(bgrBuffer, argbBuffer);
         tex.copyBufferFromSource(null, argbBuffer, width, height);

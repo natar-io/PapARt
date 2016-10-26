@@ -623,6 +623,18 @@ public class Utils {
         }
         argb.rewind();
     }
+    static public void byteBufferZ16toARGB(ByteBuffer gray, ByteBuffer argb) {
+        byte[] tmpArr = new byte[2];
+
+        for (int i = 0; i < gray.capacity(); i +=2) {
+            gray.get(tmpArr);
+            argb.put(tmpArr[0]);
+            argb.put(tmpArr[1]);
+            argb.put((byte) 128);
+            argb.put((byte) 255);
+        }
+        argb.rewind();
+    }
 
     // TODO
     private static byte[] kinectByteArray = null;

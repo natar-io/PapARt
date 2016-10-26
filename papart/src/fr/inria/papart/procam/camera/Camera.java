@@ -71,7 +71,7 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
 
     public enum PixelFormat {
 
-        RGB, BGR, ARGB, RGBA, GRAY, DEPTH_KINECT_MM, DEPTH_KINECT_RAW
+        RGB, BGR, ARGB, RGBA, GRAY, DEPTH_KINECT_MM, DEPTH_KINECT_RAW, REALSENSE_Z16
     }
 
     protected PixelFormat format;
@@ -389,6 +389,7 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
     protected boolean isPixelFormatGray() {
         PixelFormat pixelFormat = getPixelFormat();
         return pixelFormat == PixelFormat.GRAY
+                || pixelFormat == PixelFormat.REALSENSE_Z16
                 || pixelFormat == PixelFormat.DEPTH_KINECT_MM
                 || pixelFormat == PixelFormat.DEPTH_KINECT_RAW;
     }

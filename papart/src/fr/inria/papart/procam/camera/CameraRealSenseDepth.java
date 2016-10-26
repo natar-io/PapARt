@@ -34,7 +34,9 @@ public class CameraRealSenseDepth extends Camera implements WithTouchInput {
     private KinectTouchInput touchInput;
 
     protected CameraRealSenseDepth(CameraRealSense colorCamera) {
+        setPixelFormat(PixelFormat.REALSENSE_Z16);
         this.mainCamera = colorCamera;
+        this.setSize(640, 480);
     }
 
     public void useHarwareIntrinsics() {
