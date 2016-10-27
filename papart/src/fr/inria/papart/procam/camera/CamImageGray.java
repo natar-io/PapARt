@@ -1,6 +1,7 @@
 /*
  * Part of the PapARt project - https://project.inria.fr/papart/
  *
+ * Copyright (C) 2016 Jérémy Laviole
  * Copyright (C) 2014-2016 Inria
  * Copyright (C) 2011-2013 Bordeaux University
  *
@@ -35,7 +36,7 @@ import processing.opengl.Texture;
 public class CamImageGray extends CamImage {
 
     protected ByteBuffer argbBuffer;
-    
+
     public CamImageGray(PApplet parent, Image img) {
         super(parent, img);
     }
@@ -56,8 +57,7 @@ public class CamImageGray extends CamImage {
         // Second time with bufferSource.
         tex = ((PGraphicsOpenGL) parent.g).getTexture(this);
 
-     System.out.println("Allocating.. " + this.pixels.length * 4);
-         argbBuffer = ByteBuffer.allocateDirect(this.pixels.length * 4);
+        argbBuffer = ByteBuffer.allocateDirect(this.pixels.length * 4);
     }
 
     @Override
@@ -66,16 +66,14 @@ public class CamImageGray extends CamImage {
         Texture tex = ((PGraphicsOpenGL) parent.g).getTexture(this);
         ByteBuffer imageBuffer = iplImage.getByteBuffer();
 
-        
-        if(incomingFormat == PixelFormat.GRAY){
-        // P5 does not know real Gray textures, we need to convert it... 
+        if (incomingFormat == PixelFormat.GRAY) {
+            // P5 does not know real Gray textures, we need to convert it... 
             Utils.byteBufferGRAYtoARGB(imageBuffer, argbBuffer);
-        } 
-        if(incomingFormat == PixelFormat.REALSENSE_Z16){
-            
+        }
+        if (incomingFormat == PixelFormat.REALSENSE_Z16) {
             Utils.byteBufferZ16toARGB(imageBuffer, argbBuffer);
         }
-        
+
 //         Utils.byteBufferBRGtoARGB(bgrBuffer, argbBuffer);
         tex.copyBufferFromSource(null, argbBuffer, width, height);
         imageBuffer.rewind();

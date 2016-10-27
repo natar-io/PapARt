@@ -1,6 +1,7 @@
 /*
  * Part of the PapARt project - https://project.inria.fr/papart/
  *
+ * Copyright (C) 2016 Jérémy Laviole
  * Copyright (C) 2014-2016 Inria
  * Copyright (C) 2011-2013 Bordeaux University
  *
@@ -19,23 +20,17 @@
  */
 package fr.inria.papart.depthcam.analysis;
 
-import static fr.inria.papart.depthcam.analysis.DepthAnalysis.papplet;
-import fr.inria.papart.calibration.HomographyCalibration;
 import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
-import fr.inria.papart.calibration.PlaneCalibration;
 import fr.inria.papart.depthcam.PixelOffset;
 import fr.inria.papart.depthcam.devices.KinectDevice;
 import fr.inria.papart.depthcam.devices.KinectOne;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.papplet;
-import fr.inria.papart.procam.camera.CameraOpenKinect;
 import java.util.ArrayList;
 import java.util.Arrays;
-import org.bytedeco.javacpp.indexer.Indexer;
 import org.bytedeco.javacpp.indexer.UByteIndexer;
 import org.bytedeco.javacpp.opencv_core;
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
-import org.bytedeco.javacpp.opencv_core.CvSize;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import processing.core.PApplet;
 import processing.core.PConstants;

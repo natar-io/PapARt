@@ -1,6 +1,7 @@
 /*
  * Part of the PapARt project - https://project.inria.fr/papart/
  *
+ * Copyright (C) 2016 Jérémy Laviole
  * Copyright (C) 2014-2016 Inria
  * Copyright (C) 2011-2013 Bordeaux University
  *
@@ -19,7 +20,6 @@
  */
 package fr.inria.papart.depthcam.analysis;
 
-import fr.inria.papart.calibration.HomographyCalibration;
 import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
 import fr.inria.papart.depthcam.PixelOffset;
 import fr.inria.papart.depthcam.TouchAttributes;
@@ -32,9 +32,6 @@ import static fr.inria.papart.depthcam.analysis.DepthAnalysis.papplet;
 import fr.inria.papart.depthcam.devices.RealSense;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.procam.Utils;
-import fr.inria.papart.procam.camera.Camera;
-import fr.inria.papart.procam.camera.CameraOpenKinect;
-import fr.inria.papart.procam.camera.CameraRealSense;
 import fr.inria.papart.procam.camera.CameraRealSenseDepth;
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
@@ -48,7 +45,6 @@ import java.util.concurrent.FutureTask;
 import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import processing.core.PApplet;
-import processing.core.PMatrix3D;
 import processing.core.PVector;
 import toxi.geom.Vec3D;
 
@@ -65,6 +61,7 @@ public class KinectDepthAnalysis extends DepthAnalysis {
     // private variables 
     // Raw data from the Kinect Sensor
     protected ShortBuffer depthRawShortBuffer;
+    protected ByteBuffer depthRawBuffer;
     protected byte[] depthRaw;
     protected byte[] colorRaw;
 
@@ -125,7 +122,7 @@ public class KinectDepthAnalysis extends DepthAnalysis {
             depthComputationMethod = new KinectOneDepth();
         }
         if (kinectDevice instanceof RealSense) {
-            float depthScale = ((CameraRealSenseDepth)((RealSense) kinectDevice).getCameraDepth()).getDepthScale();
+            float depthScale = ((CameraRealSenseDepth) ((RealSense) kinectDevice).getCameraDepth()).getDepthScale();
             depthComputationMethod = new RealSenseDepth(depthScale);
         }
 
@@ -293,9 +290,12 @@ public class KinectDepthAnalysis extends DepthAnalysis {
         }
     }
 
+    // WARNING MAGIC NUMBER
     protected void updateRawDepth(opencv_core.IplImage depthImage) {
         if (kinectDevice().type() == KinectDevice.Type.REALSENSE) {
-            depthRawShortBuffer = depthImage.imageData().position(0).limit(640 * 480 * 2).asByteBuffer().asShortBuffer();
+//            depthRawShortBuffer = depthImage.imageData().position(0).limit(640 * 480 * 2).asByteBuffer().asShortBuffer();
+            depthRawBuffer = depthImage.getByteBuffer();
+            depthRawShortBuffer = depthRawBuffer.asShortBuffer();
         } else {
             depthImage.getByteBuffer().get(depthRaw);
         }

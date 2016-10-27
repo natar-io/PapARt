@@ -1,6 +1,7 @@
 /*
  * Part of the PapARt project - https://project.inria.fr/papart/
  *
+ * Copyright (C) 2016 Jérémy Laviole
  * Copyright (C) 2014-2016 Inria
  * Copyright (C) 2011-2013 Bordeaux University
  *
@@ -29,11 +30,15 @@ import processing.core.PImage;
  */
 public class CameraRealSenseColor extends Camera {
 
-    CameraRealSense mainCamera;
+    private CameraRealSense mainCamera;
 
     protected CameraRealSenseColor(CameraRealSense mainCamera) {
         setPixelFormat(PixelFormat.RGB);
         this.mainCamera = mainCamera;
+    }
+    
+    public CameraRealSense getMainCamera(){
+        return mainCamera;
     }
 
     public void useHarwareIntrinsics() {
@@ -61,9 +66,7 @@ public class CameraRealSenseColor extends Camera {
         }
         // update the images.
         try {
-            System.out.println("Grabbing color");
             currentImage = mainCamera.grabber.grabVideo();
-            
         } catch (Exception e) {
             System.out.println("Exception :" + e);
             e.printStackTrace();

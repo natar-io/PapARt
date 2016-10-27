@@ -1,6 +1,7 @@
 /*
  * Part of the PapARt project - https://project.inria.fr/papart/
  *
+ * Copyright (C) 2016 Jérémy Laviole
  * Copyright (C) 2014-2016 Inria
  * Copyright (C) 2011-2013 Bordeaux University
  *
@@ -29,17 +30,21 @@ import processing.core.PImage;
  */
 public class CameraRealSenseIR extends Camera {
 
-    CameraRealSense colorCamera;
+    CameraRealSense mainCamera;
 
     protected CameraRealSenseIR(CameraRealSense colorCamera) {
-        this.colorCamera = colorCamera;
+        this.mainCamera = colorCamera;
         this.width = 640;
         this.height = 480;
         setPixelFormat(PixelFormat.GRAY);
     }
 
+    public CameraRealSense getMainCamera() {
+        return mainCamera;
+    }
+
     public void useHarwareIntrinsics() {
-        RealSense.intrinsics intrinsics = colorCamera.grabber.getRealSenseDevice().get_stream_intrinsics(RealSense.infrared);
+        RealSense.intrinsics intrinsics = mainCamera.grabber.getRealSenseDevice().get_stream_intrinsics(RealSense.infrared);
         FloatBuffer fb = intrinsics.position(0).asByteBuffer().asFloatBuffer();
         float cx = fb.get(2);
         float cy = fb.get(3);
@@ -50,9 +55,9 @@ public class CameraRealSenseIR extends Camera {
 
     @Override
     public void start() {
-        colorCamera.grabber.setIRImageWidth(width());
-        colorCamera.grabber.setIRImageHeight(height());
-        colorCamera.grabber.enableIRStream();
+        mainCamera.grabber.setIRImageWidth(width());
+        mainCamera.grabber.setIRImageHeight(height());
+        mainCamera.grabber.enableIRStream();
         this.isConnected = true;
     }
 
@@ -63,7 +68,7 @@ public class CameraRealSenseIR extends Camera {
         }
         // update the images.
         try {
-            currentImage = colorCamera.grabber.grabIR();
+            currentImage = mainCamera.grabber.grabIR();
         } catch (Exception e) {
             System.out.println("Exception :" + e);
             e.printStackTrace();
@@ -84,8 +89,8 @@ public class CameraRealSenseIR extends Camera {
     @Override
     public void close() {
         this.setClosing();
-        colorCamera.useIR(false);
-        colorCamera.grabber.disableIRStream();
+        mainCamera.useIR(false);
+        mainCamera.grabber.disableIRStream();
 
     }
 

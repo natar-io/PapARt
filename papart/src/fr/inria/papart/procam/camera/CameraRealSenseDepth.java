@@ -1,6 +1,7 @@
 /*
  * Part of the PapARt project - https://project.inria.fr/papart/
  *
+ * Copyright (C) 2016 Jérémy Laviole
  * Copyright (C) 2014-2016 Inria
  * Copyright (C) 2011-2013 Bordeaux University
  *
@@ -37,6 +38,10 @@ public class CameraRealSenseDepth extends Camera implements WithTouchInput {
         setPixelFormat(PixelFormat.REALSENSE_Z16);
         this.mainCamera = colorCamera;
         this.setSize(640, 480);
+    }
+
+    public CameraRealSense getMainCamera() {
+        return mainCamera;
     }
 
     public void useHarwareIntrinsics() {
