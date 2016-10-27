@@ -38,13 +38,24 @@ public class CameraOpenKinect extends Camera implements Displayable {
     private boolean isGrabbingDepth = false;
     protected OpenKinectFrameGrabber grabber;
 
-    private CameraOpenKinectDepth depthCamera;
+    int kinectVideoFormat;
+    private final CameraOpenKinectDepth depthCamera;
 
     protected CameraOpenKinect(int cameraNo) {
         this.systemNumber = cameraNo;
-        this.setPixelFormat(PixelFormat.BGR);
 
         depthCamera = new CameraOpenKinectDepth(this);
+        getRGBVideo();
+    }
+
+    public void getIRVideo() {
+        this.setPixelFormat(PixelFormat.GRAY);
+        kinectVideoFormat = freenect.FREENECT_VIDEO_IR_8BIT;
+    }
+
+    public void getRGBVideo() {
+        this.setPixelFormat(PixelFormat.BGR);
+        kinectVideoFormat = freenect.FREENECT_VIDEO_RGB;
     }
 
     @Override
@@ -55,7 +66,7 @@ public class CameraOpenKinect extends Camera implements Displayable {
 
         try {
             grabber.start();
-            grabber.setVideoFormat(freenect.FREENECT_VIDEO_RGB);
+            grabber.setVideoFormat(kinectVideoFormat);
 
             depthCamera.start();
 
@@ -107,7 +118,7 @@ public class CameraOpenKinect extends Camera implements Displayable {
                 System.out.println("Stopping KinectGrabber");
                 this.stopThread();
                 grabber.stop();
-                if(this.isGrabbingDepth){
+                if (this.isGrabbingDepth) {
                     depthCamera.close();
                 }
             } catch (Exception e) {
@@ -149,6 +160,5 @@ public class CameraOpenKinect extends Camera implements Displayable {
     public boolean canBeDisplayedOn(PApplet display) {
         return imageMap.containsKey(display);
     }
-    
 
 }

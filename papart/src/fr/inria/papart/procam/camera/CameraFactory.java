@@ -68,8 +68,13 @@ public class CameraFactory {
 //                camRS.useColor(true);
 //                camera = camRS;
 //                break;
+            case OPEN_KINECT_IR:
+                camera = new CameraOpenKinect(cameraNo);
+                ((CameraOpenKinect) camera).getIRVideo();
+                break;
             case OPEN_KINECT:
                 camera = new CameraOpenKinect(cameraNo);
+                 ((CameraOpenKinect) camera).getRGBVideo();
                 break;
             case FLY_CAPTURE:
                 camera = new CameraFlyCapture(cameraNo);

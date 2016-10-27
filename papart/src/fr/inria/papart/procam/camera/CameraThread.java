@@ -108,7 +108,8 @@ class CameraThread extends Thread {
 
     private void tryComputeGrayScale() {
 
-        if (image.depth() == IPL_DEPTH_8U) {
+//        if (image.depth() == IPL_DEPTH_8U) {
+        if (image.nChannels() == 1) {
             grayImage = image;
             return;
         }
