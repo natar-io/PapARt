@@ -41,7 +41,7 @@ import static org.bytedeco.javacpp.opencv_imgproc.cvCvtColor;
 class CameraThread extends Thread {
 
     private final Camera camera;
-       Camera cameraForMarkerboard;
+    Camera cameraForMarkerboard;
     private boolean compute;
     private IplImage image, grayImage;
     private DetectedMarker[] detectedMarkers;
@@ -69,8 +69,6 @@ class CameraThread extends Thread {
         threadPool = Executors.newFixedThreadPool(nbThreads);
 //        threadPool = Executors.newCachedThreadPool();
     }
-
- 
 
     @Override
     public void run() {
@@ -109,6 +107,12 @@ class CameraThread extends Thread {
     }
 
     private void tryComputeGrayScale() {
+
+        if (image.depth() == IPL_DEPTH_8U) {
+            grayImage = image;
+            return;
+        }
+
         for (MarkerBoard sheet : camera.getTrackedSheets()) {
             if (sheet.useGrayscaleImages()) {
                 if (grayImage == null) {
