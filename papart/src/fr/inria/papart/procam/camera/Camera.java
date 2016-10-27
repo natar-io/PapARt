@@ -28,9 +28,6 @@ import fr.inria.papart.procam.HasExtrinsics;
 import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.procam.Utils;
-import fr.inria.papart.procam.camera.CamImage;
-import fr.inria.papart.procam.camera.CamImageColor;
-import fr.inria.papart.procam.camera.CamImageGray;
 import fr.inria.papart.tracking.DetectedMarker;
 import fr.inria.papart.tracking.MarkerList;
 import org.bytedeco.javacpp.opencv_core.CvMat;
@@ -65,8 +62,8 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
     private boolean hasExtrinsics = false;
 
     public enum Type {
-
-        OPENCV, FFMPEG, OPENCV_DEPTH, PROCESSING, OPEN_KINECT, FLY_CAPTURE, KINECT2_RGB, KINECT2_IR, REALSENSE, FAKE
+        OPENCV, FFMPEG, OPENCV_DEPTH, PROCESSING, OPEN_KINECT, FLY_CAPTURE, KINECT2_RGB, KINECT2_IR, 
+        REALSENSE_RGB, REALSENSE_IR, REALSENSE_DEPTH, FAKE
     }
 
     public enum PixelFormat {
@@ -100,14 +97,15 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
     protected PApplet parent = null;
 
     private List<MarkerBoard> sheets = null;
-
-    protected final Semaphore sheetsSemaphore = new Semaphore(1);
+    private final Semaphore sheetsSemaphore = new Semaphore(1);
 
     // ARToolkit 
     protected String calibrationARToolkit;
+    protected CameraThread thread = null;
 
-    private CameraThread thread = null;
-
+    protected List<MarkerBoard> getSheets(){
+        return sheets;
+    }
     abstract public void start();
 
     @Override
@@ -265,6 +263,10 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
         return calibrationARToolkit;
     }
 
+    
+    protected Semaphore getSheetSemaphore(){
+        return sheetsSemaphore;
+    }
     /**
      * Add a markerboard to track with this camera.
      *
@@ -273,9 +275,9 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
     public void trackMarkerBoard(MarkerBoard sheet) {
         sheet.addTracker(parent, this);
         try {
-            sheetsSemaphore.acquire();
+            getSheetSemaphore().acquire();
             this.sheets.add(sheet);
-            sheetsSemaphore.release();
+            getSheetSemaphore().release();
         } catch (InterruptedException ex) {
             System.out.println("Interrupted !");
             Logger.getLogger(Camera.class.getName()).log(Level.SEVERE, null, ex);

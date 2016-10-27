@@ -26,8 +26,6 @@ import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.calibration.HomographyCalibration;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
-import fr.inria.papart.drawingapp.DrawUtils;
-import static fr.inria.papart.procam.Papart.tablePosition;
 import fr.inria.papart.tracking.ObjectFinder;
 import java.awt.Image;
 import java.util.ArrayList;
@@ -102,7 +100,7 @@ public class PaperScreen {
         this.parent = papart.getApplet();
         this.isWithoutCamera = papart.isWithoutCamera();
         if (!this.isWithoutCamera) {
-            this.cameraTracking = papart.getCameraTracking();
+            this.cameraTracking = papart.getPublicCameraTracking();
         }
         mainDisplay = papart.getDisplay();
         displays.add(papart.getDisplay());

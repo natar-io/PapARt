@@ -64,6 +64,7 @@ public class CameraRealSenseColor extends Camera {
         if (this.isClosing()) {
             return;
         }
+        
         // update the images.
         try {
             currentImage = mainCamera.grabber.grabVideo();

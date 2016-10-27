@@ -53,11 +53,21 @@ public class CameraFactory {
             case OPENCV_DEPTH:
                 camera = new CameraOpenCVDepth(cameraNo);
                 break;
-            case REALSENSE:
+            case REALSENSE_RGB:
                 camRS = new CameraRealSense(cameraNo);
-                camRS.useColor(true);
+                camRS.actAsColorCamera(true);
                 camera = camRS;
                 break;
+            case REALSENSE_IR:
+                camRS = new CameraRealSense(cameraNo);
+                camRS.actAsIRCamera(true);
+                camera = camRS;
+                break;
+//            case REALSENSE_DEPTH:
+//                camRS = new CameraRealSense(cameraNo);
+//                camRS.useColor(true);
+//                camera = camRS;
+//                break;
             case OPEN_KINECT:
                 camera = new CameraOpenKinect(cameraNo);
                 break;
@@ -90,6 +100,7 @@ public class CameraFactory {
                 break;
             case PROCESSING:
                 camera = new CameraProcessing(description);
+                break;
             default:
                 boolean isInt = checkInt(description);
                 if (!isInt) {

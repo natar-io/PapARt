@@ -127,7 +127,7 @@ public class CalibrationPopup extends PApplet {
         calibrationApp.pre();
         board = calibrationApp.getBoard();
 
-        cameraTracking = Papart.getPapart().getCameraTracking();
+        cameraTracking = Papart.getPapart().getPublicCameraTracking();
         projector = Papart.getPapart().getProjectorDisplay();
         projector.setCalibrationMode(true);
 

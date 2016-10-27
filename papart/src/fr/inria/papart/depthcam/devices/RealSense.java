@@ -56,7 +56,23 @@ public final class RealSense extends KinectDevice {
     }
 
     public RealSense(PApplet parent, CameraRealSense cameraRGB) {
-        throw new UnsupportedOperationException("Not supported yet: RealSense(PApplet parent, CameraRealSense cameraRGB)");
+        initSize();
+        this.parent = parent;
+
+        cameraColor = cameraRS.getColorCamera();
+        cameraDepth = cameraRS.getDepthCamera();
+        cameraIR = cameraRS.getIRCamera();
+
+        cameraDepth.setSize(WIDTH, HEIGHT);
+        cameraIR.setSize(WIDTH, HEIGHT);
+
+        // Warning Start both depth & color camera for now.
+        cameraRS.start();
+
+        setStereoCalibration(cameraRS.getHardwareExtrinsics());
+        cameraColor.useHarwareIntrinsics();
+        cameraDepth.useHarwareIntrinsics();
+        cameraIR.useHarwareIntrinsics();
     }
 
     private void initSize() {
@@ -79,19 +95,15 @@ public final class RealSense extends KinectDevice {
     final void initCameras() {
         // Check if it is the default camera... 
         Papart papart = Papart.getPapart();
-        if (papart.cameraConfiguration.getCameraType() == Camera.Type.REALSENSE) {
+        if (papart.cameraConfiguration.getCameraType() == Camera.Type.REALSENSE_RGB) {
             System.out.println("REALSENSE: Using configuration ID & Resolution.");
             // use the ID
             int id = Integer.parseInt(papart.cameraConfiguration.getCameraName());
 
-            cameraRS = (CameraRealSense) CameraFactory.createCamera(Camera.Type.REALSENSE, id);
-            cameraRS.setParent(parent);
-
             cameraColor = cameraRS.getColorCamera();
             cameraColor.setCalibration(Papart.cameraCalib);
         } else {
-
-            cameraRS = (CameraRealSense) CameraFactory.createCamera(Camera.Type.REALSENSE, 0);
+            cameraRS = (CameraRealSense) CameraFactory.createCamera(Camera.Type.REALSENSE_RGB, 0);
             cameraRS.setParent(parent);
 
             cameraColor = cameraRS.getColorCamera();
@@ -101,16 +113,16 @@ public final class RealSense extends KinectDevice {
 
         cameraDepth = cameraRS.getDepthCamera();
         cameraDepth.setSize(WIDTH, HEIGHT);
-        
+
         cameraIR = cameraRS.getIRCamera();
         cameraIR.setSize(WIDTH, HEIGHT);
     }
-    
-    public void grab(){
+
+    public void grab() {
         cameraRS.grab();
     }
-    
-    public CameraRealSense getMainCamera(){
+
+    public CameraRealSense getMainCamera() {
         return cameraRS;
     }
 

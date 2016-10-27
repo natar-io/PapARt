@@ -63,7 +63,7 @@ public class CalibrationVideoPopup extends PApplet {
         frame.setUndecorated(true);
         frame.addNotify();
 //        surface.setLocation(screenOffsetX, screenOffsetY);
-        cameraTracking = Papart.getPapart().getCameraTracking();
+        cameraTracking = Papart.getPapart().getPublicCameraTracking();
         surface.setSize(cameraTracking.width(), cameraTracking.height());
     }
 

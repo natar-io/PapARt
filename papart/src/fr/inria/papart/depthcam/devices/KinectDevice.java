@@ -74,18 +74,6 @@ public abstract class KinectDevice implements DepthCameraDevice {
         getCameraRGB().close();
     }
 
-    public static KinectDevice createKinect360(PApplet parent) {
-        return new Kinect360(parent);
-    }
-
-    public static KinectDevice createKinectOne(PApplet parent) {
-        return new KinectOne(parent);
-    }
-    
-    public static KinectDevice createRealSense(PApplet parent) {
-        return new RealSense(parent);
-    }
-
     public void setStereoCalibration(String fileName) {
         HomographyCalibration calib = new HomographyCalibration();
         calib.loadFrom(parent, fileName);

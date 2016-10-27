@@ -49,6 +49,16 @@ public class Kinect360 extends KinectDevice {
         setStereoCalibration(Papart.kinectStereoCalib);
         camera.start();
     }
+    public Kinect360(PApplet parent, CameraOpenKinect camera) {
+        initSizes(parent);
+        this.camera = camera;
+//        camera = (CameraOpenKinect) CameraFactory.createCamera(Camera.Type.OPEN_KINECT, 0);
+//        camera.setParent(parent);
+//        camera.setCalibration(Papart.kinectRGBCalib);
+        camera.getDepthCamera().setCalibration(Papart.kinectIRCalib);
+        setStereoCalibration(Papart.kinectStereoCalib);
+        camera.start();
+    }
 
     private void initSizes(PApplet parent) {
         this.parent = parent;

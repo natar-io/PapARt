@@ -30,9 +30,6 @@ import org.bytedeco.javacpp.opencv_core.IplImage;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bytedeco.javacpp.ARToolKitPlus;
-import static org.bytedeco.javacpp.ARToolKitPlus.MARKER_ID_BCH;
-import static org.bytedeco.javacpp.ARToolKitPlus.PIXEL_FORMAT_LUM;
-import static org.bytedeco.javacpp.ARToolKitPlus.UNDIST_NONE;
 import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
 import static org.bytedeco.javacpp.opencv_imgproc.cvCvtColor;
@@ -44,6 +41,7 @@ import static org.bytedeco.javacpp.opencv_imgproc.cvCvtColor;
 class CameraThread extends Thread {
 
     private final Camera camera;
+       Camera cameraForMarkerboard;
     private boolean compute;
     private IplImage image, grayImage;
     private DetectedMarker[] detectedMarkers;
@@ -72,11 +70,20 @@ class CameraThread extends Thread {
 //        threadPool = Executors.newCachedThreadPool();
     }
 
+ 
+
     @Override
     public void run() {
+
+        cameraForMarkerboard = camera;
+        if (camera instanceof CameraRealSense) {
+            cameraForMarkerboard = ((CameraRealSense) camera).getActingCamera();
+        }
+
         while (!stop) {
             camera.grab();
             image = camera.getIplImage();
+
             // TODO: check if img can be null...        
             if (image != null && compute && !camera.getTrackedSheets().isEmpty()) {
                 this.compute();
@@ -87,7 +94,7 @@ class CameraThread extends Thread {
 
     public void compute() {
         try {
-            camera.sheetsSemaphore.acquire();
+            camera.getSheetSemaphore().acquire();
 
             tryComputeGrayScale();
             tryToFindMarkers();
@@ -95,7 +102,7 @@ class CameraThread extends Thread {
             // updateSequential();
             updateParallel();
 
-            camera.sheetsSemaphore.release();
+            camera.getSheetSemaphore().release();
         } catch (InterruptedException ex) {
             Logger.getLogger(CameraThread.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -156,10 +163,12 @@ class CameraThread extends Thread {
     }
 
     protected void updateBoardLocation(MarkerBoard markerBoard) {
+
+        // The markerboard will know the real camera, not the top-level camera. 
         if (markerBoard.useGrayscaleImages()) {
-            markerBoard.updateLocation(camera, grayImage, this.detectedMarkers);
+            markerBoard.updateLocation(cameraForMarkerboard, grayImage, this.detectedMarkers);
         } else {
-            markerBoard.updateLocation(camera, image, null);
+            markerBoard.updateLocation(cameraForMarkerboard, image, null);
         }
     }
 

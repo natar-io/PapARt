@@ -50,7 +50,7 @@ public class PaperTouchScreen extends PaperScreen {
     }
 
     public PaperTouchScreen(Papart papart) {
-        this(papart.getCameraTracking(),
+        this(papart.getPublicCameraTracking(),
                 papart.getDisplay(),
                 papart.getTouchInput());
     }
@@ -260,10 +260,10 @@ public class PaperTouchScreen extends PaperScreen {
         return k;
     }
 
-    public int getColorFrom3D(PVector point){
+    public int getColorFrom3D(PVector point) {
         return getColorAt(getPxCoordinates(point));
     }
-    
+
     /**
      * Unsafe do not use unless you are sure.
      */
