@@ -56,12 +56,14 @@ public class CamImageColor extends CamImage {
         tex.setBufferSource(this);
         // Second time with bufferSource.
         tex = ((PGraphicsOpenGL) parent.g).getTexture(this);
-        argbBuffer = ByteBuffer.allocateDirect(this.pixels.length * 4);
+        if (this.incomingFormat != Camera.PixelFormat.ARGB) {
+            argbBuffer = ByteBuffer.allocateDirect(this.pixels.length * 4);
+        }
     }
 
     @Override
     public void update(IplImage iplImage) {
-      
+
         Texture tex = ((PGraphicsOpenGL) parent.g).getTexture(this);
         ByteBuffer imageBuffer = iplImage.getByteBuffer();
 
@@ -70,6 +72,9 @@ public class CamImageColor extends CamImage {
         }
         if (this.incomingFormat == Camera.PixelFormat.RGB) {
             Utils.byteBufferRGBtoARGB(imageBuffer, argbBuffer);
+        }
+        if (this.incomingFormat == Camera.PixelFormat.ARGB) {
+            argbBuffer = iplImage.getByteBuffer();
         }
         tex.copyBufferFromSource(null, argbBuffer, width, height);
         argbBuffer.rewind();
