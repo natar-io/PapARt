@@ -49,9 +49,15 @@ public abstract class CameraRGBIRDepth extends Camera {
     @Override
     public void setParent(PApplet parent) {
         super.setParent(parent);
-        depthCamera.setParent(parent);
-        IRCamera.setParent(parent);
-        colorCamera.setParent(parent);
+        if (depthCamera != null) {
+            depthCamera.setParent(parent);
+        }
+        if (IRCamera != null) {
+            IRCamera.setParent(parent);
+        }
+        if (colorCamera != null) {
+            colorCamera.setParent(parent);
+        }
     }
 
     public SubDepthCamera getDepthCamera() {
@@ -75,15 +81,24 @@ public abstract class CameraRGBIRDepth extends Camera {
     }
 
     public PImage getDepthPImage() {
-        return depthCamera.getPImage();
+        if (useDepth) {
+            return depthCamera.getPImage();
+        }
+        return null;
     }
 
     public PImage getColorImage() {
-        return colorCamera.getPImage();
+        if (useColor) {
+            return colorCamera.getPImage();
+        }
+        return null;
     }
 
     public PImage getIRImage() {
-        return IRCamera.getPImage();
+        if (useIR) {
+            return IRCamera.getPImage();
+        }
+        return null;
     }
 
     public abstract void enableIR();

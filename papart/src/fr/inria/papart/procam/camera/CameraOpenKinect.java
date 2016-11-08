@@ -23,8 +23,11 @@ import fr.inria.papart.graph.Displayable;
 import fr.inria.papart.multitouch.KinectTouchInput;
 import fr.inria.papart.procam.Utils;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.bytedeco.javacpp.freenect;
 import org.bytedeco.javacpp.opencv_core.IplImage;
+import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.OpenKinectFrameGrabber;
 import processing.core.PApplet;
 import processing.core.PImage;
@@ -33,36 +36,44 @@ import processing.core.PImage;
  *
  * @author Jeremy Laviole
  */
-public class CameraOpenKinect extends Camera implements Displayable {
+public class CameraOpenKinect extends CameraRGBIRDepth {
 
-    private boolean isGrabbingDepth = false;
     protected OpenKinectFrameGrabber grabber;
-
     int kinectVideoFormat;
-    private final CameraOpenKinectDepth depthCamera;
 
     protected CameraOpenKinect(int cameraNo) {
         this.systemNumber = cameraNo;
 
-        depthCamera = new CameraOpenKinectDepth(this);
+        depthCamera = new SubDepthCamera(this);
+        depthCamera.setPixelFormat(PixelFormat.DEPTH_KINECT_MM);
+        depthCamera.type = SubCamera.Type.DEPTH;
+        depthCamera.setSize(640, 480);
+
+        colorCamera = new SubCamera(this);
+        colorCamera.setPixelFormat(PixelFormat.BGR);
+        colorCamera.type = SubCamera.Type.COLOR;
+        colorCamera.setSize(640, 480);
         getRGBVideo();
+
+        useIR = false;
     }
 
     public void getIRVideo() {
-        this.setPixelFormat(PixelFormat.GRAY);
+        colorCamera.setPixelFormat(PixelFormat.GRAY);
         kinectVideoFormat = freenect.FREENECT_VIDEO_IR_8BIT;
     }
 
     public void getRGBVideo() {
-        this.setPixelFormat(PixelFormat.BGR);
+        colorCamera.setPixelFormat(PixelFormat.BGR);
         kinectVideoFormat = freenect.FREENECT_VIDEO_RGB;
     }
 
     @Override
     public void start() {
         grabber = new OpenKinectFrameGrabber(this.systemNumber);
-        grabber.setImageWidth(width());
-        grabber.setImageHeight(height());
+
+        colorCamera.start();
+        depthCamera.start();
 
         try {
             grabber.start();
@@ -79,38 +90,6 @@ public class CameraOpenKinect extends Camera implements Displayable {
     }
 
     @Override
-    public void grab() {
-
-        if (this.isClosing()) {
-            return;
-        }
-
-        try {
-            IplImage img = grabber.grabVideo();
-            updateCurrentImage(img);
-
-            if (this.isGrabbingDepth) {
-                depthCamera.grab();
-            }
-
-        } catch (Exception e) {
-            System.err.println("Camera: Kinect Grab() Error ! " + e);
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public PImage getPImage() {
-        this.checkCamImage();
-        if (currentImage != null) {
-            camImage.update(currentImage);
-            return camImage;
-        }
-        // TODO: exceptions !!!
-        return null;
-    }
-
-    @Override
     public void close() {
         setClosing();
         if (grabber != null) {
@@ -118,47 +97,67 @@ public class CameraOpenKinect extends Camera implements Displayable {
                 System.out.println("Stopping KinectGrabber");
                 this.stopThread();
                 grabber.stop();
-                if (this.isGrabbingDepth) {
-                    depthCamera.close();
-                }
+                depthCamera.close();
             } catch (Exception e) {
             }
         }
 
     }
 
-    public void setTouch(KinectTouchInput touchInput) {
-        this.setGrabDepth(true);
-        depthCamera.setTouchInput(touchInput);
-    }
-
-    public CameraOpenKinectDepth getDepthCamera() {
-        this.setGrabDepth(true);
-        return this.depthCamera;
-    }
-
-    public void setGrabDepth(boolean grabDepth) {
-        this.isGrabbingDepth = grabDepth;
-    }
-
-    HashMap<PApplet, PImage> imageMap = new HashMap();
-
     @Override
-    public void prepareToDisplayOn(PApplet display) {
-        PImage image = display.createImage(this.width, this.height, RGB);
-        imageMap.put(display, image);
+    public void enableIR() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public PImage getDisplayedOn(PApplet display) {
-        PImage image = imageMap.get(display);
-        Utils.IplImageToPImage(currentImage, false, image);
-        return image;
+    public void disableIR() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public boolean canBeDisplayedOn(PApplet display) {
-        return imageMap.containsKey(display);
+    public void enableDepth() {
+    }
+
+    @Override
+    public void disableDepth() {
+    }
+
+    @Override
+    public void enableColor() {
+        grabber.setImageWidth(width());
+        grabber.setImageHeight(height());
+    }
+
+    @Override
+    public void disableColor() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void grabIR() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void grabDepth() {
+        try {
+            depthCamera.currentImage = grabber.grabDepth();
+        } catch (FrameGrabber.Exception ex) {
+            Logger.getLogger(CameraOpenKinect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    @Override
+    public void grabColor() {
+        try {
+            colorCamera.updateCurrentImage(grabber.grabVideo());
+        } catch (FrameGrabber.Exception ex) {
+            Logger.getLogger(CameraOpenKinect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    @Override
+    protected void internalGrab() throws Exception {
     }
 
 }

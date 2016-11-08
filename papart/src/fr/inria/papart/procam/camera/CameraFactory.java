@@ -39,18 +39,18 @@ public class CameraFactory {
         }
 
         Camera camera;
-        CameraRealSense camRS; 
+        CameraRealSense camRS;
         switch (type) {
             case OPENCV:
                 camera = new CameraOpenCV(cameraNo);
                 break;
-            case OPEN_KINECT_2_RGB: 
+            case OPEN_KINECT_2_RGB:
                 camera = new CameraOpenKinect2(0);
-                ((CameraRGBIRDepth)camera).actAsColorCamera();
+                ((CameraRGBIRDepth) camera).actAsColorCamera();
                 break;
-            case OPEN_KINECT_2_IR:  
+            case OPEN_KINECT_2_IR:
                 camera = new CameraOpenKinect2(0);
-                ((CameraRGBIRDepth)camera).actAsIRCamera();
+                ((CameraRGBIRDepth) camera).actAsIRCamera();
                 break;
             case KINECT2_RGB:  // Hack for now with V4L loopback. 
                 camera = new CameraOpenCV(0);
@@ -82,7 +82,7 @@ public class CameraFactory {
                 break;
             case OPEN_KINECT:
                 camera = new CameraOpenKinect(cameraNo);
-                 ((CameraOpenKinect) camera).getRGBVideo();
+                ((CameraRGBIRDepth) camera).actAsColorCamera();
                 break;
             case FLY_CAPTURE:
                 camera = new CameraFlyCapture(cameraNo);

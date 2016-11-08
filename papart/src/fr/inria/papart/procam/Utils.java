@@ -662,6 +662,23 @@ public class Utils {
         }
         argb.rewind();
     }
+    static public void byteBufferDepthK1MMtoARGB(ByteBuffer gray, ByteBuffer argb) {
+        byte[] depthRaw = new byte[2];
+        
+        for (int i = 0; i < argb.capacity(); i += 4) {
+            gray.get(depthRaw);
+
+            int d = (depthRaw[0] & 0xFF) << 8 | (depthRaw[1] & 0xFF);
+            
+            // min depth: 400
+            byte dValue = (byte) ((d - 300f) / 3000f * 255f);
+            argb.put(dValue);
+            argb.put(dValue);
+            argb.put(dValue);
+            argb.put((byte) 255);
+        }
+        argb.rewind();
+    }
 
     static public void byteBufferZ16toARGB(ByteBuffer gray, ByteBuffer argb) {
         byte[] tmpArr = new byte[2];

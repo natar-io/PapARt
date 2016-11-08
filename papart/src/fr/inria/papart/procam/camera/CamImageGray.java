@@ -71,16 +71,16 @@ public class CamImageGray extends CamImage {
             return;
         }
         if (incomingFormat == PixelFormat.GRAY) {
-            // P5 does not know real Gray textures, we need to convert it... 
             Utils.byteBufferGRAYtoARGB(imageBuffer, argbBuffer);
         }
         if (incomingFormat == PixelFormat.GRAY_32) {
-            // P5 does not know real Gray textures, we need to convert it... 
             Utils.byteBufferGRAY32toARGB(imageBuffer, argbBuffer);
         }
         if (incomingFormat == PixelFormat.FLOAT_DEPTH_KINECT2) {
-            // P5 does not know real Gray textures, we need to convert it... 
             Utils.byteBufferDepthK2toARGB(imageBuffer, argbBuffer);
+        }
+        if (incomingFormat == PixelFormat.DEPTH_KINECT_MM) {
+            Utils.byteBufferDepthK1MMtoARGB(imageBuffer, argbBuffer);
         }
         if (incomingFormat == PixelFormat.REALSENSE_Z16) {
             Utils.byteBufferZ16toARGB(imageBuffer, argbBuffer);
