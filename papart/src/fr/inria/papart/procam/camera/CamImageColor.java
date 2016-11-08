@@ -63,7 +63,6 @@ public class CamImageColor extends CamImage {
 
     @Override
     public void update(IplImage iplImage) {
-
         Texture tex = ((PGraphicsOpenGL) parent.g).getTexture(this);
         ByteBuffer imageBuffer = iplImage.getByteBuffer();
 

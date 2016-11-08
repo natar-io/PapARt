@@ -19,34 +19,17 @@
  */
 package fr.inria.papart.calibration;
 
-import static fr.inria.papart.calibration.CalibrationPopup.KINECT_ARTOOLKIT_NAME;
-import fr.inria.papart.depthcam.devices.Kinect360;
 import fr.inria.papart.depthcam.devices.KinectDevice;
 import fr.inria.papart.depthcam.devices.KinectDevice.Type;
-import fr.inria.papart.depthcam.devices.KinectOne;
 import fr.inria.papart.multitouch.KinectTouchInput;
-import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.procam.Papart;
-import fr.inria.papart.procam.ProjectiveDeviceP;
-import fr.inria.papart.procam.camera.Camera;
-import fr.inria.papart.procam.camera.ProjectorAsCamera;
-import fr.inria.papart.procam.camera.TrackedView;
 import fr.inria.papart.procam.display.ProjectorDisplay;
-import fr.inria.skatolo.gui.group.Textarea;
 import java.util.ArrayList;
-import org.bytedeco.javacpp.opencv_core;
-import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;
-import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
-import static org.bytedeco.javacpp.opencv_imgproc.cvCvtColor;
 import processing.core.PApplet;
-import static processing.core.PApplet.println;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import toxi.geom.Plane;
-import toxi.geom.Ray3D;
-import toxi.geom.ReadonlyVec3D;
 import toxi.geom.Vec3D;
-import static processing.core.PApplet.println;
 
 /**
  *

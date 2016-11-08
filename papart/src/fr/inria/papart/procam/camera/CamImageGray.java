@@ -65,10 +65,22 @@ public class CamImageGray extends CamImage {
 
         Texture tex = ((PGraphicsOpenGL) parent.g).getTexture(this);
         ByteBuffer imageBuffer = iplImage.getByteBuffer();
-
+        System.out.println("Sizes: " + imageBuffer.limit() + " " + this.pixels.length + " " + argbBuffer.limit());
+        if (imageBuffer == null || imageBuffer.limit() == 0 || imageBuffer.capacity() == 0) {
+            System.out.println("imageBuffer null: The incoming image is empty.");
+            return;
+        }
         if (incomingFormat == PixelFormat.GRAY) {
             // P5 does not know real Gray textures, we need to convert it... 
             Utils.byteBufferGRAYtoARGB(imageBuffer, argbBuffer);
+        }
+        if (incomingFormat == PixelFormat.GRAY_32) {
+            // P5 does not know real Gray textures, we need to convert it... 
+            Utils.byteBufferGRAY32toARGB(imageBuffer, argbBuffer);
+        }
+        if (incomingFormat == PixelFormat.FLOAT_DEPTH_KINECT2) {
+            // P5 does not know real Gray textures, we need to convert it... 
+            Utils.byteBufferDepthK2toARGB(imageBuffer, argbBuffer);
         }
         if (incomingFormat == PixelFormat.REALSENSE_Z16) {
             Utils.byteBufferZ16toARGB(imageBuffer, argbBuffer);

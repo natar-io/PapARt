@@ -62,13 +62,13 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
     private boolean hasExtrinsics = false;
 
     public enum Type {
-        OPENCV, FFMPEG, PROCESSING, OPEN_KINECT, OPEN_KINECT_IR, FLY_CAPTURE, KINECT2_RGB, REALSENSE_RGB, REALSENSE_IR, KINECT2_IR, 
-         REALSENSE_DEPTH, OPENCV_DEPTH, OPEN_KINECT_2_RGB,  FAKE
+        OPENCV, FFMPEG, PROCESSING, OPEN_KINECT, OPEN_KINECT_IR, FLY_CAPTURE, KINECT2_RGB, REALSENSE_RGB, REALSENSE_IR, KINECT2_IR,
+        REALSENSE_DEPTH, OPENCV_DEPTH, OPEN_KINECT_2_RGB, OPEN_KINECT_2_IR, FAKE
     }
 
     public enum PixelFormat {
 
-        RGB, BGR, ARGB, RGBA, GRAY, DEPTH_KINECT_MM, DEPTH_KINECT_RAW, REALSENSE_Z16
+        RGB, BGR, ARGB, RGBA, GRAY, GRAY_32, FLOAT_DEPTH_KINECT2, DEPTH_KINECT_MM, DEPTH_KINECT_RAW, REALSENSE_Z16
     }
 
     protected PixelFormat format;
@@ -103,9 +103,10 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
     protected String calibrationARToolkit;
     protected CameraThread thread = null;
 
-    protected List<MarkerBoard> getSheets(){
+    protected List<MarkerBoard> getSheets() {
         return sheets;
     }
+
     abstract public void start();
 
     @Override
@@ -139,6 +140,9 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
         }
     }
 
+    public void setSimpleCalibration(float fx, float fy, float cx, float cy) {
+        setSimpleCalibration(fx, fy, cx, cy, width(), height());
+    }
     public void setSimpleCalibration(float fx, float fy, float cx, float cy, int w, int h) {
         this.calibrationFile = "manual calibration";
         pdp = ProjectiveDeviceP.createSimpleDevice(fx, fy, cx, cy, w, h);
@@ -263,10 +267,10 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
         return calibrationARToolkit;
     }
 
-    
-    protected Semaphore getSheetSemaphore(){
+    protected Semaphore getSheetSemaphore() {
         return sheetsSemaphore;
     }
+
     /**
      * Add a markerboard to track with this camera.
      *
@@ -391,7 +395,9 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
     protected boolean isPixelFormatGray() {
         PixelFormat pixelFormat = getPixelFormat();
         return pixelFormat == PixelFormat.GRAY
+                || pixelFormat == PixelFormat.GRAY_32
                 || pixelFormat == PixelFormat.REALSENSE_Z16
+                || pixelFormat == PixelFormat.FLOAT_DEPTH_KINECT2
                 || pixelFormat == PixelFormat.DEPTH_KINECT_MM
                 || pixelFormat == PixelFormat.DEPTH_KINECT_RAW;
     }

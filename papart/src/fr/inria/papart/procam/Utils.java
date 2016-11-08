@@ -39,6 +39,8 @@ import processing.opengl.Texture;
 import toxi.geom.Matrix4x4;
 import toxi.geom.Vec3D;
 import java.io.*;
+import java.nio.FloatBuffer;
+import static processing.core.PConstants.HSB;
 
 /**
  *
@@ -597,7 +599,7 @@ public class Utils {
         }
         argb.rewind();
     }
-    
+
     static public void byteBufferRGBtoARGB(ByteBuffer bgr, ByteBuffer argb) {
         byte[] tmpArr = new byte[3];
 
@@ -610,7 +612,7 @@ public class Utils {
         }
         argb.rewind();
     }
-    
+
     static public void byteBufferGRAYtoARGB(ByteBuffer gray, ByteBuffer argb) {
         byte[] tmpArr = new byte[1];
 
@@ -622,11 +624,50 @@ public class Utils {
             argb.put((byte) 255);
         }
         argb.rewind();
+        argb.rewind();
     }
+
+    static public void byteBufferGRAY32toARGB(ByteBuffer gray, ByteBuffer argb) {
+
+        FloatBuffer floatGray = gray.asFloatBuffer();
+        float[] tmpArr = new float[1];
+
+        for (int i = 0; i < argb.capacity(); i += 4) {
+            floatGray.get(tmpArr);
+
+            byte v = (byte) (tmpArr[0] / 65535.0 * 255);
+//            byte v = (byte) (tmpArr[0] << 8 | tmpArr[1]);
+            argb.put((byte) (v));
+            argb.put((byte) (v));
+            argb.put((byte) (v));
+            argb.put((byte) 255);
+        }
+        argb.rewind();
+    }
+
+    static public void byteBufferDepthK2toARGB(ByteBuffer gray, ByteBuffer argb) {
+        FloatBuffer floatGray = gray.asFloatBuffer();
+        float[] tmpArr = new float[1];
+
+        for (int i = 0; i < argb.capacity(); i += 4) {
+            floatGray.get(tmpArr);
+
+            // 8 meters
+            byte v = (byte) (tmpArr[0] / 8000 * 255);
+//            byte v = (byte) (tmpArr[0] << 8 | tmpArr[1]);
+            argb.put((byte) (v));
+            argb.put((byte) (v));
+            argb.put((byte) (v));
+            argb.put((byte) 255);
+        }
+        argb.rewind();
+    }
+
     static public void byteBufferZ16toARGB(ByteBuffer gray, ByteBuffer argb) {
         byte[] tmpArr = new byte[2];
 
-        for (int i = 0; i < gray.capacity(); i +=2) {
+        gray.rewind();
+        for (int i = 0; i < argb.capacity(); i += 4) {
             gray.get(tmpArr);
             argb.put(tmpArr[0]);
             argb.put(tmpArr[1]);

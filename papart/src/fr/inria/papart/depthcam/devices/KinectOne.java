@@ -25,6 +25,7 @@ import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.CameraFactory;
 import fr.inria.papart.procam.camera.CameraOpenCVDepth;
 import fr.inria.papart.procam.camera.CameraOpenKinectDepth;
+import fr.inria.papart.procam.camera.SubCamera;
 import processing.core.PApplet;
 
 /**
@@ -55,7 +56,7 @@ public final class KinectOne extends KinectDevice {
 
         setStereoCalibration(Papart.kinectStereoCalib);
     }
-    
+
     public static final int CAMERA_WIDTH = 512;
     public static final int CAMERA_WIDTH_RGB = 1920;
     public static final int CAMERA_HEIGHT = 424;
@@ -106,15 +107,15 @@ public final class KinectOne extends KinectDevice {
     }
 
     @Override
-    public Camera getCameraRGB() {
+    public SubCamera getCameraRGB() {
         return cameraRGB;
     }
 
-    public Camera getCameraIR() {
+    public SubCamera getCameraIR() {
         return cameraIR;
     }
 
-    public Camera getCameraDepth() {
+    public SubDepthCamera getCameraDepth() {
         return cameraDepth;
     }
 

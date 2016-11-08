@@ -99,7 +99,6 @@ public class KinectTouchInput extends TouchInput {
     @Override
     public void update() {
         try {
-         
             IplImage depthImage = kinectDevice.getCameraDepth().getIplImage();
             IplImage colImage = kinectDevice.getCameraRGB().getIplImage();
 

@@ -25,9 +25,8 @@ import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.CameraFactory;
 import fr.inria.papart.procam.camera.CameraRealSense;
-import fr.inria.papart.procam.camera.CameraRealSenseColor;
-import fr.inria.papart.procam.camera.CameraRealSenseDepth;
-import fr.inria.papart.procam.camera.CameraRealSenseIR;
+import fr.inria.papart.procam.camera.SubCamera;
+import fr.inria.papart.procam.camera.SubDepthCamera;
 import processing.core.PApplet;
 
 /**
@@ -37,9 +36,9 @@ import processing.core.PApplet;
 public final class RealSense extends KinectDevice {
 
     protected CameraRealSense cameraRS;
-    protected CameraRealSenseDepth cameraDepth;
-    protected CameraRealSenseColor cameraColor;
-    protected CameraRealSenseIR cameraIR;
+    protected SubDepthCamera cameraDepth;
+    protected SubCamera cameraColor;
+    protected SubCamera cameraIR;
 
     public RealSense(PApplet parent) {
         initSize();
@@ -50,9 +49,7 @@ public final class RealSense extends KinectDevice {
         cameraRS.start();
 
         setStereoCalibration(cameraRS.getHardwareExtrinsics());
-        cameraColor.useHarwareIntrinsics();
-        cameraDepth.useHarwareIntrinsics();
-        cameraIR.useHarwareIntrinsics();
+        useHardwareIntrinsics();
     }
 
     public RealSense(PApplet parent, CameraRealSense cameraRGB) {
@@ -70,9 +67,13 @@ public final class RealSense extends KinectDevice {
         cameraRS.start();
 
         setStereoCalibration(cameraRS.getHardwareExtrinsics());
-        cameraColor.useHarwareIntrinsics();
-        cameraDepth.useHarwareIntrinsics();
-        cameraIR.useHarwareIntrinsics();
+        useHardwareIntrinsics();
+    }
+
+    private void useHardwareIntrinsics() {
+        CameraRealSense.useHarwareIntrinsics(cameraColor, cameraRS.getFrameGrabber());
+        CameraRealSense.useHarwareIntrinsics(cameraDepth, cameraRS.getFrameGrabber());
+        CameraRealSense.useHarwareIntrinsics(cameraIR, cameraRS.getFrameGrabber());
     }
 
     private void initSize() {
@@ -127,17 +128,17 @@ public final class RealSense extends KinectDevice {
     }
 
     @Override
-    public CameraRealSenseColor getCameraRGB() {
+    public SubCamera getCameraRGB() {
         return cameraColor;
     }
 
     @Override
-    public CameraRealSenseIR getCameraIR() {
+    public SubCamera getCameraIR() {
         return cameraIR;
     }
 
     @Override
-    public CameraRealSenseDepth getCameraDepth() {
+    public SubDepthCamera getCameraDepth() {
         return cameraDepth;
     }
 

@@ -19,34 +19,44 @@
  */
 package fr.inria.papart.procam.camera;
 
-import org.bytedeco.javacpp.opencv_core.IplImage;
 import org.bytedeco.javacv.OpenKinect2FrameGrabber;
-import processing.core.PImage;
 
 /**
  *
  * @author Jeremy Laviole
  */
-public class CameraOpenKinect2 extends Camera {
+public class CameraOpenKinect2 extends CameraRGBIRDepth {
 
     protected OpenKinect2FrameGrabber grabber;
 
     protected CameraOpenKinect2(int cameraNo) {
         this.systemNumber = cameraNo;
-        this.setPixelFormat(PixelFormat.ARGB);
+
+        depthCamera = new SubDepthCamera(this);
+        depthCamera.setPixelFormat(PixelFormat.FLOAT_DEPTH_KINECT2);
+        depthCamera.type = SubCamera.Type.DEPTH;
+        depthCamera.setSize(512, 424);
+
+        colorCamera = new SubCamera(this);
+        colorCamera.setPixelFormat(PixelFormat.ARGB);
+        colorCamera.type = SubCamera.Type.COLOR;
+        colorCamera.setSize(1920, 1080);
+
+        IRCamera = new SubCamera(this);
+        IRCamera.setPixelFormat(PixelFormat.GRAY_32);
+        IRCamera.type = SubCamera.Type.IR;
+        IRCamera.setSize(512, 424);
     }
 
-//    public void getIRVideo() {
-//        this.setPixelFormat(PixelFormat.GRAY);
-//        kinectVideoFormat = freenect.FREENECT_VIDEO_IR_8BIT;
-//    }
     @Override
     public void start() {
-
         grabber = new OpenKinect2FrameGrabber(this.systemNumber);
-        grabber.enableColorStream();
-        try {
 
+        colorCamera.start();
+        IRCamera.start();
+        depthCamera.start();
+        
+        try {
             grabber.start();
             this.isConnected = true;
         } catch (Exception e) {
@@ -57,32 +67,8 @@ public class CameraOpenKinect2 extends Camera {
     }
 
     @Override
-    public void grab() {
-
-        if (this.isClosing()) {
-            return;
-        }
-
-        try {
-            grabber.grab();
-            IplImage img = grabber.getVideoImage();
-            updateCurrentImage(img);
-
-        } catch (Exception e) {
-            System.err.println("Camera: OpenKinect2 Grab() Error ! " + e);
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public PImage getPImage() {
-        this.checkCamImage();
-        if (currentImage != null) {
-            camImage.update(currentImage);
-            return camImage;
-        }
-        // TODO: exceptions !!!
-        return null;
+    protected void internalGrab() throws Exception {
+        grabber.grab();
     }
 
     @Override
@@ -96,20 +82,51 @@ public class CameraOpenKinect2 extends Camera {
             } catch (Exception e) {
             }
         }
-
     }
 
-//    public void setTouch(KinectTouchInput touchInput) {
-//        this.setGrabDepth(true);
-//        depthCamera.setTouchInput(touchInput);
-//    }
-//
-//    public CameraOpenKinectDepth getDepthCamera() {
-//        this.setGrabDepth(true);
-//        return this.depthCamera;
-//    }
-//
-//    public void setGrabDepth(boolean grabDepth) {
-//        this.isGrabbingDepth = grabDepth;
-//    }
+    @Override
+    public void enableIR() {
+        grabber.enableIRStream();
+    }
+
+    @Override
+    public void disableIR() {
+        // Not implemented yet.
+    }
+
+    @Override
+    public void enableDepth() {
+        grabber.enableDepthStream();
+    }
+
+    @Override
+    public void disableDepth() {
+        // Not implemented yet.
+    }
+
+    @Override
+    public void enableColor() {
+        grabber.enableColorStream();
+    }
+
+    @Override
+    public void disableColor() {
+        // Not implemented yet.
+    }
+
+    @Override
+    public void grabIR() {
+        IRCamera.updateCurrentImage(grabber.getIRImage());
+    }
+
+    @Override
+    public void grabDepth() {
+        depthCamera.currentImage = grabber.getDepthImage();
+    }
+
+    @Override
+    public void grabColor() {
+        colorCamera.updateCurrentImage(grabber.getVideoImage());
+    }
+
 }

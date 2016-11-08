@@ -71,17 +71,17 @@ public class Kinect360 extends KinectDevice {
     }
 
     @Override
-    public Camera getCameraRGB() {
+    public SubCamera getCameraRGB() {
         return camera;
     }
 
     @Override
-    public Camera getCameraIR() {
+    public SubCamera getCameraIR() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public Camera getCameraDepth() {
+    public SubCamera getCameraDepth() {
         return camera.getDepthCamera();
     }
 

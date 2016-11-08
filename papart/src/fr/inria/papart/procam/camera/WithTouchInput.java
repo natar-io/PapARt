@@ -19,6 +19,7 @@
 package fr.inria.papart.procam.camera;
 
 import fr.inria.papart.multitouch.KinectTouchInput;
+import org.bytedeco.javacpp.opencv_core.IplImage;
 
 /**
  *
@@ -28,4 +29,6 @@ public interface WithTouchInput {
     
     public KinectTouchInput getTouchInput();
     public void setTouchInput(KinectTouchInput touchInput) ;
+    public void newTouchImage();
+    public void newTouchImageWithColor(IplImage image);
 }

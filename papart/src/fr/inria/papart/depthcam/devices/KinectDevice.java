@@ -23,6 +23,8 @@ import fr.inria.papart.calibration.HomographyCalibration;
 import fr.inria.papart.multitouch.KinectTouchInput;
 import fr.inria.papart.procam.HasExtrinsics;
 import fr.inria.papart.procam.camera.Camera;
+import fr.inria.papart.procam.camera.SubCamera;
+import fr.inria.papart.procam.camera.SubDepthCamera;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
@@ -32,7 +34,7 @@ import toxi.geom.Vec3D;
  *
  * @author Jérémy Laviole - jeremy.laviole@inria.fr
  */
-public abstract class KinectDevice implements DepthCameraDevice {
+public abstract class KinectDevice {
 
     public enum Type {
         ONE, X360, REALSENSE, NONE
@@ -57,11 +59,11 @@ public abstract class KinectDevice implements DepthCameraDevice {
 
     protected PApplet parent;
 
-    abstract public Camera getCameraRGB();
+    abstract public SubCamera getCameraRGB();
 
-    abstract public Camera getCameraIR();
+    abstract public SubCamera getCameraIR();
 
-    abstract public Camera getCameraDepth();
+    abstract public SubDepthCamera getCameraDepth();
 
     abstract public int rawDepthSize();
 
@@ -138,32 +140,27 @@ public abstract class KinectDevice implements DepthCameraDevice {
         return getCameraRGB().getProjectiveDevice().worldToPixel(vt2.x, vt2.y, vt2.z);
     }
 
-    @Override
+    // TODO: find the use of all this..
     public int colorWidth() {
         return RGB_WIDTH;
     }
 
-    @Override
     public int colorHeight() {
         return RGB_HEIGHT;
     }
 
-    @Override
     public int colorSize() {
         return RGB_SIZE;
     }
 
-    @Override
     public int depthWidth() {
         return WIDTH;
     }
 
-    @Override
     public int depthHeight() {
         return HEIGHT;
     }
 
-    @Override
     public int depthSize() {
         return SIZE;
     }

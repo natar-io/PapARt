@@ -109,4 +109,14 @@ public class CameraOpenKinectDepth extends Camera implements WithTouchInput{
         this.depthFormat = depthFormat;
     }
 
+    @Override
+    public void newTouchImage() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void newTouchImageWithColor(IplImage image) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
 }

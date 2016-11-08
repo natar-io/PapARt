@@ -32,7 +32,7 @@ import static fr.inria.papart.depthcam.analysis.DepthAnalysis.papplet;
 import fr.inria.papart.depthcam.devices.RealSense;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.procam.Utils;
-import fr.inria.papart.procam.camera.CameraRealSenseDepth;
+import fr.inria.papart.procam.camera.CameraRealSense;
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
@@ -122,7 +122,7 @@ public class KinectDepthAnalysis extends DepthAnalysis {
             depthComputationMethod = new KinectOneDepth();
         }
         if (kinectDevice instanceof RealSense) {
-            float depthScale = ((CameraRealSenseDepth) ((RealSense) kinectDevice).getCameraDepth()).getDepthScale();
+            float depthScale = ((CameraRealSense) ((RealSense) kinectDevice).getMainCamera()).getDepthScale();
             depthComputationMethod = new RealSenseDepth(depthScale);
         }
 
