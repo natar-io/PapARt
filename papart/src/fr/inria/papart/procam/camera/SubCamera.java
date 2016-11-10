@@ -49,7 +49,9 @@ public class SubCamera extends Camera {
 
     @Override
     public void grab() {
-        mainCamera.grab(this);
+        if (isConnected) {
+            mainCamera.grab(this);
+        }
     }
 
     @Override
@@ -64,6 +66,7 @@ public class SubCamera extends Camera {
         this.checkCamImage();
         if (currentImage != null) {
             camImage.update(currentImage);
+            currentImage = null;
             return camImage;
         }
         // TODO: exceptions !!!

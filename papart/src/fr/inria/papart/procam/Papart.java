@@ -744,8 +744,7 @@ public class Papart {
             System.err.println("You must choose a camera to create a DepthCamera.");
         }
 
-        if (kinectConfiguration.getCameraType() == Camera.Type.REALSENSE_RGB
-                || kinectConfiguration.getCameraType() == Camera.Type.REALSENSE_IR) {
+        if (kinectConfiguration.getCameraType() == Camera.Type.REALSENSE) {
             kinectDevice = new RealSense(applet, (CameraRealSense) cameraTracking);
             return;
         }
@@ -755,7 +754,7 @@ public class Papart {
             return;
         }
 
-        if (kinectConfiguration.getCameraType() == Camera.Type.KINECT2_RGB) {
+        if (kinectConfiguration.getCameraType() == Camera.Type.OPEN_KINECT_2) {
             kinectDevice = new KinectOne(applet, cameraTracking);
             return;
         }

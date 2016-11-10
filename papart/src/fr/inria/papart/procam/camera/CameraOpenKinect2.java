@@ -19,6 +19,7 @@
  */
 package fr.inria.papart.procam.camera;
 
+import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.OpenKinect2FrameGrabber;
 
 /**
@@ -31,41 +32,37 @@ public class CameraOpenKinect2 extends CameraRGBIRDepth {
 
     protected CameraOpenKinect2(int cameraNo) {
         this.systemNumber = cameraNo;
-
-        depthCamera = new SubDepthCamera(this);
-        depthCamera.setPixelFormat(PixelFormat.FLOAT_DEPTH_KINECT2);
-        depthCamera.type = SubCamera.Type.DEPTH;
-        depthCamera.setSize(512, 424);
-
-        colorCamera = new SubCamera(this);
-        colorCamera.setPixelFormat(PixelFormat.ARGB);
-        colorCamera.type = SubCamera.Type.COLOR;
-        colorCamera.setSize(1920, 1080);
-
-        IRCamera = new SubCamera(this);
-        IRCamera.setPixelFormat(PixelFormat.GRAY_32);
-        IRCamera.type = SubCamera.Type.IR;
-        IRCamera.setSize(512, 424);
     }
 
     @Override
-    public void start() {
-        grabber = new OpenKinect2FrameGrabber(this.systemNumber);
-
-        colorCamera.start();
-        IRCamera.start();
-        depthCamera.start();
-        
-        try {
-            grabber.start();
-            this.isConnected = true;
-        } catch (Exception e) {
-            System.err.println("Could not Kinect start frameGrabber... " + e);
-            System.err.println("Kinect ID " + this.systemNumber + " could not start.");
-            System.err.println("Check cable connection and ID.");
+    public void internalInit() {
+        if (isUseDepth()) {
+            depthCamera.setPixelFormat(PixelFormat.FLOAT_DEPTH_KINECT2);
+            depthCamera.type = SubCamera.Type.DEPTH;
+            depthCamera.setSize(512, 424);
         }
+        if (isUseColor()) {
+            colorCamera.setPixelFormat(PixelFormat.ARGB);
+            colorCamera.type = SubCamera.Type.COLOR;
+            colorCamera.setSize(1920, 1080);
+        }
+        if (isUseIR()) {
+            IRCamera.setPixelFormat(PixelFormat.GRAY_32);
+            IRCamera.type = SubCamera.Type.IR;
+            IRCamera.setSize(512, 424);
+        }
+        grabber = new OpenKinect2FrameGrabber(this.systemNumber);
     }
 
+    @Override
+    public void internalStart() throws FrameGrabber.Exception {
+        grabber.start();
+    }
+
+    /***
+     * Warning BUG: cannot grab in a thread and display as PImage in another.
+     * @throws Exception 
+     */
     @Override
     protected void internalGrab() throws Exception {
         grabber.grab();
@@ -76,7 +73,6 @@ public class CameraOpenKinect2 extends CameraRGBIRDepth {
         setClosing();
         if (grabber != null) {
             try {
-                System.out.println("Stopping OpenKinect2Grabber");
                 this.stopThread();
                 grabber.stop();
             } catch (Exception e) {
@@ -97,6 +93,7 @@ public class CameraOpenKinect2 extends CameraRGBIRDepth {
     @Override
     public void enableDepth() {
         grabber.enableDepthStream();
+        System.out.println("enable depth stream");
     }
 
     @Override

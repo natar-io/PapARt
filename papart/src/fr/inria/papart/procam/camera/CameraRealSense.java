@@ -43,22 +43,6 @@ public class CameraRealSense extends CameraRGBIRDepth {
         }
         this.systemNumber = cameraNo;
 
-        grabber = new RealSenseFrameGrabber(this.systemNumber);
-
-        depthCamera = new SubDepthCamera(this);
-        depthCamera.setPixelFormat(PixelFormat.REALSENSE_Z16);
-        depthCamera.setSize(640, 480);
-        depthCamera.type = SubCamera.Type.DEPTH;
-
-        colorCamera = new SubCamera(this);
-        colorCamera.setPixelFormat(PixelFormat.RGB);
-        colorCamera.type = SubCamera.Type.COLOR;
-        colorCamera.setSize(960, 540);
-
-        IRCamera = new SubCamera(this);
-        IRCamera.setSize(640, 480);
-        IRCamera.setPixelFormat(PixelFormat.GRAY);
-        IRCamera.type = SubCamera.Type.IR;
     }
 
     public RealSenseFrameGrabber getFrameGrabber() {
@@ -76,28 +60,34 @@ public class CameraRealSense extends CameraRGBIRDepth {
     }
 
     @Override
-    public void start() {
+    public void internalInit() {
 
-        depthCamera.start();
-        colorCamera.start();
-        IRCamera.start();
-
-        try {
-            grabber.start();
-            this.isConnected = true;
-        } catch (Exception e) {
-            System.err.println("Could not start RealSenseGrabber... " + e);
-            System.err.println("Could not camera start RealSenseGrabber... " + e);
-            System.err.println("Camera ID " + this.systemNumber + " could not start.");
-            System.err.println("Check cable connection, ID and resolution asked.");
-
-            this.grabber = null;
+        if (isUseDepth()) {
+            depthCamera.setPixelFormat(PixelFormat.REALSENSE_Z16);
+            depthCamera.setSize(640, 480);
+            depthCamera.type = SubCamera.Type.DEPTH;
         }
+        if (isUseColor()) {
+            colorCamera.setPixelFormat(PixelFormat.RGB);
+            colorCamera.type = SubCamera.Type.COLOR;
+            colorCamera.setSize(960, 540);
+        }
+        if (isUseIR()) {
+            IRCamera.setSize(640, 480);
+            IRCamera.setPixelFormat(PixelFormat.GRAY);
+            IRCamera.type = SubCamera.Type.IR;
+        }
+        grabber = new RealSenseFrameGrabber(this.systemNumber);
+
+    }
+
+    @Override
+    public void internalStart() throws FrameGrabber.Exception {
+        grabber.start();
     }
 
     @Override
     public void internalGrab() throws Exception {
-        System.out.println("Realsense: main grab");
         grabber.grab();
     }
 

@@ -24,6 +24,7 @@ import fr.inria.papart.tracking.MarkerBoard;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import org.bytedeco.javacpp.opencv_core;
+import org.bytedeco.javacv.OpenKinectFrameGrabber;
 import processing.core.PApplet;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
@@ -40,11 +41,15 @@ public abstract class CameraRGBIRDepth extends Camera {
     protected SubCamera IRCamera;
     private SubCamera actAsCamera = null;
 
-    protected boolean useIR = true;
-    protected boolean useDepth = true;
-    protected boolean useColor = true;
-    protected boolean actAsColorCamera = false;
-    protected boolean actAsIRCamera = false;
+    protected boolean useIR = false;
+    protected boolean useDepth = false;
+    protected boolean useColor = false;
+
+    public CameraRGBIRDepth() {
+        colorCamera = new SubCamera(this);
+        depthCamera = new SubDepthCamera(this);
+        IRCamera = new SubCamera(this);
+    }
 
     @Override
     public void setParent(PApplet parent) {
@@ -155,7 +160,33 @@ public abstract class CameraRGBIRDepth extends Camera {
         }
     }
 
+    protected abstract void internalStart() throws Exception;
+
+    @Override
+    public void start() {
+        try {
+            internalInit();
+            if (isUseColor()) {
+                colorCamera.start();
+            }
+            if (isUseDepth()) {
+                depthCamera.start();
+            }
+            if (isUseIR()) {
+                IRCamera.start();
+            }
+            internalStart();
+            this.isConnected = true;
+        } catch (Exception e) {
+            System.err.println("Could not Kinect start frameGrabber... " + e);
+            System.err.println("Kinect ID " + this.systemNumber + " could not start.");
+            System.err.println("Check cable connection and ID.");
+        }
+    }
+
     protected abstract void internalGrab() throws Exception;
+
+    protected abstract void internalInit() throws Exception;
 
     @Override
     public void grab() {
@@ -179,7 +210,7 @@ public abstract class CameraRGBIRDepth extends Camera {
                 depthCamera.grab();
             }
 
-            if (actAsColorCamera || actAsIRCamera) {
+            if (actAsCamera != null) {
                 currentImage = actAsCamera.currentImage;
             }
         } catch (Exception e) {
@@ -194,6 +225,10 @@ public abstract class CameraRGBIRDepth extends Camera {
 
     public void actAsIRCamera() {
         actAsCamera = IRCamera;
+    }
+
+    public void actAsDepthCamera() {
+        actAsCamera = depthCamera;
     }
 
     // Generated delegate methods... 
@@ -353,8 +388,13 @@ public abstract class CameraRGBIRDepth extends Camera {
     public void setThread() {
         if (thread == null) {
             thread = new CameraThread(this);
-            thread.setCompute(actAsCamera.trackSheets);
-            actAsCamera.thread = thread;
+            if (this.actAsCamera != null) {
+                thread.setCompute(actAsCamera.trackSheets);
+                actAsCamera.thread = thread;
+            } else {
+                thread.setCompute(trackSheets);
+            }
+
             thread.start();
         } else {
             System.err.println("Camera: Error Thread already launched");
@@ -403,6 +443,9 @@ public abstract class CameraRGBIRDepth extends Camera {
 
     @Override
     public boolean isClosing() {
+        if (actAsCamera == null) {
+            return super.isClosing();
+        }
         return actAsCamera.isClosing();
     }
 
@@ -434,6 +477,30 @@ public abstract class CameraRGBIRDepth extends Camera {
     @Override
     public PVector getViewPoint(PVector point) {
         return actAsCamera.getViewPoint(point);
+    }
+
+    public boolean isUseIR() {
+        return useIR;
+    }
+
+    public void setUseIR(boolean useIR) {
+        this.useIR = useIR;
+    }
+
+    public boolean isUseDepth() {
+        return useDepth;
+    }
+
+    public void setUseDepth(boolean useDepth) {
+        this.useDepth = useDepth;
+    }
+
+    public boolean isUseColor() {
+        return useColor;
+    }
+
+    public void setUseColor(boolean useColor) {
+        this.useColor = useColor;
     }
 
 }

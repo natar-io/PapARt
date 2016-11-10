@@ -47,7 +47,6 @@ public class CamImageColor extends CamImage {
     @Override
     protected final void camInit(PApplet parent) {
         this.parent = parent;
-
         Texture tex = ((PGraphicsOpenGL) parent.g).getTexture(this);
         if (tex == null) {
             throw new RuntimeException("CamImage: Impossible to get the Processing Texture. "

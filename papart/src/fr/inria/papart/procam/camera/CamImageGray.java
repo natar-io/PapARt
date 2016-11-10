@@ -65,11 +65,7 @@ public class CamImageGray extends CamImage {
 
         Texture tex = ((PGraphicsOpenGL) parent.g).getTexture(this);
         ByteBuffer imageBuffer = iplImage.getByteBuffer();
-        System.out.println("Sizes: " + imageBuffer.limit() + " " + this.pixels.length + " " + argbBuffer.limit());
-        if (imageBuffer == null || imageBuffer.limit() == 0 || imageBuffer.capacity() == 0) {
-            System.out.println("imageBuffer null: The incoming image is empty.");
-            return;
-        }
+
         if (incomingFormat == PixelFormat.GRAY) {
             Utils.byteBufferGRAYtoARGB(imageBuffer, argbBuffer);
         }
