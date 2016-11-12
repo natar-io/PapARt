@@ -20,13 +20,10 @@
  */
 package fr.inria.papart.depthcam.devices;
 
-import fr.inria.papart.multitouch.KinectTouchInput;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.camera.Camera;
-import fr.inria.papart.procam.camera.CameraFactory;
+import fr.inria.papart.procam.camera.CameraRGBIRDepth;
 import fr.inria.papart.procam.camera.CameraRealSense;
-import fr.inria.papart.procam.camera.SubCamera;
-import fr.inria.papart.procam.camera.SubDepthCamera;
 import processing.core.PApplet;
 
 /**
@@ -35,92 +32,35 @@ import processing.core.PApplet;
  */
 public final class RealSense extends KinectDevice {
 
-    protected CameraRealSense cameraRS;
-    protected SubDepthCamera cameraDepth;
-    protected SubCamera cameraColor;
-    protected SubCamera cameraIR;
+    CameraRealSense cameraRS;
 
-    public RealSense(PApplet parent) {
-        initSize();
-        this.parent = parent;
-        initCameras();
+    public RealSense(PApplet parent, Camera anotherCam) {
+        super(parent, anotherCam);
 
-        // Warning Start both depth & color camera for now.
-        cameraRS.start();
+        initDefaultCamera();
+
+        cameraRS.setCalibration(Papart.kinectRGBCalib);
+        cameraRS.getDepthCamera().setCalibration(Papart.kinectIRCalib);
+        setStereoCalibration(Papart.kinectStereoCalib);
 
         setStereoCalibration(cameraRS.getHardwareExtrinsics());
-        useHardwareIntrinsics();
+        useHardwareIntrinsics(cameraRS);
     }
 
-    public RealSense(PApplet parent, CameraRealSense cameraRGB) {
-        initSize();
-        this.parent = parent;
-
-        cameraColor = cameraRS.getColorCamera();
-        cameraDepth = cameraRS.getDepthCamera();
-        cameraIR = cameraRS.getIRCamera();
-
-        cameraDepth.setSize(WIDTH, HEIGHT);
-        cameraIR.setSize(WIDTH, HEIGHT);
-
-        // Warning Start both depth & color camera for now.
-        cameraRS.start();
+    public RealSense(PApplet parent, CameraRealSense cameraRS) {
+        super(parent, (CameraRGBIRDepth) cameraRS);
+        
+//                    cameraColor.setCalibration(Papart.cameraCalib);
+//            cameraColor.setCalibration(Papart.calibrationFolder + "saved/camera-SR300.yaml");
 
         setStereoCalibration(cameraRS.getHardwareExtrinsics());
-        useHardwareIntrinsics();
+        useHardwareIntrinsics(cameraRS);
     }
 
-    private void useHardwareIntrinsics() {
-        CameraRealSense.useHarwareIntrinsics(cameraColor, cameraRS.getFrameGrabber());
-        CameraRealSense.useHarwareIntrinsics(cameraDepth, cameraRS.getFrameGrabber());
-        CameraRealSense.useHarwareIntrinsics(cameraIR, cameraRS.getFrameGrabber());
-    }
-
-    private void initSize() {
-        // IR and Depth image size 
-        WIDTH = 640;
-        HEIGHT = 480;
-        SIZE = WIDTH * HEIGHT;
-
-        // RGB image size
-        RGB_WIDTH = 960;
-        RGB_HEIGHT = 540;
-        RGB_SIZE = RGB_WIDTH * RGB_HEIGHT;
-    }
-
-    public void close() {
-        cameraRS.close();
-        cameraDepth.close();
-    }
-
-    final void initCameras() {
-        // Check if it is the default camera... 
-        Papart papart = Papart.getPapart();
-        if (papart.cameraConfiguration.getCameraType() == Camera.Type.REALSENSE_RGB) {
-            System.out.println("REALSENSE: Using configuration ID & Resolution.");
-            // use the ID
-            int id = Integer.parseInt(papart.cameraConfiguration.getCameraName());
-
-            cameraColor = cameraRS.getColorCamera();
-            cameraColor.setCalibration(Papart.cameraCalib);
-        } else {
-            cameraRS = (CameraRealSense) CameraFactory.createCamera(Camera.Type.REALSENSE_RGB, 0);
-            cameraRS.setParent(parent);
-
-            cameraColor = cameraRS.getColorCamera();
-            cameraColor.setSize(RGB_WIDTH, RGB_HEIGHT);
-            cameraColor.setCalibration(Papart.calibrationFolder + "saved/camera-SR300.yaml");
-        }
-
-        cameraDepth = cameraRS.getDepthCamera();
-        cameraDepth.setSize(WIDTH, HEIGHT);
-
-        cameraIR = cameraRS.getIRCamera();
-        cameraIR.setSize(WIDTH, HEIGHT);
-    }
-
-    public void grab() {
-        cameraRS.grab();
+    private void useHardwareIntrinsics(CameraRealSense cameraRS) {
+        CameraRealSense.useHarwareIntrinsics(cameraRS.getColorCamera(), cameraRS.getFrameGrabber());
+        CameraRealSense.useHarwareIntrinsics(cameraRS.getColorCamera(), cameraRS.getFrameGrabber());
+        CameraRealSense.useHarwareIntrinsics(cameraRS.getColorCamera(), cameraRS.getFrameGrabber());
     }
 
     public CameraRealSense getMainCamera() {
@@ -128,33 +68,13 @@ public final class RealSense extends KinectDevice {
     }
 
     @Override
-    public SubCamera getCameraRGB() {
-        return cameraColor;
-    }
-
-    @Override
-    public SubCamera getCameraIR() {
-        return cameraIR;
-    }
-
-    @Override
-    public SubDepthCamera getCameraDepth() {
-        return cameraDepth;
-    }
-
-    @Override
     public int rawDepthSize() {
-        return SIZE * 2;
+        return getDepthCamera().width() * getDepthCamera().height() * 2;
     }
 
     @Override
-    public void setTouch(KinectTouchInput kinectTouchInput) {
-        cameraDepth.setTouchInput(kinectTouchInput);
-    }
-
-    @Override
-    public Type type() {
-        return Type.REALSENSE;
+    public Camera.Type type() {
+        return Camera.Type.REALSENSE;
     }
 
 }

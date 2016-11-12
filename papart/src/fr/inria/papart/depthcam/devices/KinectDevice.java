@@ -22,7 +22,12 @@ package fr.inria.papart.depthcam.devices;
 import fr.inria.papart.calibration.HomographyCalibration;
 import fr.inria.papart.multitouch.KinectTouchInput;
 import fr.inria.papart.procam.HasExtrinsics;
+import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.camera.Camera;
+import fr.inria.papart.procam.camera.CameraFactory;
+import fr.inria.papart.procam.camera.CameraOpenKinect;
+import fr.inria.papart.procam.camera.CameraOpenKinect2;
+import fr.inria.papart.procam.camera.CameraRGBIRDepth;
 import fr.inria.papart.procam.camera.SubCamera;
 import fr.inria.papart.procam.camera.SubDepthCamera;
 import processing.core.PApplet;
@@ -36,18 +41,6 @@ import toxi.geom.Vec3D;
  */
 public abstract class KinectDevice {
 
-    public enum Type {
-        ONE, X360, REALSENSE, NONE
-    }
-    // IR and Depth image size 
-    public static int WIDTH;
-    public static int HEIGHT;
-    public static int SIZE;
-
-    // RGB image size
-    public static int RGB_WIDTH;
-    public static int RGB_HEIGHT;
-    public static int RGB_SIZE;
     private final PMatrix3D KinectRGBIRCalibration = new PMatrix3D(1, 0, 0, 0,
             0, 1, 0, 0,
             0, 0, 1, 0,
@@ -57,23 +50,54 @@ public abstract class KinectDevice {
             0, 0, 1, 0,
             0, 0, 0, 1);
 
-    protected PApplet parent;
+    protected final PApplet parent;
+    protected CameraRGBIRDepth camera;
+    protected Camera anotherCamera = Camera.INVALID_CAMERA;
 
-    abstract public SubCamera getCameraRGB();
+    public KinectDevice(PApplet parent, Camera anotherCamera) {
+        this.anotherCamera = anotherCamera;
+        this.parent = parent;
+    }
 
-    abstract public SubCamera getCameraIR();
+    public KinectDevice(PApplet parent, CameraRGBIRDepth mainCamera) {
+        this.camera = mainCamera;
+        this.parent = parent;
+        mainCamera.enableDepth();
+    }
 
-    abstract public SubDepthCamera getCameraDepth();
+    public SubCamera getColorCamera() {
+        return camera.getColorCamera();
+    }
+
+    public SubCamera getIRCamera() {
+        return camera.getIRCamera();
+    }
+
+    public SubDepthCamera getDepthCamera() {
+        return camera.getDepthCamera();
+    }
 
     abstract public int rawDepthSize();
 
-    abstract public Type type();
+    abstract public Camera.Type type();
 
-    abstract public void setTouch(KinectTouchInput kinectTouchInput);
+    /*** 
+     * init a depth camera, depth only as there is another color camera.
+     */
+    protected final void initDefaultCamera() {
+        String id = Papart.getPapart().cameraConfiguration.getCameraName();
+        camera = (CameraOpenKinect2) CameraFactory.createCamera(type(), id);
+        camera.enableDepth();
+        camera.setParent(parent);
+    }
 
     public void close() {
-        getCameraDepth().close();
-        getCameraRGB().close();
+        getDepthCamera().close();
+        getColorCamera().close();
+    }
+
+    public void setTouch(KinectTouchInput kinectTouchInput) {
+        camera.getDepthCamera().setTouchInput(kinectTouchInput);
     }
 
     public void setStereoCalibration(String fileName) {
@@ -103,13 +127,13 @@ public abstract class KinectDevice {
     }
 
     public void setExtrinsics(PMatrix3D extr) {
-        getCameraRGB().setExtrinsics(extr);
+        getColorCamera().setExtrinsics(extr);
 
         // Get color -> Depth 
         PMatrix3D stereo = getStereoCalibrationInv();
         PMatrix3D tmp = extr.get();
         tmp.apply(stereo);
-        getCameraDepth().setExtrinsics(tmp);
+        getDepthCamera().setExtrinsics(tmp);
     }
 
     public int findColorOffset(Vec3D v) {
@@ -123,6 +147,7 @@ public abstract class KinectDevice {
     private PVector vt = new PVector();
     private PVector vt2 = new PVector();
 
+    // TODO: this must take into account if we use another camera for tracking.
     /**
      * Warning not thread safe.
      *
@@ -137,32 +162,7 @@ public abstract class KinectDevice {
         //  Ideally use a calibration... 
 //        kinectCalibRGB.getExtrinsics().mult(vt, vt2);       
         getStereoCalibration().mult(vt, vt2);
-        return getCameraRGB().getProjectiveDevice().worldToPixel(vt2.x, vt2.y, vt2.z);
-    }
-
-    // TODO: find the use of all this..
-    public int colorWidth() {
-        return RGB_WIDTH;
-    }
-
-    public int colorHeight() {
-        return RGB_HEIGHT;
-    }
-
-    public int colorSize() {
-        return RGB_SIZE;
-    }
-
-    public int depthWidth() {
-        return WIDTH;
-    }
-
-    public int depthHeight() {
-        return HEIGHT;
-    }
-
-    public int depthSize() {
-        return SIZE;
+        return getColorCamera().getProjectiveDevice().worldToPixel(vt2.x, vt2.y, vt2.z);
     }
 
 }

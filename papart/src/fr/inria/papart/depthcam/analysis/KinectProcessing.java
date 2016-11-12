@@ -59,8 +59,8 @@ public class KinectProcessing extends KinectDepthAnalysis {
     }
 
     private void init() {
-        validPointsPImage = papplet.createImage(kinectDevice().depthWidth(), kinectDevice().depthHeight(), PConstants.RGB);
-        nativeArrayToErode = IplImage.create(kinectDevice.depthWidth(), kinectDevice.depthHeight(), IPL_DEPTH_8U, 1);
+        validPointsPImage = papplet.createImage(getDepthWidth(), getDepthHeight(), PConstants.RGB);
+        nativeArrayToErode = IplImage.create(getDepthWidth(), getDepthHeight(), IPL_DEPTH_8U, 1);
         erosionIndexer = (UByteIndexer) nativeArrayToErode.createIndexer();
         validCopy = Arrays.copyOf(depthData.validPointsMask, depthData.validPointsMask.length);
 
@@ -124,9 +124,9 @@ public class KinectProcessing extends KinectDepthAnalysis {
             int x = po.x;
             int y = po.y;
 
-            for (int j = y * kinectDevice.depthWidth() - skip;
-                    j <= y * kinectDevice.depthWidth() + skip;
-                    j += kinectDevice.depthWidth() * skip) {
+            for (int j = y * getDepthWidth() - skip;
+                    j <= y * getDepthWidth() + skip;
+                    j += getDepthWidth() * skip) {
                 for (int i = x - skip; i <= x + skip; i += skip) {
 
                     int currentIdx = i + j;
@@ -144,11 +144,11 @@ public class KinectProcessing extends KinectDepthAnalysis {
 
     private void erodePoints(boolean[] arrayToErode) {
 
-        for (int i = 0; i < kinectDevice.depthWidth() * kinectDevice.depthHeight(); i++) {
+        for (int i = 0; i < getDepthWidth() * getDepthHeight(); i++) {
             erosionIndexer.put(i, arrayToErode[i] ? 1 : 0);
         }
         cvErode(nativeArrayToErode, nativeArrayToErode);
-        for (int i = 0; i < kinectDevice.depthWidth() * kinectDevice.depthHeight(); i++) {
+        for (int i = 0; i < getDepthWidth() * getDepthHeight(); i++) {
             arrayToErode[i] = erosionIndexer.get(i) == 1;
         }
 

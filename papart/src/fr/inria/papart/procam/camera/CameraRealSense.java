@@ -110,6 +110,9 @@ public class CameraRealSense extends CameraRGBIRDepth {
     }
 
     public static void useHarwareIntrinsics(SubCamera camera, RealSenseFrameGrabber grabber) {
+        if(camera == null || camera == Camera.INVALID_CAMERA){
+            return;
+        }
         int camType = 0;
         if (camera.type == SubCamera.Type.COLOR) {
             camType = RealSense.color;

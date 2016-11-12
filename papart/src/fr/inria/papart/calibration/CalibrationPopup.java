@@ -20,7 +20,6 @@
 package fr.inria.papart.calibration;
 
 import fr.inria.papart.depthcam.devices.KinectDevice;
-import fr.inria.papart.depthcam.devices.KinectDevice.Type;
 import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.camera.Camera;
@@ -93,7 +92,7 @@ public class CalibrationPopup extends PApplet {
     private TrackedView projectorView;
 
     // Kinect
-    private KinectDevice.Type kinectType;
+    private Camera.Type kinectType;
 
     // calibrations
     private ArrayList<CalibrationSnapshot> snapshots = new ArrayList<CalibrationSnapshot>();
@@ -183,7 +182,7 @@ public class CalibrationPopup extends PApplet {
     }
 
     private void initKinect360(KinectDevice kinectDevice) {
-        cameraKinect = kinectDevice.getCameraRGB();
+        cameraKinect = kinectDevice.getColorCamera();
 
         String ARToolkitCalib = Papart.calibrationFolder + KINECT_ARTOOLKIT_NAME;
         Camera.convertARParams(this, cameraKinect.getCalibrationFile(), ARToolkitCalib);

@@ -81,7 +81,7 @@ public class Papart {
 
     public static String screenConfig = calibrationFolder + "screenConfiguration.xml";
     public static String cameraConfig = calibrationFolder + "cameraConfiguration.xml";
-    public static String cameraKinectConfig = calibrationFolder + "cameraKinectConfiguration.xml";
+    public static String depthCameraConfig = calibrationFolder + "depthCameraConfiguration.xml";
 
     public static String tablePosition = calibrationFolder + "tablePosition.xml";
     public static String planeCalib = calibrationFolder + "PlaneCalibration.xml";
@@ -120,10 +120,6 @@ public class Papart {
     public CameraConfiguration cameraConfiguration;
     public ScreenConfiguration screenConfiguration;
     // TODO: find what to do with these...
-//    private final int depthFormat = freenect.FREENECT_DEPTH_10BIT;
-//    private final int kinectFormat = Kinect.KINECT_10BIT;
-    private final int depthFormat = freenect.FREENECT_DEPTH_MM;
-    private final int kinectFormat = Kinect360.KINECT_MM;
 
     /**
      * Create the main PapARt object, look at the examples for how to use it.
@@ -156,7 +152,7 @@ public class Papart {
 
     public static CameraConfiguration getDefaultKinectConfiguration(PApplet applet) {
         CameraConfiguration config = new CameraConfiguration();
-        config.loadFrom(applet, cameraKinectConfig);
+        config.loadFrom(applet, depthCameraConfig);
         return config;
     }
 
@@ -320,11 +316,6 @@ public class Papart {
     public void forceCameraSize() {
         forceWindowSize(cameraTracking.width(),
                 cameraTracking.height());
-    }
-
-    public void forceDepthCameraSize() {
-        forceWindowSize(kinectDevice.depthWidth(),
-                kinectDevice.depthHeight());
     }
 
     public void forceWindowSize(int w, int h) {
@@ -737,6 +728,8 @@ public class Papart {
      */
     public void loadDefaultCameraKinect() {
 
+        // Two cases, either the other camera running of the same type
+        
         CameraConfiguration kinectConfiguration = Papart.getDefaultKinectConfiguration(applet);
 
         // If the camera is not instanciated, it is not correct !
@@ -921,7 +914,7 @@ public class Papart {
     }
 
     public Camera getKinectCamera() {
-        return this.kinectDevice.getCameraRGB();
+        return this.kinectDevice.getColorCamera();
     }
 
     public KinectDevice getKinectDevice() {
@@ -932,10 +925,9 @@ public class Papart {
         return this.kinectDepthAnalysis;
     }
 
-    public KinectDevice.Type getKinectType() {
+    public Camera.Type getKinectType() {
         if (kinectDevice == null) {
-            return KinectDevice.Type.NONE;
-
+            return Camera.Type.FAKE;
         }
         return kinectDevice.type();
     }

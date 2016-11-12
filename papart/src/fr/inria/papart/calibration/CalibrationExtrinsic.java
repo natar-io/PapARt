@@ -20,9 +20,9 @@
 package fr.inria.papart.calibration;
 
 import fr.inria.papart.depthcam.devices.KinectDevice;
-import fr.inria.papart.depthcam.devices.KinectDevice.Type;
 import fr.inria.papart.multitouch.KinectTouchInput;
 import fr.inria.papart.procam.Papart;
+import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import java.util.ArrayList;
 import processing.core.PApplet;
@@ -45,7 +45,7 @@ public class CalibrationExtrinsic {
     private Papart papart;
 
     // Kinect
-    private KinectDevice.Type kinectType;
+    private Camera.Type kinectType;
     private KinectDevice kinectDevice;
 
     public CalibrationExtrinsic(PApplet parent) {
@@ -61,7 +61,7 @@ public class CalibrationExtrinsic {
         this.kinectType = papart.getKinectType();
         this.kinectDevice = papart.getKinectDevice();
     }
-    public void setKinect(KinectDevice device, Type type) {
+    public void setKinect(KinectDevice device, Camera.Type type) {
         this.kinectType = type;
         this.kinectDevice = device;
     }
@@ -92,10 +92,10 @@ public class CalibrationExtrinsic {
     }
 
     public void calibrateKinect(ArrayList<CalibrationSnapshot> snapshots) {
-        if (this.kinectType == Type.ONE) {
+        if (this.kinectType == Camera.Type.OPEN_KINECT_2) {
             calibrateKinectOne(snapshots);
         }
-        if (this.kinectType == Type.X360) {
+        if (this.kinectType == Camera.Type.OPEN_KINECT) {
             calibrateKinect360(snapshots);
         }
     }

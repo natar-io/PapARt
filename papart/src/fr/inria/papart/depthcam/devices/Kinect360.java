@@ -19,13 +19,12 @@
  */
 package fr.inria.papart.depthcam.devices;
 
-import fr.inria.papart.multitouch.KinectTouchInput;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.CameraFactory;
 import fr.inria.papart.procam.camera.CameraOpenKinect;
+import fr.inria.papart.procam.camera.CameraRGBIRDepth;
 import processing.core.PApplet;
-import processing.core.PMatrix3D;
 
 /**
  *
@@ -33,70 +32,42 @@ import processing.core.PMatrix3D;
  */
 public class Kinect360 extends KinectDevice {
 
-    public static final int KINECT_MM = 1;
-    public static final int KINECT_10BIT = 0;
-    private final CameraOpenKinect camera;
-
-    public static final int CAMERA_WIDTH = 640;
-    public static final int CAMERA_HEIGHT = 480;
-
-    public Kinect360(PApplet parent) {
-        initSizes(parent);
-        camera = (CameraOpenKinect) CameraFactory.createCamera(Camera.Type.OPEN_KINECT, 0);
-        camera.setParent(parent);
-        camera.setCalibration(Papart.kinectRGBCalib);
-        camera.getDepthCamera().setCalibration(Papart.kinectIRCalib);
-        setStereoCalibration(Papart.kinectStereoCalib);
-        camera.start();
-    }
-    public Kinect360(PApplet parent, CameraOpenKinect camera) {
-        initSizes(parent);
-        this.camera = camera;
-//        camera = (CameraOpenKinect) CameraFactory.createCamera(Camera.Type.OPEN_KINECT, 0);
+//    public Kinect360(PApplet parent) {
+//        this.parent = parent;
+//        camera = (CameraOpenKinect) CameraFactory.createCamera(Camera.Type.OPEN_KINECT, "0");
 //        camera.setParent(parent);
 //        camera.setCalibration(Papart.kinectRGBCalib);
+//        camera.getDepthCamera().setCalibration(Papart.kinectIRCalib);
+//        setStereoCalibration(Papart.kinectStereoCalib);
+//        camera.start();
+//    }
+    
+    public Kinect360(PApplet parent, CameraOpenKinect camera) {
+        super(parent, (CameraRGBIRDepth) camera);
         camera.getDepthCamera().setCalibration(Papart.kinectIRCalib);
         setStereoCalibration(Papart.kinectStereoCalib);
-        camera.start();
+        
+        // --------------------------
+        // TODO: find when to start()
+//        camera.start();
     }
-
-    private void initSizes(PApplet parent) {
-        this.parent = parent;
-        WIDTH = 640;
-        HEIGHT = 480;
-        SIZE = WIDTH * HEIGHT;
-        RGB_WIDTH = 640;
-        RGB_HEIGHT = 480;
-        RGB_SIZE = WIDTH * HEIGHT;
-    }
-
-    @Override
-    public SubCamera getCameraRGB() {
-        return camera;
-    }
-
-    @Override
-    public SubCamera getCameraIR() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public SubCamera getCameraDepth() {
-        return camera.getDepthCamera();
+    
+    public Kinect360(PApplet parent, Camera anotherCamera) {
+        super(parent, anotherCamera);
+        this.anotherCamera = anotherCamera;
+        
+        initDefaultCamera();
+        camera.getDepthCamera().setCalibration(Papart.kinectIRCalib);
+        setStereoCalibration(Papart.kinectStereoCalib);
     }
 
     @Override
     public int rawDepthSize() {
-        return SIZE * 2;
+        return getDepthCamera().width() * getDepthCamera().height() * 2;
     }
 
     @Override
-    public void setTouch(KinectTouchInput kinectTouchInput) {
-        ((CameraOpenKinect) this.getCameraRGB()).setTouch(kinectTouchInput);
-    }
-
-    @Override
-    public Type type() {
-        return Type.X360;
+    public Camera.Type type() {
+        return Camera.Type.OPEN_KINECT;
     }
 }
