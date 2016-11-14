@@ -43,6 +43,9 @@ public class SubCamera extends Camera {
 
     @Override
     public void start() {
+        if(!mainCamera.isStarting){
+          throw new RuntimeException("Cannot start a subCamera: start the main camera instead.");
+        }
         mainCamera.start(this);
         isConnected = true;
     }

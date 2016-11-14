@@ -25,7 +25,7 @@ import fr.inria.papart.depthcam.PixelOffset;
 import fr.inria.papart.depthcam.TouchAttributes;
 import fr.inria.papart.depthcam.devices.Kinect360;
 import fr.inria.papart.depthcam.devices.KinectDepthData;
-import fr.inria.papart.depthcam.devices.KinectDevice;
+import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.depthcam.devices.KinectOne;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.INVALID_POINT;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.papplet;
@@ -69,10 +69,10 @@ public class KinectDepthAnalysis extends DepthAnalysis {
     // static values
     protected static final float INVALID_DEPTH = -1;
 
-    protected KinectDevice kinectDevice;
+    protected DepthCameraDevice kinectDevice;
     protected DepthComputation depthComputationMethod;
 
-    public KinectDevice kinectDevice() {
+    public DepthCameraDevice kinectDevice() {
         return this.kinectDevice;
     }
 
@@ -103,7 +103,7 @@ public class KinectDepthAnalysis extends DepthAnalysis {
         return getColorWidth() * getColorHeight();
     }
 
-    public KinectDepthAnalysis(PApplet parent, KinectDevice kinect) {
+    public KinectDepthAnalysis(PApplet parent, DepthCameraDevice kinect) {
         kinectDevice = kinect;
         DepthAnalysis.papplet = parent;
         calibRGB = kinect.getColorCamera().getProjectiveDevice();

@@ -30,29 +30,25 @@ import processing.core.PApplet;
  *
  * @author Jeremy Laviole
  */
-public final class RealSense extends KinectDevice {
+public final class RealSense extends DepthCameraDevice {
 
-    CameraRealSense cameraRS;
+    private final CameraRealSense cameraRS;
 
     public RealSense(PApplet parent, Camera anotherCam) {
-        super(parent, anotherCam);
+        super(parent);
+        if (anotherCam instanceof CameraRealSense) {
+            this.camera = (CameraRealSense) anotherCam;
+        } else {
+            initDefaultCamera();
+            this.anotherCamera = anotherCam;
+        }
+        this.camera.setUseDepth(true);
+        cameraRS = (CameraRealSense) camera;
+//        cameraRS.setCalibration(Papart.kinectRGBCalib);
+//        cameraRS.getDepthCamera().setCalibration(Papart.kinectIRCalib);
+//        setStereoCalibration(Papart.kinectStereoCalib);
 
-        initDefaultCamera();
-
-        cameraRS.setCalibration(Papart.kinectRGBCalib);
-        cameraRS.getDepthCamera().setCalibration(Papart.kinectIRCalib);
-        setStereoCalibration(Papart.kinectStereoCalib);
-
-        setStereoCalibration(cameraRS.getHardwareExtrinsics());
-        useHardwareIntrinsics(cameraRS);
-    }
-
-    public RealSense(PApplet parent, CameraRealSense cameraRS) {
-        super(parent, (CameraRGBIRDepth) cameraRS);
-        
-//                    cameraColor.setCalibration(Papart.cameraCalib);
-//            cameraColor.setCalibration(Papart.calibrationFolder + "saved/camera-SR300.yaml");
-
+        camera.start();
         setStereoCalibration(cameraRS.getHardwareExtrinsics());
         useHardwareIntrinsics(cameraRS);
     }

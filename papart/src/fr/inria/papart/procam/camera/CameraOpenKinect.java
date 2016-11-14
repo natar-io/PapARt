@@ -40,10 +40,12 @@ public class CameraOpenKinect extends CameraRGBIRDepth {
 
     @Override
     public void internalInit() {
+          System.out.println("setting all pix format");
         if (isUseDepth()) {
             depthCamera.setPixelFormat(PixelFormat.DEPTH_KINECT_MM);
             depthCamera.type = SubCamera.Type.DEPTH;
             depthCamera.setSize(640, 480);
+            System.out.println("setting depth pixel format");
         }
         if (isUseColor()) {
             colorCamera.setPixelFormat(PixelFormat.BGR);

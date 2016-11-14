@@ -106,23 +106,23 @@ public abstract class CameraRGBIRDepth extends Camera {
         return null;
     }
 
-    public abstract void enableIR();
+    protected abstract void enableIR();
 
-    public abstract void disableIR();
+    protected abstract void disableIR();
 
-    public abstract void enableDepth();
+    protected abstract void enableDepth();
 
-    public abstract void disableDepth();
+    protected abstract void disableDepth();
 
-    public abstract void enableColor();
+    protected abstract void enableColor();
 
-    public abstract void disableColor();
+    protected abstract void disableColor();
 
-    public abstract void grabIR();
+    protected abstract void grabIR();
 
-    public abstract void grabDepth();
+    protected abstract void grabDepth();
 
-    public abstract void grabColor();
+    protected abstract void grabColor();
 
     public void disable(SubCamera camera) {
         if (camera.type == SubCamera.Type.DEPTH) {
@@ -162,8 +162,11 @@ public abstract class CameraRGBIRDepth extends Camera {
 
     protected abstract void internalStart() throws Exception;
 
+    protected boolean isStarting = false;
+    
     @Override
     public void start() {
+        isStarting = true;
         try {
             internalInit();
             if (isUseColor()) {
@@ -182,6 +185,7 @@ public abstract class CameraRGBIRDepth extends Camera {
             System.err.println("Kinect ID " + this.systemNumber + " could not start.");
             System.err.println("Check cable connection and ID.");
         }
+          isStarting = false;
     }
 
     protected abstract void internalGrab() throws Exception;

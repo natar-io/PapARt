@@ -33,45 +33,24 @@ import processing.core.PApplet;
  *
  * @author Jeremy Laviole
  */
-public final class KinectOne extends KinectDevice {
+public final class KinectOne extends DepthCameraDevice {
 
-//    public KinectOne(PApplet parent) {
-//        this.parent = parent;
-//        
-//                this.parent = parent;
-//        camera = (CameraRGBIRDepth) CameraFactory.createCamera(Camera.Type.OPEN_KINECT_2, "0");
-//        camera.setParent(parent);
-//        camera.setCalibration(Papart.kinectRGBCalib);
-//        camera.getDepthCamera().setCalibration(Papart.kinectIRCalib);
-//        setStereoCalibration(Papart.kinectStereoCalib);
-//        camera.start();
-//        
-//
-//        setStereoCalibration(Papart.kinectStereoCalib);
-//    }
-
-    public KinectOne(PApplet parent, CameraOpenKinect2 cam) {
-        super(parent, cam); 
-
-               
-        cam.setParent(parent);
-        cam.setCalibration(Papart.calibrationFolder + "camera-kinect2-rgb.yaml");
-        getIRCamera().setCalibration(Papart.calibrationFolder + "camera-kinect2-IR.yaml");
-        getDepthCamera().setCalibration(Papart.calibrationFolder + "camera-kinect2-IR.yaml");
-
-        setStereoCalibration(Papart.kinectStereoCalib);
-    }
     public KinectOne(PApplet parent, Camera incomingCamera) {
-        super(parent, incomingCamera); 
+        super(parent);
+        if (incomingCamera instanceof CameraOpenKinect2) {
+            this.camera = (CameraOpenKinect2) incomingCamera;
+        } else {
+            initDefaultCamera();
+            this.anotherCamera = incomingCamera;
+        }
+        this.camera.setUseDepth(true);
 
-        initDefaultCamera();
-
-        // create the camera
-        incomingCamera.setCalibration(Papart.calibrationFolder + "camera-kinect2-rgb.yaml");
-        getIRCamera().setCalibration(Papart.calibrationFolder + "camera-kinect2-IR.yaml");
+//        getColorCamera().setCalibration(Papart.calibrationFolder + "camera-kinect2-RGB.yaml");
+//        getIRCamera().setCalibration(Papart.calibrationFolder + "camera-kinect2-IR.yaml");
         getDepthCamera().setCalibration(Papart.calibrationFolder + "camera-kinect2-IR.yaml");
-
         setStereoCalibration(Papart.kinectStereoCalib);
+
+        camera.start();
     }
 
     @Override

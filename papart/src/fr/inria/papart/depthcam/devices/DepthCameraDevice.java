@@ -21,12 +21,9 @@ package fr.inria.papart.depthcam.devices;
 
 import fr.inria.papart.calibration.HomographyCalibration;
 import fr.inria.papart.multitouch.KinectTouchInput;
-import fr.inria.papart.procam.HasExtrinsics;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.CameraFactory;
-import fr.inria.papart.procam.camera.CameraOpenKinect;
-import fr.inria.papart.procam.camera.CameraOpenKinect2;
 import fr.inria.papart.procam.camera.CameraRGBIRDepth;
 import fr.inria.papart.procam.camera.SubCamera;
 import fr.inria.papart.procam.camera.SubDepthCamera;
@@ -39,7 +36,7 @@ import toxi.geom.Vec3D;
  *
  * @author Jérémy Laviole - jeremy.laviole@inria.fr
  */
-public abstract class KinectDevice {
+public abstract class DepthCameraDevice {
 
     private final PMatrix3D KinectRGBIRCalibration = new PMatrix3D(1, 0, 0, 0,
             0, 1, 0, 0,
@@ -54,15 +51,8 @@ public abstract class KinectDevice {
     protected CameraRGBIRDepth camera;
     protected Camera anotherCamera = Camera.INVALID_CAMERA;
 
-    public KinectDevice(PApplet parent, Camera anotherCamera) {
-        this.anotherCamera = anotherCamera;
+    public DepthCameraDevice(PApplet parent) {
         this.parent = parent;
-    }
-
-    public KinectDevice(PApplet parent, CameraRGBIRDepth mainCamera) {
-        this.camera = mainCamera;
-        this.parent = parent;
-        mainCamera.enableDepth();
     }
 
     public SubCamera getColorCamera() {
@@ -86,14 +76,13 @@ public abstract class KinectDevice {
      */
     protected final void initDefaultCamera() {
         String id = Papart.getPapart().cameraConfiguration.getCameraName();
-        camera = (CameraOpenKinect2) CameraFactory.createCamera(type(), id);
-        camera.enableDepth();
+        camera = (CameraRGBIRDepth) CameraFactory.createCamera(type(), id);
+        camera.setUseDepth(true);
         camera.setParent(parent);
     }
 
     public void close() {
-        getDepthCamera().close();
-        getColorCamera().close();
+        camera.close();
     }
 
     public void setTouch(KinectTouchInput kinectTouchInput) {

@@ -19,7 +19,7 @@
  */
 package fr.inria.papart.calibration;
 
-import fr.inria.papart.depthcam.devices.KinectDevice;
+import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.camera.Camera;
@@ -181,7 +181,7 @@ public class CalibrationPopup extends PApplet {
         projectorTracker = DetectedMarker.createDetector(projector.getWidth(), projector.getHeight());
     }
 
-    private void initKinect360(KinectDevice kinectDevice) {
+    private void initKinect360(DepthCameraDevice kinectDevice) {
         cameraKinect = kinectDevice.getColorCamera();
 
         String ARToolkitCalib = Papart.calibrationFolder + KINECT_ARTOOLKIT_NAME;

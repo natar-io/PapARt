@@ -19,7 +19,7 @@
  */
 package fr.inria.papart.calibration;
 
-import fr.inria.papart.depthcam.devices.KinectDevice;
+import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.multitouch.KinectTouchInput;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.camera.Camera;
@@ -46,7 +46,7 @@ public class CalibrationExtrinsic {
 
     // Kinect
     private Camera.Type kinectType;
-    private KinectDevice kinectDevice;
+    private DepthCameraDevice kinectDevice;
 
     public CalibrationExtrinsic(PApplet parent) {
         this.parent = parent;
@@ -61,7 +61,7 @@ public class CalibrationExtrinsic {
         this.kinectType = papart.getKinectType();
         this.kinectDevice = papart.getKinectDevice();
     }
-    public void setKinect(KinectDevice device, Camera.Type type) {
+    public void setKinect(DepthCameraDevice device, Camera.Type type) {
         this.kinectType = type;
         this.kinectDevice = device;
     }

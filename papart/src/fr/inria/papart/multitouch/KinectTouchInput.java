@@ -30,7 +30,7 @@ import fr.inria.papart.procam.Screen;
 import fr.inria.papart.depthcam.analysis.DepthAnalysis;
 import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
 import fr.inria.papart.depthcam.analysis.KinectDepthAnalysis;
-import fr.inria.papart.depthcam.devices.KinectDevice;
+import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.procam.camera.CameraOpenKinect;
@@ -62,7 +62,7 @@ public class KinectTouchInput extends TouchInput {
     private final Semaphore depthDataSem = new Semaphore(1);
 
     // List of TouchPoints, given to the user
-    private final KinectDevice kinectDevice;
+    private final DepthCameraDevice kinectDevice;
 
     private PlaneAndProjectionCalibration planeAndProjCalibration;
 
@@ -73,7 +73,7 @@ public class KinectTouchInput extends TouchInput {
     private final TouchDetectionSimple3D touchDetection3D;
 
     public KinectTouchInput(PApplet applet,
-            KinectDevice kinectDevice,
+            DepthCameraDevice kinectDevice,
             KinectDepthAnalysis depthAnalysis,
             PlaneAndProjectionCalibration calibration) {
         this.parent = applet;

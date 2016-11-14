@@ -34,7 +34,7 @@ import fr.inria.papart.calibration.PlaneCalibration;
 import fr.inria.papart.calibration.ScreenConfiguration;
 import fr.inria.papart.depthcam.devices.Kinect360;
 import fr.inria.papart.depthcam.analysis.KinectDepthAnalysis;
-import fr.inria.papart.depthcam.devices.KinectDevice;
+import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.depthcam.devices.KinectOne;
 import fr.inria.papart.depthcam.devices.RealSense;
 import fr.inria.papart.multitouch.TouchInput;
@@ -115,7 +115,7 @@ public class Papart {
     private PVector frameSize = new PVector();
     private boolean isWithoutCamera = false;
 
-    public KinectDevice kinectDevice;
+    public DepthCameraDevice kinectDevice;
 
     public CameraConfiguration cameraConfiguration;
     public ScreenConfiguration screenConfiguration;
@@ -917,7 +917,7 @@ public class Papart {
         return this.kinectDevice.getColorCamera();
     }
 
-    public KinectDevice getKinectDevice() {
+    public DepthCameraDevice getKinectDevice() {
         return kinectDevice;
     }
 

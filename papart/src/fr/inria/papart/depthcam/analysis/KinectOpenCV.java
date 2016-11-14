@@ -20,7 +20,7 @@
 package fr.inria.papart.depthcam.analysis;
 
 import fr.inria.papart.depthcam.PixelOffset;
-import fr.inria.papart.depthcam.devices.KinectDevice;
+import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.procam.camera.CameraOpenKinect;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -39,7 +39,7 @@ public class KinectOpenCV extends KinectDepthAnalysis {
     public IplImage validPointsIpl;
     public byte[] validPointsRaw;
 
-    public KinectOpenCV(PApplet parent, KinectDevice kinect) {
+    public KinectOpenCV(PApplet parent, DepthCameraDevice kinect) {
        super(parent, kinect);
        init();
     }

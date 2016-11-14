@@ -30,7 +30,7 @@ import processing.core.PApplet;
  *
  * @author Jeremy Laviole
  */
-public class Kinect360 extends KinectDevice {
+public class Kinect360 extends DepthCameraDevice {
 
 //    public Kinect360(PApplet parent) {
 //        this.parent = parent;
@@ -41,24 +41,21 @@ public class Kinect360 extends KinectDevice {
 //        setStereoCalibration(Papart.kinectStereoCalib);
 //        camera.start();
 //    }
-    
-    public Kinect360(PApplet parent, CameraOpenKinect camera) {
-        super(parent, (CameraRGBIRDepth) camera);
-        camera.getDepthCamera().setCalibration(Papart.kinectIRCalib);
-        setStereoCalibration(Papart.kinectStereoCalib);
-        
-        // --------------------------
-        // TODO: find when to start()
-//        camera.start();
-    }
-    
     public Kinect360(PApplet parent, Camera anotherCamera) {
-        super(parent, anotherCamera);
-        this.anotherCamera = anotherCamera;
-        
-        initDefaultCamera();
+        super(parent);
+
+        if (anotherCamera instanceof CameraOpenKinect) {
+            this.camera = (CameraOpenKinect) anotherCamera;
+                  System.out.println("Use the given Kinect camera");
+        } else {
+            initDefaultCamera();
+            System.out.println("init a default Kinect camera");
+            this.anotherCamera = anotherCamera;
+        }
+        this.camera.setUseDepth(true);
         camera.getDepthCamera().setCalibration(Papart.kinectIRCalib);
         setStereoCalibration(Papart.kinectStereoCalib);
+        camera.start();
     }
 
     @Override

@@ -22,7 +22,7 @@ package fr.inria.papart.depthcam.analysis;
 
 import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
 import fr.inria.papart.depthcam.PixelOffset;
-import fr.inria.papart.depthcam.devices.KinectDevice;
+import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.depthcam.devices.KinectOne;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.papplet;
 import java.util.ArrayList;
@@ -48,7 +48,7 @@ public class KinectProcessing extends KinectDepthAnalysis {
     UByteIndexer erosionIndexer;
     boolean[] validCopy;
 
-    public KinectProcessing(PApplet parent, KinectDevice kinect) {
+    public KinectProcessing(PApplet parent, DepthCameraDevice kinect) {
         super(parent, kinect);
         init();
     }
