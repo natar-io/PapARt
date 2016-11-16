@@ -54,6 +54,7 @@ public class Kinect360 extends DepthCameraDevice {
         }
         this.camera.setUseDepth(true);
         camera.getDepthCamera().setCalibration(Papart.kinectIRCalib);
+        camera.getColorCamera().setCalibration(Papart.kinectRGBCalib);
         setStereoCalibration(Papart.kinectStereoCalib);
         camera.start();
     }

@@ -74,8 +74,8 @@ class CameraThread extends Thread {
     public void run() {
 
         cameraForMarkerboard = camera;
-        if (camera instanceof CameraRealSense) {
-            cameraForMarkerboard = ((CameraRealSense) camera).getActingCamera();
+        if (camera instanceof CameraRGBIRDepth) {
+            cameraForMarkerboard = ((CameraRGBIRDepth) camera).getActingCamera();
         }
 
         while (!stop) {
@@ -86,7 +86,6 @@ class CameraThread extends Thread {
             if (image != null && compute && !camera.getTrackedSheets().isEmpty()) {
                 this.compute();
             }
-
         }
     }
 

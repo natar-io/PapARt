@@ -72,7 +72,7 @@ public class SubCamera extends Camera {
             currentImage = null;
             return camImage;
         }
+        return camImage;
         // TODO: exceptions !!!
-        return null;
     }
 }

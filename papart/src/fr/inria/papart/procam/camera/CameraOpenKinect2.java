@@ -19,8 +19,10 @@
  */
 package fr.inria.papart.procam.camera;
 
+import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.OpenKinect2FrameGrabber;
+import processing.core.PImage;
 
 /**
  *
@@ -30,8 +32,23 @@ public class CameraOpenKinect2 extends CameraRGBIRDepth {
 
     protected OpenKinect2FrameGrabber grabber;
 
+    class Kinect2SubCamera extends SubCamera {
+
+        public Kinect2SubCamera(CameraRGBIRDepth mainCamera) {
+            super(mainCamera);
+        }
+
+        @Override
+        public PImage getPImage() {
+            System.out.println("Kinect2: Get PImage");
+            mainCamera.grab();
+            return super.getPImage();
+        }
+    }
+
     protected CameraOpenKinect2(int cameraNo) {
         this.systemNumber = cameraNo;
+        colorCamera = new Kinect2SubCamera(this);
     }
 
     @Override
@@ -56,15 +73,19 @@ public class CameraOpenKinect2 extends CameraRGBIRDepth {
 
     @Override
     public void internalStart() throws FrameGrabber.Exception {
+        System.out.println("K2: Starting..." + Thread.currentThread());
         grabber.start();
     }
 
-    /***
+    /**
+     * *
      * Warning BUG: cannot grab in a thread and display as PImage in another.
-     * @throws Exception 
+     *
+     * @throws Exception
      */
     @Override
     protected void internalGrab() throws Exception {
+        System.out.println("Grab called." + Thread.currentThread());
         grabber.grab();
     }
 
@@ -93,7 +114,6 @@ public class CameraOpenKinect2 extends CameraRGBIRDepth {
     @Override
     public void enableDepth() {
         grabber.enableDepthStream();
-        System.out.println("enable depth stream");
     }
 
     @Override
@@ -123,7 +143,10 @@ public class CameraOpenKinect2 extends CameraRGBIRDepth {
 
     @Override
     public void grabColor() {
-        colorCamera.updateCurrentImage(grabber.getVideoImage());
+        opencv_core.IplImage videoImage = grabber.getVideoImage();
+        if (videoImage != null) {
+            colorCamera.updateCurrentImage(videoImage);
+        }
     }
 
 }

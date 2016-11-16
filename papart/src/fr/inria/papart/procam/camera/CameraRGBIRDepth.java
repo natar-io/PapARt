@@ -163,7 +163,7 @@ public abstract class CameraRGBIRDepth extends Camera {
     protected abstract void internalStart() throws Exception;
 
     protected boolean isStarting = false;
-    
+
     @Override
     public void start() {
         isStarting = true;
@@ -181,11 +181,12 @@ public abstract class CameraRGBIRDepth extends Camera {
             internalStart();
             this.isConnected = true;
         } catch (Exception e) {
-            System.err.println("Could not Kinect start frameGrabber... " + e);
-            System.err.println("Kinect ID " + this.systemNumber + " could not start.");
+            System.err.println("Could not start frameGrabber... " + e);
+            System.err.println("Depth camera ID " + this.systemNumber + " could not start.");
             System.err.println("Check cable connection and ID.");
+            e.printStackTrace();
         }
-          isStarting = false;
+        isStarting = false;
     }
 
     protected abstract void internalGrab() throws Exception;
@@ -358,7 +359,7 @@ public abstract class CameraRGBIRDepth extends Camera {
 
     @Override
     public void trackMarkerBoard(MarkerBoard sheet) {
-        System.out.println("In trackMarkerboard in CameaRealSense BAAAADD");
+        System.out.println("In trackMarkerboard in CameaRGBIRDepth BAAAADD");
         actAsCamera.trackMarkerBoard(sheet);
     }
 

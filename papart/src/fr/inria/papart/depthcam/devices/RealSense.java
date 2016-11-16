@@ -55,14 +55,14 @@ public final class RealSense extends DepthCameraDevice {
 
     private void useHardwareIntrinsics(CameraRealSense cameraRS) {
         CameraRealSense.useHarwareIntrinsics(cameraRS.getColorCamera(), cameraRS.getFrameGrabber());
-        CameraRealSense.useHarwareIntrinsics(cameraRS.getColorCamera(), cameraRS.getFrameGrabber());
-        CameraRealSense.useHarwareIntrinsics(cameraRS.getColorCamera(), cameraRS.getFrameGrabber());
+        CameraRealSense.useHarwareIntrinsics(cameraRS.getDepthCamera(), cameraRS.getFrameGrabber());
+        CameraRealSense.useHarwareIntrinsics(cameraRS.getIRCamera(), cameraRS.getFrameGrabber());
     }
 
     public CameraRealSense getMainCamera() {
         return cameraRS;
     }
-
+    
     @Override
     public int rawDepthSize() {
         return getDepthCamera().width() * getDepthCamera().height() * 2;

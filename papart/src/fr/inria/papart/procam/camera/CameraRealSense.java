@@ -23,6 +23,7 @@ import java.nio.FloatBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bytedeco.javacpp.RealSense;
+import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.RealSenseFrameGrabber;
 import processing.core.PMatrix3D;
@@ -70,7 +71,9 @@ public class CameraRealSense extends CameraRGBIRDepth {
         if (isUseColor()) {
             colorCamera.setPixelFormat(PixelFormat.RGB);
             colorCamera.type = SubCamera.Type.COLOR;
-            colorCamera.setSize(960, 540);
+            if (colorCamera.width == 0 || colorCamera.height == 0) {
+                colorCamera.setSize(960, 540);
+            }
         }
         if (isUseIR()) {
             IRCamera.setSize(640, 480);
@@ -110,7 +113,7 @@ public class CameraRealSense extends CameraRGBIRDepth {
     }
 
     public static void useHarwareIntrinsics(SubCamera camera, RealSenseFrameGrabber grabber) {
-        if(camera == null || camera == Camera.INVALID_CAMERA){
+        if (camera == null || camera == Camera.INVALID_CAMERA) {
             return;
         }
         int camType = 0;
@@ -134,8 +137,10 @@ public class CameraRealSense extends CameraRGBIRDepth {
 
     @Override
     public void grabColor() {
-        System.out.println("Realsense: Grab Color");
-        colorCamera.updateCurrentImage(grabber.grabVideo());
+        opencv_core.IplImage video = grabber.grabVideo();
+        if (video != null) {
+            colorCamera.updateCurrentImage(video);
+        }
     }
 
     @Override

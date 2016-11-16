@@ -19,8 +19,6 @@
  */
 package fr.inria.papart.procam.camera;
 
-import fr.inria.papart.procam.camera.Camera.Type;
-
 /**
  *
  * @author Jeremy Laviole
@@ -90,7 +88,7 @@ public class CameraFactory {
         }
 
         if (cameraMulti != null) {
-            if (isRGB) {
+            if (isRGB) {  
                 cameraMulti.setUseColor(true);
                 cameraMulti.actAsColorCamera();
             }
@@ -108,15 +106,6 @@ public class CameraFactory {
             return camera;
         }
         throw new RuntimeException("ProCam, Camera: Unspported camera Type");
-    }
-
-    private static boolean checkInt(String str) {
-        try {
-            Integer.parseInt(str);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
     }
 
 }

@@ -262,7 +262,7 @@ public class KinectProcessing extends KinectDepthAnalysis {
     }
 
     private void setPixelColor(int offset) {
-        int colorOffset = kinectDevice.findColorOffset(depthData.depthPoints[offset]) * 3;
+        int colorOffset = depthCameraDevice.findColorOffset(depthData.depthPoints[offset]) * 3;
         int c = (colorRaw[colorOffset + 2] & 0xFF) << 16
                 | (colorRaw[colorOffset + 1] & 0xFF) << 8
                 | (colorRaw[colorOffset + 0] & 0xFF);

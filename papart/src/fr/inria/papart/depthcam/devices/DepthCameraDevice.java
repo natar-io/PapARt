@@ -55,6 +55,10 @@ public abstract class DepthCameraDevice {
         this.parent = parent;
     }
 
+    public CameraRGBIRDepth getMainCamera() {
+        return camera;
+    }
+    
     public SubCamera getColorCamera() {
         return camera.getColorCamera();
     }
@@ -75,9 +79,10 @@ public abstract class DepthCameraDevice {
      * init a depth camera, depth only as there is another color camera.
      */
     protected final void initDefaultCamera() {
-        String id = Papart.getPapart().cameraConfiguration.getCameraName();
+        String id = Papart.getDefaultCameraConfiguration(parent).getCameraName();
         camera = (CameraRGBIRDepth) CameraFactory.createCamera(type(), id);
         camera.setUseDepth(true);
+        camera.setUseColor(true);
         camera.setParent(parent);
     }
 
