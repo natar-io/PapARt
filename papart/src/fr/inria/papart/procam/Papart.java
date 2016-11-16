@@ -313,6 +313,11 @@ public class Papart {
                 cameraTracking.height());
     }
 
+    public void forceDepthCameraSize() {
+        forceWindowSize(depthCameraDevice.getDepthCamera().width(),
+                depthCameraDevice.getDepthCamera().height());
+    }
+
     public void forceWindowSize(int w, int h) {
 
         Papart papart = Papart.getPapart();
@@ -622,7 +627,7 @@ public class Papart {
         cameraTracking.setCalibration(cameraCalib);
         cameraTracking.start();
         loadTracking(cameraCalib);
-//        cameraTracking.setThread();
+        cameraTracking.setThread();
 
         initARDisplay(quality);
         checkInitialization();

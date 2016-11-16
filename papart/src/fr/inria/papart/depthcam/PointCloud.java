@@ -67,7 +67,6 @@ public class PointCloud {
     protected static final int SIZEOF_FLOAT = Float.SIZE / 8;
     protected static final int SIZEOF_BYTE = Byte.SIZE / 8;
     protected boolean usePoints;
-    private int skip = 1;
 
     public PointCloud(PApplet parent, int size) {
         this.parentApplet = parent;

@@ -36,12 +36,18 @@ import toxi.geom.Vec3D;
  */
 public class KinectPointCloud extends PointCloud implements PConstants {
 
+    private KinectDepthAnalysis depthAnalysis;
+    private int precision = 1;
+
     public KinectPointCloud(PApplet parent, KinectDepthAnalysis depthAnalysis, int skip) {
         super(parent, depthAnalysis.getDepthSize() / (skip * skip));
+        this.depthAnalysis = depthAnalysis;
+        precision = skip;
     }
 
     public KinectPointCloud(PApplet parent, KinectDepthAnalysis depthAnalysis) {
         this(parent, depthAnalysis, 1);
+        this.depthAnalysis = depthAnalysis;
     }
 
     public void updateWith(KinectProcessing kinect) {
@@ -52,26 +58,34 @@ public class KinectPointCloud extends PointCloud implements PConstants {
         nbVertices = 0;
         nbColors = 0;
 
-        int k = 0;
-        for (int i = 0; i < kinect.getDepthSize(); i++) {
+//        for (int i = 0; i < kinect.getDepthSize(); i++) {
+        
+        int k = 0; // k is the 3D point cloud memory.
+        for (int y = 0; y < depthAnalysis.getDepthHeight(); y += precision) {
+            for (int x = 0; x < depthAnalysis.getDepthWidth(); x += precision) {
 
-            if (valid[i]) {
-                Vec3D p = points[i];
-                int c = colorsImg.pixels[i];
+                int i = x + y * depthAnalysis.getDepthWidth();
+                
+                if (valid[i]) {
+                    Vec3D p = points[i];
+                    int c = colorsImg.pixels[i];
 
-                verticesJava[k++] = p.x;
-                verticesJava[k++] = p.y;
-                verticesJava[k++] = -p.z;
-                verticesJava[k++] = 1;
+                    verticesJava[k++] = p.x;
+                    verticesJava[k++] = p.y;
+                    verticesJava[k++] = -p.z;
+                    verticesJava[k++] = 1;
 
-                int c2 = javaToNativeARGB(c);
+                    int c2 = javaToNativeARGB(c);
 
-                nbVertices++;
+                    nbVertices++;
 
-                colorsJava[nbColors++] = c2;
-                // Think about dividing the color intensity by 255 in the shader...
+                    colorsJava[nbColors++] = c2;
+                    // Think about dividing the color intensity by 255 in the shader...
+                }
+
             }
         }
+
         verticesNative.rewind();
         verticesNative.put(verticesJava, 0, nbVertices * 4);
 

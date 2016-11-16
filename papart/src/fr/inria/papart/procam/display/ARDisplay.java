@@ -165,7 +165,6 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics{
         drawScreensOver();
         parent.noStroke();
 
-          System.out.println("ARDisplay: GetPImage() ");
         PImage img = camera.getPImage();
       
         if (camera != null && img != null) {

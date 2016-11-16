@@ -100,6 +100,7 @@ class CameraThread extends Thread {
             updateParallel();
 
             camera.getSheetSemaphore().release();
+            System.out.println("detectedMarkers: " + this.detectedMarkers.length);
         } catch (InterruptedException ex) {
             Logger.getLogger(CameraThread.class.getName()).log(Level.SEVERE, null, ex);
         }

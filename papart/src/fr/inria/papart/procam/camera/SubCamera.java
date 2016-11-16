@@ -66,13 +66,13 @@ public class SubCamera extends Camera {
 
     @Override
     public PImage getPImage() {
+        // TODO: time management to avoid to send multiple times the same 
+        // frame to the graphics card. 
         this.checkCamImage();
-        if (currentImage != null) {
+//        if (currentImage != null) {
             camImage.update(currentImage);
-            currentImage = null;
-            return camImage;
-        }
+//            return camImage;
+//        }
         return camImage;
-        // TODO: exceptions !!!
     }
 }
