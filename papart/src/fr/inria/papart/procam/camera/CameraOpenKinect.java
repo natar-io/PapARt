@@ -47,7 +47,7 @@ public class CameraOpenKinect extends CameraRGBIRDepth {
             depthCamera.setPixelFormat(PixelFormat.DEPTH_KINECT_MM);
             depthCamera.type = SubCamera.Type.DEPTH;
             depthCamera.setSize(640, 480);
-            
+
             grabber.setDepthFormat(freenect.FREENECT_DEPTH_MM);
         }
         if (isUseColor()) {
@@ -125,6 +125,8 @@ public class CameraOpenKinect extends CameraRGBIRDepth {
     public void grabDepth() {
         try {
             depthCamera.currentImage = grabber.grabDepth();
+
+            ((WithTouchInput) depthCamera).newTouchImageWithColor(colorCamera.currentImage);
         } catch (FrameGrabber.Exception ex) {
             Logger.getLogger(CameraOpenKinect.class.getName()).log(Level.SEVERE, null, ex);
         }

@@ -46,7 +46,7 @@ public class Kinect360 extends DepthCameraDevice {
 
         if (anotherCamera instanceof CameraOpenKinect) {
             this.camera = (CameraOpenKinect) anotherCamera;
-                  System.out.println("Use the given Kinect camera");
+            this.anotherCamera = camera.getActingCamera();
         } else {
             initDefaultCamera();
             System.out.println("init a default Kinect camera");

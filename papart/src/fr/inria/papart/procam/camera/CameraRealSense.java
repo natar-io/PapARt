@@ -19,6 +19,7 @@
  */
 package fr.inria.papart.procam.camera;
 
+import fr.inria.papart.procam.ProjectiveDeviceP;
 import java.nio.FloatBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -43,6 +44,7 @@ public class CameraRealSense extends CameraRGBIRDepth {
             Logger.getLogger(CameraRealSense.class.getName()).log(Level.SEVERE, null, ex);
         }
         this.systemNumber = cameraNo;
+        grabber = new RealSenseFrameGrabber(this.systemNumber);
 
     }
 
@@ -71,22 +73,44 @@ public class CameraRealSense extends CameraRGBIRDepth {
         if (isUseColor()) {
             colorCamera.setPixelFormat(PixelFormat.RGB);
             colorCamera.type = SubCamera.Type.COLOR;
+            
             if (colorCamera.width == 0 || colorCamera.height == 0) {
-                colorCamera.setSize(960, 540);
+                System.out.println("Setting default realSense width and height...");
+                colorCamera.setSize(1280, 720);
+            }
+
+            if (colorCamera.width() == 1280) {
+                grabber.setFrameRate(60);
+            }
+
+            if (colorCamera.width() == 1920) {
+                grabber.setFrameRate(30);
             }
         }
         if (isUseIR()) {
             IRCamera.setSize(640, 480);
             IRCamera.setPixelFormat(PixelFormat.GRAY);
             IRCamera.type = SubCamera.Type.IR;
+            grabber.setIRFrameRate(60);
         }
-        grabber = new RealSenseFrameGrabber(this.systemNumber);
 
     }
 
     @Override
     public void internalStart() throws FrameGrabber.Exception {
         grabber.start();
+
+        // Override the calibration... 
+        if (useColor) {
+            useHarwareIntrinsics(colorCamera, grabber);
+        }
+        if (useDepth) {
+            useHarwareIntrinsics(depthCamera, grabber);
+        }
+        if (useIR) {
+            useHarwareIntrinsics(IRCamera, grabber);
+        }
+
     }
 
     @Override
@@ -152,7 +176,16 @@ public class CameraRealSense extends CameraRGBIRDepth {
     public void grabDepth() {
         depthCamera.updateCurrentImage(grabber.grabDepth());
         // update the touch input
-        ((WithTouchInput) depthCamera).newTouchImageWithColor(colorCamera.currentImage);
+        
+        if (getActingCamera() == IRCamera) {
+            ((WithTouchInput) depthCamera).newTouchImageWithColor(IRCamera.currentImage);
+            return;
+        }
+        if (getActingCamera() == colorCamera || useColor) {
+            ((WithTouchInput) depthCamera).newTouchImageWithColor(colorCamera.currentImage);
+            return;
+        }
+        ((WithTouchInput) depthCamera).newTouchImage();
     }
 
     @Override

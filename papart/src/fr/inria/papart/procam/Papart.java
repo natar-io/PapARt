@@ -44,6 +44,7 @@ import fr.inria.papart.procam.camera.CameraFactory;
 import fr.inria.papart.procam.camera.CameraOpenKinect;
 import fr.inria.papart.procam.camera.CameraRGBIRDepth;
 import fr.inria.papart.procam.camera.CameraRealSense;
+import fr.inria.papart.procam.camera.SubCamera;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.util.Set;
@@ -198,7 +199,15 @@ public class Papart {
         papart.shouldSetWindowLocation = true;
         papart.shouldSetWindowSize = true;
         papart.registerPost();
-        papart.initProjectorCamera(quality);
+
+        papart.initProjectorDisplay(quality);
+        papart.initCamera();
+
+        papart.tryLoadExtrinsics();
+        papart.projector.setCamera(papart.getPublicCameraTracking());
+
+        papart.checkInitialization();
+
         papart.registerKey();
 
         return papart;
@@ -261,7 +270,9 @@ public class Papart {
         papart.shouldSetWindowSize = true;
         papart.registerPost();
 
-        papart.initCamera(quality);
+        papart.initCamera();
+        papart.initARDisplay(quality);
+        papart.checkInitialization();
 
         return papart;
     }
@@ -286,7 +297,6 @@ public class Papart {
         papart.shouldSetWindowSize = true;
         papart.registerPost();
 
-//        Panel panel = new Panel(applet);
         return papart;
     }
 
@@ -533,49 +543,6 @@ public class Papart {
         initDebugDisplay();
     }
 
-    public void initProjectorCamera() {
-        CameraConfiguration cameraConfiguration = getDefaultCameraConfiguration(this.applet);
-        initProjectorCamera(cameraConfiguration,
-                1);
-    }
-
-    public void initProjectorCamera(float quality) {
-        CameraConfiguration cameraConfiguration = getDefaultCameraConfiguration(this.applet);
-        initProjectorCamera(cameraConfiguration, quality);
-    }
-
-    public void initProjectorCamera(CameraConfiguration cameraConfiguration, float quality) {
-        initProjectorCamera(cameraConfiguration.getCameraName(),
-                cameraConfiguration.getCameraType(),
-                cameraConfiguration.getCameraFormat(),
-                quality);
-    }
-
-    public void initProjectorCamera(String cameraNo, Camera.Type cameraType, String cameraFormat) {
-        initProjectorCamera(cameraNo, cameraType, cameraFormat, 1);
-    }
-
-    /**
-     * Load a projector - camera couple. Default configuration files are used.
-     *
-     * @param quality
-     * @param cameraNo
-     * @param cameraType
-     */
-    public void initProjectorCamera(String cameraNo, Camera.Type cameraType, String cameraFormat, float quality) {
-        assert (!cameraInitialized);
-        initProjectorDisplay(quality);
-        tryLoadExtrinsics();
-        cameraTracking = CameraFactory.createCamera(cameraType, cameraNo, cameraFormat);
-        cameraTracking.setParent(applet);
-        cameraTracking.setCalibration(cameraCalib);
-        cameraTracking.start();
-        loadTracking(cameraCalib);
-        cameraTracking.setThread();
-        projector.setCamera(getPublicCameraTracking());
-        checkInitialization();
-    }
-
     private void tryLoadExtrinsics() {
         PMatrix3D extrinsics = loadCalibration(cameraProjExtrinsics);
         if (extrinsics == null) {
@@ -590,25 +557,14 @@ public class Papart {
      *
      */
     public void initCamera() {
-        initCamera(1);
-    }
-
-    /**
-     * Initialize the default camera for object tracking.
-     *
-     * @param quality default is 1, to downscale go below 1, try 0.8, for better
-     * quality go higher like 2.
-     */
-    public void initCamera(float quality) {
         CameraConfiguration cameraConfiguration = getDefaultCameraConfiguration(applet);
-        initCamera(cameraConfiguration, quality);
+        initCamera(cameraConfiguration);
     }
 
-    public void initCamera(CameraConfiguration cameraConfiguration, float quality) {
+    public void initCamera(CameraConfiguration cameraConfiguration) {
         initCamera(cameraConfiguration.getCameraName(),
                 cameraConfiguration.getCameraType(),
-                cameraConfiguration.getCameraFormat(),
-                quality);
+                cameraConfiguration.getCameraFormat());
     }
 
     /**
@@ -616,21 +572,15 @@ public class Papart {
      *
      */
     public void initCamera(String cameraNo, Camera.Type cameraType, String cameraFormat) {
-        initCamera(cameraNo, cameraType, cameraFormat, 1);
-    }
-
-    public void initCamera(String cameraNo, Camera.Type cameraType, String cameraFormat, float quality) {
         assert (!cameraInitialized);
 
         cameraTracking = CameraFactory.createCamera(cameraType, cameraNo, cameraFormat);
         cameraTracking.setParent(applet);
         cameraTracking.setCalibration(cameraCalib);
-        cameraTracking.start();
-        loadTracking(cameraCalib);
-        cameraTracking.setThread();
-
-        initARDisplay(quality);
-        checkInitialization();
+        // TEST: no more start here...
+//        cameraTracking.start();
+//        loadTracking(cameraCalib);
+//        cameraTracking.setThread();
     }
 
     private void initProjectorDisplay(float quality) {
@@ -682,8 +632,9 @@ public class Papart {
         Camera.convertARParams(this.applet, calibrationPath, camCalibARtoolkit);
         getPublicCameraTracking().initMarkerDetection(camCalibARtoolkit);
 
+        // CODE to delete ?
         // The camera view is handled in another thread;
-        cameraInitialized = true;
+//        cameraInitialized = true;
     }
 
     /**
@@ -693,11 +644,6 @@ public class Papart {
     public void loadTouchInputKinectOnly() {
 
         loadDefaultDepthCamera();
-
-//         cameraTracking = kinectDevice.getCameraRGB();
-//        kinectDevice.getCameraRGB().setThread();
-//        kinectDevice.getCameraDepth().setThread();
-//        cameraInitialized = true;
         loadDefaultTouchKinect();
 
         // Specific ?
@@ -715,9 +661,6 @@ public class Papart {
      */
     public void loadTouchInput() {
         loadDefaultDepthCamera();
-
-//        kinectDevice.getCameraRGB().setThread();
-//        kinectDevice.getCameraDepth().setThread();
         loadDefaultTouchKinect();
 
         // setExtrinsics must after the kinect stereo calibration is loaded
@@ -761,6 +704,7 @@ public class Papart {
             System.err.println("Could not load the depth camera !" + "Camera Type " + kinectConfiguration.getCameraType());
         }
 
+        // At this point, cameraTracking & depth Camera are ready. 
         return depthCameraDevice;
     }
 
@@ -838,12 +782,23 @@ public class Papart {
 
     }
 
+    /**
+     * Start the camera thread, and the tracking. it calls automaticall
+     * startCameraThread().
+     */
     public void startTracking() {
         if (this.cameraTracking == null) {
             System.err.println("Start Tracking requires a Camera...");
             return;
         }
+        loadTracking(cameraCalib);
         this.getPublicCameraTracking().trackSheets(true);
+        startCameraThread();
+    }
+
+    public void startCameraThread() {
+        cameraTracking.start();
+        cameraTracking.setThread();
     }
 
     public void stop() {
@@ -929,7 +884,7 @@ public class Papart {
         return this.depthCameraDevice.getColorCamera();
     }
 
-    public DepthCameraDevice getKinectDevice() {
+    public DepthCameraDevice getDepthCameraDevice() {
         return depthCameraDevice;
     }
 
@@ -937,7 +892,7 @@ public class Papart {
         return this.kinectDepthAnalysis;
     }
 
-    public Camera.Type getKinectType() {
+    public Camera.Type getDepthCameraType() {
         if (depthCameraDevice == null) {
             return Camera.Type.FAKE;
         }

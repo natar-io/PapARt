@@ -139,6 +139,7 @@ public class CameraOpenKinect2 extends CameraRGBIRDepth {
     @Override
     public void grabDepth() {
         depthCamera.currentImage = grabber.getDepthImage();
+        ((WithTouchInput) depthCamera).newTouchImageWithColor(colorCamera.currentImage);
     }
 
     @Override

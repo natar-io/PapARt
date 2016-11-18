@@ -45,8 +45,8 @@ public class CalibrationExtrinsic {
     private Papart papart;
 
     // Kinect
-    private Camera.Type kinectType;
-    private DepthCameraDevice kinectDevice;
+    private Camera.Type depthCameraType;
+    private DepthCameraDevice depthCameraDevice;
 
     public CalibrationExtrinsic(PApplet parent) {
         this.parent = parent;
@@ -57,13 +57,13 @@ public class CalibrationExtrinsic {
         this.projector = projector;
     }
 
-    public void setDefaultKinect() {
-        this.kinectType = papart.getKinectType();
-        this.kinectDevice = papart.getKinectDevice();
+    public void setDefaultDepthCamera() {
+        this.depthCameraType = papart.getDepthCameraType();
+        this.depthCameraDevice = papart.getDepthCameraDevice();
     }
-    public void setKinect(DepthCameraDevice device, Camera.Type type) {
-        this.kinectType = type;
-        this.kinectDevice = device;
+    public void setDepthCamera(DepthCameraDevice device, Camera.Type type) {
+        this.depthCameraType = type;
+        this.depthCameraDevice = device;
     }
 
     public PMatrix3D getKinectCamExtrinsics() {
@@ -77,7 +77,7 @@ public class CalibrationExtrinsic {
                 0, 0, 0, 0);
 
         for (CalibrationSnapshot snapshot : snapshots) {
-            PMatrix3D extr = computeExtrinsics(snapshot.cameraPaper,
+            PMatrix3D extr = computeExtrinsics(snapshot.mainCameraPaper,
                     snapshot.projectorPaper);
             Utils.addMatrices(sum, extr);
         }
@@ -92,16 +92,16 @@ public class CalibrationExtrinsic {
     }
 
     public void calibrateKinect(ArrayList<CalibrationSnapshot> snapshots) {
-        if (this.kinectType == Camera.Type.OPEN_KINECT_2) {
+        if (this.depthCameraType == Camera.Type.OPEN_KINECT_2) {
             calibrateKinectOne(snapshots);
         }
-        if (this.kinectType == Camera.Type.OPEN_KINECT) {
+        if (this.depthCameraType == Camera.Type.OPEN_KINECT) {
             calibrateKinect360(snapshots);
         }
     }
 
     protected void calibrateKinectOne(ArrayList<CalibrationSnapshot> snapshots) {
-        PMatrix3D kinectExtr = kinectDevice.getStereoCalibration().get();
+        PMatrix3D kinectExtr = depthCameraDevice.getStereoCalibration().get();
         kinectExtr.invert();
 
         PlaneCalibration planeCalibCam = computeAveragePlaneCam(snapshots);
@@ -133,7 +133,7 @@ public class CalibrationExtrinsic {
 
     protected void calibrateKinect360Extr(ArrayList<CalibrationSnapshot> snapshots) {
         // Depth -> color  extrinsics
-        PMatrix3D kinectExtr = kinectDevice.getStereoCalibration().get();
+        PMatrix3D kinectExtr = depthCameraDevice.getStereoCalibration().get();
 
         // color -> depth  extrinsics
         kinectExtr.invert();
@@ -150,7 +150,7 @@ public class CalibrationExtrinsic {
 
     public boolean calibrateKinect360Plane(ArrayList<CalibrationSnapshot> snapshots) {
         // Depth -> color  extrinsics
-        PMatrix3D kinectExtr = kinectDevice.getStereoCalibration().get();
+        PMatrix3D kinectExtr = depthCameraDevice.getStereoCalibration().get();
 
         // color -> depth  extrinsics
         kinectExtr.invert();
@@ -181,7 +181,7 @@ public class CalibrationExtrinsic {
     
     public boolean calibrateKinect360PlaneOnly(ArrayList<CalibrationSnapshot> snapshots) {
         // Depth -> color  extrinsics
-        PMatrix3D kinectExtr = kinectDevice.getStereoCalibration().get();
+        PMatrix3D kinectExtr = depthCameraDevice.getStereoCalibration().get();
 
         // color -> depth  extrinsics
         kinectExtr.invert();
@@ -227,7 +227,7 @@ public class CalibrationExtrinsic {
             /// depth -> color -> color -> Paper
             boardFromDepth.preApply(stereoExtr);
 
-            PMatrix3D extr = computeExtrinsics(boardFromDepth, snapshot.cameraPaper);
+            PMatrix3D extr = computeExtrinsics(boardFromDepth, snapshot.mainCameraPaper);
 
             Utils.addMatrices(sum, extr);
             nbCalib++;
@@ -281,12 +281,12 @@ public class CalibrationExtrinsic {
         int nbPlanes = 0;
         for (CalibrationSnapshot snapshot : snapshots) {
 
-            if (snapshot.cameraPaper == null) {
+            if (snapshot.mainCameraPaper == null) {
                 continue;
             }
 
             PlaneCalibration cam = PlaneCalibration.CreatePlaneCalibrationFrom(
-                    snapshot.cameraPaper.get(), paperSize);
+                    snapshot.mainCameraPaper.get(), paperSize);
 
             Utils.sumPlane(sumCam, cam.getPlane());
             nbPlanes++;

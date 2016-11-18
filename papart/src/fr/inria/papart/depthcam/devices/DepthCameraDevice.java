@@ -27,6 +27,7 @@ import fr.inria.papart.procam.camera.CameraFactory;
 import fr.inria.papart.procam.camera.CameraRGBIRDepth;
 import fr.inria.papart.procam.camera.SubCamera;
 import fr.inria.papart.procam.camera.SubDepthCamera;
+import org.bytedeco.javacpp.opencv_core.IplImage;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
@@ -57,6 +58,10 @@ public abstract class DepthCameraDevice {
 
     public CameraRGBIRDepth getMainCamera() {
         return camera;
+    }
+    
+    public Camera getOtherCamera() {
+        return anotherCamera;
     }
     
     public SubCamera getColorCamera() {
@@ -156,7 +161,10 @@ public abstract class DepthCameraDevice {
         //  Ideally use a calibration... 
 //        kinectCalibRGB.getExtrinsics().mult(vt, vt2);       
         getStereoCalibration().mult(vt, vt2);
-        return getColorCamera().getProjectiveDevice().worldToPixel(vt2.x, vt2.y, vt2.z);
+        
+        // TODO: find a solution for this...
+        return anotherCamera.getProjectiveDevice().worldToPixel(vt2.x, vt2.y, vt2.z);
+//        return getColorCamera.getProjectiveDevice().worldToPixel(vt2.x, vt2.y, vt2.z);
     }
 
 }

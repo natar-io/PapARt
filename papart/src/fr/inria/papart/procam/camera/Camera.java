@@ -182,6 +182,10 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
      */
     public PImage getPImageCopy(PApplet context) {
         PImage out = context.createImage(this.width, this.height, RGB);
+
+        if(currentImage.nChannels() == 1){
+
+        }
         Utils.IplImageToPImage(currentImage, this.format == PixelFormat.RGB, out);
         return out;
     }

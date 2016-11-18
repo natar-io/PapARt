@@ -101,8 +101,12 @@ public class TrackedView {
     }
 
     public void init() {
-        extractedImage = new PImage(imageWidthPx, imageHeightPx, PApplet.RGB);
-
+        init(PApplet.RGB);
+    }
+    
+    public void init(int frameType) {
+        // TODO: Init with good color... 
+        extractedImage = new PImage(imageWidthPx, imageHeightPx, frameType);
         initiateImageCoordinates();
     }
 
@@ -132,6 +136,9 @@ public class TrackedView {
         this.camera = camera;
 
         CvMat homography = computeHomography();
+        
+        // Convert to the good type... 
+        
         Utils.remapImage(homography, camera.getIplImage(), extractedIplImage, extractedImage);
         return extractedImage;
     }

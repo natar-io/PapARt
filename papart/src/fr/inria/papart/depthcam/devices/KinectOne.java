@@ -34,6 +34,7 @@ public final class KinectOne extends DepthCameraDevice {
         super(parent);
         if (incomingCamera instanceof CameraOpenKinect2) {
             this.camera = (CameraOpenKinect2) incomingCamera;
+            this.anotherCamera = camera.getActingCamera();
         } else {
             initDefaultCamera();
             this.anotherCamera = incomingCamera;

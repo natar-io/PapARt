@@ -40,6 +40,7 @@ import toxi.geom.Matrix4x4;
 import toxi.geom.Vec3D;
 import java.io.*;
 import java.nio.FloatBuffer;
+import static processing.core.PConstants.ALPHA;
 import static processing.core.PConstants.HSB;
 
 /**
@@ -341,6 +342,12 @@ public class Utils {
                     3);
         }
 
+        if (in.format == ALPHA) {
+            imgOut = cvCreateImage(outSize, // size
+                    IPL_DEPTH_8U, // depth
+                    1);
+        }
+
         if (in.format == ARGB) {
             imgOut = cvCreateImage(outSize, // size
                     IPL_DEPTH_8U, // depth
@@ -579,8 +586,14 @@ public class Utils {
             buff.get(arr);
 
             for (int i = 0; i < img.width() * img.height(); i++) {
-                int d = (arr[i] & 0xFF);
-                ret.pixels[i] = d;
+
+                byte d = arr[i];
+//                int d = (arr[i] & 0xFF);
+                ret.pixels[i]
+                        = (0xFF) << 24
+                        | (d & 0xFF) << 16
+                        | (d & 0xFF) << 8
+                        | (d & 0xFF);
             }
 
         }
@@ -662,14 +675,15 @@ public class Utils {
         }
         argb.rewind();
     }
+
     static public void byteBufferDepthK1MMtoARGB(ByteBuffer gray, ByteBuffer argb) {
         byte[] depthRaw = new byte[2];
-        
+
         for (int i = 0; i < argb.capacity(); i += 4) {
             gray.get(depthRaw);
 
             int d = (depthRaw[0] & 0xFF) << 8 | (depthRaw[1] & 0xFF);
-            
+
             // min depth: 400
             byte dValue = (byte) ((d - 300f) / 3000f * 255f);
             argb.put(dValue);

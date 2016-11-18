@@ -149,14 +149,14 @@ public abstract class CameraRGBIRDepth extends Camera {
     }
 
     void grab(SubCamera camera) {
-        if (camera.type == SubCamera.Type.DEPTH) {
-            grabDepth();
+        if (camera.type == SubCamera.Type.COLOR) {
+            grabColor();
         }
         if (camera.type == SubCamera.Type.IR) {
             grabIR();
         }
-        if (camera.type == SubCamera.Type.COLOR) {
-            grabColor();
+        if (camera.type == SubCamera.Type.DEPTH) {
+            grabDepth();
         }
     }
 
@@ -388,7 +388,28 @@ public abstract class CameraRGBIRDepth extends Camera {
         return actAsCamera.getSheetSemaphore();
     }
 
-    //
+    /**
+     * SetThread called by a subcamera, either color or IR (not checked).
+     *
+     * @param subCam
+     */
+    void setThread(SubCamera subCam) {
+        if (thread == null) {
+            thread = new CameraThread(this);
+            thread.setCompute(subCam.trackSheets);
+            subCam.thread = thread;
+
+            thread.setCompute(trackSheets);
+            thread.start();
+        } else {
+            System.err.println("Camera: Error Thread already launched");
+        }
+    }
+
+    /**
+     * Called from aynwhere, start the thread and use the acting camera to track
+     * sheets of paper.
+     */
     @Override
     public void setThread() {
         if (thread == null) {

@@ -69,8 +69,11 @@ public class KinectTouchInput extends TouchInput {
     // List of TouchPoints, given to the user
     private final ArrayList<TouchPoint> touchPoints2D = new ArrayList<>();
     private final ArrayList<TouchPoint> touchPoints3D = new ArrayList<>();
-    private final TouchDetectionSimple2D touchDetection2D;
-    private final TouchDetectionSimple3D touchDetection3D;
+    private TouchDetectionSimple2D touchDetection2D;
+    private TouchDetectionSimple3D touchDetection3D;
+
+    private PlanarTouchCalibration touchCalib2D;
+    private PlanarTouchCalibration touchCalib3D;
 
     public KinectTouchInput(PApplet applet,
             DepthCameraDevice kinectDevice,
@@ -80,38 +83,59 @@ public class KinectTouchInput extends TouchInput {
         this.depthAnalysis = depthAnalysis;
         this.kinectDevice = kinectDevice;
         this.planeAndProjCalibration = calibration;
-        this.touchDetection2D = new TouchDetectionSimple2D(depthAnalysis.getDepthSize());
-        this.touchDetection3D = new TouchDetectionSimple3D(depthAnalysis.getDepthSize());
     }
-    
-    public void setPlaneAndProjCalibration(PlaneAndProjectionCalibration papc){
+
+    public void setPlaneAndProjCalibration(PlaneAndProjectionCalibration papc) {
         this.planeAndProjCalibration = papc;
     }
 
     public void setTouchDetectionCalibration(PlanarTouchCalibration touchCalib) {
-        this.touchDetection2D.setCalibration(touchCalib);
+        touchCalib2D = touchCalib;
     }
 
     public void setTouchDetectionCalibration3D(PlanarTouchCalibration touchCalib) {
-        this.touchDetection3D.setCalibration(touchCalib);
+//        this.touchDetection3D.setCalibration(touchCalib);
+        touchCalib3D = touchCalib;
     }
 
     @Override
     public void update() {
         try {
-            IplImage depthImage = kinectDevice.getDepthCamera().getIplImage();
-            IplImage colImage = kinectDevice.getColorCamera().getIplImage();
+            IplImage depthImage;
+            IplImage colImage = null;
+
+            // TODO: to only once ?
+            if (kinectDevice.getMainCamera().isUseColor()) {
+                colImage = kinectDevice.getColorCamera().getIplImage();
+            }
+            if (kinectDevice.getMainCamera().isUseIR()) {
+                colImage = kinectDevice.getIRCamera().getIplImage();
+            }
+
+            depthImage = kinectDevice.getDepthCamera().getIplImage();
+
+            if (depthImage == null) {
+//                 System.out.println("No Image. " + colImage + " " + depthImage);
+                return;
+            }
 
             depthDataSem.acquire();
-            if (colImage == null || depthImage == null) {
-                 System.out.println("No Image.");
-                return;
+
+            // Allocate the data when everything else is ready. 
+            // TODO: all the time ?...
+            if (touchDetection2D == null) {
+                int depthSize = kinectDevice.getDepthCamera().width() * kinectDevice.getDepthCamera().height();
+                touchDetection2D = new TouchDetectionSimple2D(depthSize);
+                touchDetection3D = new TouchDetectionSimple3D(depthSize);
+
+                touchDetection2D.setCalibration(touchCalib2D);
+                touchDetection3D.setCalibration(touchCalib3D);
+                depthAnalysis.updateCalibrations(kinectDevice);
             }
 
             touch2DPrecision = touchDetection2D.getPrecision();
             touch3DPrecision = touchDetection3D.getPrecision();
             if (touch2DPrecision > 0 && touch3DPrecision > 0) {
-                
                 depthAnalysis.updateMT(depthImage, colImage, planeAndProjCalibration, touch2DPrecision, touch3DPrecision);
                 findAndTrack2D();
                 findAndTrack3D();
@@ -249,9 +273,8 @@ public class KinectTouchInput extends TouchInput {
             return null;
         }
     }
-    
+
     // TODO: Do the same without the Display, use the extrinsics instead! 
-    
     // TODO: Do the same with DepthDataElement  instead of  DepthPoint ?
     public ArrayList<DepthPoint> projectDepthData(ARDisplay display, Screen screen) {
         ArrayList<DepthPoint> list = projectDepthData2D(display, screen);
@@ -382,13 +405,25 @@ public class KinectTouchInput extends TouchInput {
         }
         ByteBuffer cBuff = colorImage.getByteBuffer();
 
-        for (TouchPoint tp : touchPointList) {
-            int offset = 3 * depthAnalysis.kinectDevice().findColorOffset(tp.getPositionKinect());
+        if (colorImage.nChannels() == 1) {
+            for (TouchPoint tp : touchPointList) {
+                int offset = depthAnalysis.getDepthCameraDevice().findColorOffset(tp.getPositionKinect());
+                int c = cBuff.get(offset);
+                tp.setColor((255 & 0xFF) << 24
+                        | (c & 0xFF) << 16
+                        | (c & 0xFF) << 8
+                        | (c & 0xFF));
+            }
+        }
+        if (colorImage.nChannels() == 3) {
+            for (TouchPoint tp : touchPointList) {
+                int offset = 3 * depthAnalysis.getDepthCameraDevice().findColorOffset(tp.getPositionKinect());
 
-            tp.setColor((255 & 0xFF) << 24
-                    | (cBuff.get(offset + 2) & 0xFF) << 16
-                    | (cBuff.get(offset + 1) & 0xFF) << 8
-                    | (cBuff.get(offset) & 0xFF));
+                tp.setColor((255 & 0xFF) << 24
+                        | (cBuff.get(offset + 2) & 0xFF) << 16
+                        | (cBuff.get(offset + 1) & 0xFF) << 8
+                        | (cBuff.get(offset) & 0xFF));
+            }
         }
     }
 

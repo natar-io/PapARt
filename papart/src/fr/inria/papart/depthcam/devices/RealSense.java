@@ -36,33 +36,29 @@ public final class RealSense extends DepthCameraDevice {
 
     public RealSense(PApplet parent, Camera anotherCam) {
         super(parent);
+
         if (anotherCam instanceof CameraRealSense) {
             this.camera = (CameraRealSense) anotherCam;
+            this.camera.setUseDepth(true);
         } else {
             initDefaultCamera();
             this.anotherCamera = anotherCam;
         }
-        this.camera.setUseDepth(true);
+
+        if (this.anotherCamera == null) {
+            this.anotherCamera = getColorCamera();
+        }
+
         cameraRS = (CameraRealSense) camera;
-//        cameraRS.setCalibration(Papart.kinectRGBCalib);
-//        cameraRS.getDepthCamera().setCalibration(Papart.kinectIRCalib);
 //        setStereoCalibration(Papart.kinectStereoCalib);
 
-        camera.start();
         setStereoCalibration(cameraRS.getHardwareExtrinsics());
-        useHardwareIntrinsics(cameraRS);
-    }
-
-    private void useHardwareIntrinsics(CameraRealSense cameraRS) {
-        CameraRealSense.useHarwareIntrinsics(cameraRS.getColorCamera(), cameraRS.getFrameGrabber());
-        CameraRealSense.useHarwareIntrinsics(cameraRS.getDepthCamera(), cameraRS.getFrameGrabber());
-        CameraRealSense.useHarwareIntrinsics(cameraRS.getIRCamera(), cameraRS.getFrameGrabber());
     }
 
     public CameraRealSense getMainCamera() {
         return cameraRS;
     }
-    
+
     @Override
     public int rawDepthSize() {
         return getDepthCamera().width() * getDepthCamera().height() * 2;

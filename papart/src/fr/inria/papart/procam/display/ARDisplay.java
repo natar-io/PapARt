@@ -103,6 +103,10 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics{
         }
     }
 
+    public void setCalibration(Camera c){
+        setCalibration(c.getProjectiveDevice());
+    }
+    
     protected void setCalibration(ProjectiveDeviceP pdp) {
         // Load the camera parameters.
 //            pdp = ProjectiveDeviceP.loadProjectiveDevice(calibrationYAML, 0);

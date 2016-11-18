@@ -43,8 +43,8 @@ public class SubCamera extends Camera {
 
     @Override
     public void start() {
-        if(!mainCamera.isStarting){
-          throw new RuntimeException("Cannot start a subCamera: start the main camera instead.");
+        if (!mainCamera.isStarting) {
+            throw new RuntimeException("Cannot start a subCamera: start the main camera instead.");
         }
         mainCamera.start(this);
         isConnected = true;
@@ -64,15 +64,31 @@ public class SubCamera extends Camera {
         mainCamera.disable(this);
     }
 
+    /**
+     * It makes the camera update continuously.
+     */
+    public void setThread() {
+        // thread must be of the main camera...
+        mainCamera.setThread(this);
+        
+        if (thread == null) {
+            thread = new CameraThread(this);
+            thread.setCompute(this.trackSheets);
+            thread.start();
+        } else {
+            System.err.println("Camera: Error Thread already launched");
+        }
+    }
+
     @Override
     public PImage getPImage() {
         // TODO: time management to avoid to send multiple times the same 
         // frame to the graphics card. 
         this.checkCamImage();
-//        if (currentImage != null) {
+        if (currentImage != null) {
             camImage.update(currentImage);
 //            return camImage;
-//        }
+        }
         return camImage;
     }
 }
