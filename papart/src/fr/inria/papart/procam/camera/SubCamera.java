@@ -36,6 +36,10 @@ public class SubCamera extends Camera {
     public SubCamera(CameraRGBIRDepth mainCamera) {
         this.mainCamera = mainCamera;
     }
+    public SubCamera(CameraRGBIRDepth mainCamera, Type type) {
+        this.mainCamera = mainCamera;
+        this.type = type;
+    }
 
     public Camera getMainCamera() {
         return mainCamera;

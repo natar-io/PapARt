@@ -34,6 +34,10 @@ public class SubDepthCamera extends SubCamera implements WithTouchInput{
         super(mainCamera);
     }
     
+    public SubDepthCamera(CameraRGBIRDepth mainCamera, Type type) {
+        super(mainCamera, type);
+    }
+    
     @Override
     public KinectTouchInput getTouchInput() {
         return touchInput;

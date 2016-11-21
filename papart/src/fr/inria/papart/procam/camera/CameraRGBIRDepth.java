@@ -46,9 +46,9 @@ public abstract class CameraRGBIRDepth extends Camera {
     protected boolean useColor = false;
 
     public CameraRGBIRDepth() {
-        colorCamera = new SubCamera(this);
-        depthCamera = new SubDepthCamera(this);
-        IRCamera = new SubCamera(this);
+        colorCamera = new SubCamera(this, SubCamera.Type.COLOR);
+        depthCamera = new SubDepthCamera(this, SubCamera.Type.DEPTH);
+        IRCamera = new SubCamera(this, SubCamera.Type.IR);
     }
 
     @Override
