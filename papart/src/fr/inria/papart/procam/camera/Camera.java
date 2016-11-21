@@ -96,7 +96,7 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
     // Instance variables
     protected PApplet parent = null;
 
-    private List<MarkerBoard> sheets = null;
+    private final List<MarkerBoard> sheets = Collections.synchronizedList(new ArrayList<MarkerBoard>());
     private final Semaphore sheetsSemaphore = new Semaphore(1);
 
     // ARToolkit 
@@ -162,6 +162,7 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
     }
 
     private void updateCalibration() {
+        System.out.println("updateCalibrationcalled:");
         camIntrinsicsP3D = pdp.getIntrinsics();
         this.width = pdp.getWidth();
         this.height = pdp.getHeight();
@@ -255,16 +256,8 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
         return this.calibrationFile;
     }
 
-    /**
-     * Initialize the tracking with ARToolkit plus.
-     *
-     * @param calibrationARToolkit
-     */
-    public void initMarkerDetection(String calibrationARToolkit) {
-        // Marker Detection and view
+    public void setCalibrationARToolkit(String calibrationARToolkit) {
         this.calibrationARToolkit = calibrationARToolkit;
-        this.sheets = Collections.synchronizedList(new ArrayList<MarkerBoard>());
-        System.out.println("Init MARKER DETECTION " + this + " " + this.sheets);
     }
 
     public String getCalibrationARToolkit() {
@@ -305,8 +298,6 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
 
         if (thread != null) {
             thread.setCompute(auto);
-        } else {
-            System.err.println("Camera: Error AutoCompute only if threaded.");
         }
     }
 
@@ -396,7 +387,7 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
         }
     }
 
-    protected boolean isPixelFormatGray() {
+    public boolean isPixelFormatGray() {
         PixelFormat pixelFormat = getPixelFormat();
         return pixelFormat == PixelFormat.GRAY
                 || pixelFormat == PixelFormat.GRAY_32
@@ -405,7 +396,7 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
                 || pixelFormat == PixelFormat.DEPTH_KINECT_MM;
     }
 
-    protected boolean isPixelFormatColor() {
+    public boolean isPixelFormatColor() {
         PixelFormat pixelFormat = getPixelFormat();
         return pixelFormat == PixelFormat.ARGB
                 || pixelFormat == PixelFormat.BGR
@@ -501,6 +492,15 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
 //            fr.inria.papart.procam.Utils.convertARParam(parent, calibrationYAML, calibrationData, width, height);
             // ARToolkit Plus 2.3.0
             fr.inria.papart.procam.Utils.convertARParam2(parent, calibrationFile, calibrationARtoolkit);
+        } catch (Exception e) {
+            PApplet.println("Conversion error. " + e);
+        }
+    }
+    
+    static public void convertARParams(PApplet parent, ProjectiveDeviceP projectiveDevice,
+            String calibrationARtoolkit) {
+        try {
+            fr.inria.papart.procam.Utils.convertARParamFromDevice(parent, projectiveDevice, calibrationARtoolkit);
         } catch (Exception e) {
             PApplet.println("Conversion error. " + e);
         }

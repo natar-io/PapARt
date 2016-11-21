@@ -41,6 +41,7 @@ import toxi.geom.Vec3D;
 import java.io.*;
 import java.nio.FloatBuffer;
 import static processing.core.PConstants.ALPHA;
+import static processing.core.PConstants.GRAY;
 import static processing.core.PConstants.HSB;
 
 /**
@@ -335,6 +336,7 @@ public class Utils {
         outSize.width(in.width);
         outSize.height(in.height);
 
+        System.out.println("inputImage to create an IPL:"  + in.width + " " + in.height + " " + in.format );
         IplImage imgOut = null;
         if (in.format == RGB) {
             imgOut = cvCreateImage(outSize, // size
@@ -342,7 +344,7 @@ public class Utils {
                     3);
         }
 
-        if (in.format == ALPHA) {
+        if (in.format == ALPHA || in.format == GRAY) {
             imgOut = cvCreateImage(outSize, // size
                     IPL_DEPTH_8U, // depth
                     1);
@@ -815,7 +817,6 @@ public class Utils {
     }
 
     static public void convertARParam2(PApplet pa, String inputYAML, String outputDAT) throws Exception {
-
         CameraDevice cam = null;
 
         // Hack 
@@ -872,6 +873,49 @@ public class Utils {
                 sb.append("0 ");
             }
         }
+        // undist iterations
+        sb.append("10\n");
+
+        pw.print(sb);
+        pw.flush();
+        pw.close();
+    }
+    
+    static public void convertARParamFromDevice(PApplet pa, ProjectiveDeviceP pdp, String outputDAT) throws Exception {
+
+        PrintWriter pw = pa.createWriter(outputDAT);
+        StringBuffer sb = new StringBuffer();
+
+        // From ARToolkitPlus...
+//http://www.vision.caltech.edu/bouguetj/calib_doc/htmls/parameters.html
+        sb.append("ARToolKitPlus_CamCal_Rev02\n");
+        sb.append(pdp.getWidth()).append(" ").append(pdp.getHeight()).append(" ");
+
+        // cx cy  fx fy  
+        sb.append(pdp.getCx()).append(" ").append(pdp.getCy())
+                .append(" ").append(pdp.getFx()).
+                append(" ").append(pdp.getFy()).append(" ");
+
+        // alpha_c  // skew factor  
+        sb.append("0 ").append(" ");
+
+//        if(pdp.handleDistorsions()){
+            // TODO: handle the distorsions... 
+//            double[] distort = cam.distortionCoeffs.get();
+//            // alpha_c ?  
+////        sb.append("0 ");
+//            // kc(1 - x)  -> 6 values
+//            for (int i = 0; i < distort.length; i++) {
+//                sb.append(distort[i]).append(" ");
+//            }
+//            for (int i = distort.length; i < 6; i++) {
+//                sb.append("0 ");
+//            }
+//        } else {
+            for (int i = 0; i < 6; i++) {
+                sb.append("0 ");
+            }
+//        }
         // undist iterations
         sb.append("10\n");
 

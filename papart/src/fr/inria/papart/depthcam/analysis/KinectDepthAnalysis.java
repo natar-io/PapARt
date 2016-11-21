@@ -155,6 +155,7 @@ public class KinectDepthAnalysis extends DepthAnalysis {
 
         depthData = new KinectDepthData(this);
         depthData.projectiveDevice = this.calibDepth;
+        
         if (depthCameraDevice instanceof Kinect360) {
             depthComputationMethod = new Kinect360Depth();
         }
@@ -322,12 +323,23 @@ public class KinectDepthAnalysis extends DepthAnalysis {
         PVector v = new PVector(x, y, z);
         PVector v2 = new PVector();
 
+        // Point is now in the Depth coordinates
         depthCameraDevice.getStereoCalibrationInv().mult(v, v2);
+        
         // v2 is now the location in KinectDepth instead of KinectRGB coordinates.
 
+        // Point is now in pixel coordinates 
         int worldToPixel = getDepthCameraDevice().getDepthCamera().getProjectiveDevice().worldToPixel(v2);
 
-        return Utils.toPVector(depthData.depthPoints[worldToPixel]);
+        // Point viewed in the depth camera point of view. 
+        PVector pointDepth = Utils.toPVector(depthData.depthPoints[worldToPixel]);
+        
+        return pointDepth;
+        // get it back in the RGB point of view.
+//        PVector out = new PVector();
+//        depthCameraDevice.getStereoCalibration().mult(pointDepth, out);
+//        return out;
+//        return Utils.toPVector(depthData.depthPoints[worldToPixel]);
     }
 
     protected void updateRawDepth(opencv_core.IplImage depthImage) {

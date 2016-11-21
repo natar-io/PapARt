@@ -48,6 +48,8 @@ import fr.inria.papart.procam.camera.SubCamera;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.reflections.Reflections;
 import processing.core.PApplet;
 import processing.core.PFont;
@@ -255,20 +257,20 @@ public class Papart {
      */
     public static Papart seeThrough(PApplet applet, float quality) {
 
-        CameraConfiguration cameraConfiguration = getDefaultCameraConfiguration(applet);
-
-        Camera cameraTracking = CameraFactory.createCamera(
-                cameraConfiguration.getCameraType(),
-                cameraConfiguration.getCameraName(),
-                cameraConfiguration.getCameraFormat());
-        cameraTracking.setParent(applet);
-        cameraTracking.setCalibration(cameraCalib);
+        ProjectiveDeviceP pdp = null;
+        try {
+            pdp = ProjectiveDeviceP.loadCameraDevice(applet, cameraCalib);
+        } catch (Exception ex) {
+            Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         Papart papart = new Papart(applet);
 
-        papart.frameSize.set(cameraTracking.width(), cameraTracking.height());
-        papart.shouldSetWindowSize = true;
-        papart.registerPost();
+        if (pdp != null) {
+            papart.frameSize.set(pdp.getWidth(), pdp.getHeight());
+            papart.shouldSetWindowSize = true;
+            papart.registerPost();
+        }
 
         papart.initCamera();
         papart.initARDisplay(quality);
@@ -627,14 +629,19 @@ public class Papart {
         this.applet.registerMethod("stop", this);
     }
 
-    private void loadTracking(String calibrationPath) {
-        // TODO: check if file exists !
-        Camera.convertARParams(this.applet, calibrationPath, camCalibARtoolkit);
-        getPublicCameraTracking().initMarkerDetection(camCalibARtoolkit);
-
-        // CODE to delete ?
-        // The camera view is handled in another thread;
-//        cameraInitialized = true;
+    /** 
+     * Only for .cfg marker tracking. 
+     */
+    private void setARToolkitCalib() {
+        // TODO: warning −> used only for .cfg files.
+        // try to get the params from the camera, instead of the files! 
+        if (cameraTracking.isCalibrated()) {
+            Camera.convertARParams(this.applet, getPublicCameraTracking().getProjectiveDevice(), camCalibARtoolkit);
+            getPublicCameraTracking().setCalibrationARToolkit(camCalibARtoolkit);
+        } else {
+            Camera.convertARParams(this.applet, cameraCalib, camCalibARtoolkit);
+            getPublicCameraTracking().setCalibrationARToolkit(camCalibARtoolkit);
+        }
     }
 
     /**
@@ -783,6 +790,18 @@ public class Papart {
     }
 
     /**
+     * Start the tracking without a thread.
+     */
+    public void startTrackingWithoutThread() {
+        if (this.cameraTracking == null) {
+            System.err.println("Start Tracking requires a Camera...");
+            return;
+        }
+        setARToolkitCalib();
+        this.getPublicCameraTracking().trackSheets(true);
+    }
+
+    /**
      * Start the camera thread, and the tracking. it calls automaticall
      * startCameraThread().
      */
@@ -791,14 +810,26 @@ public class Papart {
             System.err.println("Start Tracking requires a Camera...");
             return;
         }
-        loadTracking(cameraCalib);
+        setARToolkitCalib();
         this.getPublicCameraTracking().trackSheets(true);
         startCameraThread();
     }
 
     public void startCameraThread() {
         cameraTracking.start();
+        
+        // Calibration might be loaded from the device and require an update. 
+        if(arDisplay != null && !(arDisplay instanceof ProjectorDisplay)){
+            System.out.println("Papart: Reload calibration!");
+            arDisplay.reloadCalibration();
+        }
+        
         cameraTracking.setThread();
+    }
+
+    public void startDepthCameraThread() {
+        depthCameraDevice.getMainCamera().start();
+        depthCameraDevice.getMainCamera().setThread();
     }
 
     public void stop() {

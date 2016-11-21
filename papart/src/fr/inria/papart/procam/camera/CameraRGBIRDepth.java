@@ -106,18 +106,6 @@ public abstract class CameraRGBIRDepth extends Camera {
         return null;
     }
 
-    protected abstract void enableIR();
-
-    protected abstract void disableIR();
-
-    protected abstract void enableDepth();
-
-    protected abstract void disableDepth();
-
-    protected abstract void enableColor();
-
-    protected abstract void disableColor();
-
     protected abstract void grabIR();
 
     protected abstract void grabDepth();
@@ -126,25 +114,13 @@ public abstract class CameraRGBIRDepth extends Camera {
 
     public void disable(SubCamera camera) {
         if (camera.type == SubCamera.Type.DEPTH) {
-            disableDepth();
+            setUseDepth(false);
         }
         if (camera.type == SubCamera.Type.IR) {
-            disableIR();
+            setUseIR(false);
         }
         if (camera.type == SubCamera.Type.COLOR) {
-            disableColor();
-        }
-    }
-
-    void start(SubCamera camera) {
-        if (camera.type == SubCamera.Type.DEPTH) {
-            enableDepth();
-        }
-        if (camera.type == SubCamera.Type.IR) {
-            enableIR();
-        }
-        if (camera.type == SubCamera.Type.COLOR) {
-            enableColor();
+            setUseColor(false);
         }
     }
 
@@ -168,7 +144,6 @@ public abstract class CameraRGBIRDepth extends Camera {
     public void start() {
         isStarting = true;
         try {
-            internalInit();
             if (isUseColor()) {
                 colorCamera.start();
             }
@@ -190,8 +165,6 @@ public abstract class CameraRGBIRDepth extends Camera {
     }
 
     protected abstract void internalGrab() throws Exception;
-
-    protected abstract void internalInit() throws Exception;
 
     @Override
     public void grab() {
@@ -348,8 +321,8 @@ public abstract class CameraRGBIRDepth extends Camera {
     }
 
     @Override
-    public void initMarkerDetection(String calibrationARToolkit) {
-        actAsCamera.initMarkerDetection(calibrationARToolkit);
+    public void setCalibrationARToolkit(String calibrationARToolkit) {
+        actAsCamera.setCalibrationARToolkit(calibrationARToolkit);
     }
 
     @Override
@@ -443,12 +416,12 @@ public abstract class CameraRGBIRDepth extends Camera {
     }
 
     @Override
-    protected boolean isPixelFormatGray() {
+    public boolean isPixelFormatGray() {
         return actAsCamera.isPixelFormatGray();
     }
 
     @Override
-    protected boolean isPixelFormatColor() {
+    public boolean isPixelFormatColor() {
         return actAsCamera.isPixelFormatColor();
     }
 

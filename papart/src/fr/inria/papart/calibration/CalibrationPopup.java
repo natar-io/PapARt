@@ -160,6 +160,8 @@ public class CalibrationPopup extends PApplet {
                 useExternalColorCamera = true;
             }
             calibrationExtrinsic.setDepthCamera(depthCameraDevice, depthCameraType);
+        } else {
+            System.out.println("Calibration with a color camera.");
         }
 
         initCorners();
@@ -182,10 +184,11 @@ public class CalibrationPopup extends PApplet {
         projectorView.setImageWidthPx(projector.getWidth());
         projectorView.setImageHeightPx(projector.getHeight());
 
-        if (cameraTracking.getPixelFormat() == Camera.PixelFormat.GRAY) {
-            projectorView.init(PApplet.ALPHA);
-        } else {
+        if (cameraTracking.isPixelFormatGray()) {
             projectorView.init(PApplet.GRAY);
+        }
+        if (cameraTracking.isPixelFormatColor()) {
+            projectorView.init(PApplet.RGB);
         }
 
         projectorAsCamera = new ProjectorAsCamera();
@@ -195,7 +198,7 @@ public class CalibrationPopup extends PApplet {
         String ARToolkitCalibFile = Papart.calibrationFolder + "projector.cal";
         ProjectorAsCamera.convertARProjParams(this, projectorAsCamera.getCalibrationFile(),
                 ARToolkitCalibFile);
-        projectorAsCamera.initMarkerDetection(ARToolkitCalibFile);
+        projectorAsCamera.setCalibrationARToolkit(ARToolkitCalibFile);
         projectorAsCamera.trackMarkerBoard(board);
         initMarkerTrackingFromProjector();
     }
@@ -211,7 +214,7 @@ public class CalibrationPopup extends PApplet {
 
         String ARToolkitCalib = Papart.calibrationFolder + KINECT_ARTOOLKIT_NAME;
         Camera.convertARParams(this, cameraFromDepthCam.getCalibrationFile(), ARToolkitCalib);
-        cameraFromDepthCam.initMarkerDetection(ARToolkitCalib);
+        cameraFromDepthCam.setCalibrationARToolkit(ARToolkitCalib);
 
         // No display for now...
 //        arDisplayKinect = new ARDisplay(this, cameraKinect);
@@ -284,7 +287,7 @@ public class CalibrationPopup extends PApplet {
     }
 
     public void calibrateKinect() {
-        boolean isCalibOK = calibrationExtrinsic.calibrateKinect360Plane(snapshots);
+        boolean isCalibOK = calibrationExtrinsic.calibrateDepthCamPlane(snapshots);
         if (isCalibOK) {
             this.isKinectCalibrated = OK;
         }
@@ -340,9 +343,7 @@ public class CalibrationPopup extends PApplet {
                     IPL_DEPTH_8U, 1);
         }
 
-        System.out.println(projImage + " " + grayImage);
         cvCvtColor(projImage, grayImage, CV_BGR2GRAY);
-
         // if(test){
         //     cvSaveImage( sketchPath() + "/data/projImage.jpg", grayImage);
         //     cvSaveImage( sketchPath() + "/data/camImage.jpg", camera.getIplImage());
@@ -375,7 +376,7 @@ public class CalibrationPopup extends PApplet {
                     .setLineHeight(14) //.setColor(color(128))
                     ;
         } else {
-            System.out.println("External camera not activated !");
+            System.out.println("External camera not activated.");
         }
 
     }

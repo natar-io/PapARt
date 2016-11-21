@@ -37,7 +37,7 @@ import processing.core.PVector;
  */
 public class TrackedView {
 
-    private PImage extractedImage = null;
+    private PImage extractedPImage = null;
     private IplImage extractedIplImage = null;
 
     // private data
@@ -103,10 +103,10 @@ public class TrackedView {
     public void init() {
         init(PApplet.RGB);
     }
-    
+
     public void init(int frameType) {
         // TODO: Init with good color... 
-        extractedImage = new PImage(imageWidthPx, imageHeightPx, frameType);
+        extractedPImage = new PImage(imageWidthPx, imageHeightPx, frameType);
         initiateImageCoordinates();
     }
 
@@ -124,7 +124,7 @@ public class TrackedView {
     }
 
     public PImage getViewOf(Camera camera) {
-        if (extractedImage == null) {
+        if (extractedPImage == null) {
             System.err.println("You should init the TrackedView before getting the view.");
             return null;
         }
@@ -136,19 +136,23 @@ public class TrackedView {
         this.camera = camera;
 
         CvMat homography = computeHomography();
-        
+
         // Convert to the good type... 
-        
-        Utils.remapImage(homography, camera.getIplImage(), extractedIplImage, extractedImage);
-        return extractedImage;
+        Utils.remapImage(homography, camera.getIplImage(), extractedIplImage, extractedPImage);
+        return extractedPImage;
     }
 
     public IplImage getIplViewOf(Camera camera) {
-        if (camera.getIplImage() == null) {
+        if (extractedPImage == null) {
+            System.err.println("You should init the TrackedView before getting the view.");
+            return null;
+        }
+        IplImage img = camera.getIplImage();
+        if (img == null) {
             return null;
         }
 
-        this.mainImage = camera.getIplImage();
+        this.mainImage = img;
         this.camera = camera;
         CvMat homography = computeHomography();
         Utils.remapImageIpl(homography, camera.getIplImage(), extractedIplImage);
@@ -164,7 +168,10 @@ public class TrackedView {
 
     private void checkMemory() {
         if (extractedIplImage == null) {
-            extractedIplImage = Utils.createImageFrom(extractedImage);
+            extractedIplImage = Utils.createImageFrom(extractedPImage);
+            if (extractedIplImage == null) {
+                System.err.println("Impossible to create a View! " + this + " " + extractedPImage);
+            }
         }
     }
 

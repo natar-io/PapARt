@@ -36,35 +36,8 @@ public class CameraOpenKinect extends CameraRGBIRDepth {
 
     protected CameraOpenKinect(int cameraNo) {
         this.systemNumber = cameraNo;
-    }
-
-    @Override
-    public void internalInit() {
-
         grabber = new OpenKinectFrameGrabber(this.systemNumber);
 
-        if (isUseDepth()) {
-            depthCamera.setPixelFormat(PixelFormat.DEPTH_KINECT_MM);
-            depthCamera.type = SubCamera.Type.DEPTH;
-            depthCamera.setSize(640, 480);
-
-            grabber.setDepthFormat(freenect.FREENECT_DEPTH_MM);
-        }
-        if (isUseColor()) {
-            colorCamera.setPixelFormat(PixelFormat.BGR);
-            colorCamera.type = SubCamera.Type.COLOR;
-            colorCamera.setSize(640, 480);
-
-            grabber.setImageWidth(colorCamera.width());
-            grabber.setImageHeight(colorCamera.height());
-            kinectVideoFormat = freenect.FREENECT_VIDEO_RGB;
-            grabber.setVideoFormat(kinectVideoFormat);
-        }
-        if (isUseIR()) {
-            IRCamera.setPixelFormat(PixelFormat.GRAY);
-            IRCamera.type = SubCamera.Type.IR;
-            IRCamera.setSize(640, 480);
-        }
     }
 
     @Override
@@ -85,31 +58,6 @@ public class CameraOpenKinect extends CameraRGBIRDepth {
             }
         }
 
-    }
-
-    @Override
-    public void enableIR() {
-    }
-
-    @Override
-    public void disableIR() {
-    }
-
-    @Override
-    public void enableDepth() {
-    }
-
-    @Override
-    public void disableDepth() {
-    }
-
-    @Override
-    public void enableColor() {
-    }
-
-    @Override
-    public void disableColor() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
@@ -138,6 +86,39 @@ public class CameraOpenKinect extends CameraRGBIRDepth {
             colorCamera.updateCurrentImage(grabber.grabVideo());
         } catch (FrameGrabber.Exception ex) {
             Logger.getLogger(CameraOpenKinect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    @Override
+    public void setUseDepth(boolean use) {
+        if (use) {
+            depthCamera.setPixelFormat(PixelFormat.DEPTH_KINECT_MM);
+            depthCamera.type = SubCamera.Type.DEPTH;
+            depthCamera.setSize(640, 480);
+            grabber.setDepthFormat(freenect.FREENECT_DEPTH_MM);
+        }
+    }
+
+    @Override
+    public void setUseIR(boolean use) {
+        if (use) {
+            IRCamera.setPixelFormat(PixelFormat.GRAY);
+            IRCamera.type = SubCamera.Type.IR;
+            IRCamera.setSize(640, 480);
+        }
+    }
+
+    @Override
+    public void setUseColor(boolean use) {
+        if (use) {
+            colorCamera.setPixelFormat(PixelFormat.BGR);
+            colorCamera.type = SubCamera.Type.COLOR;
+            colorCamera.setSize(640, 480);
+
+            grabber.setImageWidth(colorCamera.width());
+            grabber.setImageHeight(colorCamera.height());
+            kinectVideoFormat = freenect.FREENECT_VIDEO_RGB;
+            grabber.setVideoFormat(kinectVideoFormat);
         }
     }
 

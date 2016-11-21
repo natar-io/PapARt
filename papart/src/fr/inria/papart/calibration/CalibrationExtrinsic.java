@@ -41,8 +41,8 @@ public class CalibrationExtrinsic {
 
     // Cameras
     private ProjectorDisplay projector;
-    private PMatrix3D kinectCameraExtrinsics = new PMatrix3D();
-    private Papart papart;
+    private final PMatrix3D kinectCameraExtrinsics = new PMatrix3D();
+    private final Papart papart;
 
     // Kinect
     private Camera.Type depthCameraType;
@@ -61,6 +61,7 @@ public class CalibrationExtrinsic {
         this.depthCameraType = papart.getDepthCameraType();
         this.depthCameraDevice = papart.getDepthCameraDevice();
     }
+
     public void setDepthCamera(DepthCameraDevice device, Camera.Type type) {
         this.depthCameraType = type;
         this.depthCameraDevice = device;
@@ -85,22 +86,22 @@ public class CalibrationExtrinsic {
 
         saveProCamExtrinsics(sum);
     }
-    
-    public void saveProCamExtrinsics(PMatrix3D extr){
-          papart.saveCalibration(Papart.cameraProjExtrinsics, extr);
-           projector.setExtrinsics(extr);
+
+    public void saveProCamExtrinsics(PMatrix3D extr) {
+        papart.saveCalibration(Papart.cameraProjExtrinsics, extr);
+        projector.setExtrinsics(extr);
     }
 
     public void calibrateKinect(ArrayList<CalibrationSnapshot> snapshots) {
         if (this.depthCameraType == Camera.Type.OPEN_KINECT_2) {
-            calibrateKinectOne(snapshots);
+            calibrateProjectorDepthCam(snapshots);
         }
         if (this.depthCameraType == Camera.Type.OPEN_KINECT) {
-            calibrateKinect360(snapshots);
+            calibrateDepthAndExternalCam(snapshots);
         }
     }
 
-    protected void calibrateKinectOne(ArrayList<CalibrationSnapshot> snapshots) {
+    protected void calibrateProjectorDepthCam(ArrayList<CalibrationSnapshot> snapshots) {
         PMatrix3D kinectExtr = depthCameraDevice.getStereoCalibration().get();
         kinectExtr.invert();
 
@@ -120,18 +121,25 @@ public class CalibrationExtrinsic {
         }
 
         // move the plane up a little.
-        planeCalibCam.moveAlongNormal(-7f);
+        // Value for Kinect 360. 
+        if (depthCameraDevice.type() == Camera.Type.OPEN_KINECT) {
+            planeCalibCam.moveAlongNormal(-7f);
+        }
+        // Value for RealSense. 
+        if (depthCameraDevice.type() == Camera.Type.REALSENSE) {
+            planeCalibCam.moveAlongNormal(-22f);
+        }
 
         saveKinectPlaneCalibration(planeCalibCam, homography);
         saveKinectCameraExtrinsics(kinectCameraExtrinsics);
     }
 
-    protected void calibrateKinect360(ArrayList<CalibrationSnapshot> snapshots) {
-        calibrateKinect360Extr(snapshots);
-        calibrateKinect360Plane(snapshots);
+    protected void calibrateDepthAndExternalCam(ArrayList<CalibrationSnapshot> snapshots) {
+        calibrateDepthToExternalExtr(snapshots);
+        calibrateDepthCamPlane(snapshots);
     }
 
-    protected void calibrateKinect360Extr(ArrayList<CalibrationSnapshot> snapshots) {
+    protected void calibrateDepthToExternalExtr(ArrayList<CalibrationSnapshot> snapshots) {
         // Depth -> color  extrinsics
         PMatrix3D kinectExtr = depthCameraDevice.getStereoCalibration().get();
 
@@ -148,7 +156,7 @@ public class CalibrationExtrinsic {
         saveKinectCameraExtrinsics(kinectCameraExtr);
     }
 
-    public boolean calibrateKinect360Plane(ArrayList<CalibrationSnapshot> snapshots) {
+    public boolean calibrateDepthCamPlane(ArrayList<CalibrationSnapshot> snapshots) {
         // Depth -> color  extrinsics
         PMatrix3D kinectExtr = depthCameraDevice.getStereoCalibration().get();
 
@@ -177,9 +185,8 @@ public class CalibrationExtrinsic {
         saveKinectPlaneCalibration(planeCalibKinect, homography);
         return true;
     }
-    
-    
-    public boolean calibrateKinect360PlaneOnly(ArrayList<CalibrationSnapshot> snapshots) {
+
+    public boolean calibrateDepthCamPlaneOnly(ArrayList<CalibrationSnapshot> snapshots) {
         // Depth -> color  extrinsics
         PMatrix3D kinectExtr = depthCameraDevice.getStereoCalibration().get();
 

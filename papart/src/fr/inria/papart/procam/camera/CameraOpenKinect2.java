@@ -49,31 +49,11 @@ public class CameraOpenKinect2 extends CameraRGBIRDepth {
     protected CameraOpenKinect2(int cameraNo) {
         this.systemNumber = cameraNo;
         colorCamera = new Kinect2SubCamera(this);
-    }
-
-    @Override
-    public void internalInit() {
-        if (isUseDepth()) {
-            depthCamera.setPixelFormat(PixelFormat.FLOAT_DEPTH_KINECT2);
-            depthCamera.type = SubCamera.Type.DEPTH;
-            depthCamera.setSize(512, 424);
-        }
-        if (isUseColor()) {
-            colorCamera.setPixelFormat(PixelFormat.ARGB);
-            colorCamera.type = SubCamera.Type.COLOR;
-            colorCamera.setSize(1920, 1080);
-        }
-        if (isUseIR()) {
-            IRCamera.setPixelFormat(PixelFormat.GRAY_32);
-            IRCamera.type = SubCamera.Type.IR;
-            IRCamera.setSize(512, 424);
-        }
         grabber = new OpenKinect2FrameGrabber(this.systemNumber);
     }
 
     @Override
     public void internalStart() throws FrameGrabber.Exception {
-        System.out.println("K2: Starting..." + Thread.currentThread());
         grabber.start();
     }
 
@@ -102,33 +82,34 @@ public class CameraOpenKinect2 extends CameraRGBIRDepth {
     }
 
     @Override
-    public void enableIR() {
-        grabber.enableIRStream();
+    public void setUseIR(boolean use) {
+        if (use) {
+            IRCamera.setPixelFormat(PixelFormat.GRAY_32);
+            IRCamera.type = SubCamera.Type.IR;
+            IRCamera.setSize(512, 424);
+            grabber.enableIRStream();
+        }
+        this.useIR = use;
     }
 
     @Override
-    public void disableIR() {
-        // Not implemented yet.
+    public void setUseDepth(boolean use) {
+        if (use) {
+            depthCamera.setPixelFormat(PixelFormat.FLOAT_DEPTH_KINECT2);
+            depthCamera.type = SubCamera.Type.DEPTH;
+            depthCamera.setSize(512, 424);
+            grabber.enableDepthStream();
+        }
     }
 
     @Override
-    public void enableDepth() {
-        grabber.enableDepthStream();
-    }
-
-    @Override
-    public void disableDepth() {
-        // Not implemented yet.
-    }
-
-    @Override
-    public void enableColor() {
-        grabber.enableColorStream();
-    }
-
-    @Override
-    public void disableColor() {
-        // Not implemented yet.
+    public void setUseColor(boolean use) {
+        if (use) {
+            colorCamera.setPixelFormat(PixelFormat.ARGB);
+            colorCamera.type = SubCamera.Type.COLOR;
+            colorCamera.setSize(1920, 1080);
+            grabber.enableColorStream();
+        }
     }
 
     @Override

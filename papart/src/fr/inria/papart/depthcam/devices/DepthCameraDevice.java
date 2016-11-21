@@ -22,6 +22,7 @@ package fr.inria.papart.depthcam.devices;
 import fr.inria.papart.calibration.HomographyCalibration;
 import fr.inria.papart.multitouch.KinectTouchInput;
 import fr.inria.papart.procam.Papart;
+import fr.inria.papart.procam.Utils;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.CameraFactory;
 import fr.inria.papart.procam.camera.CameraRGBIRDepth;
@@ -106,6 +107,8 @@ public abstract class DepthCameraDevice {
     }
 
     public void setStereoCalibration(PMatrix3D matrix) {
+        System.out.println("DepthCameraDevice: Call to setStereoCalibration...");
+        matrix.print();
         KinectRGBIRCalibration.set(matrix);
         KinectRGBIRCalibrationInv = KinectRGBIRCalibration.get();
         KinectRGBIRCalibrationInv.invert();
@@ -163,8 +166,8 @@ public abstract class DepthCameraDevice {
         getStereoCalibration().mult(vt, vt2);
         
         // TODO: find a solution for this...
-        return anotherCamera.getProjectiveDevice().worldToPixel(vt2.x, vt2.y, vt2.z);
+        return getColorCamera().getProjectiveDevice().worldToPixel(vt2.x, vt2.y, vt2.z);
 //        return getColorCamera.getProjectiveDevice().worldToPixel(vt2.x, vt2.y, vt2.z);
     }
-
+    
 }

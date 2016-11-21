@@ -79,11 +79,15 @@ class CameraThread extends Thread {
         }
 
         while (!stop) {
+            
             camera.grab();
+            // If there is no camera for tracking...
+            if(cameraForMarkerboard  == null || !compute ||  camera.getTrackedSheets().isEmpty()){
+                continue;
+            }
+            
             image = camera.getIplImage();
-
-            // TODO: check if img can be null...        
-            if (image != null && compute && !camera.getTrackedSheets().isEmpty()) {
+            if (image != null) {
                 this.compute();
             }
         }
@@ -167,7 +171,6 @@ class CameraThread extends Thread {
     }
 
     protected void updateBoardLocation(MarkerBoard markerBoard) {
-
         // The markerboard will know the real camera, not the top-level camera. 
         if (markerBoard.useGrayscaleImages()) {
             markerBoard.updateLocation(cameraForMarkerboard, grayImage, this.detectedMarkers);

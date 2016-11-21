@@ -19,7 +19,6 @@
  */
 package fr.inria.papart.procam.camera;
 
-import fr.inria.papart.procam.ProjectiveDeviceP;
 import java.nio.FloatBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,41 +62,24 @@ public class CameraRealSense extends CameraRGBIRDepth {
     }
 
     @Override
-    public void internalInit() {
+    public void internalStart() throws FrameGrabber.Exception {
 
-        if (isUseDepth()) {
-            depthCamera.setPixelFormat(PixelFormat.REALSENSE_Z16);
-            depthCamera.setSize(640, 480);
-            depthCamera.type = SubCamera.Type.DEPTH;
-        }
-        if (isUseColor()) {
-            colorCamera.setPixelFormat(PixelFormat.RGB);
-            colorCamera.type = SubCamera.Type.COLOR;
-            
+        if (useColor) {
             if (colorCamera.width == 0 || colorCamera.height == 0) {
-                System.out.println("Setting default realSense width and height...");
+                System.out.println("Setting default color for Realsense...");
+                this.setSize(1280, 720);
                 colorCamera.setSize(1280, 720);
             }
+
+            grabber.setImageWidth(colorCamera.width());
+            grabber.setImageHeight(colorCamera.height());
+            grabber.setFrameRate(30);
 
             if (colorCamera.width() == 1280) {
                 grabber.setFrameRate(60);
             }
-
-            if (colorCamera.width() == 1920) {
-                grabber.setFrameRate(30);
-            }
+            grabber.enableColorStream();
         }
-        if (isUseIR()) {
-            IRCamera.setSize(640, 480);
-            IRCamera.setPixelFormat(PixelFormat.GRAY);
-            IRCamera.type = SubCamera.Type.IR;
-            grabber.setIRFrameRate(60);
-        }
-
-    }
-
-    @Override
-    public void internalStart() throws FrameGrabber.Exception {
         grabber.start();
 
         // Override the calibration... 
@@ -115,6 +97,7 @@ public class CameraRealSense extends CameraRGBIRDepth {
 
     @Override
     public void internalGrab() throws Exception {
+
         grabber.grab();
     }
 
@@ -150,6 +133,7 @@ public class CameraRealSense extends CameraRGBIRDepth {
         if (camera.type == SubCamera.Type.DEPTH) {
             camType = RealSense.depth;
         }
+        System.out.println("Setting hardware intrinsics for: " + camera.type.name());
         RealSense.intrinsics intrinsics = grabber.getRealSenseDevice().get_stream_intrinsics(camType);
         FloatBuffer fb = intrinsics.position(0).asByteBuffer().asFloatBuffer();
         float cx = fb.get(2);
@@ -176,7 +160,7 @@ public class CameraRealSense extends CameraRGBIRDepth {
     public void grabDepth() {
         depthCamera.updateCurrentImage(grabber.grabDepth());
         // update the touch input
-        
+
         if (getActingCamera() == IRCamera) {
             ((WithTouchInput) depthCamera).newTouchImageWithColor(IRCamera.currentImage);
             return;
@@ -188,40 +172,64 @@ public class CameraRealSense extends CameraRGBIRDepth {
         ((WithTouchInput) depthCamera).newTouchImage();
     }
 
-    @Override
-    public void enableIR() {
-        grabber.setIRImageWidth(IRCamera.width());
-        grabber.setIRImageHeight(IRCamera.height());
-        grabber.enableIRStream();
+    public void setUseIR(boolean use) {
+        if (use) {
+            grabber.setIRImageWidth(IRCamera.width());
+            grabber.setIRImageHeight(IRCamera.height());
+            grabber.enableIRStream();
+        } else {
+            grabber.disableIRStream();
+        }
+        this.useIR = use;
+    }
+
+    public void setUseDepth(boolean use) {
+        if (use) {
+            depthCamera.type = SubCamera.Type.DEPTH;
+            depthCamera.setPixelFormat(PixelFormat.REALSENSE_Z16);
+            depthCamera.setSize(640, 480);
+
+            grabber.setDepthImageWidth(depthCamera.width());
+            grabber.setDepthImageHeight(depthCamera.height());
+            grabber.enableDepthStream();
+            getFrameGrabber().setPreset(5);
+        } else {
+            grabber.disableDepthStream();
+        }
+        this.useDepth = use;
     }
 
     @Override
-    public void disableIR() {
-        grabber.disableIRStream();
+    public void setSize(int w, int h) {
+        Camera act = getActingCamera();
+
+        if (act == null) {
+            return;
+        }
+        act.setSize(w, h);
+        System.out.println("Setting custom color for Realsense: " + w + " " + h);
+        if (act == colorCamera) {
+            grabber.setImageWidth(colorCamera.width());
+            grabber.setImageHeight(colorCamera.height());
+            grabber.setFrameRate(30);
+        }
     }
 
-    @Override
-    public void enableDepth() {
-        grabber.setDepthImageWidth(depthCamera.width());
-        grabber.setDepthImageHeight(depthCamera.height());
-        grabber.enableDepthStream();
-    }
+    public void setUseColor(boolean use) {
+        // todo: boolean or not ?
+        if (!use) {
+            grabber.disableColorStream();
+        } else {
+            colorCamera.setPixelFormat(PixelFormat.RGB);
+            colorCamera.type = SubCamera.Type.COLOR;
 
-    @Override
-    public void disableDepth() {
-        grabber.disableDepthStream();
+            // Default values to get Color with multi-touch depth tracking. 
+            this.setSize(1280, 720);
+            colorCamera.setSize(1280, 720);
+            grabber.setImageWidth(colorCamera.width());
+            grabber.setImageHeight(colorCamera.height());
+            grabber.setFrameRate(60);
+        }
+        this.useColor = use;
     }
-
-    @Override
-    public void enableColor() {
-        grabber.setImageWidth(colorCamera.width());
-        grabber.setImageHeight(colorCamera.height());
-        grabber.enableColorStream();
-    }
-
-    @Override
-    public void disableColor() {
-        grabber.disableColorStream();
-    }
-
 }

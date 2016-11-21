@@ -578,6 +578,8 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
 
     public String toString() {
         return "intr " + intrinsics.toString() + (extrinsics != null ? " extr " + extrinsics.toString() : " ") + " "
-                + " width " + w + " height " + h;
+                + " width " + w + " height " + h
+                + " fx " + fx + " fy " + fy
+                + " cx " + cx + " cy " + cy;
     }
 }

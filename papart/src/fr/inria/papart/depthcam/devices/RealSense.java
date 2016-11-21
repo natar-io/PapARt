@@ -51,7 +51,6 @@ public final class RealSense extends DepthCameraDevice {
 
         cameraRS = (CameraRealSense) camera;
 //        setStereoCalibration(Papart.kinectStereoCalib);
-
         setStereoCalibration(cameraRS.getHardwareExtrinsics());
     }
 

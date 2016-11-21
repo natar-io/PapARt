@@ -72,6 +72,9 @@ public class MarkerBoardARToolKitPlus extends MarkerBoard {
 //  
     @Override
     protected void addTrackerImpl(Camera camera) {
+        
+        System.out.println("Starting a ARToolkitPlus tracker for CFG files.");
+        
         // create a tracker that does:
         //  - 6x6 sized marker images (required for binary markers)
         //  - samples at a maximum of 6x6 
@@ -109,8 +112,8 @@ public class MarkerBoardARToolKitPlus extends MarkerBoard {
         tracker.setMarkerMode(ARToolKitPlus.MARKER_ID_BCH);
 
         // TODO: find why  FULL RES is not working with a FULL HD image. 
-//        tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_FULL_RES);
-        tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_HALF_RES);
+        tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_FULL_RES);
+//        tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_HALF_RES);
 
 //        tracker.setUseDetectLite(false);
         tracker.setUseDetectLite(true);
