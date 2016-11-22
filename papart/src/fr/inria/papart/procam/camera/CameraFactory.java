@@ -47,6 +47,7 @@ public class CameraFactory {
         CameraRGBIRDepth cameraMulti = null;
         int cameraNo = 0;
 
+//        System.out.println("CameraFactory: new " + type.name() + ", " + description + " " + format);
         boolean isInt = false;
         try {
             cameraNo = Integer.parseInt(description);

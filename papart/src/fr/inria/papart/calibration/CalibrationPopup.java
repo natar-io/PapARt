@@ -93,7 +93,7 @@ public class CalibrationPopup extends PApplet {
     // Kinect
     private Camera.Type depthCameraType;
     private boolean useExternalColorCamera = false;
-    
+
     // calibrations
     private ArrayList<CalibrationSnapshot> snapshots = new ArrayList<CalibrationSnapshot>();
     private String isProCamCalibrated = NOTHING;
@@ -210,10 +210,14 @@ public class CalibrationPopup extends PApplet {
     }
 
     private void initTrackingOn(DepthCameraDevice kinectDevice) {
-        cameraFromDepthCam = kinectDevice.getColorCamera();
+        kinectDevice.getMainCamera().actAsColorCamera();
+        kinectDevice.getMainCamera().trackSheets(true);
 
+        cameraFromDepthCam = kinectDevice.getColorCamera();
         String ARToolkitCalib = Papart.calibrationFolder + KINECT_ARTOOLKIT_NAME;
-        Camera.convertARParams(this, cameraFromDepthCam.getCalibrationFile(), ARToolkitCalib);
+
+        // Warning, only used for .CFG markers (old).
+        Camera.convertARParams(this, cameraFromDepthCam.getProjectiveDevice(), ARToolkitCalib);
         cameraFromDepthCam.setCalibrationARToolkit(ARToolkitCalib);
 
         // No display for now...
@@ -225,6 +229,8 @@ public class CalibrationPopup extends PApplet {
 
         // as it does not comes with the display:
         cameraFromDepthCam.trackMarkerBoard(board);
+
+        System.out.println("Tracking from the depth CAmera should be OK. ");
     }
 
     void reset() {
@@ -278,15 +284,15 @@ public class CalibrationPopup extends PApplet {
         reset();
     }
 
-    public void calibrateProCam() {
+    public void calibrateProCam(boolean useExternal) {
         this.isProCamCalibrated = COMPUTING;
         calibrationExtrinsic.computeProjectorCameraExtrinsics(snapshots);
-        calibrationExtrinsic.calibrateKinect(snapshots);
+        calibrationExtrinsic.calibrateKinect(snapshots, useExternalColorCamera);
         this.isProCamCalibrated = OK;
         this.isKinectCalibrated = OK;
     }
 
-    public void calibrateKinect() {
+    public void calibrateKinect(boolean useExternal) {
         boolean isCalibOK = calibrationExtrinsic.calibrateDepthCamPlane(snapshots);
         if (isCalibOK) {
             this.isKinectCalibrated = OK;
@@ -294,8 +300,9 @@ public class CalibrationPopup extends PApplet {
     }
 
     private PMatrix3D currentDepthCameraBoard() {
-        if(cameraFromDepthCam == null || cameraFromDepthCam == cameraTracking)
+        if (cameraFromDepthCam == null || cameraFromDepthCam == cameraTracking) {
             return null;
+        }
         return board.getTransfoMat(cameraFromDepthCam).get();
     }
 
@@ -331,12 +338,12 @@ public class CalibrationPopup extends PApplet {
     }
 
     private opencv_core.IplImage greyProjectorImage(opencv_core.IplImage projImage) {
-        
-        if(projImage.nChannels() == 1){
+
+        if (projImage.nChannels() == 1) {
             grayImage = projImage;
             return grayImage;
-        } 
-        
+        }
+
         if (grayImage == null) {
             grayImage = opencv_core.IplImage.create(projector.getWidth(),
                     projector.getHeight(),

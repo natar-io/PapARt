@@ -52,6 +52,10 @@ public final class RealSense extends DepthCameraDevice {
         cameraRS = (CameraRealSense) camera;
 //        setStereoCalibration(Papart.kinectStereoCalib);
         setStereoCalibration(cameraRS.getHardwareExtrinsics());
+        
+        // TODO: Hacks to try to handle the SR300 distorsions
+//        camera.getDepthCamera().setCalibration(Papart.SR300IRCalib);
+//        camera.getIRCamera().setCalibration(Papart.SR300IRCalib);
     }
 
     public CameraRealSense getMainCamera() {

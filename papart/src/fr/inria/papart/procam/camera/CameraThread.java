@@ -72,13 +72,10 @@ class CameraThread extends Thread {
 
     @Override
     public void run() {
-
         cameraForMarkerboard = camera;
-        if (camera instanceof CameraRGBIRDepth) {
-            cameraForMarkerboard = ((CameraRGBIRDepth) camera).getActingCamera();
-        }
 
         while (!stop) {
+            checkSubCamera();
             
             camera.grab();
             // If there is no camera for tracking...
@@ -90,6 +87,16 @@ class CameraThread extends Thread {
             if (image != null) {
                 this.compute();
             }
+        }
+    }
+    
+    private void checkSubCamera(){
+        if(!(camera instanceof CameraRGBIRDepth)){
+            return;
+        }
+        Camera actAsCam = ((CameraRGBIRDepth) camera).getActingCamera();
+        if(actAsCam != null){
+            cameraForMarkerboard = actAsCam;
         }
     }
 

@@ -92,12 +92,11 @@ public class CalibrationExtrinsic {
         projector.setExtrinsics(extr);
     }
 
-    public void calibrateKinect(ArrayList<CalibrationSnapshot> snapshots) {
-        if (this.depthCameraType == Camera.Type.OPEN_KINECT_2) {
-            calibrateProjectorDepthCam(snapshots);
-        }
-        if (this.depthCameraType == Camera.Type.OPEN_KINECT) {
+    public void calibrateKinect(ArrayList<CalibrationSnapshot> snapshots, boolean useExternal) {
+        if (useExternal) {
             calibrateDepthAndExternalCam(snapshots);
+        } else {
+            calibrateProjectorDepthCam(snapshots);
         }
     }
 
@@ -127,13 +126,13 @@ public class CalibrationExtrinsic {
         }
         // Value for RealSense. 
         if (depthCameraDevice.type() == Camera.Type.REALSENSE) {
-            planeCalibCam.moveAlongNormal(-22f);
+            planeCalibCam.moveAlongNormal(-42f);
         }
 
         saveKinectPlaneCalibration(planeCalibCam, homography);
         saveKinectCameraExtrinsics(kinectCameraExtrinsics);
     }
-
+    
     protected void calibrateDepthAndExternalCam(ArrayList<CalibrationSnapshot> snapshots) {
         calibrateDepthToExternalExtr(snapshots);
         calibrateDepthCamPlane(snapshots);
@@ -181,6 +180,10 @@ public class CalibrationExtrinsic {
         // move the plane up a little.
         planeCalibKinect.flipNormal();
         planeCalibKinect.moveAlongNormal(-20f);
+        
+        if(depthCameraDevice.type() == Camera.Type.REALSENSE){
+            planeCalibKinect.moveAlongNormal(-20f);
+        }
 
         saveKinectPlaneCalibration(planeCalibKinect, homography);
         return true;

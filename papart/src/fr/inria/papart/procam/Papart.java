@@ -50,6 +50,7 @@ import java.lang.reflect.Constructor;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.bytedeco.javacv.CameraDevice;
 import org.reflections.Reflections;
 import processing.core.PApplet;
 import processing.core.PFont;
@@ -77,6 +78,7 @@ public class Papart {
 
     public static String camCalibARtoolkit = calibrationFolder + "camera-projector.cal";
     public static String kinectIRCalib = calibrationFolder + "calibration-kinect-IR.yaml";
+    public static String SR300IRCalib = calibrationFolder + "calibration-SR300-IR.yaml";
     public static String kinectRGBCalib = calibrationFolder + "calibration-kinect-RGB.yaml";
     public static String kinectStereoCalib = calibrationFolder + "calibration-kinect-Stereo.xml";
 
@@ -579,6 +581,8 @@ public class Papart {
         cameraTracking = CameraFactory.createCamera(cameraType, cameraNo, cameraFormat);
         cameraTracking.setParent(applet);
         cameraTracking.setCalibration(cameraCalib);
+        
+          System.out.println("Starting First tracking camera: " + cameraTracking);
         // TEST: no more start here...
 //        cameraTracking.start();
 //        loadTracking(cameraCalib);
@@ -696,11 +700,11 @@ public class Papart {
 //            System.err.println("You must choose a camera to create a DepthCamera.");
 //        }
         if (kinectConfiguration.getCameraType() == Camera.Type.REALSENSE) {
-            depthCameraDevice = new RealSense(applet, (CameraRealSense) cameraTracking);
+            depthCameraDevice = new RealSense(applet, cameraTracking);
         }
 
         if (kinectConfiguration.getCameraType() == Camera.Type.OPEN_KINECT) {
-            depthCameraDevice = new Kinect360(applet, (CameraOpenKinect) cameraTracking);
+            depthCameraDevice = new Kinect360(applet, cameraTracking);
         }
 
         if (kinectConfiguration.getCameraType() == Camera.Type.OPEN_KINECT_2) {
@@ -816,6 +820,8 @@ public class Papart {
     }
 
     public void startCameraThread() {
+        
+        System.out.println("Starting thread for camera: " + cameraTracking);
         cameraTracking.start();
         
         // Calibration might be loaded from the device and require an update. 
@@ -825,6 +831,12 @@ public class Papart {
         }
         
         cameraTracking.setThread();
+        
+        if(depthCameraDevice != null && 
+                cameraTracking != depthCameraDevice.getMainCamera()){
+            depthCameraDevice.getMainCamera().start();
+            depthCameraDevice.getMainCamera().setThread();
+        }
     }
 
     public void startDepthCameraThread() {

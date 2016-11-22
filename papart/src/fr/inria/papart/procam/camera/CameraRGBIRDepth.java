@@ -217,6 +217,9 @@ public abstract class CameraRGBIRDepth extends Camera {
 
     @Override
     public String toString() {
+        if (actAsCamera == null) {
+            return "RGBDIR camear";
+        }
         return actAsCamera.toString();
     }
 
@@ -398,6 +401,16 @@ public abstract class CameraRGBIRDepth extends Camera {
         } else {
             System.err.println("Camera: Error Thread already launched");
         }
+
+        if (useDepth) {
+            depthCamera.thread = thread;
+        }
+        if (useColor) {
+            colorCamera.thread = thread;
+        }
+        if (useIR) {
+            IRCamera.thread = thread;
+        }
     }
 
     @Override
@@ -437,7 +450,7 @@ public abstract class CameraRGBIRDepth extends Camera {
 
     @Override
     protected void setClosing() {
-        actAsCamera.setClosing();
+        super.setClosing();
     }
 
     @Override

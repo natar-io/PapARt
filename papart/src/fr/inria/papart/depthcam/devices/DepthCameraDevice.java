@@ -85,7 +85,7 @@ public abstract class DepthCameraDevice {
      * init a depth camera, depth only as there is another color camera.
      */
     protected final void initDefaultCamera() {
-        String id = Papart.getDefaultCameraConfiguration(parent).getCameraName();
+        String id = Papart.getDefaultDepthCameraConfiguration(parent).getCameraName();
         camera = (CameraRGBIRDepth) CameraFactory.createCamera(type(), id);
         camera.setUseDepth(true);
         camera.setUseColor(true);
