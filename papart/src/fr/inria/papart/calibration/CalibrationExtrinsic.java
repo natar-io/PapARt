@@ -45,7 +45,6 @@ public class CalibrationExtrinsic {
     private final Papart papart;
 
     // Kinect
-    private Camera.Type depthCameraType;
     private DepthCameraDevice depthCameraDevice;
 
     public CalibrationExtrinsic(PApplet parent) {
@@ -58,12 +57,10 @@ public class CalibrationExtrinsic {
     }
 
     public void setDefaultDepthCamera() {
-        this.depthCameraType = papart.getDepthCameraType();
         this.depthCameraDevice = papart.getDepthCameraDevice();
     }
 
-    public void setDepthCamera(DepthCameraDevice device, Camera.Type type) {
-        this.depthCameraType = type;
+    public void setDepthCamera(DepthCameraDevice device) {
         this.depthCameraDevice = device;
     }
 

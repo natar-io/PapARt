@@ -78,6 +78,8 @@ public class CalibrationPopup extends PApplet {
     static final String PROJECTOR_ARTOOLKIT_NAME = "projectorCalibration.cal";
     static final String KINECT_ARTOOLKIT_NAME = "kinectCalibration.cal";
 
+    private ARToolKitPlus.MultiTracker projectorTracker = null;
+
     // calibration App / board
     private CalibrationApp calibrationApp;
     private MarkerBoard board;
@@ -159,7 +161,7 @@ public class CalibrationPopup extends PApplet {
                 System.out.println("Calibration with a Depth and color camera in DIFFERENT devices.");
                 useExternalColorCamera = true;
             }
-            calibrationExtrinsic.setDepthCamera(depthCameraDevice, depthCameraType);
+            calibrationExtrinsic.setDepthCamera(depthCameraDevice);
         } else {
             System.out.println("Calibration with a color camera.");
         }
@@ -195,15 +197,15 @@ public class CalibrationPopup extends PApplet {
         projectorAsCamera.setCalibration(Papart.projectorCalib);
         projectorAsCamera.setParent(this);
 
+        // This is used only for tracking with .cfg markers
         String ARToolkitCalibFile = Papart.calibrationFolder + "projector.cal";
         ProjectorAsCamera.convertARProjParams(this, projectorAsCamera.getCalibrationFile(),
                 ARToolkitCalibFile);
         projectorAsCamera.setCalibrationARToolkit(ARToolkitCalibFile);
+
         projectorAsCamera.trackMarkerBoard(board);
         initMarkerTrackingFromProjector();
     }
-
-    private ARToolKitPlus.MultiTracker projectorTracker = null;
 
     private void initMarkerTrackingFromProjector() {
         projectorTracker = DetectedMarker.createDetector(projector.getWidth(), projector.getHeight());

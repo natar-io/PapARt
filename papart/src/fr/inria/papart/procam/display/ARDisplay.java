@@ -410,9 +410,7 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         // Setting the projector negative because ARToolkit provides neg Z values
         this.graphics.scale(1, 1, -1);
 
-        // TODO: check !
         this.graphics.scale(1f / quality);
-
     }
 
     public void endDraw() {

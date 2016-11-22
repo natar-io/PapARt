@@ -37,6 +37,7 @@ public class ProjectorAsCamera extends Camera {
         this.currentImage = image;
     }
 
+    @Override
     public void setCalibration(String fileName) {
         try {
             this.calibrationFile = fileName;

@@ -87,17 +87,12 @@ public class TrackedView {
         allocateMemory();
     }
 
-    /**
-     *
-     * @param corners
-     */
     public void setCorners(PVector[] corners) {
         if (corners.length == 4) {
             for (int i = 0; i < 4; i++) {
                 screenPixelCoordinates[i] = corners[i];
             }
         }
-
     }
 
     public void init() {
