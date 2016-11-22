@@ -60,11 +60,11 @@ public abstract class DepthCameraDevice {
     public CameraRGBIRDepth getMainCamera() {
         return camera;
     }
-    
+
     public Camera getOtherCamera() {
         return anotherCamera;
     }
-    
+
     public SubCamera getColorCamera() {
         return camera.getColorCamera();
     }
@@ -81,7 +81,8 @@ public abstract class DepthCameraDevice {
 
     abstract public Camera.Type type();
 
-    /*** 
+    /**
+     * *
      * init a depth camera, depth only as there is another color camera.
      */
     protected final void initDefaultCamera() {
@@ -107,8 +108,6 @@ public abstract class DepthCameraDevice {
     }
 
     public void setStereoCalibration(PMatrix3D matrix) {
-        System.out.println("DepthCameraDevice: Call to setStereoCalibration...");
-        matrix.print();
         KinectRGBIRCalibration.set(matrix);
         KinectRGBIRCalibrationInv = KinectRGBIRCalibration.get();
         KinectRGBIRCalibrationInv.invert();
@@ -126,16 +125,6 @@ public abstract class DepthCameraDevice {
      */
     public PMatrix3D getStereoCalibrationInv() {
         return KinectRGBIRCalibrationInv;
-    }
-
-    public void setExtrinsics(PMatrix3D extr) {
-        getColorCamera().setExtrinsics(extr);
-
-        // Get color -> Depth 
-        PMatrix3D stereo = getStereoCalibrationInv();
-        PMatrix3D tmp = extr.get();
-        tmp.apply(stereo);
-        getDepthCamera().setExtrinsics(tmp);
     }
 
     public int findColorOffset(Vec3D v) {
@@ -164,10 +153,10 @@ public abstract class DepthCameraDevice {
         //  Ideally use a calibration... 
 //        kinectCalibRGB.getExtrinsics().mult(vt, vt2);       
         getStereoCalibration().mult(vt, vt2);
-        
+
         // TODO: find a solution for this...
         return getColorCamera().getProjectiveDevice().worldToPixel(vt2.x, vt2.y, vt2.z);
 //        return getColorCamera.getProjectiveDevice().worldToPixel(vt2.x, vt2.y, vt2.z);
     }
-    
+
 }

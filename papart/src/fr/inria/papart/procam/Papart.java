@@ -581,8 +581,8 @@ public class Papart {
         cameraTracking = CameraFactory.createCamera(cameraType, cameraNo, cameraFormat);
         cameraTracking.setParent(applet);
         cameraTracking.setCalibration(cameraCalib);
-        
-          System.out.println("Starting First tracking camera: " + cameraTracking);
+
+        System.out.println("Starting First tracking camera: " + cameraTracking);
         // TEST: no more start here...
 //        cameraTracking.start();
 //        loadTracking(cameraCalib);
@@ -633,8 +633,8 @@ public class Papart {
         this.applet.registerMethod("stop", this);
     }
 
-    /** 
-     * Only for .cfg marker tracking. 
+    /**
+     * Only for .cfg marker tracking.
      */
     private void setARToolkitCalib() {
         // TODO: warning −> used only for .cfg files.
@@ -649,23 +649,6 @@ public class Papart {
     }
 
     /**
-     * Touch input when the camera tracking the markers is a Kinect.
-     *
-     */
-    public void loadTouchInputKinectOnly() {
-
-        loadDefaultDepthCamera();
-        loadDefaultTouchKinect();
-
-        // Specific ?
-        PMatrix3D extr = depthCameraDevice.getStereoCalibration();
-        depthCameraDevice.setExtrinsics(extr);
-
-        // Specific
-        ((KinectTouchInput) this.touchInput).useRawDepth();
-    }
-
-    /**
      * *
      * Touch input with a Kinect calibrated with the display area.
      *
@@ -673,10 +656,29 @@ public class Papart {
     public void loadTouchInput() {
         loadDefaultDepthCamera();
         loadDefaultTouchKinect();
+        updateDepthCameraDeviceExtrinsics();
+    }
+    
+    private void updateDepthCameraDeviceExtrinsics(){
+         // Check if depthCamera is the same as the camera !
+        if (cameraTracking instanceof CameraRGBIRDepth
+                && cameraTracking == depthCameraDevice.getMainCamera()) {
 
-        // setExtrinsics must after the kinect stereo calibration is loaded
-        PMatrix3D extr = (Papart.getPapart()).loadCalibration(Papart.kinectTrackingCalib);
-        depthCameraDevice.setExtrinsics(extr);
+            // No extrinsic used, it is already in the camera... 
+            depthCameraDevice.getDepthCamera().setExtrinsics(depthCameraDevice.getStereoCalibration());
+
+            // Specific
+            ((KinectTouchInput) this.touchInput).useRawDepth();
+            
+            System.out.println("Papart: Using Touchextrinsics from the device.");
+        } else {
+            // Two different cameras  
+            // setExtrinsics must after the kinect stereo calibration is loaded
+            PMatrix3D extr = (Papart.getPapart()).loadCalibration(Papart.kinectTrackingCalib);
+            extr.invert();
+            depthCameraDevice.getDepthCamera().setExtrinsics(extr);
+            System.out.println("Papart: Using Touchextrinsics from the calibrated File.");
+        }
     }
 
     private boolean useKinectOne = true;
@@ -820,20 +822,20 @@ public class Papart {
     }
 
     public void startCameraThread() {
-        
+
         System.out.println("Starting thread for camera: " + cameraTracking);
         cameraTracking.start();
-        
+
         // Calibration might be loaded from the device and require an update. 
-        if(arDisplay != null && !(arDisplay instanceof ProjectorDisplay)){
+        if (arDisplay != null && !(arDisplay instanceof ProjectorDisplay)) {
             System.out.println("Papart: Reload calibration!");
             arDisplay.reloadCalibration();
         }
-        
+
         cameraTracking.setThread();
-        
-        if(depthCameraDevice != null && 
-                cameraTracking != depthCameraDevice.getMainCamera()){
+
+        if (depthCameraDevice != null
+                && cameraTracking != depthCameraDevice.getMainCamera()) {
             depthCameraDevice.getMainCamera().start();
             depthCameraDevice.getMainCamera().setThread();
         }

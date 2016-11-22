@@ -346,6 +346,7 @@ public class KinectTouchInput extends TouchInput {
         return out;
     }
 
+    // PaperScreen coordinates as computed here. 
     private PVector projectPointToScreen(Screen screen,
             BaseDisplay display, Vec3D pKinect, Vec3D pNorm) {
 
