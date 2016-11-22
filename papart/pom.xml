@@ -77,22 +77,22 @@
         <dependency>
             <groupId>org.bytedeco.javacpp-presets</groupId>
             <artifactId>ffmpeg</artifactId>
-            <version>2.7.1-1.0</version>
+            <version>3.1.2-1.2</version>
         </dependency>
         <dependency>
             <groupId>org.bytedeco.javacpp-presets</groupId>
             <artifactId>flycapture</artifactId>
-            <version>2.7.3.19-1.0</version>
+            <version>2.9.3.43-1.2</version>
         </dependency>
         <dependency>
             <groupId>org.bytedeco.javacpp-presets</groupId>
             <artifactId>libdc1394</artifactId>
-            <version>2.2.3-1.0</version>
+            <version>2.2.4-1.2</version>
         </dependency>
         <dependency>
             <groupId>org.bytedeco.javacpp-presets</groupId>
             <artifactId>videoinput</artifactId>
-            <version>0.200-1.0</version>
+            <version>0.200-1.2</version>
         </dependency>
       
 
@@ -137,6 +137,20 @@
             <classifier>${platform}</classifier>
             <scope>runtime</scope>
         </dependency>
+        
+<!--        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>libfreenect2</artifactId>
+            <version>0.2.0-1.2.2-SNAPSHOT</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>libfreenect2</artifactId>
+            <version>0.2.0-1.2.2-SNAPSHOT</version>
+            <classifier>${platform}</classifier>
+            <scope>runtime</scope>
+        </dependency>-->
         
         <dependency>
             <groupId>org.bytedeco.javacpp-presets</groupId>
