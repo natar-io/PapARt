@@ -24,6 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bytedeco.javacpp.RealSense;
 import org.bytedeco.javacpp.opencv_core;
+import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.RealSenseFrameGrabber;
 import processing.core.PMatrix3D;
@@ -35,6 +36,7 @@ import processing.core.PMatrix3D;
 public class CameraRealSense extends CameraRGBIRDepth {
 
     protected RealSenseFrameGrabber grabber;
+    private boolean useHardwareIntrinsics = true;
 
     protected CameraRealSense(int cameraNo) {
         try {
@@ -49,6 +51,10 @@ public class CameraRealSense extends CameraRGBIRDepth {
 
     public RealSenseFrameGrabber getFrameGrabber() {
         return this.grabber;
+    }
+
+    public void useHardwareIntrinsics(boolean use) {
+        this.useHardwareIntrinsics = use;
     }
 
     @Override
@@ -84,20 +90,32 @@ public class CameraRealSense extends CameraRGBIRDepth {
         grabber.start();
 
         // Override the calibration... 
-        if (useColor) {
-            useHarwareIntrinsics(colorCamera, grabber);
+        if (useHardwareIntrinsics) {
+            if (useColor) {
+                useHarwareIntrinsics(colorCamera, grabber);
+            }
+            if (useIR) {
+                useHarwareIntrinsics(IRCamera, grabber);
+            }
+            if (useDepth) {
+                useHarwareIntrinsics(depthCamera, grabber);
+            }
         }
-        if (useDepth) {
-            useHarwareIntrinsics(depthCamera, grabber);
-        }
-        if (useIR) {
-            useHarwareIntrinsics(IRCamera, grabber);
-        }
+
     }
 
     @Override
     public void internalGrab() throws Exception {
         grabber.grab();
+    }
+
+    public Frame grabFrame() {
+        try {
+            return grabber.grab();
+        } catch (FrameGrabber.Exception ex) {
+            Logger.getLogger(CameraRealSense.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
     public float getDepthScale() {
