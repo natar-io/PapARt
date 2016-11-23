@@ -135,8 +135,8 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
             updateIntrinsicsRendering();
         }
 
-        // TODO: no more distorsions Processing3 test 
-        // this.setDistort(pdp.handleDistorsions());
+        // TODO: To set back when the distorsions are properly computed
+//         this.setDistort(pdp.handleDistorsions());
         this.setDistort(false);
     }
 
@@ -341,7 +341,8 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         parent.colorMode(PApplet.RGB, 255);
 
         lensFilter.set("mapTex", mapImg);
-        lensFilter.set("texture", this.graphics);
+        // name must not be texture ?
+        lensFilter.set("textureGraphics", this.graphics);
         lensFilter.set("resX", (int) (frameWidth * quality));
         lensFilter.set("resY", (int) (frameHeight * quality));
         lensFilter.set("mag", mag);
