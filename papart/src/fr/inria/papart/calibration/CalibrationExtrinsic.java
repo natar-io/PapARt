@@ -90,6 +90,9 @@ public class CalibrationExtrinsic {
     }
 
     public void calibrateKinect(ArrayList<CalibrationSnapshot> snapshots, boolean useExternal) {
+        if (depthCameraDevice == null) {
+            return;
+        }
         if (useExternal) {
             calibrateDepthAndExternalCam(snapshots);
         } else {
@@ -129,7 +132,7 @@ public class CalibrationExtrinsic {
         saveKinectPlaneCalibration(planeCalibCam, homography);
         saveKinectCameraExtrinsics(kinectCameraExtrinsics);
     }
-    
+
     protected void calibrateDepthAndExternalCam(ArrayList<CalibrationSnapshot> snapshots) {
         calibrateDepthToExternalExtr(snapshots);
         calibrateDepthCamPlane(snapshots);
@@ -177,8 +180,8 @@ public class CalibrationExtrinsic {
         // move the plane up a little.
         planeCalibKinect.flipNormal();
         planeCalibKinect.moveAlongNormal(-20f);
-        
-        if(depthCameraDevice.type() == Camera.Type.REALSENSE){
+
+        if (depthCameraDevice.type() == Camera.Type.REALSENSE) {
             planeCalibKinect.moveAlongNormal(-20f);
         }
 

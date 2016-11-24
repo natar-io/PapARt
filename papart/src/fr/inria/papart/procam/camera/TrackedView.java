@@ -87,11 +87,14 @@ public class TrackedView {
         allocateMemory();
     }
 
+    private boolean cornersSet = false;
+
     public void setCorners(PVector[] corners) {
         if (corners.length == 4) {
             for (int i = 0; i < 4; i++) {
                 screenPixelCoordinates[i] = corners[i];
             }
+            cornersSet = true;
         }
     }
 
@@ -119,15 +122,13 @@ public class TrackedView {
     }
 
     public PImage getViewOf(Camera camera) {
-        if (extractedPImage == null) {
-            System.err.println("You should init the TrackedView before getting the view.");
-            return null;
-        }
-        if (camera.getIplImage() == null) {
+
+        IplImage img = camera.getIplImage();
+        if (!isExtractionReady(img)) {
             return null;
         }
 
-        this.mainImage = camera.getIplImage();
+        this.mainImage = img;
         this.camera = camera;
 
         CvMat homography = computeHomography();
@@ -138,12 +139,8 @@ public class TrackedView {
     }
 
     public IplImage getIplViewOf(Camera camera) {
-        if (extractedPImage == null) {
-            System.err.println("You should init the TrackedView before getting the view.");
-            return null;
-        }
         IplImage img = camera.getIplImage();
-        if (img == null) {
+        if (!isExtractionReady(img)) {
             return null;
         }
 
@@ -152,6 +149,14 @@ public class TrackedView {
         CvMat homography = computeHomography();
         Utils.remapImageIpl(homography, camera.getIplImage(), extractedIplImage);
         return extractedIplImage;
+    }
+
+    private boolean isExtractionReady(IplImage img) {
+        if (extractedPImage == null) {
+            System.err.println("You should init the TrackedView before getting the view.");
+            return false;
+        }
+        return img != null && cornersSet;
     }
 
     private CvMat computeHomography() {

@@ -20,33 +20,48 @@
 package fr.inria.papart.tracking;
 
 import fr.inria.papart.tracking.MarkerBoard.MarkerType;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  *
  * @author Jérémy Laviole - jeremy.laviole@inria.fr
  */
 public class MarkerBoardFactory {
-        
 
-    // Todo: error Handling...
-    public static MarkerBoard create(String fileName, float width, float height){
-
-        MarkerType type = getType(fileName);
-        
-        if (type == MarkerType.ARTOOLKITPLUS) {
-            return new MarkerBoardARToolKitPlus(fileName, width, height);
-        }
-        if (type == MarkerType.JAVACV_FINDER) {
-            return new MarkerBoardJavaCV(fileName, width, height);
-        }
-        
-        if (type == MarkerType.SVG) {
-            return new MarkerBoardSvg(fileName, width, height);
-        }
-        
-        return MarkerBoardInvalid.board;
-    }
+    private static final HashMap<String, MarkerBoard> allBoards = new HashMap<>();
     
+    // Todo: error Handling...
+    public static MarkerBoard create(String fileName, float width, float height) {
+
+        
+        if(allBoards.containsKey(fileName)){
+            return allBoards.get(fileName);
+        }
+        
+        MarkerBoard output = MarkerBoardInvalid.board;
+        
+        MarkerType type = getType(fileName);
+        try {
+            if (type == MarkerType.ARTOOLKITPLUS) {
+                output =  new MarkerBoardARToolKitPlus(fileName, width, height);
+            }
+            if (type == MarkerType.JAVACV_FINDER) {
+                output = new MarkerBoardJavaCV(fileName, width, height);
+            }
+
+            if (type == MarkerType.SVG) {
+                output = new MarkerBoardSvg(fileName, width, height);
+            }
+            
+            allBoards.put(fileName, output);
+        } catch (Exception e) {
+            System.err.println("Error loading the markerboard: " + e);
+        }
+        
+        return output;
+    }
+
     private static MarkerType getType(String name) {
         if (name.endsWith("cfg")) {
             return MarkerType.ARTOOLKITPLUS;
@@ -60,5 +75,4 @@ public class MarkerBoardFactory {
         return MarkerType.INVALID;
     }
 
-    
 }

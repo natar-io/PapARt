@@ -64,16 +64,19 @@ public abstract class MarkerBoard {
     static public final int FORCE_UPDATE = 3;
     static public final PMatrix3D INVALID_LOCATION = new PMatrix3D();
 
-    
     public enum MarkerType {
 
         ARTOOLKITPLUS, JAVACV_FINDER, SVG, INVALID
     }
-    
-    protected MarkerBoard(){
+
+    public MarkerType getMarkerType() {
+        return type;
+    }
+
+    protected MarkerBoard() {
         this.fileName = "Invalid MarkerBoard";
     }
-    
+
     public MarkerBoard(String fileName, float width, float height) {
         this.fileName = fileName;
         this.width = width;
@@ -89,12 +92,10 @@ public abstract class MarkerBoard {
     }
 
     protected abstract void addTrackerImpl(Camera camera);
-    
+
     public void addTracker(PApplet applet, Camera camera) {
 //    public void addTracker(PApplet applet, Camera camera, ARToolKitPlus.TrackerMultiMarker tracker, float[] transfo) {
         this.applet = applet;
-
-        addTrackerImpl(camera);
 
         this.cameras.add(camera);
         this.drawingMode.add(false);
@@ -103,12 +104,12 @@ public abstract class MarkerBoard {
         this.minDistanceDrawingMode.add(2f);
         this.nextTimeEvent.add(0);
         this.updateStatus.add(NORMAL);
-
         OneEuroFilter[] filter = null;
         this.filters.add(filter);
+
+        addTrackerImpl(camera);
     }
 
-   
     private int getId(Camera camera) {
         return cameras.indexOf(camera);
     }
@@ -121,7 +122,7 @@ public abstract class MarkerBoard {
 
     public void removeFiltering(Camera camera) {
         int id = cameras.indexOf(camera);
-        filters.remove(id);
+        filters.set(id, null);
     }
 
     public void setDrawingMode(Camera camera, boolean dm) {
@@ -240,12 +241,12 @@ public abstract class MarkerBoard {
         if (mode == BLOCK_UPDATE && currentTime < endTime) {
             return;
         }
-        
+
         updatePositionImpl(id, currentTime, endTime, mode, camera, img, globalTracking);
 
     }
+
     protected abstract void updatePositionImpl(int id, int currentTime, int endTime, int mode, Camera camera, IplImage img, Object globalTracking);
-    
 
     public PMatrix3D getTransfoMat(Camera camera) {
         return transfos.get(cameras.indexOf(camera));
@@ -266,7 +267,7 @@ public abstract class MarkerBoard {
     }
 
     public ARToolKitPlus.TrackerMultiMarker getARToolkitTracking(Camera camera) {
-        assert (this.useGrayscaleImages());
+        assert (this.useMarkers());
         return (ARToolKitPlus.TrackerMultiMarker) getTracking(camera);
     }
 
@@ -278,10 +279,14 @@ public abstract class MarkerBoard {
         return this.type == MarkerType.JAVACV_FINDER;
     }
 
-    public boolean useGrayscaleImages() {
+    public boolean useMarkers() {
         return this.type == MarkerType.ARTOOLKITPLUS || this.type == MarkerType.SVG;
     }
-  
+
+    public boolean useGrayImages() {
+        return this.type == MarkerType.ARTOOLKITPLUS || this.type == MarkerType.SVG;
+    }
+
     public boolean useCustomARToolkitBoard() {
         return this.type == MarkerType.SVG;
     }

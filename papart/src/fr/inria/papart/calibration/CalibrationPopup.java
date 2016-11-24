@@ -23,12 +23,14 @@ package fr.inria.papart.calibration;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.procam.Papart;
+import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.ProjectorAsCamera;
 import fr.inria.papart.procam.camera.SubCamera;
 import fr.inria.papart.procam.camera.TrackedView;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.tracking.DetectedMarker;
+import fr.inria.papart.tracking.MarkerBoardARToolKitPlus;
 import fr.inria.skatolo.Skatolo;
 import fr.inria.skatolo.gui.controllers.Toggle;
 import fr.inria.skatolo.gui.group.Group;
@@ -81,7 +83,7 @@ public class CalibrationPopup extends PApplet {
     private ARToolKitPlus.MultiTracker projectorTracker = null;
 
     // calibration App / board
-    private CalibrationApp calibrationApp;
+    private PaperScreen calibrationApp;
     private MarkerBoard board;
 
     // Matrices
@@ -108,8 +110,9 @@ public class CalibrationPopup extends PApplet {
     private CalibrationExtrinsic calibrationExtrinsic;
     private PImage backgroundImg;
 
-    public CalibrationPopup() {
+    public CalibrationPopup(PaperScreen screen) {
         super();
+        this.calibrationApp = screen;
         PApplet.runSketch(new String[]{this.getClass().getName()}, this);
     }
 
@@ -124,8 +127,12 @@ public class CalibrationPopup extends PApplet {
         // Papart was created before, already with a camera, projector and Dcam. 
         papart = Papart.getPapart();
         cornersFileName = Papart.calibrationFolder + CORNERS_NAME;
-        calibrationApp = new CalibrationApp();
-        calibrationApp.pre();
+
+        if (calibrationApp == null) {
+            calibrationApp = new CalibrationApp();
+            calibrationApp.pre();
+        }
+        
         board = calibrationApp.getBoard();
 
         cameraTracking = Papart.getPapart().getPublicCameraTracking();
@@ -193,22 +200,31 @@ public class CalibrationPopup extends PApplet {
             projectorView.init(PApplet.RGB);
         }
 
-        projectorAsCamera = new ProjectorAsCamera();
+        projectorAsCamera = new ProjectorAsCamera(projector, cameraTracking, projectorView);
         projectorAsCamera.setCalibration(Papart.projectorCalib);
         projectorAsCamera.setParent(this);
 
-        // This is used only for tracking with .cfg markers
-        String ARToolkitCalibFile = Papart.calibrationFolder + "projector.cal";
-        ProjectorAsCamera.convertARProjParams(this, projectorAsCamera.getCalibrationFile(),
-                ARToolkitCalibFile);
-        projectorAsCamera.setCalibrationARToolkit(ARToolkitCalibFile);
+        // if it uses gray images.
+        // All of this needs to be more explicit. 
+        if (board.useGrayImages()) {
+            projectorAsCamera.setPixelFormat(Camera.PixelFormat.GRAY);
+        }
 
+        if (board.getMarkerType() == MarkerBoard.MarkerType.ARTOOLKITPLUS) {
+            String ARToolkitCalibFile = Papart.calibrationFolder + "projector.cal";
+            ProjectorAsCamera.convertARProjParams(this, projectorAsCamera.getCalibrationFile(),
+                    ARToolkitCalibFile);
+            projectorAsCamera.setCalibrationARToolkit(ARToolkitCalibFile);
+        }
+        if (board.getMarkerType() == MarkerBoard.MarkerType.SVG) {
+            projectorTracker = DetectedMarker.createDetector(projector.getWidth(), projector.getHeight());
+        }
+
+        projectorAsCamera.trackSheets(true);
         projectorAsCamera.trackMarkerBoard(board);
-        initMarkerTrackingFromProjector();
-    }
 
-    private void initMarkerTrackingFromProjector() {
-        projectorTracker = DetectedMarker.createDetector(projector.getWidth(), projector.getHeight());
+        // warrning experimental
+        projectorAsCamera.setThread();
     }
 
     private void initTrackingOn(DepthCameraDevice kinectDevice) {
@@ -216,23 +232,18 @@ public class CalibrationPopup extends PApplet {
         kinectDevice.getMainCamera().trackSheets(true);
 
         cameraFromDepthCam = kinectDevice.getColorCamera();
-        String ARToolkitCalib = Papart.calibrationFolder + KINECT_ARTOOLKIT_NAME;
 
-        // Warning, only used for .CFG markers (old).
-        Camera.convertARParams(this, cameraFromDepthCam.getProjectiveDevice(), ARToolkitCalib);
-        cameraFromDepthCam.setCalibrationARToolkit(ARToolkitCalib);
+        if (board.getMarkerType() == MarkerBoard.MarkerType.ARTOOLKITPLUS) {
+            String ARToolkitCalib = Papart.calibrationFolder + KINECT_ARTOOLKIT_NAME;
+            Camera.convertARParams(this, cameraFromDepthCam.getProjectiveDevice(), ARToolkitCalib);
+            cameraFromDepthCam.setCalibrationARToolkit(ARToolkitCalib);
+        }
 
         // No display for now...
-//        arDisplayKinect = new ARDisplay(this, cameraKinect);
-//        arDisplayKinect.init();
-//        arDisplayKinect.manualMode();
-//        app.addDisplay(arDisplayKinect);
         cameraFromDepthCam.trackSheets(true);
 
         // as it does not comes with the display:
         cameraFromDepthCam.trackMarkerBoard(board);
-
-        System.out.println("Tracking from the depth CAmera should be OK. ");
     }
 
     void reset() {
@@ -313,54 +324,10 @@ public class CalibrationPopup extends PApplet {
     }
 
     private PMatrix3D currentProjBoard() {
-        opencv_core.IplImage projImage = projectorImage();
-        if (projImage == null) {
-            return new PMatrix3D();
-        }
-        // Detection from Projector's view...
-        DetectedMarker[] markers = DetectedMarker.detect(this.projectorTracker, projImage);
-
-        board.updateLocation(projectorAsCamera, projImage, markers);
         return board.getTransfoMat(projectorAsCamera);
     }
 
-    private opencv_core.IplImage grayImage = null;
-
-    private opencv_core.IplImage projectorImage() {
-        projectorView.setCorners(corners);
-        opencv_core.IplImage projImage = projectorView.getIplViewOf(cameraTracking);
-        if (projImage == null) {
-            return null;
-        }
-
-        if (board.useGrayscaleImages()) {
-            projImage = greyProjectorImage(projImage);
-        }
-        return projImage;
-    }
-
-    private opencv_core.IplImage greyProjectorImage(opencv_core.IplImage projImage) {
-
-        if (projImage.nChannels() == 1) {
-            grayImage = projImage;
-            return grayImage;
-        }
-
-        if (grayImage == null) {
-            grayImage = opencv_core.IplImage.create(projector.getWidth(),
-                    projector.getHeight(),
-                    IPL_DEPTH_8U, 1);
-        }
-
-        cvCvtColor(projImage, grayImage, CV_BGR2GRAY);
-        // if(test){
-        //     cvSaveImage( sketchPath() + "/data/projImage.jpg", grayImage);
-        //     cvSaveImage( sketchPath() + "/data/camImage.jpg", camera.getIplImage());
-        // }
-        return grayImage;
-    }
     //// Calibrations
-
     void initMatrixGui() {
 
         PFont arial = createFont("arial", 12);
@@ -533,6 +500,10 @@ public class CalibrationPopup extends PApplet {
             }
         }
         popMatrix();
+
+        // Update the corners.
+        // TODO: move this when the corners are actally moved. 
+        projectorView.setCorners(corners);
 
         text(this.isProCamCalibrated, 100, DO_CALIBRATION_HEIGHT + 15);
         text(this.isKinectCalibrated, 300, DO_CALIBRATION_HEIGHT + 15);

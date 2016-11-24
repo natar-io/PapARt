@@ -76,26 +76,24 @@ class CameraThread extends Thread {
 
         while (!stop) {
             checkSubCamera();
-            
             camera.grab();
             // If there is no camera for tracking...
-            if(cameraForMarkerboard  == null || !compute ||  camera.getTrackedSheets().isEmpty()){
+            if (cameraForMarkerboard == null || !compute || camera.getTrackedSheets().isEmpty()) {
                 continue;
             }
-            
             image = camera.getIplImage();
             if (image != null) {
                 this.compute();
             }
         }
     }
-    
-    private void checkSubCamera(){
-        if(!(camera instanceof CameraRGBIRDepth)){
+
+    private void checkSubCamera() {
+        if (!(camera instanceof CameraRGBIRDepth)) {
             return;
         }
         Camera actAsCam = ((CameraRGBIRDepth) camera).getActingCamera();
-        if(actAsCam != null){
+        if (actAsCam != null) {
             cameraForMarkerboard = actAsCam;
         }
     }
@@ -125,7 +123,7 @@ class CameraThread extends Thread {
         }
 
         for (MarkerBoard sheet : camera.getTrackedSheets()) {
-            if (sheet.useGrayscaleImages()) {
+            if (sheet.useMarkers()) {
                 if (grayImage == null) {
                     initGrayScale();
                 }
@@ -179,7 +177,7 @@ class CameraThread extends Thread {
 
     protected void updateBoardLocation(MarkerBoard markerBoard) {
         // The markerboard will know the real camera, not the top-level camera. 
-        if (markerBoard.useGrayscaleImages()) {
+        if (markerBoard.useMarkers()) {
             markerBoard.updateLocation(cameraForMarkerboard, grayImage, this.detectedMarkers);
         } else {
             markerBoard.updateLocation(cameraForMarkerboard, image, null);

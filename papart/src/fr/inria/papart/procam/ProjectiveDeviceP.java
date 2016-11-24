@@ -433,7 +433,8 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
     
     public static ProjectiveDeviceP createSimpleDevice(float fx, float fy, float cx, float cy, int w, int h) {
         ProjectiveDeviceP p = new ProjectiveDeviceP();
-        p.handleDistorsion = false;
+        // Do not update the handle distorsions ?
+//        p.handleDistorsion = false;
         p.w = w;
         p.h = h;
         p.intrinsics = new PMatrix3D(fx, 0,  cx, 0,

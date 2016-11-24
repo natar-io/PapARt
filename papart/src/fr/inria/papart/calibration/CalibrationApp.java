@@ -28,7 +28,7 @@ public class CalibrationApp extends PaperScreen {
     @Override
     public void settings() {
         setDrawingSize(297, 210);
-        loadMarkerBoard(Papart.markerFolder + Papart.calibrationFileName, 297, 210);
+        loadMarkerBoard(Papart.markerFolder + Papart.calibrationFileName, 162, 104);// 297, 210);
         setDrawAroundPaper();
     }
 

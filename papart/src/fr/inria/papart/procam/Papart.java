@@ -164,9 +164,9 @@ public class Papart {
 
     private CalibrationPopup calibrationPopup = null;
 
-    public void calibration() {
+    public void calibration(PaperScreen screen) {
         if (calibrationPopup == null) {
-            calibrationPopup = new CalibrationPopup();
+            calibrationPopup = new CalibrationPopup(screen);
         } else if (calibrationPopup.isHidden()) {
             calibrationPopup.show();
         } else {
