@@ -128,7 +128,6 @@ public class MarkerBoardJavaCV extends MarkerBoard {
 //        trackers.set(id, finder);
 
         if (corners == null) {
-            System.out.println("corners null, no update");
             return;
         }
 
