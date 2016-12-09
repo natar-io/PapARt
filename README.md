@@ -1,6 +1,11 @@
-# PapARt Library
+## PapARt Library
 
 PapARt is a software development kit (SDK) that enables the creation of interactive projection mapping. Today, it is developed by the Inria Potioc team. It comes from the augmented physical drawing tools created by Jeremy Laviole, which are documented in his PhD thesis (free to read).
+
+## Examples
+
+This repository is for the development of the library.  
+You may want to go to the **[PapARt-Examples repository](https://github.com/poqudrof/Papart-examples)** to see how to use it or discover  the features and demos. 
 
 ## Features
 
@@ -23,7 +28,6 @@ More information about the research project here:
 
 ## Examples
 
-The examples are in a [dedicated repository](https://github.com/poqudrof/Papart-examples). 
 PapARt is large library, and work with many different systems:
 - webcams and professionnal cameras ([PointGrey](https://www.ptgrey.com/) cameras). 
 - depthCameras: [Kinect Xbox360](https://github.com/OpenKinect/libfreenect), [Kinect xbox one](https://github.com/OpenKinect/libfreenect2), Intel [Realsense](https://github.com/IntelRealSense/librealsense).  
