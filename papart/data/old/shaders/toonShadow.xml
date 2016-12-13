@@ -1,9 +1,0 @@
-<effect name="toon shading v2">
-    <description>toon effect</description>
-    <vertex>toonShadow.vert</vertex>
-    <fragment>toonShadow.frag</fragment>
-    <textures>
-      <texture type="sampler2d" name="litTexture" offset="offset" label="Input image0">0</texture> 
-    </textures>
-</effect>
-
