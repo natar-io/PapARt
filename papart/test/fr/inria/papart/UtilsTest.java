@@ -30,8 +30,12 @@ import processing.core.PApplet;
 public class UtilsTest extends PApplet {
 
     @Override
-    public void setup() {
+    public void settings() {
         size(200, 200);
+    }
+
+    @Override
+    public void setup() {
         stroke(155, 0, 0);
     }
 
