@@ -100,6 +100,7 @@ public class CameraOpenKinect2 extends CameraRGBIRDepth {
             depthCamera.setSize(512, 424);
             grabber.enableDepthStream();
         }
+             this.useDepth = use;
     }
 
     @Override
@@ -110,6 +111,7 @@ public class CameraOpenKinect2 extends CameraRGBIRDepth {
             colorCamera.setSize(1920, 1080);
             grabber.enableColorStream();
         }
+             this.useColor = use;
     }
 
     @Override

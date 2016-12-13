@@ -189,6 +189,7 @@ public class CameraRealSense extends CameraRGBIRDepth {
         this.useDepth = use;
     }
 
+    @Override
     public void setUseColor(boolean use) {
         // todo: boolean or not ?
         if (!use) {

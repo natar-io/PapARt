@@ -37,7 +37,6 @@ public class CameraOpenKinect extends CameraRGBIRDepth {
     protected CameraOpenKinect(int cameraNo) {
         this.systemNumber = cameraNo;
         grabber = new OpenKinectFrameGrabber(this.systemNumber);
-
     }
 
     @Override
@@ -97,6 +96,7 @@ public class CameraOpenKinect extends CameraRGBIRDepth {
             depthCamera.setSize(640, 480);
             grabber.setDepthFormat(freenect.FREENECT_DEPTH_MM);
         }
+        this.useDepth = use;
     }
 
     @Override
@@ -105,7 +105,9 @@ public class CameraOpenKinect extends CameraRGBIRDepth {
             IRCamera.setPixelFormat(PixelFormat.GRAY);
             IRCamera.type = SubCamera.Type.IR;
             IRCamera.setSize(640, 480);
+            // grabber.setvideoformat ?
         }
+        this.useIR = use;
     }
 
     @Override
@@ -120,6 +122,7 @@ public class CameraOpenKinect extends CameraRGBIRDepth {
             kinectVideoFormat = freenect.FREENECT_VIDEO_RGB;
             grabber.setVideoFormat(kinectVideoFormat);
         }
+        this.useColor = use;
     }
 
     @Override

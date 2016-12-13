@@ -68,7 +68,7 @@ public class Papart {
     public final static String calibrationFolder = folder + "calibration/";
     public final static String markerFolder = folder + "markers/";
 
-    public static String calibrationFileName = "big-calib.svg";
+    public static String calibrationFileName = "A4-calib.svg";
 
     public static String cameraCalibName = "camera.yaml";
     public static String projectorCalibName = "projector.yaml";

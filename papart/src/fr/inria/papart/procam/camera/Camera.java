@@ -80,7 +80,7 @@ public abstract class Camera implements PConstants, HasExtrinsics {
     protected int width, height;
     protected int frameRate;
     protected boolean trackSheets = false;
-    private boolean isClosing = false;
+    protected boolean isClosing = false;
     protected boolean isConnected = false;
 
     protected boolean undistort = false;
