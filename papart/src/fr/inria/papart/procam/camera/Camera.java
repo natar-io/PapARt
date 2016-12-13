@@ -23,7 +23,6 @@ package fr.inria.papart.procam.camera;
  *
  * @author jeremylaviole
  */
-import fr.inria.papart.graph.Node;
 import fr.inria.papart.procam.HasExtrinsics;
 import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.procam.ProjectiveDeviceP;
@@ -45,7 +44,7 @@ import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 
-public abstract class Camera extends Node implements PConstants, HasExtrinsics {
+public abstract class Camera implements PConstants, HasExtrinsics {
 
     public static Camera INVALID_CAMERA = new CameraOpenCV(-1);
 
