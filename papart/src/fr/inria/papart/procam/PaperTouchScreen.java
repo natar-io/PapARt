@@ -115,6 +115,7 @@ public class PaperTouchScreen extends PaperScreen {
 
     }
 
+    // TODO: cleaning of this
     static private final int DEFAULT_TOUCH_SIZE = 15;
 
     protected void drawTouch() {
@@ -124,11 +125,12 @@ public class PaperTouchScreen extends PaperScreen {
     protected void drawTouch(int ellipseSize) {
         for (Touch t : touchList) {
             if (t.is3D) {
-                fill(185, 142, 62);
+                // fill(185, 142, 62);
             } else {
                 fill(58, 71, 198);
+                 ellipse(t.position.x, t.position.y, ellipseSize, ellipseSize);
             }
-            ellipse(t.position.x, t.position.y, ellipseSize, ellipseSize);
+            // ellipse(t.position.x, t.position.y, ellipseSize, ellipseSize);
 
 //            ellipse(t.pposition.x, t.pposition.y, ellipseSize /2 , ellipseSize /2);
 //            pushMatrix();
