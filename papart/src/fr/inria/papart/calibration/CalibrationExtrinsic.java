@@ -119,20 +119,28 @@ public class CalibrationExtrinsic {
             return;
         }
 
-        // move the plane up a little.
-        // Value for Kinect 360. 
-        if (depthCameraDevice.type() == Camera.Type.OPEN_KINECT) {
-            planeCalibCam.moveAlongNormal(-7f);
-        }
-        // Value for RealSense. 
-        if (depthCameraDevice.type() == Camera.Type.REALSENSE) {
-            planeCalibCam.moveAlongNormal(-42f);
-        }
-
+        // TODO: not sure here... ?
+        movePlaneAlongOffset(planeCalibCam);
+      
         saveKinectPlaneCalibration(planeCalibCam, homography);
         saveKinectCameraExtrinsics(kinectCameraExtrinsics);
     }
+    
+        private static final float OPEN_KINECT_Z_OFFSET = -12;
+    private static final float REALSENSE_Z_OFFSET = -42f;
 
+    private void movePlaneAlongOffset(PlaneCalibration planeCalib){
+        
+        if (depthCameraDevice.type() == Camera.Type.OPEN_KINECT) {
+            System.out.println("Moving the plane along Z... " + OPEN_KINECT_Z_OFFSET);
+            planeCalib.moveAlongNormal(OPEN_KINECT_Z_OFFSET);
+        }
+        if (depthCameraDevice.type() == Camera.Type.REALSENSE) {
+            planeCalib.moveAlongNormal(REALSENSE_Z_OFFSET);
+        }
+
+    }
+    
     protected void calibrateDepthAndExternalCam(ArrayList<CalibrationSnapshot> snapshots) {
         calibrateDepthToExternalExtr(snapshots);
         calibrateDepthCamPlane(snapshots);
@@ -179,15 +187,12 @@ public class CalibrationExtrinsic {
 
         // move the plane up a little.
         planeCalibKinect.flipNormal();
-        planeCalibKinect.moveAlongNormal(-20f);
-
-        if (depthCameraDevice.type() == Camera.Type.REALSENSE) {
-            planeCalibKinect.moveAlongNormal(-20f);
-        }
+        movePlaneAlongOffset(planeCalibKinect);
 
         saveKinectPlaneCalibration(planeCalibKinect, homography);
         return true;
     }
+
 
     public boolean calibrateDepthCamPlaneOnly(ArrayList<CalibrationSnapshot> snapshots) {
         // Depth -> color  extrinsics
@@ -213,7 +218,7 @@ public class CalibrationExtrinsic {
 
         // move the plane up a little.
         planeCalibKinect.flipNormal();
-        planeCalibKinect.moveAlongNormal(-20f);
+        movePlaneAlongOffset(planeCalibKinect);
 
         saveKinectPlaneCalibration(planeCalibKinect, homography);
         return true;
