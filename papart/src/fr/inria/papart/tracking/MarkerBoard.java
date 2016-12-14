@@ -23,6 +23,7 @@ import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.multitouch.OneEuroFilter;
+import fr.inria.papart.procam.camera.CameraRGBIRDepth;
 import fr.inria.papart.tracking.ObjectFinder;
 import org.bytedeco.javacpp.ARToolKitPlus;
 import org.bytedeco.javacpp.opencv_core.IplImage;
@@ -111,17 +112,17 @@ public abstract class MarkerBoard {
     }
 
     private int getId(Camera camera) {
-        return cameras.indexOf(camera);
+        return cameras.indexOf(Camera.checkActingCamera(camera));
     }
 
     public void setFiltering(Camera camera, double freq, double minCutOff) {
-        int id = cameras.indexOf(camera);
+        int id = getId(camera);
         OneEuroFilter[] filter = createFilter(freq, minCutOff);
         filters.set(id, filter);
     }
 
     public void removeFiltering(Camera camera) {
-        int id = cameras.indexOf(camera);
+        int id = getId(camera);
         filters.set(id, null);
     }
 
@@ -137,7 +138,7 @@ public abstract class MarkerBoard {
     }
 
     public void setFakeLocation(Camera camera, PMatrix3D location) {
-        int id = cameras.indexOf(camera);
+        int id = getId(camera);
         PMatrix3D transfo = (PMatrix3D) transfos.get(id);
         transfo.set(location);
     }
@@ -203,7 +204,7 @@ public abstract class MarkerBoard {
 
     // We suppose that the ARDisplay is the one of the camera...
     public PVector getBoardLocation(Camera camera, ARDisplay display) {
-        int id = cameras.indexOf(camera);
+        int id = getId(camera);
         PVector v = getPositionVector(id);
 
         // Apply extrinsics if required.
@@ -227,7 +228,7 @@ public abstract class MarkerBoard {
 
     public synchronized void updateLocation(Camera camera, IplImage img, Object globalTracking) {
 
-        int id = cameras.indexOf(camera);
+        int id = getId(camera);
         if (id == -1) {
             throw new RuntimeException("The board " + this.fileName + " is"
                     + " not registered with the camera you asked");
@@ -249,7 +250,7 @@ public abstract class MarkerBoard {
     protected abstract void updatePositionImpl(int id, int currentTime, int endTime, int mode, Camera camera, IplImage img, Object globalTracking);
 
     public PMatrix3D getTransfoMat(Camera camera) {
-        return transfos.get(cameras.indexOf(camera));
+        return transfos.get(getId(camera));
     }
 
     public PMatrix3D getTransfoRelativeTo(Camera camera, MarkerBoard board2) {
@@ -272,7 +273,7 @@ public abstract class MarkerBoard {
     }
 
     private Object getTracking(Camera camera) {
-        return trackers.get(cameras.indexOf(camera));
+        return trackers.get(getId(camera));
     }
 
     public boolean useJavaCVFinder() {
