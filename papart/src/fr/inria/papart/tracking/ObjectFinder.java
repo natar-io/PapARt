@@ -72,15 +72,11 @@ public class ObjectFinder {
         // Marche très bien
 //        ORB detector = ORB.create(1200/*=500*/, 1.6f /*=1.2f*/, 8 /*=8*/, 31/*=31*/,
 //            0/*=0*/, 2/*=2*/, ORB.HARRIS_SCORE/*=cv::ORB::HARRIS_SCORE*/, 31 /*=31*/, 20/*=20*/);
-        
-          // default--> quite awesome 
+        // default--> quite awesome 
         BRISK detector = BRISK.create(50, 2, 1);
-        
-        
+
         // Tests 
 //        BRISK detector = BRISK.create(briskParam1, briskParam2, briskParam3);
-        
-        
 //        AKAZE detector = AKAZE.create();  // -> CRAZY memory leaks ?!
 //        AKAZE detector = AKAZE.create(AKAZE.DESCRIPTOR_KAZE,
 //                    0, 3, 0.001f,
@@ -90,8 +86,6 @@ public class ObjectFinder {
 //                                         int descriptor_size/*=0*/, int descriptor_channels/*=3*/,
 //                                         float threshold/*=0.001f*/, int nOctaves/*=4*/,
 //                                         int nOctaveLayers/*=4*/, int diffusivity/*=cv::KAZE::DIFF_PM_G2*/);
-
-
 //        MSER detector = MSER.create();  // -> Not implemented.
 //        FastFeatureDetector detector = FastFeatureDetector.create();  // -> Not implemented.
 //        AgastFeatureDetector detector = AgastFeatureDetector.create(); // -> not implemented
@@ -200,7 +194,7 @@ public class ObjectFinder {
             roi = cvRect(0, 0, image.width(), image.height());
             defaultRoi = cvRect(0, 0, image.width(), image.height());
         }
-        
+
         cvSetImageROI(image, roi);
 
 //        System.out.println("retreived roi: " + roi.x() + " " + roi.y() + " " + roi.width() + " " + roi.height());
@@ -215,6 +209,7 @@ public class ObjectFinder {
             roi.y(0);
             roi.width(image.width());
             roi.height(image.height());
+            cvSetImageROI(image, defaultRoi);
             return null;
         }
 
@@ -235,13 +230,14 @@ public class ObjectFinder {
             roi.y(0);
             roi.width(image.width());
             roi.height(image.height());
+            cvSetImageROI(image, defaultRoi);
             return null;
         }
-        
+
         adjustROI(image, dstCorners);
         // update mask from dstCorners... 
 
-//        cvSetImageROI(image, defaultRoi);
+        cvSetImageROI(image, defaultRoi);
 //        System.out.println("Updated roi: " + roi.x() + " " + roi.y());
         return dstCorners;
     }
