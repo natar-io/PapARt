@@ -39,6 +39,8 @@ public class CalibrationExtrinsic {
 
     private final PApplet parent;
 
+    private static final float OPEN_KINECT_Z_OFFSET = -15f;
+    private static final float REALSENSE_Z_OFFSET = -42f;
     // Cameras
     private ProjectorDisplay projector;
     private final PMatrix3D kinectCameraExtrinsics = new PMatrix3D();
@@ -121,16 +123,13 @@ public class CalibrationExtrinsic {
 
         // TODO: not sure here... ?
         movePlaneAlongOffset(planeCalibCam);
-      
+
         saveKinectPlaneCalibration(planeCalibCam, homography);
         saveKinectCameraExtrinsics(kinectCameraExtrinsics);
     }
-    
-        private static final float OPEN_KINECT_Z_OFFSET = -12;
-    private static final float REALSENSE_Z_OFFSET = -42f;
 
-    private void movePlaneAlongOffset(PlaneCalibration planeCalib){
-        
+    private void movePlaneAlongOffset(PlaneCalibration planeCalib) {
+
         if (depthCameraDevice.type() == Camera.Type.OPEN_KINECT) {
             System.out.println("Moving the plane along Z... " + OPEN_KINECT_Z_OFFSET);
             planeCalib.moveAlongNormal(OPEN_KINECT_Z_OFFSET);
@@ -140,7 +139,7 @@ public class CalibrationExtrinsic {
         }
 
     }
-    
+
     protected void calibrateDepthAndExternalCam(ArrayList<CalibrationSnapshot> snapshots) {
         calibrateDepthToExternalExtr(snapshots);
         calibrateDepthCamPlane(snapshots);
@@ -192,7 +191,6 @@ public class CalibrationExtrinsic {
         saveKinectPlaneCalibration(planeCalibKinect, homography);
         return true;
     }
-
 
     public boolean calibrateDepthCamPlaneOnly(ArrayList<CalibrationSnapshot> snapshots) {
         // Depth -> color  extrinsics

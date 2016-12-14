@@ -43,12 +43,12 @@ public class ProjectorAsCamera extends Camera {
     private IplImage grayImage;
     private final ProjectorDisplay projector;
 
-    public ProjectorAsCamera(ProjectorDisplay projector, Camera cameraTracking, TrackedView view){
-        this.projectorView = view; 
+    public ProjectorAsCamera(ProjectorDisplay projector, Camera cameraTracking, TrackedView view) {
+        this.projectorView = view;
         this.cameraTracking = cameraTracking;
         this.projector = projector;
     }
-    
+
     public void setImage(IplImage image) {
         this.currentImage = image;
     }
@@ -105,15 +105,14 @@ public class ProjectorAsCamera extends Camera {
     @Override
     public void grab() {
         IplImage img = projectorView.getIplViewOf(cameraTracking);
-        if(img != null){
+        if (img != null) {
             currentImage = img;
-        }
-        
-        if(this.format == PixelFormat.GRAY){
-            currentImage = greyProjectorImage(img);
+            if (this.format == PixelFormat.GRAY) {
+                currentImage = greyProjectorImage(img);
+            }
         }
     }
-    
+
     private opencv_core.IplImage greyProjectorImage(opencv_core.IplImage projImage) {
 
         if (projImage.nChannels() == 1) {
@@ -134,6 +133,7 @@ public class ProjectorAsCamera extends Camera {
         // }
         return grayImage;
     }
+
     /**
      * Not used.
      */
