@@ -359,9 +359,20 @@ public class KinectTouchInput extends TouchInput {
 //            paperScreenCoord = project(screen, display,
 //                    p.x / (float) pdp.getWidth(),
 //                    p.y / (float) pdp.getHeight());
+
+            // This works well in the best of worlds, where the depth information is 
+            // reliable. 
+
             paperScreenCoord = new PVector();
             PVector pKinectP = new PVector(pKinect.x, pKinect.y, pKinect.z);
 
+            // maybe not here... 
+            // TODO: maybe a better way to this, or to tweak the magic numbers. 
+//            // yOffset difference ? 1cm  -> surface view. 
+//            // zOffset difference ? 1cm  -> surface view. 
+            pKinectP.y -= 10;
+            pKinectP.z += 10;
+            
             // TODO: Here change the display.getCamera() to 
             // another way to get the screen location... 
             PMatrix3D transfo = screen.getLocation(display.getCamera());
@@ -370,6 +381,10 @@ public class KinectTouchInput extends TouchInput {
 
             // TODO: check bounds too ?!
         } else {
+            // This is not working with raw Depth, because the coordinates
+            // of pNorm is not in display Space, but in a custom space
+            // defined for the touch surface... 
+            
             paperScreenCoord = project(screen, display,
                     pNorm.x,
                     pNorm.y);
