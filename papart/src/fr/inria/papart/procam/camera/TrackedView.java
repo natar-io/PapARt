@@ -122,19 +122,20 @@ public class TrackedView {
     }
 
     public PImage getViewOf(Camera camera) {
-
+        camera = Camera.checkActingCamera(camera);
+        
         IplImage img = camera.getIplImage();
         if (!isExtractionReady(img)) {
             return null;
         }
-
+        
         this.mainImage = img;
         this.camera = camera;
 
         CvMat homography = computeHomography();
 
         // Convert to the good type... 
-        Utils.remapImage(homography, camera.getIplImage(), extractedIplImage, extractedPImage);
+        Utils.remapImage(homography, img, extractedIplImage, extractedPImage);
         return extractedPImage;
     }
 
@@ -156,19 +157,24 @@ public class TrackedView {
             System.err.println("You should init the TrackedView before getting the view.");
             return false;
         }
-        return img != null && cornersSet;
+        
+        if(img != null){
+            checkMemory(img);
+        }
+        
+        return img != null && (!useManualConrers || (useManualConrers && cornersSet));
     }
 
     private CvMat computeHomography() {
-        checkMemory();
         computeCorners();
         CvMat homography = Utils.createHomography(screenPixelCoordinates, imagePixelCoordinates);
         return homography;
     }
 
-    private void checkMemory() {
+    private void checkMemory(IplImage memory) {
         if (extractedIplImage == null) {
-            extractedIplImage = Utils.createImageFrom(extractedPImage);
+            extractedIplImage = Utils.createNewSizeImageFrom(memory,imageWidthPx, imageHeightPx);
+            
             if (extractedIplImage == null) {
                 System.err.println("Impossible to create a View! " + this + " " + extractedPImage);
             }
@@ -255,6 +261,7 @@ public class TrackedView {
         for (int i = 0; i < 4; i++) {
             screenPixelCoordinates[i] = camera.pdp.worldToPixel(corner3DPos[i], true);
         }
+        cornersSet = true;
     }
 
     public MarkerBoard getBoard() {

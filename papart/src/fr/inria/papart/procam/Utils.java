@@ -330,13 +330,25 @@ public class Utils {
         return imgOut;
     }
 
+    static public IplImage createNewSizeImageFrom(IplImage imgIn, int width, int height) {
+        // TODO: avoid this creation !!
+        CvSize outSize = new CvSize();
+        outSize.width(width);
+        outSize.height(height);
+        IplImage imgOut = cvCreateImage(outSize, // size
+                imgIn.depth(), // depth
+                imgIn.nChannels());
+//        imgIn.w
+        return imgOut;
+    }
+
     static public IplImage createImageFrom(PImage in) {
         // TODO: avoid this creation !!
         CvSize outSize = new CvSize();
         outSize.width(in.width);
         outSize.height(in.height);
 
-        System.out.println("inputImage to create an IPL:"  + in.width + " " + in.height + " " + in.format );
+        System.out.println("inputImage to create an IPL:" + in.width + " " + in.height + " " + in.format);
         IplImage imgOut = null;
         if (in.format == RGB) {
             imgOut = cvCreateImage(outSize, // size
@@ -539,13 +551,12 @@ public class Utils {
 //        }
         assert (img.width() == ret.width);
         assert (img.height() == ret.height);
-        //= new BufferedImage();
+        ret.loadPixels();
 
         if (img.nChannels() == 3) {
             ByteBuffer buff = img.getByteBuffer();
 
             //  PImage ret = new PImage(img.width(), img.height(), PApplet.RGB);
-            ret.loadPixels();
             if (RGB) {
                 for (int i = 0; i < img.width() * img.height(); i++) {
                     int offset = i * 3;
@@ -568,7 +579,6 @@ public class Utils {
         if (img.nChannels() == 4) {
             ByteBuffer buff = img.getByteBuffer();
             //  PImage ret = new PImage(img.width(), img.height(), PApplet.RGB);
-            ret.loadPixels();
             for (int i = 0; i < img.width() * img.height(); i++) {
                 int offset = i * 4;
 //            ret.pixels[i] = applet.color(buff.get(offset + 0) & 0xff, buff.get(offset + 1) & 0xFF, buff.get(offset + 2) & 0xff);
@@ -584,12 +594,14 @@ public class Utils {
         if (img.nChannels() == 1) {
             // TODO: no more allocations. 
             ByteBuffer buff = img.getByteBuffer();
-            byte[] arr = new byte[img.width() * img.height()];
-            buff.get(arr);
+
+            byte[] tmpArr = new byte[1];
+//            byte[] arr = new byte[img.width() * img.height()];
+//            buff.get(arr);
 
             for (int i = 0; i < img.width() * img.height(); i++) {
-
-                byte d = arr[i];
+                buff.get(tmpArr);
+                byte d = tmpArr[0];
 //                int d = (arr[i] & 0xFF);
                 ret.pixels[i]
                         = (0xFF) << 24
@@ -638,7 +650,6 @@ public class Utils {
             argb.put(tmpArr[0]);
             argb.put((byte) 255);
         }
-        argb.rewind();
         argb.rewind();
     }
 
@@ -880,7 +891,7 @@ public class Utils {
         pw.flush();
         pw.close();
     }
-    
+
     static public void convertARParamFromDevice(PApplet pa, ProjectiveDeviceP pdp, String outputDAT) throws Exception {
 
         PrintWriter pw = pa.createWriter(outputDAT);
@@ -900,7 +911,7 @@ public class Utils {
         sb.append("0 ").append(" ");
 
 //        if(pdp.handleDistorsions()){
-            // TODO: handle the distorsions... 
+        // TODO: handle the distorsions... 
 //            double[] distort = cam.distortionCoeffs.get();
 //            // alpha_c ?  
 ////        sb.append("0 ");
@@ -912,9 +923,9 @@ public class Utils {
 //                sb.append("0 ");
 //            }
 //        } else {
-            for (int i = 0; i < 6; i++) {
-                sb.append("0 ");
-            }
+        for (int i = 0; i < 6; i++) {
+            sb.append("0 ");
+        }
 //        }
         // undist iterations
         sb.append("10\n");

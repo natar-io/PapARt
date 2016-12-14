@@ -141,6 +141,7 @@ class CameraThread extends Thread {
                 }
                 this.detectedMarkers = computeMarkerLocations();
                 camera.setMarkers(this.detectedMarkers);
+//                System.out.println("Detected markers: " + detectedMarkers.length);
                 break;
             }
         }

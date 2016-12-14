@@ -116,6 +116,16 @@ public abstract class Camera implements PConstants, HasExtrinsics {
     public PImage getImage() {
         return getPImage();
     }
+    
+    public static Camera checkActingCamera(Camera camera) {
+        if (camera instanceof CameraRGBIRDepth) {
+            Camera acting = ((CameraRGBIRDepth) camera).getActingCamera();
+            if (acting != null) {
+                camera = acting;
+            }
+        }
+        return camera;
+    }
 
     public abstract PImage getPImage();
 
