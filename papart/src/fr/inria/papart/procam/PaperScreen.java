@@ -268,8 +268,8 @@ public class PaperScreen {
         }
 
         if (!cameraTracking.tracks(markerBoard)) {
-            System.out.println("Camera. " + cameraTracking + " now tracks " + markerBoard);
             cameraTracking.trackMarkerBoard(markerBoard);
+//            System.out.println("Camera. " + cameraTracking + " now tracks " + markerBoard);
         }
     }
 

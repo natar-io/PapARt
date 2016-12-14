@@ -668,16 +668,17 @@ public class Papart {
             depthCameraDevice.getDepthCamera().setExtrinsics(depthCameraDevice.getStereoCalibration());
 
             // Specific
+            // Important to use it for now ! Used in KinectTouchInput.projectPointToScreen
             ((KinectTouchInput) this.touchInput).useRawDepth();
-            
-            System.out.println("Papart: Using Touchextrinsics from the device.");
+
+//            System.out.println("Papart: Using Touchextrinsics from the device.");
         } else {
             // Two different cameras  
             // setExtrinsics must after the kinect stereo calibration is loaded
             PMatrix3D extr = (Papart.getPapart()).loadCalibration(Papart.kinectTrackingCalib);
             extr.invert();
             depthCameraDevice.getDepthCamera().setExtrinsics(extr);
-            System.out.println("Papart: Using Touchextrinsics from the calibrated File.");
+//            System.out.println("Papart: Using Touchextrinsics from the calibrated File.");
         }
     }
 
@@ -688,9 +689,6 @@ public class Papart {
     }
 
     /**
-     * WORK IN PROGRESS
-     *
-     * @return
      */
     public DepthCameraDevice loadDefaultDepthCamera() {
 
