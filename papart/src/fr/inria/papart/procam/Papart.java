@@ -636,17 +636,17 @@ public class Papart {
     /**
      * Only for .cfg marker tracking.
      */
-    private void setARToolkitCalib() {
-        // TODO: warning −> used only for .cfg files.
-        // try to get the params from the camera, instead of the files! 
-        if (cameraTracking.isCalibrated()) {
-            Camera.convertARParams(this.applet, getPublicCameraTracking().getProjectiveDevice(), camCalibARtoolkit);
-            getPublicCameraTracking().setCalibrationARToolkit(camCalibARtoolkit);
-        } else {
-            Camera.convertARParams(this.applet, cameraCalib, camCalibARtoolkit);
-            getPublicCameraTracking().setCalibrationARToolkit(camCalibARtoolkit);
-        }
-    }
+//    private void setARToolkitCalib() {
+//        // TODO: warning −> used only for .cfg files.
+//        // try to get the params from the camera, instead of the files! 
+//        if (cameraTracking.isCalibrated()) {
+//           Camera.convertARParams(this.applet, getPublicCameraTracking().getProjectiveDevice(), camCalibARtoolkit);
+//            getPublicCameraTracking().setCalibrationARToolkit(camCalibARtoolkit);
+//        } else {
+//            Camera.convertARParams(this.applet, cameraCalib, camCalibARtoolkit);
+//            getPublicCameraTracking().setCalibrationARToolkit(camCalibARtoolkit);
+//        }
+//    }
 
     /**
      * *
@@ -801,7 +801,7 @@ public class Papart {
             System.err.println("Start Tracking requires a Camera...");
             return;
         }
-        setARToolkitCalib();
+//        setARToolkitCalib();
         this.getPublicCameraTracking().trackSheets(true);
     }
 
@@ -814,7 +814,7 @@ public class Papart {
             System.err.println("Start Tracking requires a Camera...");
             return;
         }
-        setARToolkitCalib();
+//        setARToolkitCalib();
         this.getPublicCameraTracking().trackSheets(true);
         startCameraThread();
     }
