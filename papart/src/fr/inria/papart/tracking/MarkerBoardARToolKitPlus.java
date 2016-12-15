@@ -19,6 +19,7 @@
  */
 package fr.inria.papart.tracking;
 
+import static fr.inria.papart.procam.Papart.camCalibARtoolkit;
 import static fr.inria.papart.tracking.MarkerBoard.BLOCK_UPDATE;
 import static fr.inria.papart.tracking.MarkerBoard.FORCE_UPDATE;
 import static fr.inria.papart.tracking.MarkerBoard.NORMAL;
@@ -118,6 +119,10 @@ public class MarkerBoardARToolKitPlus extends MarkerBoard {
 //        tracker.setUseDetectLite(false);
         tracker.setUseDetectLite(true);
 
+        // Deal with the calibration files here...
+        Camera.convertARParams(this.applet, camera.getProjectiveDevice(), camCalibARtoolkit);
+        camera.setCalibrationARToolkit(camCalibARtoolkit);
+        
         // Initialize the tracker, with camera parameters and marker config. 
         if (!tracker.init(camera.getCalibrationARToolkit(), this.getFileName(), 1.0f, 10000.f)) {
             System.err.println("Init ARTOOLKIT Error " + camera.getCalibrationARToolkit() + " " + this.getFileName());
