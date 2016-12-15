@@ -486,11 +486,14 @@ public class Utils {
     }
 
     static public void remapImage(CvMat homography, IplImage imgIn, IplImage imgTmp, PImage Pout) {
+        remapImage(homography, imgIn, imgTmp, Pout, false);
+    }
+    static public void remapImage(CvMat homography, IplImage imgIn, IplImage imgTmp, PImage Pout, boolean isRgb) {
 
         opencv_imgproc.cvWarpPerspective(imgIn, imgTmp, homography);
         // opencv_imgproc.CV_INTER_LINEAR ); //                opencv_imgproc.CV_WARP_FILL_OUTLIERS);
 //                getFillColor());
-        IplImageToPImage(imgTmp, false, Pout);
+        IplImageToPImage(imgTmp, isRgb, Pout);
 
     }
 
