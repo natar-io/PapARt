@@ -134,8 +134,9 @@ public class TrackedView {
 
         CvMat homography = computeHomography();
 
+        boolean useRGB = camera.getPixelFormat() == Camera.PixelFormat.RGB;
         // Convert to the good type... 
-        Utils.remapImage(homography, img, extractedIplImage, extractedPImage);
+        Utils.remapImage(homography, img, extractedIplImage, extractedPImage, useRGB);
         return extractedPImage;
     }
 
@@ -285,6 +286,10 @@ public class TrackedView {
     public void setBottomLeftCorner(PVector bottomLeftCorner) {
         this.bottomLeftCorner.set(bottomLeftCorner);
         this.isYUp = true;
+    }
+    
+    public void forceYOrientation(boolean up){
+        this.isYUp = up;
     }
 
     /**

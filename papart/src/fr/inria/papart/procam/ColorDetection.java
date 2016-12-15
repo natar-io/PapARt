@@ -54,25 +54,21 @@ public class ColorDetection {
     }
 
     public void initialize() {
-
         boardView = new TrackedView(paperScreen);
-
         setPosition(pos);
         boardView.setCaptureSizeMM(captureSize);
         boardView.setImageWidthPx(picWidth);
         boardView.setImageHeightPx(picHeight);
         boardView.init();
-
     }
 
     public void setPosition(PVector pos) {
         this.pos.set(pos);
-
         if (boardView != null) {
             if (invY) {
                 boardView.setBottomLeftCorner(new PVector(pos.x, paperScreen.drawingSize.y - pos.y));
             } else {
-                boardView.setBottomLeftCorner(pos);
+                boardView.setBottomLeftCorner(new PVector(pos.x, pos.y));
             }
         }
     }
@@ -84,13 +80,23 @@ public class ColorDetection {
     public void drawSelf() {
         computeColor();
 
+        drawCaptureZone();
+
         paperScreen.pushMatrix();
         paperScreen.translate(pos.x,
                 pos.y, 1);
 
-        drawCaptureZonePriv();
-        drawCapturedColor();
+          if (!invY) {
+//             paperScreen.translate(0, captureSize.y, 0);
+        }
+
+//        drawCaptureZonePriv();
+        paperScreen.translate(captureSize.x + 20, 0);
         drawCapturedImage();
+
+        paperScreen.translate(20, 0);
+        drawCapturedColor();
+
         paperScreen.popMatrix();
     }
 
@@ -101,14 +107,14 @@ public class ColorDetection {
     public void drawCapturedImage() {
         PImage out = getImage();
         if (out != null) {
-            paperScreen.image(out, 0, -picHeight - 5, picWidth, picHeight);
+            paperScreen.image(out, 0, 0, captureSize.x, captureSize.y);
         }
     }
 
     public void drawCapturedColor() {
         paperScreen.fill(this.col);
         paperScreen.noStroke();
-        paperScreen.ellipse(0, -picWidth - 5, picHeight, picHeight);
+        paperScreen.ellipse(0, 0, 10, 10);
     }
 
     public void drawCaptureZonePriv() {
@@ -122,12 +128,18 @@ public class ColorDetection {
     public void drawCaptureZone() {
         paperScreen.pushMatrix();
         paperScreen.translate(pos.x,
-                pos.y, 1);
+                pos.y,
+                0.2f);
+
+        if (!invY) {
+             paperScreen.translate(0, captureSize.y, 0);
+        }
+
         paperScreen.strokeWeight(2);
         paperScreen.noFill();
         paperScreen.stroke(80);
         paperScreen.rectMode(PApplet.CORNER);
-        paperScreen.rect(0, 0, captureSize.x, captureSize.y);
+        paperScreen.rect(0, -captureSize.y, captureSize.x, captureSize.y);
         paperScreen.popMatrix();
     }
 
@@ -208,23 +220,38 @@ public class ColorDetection {
         this.captureOffset = captureOffset;
     }
 
+    public void setCaptureOffset(float x, float y) {
+        this.captureOffset.set(x, y);
+    }
+
     public PVector getCaptureSize() {
         return captureSize.copy();
     }
 
     /**
-     * Set the capture size in millimeters. 
+     * Set the capture size in millimeters.
+     *
      * @param x
-     * @param y 
+     * @param y
      */
     public void setCaptureSize(float x, float y) {
         this.captureSize.set(x, y);
     }
 
     /**
+     * Set the capture size in millimeters.
+     *
+     * @param size in mm.
+     */
+    public void setCaptureSize(PVector size) {
+        setCaptureSize(size.x, size.y);
+    }
+
+    /**
      * Set the picture size for analysis in pixels.
+     *
      * @param picWidth
-     * @param picHeight 
+     * @param picHeight
      */
     public void setPicSize(int picWidth, int picHeight) {
         this.picWidth = picWidth;
