@@ -20,7 +20,8 @@
  */
 package fr.inria.papart.procam.camera;
 
-import fr.inria.papart.procam.Utils;
+import fr.inria.papart.procam.utils.ImageUtils;
+import fr.inria.papart.procam.utils.ARToolkitPlusUtils;
 import fr.inria.papart.procam.camera.Camera.PixelFormat;
 import java.awt.Image;
 import java.nio.ByteBuffer;
@@ -67,19 +68,19 @@ public class CamImageGray extends CamImage {
         ByteBuffer imageBuffer = iplImage.getByteBuffer();
 
         if (incomingFormat == PixelFormat.GRAY) {
-            Utils.byteBufferGRAYtoARGB(imageBuffer, argbBuffer);
+            ImageUtils.byteBufferGRAYtoARGB(imageBuffer, argbBuffer);
         }
         if (incomingFormat == PixelFormat.GRAY_32) {
-            Utils.byteBufferGRAY32toARGB(imageBuffer, argbBuffer);
+            ImageUtils.byteBufferGRAY32toARGB(imageBuffer, argbBuffer);
         }
         if (incomingFormat == PixelFormat.FLOAT_DEPTH_KINECT2) {
-            Utils.byteBufferDepthK2toARGB(imageBuffer, argbBuffer);
+            ImageUtils.byteBufferDepthK2toARGB(imageBuffer, argbBuffer);
         }
         if (incomingFormat == PixelFormat.DEPTH_KINECT_MM) {
-            Utils.byteBufferDepthK1MMtoARGB(imageBuffer, argbBuffer);
+            ImageUtils.byteBufferDepthK1MMtoARGB(imageBuffer, argbBuffer);
         }
         if (incomingFormat == PixelFormat.REALSENSE_Z16) {
-            Utils.byteBufferZ16toARGB(imageBuffer, argbBuffer);
+            ImageUtils.byteBufferZ16toARGB(imageBuffer, argbBuffer);
         }
 
 //         Utils.byteBufferBRGtoARGB(bgrBuffer, argbBuffer);

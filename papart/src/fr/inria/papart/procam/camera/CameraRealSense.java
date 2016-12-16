@@ -67,9 +67,10 @@ public class CameraRealSense extends CameraRGBIRDepth {
             if (colorCamera.width() == 1280) {
                 grabber.setFrameRate(60);
             } else {
-                grabber.setFrameRate(30);
+                grabber.setFrameRate(colorCamera.getFrameRate());
+//                grabber.setFrameRate(30);
             }
-//                grabber.setFrameRate(colorCamera.getFrameRate());
+
             grabber.enableColorStream();
         }
 

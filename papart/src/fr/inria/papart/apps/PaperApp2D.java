@@ -36,7 +36,7 @@ public class PaperApp2D extends PApplet {
 
     @Override
     public void settings() {
-        size(900, 600, P3D);
+        size(900, 600);
 //        fullScreen(P3D, 2);
     }
 

@@ -23,9 +23,10 @@ import fr.inria.papart.tracking.MarkerBoardInvalid;
 import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.calibration.HomographyCalibration;
 import fr.inria.papart.calibration.HomographyCreator;
+import fr.inria.papart.procam.utils.MathUtils;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.display.ProjectorDisplay;
-import static fr.inria.papart.procam.Utils.toVec;
+import static fr.inria.papart.procam.utils.MathUtils.toVec;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
@@ -255,7 +256,7 @@ public class Screen implements HasExtrinsics {
         mat.translate(-size.x, 0, 0);
         paperPosCorners3D[3] = new PVector(mat.m03, mat.m13, mat.m23);
 
-        plane = new Plane(new Triangle3D(toVec(paperPosCorners3D[0]), toVec(paperPosCorners3D[1]), toVec(paperPosCorners3D[2])));
+        plane = new Plane(new Triangle3D(MathUtils.toVec(paperPosCorners3D[0]), MathUtils.toVec(paperPosCorners3D[1]), MathUtils.toVec(paperPosCorners3D[2])));
 
         homography.addPoint(paperPosCorners3D[0], new PVector(0, 0));
         homography.addPoint(paperPosCorners3D[1], new PVector(1, 0));

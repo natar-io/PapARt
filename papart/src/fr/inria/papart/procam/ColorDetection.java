@@ -19,6 +19,8 @@
  */
 package fr.inria.papart.procam;
 
+import fr.inria.papart.procam.utils.MathUtils;
+import fr.inria.papart.procam.utils.ARToolkitPlusUtils;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.TrackedView;
 import processing.core.PApplet;
@@ -200,7 +202,7 @@ public class ColorDetection {
 
         for (int k = 0; k < pxNb; k++) {
             int c2 = out.pixels[k];
-            boolean isClose = Utils.colorDist(c, c2, threshold);
+            boolean isClose = MathUtils.colorDistRGB(c, c2, threshold);
             if (isClose) {
                 nbSameColor++;
             }

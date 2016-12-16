@@ -24,9 +24,10 @@ package fr.inria.papart.procam.camera;
  * @author jeremylaviole
  */
 import fr.inria.papart.procam.HasExtrinsics;
+import fr.inria.papart.procam.utils.ImageUtils;
 import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.procam.ProjectiveDeviceP;
-import fr.inria.papart.procam.Utils;
+import fr.inria.papart.procam.utils.ARToolkitPlusUtils;
 import fr.inria.papart.tracking.DetectedMarker;
 import fr.inria.papart.tracking.MarkerList;
 import org.bytedeco.javacpp.opencv_core.CvMat;
@@ -180,7 +181,7 @@ public abstract class Camera implements PConstants, HasExtrinsics {
 
     public PImage getPImageCopy() {
         PImage out = parent.createImage(this.width, this.height, RGB);
-        Utils.IplImageToPImage(currentImage, false, out);
+        ImageUtils.IplImageToPImage(currentImage, false, out);
         return out;
     }
 
@@ -196,12 +197,12 @@ public abstract class Camera implements PConstants, HasExtrinsics {
         if(currentImage.nChannels() == 1){
 
         }
-        Utils.IplImageToPImage(currentImage, this.format == PixelFormat.RGB, out);
+        ImageUtils.IplImageToPImage(currentImage, this.format == PixelFormat.RGB, out);
         return out;
     }
 
     public PImage getPImageCopyTo(PImage out) {
-        Utils.IplImageToPImage(currentImage, this.format, out);
+        ImageUtils.IplImageToPImage(currentImage, this.format, out);
         return out;
     }
 
@@ -500,7 +501,7 @@ public abstract class Camera implements PConstants, HasExtrinsics {
             // ARToolkit Plus 2.1.1
 //            fr.inria.papart.procam.Utils.convertARParam(parent, calibrationYAML, calibrationData, width, height);
             // ARToolkit Plus 2.3.0
-            fr.inria.papart.procam.Utils.convertARParam2(parent, calibrationFile, calibrationARtoolkit);
+            fr.inria.papart.procam.utils.ARToolkitPlusUtils.convertARParam2(parent, calibrationFile, calibrationARtoolkit);
         } catch (Exception e) {
             PApplet.println("Conversion error. " + e);
         }
@@ -509,7 +510,7 @@ public abstract class Camera implements PConstants, HasExtrinsics {
     static public void convertARParams(PApplet parent, ProjectiveDeviceP projectiveDevice,
             String calibrationARtoolkit) {
         try {
-            fr.inria.papart.procam.Utils.convertARParamFromDevice(parent, projectiveDevice, calibrationARtoolkit);
+            fr.inria.papart.procam.utils.ARToolkitPlusUtils.convertARParamFromDevice(parent, projectiveDevice, calibrationARtoolkit);
         } catch (Exception e) {
             PApplet.println("Conversion error. " + e);
         }

@@ -359,10 +359,8 @@ public class KinectTouchInput extends TouchInput {
 //            paperScreenCoord = project(screen, display,
 //                    p.x / (float) pdp.getWidth(),
 //                    p.y / (float) pdp.getHeight());
-
             // This works well in the best of worlds, where the depth information is 
             // reliable. 
-
             paperScreenCoord = new PVector();
             PVector pKinectP = new PVector(pKinect.x, pKinect.y, pKinect.z);
 
@@ -372,7 +370,7 @@ public class KinectTouchInput extends TouchInput {
 //            // zOffset difference ? 1cm  -> surface view. 
             pKinectP.y -= 10;
             pKinectP.z += 10;
-            
+
             // TODO: Here change the display.getCamera() to 
             // another way to get the screen location... 
             PMatrix3D transfo = screen.getLocation(display.getCamera());
@@ -381,10 +379,28 @@ public class KinectTouchInput extends TouchInput {
 
             // TODO: check bounds too ?!
         } else {
-            // This is not working with raw Depth, because the coordinates
+
+//            // other possib, we know the 3D Point -> screen transfo... 
+//            PMatrix3D kinectExtrinsics = kinectDevice.getDepthCamera().getExtrinsics().get();
+//            kinectExtrinsics.invert();
+//            PMatrix3D paperLocation = screen.getLocation(display.getCamera()).get();
+//            paperLocation.invert();
+//            Vec3D depthPoint = pKinect;
+//            PVector pointPosExtr = new PVector();
+//            PVector pointPosDisplay = new PVector();
+//            kinectExtrinsics.mult(new PVector(depthPoint.x,
+//                    depthPoint.y,
+//                    depthPoint.z),
+//                    pointPosExtr);
+//            paperLocation.mult(pointPosExtr,
+//                    pointPosDisplay);
+//            System.out.println("new: " + pointPosDisplay);
+//            return pointPosDisplay;
+                // Not ready yet...
+            
+// This is not working with raw Depth, because the coordinates
             // of pNorm is not in display Space, but in a custom space
             // defined for the touch surface... 
-            
             paperScreenCoord = project(screen, display,
                     pNorm.x,
                     pNorm.y);

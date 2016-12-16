@@ -19,7 +19,8 @@
  */
 package fr.inria.papart.procam.camera;
 
-import fr.inria.papart.procam.Utils;
+import fr.inria.papart.procam.utils.ImageUtils;
+import fr.inria.papart.procam.utils.ARToolkitPlusUtils;
 import java.awt.Image;
 import java.nio.ByteBuffer;
 import org.bytedeco.javacpp.opencv_core.IplImage;
@@ -66,10 +67,10 @@ public class CamImageColor extends CamImage {
         ByteBuffer imageBuffer = iplImage.getByteBuffer();
 
         if (this.incomingFormat == Camera.PixelFormat.BGR) {
-            Utils.byteBufferBRGtoARGB(imageBuffer, argbBuffer);
+            ImageUtils.byteBufferBRGtoARGB(imageBuffer, argbBuffer);
         }
         if (this.incomingFormat == Camera.PixelFormat.RGB) {
-            Utils.byteBufferRGBtoARGB(imageBuffer, argbBuffer);
+            ImageUtils.byteBufferRGBtoARGB(imageBuffer, argbBuffer);
         }
         if (this.incomingFormat == Camera.PixelFormat.ARGB) {
             argbBuffer = iplImage.getByteBuffer();

@@ -19,10 +19,11 @@
  */
 package fr.inria.papart.procam.camera;
 
+import fr.inria.papart.procam.utils.ImageUtils;
 import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.tracking.MarkerBoardInvalid;
 import fr.inria.papart.procam.PaperScreen;
-import fr.inria.papart.procam.Utils;
+import fr.inria.papart.procam.utils.ARToolkitPlusUtils;
 import fr.inria.papart.procam.camera.Camera;
 import org.bytedeco.javacpp.opencv_core.CvMat;
 import org.bytedeco.javacpp.opencv_core.IplImage;
@@ -136,7 +137,7 @@ public class TrackedView {
 
         boolean useRGB = camera.getPixelFormat() == Camera.PixelFormat.RGB;
         // Convert to the good type... 
-        Utils.remapImage(homography, img, extractedIplImage, extractedPImage, useRGB);
+        ImageUtils.remapImage(homography, img, extractedIplImage, extractedPImage, useRGB);
         return extractedPImage;
     }
 
@@ -149,7 +150,7 @@ public class TrackedView {
         this.mainImage = img;
         this.camera = camera;
         CvMat homography = computeHomography();
-        Utils.remapImageIpl(homography, camera.getIplImage(), extractedIplImage);
+        ImageUtils.remapImageIpl(homography, camera.getIplImage(), extractedIplImage);
         return extractedIplImage;
     }
 
@@ -168,13 +169,13 @@ public class TrackedView {
 
     private CvMat computeHomography() {
         computeCorners();
-        CvMat homography = Utils.createHomography(screenPixelCoordinates, imagePixelCoordinates);
+        CvMat homography = ImageUtils.createHomography(screenPixelCoordinates, imagePixelCoordinates);
         return homography;
     }
 
     private void checkMemory(IplImage memory) {
         if (extractedIplImage == null) {
-            extractedIplImage = Utils.createNewSizeImageFrom(memory,imageWidthPx, imageHeightPx);
+            extractedIplImage = ImageUtils.createNewSizeImageFrom(memory,imageWidthPx, imageHeightPx);
             
             if (extractedIplImage == null) {
                 System.err.println("Impossible to create a View! " + this + " " + extractedPImage);

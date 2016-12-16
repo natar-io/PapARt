@@ -20,7 +20,7 @@
 package fr.inria.papart.procam.camera;
 
 import fr.inria.papart.procam.ProjectiveDeviceP;
-import fr.inria.papart.procam.Utils;
+import fr.inria.papart.procam.utils.ARToolkitPlusUtils;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -76,7 +76,7 @@ public class ProjectorAsCamera extends Camera {
     static public void convertARProjParams(PApplet parent, String calibrationFile,
             String calibrationARtoolkit) {
         try {
-            Utils.convertProjParam(parent, calibrationFile, calibrationARtoolkit);
+            ARToolkitPlusUtils.convertProjParam(parent, calibrationFile, calibrationARtoolkit);
         } catch (Exception ex) {
             System.out.println("Error converting projector to ARToolkit "
                     + calibrationFile + " " + calibrationARtoolkit

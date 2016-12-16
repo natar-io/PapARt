@@ -40,6 +40,7 @@ import fr.inria.papart.depthcam.devices.RealSense;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.multitouch.TUIOTouchInput;
 import fr.inria.papart.multitouch.KinectTouchInput;
+import fr.inria.papart.procam.utils.LibraryUtils;
 import fr.inria.papart.procam.camera.CameraFactory;
 import fr.inria.papart.procam.camera.CameraOpenKinect;
 import fr.inria.papart.procam.camera.CameraRGBIRDepth;
@@ -64,10 +65,12 @@ import processing.event.KeyEvent;
  */
 public class Papart {
 
-    public final static String folder = fr.inria.papart.procam.Utils.getPapartFolder() + "/data/";
+    public final static String folder = LibraryUtils.getPapartFolder() + "/data/";
     public final static String calibrationFolder = folder + "calibration/";
     public final static String markerFolder = folder + "markers/";
 
+    public static boolean isInria = false;
+    public static boolean isReality= true;
     public static String calibrationFileName = "A4-calib.svg";
 
     public static String cameraCalibName = "camera.yaml";
@@ -95,7 +98,6 @@ public class Papart {
     public static String planeAndProjectionCalib = calibrationFolder + "PlaneProjectionCalibration.xml";
     public static String touchCalib = calibrationFolder + "Touch2DCalibration.xml";
     public static String touchCalib3D = calibrationFolder + "Touch3DCalibration.xml";
-    public static String defaultFont = folder + "Font/" + "GentiumBookBasic-48.vlw";
     public int defaultFontSize = 12;
 
     protected static Papart singleton = null;
@@ -136,11 +138,10 @@ public class Papart {
         this.applet = (PApplet) applet;
 
         this.appletClass = applet.getClass();
-        PFont font = this.applet.loadFont(defaultFont);
         // TODO: singleton -> Better implementation.
         if (Papart.singleton == null) {
             Papart.singleton = this;
-            fr.inria.papart.drawingapp.DrawUtils.applet = (PApplet) applet;
+            fr.inria.papart.procam.utils.DrawUtils.applet = (PApplet) applet;
         }
     }
 
@@ -661,9 +662,10 @@ public class Papart {
     
     private void updateDepthCameraDeviceExtrinsics(){
          // Check if depthCamera is the same as the camera !
-        if (cameraTracking instanceof CameraRGBIRDepth
-                && cameraTracking == depthCameraDevice.getMainCamera()) {
-
+        if (projector == null && 
+                cameraTracking instanceof CameraRGBIRDepth &&
+                cameraTracking == depthCameraDevice.getMainCamera()) {
+            
             // No extrinsic used, it is already in the camera... 
             depthCameraDevice.getDepthCamera().setExtrinsics(depthCameraDevice.getStereoCalibration());
 

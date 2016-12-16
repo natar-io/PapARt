@@ -17,7 +17,7 @@
  * Public License along with this library; If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package fr.inria.papart.drawingapp;
+package fr.inria.papart.procam.utils;
 
 import processing.core.PApplet;
 import processing.core.PFont;
