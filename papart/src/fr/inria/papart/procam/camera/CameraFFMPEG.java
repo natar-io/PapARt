@@ -44,7 +44,7 @@ public class CameraFFMPEG extends Camera {
     
     protected CameraFFMPEG(String description, String imFormat) {
         this.cameraDescription = description;
-        this.setPixelFormat(Camera.PixelFormat.BGR);
+//        this.setPixelFormat(Camera.PixelFormat.RGB);
         this.imageFormat = imFormat;
         converter = new OpenCVFrameConverter.ToIplImage();
     }
@@ -52,17 +52,17 @@ public class CameraFFMPEG extends Camera {
     @Override
     public void start() {
         FFmpegFrameGrabber grabberFF = new FFmpegFrameGrabber(this.cameraDescription);
-        grabberFF.setImageWidth(width());
-        grabberFF.setImageHeight(height());
-//        grabberCV.setFrameRate(60);
+
+        grabberFF.setImageMode(FrameGrabber.ImageMode.COLOR);
         
-//        grabberFF.setImageMode(FrameGrabber.ImageMode.COLOR);
-        grabberFF.setImageMode(FrameGrabber.ImageMode.RAW);
-        
-        this.setPixelFormat(PixelFormat.RGB);
+        this.setPixelFormat(PixelFormat.BGR);
         
         grabberFF.setFormat(this.imageFormat);
+        grabberFF.setImageWidth(width());
+        grabberFF.setImageHeight(height());
+        grabberFF.setFrameRate(frameRate);
         
+
         try {
             grabberFF.start();
             this.grabber = grabberFF;
@@ -85,28 +85,9 @@ public class CameraFFMPEG extends Camera {
             return;
         }
         try {
-            
-            if(parent.millis() > 5000){
-            Frame frame = grabber.grab();
-            Buffer b = frame.image[0];
-//            byte[] arr = ((ByteBuffer) b).array();
-//            System.out.println("Data: " + arr[0]);
-//            System.out.println("Data: " + arr[1]);
-            }
-//            IplImage img = converter.convertToIplImageDepth(grabber.grab());
-//
-//            
-//            if (img != null) {
-//            System.out.println(img.asByteBuffer().get(100));
-//            System.out.println(img.asByteBuffer().get(101));
-//            
-//                System.out.println("ipl depth: " + img.depth());
-//            System.out.println("ipl channels: " + img.nChannels());
-//                
-//                this.updateCurrentImage(img);
-//            }
+              this.updateCurrentImage(converter.convertToIplImage(grabber.grab()));
         } catch (Exception e) {
-            System.err.println("Camera: OpenCV Grab() Error ! " + e);
+            System.err.println("Camera: FFMPEG Grab() Error ! " + e);
             e.printStackTrace();
         }
     }
