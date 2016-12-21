@@ -7,10 +7,10 @@
 
 current_branch = %x(git rev-parse --abbrev-ref HEAD).chomp
 
-output_names=["realsense"]
-              # "kinect",
-              # "hardware2",
-              # "hardware3"]
+output_names=["realsense",
+              "kinect",
+              "hardware2",
+              "hardware3"]
 
 output_names.each do |release_name|
   puts "Get the version: " + release_name
