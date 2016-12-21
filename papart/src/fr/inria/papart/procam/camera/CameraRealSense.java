@@ -94,6 +94,7 @@ public class CameraRealSense extends CameraRGBIRDepth {
         if (useHardwareIntrinsics) {
             if (useColor) {
                 useHarwareIntrinsics(colorCamera, grabber);
+                System.out.println("setting hardware intrinsics for Realsense..");
             }
             if (useIR) {
                 useHarwareIntrinsics(IRCamera, grabber);

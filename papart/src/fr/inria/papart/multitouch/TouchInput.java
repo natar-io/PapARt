@@ -39,24 +39,6 @@ public abstract class TouchInput {
 
     abstract public TouchList projectTouchToScreen(Screen screen, BaseDisplay display);
 
-    public PVector project(Screen screen, BaseDisplay display, float x, float y) {
-        boolean isProjector = display instanceof ProjectorDisplay;
-        boolean isARDisplay = display instanceof ARDisplay;
-
-        // check that the correct method is called !
-        PVector paperScreenCoord;
-        if (isProjector) {
-            paperScreenCoord = ((ProjectorDisplay) display).projectPointer(screen, x, y);
-        } else {
-            if (isARDisplay) {
-                paperScreenCoord = ((ARDisplay) display).projectPointer(screen, x, y);
-            } else {
-                paperScreenCoord = display.projectPointer(screen, x, y);
-            }
-        }
-        return paperScreenCoord;
-    }
-
     protected boolean computeOutsiders = false;
 
     public void computeOutsiders(boolean outsiders) {

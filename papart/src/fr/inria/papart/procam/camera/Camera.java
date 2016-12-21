@@ -181,6 +181,10 @@ public abstract class Camera implements PConstants, HasExtrinsics {
 
     public PImage getPImageCopy() {
         PImage out = parent.createImage(this.width, this.height, RGB);
+        if(currentImage == null){
+            System.err.println("Error in PImageCopy(): no current image. ");
+            return out;
+        }
         ImageUtils.IplImageToPImage(currentImage, false, out);
         return out;
     }

@@ -78,7 +78,7 @@ public class TUIOTouchInput extends TouchInput {
 
         Touch touch = touchPoint.getTouch();
         TuioPoint tuioPoint = tcur.getPosition();
-        PVector v = project(screen, display, tuioPoint.getX(), tuioPoint.getY());
+        PVector v = display.project(screen, tuioPoint.getX(), tuioPoint.getY());
         touch.setPosition(v);
         return touch;
     }
@@ -89,7 +89,7 @@ public class TUIOTouchInput extends TouchInput {
         Touch touch = tp.getTouch();
 
         TuioPoint tuioPoint = tobj.getPosition();
-        PVector v = project(screen, display, tuioPoint.getX(), tuioPoint.getY());
+        PVector v = display.project(screen, tuioPoint.getX(), tuioPoint.getY());
         touch.setPosition(v);
 
 //        // TODO: implement this ?

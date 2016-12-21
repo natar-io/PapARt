@@ -401,7 +401,7 @@ public class KinectTouchInput extends TouchInput {
 // This is not working with raw Depth, because the coordinates
             // of pNorm is not in display Space, but in a custom space
             // defined for the touch surface... 
-            paperScreenCoord = project(screen, display,
+            paperScreenCoord = display.project(screen,
                     pNorm.x,
                     pNorm.y);
 

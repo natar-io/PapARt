@@ -159,7 +159,7 @@ public class BaseDisplay implements HasCamera {
      * Called in Automatic mode to display the image.
      */
     public void draw() {
-        parent.g.background(100, 0, 0);
+        parent.g.background(30, 30, 30);
         drawScreensOver();
         parent.noStroke();
         parent.g.image(this.render(), 0, 0, this.drawingSizeX, this.drawingSizeY);
@@ -279,5 +279,23 @@ public class BaseDisplay implements HasCamera {
         PVector transformed = new PVector();
         screenMat.mult(new PVector(x * drawingSizeX, y * drawingSizeY), transformed);
         return transformed;
+    }
+    
+
+    public PVector project(Screen screen, float x, float y) {
+        boolean isProjector = this instanceof ProjectorDisplay;
+        boolean isARDisplay = this instanceof ARDisplay;
+        // check that the correct method is called !
+        PVector paperScreenCoord;
+        if (isProjector) {
+            paperScreenCoord = ((ProjectorDisplay) this).projectPointer(screen, x, y);
+        } else {
+            if (isARDisplay) {
+                paperScreenCoord = ((ARDisplay) this).projectPointer(screen, x, y);
+            } else {
+                paperScreenCoord = this.projectPointer(screen, x, y);
+            }
+        }
+        return paperScreenCoord;
     }
 }
