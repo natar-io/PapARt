@@ -15,6 +15,8 @@ mkdir $TMP/$NAME/examples
 echo "Copy Library"
 # Library
 cp papart/target/$NAME.jar $TMP/$NAME/library/$NAME.jar
+echo "Copy the dependencies"
+cp papart/target/reflections.jar $TMP/$NAME/library/
 
 echo "Copy the sources"
 # copy the source also
