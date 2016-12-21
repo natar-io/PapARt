@@ -5,8 +5,7 @@ TMP=tmp
 NAME=PapARt
 
 ## NAME must match
-## fr.inria.papart.procam.Utils.LibraryName = "ProCam";
-
+## fr.inria.papart.procam.Utils.LibraryName = "PapARt"
 
 mkdir $TMP
 mkdir $TMP/$NAME
@@ -41,7 +40,6 @@ cp -R papart/target/site/apidocs $TMP/$NAME/
 echo "Copy the Data"
 cp -R papart/data $TMP/$NAME/
 
-
 echo "Download the examples"
 wget https://github.com/potioc/Papart-examples/archive/master.zip
 unzip master.zip
@@ -53,18 +51,6 @@ echo "cleaning the examples"
 rm master.zip
 rm -rf Papart-examples-master
 
-
-# Calibration stuff
-# cp -R sketches/calibration $TMP/$NAME/examples/calib
-
-# Now working with github examples and apps.
-
-# echo "Copy Examples, Calibration & Apps"
-# Examples
-# cp -R sketches/examples $TMP/$NAME/examples/examples
-# Apps
-# cp -R sketches/apps $TMP/$NAME/examples/apps
-
 echo "Create the archive..."
 cd $TMP
 
@@ -72,11 +58,6 @@ tar -zcf $NAME.tgz $NAME
 
 mv $NAME.tgz  ..
 cd ..
-
-cp -r $TMP/$NAME libraries/
-
-echo "Create full archive : Papart & Deps"
-tar -zcf papart-complete.tgz libraries
 
 echo "Clean "
 rm -rf $TMP
