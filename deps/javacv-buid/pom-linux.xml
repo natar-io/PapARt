@@ -1,0 +1,441 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>fr.inria</groupId>
+    <artifactId>papart-deps</artifactId>
+    <version>0.7-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>PapARt-deps</name>
+    <description>Paper Augmented Reality Toolkit</description>
+    <url>http://papart.gforge.inria.fr</url>
+    
+    <repositories>
+        <repository>
+            <id>clojars.org</id>
+            <url>http://clojars.org/repo</url>
+        </repository>
+
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </repository>
+
+        <repository>
+            <id>central</id>
+            <name>Maven Repository Switchboard</name>
+            <layout>default</layout>
+            <url>http://repo1.maven.org/maven2</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+    
+    <licenses>
+        <license>
+            <name> GNU Lesser General Public License version 2 (LGPLv2)</name>
+            <url>https://www.gnu.org/licenses/lgpl.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    
+    <developers>
+        <developer>
+            <name>Jeremy Laviole</name>
+            <email>jeremy.laviole@inria.fr</email>
+        </developer>
+    </developers>
+    
+    
+    <properties>
+        <platform>linux-${os.arch}</platform> <!-- For Android: -Dplatform=android-arm                                        -->
+    </properties>
+    
+    <dependencies>
+        <!--We distribute with PapARt-->
+        <!-- <dependency> -->
+        <!--     <groupId>org.reflections</groupId> -->
+        <!--     <artifactId>reflections</artifactId> -->
+        <!--     <version>0.9.9</version> -->
+        <!-- </dependency> -->
+
+        <!-- <!-\-Processing core-\-> -->
+        <!-- <dependency> -->
+        <!--     <groupId>org.processing</groupId> -->
+        <!--     <artifactId>core</artifactId> -->
+        <!--     <version>3.2.3</version> -->
+        <!-- </dependency> -->
+
+        <!-- <!-\-Processing OpenGL-\-> -->
+        <!-- <dependency> -->
+        <!--     <groupId>org.jogamp.jogl</groupId> -->
+        <!--     <artifactId>jogl</artifactId> -->
+        <!--     <version>2.3.2</version> -->
+        <!-- </dependency> -->
+        
+        <!-- <dependency> -->
+        <!--     <groupId>org.jogamp.jogl</groupId> -->
+        <!--     <artifactId>jogl-all</artifactId> -->
+        <!--     <version>2.3.2</version> -->
+        <!-- </dependency> -->
+        
+        <!-- <dependency> -->
+        <!--     <groupId>org.jogamp.gluegen</groupId> -->
+        <!--     <artifactId>gluegen-rt-main</artifactId> -->
+        <!--     <version>2.3.2</version> -->
+        <!-- </dependency> -->
+        
+        <!-- <dependency> -->
+        <!--     <groupId>org.jogamp.jogl</groupId> -->
+        <!--     <artifactId>newt-main</artifactId> -->
+        <!--     <version>2.3.2</version> -->
+        <!-- </dependency> -->
+
+        <!-- <dependency> -->
+        <!--     <groupId>org.jogamp.jogl</groupId> -->
+        <!--     <artifactId>nativewindow-main</artifactId> -->
+        <!--     <version>2.3.2</version> -->
+        <!-- </dependency> -->
+        
+        <!-- <!-\-Processing Video-\-> -->
+        <!-- <dependency> -->
+        <!--     <groupId>org.processing</groupId> -->
+        <!--     <artifactId>video</artifactId> -->
+        <!--     <version>3.2.3</version> -->
+        <!-- </dependency> -->
+        
+        
+        <!-- <dependency> -->
+        <!--     <groupId>com.googlecode.gstreamer-java</groupId> -->
+        <!--     <artifactId>gstreamer-java</artifactId> -->
+        <!--     <version>1.5</version> -->
+        <!-- </dependency> -->
+        
+        <!-- <!-\- Processing libraries -\-> -->
+        
+        <!-- <!-\-We package and distribute-\->  -->
+        <!-- <dependency> -->
+        <!--     <groupId>tech.lity.rea</groupId> -->
+        <!--     <artifactId>SVGExtended</artifactId> -->
+        <!--     <version>3.2.1</version> -->
+        <!-- </dependency> -->
+        
+        <!--  <!-\-We package and distribute-\->  -->
+        <!-- <dependency> -->
+        <!--     <groupId>fr.inria.potioc</groupId> -->
+        <!--     <artifactId>ProcessingTUIO</artifactId> -->
+        <!--     <version>1.1.0</version> -->
+        <!-- </dependency> -->
+        
+        <!--  <!-\-We package and distribute-\->  -->
+        <!-- <dependency> -->
+        <!--     <groupId>org.clojars.frederikdb</groupId> -->
+        <!--     <artifactId>oscp5</artifactId> -->
+        <!--     <version>0.9.8-SNAPSHOT</version> -->
+        <!-- </dependency> -->
+        
+        <!-- <!-\-Toxiclibs already packaged, we distribute -\-> -->
+        <!-- <dependency> -->
+        <!--     <groupId>org.clojars.hozumi</groupId> -->
+        <!--     <artifactId>toxiclibscore</artifactId> -->
+        <!--     <version>0022</version> -->
+        <!-- </dependency> -->
+        
+        <!-- <!-\-We package and distribute-\->  -->
+        <!-- <dependency> -->
+        <!--     <groupId>fr.inria.potioc</groupId> -->
+        <!--     <artifactId>skatolo</artifactId> -->
+        <!--     <version>1.0</version> -->
+        <!-- </dependency> -->
+        
+
+        <!--JavaCPP-presets et JavaCV -->
+        <!--We package and distribute--> 
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>javacpp</artifactId>
+            <version>1.2</version>
+        </dependency>
+
+       <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>javacv</artifactId>
+            <version>1.2</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>opencv</artifactId>
+            <version>3.1.0-1.2</version>
+            <classifier>${platform}</classifier>
+            <scope>runtime</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>opencv</artifactId>
+            <version>3.1.0-1.2</version>
+            <scope>compile</scope>
+        </dependency>
+             
+        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>artoolkitplus</artifactId>
+            <version>2.3.1-1.2</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>artoolkitplus</artifactId>
+            <version>2.3.1-1.2</version>
+            <classifier>${platform}</classifier>
+            <scope>runtime</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>ffmpeg</artifactId>
+            <version>3.1.2-1.2</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>ffmpeg</artifactId>
+            <version>3.0.2-1.2</version>
+            <classifier>${platform}</classifier>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>flycapture</artifactId>
+            <version>2.9.3.43-1.2</version>
+        </dependency>
+<!--        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>libdc1394</artifactId>
+            <version>2.2.4-1.2</version>
+        </dependency>-->
+<!--        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>videoinput</artifactId>
+            <version>0.200-1.2</version>
+        </dependency>-->
+   
+        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>libfreenect</artifactId>
+            <version>0.5.3-1.2</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>libfreenect</artifactId>
+            <version>0.5.3-1.2</version>
+            <classifier>${platform}</classifier>
+            <scope>runtime</scope>
+        </dependency> 
+
+         <!--Freenect 2 is out for now...-->         
+<!--        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>libfreenect2</artifactId>
+            <version>0.2.0-1.2.2-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>libfreenect2</artifactId>
+            <version>0.2.0-1.2.2-SNAPSHOT</version>
+            <classifier>${platform}</classifier>
+            <scope>runtime</scope>
+        </dependency>-->
+        
+        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>librealsense</artifactId>
+            <version>1.9.6-1.2</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>librealsense</artifactId>
+            <version>1.9.6-1.2</version>
+            <classifier>${platform}</classifier>
+            <scope>runtime</scope>
+        </dependency>
+        
+        <!--Tests no packaging no distribution --> 
+        <!-- <dependency> -->
+        <!--     <groupId>junit</groupId> -->
+        <!--     <artifactId>junit</artifactId> -->
+        <!--     <version>4.7</version> -->
+        <!--     <scope>test</scope> -->
+        <!-- </dependency> -->
+        
+  
+    </dependencies>
+    
+    <build>
+        <sourceDirectory>src</sourceDirectory>
+        <testSourceDirectory>test</testSourceDirectory>
+        <outputDirectory>target/classes</outputDirectory>
+        
+        <plugins> 
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.3</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
+                            <stripVersion>true</stripVersion>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <finalName>PapARt</finalName>                   
+                </configuration>
+            </plugin>  
+        
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+        </plugins>
+        
+        <resources>
+            
+            <resource>
+                <directory>src</directory>
+                <includes>
+                    <include>**/*.vert</include>
+                    <include>**/*.frag</include>
+                    <include>**/*.glsl</include>
+                </includes>
+            </resource>
+        </resources>
+    </build>
+    
+  
+    <profiles>
+    
+        <!-- If someone knows a better way to do this, please do let me know! -->
+        <!--From JavaCPP presets-->
+        <profile>
+            <id>linux</id>
+            <activation>
+                <os>
+                    <name>linux</name>
+                </os>
+            </activation>
+            <properties>
+                <os.name>linux</os.name>
+            </properties>
+        </profile>
+        <profile>
+            <id>macosx</id>
+            <activation>
+                <os>
+                    <name>mac os x</name>
+                </os>
+            </activation>
+            <properties>
+                <os.name>macosx</os.name>
+            </properties>
+        </profile>
+        <profile>
+            <id>windows</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                </os>
+            </activation>
+            <properties>
+                <os.name>windows</os.name>
+            </properties>
+        </profile>
+        <profile>
+            <id>i386</id>
+            <activation>
+                <os>
+                    <arch>i386</arch>
+                </os>
+            </activation>
+            <properties>
+                <os.arch>x86</os.arch>
+            </properties>
+        </profile>
+        <profile>
+            <id>i486</id>
+            <activation>
+                <os>
+                    <arch>i486</arch>
+                </os>
+            </activation>
+            <properties>
+                <os.arch>x86</os.arch>
+            </properties>
+        </profile>
+        <profile>
+            <id>i586</id>
+            <activation>
+                <os>
+                    <arch>i586</arch>
+                </os>
+            </activation>
+            <properties>
+                <os.arch>x86</os.arch>
+            </properties>
+        </profile>
+        <profile>
+            <id>i686</id>
+            <activation>
+                <os>
+                    <arch>i686</arch>
+                </os>
+            </activation>
+            <properties>
+                <os.arch>x86</os.arch>
+            </properties>
+        </profile>
+        <profile>
+            <id>amd64</id>
+            <activation>
+                <os>
+                    <arch>amd64</arch>
+                </os>
+            </activation>
+            <properties>
+                <os.arch>x86_64</os.arch>
+            </properties>
+        </profile>
+        <profile>
+            <id>x86-64</id>
+            <activation>
+                <os>
+                    <arch>x86-64</arch>
+                </os>
+            </activation>
+            <properties>
+                <os.arch>x86_64</os.arch>
+            </properties>
+        </profile>
+    </profiles>
+
+
+
+</project>
