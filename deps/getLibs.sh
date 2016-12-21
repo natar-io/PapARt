@@ -72,6 +72,7 @@ mv reflections libraries/
 echo "Compile JavaCV"
 cd javacv-build
 ruby createLibs.rb
+mv javacv-*.tgz ..
 
 echo "compile all"
 zip -r libraries.zip libraries

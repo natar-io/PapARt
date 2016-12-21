@@ -202,7 +202,7 @@
         <dependency>
             <groupId>org.bytedeco.javacpp-presets</groupId>
             <artifactId>ffmpeg</artifactId>
-            <version>3.0.2-1.2</version>
+            <version>3.1.2-1.2</version>
             <classifier>${platform}</classifier>
         </dependency>
         
