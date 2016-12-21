@@ -18,7 +18,7 @@ def build(platform, arch)
 
   `mv target/dependency target/library`
   `mv target javacv`
-  `mv javacv/library/javacv-1.2.jar javacv/library/javacv.jar`
+  `mv javacv/library/javacv-1.3.jar javacv/library/javacv.jar`
   
   puts "compress library"
   `tar -zcf javacv-#{platform}-#{arch}.tgz javacv`
