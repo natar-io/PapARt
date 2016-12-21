@@ -3,7 +3,6 @@
 
 
 # %x(sh downloadExamples.sh)
-# %x(sh createLibs.sh)
 
 current_branch = %x(git rev-parse --abbrev-ref HEAD).chomp
 
