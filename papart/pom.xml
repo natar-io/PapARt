@@ -237,18 +237,18 @@
         </dependency> 
 
          <!--Freenect 2 is out for now...-->         
-<!--        <dependency>
+        <dependency>
             <groupId>org.bytedeco.javacpp-presets</groupId>
             <artifactId>libfreenect2</artifactId>
-            <version>0.2.0-1.2.2-SNAPSHOT</version>
+            <version>0.2.0-1.3</version>
         </dependency>
         <dependency>
             <groupId>org.bytedeco.javacpp-presets</groupId>
             <artifactId>libfreenect2</artifactId>
-            <version>0.2.0-1.2.2-SNAPSHOT</version>
+            <version>0.2.0-1.3</version>
             <classifier>${platform}</classifier>
             <scope>runtime</scope>
-        </dependency>-->
+        </dependency>
         
         <dependency>
             <groupId>org.bytedeco.javacpp-presets</groupId>
