@@ -281,6 +281,7 @@ public class KinectProcessing extends KinectDepthAnalysis {
         validPointsPImage.pixels[offset] = c;
     }
 
+    // TODO: Generalization here, same functions as those to convert the pixels for OpenGL. 
     private void setPixelColor(int offset) {
         
         // TODO: Get a cleaner way go obtain the color... 
