@@ -5,6 +5,7 @@
  */
 package fr.inria.papart.utils;
 
+import fr.inria.papart.procam.PaperTouchScreen;
 import fr.inria.papart.procam.camera.Camera;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -421,5 +422,5 @@ public class ImageUtils {
         }
         argb.rewind();
     }
-    
+
 }

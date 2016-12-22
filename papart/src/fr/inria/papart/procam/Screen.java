@@ -26,7 +26,6 @@ import fr.inria.papart.calibration.HomographyCreator;
 import fr.inria.papart.utils.MathUtils;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.display.ProjectorDisplay;
-import static fr.inria.papart.utils.MathUtils.toVec;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
@@ -110,28 +109,6 @@ public class Screen implements HasExtrinsics {
         return thisGraphics;
     }
 
-    // The board must be registered with the camera. 
-    /**
-     * **
-     * @deprecated
-     *
-     */
-//    public void setAutoUpdatePos(Camera camera, MarkerBoard board) {
-//        if (!camera.tracks(board)) {
-//            camera.trackMarkerBoard(board);
-//        }
-//
-//        isFloatArrayUpdating = board.useFloatArray();
-//        if (this.isFloatArrayUpdating) {
-//            posFloat = board.getTransfo(camera);
-//            transformation = new PMatrix3D();
-//        } else {
-////            System.out.println("Getting the original transfo");
-//
-//            transformation = board.getTransfoMat(camera);
-//            posFloat = new float[12];
-//        }
-//    }
     public boolean isOpenGL() {
         return isOpenGL;
     }
@@ -228,19 +205,6 @@ public class Screen implements HasExtrinsics {
 
     public float getScale() {
         return this.scale;
-    }
-
-    /**
-     * update the internals of the screen to match the tracking.
-     */
-    @Deprecated
-    public void updatePos(Camera camera, MarkerBoard board) {
-        System.err.println("ERROR Depracted call updatePos. ");
-//        transformation.set(board.getTransfoMat(camera));
-    }
-
-    protected void updatePos() {
-
     }
 
     public void computeScreenPosTransform(Camera camera) {

@@ -5,12 +5,15 @@
  */
 package fr.inria.papart.utils;
 
+import fr.inria.papart.procam.PaperTouchScreen;
+import fr.inria.papart.procam.camera.Camera;
 import java.io.FileNotFoundException;
 import java.nio.ByteBuffer;
 import org.bytedeco.javacpp.opencv_core;
 import processing.core.PApplet;
 import static processing.core.PApplet.abs;
 import processing.core.PGraphics;
+import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import toxi.geom.Vec3D;
@@ -229,8 +232,8 @@ public class MathUtils {
 
     /**
      * Color distance on the HSB scale. The incomingPix is compared with the
-     * baseline. The method returns true if each channel validates the condition for 
-     * the given threshold. 
+     * baseline. The method returns true if each channel validates the condition
+     * for the given threshold.
      *
      * @param g
      * @param baseline
@@ -274,6 +277,58 @@ public class MathUtils {
         float d3 = abs(g.brightness(baseline) - g.brightness(incomingPix));
 
         return (d1 + d2 + d3) < (threshold * 3);
+    }
+
+    /**
+     * Unsafe do not use unless you are sure.
+     */
+    public static int getColorOccurencesFrom(Camera camera, PVector coord, int radius, int col, int threshold, PaperTouchScreen paperTouchScreen) {
+        int x = (int) coord.x;
+        int y = (int) coord.y;
+        int minX = PApplet.constrain(x - radius, 0, camera.width() - 1);
+        int maxX = PApplet.constrain(x + radius, 0, camera.width() - 1);
+        int minY = PApplet.constrain(y - radius, 0, camera.height() - 1);
+        int maxY = PApplet.constrain(y + radius, 0, camera.height() - 1);
+        ByteBuffer buff = camera.getIplImage().getByteBuffer();
+        int k = 0;
+        for (int j = minY; j <= maxY; j++) {
+            for (int i = minX; i <= maxX; i++) {
+                int offset = i + j * camera.width();
+                int pxCol = getColor(buff, offset);
+                if (MathUtils.colorDistRGB(col, pxCol, threshold)) {
+                    k++;
+                }
+            }
+        }
+        return k;
+    }
+
+    private static int getColor(ByteBuffer buff, int offset) {
+        offset = offset * 3;
+        return (buff.get(offset + 2) & 255) << 16 | (buff.get(offset + 1) & 255) << 8 | (buff.get(offset) & 255);
+    }
+
+    /**
+     * Unsafe do not use unless you are sure.
+     */
+    public int getColorOccurencesFrom(PVector coord, PImage cameraImage, int radius, int col, int threshold, PaperTouchScreen paperTouchScreen) {
+        int x = (int) coord.x;
+        int y = (int) coord.y;
+        int minX = PApplet.constrain(x - radius, 0, cameraImage.width - 1);
+        int maxX = PApplet.constrain(x + radius, 0, cameraImage.width - 1);
+        int minY = PApplet.constrain(y - radius, 0, cameraImage.height - 1);
+        int maxY = PApplet.constrain(y + radius, 0, cameraImage.height - 1);
+        int k = 0;
+        for (int j = minY; j <= maxY; j++) {
+            for (int i = minX; i <= maxX; i++) {
+                int offset = i + j * cameraImage.width;
+                int pxCol = cameraImage.pixels[offset];
+                if (colorDistRGB(col, pxCol, threshold)) {
+                    k++;
+                }
+            }
+        }
+        return k;
     }
 
 }
