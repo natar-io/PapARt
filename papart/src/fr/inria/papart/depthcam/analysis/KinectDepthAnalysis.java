@@ -73,7 +73,7 @@ public class KinectDepthAnalysis extends DepthAnalysis {
     protected DepthCameraDevice depthCameraDevice;
     protected DepthComputation depthComputationMethod;
 
-    private Camera colorCamera;
+    protected Camera colorCamera;
 
     public DepthCameraDevice getDepthCameraDevice() {
         return this.depthCameraDevice;

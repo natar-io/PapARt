@@ -25,6 +25,7 @@ import fr.inria.papart.depthcam.PixelOffset;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.depthcam.devices.KinectOne;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.papplet;
+import fr.inria.papart.procam.camera.Camera;
 import java.util.ArrayList;
 import java.util.Arrays;
 import org.bytedeco.javacpp.indexer.UByteIndexer;
@@ -226,7 +227,14 @@ public class KinectProcessing extends KinectDepthAnalysis {
 
 //        computeDepthAndDo(skip, new DoNothing());
         // TODO: get the color with Kinect2... 
-        computeDepthAndDo(skip, new SetImageData());
+        
+        System.out.println("PixelFormat " + colorCamera.getPixelFormat().name());
+        if(this.colorCamera.getPixelFormat() == Camera.PixelFormat.RGB){
+            computeDepthAndDo(skip, new SetImageDataRGB());
+        }
+        if(this.colorCamera.getPixelFormat() == Camera.PixelFormat.BGR){
+            computeDepthAndDo(skip, new SetImageData());
+        }
 
 //        computeDepthAndDo(skip, new Select2DPointOverPlane());
         validPointsPImage.updatePixels();
@@ -255,6 +263,16 @@ public class KinectProcessing extends KinectDepthAnalysis {
             setPixelColor(px.offset);
         }
     }
+    class SetImageDataRGB implements DepthPointManiplation {
+        public SetImageDataRGB(){
+            super();
+        }
+        @Override
+        public void execute(Vec3D p, PixelOffset px) {
+            depthData.validPointsMask[px.offset] = true;
+            setPixelColorRGB(px.offset);
+        }
+    }
 
     private void setFakeColor(int offset, int r, int g, int b) {
         int c = (r & 0xFF) << 16
@@ -270,6 +288,16 @@ public class KinectProcessing extends KinectDepthAnalysis {
         int c = (colorRaw[colorOffset + 2] & 0xFF) << 16
                 | (colorRaw[colorOffset + 1] & 0xFF) << 8
                 | (colorRaw[colorOffset + 0] & 0xFF);
+
+        validPointsPImage.pixels[offset] = c;
+    }
+    private void setPixelColorRGB(int offset) {
+        
+        // TODO: Get a cleaner way go obtain the color... 
+        int colorOffset = depthCameraDevice.findColorOffset(depthData.depthPoints[offset]) * 3;
+        int c = (colorRaw[colorOffset + 0] & 0xFF) << 16
+                | (colorRaw[colorOffset + 1] & 0xFF) << 8
+                | (colorRaw[colorOffset + 2] & 0xFF);
 
         validPointsPImage.pixels[offset] = c;
     }
