@@ -39,7 +39,7 @@ public class CalibrationExtrinsic {
 
     private final PApplet parent;
 
-    private static final float OPEN_KINECT_Z_OFFSET = -15f;
+    private static final float OPEN_KINECT_Z_OFFSET = -25f;
     private static final float REALSENSE_Z_OFFSET = -52f;
     // Cameras
     private ProjectorDisplay projector;

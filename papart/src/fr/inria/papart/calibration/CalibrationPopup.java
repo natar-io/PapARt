@@ -132,7 +132,7 @@ public class CalibrationPopup extends PApplet {
             calibrationApp = new CalibrationApp();
             calibrationApp.pre();
         }
-        
+
         board = calibrationApp.getBoard();
 
         cameraTracking = Papart.getPapart().getPublicCameraTracking();
@@ -162,7 +162,8 @@ public class CalibrationPopup extends PApplet {
             }
 
             // 2. Tracking camera is another camera. 
-            if (!(cameraTracking instanceof SubCamera)) {
+            if (cameraTracking != depthCameraDevice.getColorCamera()
+                    && cameraTracking != depthCameraDevice.getIRCamera()) {
                 // the depth camera 
                 initTrackingOn(papart.getDepthCameraDevice());
                 System.out.println("Calibration with a Depth and color camera in DIFFERENT devices.");
@@ -344,7 +345,7 @@ public class CalibrationPopup extends PApplet {
                 .setLineHeight(14);
 
         if (useExternalColorCamera) {
-            System.out.println("Kinect 360 OK...");
+            System.out.println("Depth camera OK...");
             kinectMatrixText = skatolo.addTextarea("Kinect")
                     .setPosition(600, MATRICES_HEIGHT)
                     .setSize(330, 100)
