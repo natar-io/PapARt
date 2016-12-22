@@ -196,6 +196,10 @@ public class PaperScreen {
 
             isInitialized = true;
         }
+        
+        // Needed for touch and projection operations
+        screen.computeScreenPosTransform(cameraTracking);
+        
 //        assert (isInitialized);
 //        if (this.isWithoutCamera || useManualLocation) {
 //            return;

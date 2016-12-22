@@ -84,6 +84,7 @@ public class PaperTouchScreen extends PaperScreen {
     @Override
     public void setLocation(float x, float y, float z) {
         super.setLocation(x, y, z);
+        screen.computeScreenPosTransform(cameraTracking);
         updateTouch();
     }
 
@@ -93,8 +94,6 @@ public class PaperTouchScreen extends PaperScreen {
                 return;
             }
         }
-        screen.computeScreenPosTransform(cameraTracking);
-
         // Warning TODO: Hack.. V_V 
         // Touch in 2D  mode has boundaries. 
         // Touch in 3D mode has no boundaries. 
@@ -130,7 +129,7 @@ public class PaperTouchScreen extends PaperScreen {
                 // fill(185, 142, 62);
             } else {
                 fill(58, 71, 198);
-                 ellipse(t.position.x, t.position.y, ellipseSize, ellipseSize);
+                ellipse(t.position.x, t.position.y, ellipseSize, ellipseSize);
             }
             // ellipse(t.position.x, t.position.y, ellipseSize, ellipseSize);
 

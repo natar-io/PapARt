@@ -1,6 +1,7 @@
 /*
  * Part of the PapARt project - https://project.inria.fr/papart/
  *
+ * Copyright (C) 2016 RealityTech
  * Copyright (C) 2014-2016 Inria
  * Copyright (C) 2011-2013 Bordeaux University
  *
@@ -20,6 +21,7 @@
 package fr.inria.papart.multitouch;
 
 import fr.inria.papart.procam.Papart;
+import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.PaperTouchScreen;
 import fr.inria.skatolo.Skatolo;
 import fr.inria.skatolo.gui.Pointer;
@@ -30,7 +32,7 @@ import processing.core.PVector;
 
 /**
  *
- * @author Jérémy Laviole - jeremy.laviole@inria.fr
+ * @author Jérémy Laviole 
  */
 public class SkatoloLink {
 
@@ -41,7 +43,7 @@ public class SkatoloLink {
     
     public static Touch mouseTouch = new Touch(); 
   
-    public static void addMouseTo(TouchList touchList, Skatolo skatolo, PaperTouchScreen paperScreen) {
+    public static void addMouseTo(TouchList touchList, Skatolo skatolo, PaperScreen paperScreen) {
         PApplet applet = Papart.getPapart().getApplet();
 
         float normX = (float) applet.mouseX / (float) applet.width;
