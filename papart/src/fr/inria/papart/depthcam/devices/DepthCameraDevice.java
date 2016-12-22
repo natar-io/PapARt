@@ -22,7 +22,7 @@ package fr.inria.papart.depthcam.devices;
 import fr.inria.papart.calibration.HomographyCalibration;
 import fr.inria.papart.multitouch.KinectTouchInput;
 import fr.inria.papart.procam.Papart;
-import fr.inria.papart.procam.utils.ARToolkitPlusUtils;
+import fr.inria.papart.utils.ARToolkitPlusUtils;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.CameraFactory;
 import fr.inria.papart.procam.camera.CameraRGBIRDepth;

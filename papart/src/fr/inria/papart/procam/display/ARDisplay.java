@@ -22,7 +22,7 @@ package fr.inria.papart.procam.display;
 import fr.inria.papart.calibration.PlaneCalibration;
 import processing.opengl.PGraphicsOpenGL;
 import org.bytedeco.javacv.ProjectiveDevice;
-import fr.inria.papart.procam.utils.DrawUtils;
+import fr.inria.papart.utils.DrawUtils;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.HasExtrinsics;

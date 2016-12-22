@@ -17,7 +17,7 @@
  * Public License along with this library; If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package fr.inria.papart.procam.utils;
+package fr.inria.papart.utils;
 
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.ProjectiveDeviceP;

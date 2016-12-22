@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package fr.inria.papart.procam.utils;
+package fr.inria.papart.utils;
 
 import java.io.FileNotFoundException;
 import java.nio.ByteBuffer;

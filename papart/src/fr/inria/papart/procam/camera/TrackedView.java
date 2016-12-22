@@ -19,11 +19,11 @@
  */
 package fr.inria.papart.procam.camera;
 
-import fr.inria.papart.procam.utils.ImageUtils;
+import fr.inria.papart.utils.ImageUtils;
 import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.tracking.MarkerBoardInvalid;
 import fr.inria.papart.procam.PaperScreen;
-import fr.inria.papart.procam.utils.ARToolkitPlusUtils;
+import fr.inria.papart.utils.ARToolkitPlusUtils;
 import fr.inria.papart.procam.camera.Camera;
 import org.bytedeco.javacpp.opencv_core.CvMat;
 import org.bytedeco.javacpp.opencv_core.IplImage;

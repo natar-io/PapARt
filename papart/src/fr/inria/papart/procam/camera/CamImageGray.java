@@ -20,8 +20,8 @@
  */
 package fr.inria.papart.procam.camera;
 
-import fr.inria.papart.procam.utils.ImageUtils;
-import fr.inria.papart.procam.utils.ARToolkitPlusUtils;
+import fr.inria.papart.utils.ImageUtils;
+import fr.inria.papart.utils.ARToolkitPlusUtils;
 import fr.inria.papart.procam.camera.Camera.PixelFormat;
 import java.awt.Image;
 import java.nio.ByteBuffer;

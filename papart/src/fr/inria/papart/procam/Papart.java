@@ -40,7 +40,7 @@ import fr.inria.papart.depthcam.devices.RealSense;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.multitouch.TUIOTouchInput;
 import fr.inria.papart.multitouch.KinectTouchInput;
-import fr.inria.papart.procam.utils.LibraryUtils;
+import fr.inria.papart.utils.LibraryUtils;
 import fr.inria.papart.procam.camera.CameraFactory;
 import fr.inria.papart.procam.camera.CameraOpenKinect;
 import fr.inria.papart.procam.camera.CameraRGBIRDepth;
@@ -141,7 +141,7 @@ public class Papart {
         // TODO: singleton -> Better implementation.
         if (Papart.singleton == null) {
             Papart.singleton = this;
-            fr.inria.papart.procam.utils.DrawUtils.applet = (PApplet) applet;
+            fr.inria.papart.utils.DrawUtils.applet = (PApplet) applet;
         }
     }
 

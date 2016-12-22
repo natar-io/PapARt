@@ -19,7 +19,7 @@
  */
 package fr.inria.papart.procam;
 
-import fr.inria.papart.procam.utils.ARToolkitPlusUtils;
+import fr.inria.papart.utils.ARToolkitPlusUtils;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.multitouch.TouchInput;
@@ -28,7 +28,7 @@ import fr.inria.papart.multitouch.KinectTouchInput;
 import fr.inria.papart.multitouch.TUIOTouchInput;
 import fr.inria.papart.multitouch.TouchList;
 import fr.inria.papart.multitouch.TouchPoint;
-import fr.inria.papart.procam.utils.MathUtils;
+import fr.inria.papart.utils.MathUtils;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;

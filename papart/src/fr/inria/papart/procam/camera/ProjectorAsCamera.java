@@ -20,7 +20,7 @@
 package fr.inria.papart.procam.camera;
 
 import fr.inria.papart.procam.ProjectiveDeviceP;
-import fr.inria.papart.procam.utils.ARToolkitPlusUtils;
+import fr.inria.papart.utils.ARToolkitPlusUtils;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import java.util.logging.Level;
 import java.util.logging.Logger;

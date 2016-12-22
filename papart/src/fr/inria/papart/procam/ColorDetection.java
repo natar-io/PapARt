@@ -19,8 +19,8 @@
  */
 package fr.inria.papart.procam;
 
-import fr.inria.papart.procam.utils.MathUtils;
-import fr.inria.papart.procam.utils.ARToolkitPlusUtils;
+import fr.inria.papart.utils.MathUtils;
+import fr.inria.papart.utils.ARToolkitPlusUtils;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.TrackedView;
 import processing.core.PApplet;

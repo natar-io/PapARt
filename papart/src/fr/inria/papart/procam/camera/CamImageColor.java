@@ -19,8 +19,8 @@
  */
 package fr.inria.papart.procam.camera;
 
-import fr.inria.papart.procam.utils.ImageUtils;
-import fr.inria.papart.procam.utils.ARToolkitPlusUtils;
+import fr.inria.papart.utils.ImageUtils;
+import fr.inria.papart.utils.ARToolkitPlusUtils;
 import java.awt.Image;
 import java.nio.ByteBuffer;
 import org.bytedeco.javacpp.opencv_core.IplImage;
