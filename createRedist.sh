@@ -29,8 +29,8 @@ echo "Copy the Data"
 cp -R papart/data $TMP/$NAME/
 
 echo "Copy the examples"
-cp -R Papart-examples-master/apps $TMP/$NAME/examples/
-cp -R Papart-examples-master/papart-examples $TMP/$NAME/examples/
+cp -R Papart-examples/apps $TMP/$NAME/examples/
+cp -R Papart-examples/papart-examples $TMP/$NAME/examples/
 
 echo "Create the archive..."
 cd $TMP
