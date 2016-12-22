@@ -430,7 +430,21 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
     public void saveProjectorTo(PApplet applet, String filename) {
         saveTo(applet, filename, false);
     }
-
+    
+    public static ProjectiveDeviceP createSimpleDevice(float fx, float fy, float cx, float cy, int w, int h) {
+        ProjectiveDeviceP p = new ProjectiveDeviceP();
+        // Do not update the handle distorsions ?
+//        p.handleDistorsion = false;
+        p.w = w;
+        p.h = h;
+        p.intrinsics = new PMatrix3D(fx, 0,  cx, 0,
+                                   0,  fy, cy, 0,
+                                   0,  0,  0,  0,
+                                   0,  0,  0,  0);
+        p.updateFromIntrinsics();
+        p.device = null;
+        return p;
+    }
     public static ProjectiveDeviceP loadCameraDevice(PApplet parent, String filename) throws Exception {
         return loadCameraDevice(parent, filename, 0);
     }
@@ -565,6 +579,8 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
 
     public String toString() {
         return "intr " + intrinsics.toString() + (extrinsics != null ? " extr " + extrinsics.toString() : " ") + " "
-                + " width " + w + " height " + h;
+                + " width " + w + " height " + h
+                + " fx " + fx + " fy " + fy
+                + " cx " + cx + " cy " + cy;
     }
 }

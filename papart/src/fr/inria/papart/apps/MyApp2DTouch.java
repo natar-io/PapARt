@@ -28,7 +28,7 @@ public class MyApp2DTouch extends PaperTouchScreen {
     @Override
     public void settings() {
         setDrawingSize(297, 210);
-        loadMarkerBoard(Papart.markerFolder + "A3-small1.cfg", 297, 210);
+        loadMarkerBoard(Papart.markerFolder + "A4-default.svg", 297, 210);
     }
 
     @Override

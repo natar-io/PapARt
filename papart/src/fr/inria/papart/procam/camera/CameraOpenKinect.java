@@ -19,84 +19,29 @@
  */
 package fr.inria.papart.procam.camera;
 
-import fr.inria.papart.graph.Displayable;
-import fr.inria.papart.multitouch.KinectTouchInput;
-import fr.inria.papart.procam.Utils;
-import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.bytedeco.javacpp.freenect;
-import org.bytedeco.javacpp.opencv_core.IplImage;
+import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.OpenKinectFrameGrabber;
-import processing.core.PApplet;
-import processing.core.PImage;
 
 /**
  *
  * @author Jeremy Laviole
  */
-public class CameraOpenKinect extends Camera implements Displayable {
+public class CameraOpenKinect extends CameraRGBIRDepth {
 
-    private boolean isGrabbingDepth = false;
     protected OpenKinectFrameGrabber grabber;
-
-    private CameraOpenKinectDepth depthCamera;
+    int kinectVideoFormat;
 
     protected CameraOpenKinect(int cameraNo) {
         this.systemNumber = cameraNo;
-        this.setPixelFormat(PixelFormat.BGR);
-
-        depthCamera = new CameraOpenKinectDepth(this);
-    }
-
-    @Override
-    public void start() {
         grabber = new OpenKinectFrameGrabber(this.systemNumber);
-        grabber.setImageWidth(width());
-        grabber.setImageHeight(height());
-
-        try {
-            grabber.start();
-            grabber.setVideoFormat(freenect.FREENECT_VIDEO_RGB);
-
-            depthCamera.start();
-
-            this.isConnected = true;
-        } catch (Exception e) {
-            System.err.println("Could not Kinect start frameGrabber... " + e);
-            System.err.println("Kinect ID " + this.systemNumber + " could not start.");
-            System.err.println("Check cable connection and ID.");
-        }
     }
 
     @Override
-    public void grab() {
-
-        if (this.isClosing()) {
-            return;
-        }
-
-        try {
-            IplImage img = grabber.grabVideo();
-            updateCurrentImage(img);
-
-            if (this.isGrabbingDepth) {
-                depthCamera.grab();
-            }
-
-        } catch (Exception e) {
-            System.err.println("Camera: Kinect Grab() Error ! " + e);
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public PImage getPImage() {
-        this.checkCamImage();
-        if (currentImage != null) {
-            camImage.update(currentImage);
-            return camImage;
-        }
-        // TODO: exceptions !!!
-        return null;
+    public void internalStart() throws FrameGrabber.Exception {
+        grabber.start();
     }
 
     @Override
@@ -107,48 +52,81 @@ public class CameraOpenKinect extends Camera implements Displayable {
                 System.out.println("Stopping KinectGrabber");
                 this.stopThread();
                 grabber.stop();
-                if(this.isGrabbingDepth){
-                    depthCamera.close();
-                }
+                depthCamera.close();
             } catch (Exception e) {
             }
         }
 
     }
 
-    public void setTouch(KinectTouchInput touchInput) {
-        this.setGrabDepth(true);
-        depthCamera.setTouchInput(touchInput);
-    }
-
-    public CameraOpenKinectDepth getDepthCamera() {
-        this.setGrabDepth(true);
-        return this.depthCamera;
-    }
-
-    public void setGrabDepth(boolean grabDepth) {
-        this.isGrabbingDepth = grabDepth;
-    }
-
-    HashMap<PApplet, PImage> imageMap = new HashMap();
-
     @Override
-    public void prepareToDisplayOn(PApplet display) {
-        PImage image = display.createImage(this.width, this.height, RGB);
-        imageMap.put(display, image);
+    public void grabIR() {
+        try {
+            IRCamera.updateCurrentImage(grabber.grabIR());
+        } catch (FrameGrabber.Exception ex) {
+            Logger.getLogger(CameraOpenKinect.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override
-    public PImage getDisplayedOn(PApplet display) {
-        PImage image = imageMap.get(display);
-        Utils.IplImageToPImage(currentImage, false, image);
-        return image;
+    public void grabDepth() {
+        try {
+            depthCamera.currentImage = grabber.grabDepth();
+
+            ((WithTouchInput) depthCamera).newTouchImageWithColor(colorCamera.currentImage);
+        } catch (FrameGrabber.Exception ex) {
+            Logger.getLogger(CameraOpenKinect.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override
-    public boolean canBeDisplayedOn(PApplet display) {
-        return imageMap.containsKey(display);
+    public void grabColor() {
+        try {
+            colorCamera.updateCurrentImage(grabber.grabVideo());
+        } catch (FrameGrabber.Exception ex) {
+            Logger.getLogger(CameraOpenKinect.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
-    
+
+    @Override
+    public void setUseDepth(boolean use) {
+        if (use) {
+            depthCamera.setPixelFormat(PixelFormat.DEPTH_KINECT_MM);
+            depthCamera.type = SubCamera.Type.DEPTH;
+            depthCamera.setSize(640, 480);
+            grabber.setDepthFormat(freenect.FREENECT_DEPTH_MM);
+        }
+        this.useDepth = use;
+    }
+
+    @Override
+    public void setUseIR(boolean use) {
+        if (use) {
+            IRCamera.setPixelFormat(PixelFormat.GRAY);
+            IRCamera.type = SubCamera.Type.IR;
+            IRCamera.setSize(640, 480);
+            // grabber.setvideoformat ?
+        }
+        this.useIR = use;
+    }
+
+    @Override
+    public void setUseColor(boolean use) {
+        if (use) {
+            colorCamera.setPixelFormat(PixelFormat.BGR);
+            colorCamera.type = SubCamera.Type.COLOR;
+            colorCamera.setSize(640, 480);
+
+            grabber.setImageWidth(colorCamera.width());
+            grabber.setImageHeight(colorCamera.height());
+            kinectVideoFormat = freenect.FREENECT_VIDEO_RGB;
+            grabber.setVideoFormat(kinectVideoFormat);
+        }
+        this.useColor = use;
+    }
+
+    @Override
+    protected void internalGrab() throws Exception {
+    }
 
 }

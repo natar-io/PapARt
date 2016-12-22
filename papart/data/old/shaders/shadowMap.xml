@@ -1,9 +1,0 @@
-<effect name="Shadow map">
-    <description>Maybe a shadow map</description>
-    <vertex>shadowMap.vert</vertex>
-    <fragment>shadowMap.frag</fragment>
-    <textures>
-      <texture type="sampler2d" name="ShadowMap" offset="offset" label="shadowMap">0</texture> 
-    </textures>
-</effect>
-

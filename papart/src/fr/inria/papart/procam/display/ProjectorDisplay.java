@@ -20,7 +20,7 @@
 package fr.inria.papart.procam.display;
 
 import fr.inria.papart.calibration.PlaneCalibration;
-import fr.inria.papart.drawingapp.DrawUtils;
+import fr.inria.papart.utils.DrawUtils;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.tracking.MarkerBoard;
@@ -269,26 +269,32 @@ public class ProjectorDisplay extends ARDisplay {
         g.ellipseMode(PApplet.CENTER);
 
         g.noStroke();
-        // corner 4
+        // corner 4  Yellow 0, 0
         g.fill(255, 255, 50);
         g.translate(0, 0);
 
         drawEllipses(g);
 
-        // corner 3
+        // corner 3  green x, 0  
         g.translate(g.width, 0);
         g.fill(50, 255, 50);
         drawEllipses(g);
 
-        // Corner 2
+        // Corner 2  Red  x,y
         g.fill(255, 50, 55);
         g.translate(0, g.height);
         drawEllipses(g);
 
-        // Corner 1
-        g.fill(255);
+        // Corner 1  White 0,y
+        g.fill(255);  
         g.translate(-g.width, 0);
         drawEllipses(g);
+        
+        // In TrackedView 
+        // 0 is ->  0, h   (white)
+        // 1 is ->  w, h   (Red)
+        // 2 is ->  w, 0   (Green)
+        // 3 is ->  0, 0   (Yellow)
     }
 
     void drawEllipses(PGraphicsOpenGL g) {

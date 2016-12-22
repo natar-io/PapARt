@@ -19,49 +19,14 @@
  */
 package fr.inria.papart.procam.camera;
 
-import fr.inria.papart.procam.camera.Camera.Type;
-
 /**
  *
  * @author Jeremy Laviole
  */
 public class CameraFactory {
 
-    /**
-     *
-     * @param type either OPENCV_VIDEO or KINECT_VIDEO
-     * @param cameraNo id of the Camera starting from 0.
-     * @return
-     */
-    public static Camera createCamera(Camera.Type type, int cameraNo) {
-        if (type == Type.PROCESSING) {
-            throw new RuntimeException("PROCESSING_VIDEO requires a String describing the camera.");
-        }
-
-        Camera camera;
-        switch (type) {
-            case OPENCV:
-                camera = new CameraOpenCV(cameraNo);
-                break;
-            case KINECT2_RGB:  // Hack for now with V4L loopback. 
-                camera = new CameraOpenCV(0);
-                break;
-            case KINECT2_IR:  // Hack for now with V4L loopback. 
-                camera = new CameraOpenCV(2);
-                break;
-            case OPENCV_DEPTH:
-                camera = new CameraOpenCVDepth(cameraNo);
-                break;
-            case OPEN_KINECT:
-                camera = new CameraOpenKinect(cameraNo);
-                break;
-            case FLY_CAPTURE:
-                camera = new CameraFlyCapture(cameraNo);
-                break;
-            default:
-                throw new RuntimeException("ProCam, Camera: Unspported camera Type");
-        }
-        return camera;
+    public static Camera createCamera(Camera.Type type) {
+        return createCamera(type, "0", "");
     }
 
     public static Camera createCamera(Camera.Type type, String description) {
@@ -73,35 +38,75 @@ public class CameraFactory {
      * @param type must be PROCESSING_VIDEO or FFMPEG
      * @param description device of the camera (/dev/video0) or name. see the
      * Processing GettingStartedCamera example to get the name.
+     * @param format either ffmpeg format information, or RGB, IR, DEPTH to
+     * specify the default camera type.
      * @return
      */
     public static Camera createCamera(Camera.Type type, String description, String format) {
-        Camera camera;
+        Camera camera = null;
+        CameraRGBIRDepth cameraMulti = null;
+        int cameraNo = 0;
 
+//        System.out.println("CameraFactory: new " + type.name() + ", " + description + " " + format);
+        boolean isInt = false;
+        try {
+            cameraNo = Integer.parseInt(description);
+            isInt = true;
+        } catch (NumberFormatException e) {
+            isInt = false;
+        }
+        boolean isRGB = format.equalsIgnoreCase("rgb") || format.equalsIgnoreCase("color");
+        boolean isIR = format.equalsIgnoreCase("ir");
+        boolean isDepth = format.equalsIgnoreCase("depth");
+
+        // classes to remove:
+        //                camera = new CameraOpenCVDepth(cameraNo);
         switch (type) {
             case FFMPEG:
                 camera = new CameraFFMPEG(description, format);
                 break;
             case PROCESSING:
                 camera = new CameraProcessing(description);
+                break;
+            // Depth Cameras
+            case OPEN_KINECT_2:
+                cameraMulti = new CameraOpenKinect2(cameraNo);
+                break;
+            case REALSENSE:
+                cameraMulti = new CameraRealSense(cameraNo);
+                break;
+            case OPEN_KINECT:
+                cameraMulti = new CameraOpenKinect(cameraNo);
+                break;
+            case OPENCV:
+                camera = new CameraOpenCV(cameraNo);
+                break;
+            case FLY_CAPTURE:
+                camera = new CameraFlyCapture(cameraNo);
+                break;
             default:
-                boolean isInt = checkInt(description);
-                if (!isInt) {
-                    throw new RuntimeException("The description must be a number for this type.");
-                }
-                return createCamera(type, Integer.parseInt(description));
+                throw new RuntimeException("ProCam, Camera: Unspported camera Type");
         }
 
-        return camera;
-    }
-
-    private static boolean checkInt(String str) {
-        try {
-            Integer.parseInt(str);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
+        if (cameraMulti != null) {
+            if (isRGB) {  
+                cameraMulti.setUseColor(true);
+                cameraMulti.actAsColorCamera();
+            }
+            if (isIR) {
+                cameraMulti.setUseIR(true);
+                cameraMulti.actAsIRCamera();
+            }
+            if (isDepth) {
+                cameraMulti.setUseDepth(true);
+                cameraMulti.actAsDepthCamera();
+            }
+            return cameraMulti;
         }
+        if (camera != null) {
+            return camera;
+        }
+        throw new RuntimeException("ProCam, Camera: Unspported camera Type");
     }
 
 }

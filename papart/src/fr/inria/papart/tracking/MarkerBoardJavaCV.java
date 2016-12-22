@@ -43,7 +43,9 @@ public class MarkerBoardJavaCV extends MarkerBoard {
     private final PVector botLeft = new PVector();
     private final PVector botRight = new PVector();
 
-    public MarkerBoardJavaCV(String fileName, float width, float height) {
+    private opencv_core.IplImage imgToFind;
+
+    public MarkerBoardJavaCV(String fileName, float width, float height) throws Exception {
         super(fileName, width, height);
         trackers = new ArrayList<ObjectFinder>();
         imagePoints = new PVector[4];
@@ -57,16 +59,21 @@ public class MarkerBoardJavaCV extends MarkerBoard {
         Logger logger = Logger.getLogger(ObjectFinder.class.getName());
         logger.setLevel(Level.OFF);
         this.type = MarkerType.JAVACV_FINDER;
+        imgToFind = cvLoadImage(this.fileName);
+
+        // TODO: something less violent than a runtime exception... 
+        if (imgToFind == null) {
+            throw new Exception("MarkerBoardJavaCV: Impossible to load the image: " + this.fileName);
+        }
+
     }
 
     @Override
     protected void addTrackerImpl(Camera camera) {
-        opencv_core.IplImage imgToFind = cvLoadImage(this.fileName);
 
         ObjectFinder finder = new ObjectFinder(imgToFind);
 //        finder.getSettings().setUseFLANN(true);
 //        finder.getSettings().setMatchesMin(6);
-
         this.trackers.add(finder);
         this.transfos.add(new PMatrix3D());
     }
@@ -91,7 +98,6 @@ public class MarkerBoardJavaCV extends MarkerBoard {
 //        imagePoints[1] = botRight;
 //        imagePoints[2] = topRight;
 //        imagePoints[3] = topLeft;
-        
         imagePoints[0] = topLeft;
         imagePoints[1] = topRight;
         imagePoints[2] = botRight;
@@ -110,14 +116,16 @@ public class MarkerBoardJavaCV extends MarkerBoard {
     protected void updatePositionImpl(int id, int currentTime, int endTime, int mode,
             Camera camera, opencv_core.IplImage img, Object globalTracking) {
 
+        try{
         ObjectFinder finder = (ObjectFinder) trackers.get(id);
 
         // Find the markers
         double[] corners = finder.find(img);
 
-        // one use... HACK
-        finder = new ObjectFinder(finder.getSettings());
-        trackers.set(id, finder);
+        // one use... HACK  -- Why 
+        // why so evil ?
+//        finder = new ObjectFinder(finder.getSettings());
+//        trackers.set(id, finder);
 
         if (corners == null) {
             return;
@@ -141,7 +149,6 @@ public class MarkerBoardJavaCV extends MarkerBoard {
 //        {
 //            return;
 //        }
-        
         lastDistance.set(id, distance);
         // if the update is forced 
         if (mode == FORCE_UPDATE && currentTime < endTime) {
@@ -168,6 +175,10 @@ public class MarkerBoardJavaCV extends MarkerBoard {
 
         } else {
             update(newPos, id);
+        }
+        
+        } catch(Exception e ){
+            e.printStackTrace();
         }
     }
 

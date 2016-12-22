@@ -27,7 +27,7 @@ import processing.core.PMatrix3D;
  */
 public class CalibrationSnapshot {
 
-    PMatrix3D cameraPaper = null;
+    PMatrix3D mainCameraPaper = null;
     PMatrix3D projectorPaper = null;
     PMatrix3D kinectPaper = null;
 
@@ -36,7 +36,7 @@ public class CalibrationSnapshot {
             PMatrix3D kinectPaperCalibration) {
 
         if (cameraPaperCalibration != null) {
-            cameraPaper = cameraPaperCalibration.get();
+            mainCameraPaper = cameraPaperCalibration.get();
         }
         if (projectorPaperCalibration != null) {
             projectorPaper = projectorPaperCalibration.get();

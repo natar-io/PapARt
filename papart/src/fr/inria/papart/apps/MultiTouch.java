@@ -47,7 +47,7 @@ public class MultiTouch extends PApplet {
         Papart papart = Papart.projection2D(this);
 
         // arguments are 2D and 3D precision.
-        papart.loadTouchInputKinectOnly();
+        papart.loadTouchInput();
         touchInput = (KinectTouchInput) papart.getTouchInput();
         frameRate(200);
     }

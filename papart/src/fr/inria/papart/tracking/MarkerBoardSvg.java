@@ -25,9 +25,6 @@ import static fr.inria.papart.tracking.MarkerBoard.BLOCK_UPDATE;
 import static fr.inria.papart.tracking.MarkerBoard.FORCE_UPDATE;
 import static fr.inria.papart.tracking.MarkerBoard.NORMAL;
 import fr.inria.papart.procam.camera.Camera;
-import fr.inria.papart.tracking.DetectedMarker;
-import fr.inria.papart.tracking.MarkerList;
-import fr.inria.papart.tracking.MarkerSvg;
 import java.util.ArrayList;
 import org.bytedeco.javacpp.opencv_core;
 import processing.core.PMatrix3D;
@@ -40,7 +37,6 @@ import processing.data.XML;
  */
 public class MarkerBoardSvg extends MarkerBoard {
 
-   
     private final MarkerList markersFromSVG;
 
     public MarkerBoardSvg(String fileName, float width, float height) {

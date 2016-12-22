@@ -30,9 +30,6 @@ import org.bytedeco.javacpp.opencv_core.IplImage;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bytedeco.javacpp.ARToolKitPlus;
-import static org.bytedeco.javacpp.ARToolKitPlus.MARKER_ID_BCH;
-import static org.bytedeco.javacpp.ARToolKitPlus.PIXEL_FORMAT_LUM;
-import static org.bytedeco.javacpp.ARToolKitPlus.UNDIST_NONE;
 import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
 import static org.bytedeco.javacpp.opencv_imgproc.cvCvtColor;
@@ -44,6 +41,7 @@ import static org.bytedeco.javacpp.opencv_imgproc.cvCvtColor;
 class CameraThread extends Thread {
 
     private final Camera camera;
+    Camera cameraForMarkerboard;
     private boolean compute;
     private IplImage image, grayImage;
     private DetectedMarker[] detectedMarkers;
@@ -74,20 +72,35 @@ class CameraThread extends Thread {
 
     @Override
     public void run() {
+        cameraForMarkerboard = camera;
+
         while (!stop) {
+            checkSubCamera();
             camera.grab();
+            // If there is no camera for tracking...
+            if (cameraForMarkerboard == null || !compute || camera.getTrackedSheets().isEmpty()) {
+                continue;
+            }
             image = camera.getIplImage();
-            // TODO: check if img can be null...        
-            if (image != null && compute && !camera.getTrackedSheets().isEmpty()) {
+            if (image != null) {
                 this.compute();
             }
+        }
+    }
 
+    private void checkSubCamera() {
+        if (!(camera instanceof CameraRGBIRDepth)) {
+            return;
+        }
+        Camera actAsCam = ((CameraRGBIRDepth) camera).getActingCamera();
+        if (actAsCam != null) {
+            cameraForMarkerboard = actAsCam;
         }
     }
 
     public void compute() {
         try {
-            camera.sheetsSemaphore.acquire();
+            camera.getSheetSemaphore().acquire();
 
             tryComputeGrayScale();
             tryToFindMarkers();
@@ -95,15 +108,22 @@ class CameraThread extends Thread {
             // updateSequential();
             updateParallel();
 
-            camera.sheetsSemaphore.release();
+            camera.getSheetSemaphore().release();
         } catch (InterruptedException ex) {
             Logger.getLogger(CameraThread.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     private void tryComputeGrayScale() {
+
+//        if (image.depth() == IPL_DEPTH_8U) {
+        if (image.nChannels() == 1) {
+            grayImage = image;
+            return;
+        }
+
         for (MarkerBoard sheet : camera.getTrackedSheets()) {
-            if (sheet.useGrayscaleImages()) {
+            if (sheet.useMarkers()) {
                 if (grayImage == null) {
                     initGrayScale();
                 }
@@ -121,6 +141,7 @@ class CameraThread extends Thread {
                 }
                 this.detectedMarkers = computeMarkerLocations();
                 camera.setMarkers(this.detectedMarkers);
+//                System.out.println("Detected markers: " + detectedMarkers.length);
                 break;
             }
         }
@@ -156,10 +177,11 @@ class CameraThread extends Thread {
     }
 
     protected void updateBoardLocation(MarkerBoard markerBoard) {
-        if (markerBoard.useGrayscaleImages()) {
-            markerBoard.updateLocation(camera, grayImage, this.detectedMarkers);
+        // The markerboard will know the real camera, not the top-level camera. 
+        if (markerBoard.useMarkers()) {
+            markerBoard.updateLocation(cameraForMarkerboard, grayImage, this.detectedMarkers);
         } else {
-            markerBoard.updateLocation(camera, image, null);
+            markerBoard.updateLocation(cameraForMarkerboard, image, null);
         }
     }
 

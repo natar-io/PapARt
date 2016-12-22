@@ -1,6 +1,7 @@
 /*
  * Part of the PapARt project - https://project.inria.fr/papart/
  *
+ * Copyright (C) 2016 Jérémy Laviole
  * Copyright (C) 2014-2016 Inria
  * Copyright (C) 2011-2013 Bordeaux University
  *
@@ -19,23 +20,18 @@
  */
 package fr.inria.papart.depthcam.analysis;
 
-import static fr.inria.papart.depthcam.analysis.DepthAnalysis.papplet;
-import fr.inria.papart.calibration.HomographyCalibration;
 import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
-import fr.inria.papart.calibration.PlaneCalibration;
 import fr.inria.papart.depthcam.PixelOffset;
-import fr.inria.papart.depthcam.devices.KinectDevice;
+import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.depthcam.devices.KinectOne;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.papplet;
-import fr.inria.papart.procam.camera.CameraOpenKinect;
+import fr.inria.papart.procam.camera.Camera;
 import java.util.ArrayList;
 import java.util.Arrays;
-import org.bytedeco.javacpp.indexer.Indexer;
 import org.bytedeco.javacpp.indexer.UByteIndexer;
 import org.bytedeco.javacpp.opencv_core;
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
-import org.bytedeco.javacpp.opencv_core.CvSize;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import processing.core.PApplet;
 import processing.core.PConstants;
@@ -53,7 +49,7 @@ public class KinectProcessing extends KinectDepthAnalysis {
     UByteIndexer erosionIndexer;
     boolean[] validCopy;
 
-    public KinectProcessing(PApplet parent, KinectDevice kinect) {
+    public KinectProcessing(PApplet parent, DepthCameraDevice kinect) {
         super(parent, kinect);
         init();
     }
@@ -64,8 +60,8 @@ public class KinectProcessing extends KinectDepthAnalysis {
     }
 
     private void init() {
-        validPointsPImage = papplet.createImage(kinectDevice().depthWidth(), kinectDevice().depthHeight(), PConstants.RGB);
-        nativeArrayToErode = IplImage.create(kinectDevice.depthWidth(), kinectDevice.depthHeight(), IPL_DEPTH_8U, 1);
+        validPointsPImage = papplet.createImage(getDepthWidth(), getDepthHeight(), PConstants.RGB);
+        nativeArrayToErode = IplImage.create(getDepthWidth(), getDepthHeight(), IPL_DEPTH_8U, 1);
         erosionIndexer = (UByteIndexer) nativeArrayToErode.createIndexer();
         validCopy = Arrays.copyOf(depthData.validPointsMask, depthData.validPointsMask.length);
 
@@ -129,9 +125,9 @@ public class KinectProcessing extends KinectDepthAnalysis {
             int x = po.x;
             int y = po.y;
 
-            for (int j = y * kinectDevice.depthWidth() - skip;
-                    j <= y * kinectDevice.depthWidth() + skip;
-                    j += kinectDevice.depthWidth() * skip) {
+            for (int j = y * getDepthWidth() - skip;
+                    j <= y * getDepthWidth() + skip;
+                    j += getDepthWidth() * skip) {
                 for (int i = x - skip; i <= x + skip; i += skip) {
 
                     int currentIdx = i + j;
@@ -149,11 +145,11 @@ public class KinectProcessing extends KinectDepthAnalysis {
 
     private void erodePoints(boolean[] arrayToErode) {
 
-        for (int i = 0; i < kinectDevice.depthWidth() * kinectDevice.depthHeight(); i++) {
+        for (int i = 0; i < getDepthWidth() * getDepthHeight(); i++) {
             erosionIndexer.put(i, arrayToErode[i] ? 1 : 0);
         }
         cvErode(nativeArrayToErode, nativeArrayToErode);
-        for (int i = 0; i < kinectDevice.depthWidth() * kinectDevice.depthHeight(); i++) {
+        for (int i = 0; i < getDepthWidth() * getDepthHeight(); i++) {
             arrayToErode[i] = erosionIndexer.get(i) == 1;
         }
 
@@ -231,7 +227,14 @@ public class KinectProcessing extends KinectDepthAnalysis {
 
 //        computeDepthAndDo(skip, new DoNothing());
         // TODO: get the color with Kinect2... 
-        computeDepthAndDo(skip, new SetImageData());
+        
+        System.out.println("PixelFormat " + colorCamera.getPixelFormat().name());
+        if(this.colorCamera.getPixelFormat() == Camera.PixelFormat.RGB){
+            computeDepthAndDo(skip, new SetImageDataRGB());
+        }
+        if(this.colorCamera.getPixelFormat() == Camera.PixelFormat.BGR){
+            computeDepthAndDo(skip, new SetImageData());
+        }
 
 //        computeDepthAndDo(skip, new Select2DPointOverPlane());
         validPointsPImage.updatePixels();
@@ -251,11 +254,23 @@ public class KinectProcessing extends KinectDepthAnalysis {
     }
 
     class SetImageData implements DepthPointManiplation {
-
+        public SetImageData(){
+            super();
+        }
         @Override
         public void execute(Vec3D p, PixelOffset px) {
             depthData.validPointsMask[px.offset] = true;
             setPixelColor(px.offset);
+        }
+    }
+    class SetImageDataRGB implements DepthPointManiplation {
+        public SetImageDataRGB(){
+            super();
+        }
+        @Override
+        public void execute(Vec3D p, PixelOffset px) {
+            depthData.validPointsMask[px.offset] = true;
+            setPixelColorRGB(px.offset);
         }
     }
 
@@ -266,11 +281,24 @@ public class KinectProcessing extends KinectDepthAnalysis {
         validPointsPImage.pixels[offset] = c;
     }
 
+    // TODO: Generalization here, same functions as those to convert the pixels for OpenGL. 
     private void setPixelColor(int offset) {
-        int colorOffset = kinectDevice.findColorOffset(depthData.depthPoints[offset]) * 3;
+        
+        // TODO: Get a cleaner way go obtain the color... 
+        int colorOffset = depthCameraDevice.findColorOffset(depthData.depthPoints[offset]) * 3;
         int c = (colorRaw[colorOffset + 2] & 0xFF) << 16
                 | (colorRaw[colorOffset + 1] & 0xFF) << 8
                 | (colorRaw[colorOffset + 0] & 0xFF);
+
+        validPointsPImage.pixels[offset] = c;
+    }
+    private void setPixelColorRGB(int offset) {
+        
+        // TODO: Get a cleaner way go obtain the color... 
+        int colorOffset = depthCameraDevice.findColorOffset(depthData.depthPoints[offset]) * 3;
+        int c = (colorRaw[colorOffset + 0] & 0xFF) << 16
+                | (colorRaw[colorOffset + 1] & 0xFF) << 8
+                | (colorRaw[colorOffset + 2] & 0xFF);
 
         validPointsPImage.pixels[offset] = c;
     }

@@ -23,14 +23,11 @@ package fr.inria.papart.procam.camera;
  *
  * @author jeremylaviole
  */
-import fr.inria.papart.graph.Node;
 import fr.inria.papart.procam.HasExtrinsics;
+import fr.inria.papart.utils.ImageUtils;
 import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.procam.ProjectiveDeviceP;
-import fr.inria.papart.procam.Utils;
-import fr.inria.papart.procam.camera.CamImage;
-import fr.inria.papart.procam.camera.CamImageColor;
-import fr.inria.papart.procam.camera.CamImageGray;
+import fr.inria.papart.utils.ARToolkitPlusUtils;
 import fr.inria.papart.tracking.DetectedMarker;
 import fr.inria.papart.tracking.MarkerList;
 import org.bytedeco.javacpp.opencv_core.CvMat;
@@ -48,7 +45,7 @@ import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 
-public abstract class Camera extends Node implements PConstants, HasExtrinsics {
+public abstract class Camera implements PConstants, HasExtrinsics {
 
     public static Camera INVALID_CAMERA = new CameraOpenCV(-1);
 
@@ -65,13 +62,13 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
     private boolean hasExtrinsics = false;
 
     public enum Type {
-
-        OPENCV, FFMPEG, OPENCV_DEPTH, PROCESSING, OPEN_KINECT, FLY_CAPTURE, KINECT2_RGB, KINECT2_IR, FAKE
+        OPENCV, FFMPEG, PROCESSING, REALSENSE, OPEN_KINECT, OPEN_KINECT_2,  FLY_CAPTURE,
+        FAKE
     }
 
     public enum PixelFormat {
 
-        RGB, BGR, ARGB, RGBA, GRAY, DEPTH_KINECT_MM, DEPTH_KINECT_RAW
+        RGB, BGR, ARGB, RGBA, GRAY, GRAY_32, FLOAT_DEPTH_KINECT2, DEPTH_KINECT_MM, REALSENSE_Z16
     }
 
     protected PixelFormat format;
@@ -84,7 +81,7 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
     protected int width, height;
     protected int frameRate;
     protected boolean trackSheets = false;
-    private boolean isClosing = false;
+    protected boolean isClosing = false;
     protected boolean isConnected = false;
 
     protected boolean undistort = false;
@@ -99,14 +96,16 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
     // Instance variables
     protected PApplet parent = null;
 
-    private List<MarkerBoard> sheets = null;
-
-    protected final Semaphore sheetsSemaphore = new Semaphore(1);
+    private final List<MarkerBoard> sheets = Collections.synchronizedList(new ArrayList<MarkerBoard>());
+    private final Semaphore sheetsSemaphore = new Semaphore(1);
 
     // ARToolkit 
     protected String calibrationARToolkit;
+    protected CameraThread thread = null;
 
-    private CameraThread thread = null;
+    protected List<MarkerBoard> getSheets() {
+        return sheets;
+    }
 
     abstract public void start();
 
@@ -117,6 +116,16 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
 
     public PImage getImage() {
         return getPImage();
+    }
+    
+    public static Camera checkActingCamera(Camera camera) {
+        if (camera instanceof CameraRGBIRDepth) {
+            Camera acting = ((CameraRGBIRDepth) camera).getActingCamera();
+            if (acting != null) {
+                camera = acting;
+            }
+        }
+        return camera;
     }
 
     public abstract PImage getPImage();
@@ -139,29 +148,44 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
         if (this.systemNumber == -1 && cameraDescription == null) {
             throw new RuntimeException("Camera: initalization failed");
         }
+    }
 
+    public void setSimpleCalibration(float fx, float fy, float cx, float cy) {
+        setSimpleCalibration(fx, fy, cx, cy, width(), height());
+    }
+    public void setSimpleCalibration(float fx, float fy, float cx, float cy, int w, int h) {
+        this.calibrationFile = "manual calibration";
+        pdp = ProjectiveDeviceP.createSimpleDevice(fx, fy, cx, cy, w, h);
+        updateCalibration();
     }
 
     public void setCalibration(String fileName) {
         try {
             this.calibrationFile = fileName;
-
             pdp = ProjectiveDeviceP.loadCameraDevice(parent, fileName);
-            camIntrinsicsP3D = pdp.getIntrinsics();
-            this.width = pdp.getWidth();
-            this.height = pdp.getHeight();
-            this.undistort = pdp.handleDistorsions();
+            updateCalibration();
         } catch (Exception e) {
             e.printStackTrace();
-
             System.err.println("Camera: error reading the calibration " + pdp
                     + "file" + fileName + " \n" + e);
         }
     }
 
+    private void updateCalibration() {
+        System.out.println("updateCalibrationcalled:");
+        camIntrinsicsP3D = pdp.getIntrinsics();
+        this.width = pdp.getWidth();
+        this.height = pdp.getHeight();
+        this.undistort = pdp.handleDistorsions();
+    }
+
     public PImage getPImageCopy() {
         PImage out = parent.createImage(this.width, this.height, RGB);
-        Utils.IplImageToPImage(currentImage, false, out);
+        if(currentImage == null){
+            System.err.println("Error in PImageCopy(): no current image. ");
+            return out;
+        }
+        ImageUtils.IplImageToPImage(currentImage, false, out);
         return out;
     }
 
@@ -173,12 +197,16 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
      */
     public PImage getPImageCopy(PApplet context) {
         PImage out = context.createImage(this.width, this.height, RGB);
-        Utils.IplImageToPImage(currentImage, this.format == PixelFormat.RGB, out);
+
+        if(currentImage.nChannels() == 1){
+
+        }
+        ImageUtils.IplImageToPImage(currentImage, this.format == PixelFormat.RGB, out);
         return out;
     }
 
     public PImage getPImageCopyTo(PImage out) {
-        Utils.IplImageToPImage(currentImage, this.format, out);
+        ImageUtils.IplImageToPImage(currentImage, this.format, out);
         return out;
     }
 
@@ -242,20 +270,16 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
         return this.calibrationFile;
     }
 
-    /**
-     * Initialize the tracking with ARToolkit plus.
-     *
-     * @param calibrationARToolkit
-     */
-    public void initMarkerDetection(String calibrationARToolkit) {
-        // Marker Detection and view
+    public void setCalibrationARToolkit(String calibrationARToolkit) {
         this.calibrationARToolkit = calibrationARToolkit;
-        this.sheets = Collections.synchronizedList(new ArrayList<MarkerBoard>());
-        System.out.println("Init MARKER DETECTION " + this + " " + this.sheets);
     }
 
     public String getCalibrationARToolkit() {
         return calibrationARToolkit;
+    }
+
+    protected Semaphore getSheetSemaphore() {
+        return sheetsSemaphore;
     }
 
     /**
@@ -266,9 +290,9 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
     public void trackMarkerBoard(MarkerBoard sheet) {
         sheet.addTracker(parent, this);
         try {
-            sheetsSemaphore.acquire();
+            getSheetSemaphore().acquire();
             this.sheets.add(sheet);
-            sheetsSemaphore.release();
+            getSheetSemaphore().release();
         } catch (InterruptedException ex) {
             System.out.println("Interrupted !");
             Logger.getLogger(Camera.class.getName()).log(Level.SEVERE, null, ex);
@@ -288,8 +312,6 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
 
         if (thread != null) {
             thread.setCompute(auto);
-        } else {
-            System.err.println("Camera: Error AutoCompute only if threaded.");
         }
     }
 
@@ -339,9 +361,7 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
      * @param img
      */
     protected void updateCurrentImage(IplImage img) {
-
         if (undistort) {
-
             if (pdp == null || !pdp.handleDistorsions()) {
                 System.err.println("I cannot distort the image for processing. The "
                         + "calibration did not contain information. ");
@@ -368,24 +388,29 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
      */
     protected void checkCamImage() {
         if (camImage == null) {
-
             if (this.isPixelFormatGray()) {
-                camImage = new CamImageGray(parent, width(), height());
+                camImage = new CamImageGray(parent, width(), height(), this.format);
             }
             if (this.isPixelFormatColor()) {
-                camImage = new CamImageColor(parent, width(), height());
+                camImage = new CamImageColor(parent, width(), height(), this.format);
+            }
+
+            if (!this.isPixelFormatColor() && !this.isPixelFormatGray()) {
+                System.out.println("Error: No pixel format set for the camera!");
             }
         }
     }
 
-    protected boolean isPixelFormatGray() {
+    public boolean isPixelFormatGray() {
         PixelFormat pixelFormat = getPixelFormat();
         return pixelFormat == PixelFormat.GRAY
-                || pixelFormat == PixelFormat.DEPTH_KINECT_MM
-                || pixelFormat == PixelFormat.DEPTH_KINECT_RAW;
+                || pixelFormat == PixelFormat.GRAY_32
+                || pixelFormat == PixelFormat.REALSENSE_Z16
+                || pixelFormat == PixelFormat.FLOAT_DEPTH_KINECT2
+                || pixelFormat == PixelFormat.DEPTH_KINECT_MM;
     }
 
-    protected boolean isPixelFormatColor() {
+    public boolean isPixelFormatColor() {
         PixelFormat pixelFormat = getPixelFormat();
         return pixelFormat == PixelFormat.ARGB
                 || pixelFormat == PixelFormat.BGR
@@ -480,7 +505,16 @@ public abstract class Camera extends Node implements PConstants, HasExtrinsics {
             // ARToolkit Plus 2.1.1
 //            fr.inria.papart.procam.Utils.convertARParam(parent, calibrationYAML, calibrationData, width, height);
             // ARToolkit Plus 2.3.0
-            fr.inria.papart.procam.Utils.convertARParam2(parent, calibrationFile, calibrationARtoolkit);
+            fr.inria.papart.utils.ARToolkitPlusUtils.convertARParam2(parent, calibrationFile, calibrationARtoolkit);
+        } catch (Exception e) {
+            PApplet.println("Conversion error. " + e);
+        }
+    }
+    
+    static public void convertARParams(PApplet parent, ProjectiveDeviceP projectiveDevice,
+            String calibrationARtoolkit) {
+        try {
+            fr.inria.papart.utils.ARToolkitPlusUtils.convertARParamFromDevice(parent, projectiveDevice, calibrationARtoolkit);
         } catch (Exception e) {
             PApplet.println("Conversion error. " + e);
         }

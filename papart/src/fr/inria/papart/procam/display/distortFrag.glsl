@@ -3,7 +3,7 @@ precision mediump float;
 precision mediump int;
 #endif
 
-uniform sampler2D texture;
+uniform sampler2D textureGraphics;
 uniform sampler2D mapTex;
 
 uniform int resX, resY;
@@ -29,7 +29,7 @@ void main() {
   vec2 coord2 = vec2( (mapCoord.x - 0.5) * mag / float(resX),
 		      (mapCoord.y - 0.5) * mag / float(resY));
 
-  gl_FragColor = vec4(texture2D(texture, coord2 + vertTexCoord.st ).rgba);
+  gl_FragColor = vec4(texture2D(textureGraphics, coord2 + vertTexCoord.st ).rgba);
 
   // gl_FragColor = vec4(mapCoord.rgb , 1);
   //  gl_FragColor = vec4(coord2.rg, 1 , 1);

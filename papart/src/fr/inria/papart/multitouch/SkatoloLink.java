@@ -1,6 +1,7 @@
 /*
  * Part of the PapARt project - https://project.inria.fr/papart/
  *
+ * Copyright (C) 2016 RealityTech
  * Copyright (C) 2014-2016 Inria
  * Copyright (C) 2011-2013 Bordeaux University
  *
@@ -19,28 +20,52 @@
  */
 package fr.inria.papart.multitouch;
 
+import fr.inria.papart.procam.Papart;
+import fr.inria.papart.procam.PaperScreen;
+import fr.inria.papart.procam.PaperTouchScreen;
 import fr.inria.skatolo.Skatolo;
 import fr.inria.skatolo.gui.Pointer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import processing.core.PApplet;
 import processing.core.PVector;
 
 /**
  *
- * @author Jérémy Laviole - jeremy.laviole@inria.fr
+ * @author Jérémy Laviole 
  */
 public class SkatoloLink {
 
     public static HashMap<Skatolo, ArrayList<Integer>> pointersMap = new HashMap();
     
+    // Warning -> Must be linked to a physical screen // a Renderer. 
+    // Warning -> the mouse must be "displayed" ... 
+    
+    public static Touch mouseTouch = new Touch(); 
+  
+    public static void addMouseTo(TouchList touchList, Skatolo skatolo, PaperScreen paperScreen) {
+        PApplet applet = Papart.getPapart().getApplet();
+
+        float normX = (float) applet.mouseX / (float) applet.width;
+        float normY = (float) applet.mouseY / (float) applet.height;
+//        PVector pointer = paperScreen.getDisplay().projectPointer(paperScreen.getScreen(), normX, normY);
+        PVector pointer = paperScreen.getDisplay().project(paperScreen.getScreen(), normX, normY);
+        
+        System.out.println("Pointer: " + pointer);
+        
+        mouseTouch.setPosition(pointer.x * paperScreen.getDrawingSize().x, 
+                 pointer.y * paperScreen.getDrawingSize().y, 0);
+        touchList.add(mouseTouch);
+    }
+
     public static void updateTouch(TouchList touchList, Skatolo skatolo) {
 
         // TODO: Full integration !
         // TODO: use the pointerList ?
         ArrayList<Integer> pointers;
-        if(pointersMap.containsKey(skatolo)){
+        if (pointersMap.containsKey(skatolo)) {
             pointers = pointersMap.get(skatolo);
-        }else {
+        } else {
             pointers = new ArrayList<>();
             pointersMap.put(skatolo, pointers);
         }

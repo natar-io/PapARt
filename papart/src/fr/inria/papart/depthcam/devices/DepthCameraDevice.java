@@ -19,17 +19,144 @@
  */
 package fr.inria.papart.depthcam.devices;
 
+import fr.inria.papart.calibration.HomographyCalibration;
+import fr.inria.papart.multitouch.KinectTouchInput;
+import fr.inria.papart.procam.Papart;
+import fr.inria.papart.utils.ARToolkitPlusUtils;
+import fr.inria.papart.procam.camera.Camera;
+import fr.inria.papart.procam.camera.CameraFactory;
+import fr.inria.papart.procam.camera.CameraRGBIRDepth;
+import fr.inria.papart.procam.camera.SubCamera;
+import fr.inria.papart.procam.camera.SubDepthCamera;
+import org.bytedeco.javacpp.opencv_core.IplImage;
+import processing.core.PApplet;
+import processing.core.PMatrix3D;
+import processing.core.PVector;
+import toxi.geom.Vec3D;
+
 /**
  *
  * @author Jérémy Laviole - jeremy.laviole@inria.fr
  */
-public interface DepthCameraDevice {
-    
-    public int colorWidth();
-    public int colorHeight();
-    public int colorSize();
-    
-    public int depthWidth();
-    public int depthHeight();
-    public int depthSize();
+public abstract class DepthCameraDevice {
+
+    private final PMatrix3D KinectRGBIRCalibration = new PMatrix3D(1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1);
+    private PMatrix3D KinectRGBIRCalibrationInv = new PMatrix3D(1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1);
+
+    protected final PApplet parent;
+    protected CameraRGBIRDepth camera;
+    protected Camera anotherCamera = Camera.INVALID_CAMERA;
+
+    public DepthCameraDevice(PApplet parent) {
+        this.parent = parent;
+    }
+
+    public CameraRGBIRDepth getMainCamera() {
+        return camera;
+    }
+
+    public Camera getOtherCamera() {
+        return anotherCamera;
+    }
+
+    public SubCamera getColorCamera() {
+        return camera.getColorCamera();
+    }
+
+    public SubCamera getIRCamera() {
+        return camera.getIRCamera();
+    }
+
+    public SubDepthCamera getDepthCamera() {
+        return camera.getDepthCamera();
+    }
+
+    abstract public int rawDepthSize();
+
+    abstract public Camera.Type type();
+
+    /**
+     * *
+     * init a depth camera, depth only as there is another color camera.
+     */
+    protected final void initDefaultCamera() {
+        String id = Papart.getDefaultDepthCameraConfiguration(parent).getCameraName();
+        camera = (CameraRGBIRDepth) CameraFactory.createCamera(type(), id);
+        camera.setUseDepth(true);
+        camera.setUseColor(true);
+        camera.setParent(parent);
+    }
+
+    public void close() {
+        camera.close();
+    }
+
+    public void setTouch(KinectTouchInput kinectTouchInput) {
+        camera.getDepthCamera().setTouchInput(kinectTouchInput);
+    }
+
+    public void setStereoCalibration(String fileName) {
+        HomographyCalibration calib = new HomographyCalibration();
+        calib.loadFrom(parent, fileName);
+        setStereoCalibration(calib.getHomography());
+    }
+
+    public void setStereoCalibration(PMatrix3D matrix) {
+        KinectRGBIRCalibration.set(matrix);
+        KinectRGBIRCalibrationInv = KinectRGBIRCalibration.get();
+        KinectRGBIRCalibrationInv.invert();
+    }
+
+    /**
+     * Depth to color extrinsics
+     */
+    public PMatrix3D getStereoCalibration() {
+        return KinectRGBIRCalibration;
+    }
+
+    /**
+     * Color to Depth extrinsics
+     */
+    public PMatrix3D getStereoCalibrationInv() {
+        return KinectRGBIRCalibrationInv;
+    }
+
+    public int findColorOffset(Vec3D v) {
+        return findColorOffset(v.x, v.y, v.z);
+    }
+
+    public int findColorOffset(PVector v) {
+        return findColorOffset(v.x, v.y, v.z);
+    }
+
+    private PVector vt = new PVector();
+    private PVector vt2 = new PVector();
+
+    // TODO: this must take into account if we use another camera for tracking.
+    /**
+     * Warning not thread safe.
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @return
+     */
+    public int findColorOffset(float x, float y, float z) {
+        vt.set(x, y, z);
+        vt2.set(0, 0, 0);
+        //  Ideally use a calibration... 
+//        kinectCalibRGB.getExtrinsics().mult(vt, vt2);       
+        getStereoCalibration().mult(vt, vt2);
+
+        // TODO: find a solution for this...
+        return getColorCamera().getProjectiveDevice().worldToPixel(vt2.x, vt2.y, vt2.z);
+//        return getColorCamera.getProjectiveDevice().worldToPixel(vt2.x, vt2.y, vt2.z);
+    }
+
 }

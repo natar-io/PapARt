@@ -20,16 +20,10 @@
 package fr.inria.papart.depthcam.analysis;
 
 import fr.inria.papart.depthcam.devices.KinectDepthData;
-import fr.inria.papart.calibration.HomographyCalibration;
-import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
 import fr.inria.papart.depthcam.PixelOffset;
 import org.bytedeco.javacpp.opencv_core.IplImage;
-import fr.inria.papart.procam.ProjectiveDeviceP;
-import java.nio.ByteBuffer;
 import processing.core.PApplet;
-import processing.core.PMatrix3D;
 import processing.core.PVector;
-import toxi.geom.Plane;
 import toxi.geom.Vec3D;
 
 /**
@@ -38,8 +32,6 @@ import toxi.geom.Vec3D;
  *
  * @author jeremy
  */
-// TODO: 
-//   use the Hardware calibration. 
 public abstract class DepthAnalysis {
 
     protected int[] connexity;  // TODO: check for Byte instead of int

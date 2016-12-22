@@ -19,7 +19,8 @@
  */
 package fr.inria.papart.procam.camera;
 
-import fr.inria.papart.procam.Utils;
+import fr.inria.papart.utils.ImageUtils;
+import fr.inria.papart.utils.ARToolkitPlusUtils;
 import java.awt.Image;
 import java.nio.ByteBuffer;
 import org.bytedeco.javacpp.opencv_core.IplImage;
@@ -36,19 +37,17 @@ public class CamImageColor extends CamImage {
 
     protected ByteBuffer argbBuffer;
 
-        
     public CamImageColor(PApplet parent, Image img) {
         super(parent, img);
     }
-    
-    public CamImageColor(PApplet parent, int width, int height) {
-        super(parent, width, height, ARGB);
+
+    public CamImageColor(PApplet parent, int width, int height, Camera.PixelFormat format) {
+        super(parent, width, height, ARGB, format);
     }
 
     @Override
     protected final void camInit(PApplet parent) {
         this.parent = parent;
-
         Texture tex = ((PGraphicsOpenGL) parent.g).getTexture(this);
         if (tex == null) {
             throw new RuntimeException("CamImage: Impossible to get the Processing Texture. "
@@ -57,16 +56,27 @@ public class CamImageColor extends CamImage {
         tex.setBufferSource(this);
         // Second time with bufferSource.
         tex = ((PGraphicsOpenGL) parent.g).getTexture(this);
-
-        argbBuffer = ByteBuffer.allocateDirect(this.pixels.length * 4);
+        if (this.incomingFormat != Camera.PixelFormat.ARGB) {
+            argbBuffer = ByteBuffer.allocateDirect(this.pixels.length * 4);
+        }
     }
 
     @Override
     public void update(IplImage iplImage) {
         Texture tex = ((PGraphicsOpenGL) parent.g).getTexture(this);
-        ByteBuffer bgrBuffer = iplImage.getByteBuffer();
-        Utils.byteBufferBRGtoARGB(bgrBuffer, argbBuffer);
+        ByteBuffer imageBuffer = iplImage.getByteBuffer();
+
+        if (this.incomingFormat == Camera.PixelFormat.BGR) {
+            ImageUtils.byteBufferBRGtoARGB(imageBuffer, argbBuffer);
+        }
+        if (this.incomingFormat == Camera.PixelFormat.RGB) {
+            ImageUtils.byteBufferRGBtoARGB(imageBuffer, argbBuffer);
+        }
+        if (this.incomingFormat == Camera.PixelFormat.ARGB) {
+            argbBuffer = iplImage.getByteBuffer();
+        }
         tex.copyBufferFromSource(null, argbBuffer, width, height);
+        argbBuffer.rewind();
     }
 
 }

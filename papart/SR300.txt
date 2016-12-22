@@ -1,0 +1,38 @@
+## Working options
+
+## Not working auto range 
+
+# Change les points 3D
+F200_FILTER_OPTION
+0 - 7
+
+# F200_ACCURACY
+1 - 3
+
+# F200_CONFIDENCE_THRESHOLD
+0 - 15
+
+# F200_LASER_POWER
+0 - 1   (more has no effect)
+
+# Color Options
+
+# COLOR_SHARPNESS
+0 - 100
+
+# COLOR_GAMMA
+100 - 500  // 300 - mid
+
+# COLOR_GAIN
+0 - 128 
+
+# COLOR_CONTRAST
+0 - 100
+
+# COLOR_BRIGHTNESS
+-64 - 64
+
+
+IVCAM options preset
+0 - 8
+

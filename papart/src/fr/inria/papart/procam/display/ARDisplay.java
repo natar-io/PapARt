@@ -22,22 +22,17 @@ package fr.inria.papart.procam.display;
 import fr.inria.papart.calibration.PlaneCalibration;
 import processing.opengl.PGraphicsOpenGL;
 import org.bytedeco.javacv.ProjectiveDevice;
-import fr.inria.papart.drawingapp.DrawUtils;
+import fr.inria.papart.utils.DrawUtils;
 import fr.inria.papart.multitouch.TouchInput;
-import fr.inria.papart.multitouch.TouchPoint;
-import fr.inria.papart.procam.HasCamera;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.HasExtrinsics;
-import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.procam.Screen;
-import java.util.ArrayList;
 import processing.core.PApplet;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.opengl.PShader;
-import toxi.geom.Plane;
 import toxi.geom.Ray3D;
 import toxi.geom.ReadonlyVec3D;
 import toxi.geom.Vec3D;
@@ -46,7 +41,7 @@ import toxi.geom.Vec3D;
  *
  * @author jeremy
  */
-public class ARDisplay extends BaseDisplay implements HasExtrinsics{
+public class ARDisplay extends BaseDisplay implements HasExtrinsics {
 
 //    public PGraphicsOpenGL graphicsUndist;
     private PImage mapImg;
@@ -67,6 +62,12 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics{
 
     private boolean distort = false;
 
+    /**
+     * Warning Not used directly.
+     *
+     * @param parent
+     * @param calibrationYAML
+     */
     public ARDisplay(PApplet parent, String calibrationYAML) {
         super(parent);
         loadCalibration(calibrationYAML);
@@ -103,6 +104,18 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics{
         }
     }
 
+    /**
+     * *
+     * Reload the intrinsic calibration from the camera.
+     */
+    public void reloadCalibration() {
+        setCalibration(camera.getProjectiveDevice());
+    }
+
+    public void setCalibration(Camera c) {
+        setCalibration(c.getProjectiveDevice());
+    }
+
     protected void setCalibration(ProjectiveDeviceP pdp) {
         // Load the camera parameters.
 //            pdp = ProjectiveDeviceP.loadProjectiveDevice(calibrationYAML, 0);
@@ -117,9 +130,13 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics{
         this.frameHeight = pdp.getHeight();
         this.drawingSizeX = frameWidth;
         this.drawingSizeY = frameHeight;
-        
-        // TODO: no more distorsions Processing3 test 
-        // this.setDistort(pdp.handleDistorsions());
+
+        if (this.graphics != null) {
+            updateIntrinsicsRendering();
+        }
+
+        // TODO: To set back when the distorsions are properly computed
+//         this.setDistort(pdp.handleDistorsions());
         this.setDistort(false);
     }
 
@@ -165,8 +182,10 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics{
         drawScreensOver();
         parent.noStroke();
 
-        if (camera != null && camera.getPImage() != null) {
-            parent.image(camera.getPImage(), 0, 0, parent.width, parent.height);
+        PImage img = camera.getPImage();
+
+        if (camera != null && img != null) {
+            parent.image(img, 0, 0, parent.width, parent.height);
 //            ((PGraphicsOpenGL) (parent.g)).image(camera.getPImage(), 0, 0, frameWidth, frameHeight);
         }
 
@@ -197,7 +216,7 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics{
     @Override
     public void renderScreens() {
         this.graphics.noStroke();
-        
+
         for (Screen screen : screens) {
             if (!screen.isDrawing()) {
                 continue;
@@ -322,7 +341,8 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics{
         parent.colorMode(PApplet.RGB, 255);
 
         lensFilter.set("mapTex", mapImg);
-        lensFilter.set("texture", this.graphics);
+        // name must not be texture ?
+        lensFilter.set("textureGraphics", this.graphics);
         lensFilter.set("resX", (int) (frameWidth * quality));
         lensFilter.set("resY", (int) (frameHeight * quality));
         lensFilter.set("mag", mag);
@@ -391,9 +411,7 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics{
         // Setting the projector negative because ARToolkit provides neg Z values
         this.graphics.scale(1, 1, -1);
 
-        // TODO: check !
         this.graphics.scale(1f / quality);
-
     }
 
     public void endDraw() {
@@ -455,8 +473,8 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics{
 
         Ray3D ray
                 = new Ray3D(new Vec3D(originP.x,
-                                originP.y,
-                                originP.z),
+                        originP.y,
+                        originP.z),
                         new Vec3D(viewedPtP.x,
                                 viewedPtP.y,
                                 viewedPtP.z));
@@ -475,8 +493,8 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics{
                 1f - (res.y() / res.z()), 1);
         return out;
     }
-            
-     /**
+
+    /**
      * Computes the 3D coordinates of a projected pixel in the tracking camera
      * coordinate system.
      *
@@ -492,12 +510,16 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics{
         PVector originP = new PVector(0, 0, 0);
         PVector viewedPtP = getProjectiveDeviceP().pixelToWorldNormalized(px, py);
 
-        // Pass it to the camera point of view (origin)
-        PMatrix3D proCamExtrinsics = getExtrinsicsInv();
-        PVector originC = new PVector();
-        PVector viewedPtC = new PVector();
-        proCamExtrinsics.mult(originP, originC);
-        proCamExtrinsics.mult(viewedPtP, viewedPtC);
+        PVector originC = originP.copy();
+        PVector viewedPtC = viewedPtP.copy();
+        if (hasExtrinsics()) {
+            // Pass it to the camera point of view (origin)
+            PMatrix3D proCamExtrinsics = getExtrinsicsInv();
+            originC = new PVector();
+            viewedPtC = new PVector();
+            proCamExtrinsics.mult(originP, originC);
+            proCamExtrinsics.mult(viewedPtP, viewedPtC);
+        }
 
         // Second argument is a direction
         viewedPtC.sub(originC);
@@ -517,7 +539,7 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics{
         }
 
         return new PVector(inter.x(), inter.y(), inter.z());
-    }    
+    }
 
     protected PMatrix3D createProjection(PVector nearFar) {
 

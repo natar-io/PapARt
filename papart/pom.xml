@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fr.inria</groupId>
     <artifactId>papart</artifactId>
-    <version>0.7-SNAPSHOT</version>
+    <version>1.0</version>
     <packaging>jar</packaging>
 
     <name>PapARt</name>
@@ -53,123 +53,21 @@
     </properties>
     
     <dependencies>
-
-        <dependency>
-            <groupId>tech.lity.rea</groupId>
-            <artifactId>SVGExtended</artifactId>
-            <version>3.2.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.bytedeco</groupId>
-            <artifactId>javacpp</artifactId>
-            <version>1.2</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>opencv</artifactId>
-            <version>3.1.0-1.2</version>
-            <scope>compile</scope>
-        </dependency>
-       
-        
-        <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>ffmpeg</artifactId>
-            <version>2.7.1-1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>flycapture</artifactId>
-            <version>2.7.3.19-1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>libdc1394</artifactId>
-            <version>2.2.3-1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>videoinput</artifactId>
-            <version>0.200-1.0</version>
-        </dependency>
-      
-
-        <dependency>
-            <groupId>org.bytedeco</groupId>
-            <artifactId>javacv</artifactId>
-            <version>1.2</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>opencv</artifactId>
-            <version>3.1.0-1.2</version>
-            <classifier>${platform}</classifier>
-            <scope>runtime</scope>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>artoolkitplus</artifactId>
-            <version>2.3.1-1.2</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>artoolkitplus</artifactId>
-            <version>2.3.1-1.2</version>
-            <classifier>${platform}</classifier>
-            <scope>runtime</scope>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>libfreenect</artifactId>
-            <version>0.5.3-1.2</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>libfreenect</artifactId>
-            <version>0.5.3-1.2</version>
-            <classifier>${platform}</classifier>
-            <scope>runtime</scope>
-        </dependency>
-      
-        <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>ffmpeg</artifactId>
-            <version>3.0.2-1.2</version>
-            <classifier>${platform}</classifier>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.processing</groupId>
-            <artifactId>video</artifactId>
-            <version>3.0a11</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.processing</groupId>
-            <artifactId>core</artifactId>
-            <version>3.1.2</version>
-        </dependency>
-
+        <!--We distribute with PapARt-->
         <dependency>
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
             <version>0.9.9</version>
         </dependency>
-        
+
+        <!--Processing core-->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.7</version>
-            <scope>test</scope>
+            <groupId>org.processing</groupId>
+            <artifactId>core</artifactId>
+            <version>3.2.3</version>
         </dependency>
-        
+
+        <!--Processing OpenGL-->
         <dependency>
             <groupId>org.jogamp.jogl</groupId>
             <artifactId>jogl</artifactId>
@@ -200,32 +98,183 @@
             <version>2.3.2</version>
         </dependency>
         
+        <!--Processing Video-->
         <dependency>
-            <groupId>fr.inria.potioc</groupId>
-            <artifactId>ProcessingTUIO</artifactId>
-            <version>1.1.0</version>
+            <groupId>org.processing</groupId>
+            <artifactId>video</artifactId>
+            <version>3.2.3</version>
         </dependency>
+        
+        
         <dependency>
             <groupId>com.googlecode.gstreamer-java</groupId>
             <artifactId>gstreamer-java</artifactId>
             <version>1.5</version>
         </dependency>
+        
+        <!-- Processing libraries -->
+        
+        <!--We package and distribute--> 
+        <dependency>
+            <groupId>tech.lity.rea</groupId>
+            <artifactId>SVGExtended</artifactId>
+            <version>3.2.1</version>
+        </dependency>
+        
+         <!--We package and distribute--> 
+        <dependency>
+            <groupId>fr.inria.potioc</groupId>
+            <artifactId>ProcessingTUIO</artifactId>
+            <version>1.1.0</version>
+        </dependency>
+        
+         <!--We package and distribute--> 
         <dependency>
             <groupId>org.clojars.frederikdb</groupId>
             <artifactId>oscp5</artifactId>
             <version>0.9.8-SNAPSHOT</version>
         </dependency>
+        
+        <!--Toxiclibs already packaged, we distribute -->
         <dependency>
             <groupId>org.clojars.hozumi</groupId>
             <artifactId>toxiclibscore</artifactId>
             <version>0022</version>
         </dependency>
         
+        <!--We package and distribute--> 
         <dependency>
             <groupId>fr.inria.potioc</groupId>
             <artifactId>skatolo</artifactId>
             <version>1.0</version>
         </dependency>
+        
+
+        <!--JavaCPP-presets et JavaCV -->
+        <!--We package and distribute--> 
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>javacpp</artifactId>
+            <version>1.3</version>
+        </dependency>
+
+       <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>javacv</artifactId>
+            <version>1.3</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>opencv</artifactId>
+            <version>3.1.0-1.3</version>
+            <classifier>${platform}</classifier>
+            <scope>runtime</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>opencv</artifactId>
+            <version>3.1.0-1.3</version>
+            <scope>compile</scope>
+        </dependency>
+             
+        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>artoolkitplus</artifactId>
+            <version>2.3.1-1.3</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>artoolkitplus</artifactId>
+            <version>2.3.1-1.3</version>
+            <classifier>${platform}</classifier>
+            <scope>runtime</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>ffmpeg</artifactId>
+            <version>3.2.1-1.3</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>ffmpeg</artifactId>
+            <version>3.2.1-1.3</version>
+            <classifier>${platform}</classifier>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>flycapture</artifactId>
+            <version>2.9.3.43-1.3</version>
+        </dependency>
+<!--        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>libdc1394</artifactId>
+            <version>2.2.4-1.2</version>
+        </dependency>-->
+<!--        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>videoinput</artifactId>
+            <version>0.200-1.2</version>
+        </dependency>-->
+   
+        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>libfreenect</artifactId>
+            <version>0.5.3-1.3</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>libfreenect</artifactId>
+            <version>0.5.3-1.3</version>
+            <classifier>${platform}</classifier>
+            <scope>runtime</scope>
+        </dependency> 
+
+         <!--Freenect 2 is out for now...-->         
+        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>libfreenect2</artifactId>
+            <version>0.2.0-1.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>libfreenect2</artifactId>
+            <version>0.2.0-1.3</version>
+            <classifier>${platform}</classifier>
+            <scope>runtime</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>librealsense</artifactId>
+            <version>1.9.6-1.3</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>librealsense</artifactId>
+            <version>1.9.6-1.3</version>
+            <classifier>${platform}</classifier>
+            <scope>runtime</scope>
+        </dependency>
+      
+
+        
+        <!--Tests no packaging no distribution --> 
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.7</version>
+            <scope>test</scope>
+        </dependency>
+        
+  
     </dependencies>
     
     <reporting>

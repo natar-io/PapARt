@@ -19,6 +19,7 @@
  */
 package fr.inria.papart.tracking;
 
+import static fr.inria.papart.procam.Papart.camCalibARtoolkit;
 import static fr.inria.papart.tracking.MarkerBoard.BLOCK_UPDATE;
 import static fr.inria.papart.tracking.MarkerBoard.FORCE_UPDATE;
 import static fr.inria.papart.tracking.MarkerBoard.NORMAL;
@@ -72,6 +73,9 @@ public class MarkerBoardARToolKitPlus extends MarkerBoard {
 //  
     @Override
     protected void addTrackerImpl(Camera camera) {
+        
+        System.out.println("Starting a ARToolkitPlus tracker for CFG files.");
+        
         // create a tracker that does:
         //  - 6x6 sized marker images (required for binary markers)
         //  - samples at a maximum of 6x6 
@@ -109,12 +113,16 @@ public class MarkerBoardARToolKitPlus extends MarkerBoard {
         tracker.setMarkerMode(ARToolKitPlus.MARKER_ID_BCH);
 
         // TODO: find why  FULL RES is not working with a FULL HD image. 
-//        tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_FULL_RES);
-        tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_HALF_RES);
+        tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_FULL_RES);
+//        tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_HALF_RES);
 
 //        tracker.setUseDetectLite(false);
         tracker.setUseDetectLite(true);
 
+        // Deal with the calibration files here...
+        Camera.convertARParams(this.applet, camera.getProjectiveDevice(), camCalibARtoolkit);
+        camera.setCalibrationARToolkit(camCalibARtoolkit);
+        
         // Initialize the tracker, with camera parameters and marker config. 
         if (!tracker.init(camera.getCalibrationARToolkit(), this.getFileName(), 1.0f, 10000.f)) {
             System.err.println("Init ARTOOLKIT Error " + camera.getCalibrationARToolkit() + " " + this.getFileName());

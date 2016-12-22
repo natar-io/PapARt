@@ -19,7 +19,7 @@
  */
 package fr.inria.papart;
 
-import fr.inria.papart.procam.Utils;
+import fr.inria.papart.utils.ARToolkitPlusUtils;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import processing.core.PApplet;
 
@@ -30,8 +30,12 @@ import processing.core.PApplet;
 public class UtilsTest extends PApplet {
 
     @Override
-    public void setup() {
+    public void settings() {
         size(200, 200);
+    }
+
+    @Override
+    public void setup() {
         stroke(155, 0, 0);
     }
 

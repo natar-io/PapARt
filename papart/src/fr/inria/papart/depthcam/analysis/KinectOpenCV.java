@@ -20,7 +20,7 @@
 package fr.inria.papart.depthcam.analysis;
 
 import fr.inria.papart.depthcam.PixelOffset;
-import fr.inria.papart.depthcam.devices.KinectDevice;
+import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.procam.camera.CameraOpenKinect;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -39,16 +39,16 @@ public class KinectOpenCV extends KinectDepthAnalysis {
     public IplImage validPointsIpl;
     public byte[] validPointsRaw;
 
-    public KinectOpenCV(PApplet parent, KinectDevice kinect) {
+    public KinectOpenCV(PApplet parent, DepthCameraDevice kinect) {
        super(parent, kinect);
        init();
     }
 
     private void init() {
-        validPointsIpl = IplImage.create(cvSize(kinectDevice().depthWidth(),
-                kinectDevice().depthHeight()),
+        validPointsIpl = IplImage.create(cvSize(getDepthWidth(),
+                getDepthHeight()),
                 IPL_DEPTH_8U, 3);
-        validPointsRaw = new byte[kinectDevice().depthSize() * 3];
+        validPointsRaw = new byte[getDepthSize()* 3];
     }
 
     public IplImage update(IplImage depth, IplImage color) {
@@ -83,7 +83,7 @@ public class KinectOpenCV extends KinectDepthAnalysis {
         public void execute(Vec3D p, PixelOffset px) {
             depthData.validPointsMask[px.offset] = true;
             int outputOffset = px.offset * 3;
-            int colorOffset = kinectDevice.findColorOffset(p) * 3;
+            int colorOffset = depthCameraDevice.findColorOffset(p) * 3;
             validPointsRaw[outputOffset + 2] = colorRaw[colorOffset + 2];
             validPointsRaw[outputOffset + 1] = colorRaw[colorOffset + 1];
             validPointsRaw[outputOffset + 0] = colorRaw[colorOffset + 0];

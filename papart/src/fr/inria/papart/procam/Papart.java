@@ -34,15 +34,24 @@ import fr.inria.papart.calibration.PlaneCalibration;
 import fr.inria.papart.calibration.ScreenConfiguration;
 import fr.inria.papart.depthcam.devices.Kinect360;
 import fr.inria.papart.depthcam.analysis.KinectDepthAnalysis;
-import fr.inria.papart.depthcam.devices.KinectDevice;
+import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.depthcam.devices.KinectOne;
+import fr.inria.papart.depthcam.devices.RealSense;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.multitouch.TUIOTouchInput;
 import fr.inria.papart.multitouch.KinectTouchInput;
+import fr.inria.papart.utils.LibraryUtils;
 import fr.inria.papart.procam.camera.CameraFactory;
+import fr.inria.papart.procam.camera.CameraOpenKinect;
+import fr.inria.papart.procam.camera.CameraRGBIRDepth;
+import fr.inria.papart.procam.camera.CameraRealSense;
+import fr.inria.papart.procam.camera.SubCamera;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.bytedeco.javacv.CameraDevice;
 import org.reflections.Reflections;
 import processing.core.PApplet;
 import processing.core.PFont;
@@ -56,11 +65,13 @@ import processing.event.KeyEvent;
  */
 public class Papart {
 
-    public final static String folder = fr.inria.papart.procam.Utils.getPapartFolder() + "/data/";
+    public final static String folder = LibraryUtils.getPapartFolder() + "/data/";
     public final static String calibrationFolder = folder + "calibration/";
     public final static String markerFolder = folder + "markers/";
 
-    public static String calibrationFileName = "big-calib.svg";
+    public static boolean isInria = false;
+    public static boolean isReality= true;
+    public static String calibrationFileName = "A4-calib.svg";
 
     public static String cameraCalibName = "camera.yaml";
     public static String projectorCalibName = "projector.yaml";
@@ -70,6 +81,7 @@ public class Papart {
 
     public static String camCalibARtoolkit = calibrationFolder + "camera-projector.cal";
     public static String kinectIRCalib = calibrationFolder + "calibration-kinect-IR.yaml";
+    public static String SR300IRCalib = calibrationFolder + "calibration-SR300-IR.yaml";
     public static String kinectRGBCalib = calibrationFolder + "calibration-kinect-RGB.yaml";
     public static String kinectStereoCalib = calibrationFolder + "calibration-kinect-Stereo.xml";
 
@@ -78,7 +90,7 @@ public class Papart {
 
     public static String screenConfig = calibrationFolder + "screenConfiguration.xml";
     public static String cameraConfig = calibrationFolder + "cameraConfiguration.xml";
-    public static String cameraKinectConfig = calibrationFolder + "cameraKinectConfiguration.xml";
+    public static String depthCameraConfig = calibrationFolder + "depthCameraConfiguration.xml";
 
     public static String tablePosition = calibrationFolder + "tablePosition.xml";
     public static String planeCalib = calibrationFolder + "PlaneCalibration.xml";
@@ -86,7 +98,6 @@ public class Papart {
     public static String planeAndProjectionCalib = calibrationFolder + "PlaneProjectionCalibration.xml";
     public static String touchCalib = calibrationFolder + "Touch2DCalibration.xml";
     public static String touchCalib3D = calibrationFolder + "Touch3DCalibration.xml";
-    public static String defaultFont = folder + "Font/" + "GentiumBookBasic-48.vlw";
     public int defaultFontSize = 12;
 
     protected static Papart singleton = null;
@@ -112,16 +123,9 @@ public class Papart {
     private PVector frameSize = new PVector();
     private boolean isWithoutCamera = false;
 
-    public KinectDevice kinectDevice;
+    public DepthCameraDevice depthCameraDevice;
 
-    public CameraConfiguration cameraConfiguration;
-    public ScreenConfiguration screenConfiguration;
     // TODO: find what to do with these...
-//    private final int depthFormat = freenect.FREENECT_DEPTH_10BIT;
-//    private final int kinectFormat = Kinect.KINECT_10BIT;
-    private final int depthFormat = freenect.FREENECT_DEPTH_MM;
-    private final int kinectFormat = Kinect360.KINECT_MM;
-
     /**
      * Create the main PapARt object, look at the examples for how to use it.
      *
@@ -133,15 +137,11 @@ public class Papart {
         this.touchInitialized = false;
         this.applet = (PApplet) applet;
 
-        cameraConfiguration = getDefaultCameraConfiguration(this.applet);
-        screenConfiguration = getDefaultScreenConfiguration(this.applet);
-
         this.appletClass = applet.getClass();
-        PFont font = this.applet.loadFont(defaultFont);
         // TODO: singleton -> Better implementation.
         if (Papart.singleton == null) {
             Papart.singleton = this;
-            fr.inria.papart.drawingapp.DrawUtils.applet = (PApplet) applet;
+            fr.inria.papart.utils.DrawUtils.applet = (PApplet) applet;
         }
     }
 
@@ -151,9 +151,9 @@ public class Papart {
         return config;
     }
 
-    public static CameraConfiguration getDefaultKinectConfiguration(PApplet applet) {
+    public static CameraConfiguration getDefaultDepthCameraConfiguration(PApplet applet) {
         CameraConfiguration config = new CameraConfiguration();
-        config.loadFrom(applet, cameraKinectConfig);
+        config.loadFrom(applet, depthCameraConfig);
         return config;
     }
 
@@ -165,9 +165,9 @@ public class Papart {
 
     private CalibrationPopup calibrationPopup = null;
 
-    public void calibration() {
+    public void calibration(PaperScreen screen) {
         if (calibrationPopup == null) {
-            calibrationPopup = new CalibrationPopup();
+            calibrationPopup = new CalibrationPopup(screen);
         } else if (calibrationPopup.isHidden()) {
             calibrationPopup.show();
         } else {
@@ -204,7 +204,15 @@ public class Papart {
         papart.shouldSetWindowLocation = true;
         papart.shouldSetWindowSize = true;
         papart.registerPost();
-        papart.initProjectorCamera(quality);
+
+        papart.initProjectorDisplay(quality);
+        papart.initCamera();
+
+        papart.tryLoadExtrinsics();
+        papart.projector.setCamera(papart.getPublicCameraTracking());
+
+        papart.checkInitialization();
+
         papart.registerKey();
 
         return papart;
@@ -252,22 +260,24 @@ public class Papart {
      */
     public static Papart seeThrough(PApplet applet, float quality) {
 
-        CameraConfiguration cameraConfiguration = getDefaultCameraConfiguration(applet);
-
-        Camera cameraTracking = CameraFactory.createCamera(
-                cameraConfiguration.getCameraType(),
-                cameraConfiguration.getCameraName(),
-                cameraConfiguration.getCameraFormat());
-        cameraTracking.setParent(applet);
-        cameraTracking.setCalibration(cameraCalib);
+        ProjectiveDeviceP pdp = null;
+        try {
+            pdp = ProjectiveDeviceP.loadCameraDevice(applet, cameraCalib);
+        } catch (Exception ex) {
+            Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         Papart papart = new Papart(applet);
 
-        papart.frameSize.set(cameraTracking.width(), cameraTracking.height());
-        papart.shouldSetWindowSize = true;
-        papart.registerPost();
+        if (pdp != null) {
+            papart.frameSize.set(pdp.getWidth(), pdp.getHeight());
+            papart.shouldSetWindowSize = true;
+            papart.registerPost();
+        }
 
-        papart.initCamera(quality);
+        papart.initCamera();
+        papart.initARDisplay(quality);
+        papart.checkInitialization();
 
         return papart;
     }
@@ -292,21 +302,7 @@ public class Papart {
         papart.shouldSetWindowSize = true;
         papart.registerPost();
 
-//        Panel panel = new Panel(applet);
         return papart;
-    }
-
-    public static KinectDevice loadDefaultKinectDevice(PApplet applet) {
-        CameraConfiguration kinectConfiguration = Papart.getDefaultKinectConfiguration(applet);
-
-        if (kinectConfiguration.getCameraType() == Camera.Type.OPEN_KINECT) {
-            return new Kinect360(applet);
-        }
-        if (kinectConfiguration.getCameraType() == Camera.Type.KINECT2_RGB) {
-            return new KinectOne(applet);
-        }
-        System.err.println("Papart: Could not identify default Kinect Device.");
-        return null;
     }
 
     private boolean shouldSetWindowLocation = false;
@@ -333,8 +329,8 @@ public class Papart {
     }
 
     public void forceDepthCameraSize() {
-        forceWindowSize(kinectDevice.depthWidth(),
-                kinectDevice.depthHeight());
+        forceWindowSize(depthCameraDevice.getDepthCamera().width(),
+                depthCameraDevice.getDepthCamera().height());
     }
 
     public void forceWindowSize(int w, int h) {
@@ -412,6 +408,7 @@ public class Papart {
      */
     public void defaultFrameLocation() {
         System.out.println("Setting the frame location...");
+        ScreenConfiguration screenConfiguration = getDefaultScreenConfiguration(this.applet);
         this.applet.frame.setLocation(screenConfiguration.getProjectionScreenOffsetX(),
                 screenConfiguration.getProjectionScreenOffsetY());
 
@@ -537,7 +534,7 @@ public class Papart {
      */
     public void moveToTablePosition(PaperScreen paperScreen) {
         paperScreen.useManualLocation(true);
-        paperScreen.screen.setMainLocation(HomographyCalibration.getMatFrom(applet, tablePosition), cameraTracking);
+        paperScreen.screen.setMainLocation(HomographyCalibration.getMatFrom(applet, tablePosition), getPublicCameraTracking());
     }
 
     @Deprecated
@@ -551,45 +548,6 @@ public class Papart {
         initDebugDisplay();
     }
 
-    public void initProjectorCamera() {
-        initProjectorCamera(cameraConfiguration.getCameraName(),
-                cameraConfiguration.getCameraType(),
-                cameraConfiguration.getCameraFormat(),
-                1);
-    }
-
-    public void initProjectorCamera(float quality) {
-        initProjectorCamera(cameraConfiguration.getCameraName(),
-                cameraConfiguration.getCameraType(),
-                cameraConfiguration.getCameraFormat(),
-                quality);
-    }
-
-    public void initProjectorCamera(String cameraNo, Camera.Type cameraType, String cameraFormat) {
-        initProjectorCamera(cameraNo, cameraType, cameraFormat, 1);
-    }
-
-    /**
-     * Load a projector - camera couple. Default configuration files are used.
-     *
-     * @param quality
-     * @param cameraNo
-     * @param cameraType
-     */
-    public void initProjectorCamera(String cameraNo, Camera.Type cameraType, String cameraFormat, float quality) {
-        assert (!cameraInitialized);
-        initProjectorDisplay(quality);
-        tryLoadExtrinsics();
-        cameraTracking = CameraFactory.createCamera(cameraType, cameraNo, cameraFormat);
-        cameraTracking.setParent(applet);
-        cameraTracking.setCalibration(cameraCalib);
-        cameraTracking.start();
-        loadTracking(cameraCalib);
-        cameraTracking.setThread();
-        projector.setCamera(cameraTracking);
-        checkInitialization();
-    }
-
     private void tryLoadExtrinsics() {
         PMatrix3D extrinsics = loadCalibration(cameraProjExtrinsics);
         if (extrinsics == null) {
@@ -599,41 +557,19 @@ public class Papart {
         }
     }
 
-    public void initKinectCamera(float quality) {
-        assert (!cameraInitialized);
-        kinectDevice = loadDefaultCameraKinect();
-        cameraTracking = kinectDevice.getCameraRGB();
-        loadTracking(kinectRGBCalib);
-        cameraTracking.setThread();
-        initARDisplay(quality);
-        checkInitialization();
-    }
-
-    public void startDefaultKinectCamera() {
-        assert (!cameraInitialized);
-        kinectDevice = loadDefaultCameraKinect();
-        cameraTracking = kinectDevice.getCameraRGB();
-    }
-
     /**
      * Initialize the default camera for object tracking.
      *
      */
     public void initCamera() {
-        initCamera(1);
+        CameraConfiguration cameraConfiguration = getDefaultCameraConfiguration(applet);
+        initCamera(cameraConfiguration);
     }
 
-    /**
-     * Initialize the default camera for object tracking.
-     *
-     * @param quality default is 1, to downscale go below 1, try 0.8, for better
-     * quality go higher like 2.
-     */
-    public void initCamera(float quality) {
+    public void initCamera(CameraConfiguration cameraConfiguration) {
         initCamera(cameraConfiguration.getCameraName(),
                 cameraConfiguration.getCameraType(),
-                cameraConfiguration.getCameraFormat(),
-                quality);
+                cameraConfiguration.getCameraFormat());
     }
 
     /**
@@ -641,21 +577,17 @@ public class Papart {
      *
      */
     public void initCamera(String cameraNo, Camera.Type cameraType, String cameraFormat) {
-        initCamera(cameraNo, cameraType, cameraFormat, 1);
-    }
-
-    public void initCamera(String cameraNo, Camera.Type cameraType, String cameraFormat, float quality) {
         assert (!cameraInitialized);
 
         cameraTracking = CameraFactory.createCamera(cameraType, cameraNo, cameraFormat);
         cameraTracking.setParent(applet);
         cameraTracking.setCalibration(cameraCalib);
-        cameraTracking.start();
-        loadTracking(cameraCalib);
-        cameraTracking.setThread();
 
-        initARDisplay(quality);
-        checkInitialization();
+        System.out.println("Starting First tracking camera: " + cameraTracking);
+        // TEST: no more start here...
+//        cameraTracking.start();
+//        loadTracking(cameraCalib);
+//        cameraTracking.setThread();
     }
 
     private void initProjectorDisplay(float quality) {
@@ -673,7 +605,7 @@ public class Papart {
     private void initARDisplay(float quality) {
         assert (this.cameraTracking != null && this.applet != null);
 
-        arDisplay = new ARDisplay(this.applet, cameraTracking);
+        arDisplay = new ARDisplay(this.applet, getPublicCameraTracking());
         arDisplay.setZNearFar(zNear, zFar);
         arDisplay.setQuality(quality);
         arDisplay.init();
@@ -702,38 +634,20 @@ public class Papart {
         this.applet.registerMethod("stop", this);
     }
 
-    private void loadTracking(String calibrationPath) {
-        // TODO: check if file exists !
-        Camera.convertARParams(this.applet, calibrationPath, camCalibARtoolkit);
-        cameraTracking.initMarkerDetection(camCalibARtoolkit);
-
-        // The camera view is handled in another thread;
-        cameraInitialized = true;
-    }
-
     /**
-     * Touch input when the camera tracking the markers is a Kinect.
-     *
+     * Only for .cfg marker tracking.
      */
-    public void loadTouchInputKinectOnly() {
-
-        if (this.kinectDevice == null) {
-            kinectDevice = loadDefaultCameraKinect();
-            cameraTracking = kinectDevice.getCameraRGB();
-            kinectDevice.getCameraRGB().setThread();
-            kinectDevice.getCameraDepth().setThread();
-            cameraInitialized = true;
-
-            checkInitialization();
-        }
-
-        loadDefaultTouchKinect();
-
-        PMatrix3D extr = kinectDevice.getStereoCalibration();
-        kinectDevice.setExtrinsics(extr);
-
-        ((KinectTouchInput) this.touchInput).useRawDepth();
-    }
+//    private void setARToolkitCalib() {
+//        // TODO: warning −> used only for .cfg files.
+//        // try to get the params from the camera, instead of the files! 
+//        if (cameraTracking.isCalibrated()) {
+//           Camera.convertARParams(this.applet, getPublicCameraTracking().getProjectiveDevice(), camCalibARtoolkit);
+//            getPublicCameraTracking().setCalibrationARToolkit(camCalibARtoolkit);
+//        } else {
+//            Camera.convertARParams(this.applet, cameraCalib, camCalibARtoolkit);
+//            getPublicCameraTracking().setCalibrationARToolkit(camCalibARtoolkit);
+//        }
+//    }
 
     /**
      * *
@@ -741,15 +655,33 @@ public class Papart {
      *
      */
     public void loadTouchInput() {
-        kinectDevice = loadDefaultCameraKinect();
-        kinectDevice.getCameraRGB().setThread();
-        kinectDevice.getCameraDepth().setThread();
-
+        loadDefaultDepthCamera();
         loadDefaultTouchKinect();
+        updateDepthCameraDeviceExtrinsics();
+    }
+    
+    private void updateDepthCameraDeviceExtrinsics(){
+         // Check if depthCamera is the same as the camera !
+        if (projector == null && 
+                cameraTracking instanceof CameraRGBIRDepth &&
+                cameraTracking == depthCameraDevice.getMainCamera()) {
+            
+            // No extrinsic used, it is already in the camera... 
+            depthCameraDevice.getDepthCamera().setExtrinsics(depthCameraDevice.getStereoCalibration());
 
-        // setExtrinsics must after the kinect stereo calibration is loaded
-        PMatrix3D extr = (Papart.getPapart()).loadCalibration(Papart.kinectTrackingCalib);
-        kinectDevice.setExtrinsics(extr);
+            // Specific
+            // Important to use it for now ! Used in KinectTouchInput.projectPointToScreen
+            ((KinectTouchInput) this.touchInput).useRawDepth();
+
+//            System.out.println("Papart: Using Touchextrinsics from the device.");
+        } else {
+            // Two different cameras  
+            // setExtrinsics must after the kinect stereo calibration is loaded
+            PMatrix3D extr = (Papart.getPapart()).loadCalibration(Papart.kinectTrackingCalib);
+            extr.invert();
+            depthCameraDevice.getDepthCamera().setExtrinsics(extr);
+//            System.out.println("Papart: Using Touchextrinsics from the calibrated File.");
+        }
     }
 
     private boolean useKinectOne = true;
@@ -759,42 +691,48 @@ public class Papart {
     }
 
     /**
-     * WORK IN PROGRESS
-     *
-     * @return
      */
-    public KinectDevice loadDefaultCameraKinect() {
-        CameraConfiguration kinectConfiguration = Papart.getDefaultKinectConfiguration(applet);
+    public DepthCameraDevice loadDefaultDepthCamera() {
+
+        // Two cases, either the other camera running of the same type
+        CameraConfiguration kinectConfiguration = Papart.getDefaultDepthCameraConfiguration(applet);
+
+        // If the camera is not instanciated, we use depth + color from the camera.
+//        if (cameraTracking == null) {
+//            System.err.println("You must choose a camera to create a DepthCamera.");
+//        }
+        if (kinectConfiguration.getCameraType() == Camera.Type.REALSENSE) {
+            depthCameraDevice = new RealSense(applet, cameraTracking);
+        }
 
         if (kinectConfiguration.getCameraType() == Camera.Type.OPEN_KINECT) {
-            return new Kinect360(applet);
+            depthCameraDevice = new Kinect360(applet, cameraTracking);
         }
-        if (kinectConfiguration.getCameraType() == Camera.Type.KINECT2_RGB) {
 
-            if (this.cameraTracking == null) {
-                return new KinectOne(applet);
-            } else {
-                return new KinectOne(applet, cameraTracking);
-            }
+        if (kinectConfiguration.getCameraType() == Camera.Type.OPEN_KINECT_2) {
+            depthCameraDevice = new KinectOne(applet, cameraTracking);
         }
-        System.err.println("Could not load the Kinect !" + "Camera Type " + kinectConfiguration.getCameraType());
-        return null;
+
+        if (depthCameraDevice == null) {
+            System.err.println("Could not load the depth camera !" + "Camera Type " + kinectConfiguration.getCameraType());
+        }
+
+        // At this point, cameraTracking & depth Camera are ready. 
+        return depthCameraDevice;
     }
 
     private void loadDefaultTouchKinect() {
-
-        kinectDevice.setStereoCalibration(kinectStereoCalib);
-        kinectDepthAnalysis = new KinectDepthAnalysis(this.applet, kinectDevice);
+        kinectDepthAnalysis = new KinectDepthAnalysis(this.applet, depthCameraDevice);
 
         PlaneAndProjectionCalibration calibration = new PlaneAndProjectionCalibration();
         calibration.loadFrom(this.applet, planeAndProjectionCalib);
 
         KinectTouchInput kinectTouchInput
                 = new KinectTouchInput(this.applet,
-                        kinectDevice,
+                        depthCameraDevice,
                         kinectDepthAnalysis, calibration);
 
-        kinectDevice.setTouch(kinectTouchInput);
+        depthCameraDevice.setTouch(kinectTouchInput);
 
         kinectTouchInput.setTouchDetectionCalibration(getDefaultTouchCalibration());
         kinectTouchInput.setTouchDetectionCalibration3D(getDefaultTouchCalibration3D());
@@ -857,12 +795,55 @@ public class Papart {
 
     }
 
+    /**
+     * Start the tracking without a thread.
+     */
+    public void startTrackingWithoutThread() {
+        if (this.cameraTracking == null) {
+            System.err.println("Start Tracking requires a Camera...");
+            return;
+        }
+//        setARToolkitCalib();
+        this.getPublicCameraTracking().trackSheets(true);
+    }
+
+    /**
+     * Start the camera thread, and the tracking. it calls automaticall
+     * startCameraThread().
+     */
     public void startTracking() {
         if (this.cameraTracking == null) {
             System.err.println("Start Tracking requires a Camera...");
             return;
         }
-        this.cameraTracking.trackSheets(true);
+//        setARToolkitCalib();
+        this.getPublicCameraTracking().trackSheets(true);
+        startCameraThread();
+    }
+
+    public void startCameraThread() {
+
+        System.out.println("Starting thread for camera: " + cameraTracking);
+        cameraTracking.start();
+
+        // Calibration might be loaded from the device and require an update. 
+        if (arDisplay != null && !(arDisplay instanceof ProjectorDisplay)) {
+            System.out.println("Papart: Reload calibration!");
+            arDisplay.reloadCalibration();
+        }
+
+        cameraTracking.setThread();
+
+        if (depthCameraDevice != null
+                && cameraTracking != depthCameraDevice.getMainCamera()) {
+            depthCameraDevice.getMainCamera().start();
+            depthCameraDevice.getMainCamera().setThread();
+        }
+    }
+
+    public void startDepthCameraThread() {
+        depthCameraDevice.getMainCamera().start();
+        depthCameraDevice.getMainCamera().setThread();
     }
 
     public void stop() {
@@ -870,8 +851,8 @@ public class Papart {
     }
 
     public void dispose() {
-        if (touchInitialized && kinectDevice != null) {
-            kinectDevice.close();
+        if (touchInitialized && depthCameraDevice != null) {
+            depthCameraDevice.close();
         }
         if (cameraInitialized && cameraTracking != null) {
             try {
@@ -917,7 +898,16 @@ public class Papart {
     }
 
     public Camera getCameraTracking() {
-//        assert (cameraInitialized);
+        return this.cameraTracking;
+    }
+
+    public Camera getPublicCameraTracking() {
+        if (cameraTracking instanceof CameraRGBIRDepth) {
+            if (((CameraRGBIRDepth) cameraTracking).getActingCamera() == null) {
+                throw new RuntimeException("Papart: Impossible to use the mainCamera, use a subCamera or set the ActAsX methods.");
+            }
+            return ((CameraRGBIRDepth) cameraTracking).getActingCamera();
+        }
         return this.cameraTracking;
     }
 
@@ -936,23 +926,22 @@ public class Papart {
     }
 
     public Camera getKinectCamera() {
-        return this.kinectDevice.getCameraRGB();
+        return this.depthCameraDevice.getColorCamera();
     }
 
-    public KinectDevice getKinectDevice() {
-        return kinectDevice;
+    public DepthCameraDevice getDepthCameraDevice() {
+        return depthCameraDevice;
     }
 
     public KinectDepthAnalysis getKinectAnalysis() {
         return this.kinectDepthAnalysis;
     }
 
-    public KinectDevice.Type getKinectType() {
-        if (kinectDevice == null) {
-            return KinectDevice.Type.NONE;
-
+    public Camera.Type getDepthCameraType() {
+        if (depthCameraDevice == null) {
+            return Camera.Type.FAKE;
         }
-        return kinectDevice.type();
+        return depthCameraDevice.type();
     }
 
     public PApplet getApplet() {
