@@ -28,9 +28,11 @@ cp -R papart/target/site/apidocs $TMP/$NAME/
 echo "Copy the Data"
 cp -R papart/data $TMP/$NAME/
 
-echo "Copy the examples"
-cp -R Papart-examples/apps $TMP/$NAME/examples/
-cp -R Papart-examples/papart-examples $TMP/$NAME/examples/
+if [ -n "$2" ] ; then
+    echo "Copy the examples"
+    cp -R Papart-examples/apps $TMP/$NAME/examples/
+    cp -R Papart-examples/papart-examples $TMP/$NAME/examples/
+fi
 
 echo "Create the archive..."
 cd $TMP
