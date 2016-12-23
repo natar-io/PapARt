@@ -30,8 +30,8 @@ cp -R papart/data $TMP/$NAME/
 
 if [ -n "$2" ] ; then
     echo "Copy the examples"
-    cp -R Papart-examples/apps $TMP/$NAME/examples/
     cp -R Papart-examples/papart-examples $TMP/$NAME/examples/
+    #    cp -R Papart-examples/apps $TMP/$NAME/examples/
 fi
 
 echo "Create the archive..."
