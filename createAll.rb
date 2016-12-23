@@ -7,7 +7,7 @@
 current_branch = %x(git rev-parse --abbrev-ref HEAD).chomp
 
 %x(sh build.sh)  
-%x(sh createRedist.sh noExamples)
+%x(sh createRedist.sh withExamples)
 %x(sh createRedist.sh default ex) 
 
 output_names=["realsense",
@@ -18,10 +18,12 @@ output_names=["realsense",
 output_names.each do |release_name|
   puts "Get the version: " + release_name
   %x(git checkout release-#{release_name})
-  puts "Build it."
-  %x(sh build.sh)  
+
+  ## For now the codebase is the same, only the data changes. 
+  #  puts "Build it."
+  #  %x(sh build.sh)  
   puts "Create redistribuable."
-  %x(sh createRedist.sh #{release_name} ex) 
+  %x(sh createRedist.sh #{release_name}) 
 end
 
 %x(git checkout #{current_branch})
