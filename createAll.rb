@@ -7,8 +7,8 @@
 current_branch = %x(git rev-parse --abbrev-ref HEAD).chomp
 
 %x(sh build.sh)  
-%x(sh createRedist.sh withExamples)
-%x(sh createRedist.sh default ex) 
+%x(sh createRedist.sh withExamples ex)
+%x(sh createRedist.sh default) 
 
 output_names=["realsense",
               "kinect",
