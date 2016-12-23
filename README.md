@@ -2,6 +2,10 @@
 
 PapARt is a software development kit (SDK) that enables the creation of interactive projection mapping. Today, it is developed by the Inria Potioc team. It comes from the augmented physical drawing tools created by Jeremy Laviole, which are documented in his PhD thesis (free to read).
 
+## Version 1.0
+
+The first big release is ready. If you want to try it out download our precompiled version from the [example repository](https://github.com/poqudrof/Papart-examples). 
+
 ## Examples
 
 This repository is for the development of the library.  
@@ -38,6 +42,10 @@ PapARt is large library, and work with many different systems:
 The open source release is new (end of August 2016), feel free to fork, star, and file issues for this sources. 
 You can contribute your examples to the [example repository](https://github.com/poqudrof/Papart-examples) to 
 share your creations with the community. 
+
+## Next steps
+
+The distribution got better, and the next steps would be to create versions on **Android** and/or on **Raspberry PI**.
 
 ### Copyright note
 
