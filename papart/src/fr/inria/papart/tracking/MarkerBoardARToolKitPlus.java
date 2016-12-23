@@ -74,8 +74,6 @@ public class MarkerBoardARToolKitPlus extends MarkerBoard {
     @Override
     protected void addTrackerImpl(Camera camera) {
         
-        System.out.println("Starting a ARToolkitPlus tracker for CFG files.");
-        
         // create a tracker that does:
         //  - 6x6 sized marker images (required for binary markers)
         //  - samples at a maximum of 6x6 
@@ -146,7 +144,7 @@ public class MarkerBoardARToolKitPlus extends MarkerBoard {
 
             float w = Float.parseFloat(split[0].substring(7)) * pixelToMm();
             float h = Float.parseFloat(split[1]) * pixelToMm();
-            System.out.println("Width: " + w + " Heigth " + h);
+//            System.out.println("Width: " + w + " Heigth " + h);
             markerBoardSize.set(w, h);
         } catch (IOException ex) {
             Logger.getLogger(MarkerBoardARToolKitPlus.class.getName()).log(Level.SEVERE, null, ex);

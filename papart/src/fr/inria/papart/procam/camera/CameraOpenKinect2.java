@@ -40,7 +40,6 @@ public class CameraOpenKinect2 extends CameraRGBIRDepth {
 
         @Override
         public PImage getPImage() {
-            System.out.println("Kinect2: Get PImage");
             mainCamera.grab();
             return super.getPImage();
         }
@@ -65,7 +64,6 @@ public class CameraOpenKinect2 extends CameraRGBIRDepth {
      */
     @Override
     protected void internalGrab() throws Exception {
-        System.out.println("Grab called." + Thread.currentThread());
         grabber.grab();
     }
 

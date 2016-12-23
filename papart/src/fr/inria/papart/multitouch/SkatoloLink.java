@@ -51,8 +51,6 @@ public class SkatoloLink {
 //        PVector pointer = paperScreen.getDisplay().projectPointer(paperScreen.getScreen(), normX, normY);
         PVector pointer = paperScreen.getDisplay().project(paperScreen.getScreen(), normX, normY);
         
-        System.out.println("Pointer: " + pointer);
-        
         mouseTouch.setPosition(pointer.x * paperScreen.getDrawingSize().x, 
                  pointer.y * paperScreen.getDrawingSize().y, 0);
         touchList.add(mouseTouch);

@@ -61,7 +61,6 @@ public class CameraRealSense extends CameraRGBIRDepth {
     public void internalStart() throws FrameGrabber.Exception {
 
         if (useColor) {
-            System.out.println("Init Camera RealSense: " + colorCamera.width() + " " + colorCamera.height());
             grabber.setImageWidth(colorCamera.width());
             grabber.setImageHeight(colorCamera.height());
             if (colorCamera.width() == 1280) {
@@ -94,7 +93,6 @@ public class CameraRealSense extends CameraRGBIRDepth {
         if (useHardwareIntrinsics) {
             if (useColor) {
                 useHarwareIntrinsics(colorCamera, grabber);
-                System.out.println("setting hardware intrinsics for Realsense..");
             }
             if (useIR) {
                 useHarwareIntrinsics(IRCamera, grabber);
@@ -249,7 +247,6 @@ public class CameraRealSense extends CameraRGBIRDepth {
         if (camera.type == SubCamera.Type.DEPTH) {
             camType = RealSense.depth;
         }
-        System.out.println("Setting hardware intrinsics for: " + camera.type.name());
         RealSense.intrinsics intrinsics = grabber.getRealSenseDevice().get_stream_intrinsics(camType);
         FloatBuffer fb = intrinsics.position(0).asByteBuffer().asFloatBuffer();
         float cx = fb.get(2);

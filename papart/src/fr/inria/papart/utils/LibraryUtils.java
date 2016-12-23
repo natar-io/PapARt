@@ -62,7 +62,7 @@ public class LibraryUtils {
     public static String getPapartFolder() {
         String sketchbook = System.getenv("SKETCHBOOK");
         if (sketchbook != null) {
-            System.out.println("Found  SKETCHBOOK environment variable.");
+//            System.out.println("Found  SKETCHBOOK environment variable.");
             return sketchbook + "/libraries/" + ARToolkitPlusUtils.LibraryName;
         }
         return getLibrariesFolder() + "/" + ARToolkitPlusUtils.LibraryName;
@@ -73,7 +73,7 @@ public class LibraryUtils {
                 URL main = Matrix4x4.class.getResource("Matrix4x4.class");
 //        URL main = Papart.class.getResource("Papart.class");
         String tmp = main.getPath();
-        System.out.println("path  " + tmp);
+//        System.out.println("path  " + tmp);
         // its in a jar
         if (tmp.contains("!")) {
             tmp = tmp.substring(0, tmp.indexOf('!'));

@@ -79,7 +79,7 @@ public class MarkerDetector {
         depth = image.depth();
         channels = image.nChannels();
 
-        System.out.println("Fist init..." + width + " " + height + " " + depth + " " + channels);
+//        System.out.println("Fist init..." + width + " " + height + " " + depth + " " + channels);
         // TODO: make functions instead of elements in if()
         if (depth != IPL_DEPTH_8U || channels > 1) {
             tempImage = IplImage.create(width, height, IPL_DEPTH_8U, 1);
@@ -92,7 +92,7 @@ public class MarkerDetector {
         thresholdedImage = IplImage.create(width, height, IPL_DEPTH_8U, 1);
 
         tracker = new MultiTracker(thresholdedImage.widthStep(), thresholdedImage.height());
-        System.out.println("WidthStep " + thresholdedImage.widthStep() + " " + thresholdedImage.height() );
+//        System.out.println("WidthStep " + thresholdedImage.widthStep() + " " + thresholdedImage.height() );
         
         int pixfmt = PIXEL_FORMAT_LUM;
         tracker.setPixelFormat(pixfmt);
@@ -104,7 +104,7 @@ public class MarkerDetector {
 //        tracker.setPoseEstimator(POSE_ESTIMATOR_RPP);
         tracker.setMarkerMode(MARKER_ID_BCH);
         tracker.setImageProcessingMode(IMAGE_HALF_RES);
-        System.out.println("Tracker ready");
+//        System.out.println("Tracker ready");
 
     }
 

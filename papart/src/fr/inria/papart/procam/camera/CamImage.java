@@ -38,11 +38,8 @@ public abstract class CamImage extends PImage {
 
     protected CamImage(PApplet parent, int width, int height, int format, PixelFormat incomingFormat) {
         super(width, height, format);
-        System.out.println("CamImage: create...");
         this.incomingFormat = incomingFormat;
-        System.out.println("CamImage: Creating a CamImage " + width + " " + height + " " + format + " " + incomingFormat.name());
         camInit(parent);
-        System.out.println("CamImage: done.");
     }
 
     public CamImage(PApplet parent, Image img) {

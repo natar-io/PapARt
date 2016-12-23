@@ -90,7 +90,7 @@ public class ImageUtils {
         assert (img.height() == ret.height);
         //        BufferedImage bimg = new BufferedImage();
         if (img.nChannels() == 3) {
-            System.out.println("3 channels");
+//            System.out.println("3 channels");
             ByteBuffer buff = img.getByteBuffer();
             //  PImage ret = new PImage(img.width(), img.height(), PApplet.RGB);
             ret.loadPixels();
@@ -190,7 +190,7 @@ public class ImageUtils {
         opencv_core.CvSize outSize = new opencv_core.CvSize();
         outSize.width(in.width);
         outSize.height(in.height);
-        System.out.println("inputImage to create an IPL:" + in.width + " " + in.height + " " + in.format);
+//        System.out.println("inputImage to create an IPL:" + in.width + " " + in.height + " " + in.format);
         opencv_core.IplImage imgOut = null;
         if (in.format == PConstants.RGB) {
             imgOut = cvCreateImage(outSize, opencv_core.IPL_DEPTH_8U, // depth

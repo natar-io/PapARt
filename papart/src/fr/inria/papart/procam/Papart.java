@@ -399,7 +399,6 @@ public class Papart {
      */
     public void post() {
         checkWindowLocation();
-        System.out.println("Post");
         applet.unregisterMethod("post", this);
     }
 
@@ -407,7 +406,6 @@ public class Papart {
      * Set the frame to default location.
      */
     public void defaultFrameLocation() {
-        System.out.println("Setting the frame location...");
         ScreenConfiguration screenConfiguration = getDefaultScreenConfiguration(this.applet);
         this.applet.frame.setLocation(screenConfiguration.getProjectionScreenOffsetX(),
                 screenConfiguration.getProjectionScreenOffsetY());
@@ -583,7 +581,6 @@ public class Papart {
         cameraTracking.setParent(applet);
         cameraTracking.setCalibration(cameraCalib);
 
-        System.out.println("Starting First tracking camera: " + cameraTracking);
         // TEST: no more start here...
 //        cameraTracking.start();
 //        loadTracking(cameraCalib);
@@ -822,13 +819,10 @@ public class Papart {
     }
 
     public void startCameraThread() {
-
-        System.out.println("Starting thread for camera: " + cameraTracking);
         cameraTracking.start();
 
         // Calibration might be loaded from the device and require an update. 
         if (arDisplay != null && !(arDisplay instanceof ProjectorDisplay)) {
-            System.out.println("Papart: Reload calibration!");
             arDisplay.reloadCalibration();
         }
 

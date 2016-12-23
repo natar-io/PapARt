@@ -208,12 +208,13 @@ public abstract class MarkerBoard {
         PVector v = getPositionVector(id);
 
         // Apply extrinsics if required.
-        PMatrix3D extr = display.getExtrinsics();
-        if (extr != null) {
+        if (display.hasExtrinsics()) {
+            PMatrix3D extr = display.getExtrinsics();
             PVector v2 = new PVector();
             extr.mult(v, v2);
             v = v2;
         }
+
         PVector px = display.getProjectiveDeviceP().worldToPixel(v, true);
         return px;
     }

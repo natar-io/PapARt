@@ -149,7 +149,7 @@ public class KinectDepthAnalysis extends DepthAnalysis {
     }
 
     private void initMemory() {
-        System.out.println("Allocations: " + getColorSize() + " " + depthCameraDevice.rawDepthSize());
+//        System.out.println("Allocations: " + getColorSize() + " " + depthCameraDevice.rawDepthSize());
 
         colorRaw = new byte[getColorSize() * 3];
         depthRaw = new byte[depthCameraDevice.rawDepthSize()];

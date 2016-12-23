@@ -197,6 +197,22 @@ public abstract class CameraRGBIRDepth extends Camera {
         }
     }
 
+    @Override
+    public void close() {
+        this.isClosing = true;
+        if (useColor) {
+            colorCamera.close();
+        }
+
+        if (useIR) {
+            IRCamera.close();
+        }
+
+        if (useDepth) {
+            depthCamera.close();
+        }
+    }
+
     public void actAsColorCamera() {
         actAsCamera = colorCamera;
     }
@@ -335,7 +351,7 @@ public abstract class CameraRGBIRDepth extends Camera {
 
     @Override
     public void trackMarkerBoard(MarkerBoard sheet) {
-        System.out.println("In trackMarkerboard in CameaRGBIRDepth BAAAADD");
+//        System.out.println("In trackMarkerboard in CameaRGBIRDepth BAAAADD");
         actAsCamera.trackMarkerBoard(sheet);
     }
 

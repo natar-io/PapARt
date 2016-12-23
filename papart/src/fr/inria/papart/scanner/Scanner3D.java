@@ -160,7 +160,7 @@ public class Scanner3D implements PConstants {
 
         }
 
-        System.out.println("3D points recovered : " + scannedPoints.size());
+//        System.out.println("3D points recovered : " + scannedPoints.size());
     }
 
     class DecodedPoint {
@@ -256,7 +256,7 @@ public class Scanner3D implements PConstants {
             scannedPointsColorsInt.add(c);
         }
 
-        System.out.println("3D points recovered : " + scannedPoints.size());
+//        System.out.println("3D points recovered : " + scannedPoints.size());
     }
 
     public void savePoints(PApplet applet, String name) {

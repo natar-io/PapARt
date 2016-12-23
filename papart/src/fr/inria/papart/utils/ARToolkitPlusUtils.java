@@ -223,7 +223,7 @@ public class ARToolkitPlusUtils {
 
     static public void convertARParamXML(PApplet pa, String fileName, String outputDAT) throws Exception {
 
-        System.out.println("Convert AR Param XML");
+//        System.out.println("Convert AR Param XML");
         CameraDevice cam = null;
 
         ProjectiveDeviceP pdp = ProjectiveDeviceP.loadCameraDevice(pa, fileName);

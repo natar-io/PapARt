@@ -172,7 +172,6 @@ public abstract class Camera implements PConstants, HasExtrinsics {
     }
 
     private void updateCalibration() {
-        System.out.println("updateCalibrationcalled:");
         camIntrinsicsP3D = pdp.getIntrinsics();
         this.width = pdp.getWidth();
         this.height = pdp.getHeight();

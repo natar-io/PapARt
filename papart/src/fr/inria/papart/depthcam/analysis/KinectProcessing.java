@@ -175,7 +175,6 @@ public class KinectProcessing extends KinectDepthAnalysis {
 
     public PImage update(IplImage depth, IplImage color,
             PlaneAndProjectionCalibration planeProjCalibration, int skip) {
-        System.out.println("update good");
 
         updateRawDepth(depth);
         updateRawColor(color);
@@ -228,7 +227,6 @@ public class KinectProcessing extends KinectDepthAnalysis {
 //        computeDepthAndDo(skip, new DoNothing());
         // TODO: get the color with Kinect2... 
         
-        System.out.println("PixelFormat " + colorCamera.getPixelFormat().name());
         if(this.colorCamera.getPixelFormat() == Camera.PixelFormat.RGB){
             computeDepthAndDo(skip, new SetImageDataRGB());
         }

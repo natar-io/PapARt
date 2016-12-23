@@ -42,7 +42,7 @@ public class ProjectorDisplay extends ARDisplay {
 
     @Override
     protected void loadCalibration(String calibrationYAML) {
-        System.out.println("Loading projector internals ... " + calibrationYAML);
+//        System.out.println("Loading projector internals ... " + calibrationYAML);
         try {
             projectiveDeviceP = ProjectiveDeviceP.loadProjectorDevice(parent, calibrationYAML);
             setCalibration(projectiveDeviceP);

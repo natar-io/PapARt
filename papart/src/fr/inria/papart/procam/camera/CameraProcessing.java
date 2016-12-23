@@ -40,11 +40,8 @@ public class CameraProcessing extends Camera {
     public void start() {
 
         if (cameraDescription == null) {
-            System.out.println("Starting capture !");
             this.captureIpl = new CaptureIpl(parent, width, height);
         } else {
-
-            System.out.println("Starting capture on device " + cameraDescription);
             this.captureIpl = new CaptureIpl(parent, width, height, cameraDescription);
         }
 

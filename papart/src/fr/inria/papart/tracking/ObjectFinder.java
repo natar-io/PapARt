@@ -450,7 +450,7 @@ public class ObjectFinder {
 
         long start = System.currentTimeMillis();
         double[] dst_corners = finder.find(image);
-        System.out.println("Finding time = " + (System.currentTimeMillis() - start) + " ms");
+//        System.out.println("Finding time = " + (System.currentTimeMillis() - start) + " ms");
 
         if (dst_corners != null) {
             for (int i = 0; i < 4; i++) {

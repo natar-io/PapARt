@@ -69,8 +69,8 @@ public class ProjectorAsCamera extends Camera {
                     + "file" + fileName + " \n" + e);
         }
 
-        System.out.println("Calibration : ");
-        camIntrinsicsP3D.print();
+//        System.out.println("Calibration : ");
+//        camIntrinsicsP3D.print();
     }
 
     static public void convertARProjParams(PApplet parent, String calibrationFile,

@@ -67,7 +67,6 @@ public abstract class TouchDetection {
     public abstract ArrayList<TouchPoint> compute(KinectDepthData dData);
 
     protected void allocateMemory(int size) {
-        System.out.println("Allocating touch memory: " + size);
         assignedPoints = new boolean[size];
         connectedComponentImage = new byte[size];
         this.calib = new PlanarTouchCalibration();
