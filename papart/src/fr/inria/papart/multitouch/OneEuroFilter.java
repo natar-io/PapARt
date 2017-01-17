@@ -170,31 +170,31 @@ public class OneEuroFilter {
         return x.filterWithAlpha(value, alpha(cutoff));
     }
 
-    public static void main(String[] args) throws Exception {
-        //randSeed();
-        double duration = 10.0; // seconds
-        double frequency = 120; // Hz
-        double mincutoff = 1.0; // FIXME
-        double beta = 1.0;      // FIXME
-        double dcutoff = 1.0;   // this one should be ok
-
-        System.out.print(
-                "#SRC OneEuroFilter.java" + "\n"
-                + "#CFG {'beta': " + beta + ", 'freq': " + frequency + ", 'dcutoff': " + dcutoff + ", 'mincutoff': " + mincutoff + "}" + "\n"
-                + "#LOG timestamp, signal, noisy, filtered" + "\n");
-
-        OneEuroFilter f = new OneEuroFilter(frequency,
-                mincutoff,
-                beta,
-                dcutoff);
-        for (double timestamp = 0.0; timestamp < duration; timestamp += 1.0 / frequency) {
-            double signal = Math.sin(timestamp);
-            double noisy = signal + (Math.random() - 0.5) / 5.0;
-            double filtered = f.filter(noisy, timestamp);
-            System.out.println("" + timestamp + ", "
-                    + signal + ", "
-                    + noisy + ", "
-                    + filtered);
-        }
-    }
+//    public static void main(String[] args) throws Exception {
+//        //randSeed();
+//        double duration = 10.0; // seconds
+//        double frequency = 120; // Hz
+//        double mincutoff = 1.0; // FIXME
+//        double beta = 1.0;      // FIXME
+//        double dcutoff = 1.0;   // this one should be ok
+//
+//        System.out.print(
+//                "#SRC OneEuroFilter.java" + "\n"
+//                + "#CFG {'beta': " + beta + ", 'freq': " + frequency + ", 'dcutoff': " + dcutoff + ", 'mincutoff': " + mincutoff + "}" + "\n"
+//                + "#LOG timestamp, signal, noisy, filtered" + "\n");
+//
+//        OneEuroFilter f = new OneEuroFilter(frequency,
+//                mincutoff,
+//                beta,
+//                dcutoff);
+//        for (double timestamp = 0.0; timestamp < duration; timestamp += 1.0 / frequency) {
+//            double signal = Math.sin(timestamp);
+//            double noisy = signal + (Math.random() - 0.5) / 5.0;
+//            double filtered = f.filter(noisy, timestamp);
+//            System.out.println("" + timestamp + ", "
+//                    + signal + ", "
+//                    + noisy + ", "
+//                    + filtered);
+//        }
+//    }
 }
