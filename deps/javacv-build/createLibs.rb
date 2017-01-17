@@ -2,14 +2,19 @@
 
 
 platforms = ["linux", "windows", "macosx"]
-archs = ["x86_64", "x86"]
+archs = ["x86_64", "x86", "arm"]
 
 
 def build(platform, arch)
 
   puts "Build " + platform
-  %x(cp pom-#{platform}.xml pom.xml)
 
+  # if(platform == "linux")
+  #   %x(cp pom-linux.xml pom.xml)
+  # else
+    %x(cp pom-other.xml pom.xml)
+  # end
+    
   puts "Get the library"
 
   %x(mvn -Dplatform=#{platform}-#{arch} dependency:copy-dependencies)
@@ -30,9 +35,11 @@ def build(platform, arch)
   %x(rm pom.xml)
 end
 
-build("linux", "x86_64")
-build("windows", "x86_64")
-build("macosx", "x86_64")
-build("windows", "x86")
+build("linux", "armhf")
+build("android", "arm")
+# build("linux", "x86_64")
+# build("windows", "x86_64")
+# build("macosx", "x86_64")
+# build("windows", "x86")
 
 # mvn -Dplatform=windows-x86_64 dependency:copy-dependencies
