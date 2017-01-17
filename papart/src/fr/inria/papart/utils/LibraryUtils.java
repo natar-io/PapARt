@@ -18,6 +18,8 @@ import toxi.geom.Matrix4x4;
  */
 public class LibraryUtils {
 
+    public static final String LIBRARY_NAME = "PapARt";
+
     public static Process runExample(String exampleName, boolean silent) {
         try {
             StringBuilder commandLine = new StringBuilder();
@@ -63,14 +65,14 @@ public class LibraryUtils {
         String sketchbook = System.getenv("SKETCHBOOK");
         if (sketchbook != null) {
 //            System.out.println("Found  SKETCHBOOK environment variable.");
-            return sketchbook + "/libraries/" + ARToolkitPlusUtils.LibraryName;
+            return sketchbook + "/libraries/" + LIBRARY_NAME;
         }
-        return getLibrariesFolder() + "/" + ARToolkitPlusUtils.LibraryName;
+        return getLibrariesFolder() + "/" + LIBRARY_NAME;
     }
 
     public static String getLibrariesFolder() {
         // This is used, as Papart classes are often linked to another folder...
-                URL main = Matrix4x4.class.getResource("Matrix4x4.class");
+        URL main = Matrix4x4.class.getResource("Matrix4x4.class");
 //        URL main = Papart.class.getResource("Papart.class");
         String tmp = main.getPath();
 //        System.out.println("path  " + tmp);

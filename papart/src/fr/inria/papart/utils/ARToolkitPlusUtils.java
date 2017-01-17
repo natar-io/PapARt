@@ -52,7 +52,6 @@ import static processing.core.PConstants.HSB;
  */
 public class ARToolkitPlusUtils {
 
-    static public final String LibraryName = "PapARt";
 
     static int conversionCount = 0;
 

@@ -41,7 +41,8 @@ public class MarkerBoardSvg extends MarkerBoard {
 
     public MarkerBoardSvg(String fileName, float width, float height) {
         super(fileName, width, height);
-        trackers = new ArrayList<>();
+        // Trackers not used
+//        trackers = new ArrayList<>();
         this.type = MarkerType.SVG;
 
         // TODO: better than getting the Papart object...

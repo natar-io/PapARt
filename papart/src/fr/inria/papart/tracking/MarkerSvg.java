@@ -34,15 +34,15 @@ import tech.lity.rea.svgextended.PShapeSVGExtended;
 public class MarkerSvg implements Cloneable {
 
     private final int id;
-    private final PMatrix2D matrix = new PMatrix2D();
-    private final PVector size = new PVector();
+    private final PMatrix2D matrix;
+    private final PVector size;
     private PVector[] corners = new PVector[4];
     private boolean cornersSet = false;
 
     public MarkerSvg(int id, PMatrix2D matrix, PVector size) {
         this.id = id;
-        this.size.set(size);
-        this.matrix.set(matrix);
+        this.size = size.get();
+        this.matrix = matrix.get();
     }
 
     public int getId() {
