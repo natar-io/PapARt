@@ -21,9 +21,9 @@ package fr.inria.papart.calibration;
 
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.camera.Camera;
-import fr.inria.skatolo.Skatolo;
-import fr.inria.skatolo.gui.group.Group;
-import fr.inria.skatolo.gui.group.RadioButton;
+import tech.lity.rea.skatolo.Skatolo;
+import tech.lity.rea.skatolo.gui.group.Group;
+import tech.lity.rea.skatolo.gui.group.RadioButton;
 import java.awt.Frame;
 import processing.awt.PSurfaceAWT;
 import processing.awt.PSurfaceAWT.SmoothCanvas;

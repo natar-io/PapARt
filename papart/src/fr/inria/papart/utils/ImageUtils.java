@@ -22,7 +22,7 @@ import processing.opengl.Texture;
 
 /**
  *
- * @author jiii
+ * @author Jeremy Laviole
  */
 public class ImageUtils {
 

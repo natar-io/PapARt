@@ -14,7 +14,7 @@ import toxi.geom.Matrix4x4;
 
 /**
  *
- * @author jiii
+ * @author Jeremy Laviole
  */
 public class LibraryUtils {
 

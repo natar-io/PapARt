@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 jiii.
+ * Copyright (C) 2016  RealityTech. 
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,7 +22,7 @@ import processing.core.PImage;
 
 /**
  *
- * @author jiii
+ * @author Jeremy Laviole
  */
 public class SubCamera extends Camera {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 jiii.
+ * Copyright (C) 2016  RealityTech. 
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,7 +24,7 @@ import org.bytedeco.javacpp.opencv_core;
 
 /**
  *
- * @author jiii
+ * @author Jeremy Laviole
  */
 public class SubDepthCamera extends SubCamera implements WithTouchInput{
     

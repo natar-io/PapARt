@@ -265,9 +265,11 @@ public class ProjectorDisplay extends ARDisplay {
     void projectCornersImage() {
 
         PGraphicsOpenGL g = (PGraphicsOpenGL) parent.g;
+        
+        g.pushMatrix();
         g.background(0);
         g.ellipseMode(PApplet.CENTER);
-
+        
         g.noStroke();
         // corner 4  Yellow 0, 0
         g.fill(255, 255, 50);
@@ -290,11 +292,16 @@ public class ProjectorDisplay extends ARDisplay {
         g.translate(-g.width, 0);
         drawEllipses(g);
         
+        g.popMatrix();
         // In TrackedView 
         // 0 is ->  0, h   (white)
         // 1 is ->  w, h   (Red)
         // 2 is ->  w, 0   (Green)
         // 3 is ->  0, 0   (Yellow)
+        g.stroke(200);
+        g.noFill();
+        g.strokeWeight(3);
+        g.rect(0, 0, g.width, g.height);
     }
 
     void drawEllipses(PGraphicsOpenGL g) {

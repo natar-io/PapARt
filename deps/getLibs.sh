@@ -45,7 +45,7 @@ unzip oscP5-0.9.8.zip
 mv oscP5 libraries/
 
 echo "Get Skatolo"
-wget https://github.com/poqudrof/Skatolo/releases/download/1.0.1/skatolo.tgz
+wget https://github.com/rea-lity-tech/Skatolo/releases/download/1.1/skatolo.tgz
 
 tar xvzf skatolo.tgz
 mv skatolo libraries/
