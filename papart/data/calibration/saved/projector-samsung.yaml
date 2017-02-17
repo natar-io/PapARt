@@ -1,0 +1,13 @@
+%YAML:1.0
+Projectors:  
+   - Projector 0
+Projector 0:
+   imageWidth: 800
+   imageHeight: 600
+   responseGamma: 0.
+   cameraMatrix: !!opencv-matrix
+      rows: 3
+      cols: 3
+      dt: d
+      data: [1406.25, 0.0, 400.0, 0.0, 1406.25, 722.25, 0.0, 0.0, 1.0 ]
+
