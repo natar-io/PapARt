@@ -17,10 +17,12 @@
  * Public License along with this library; If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package fr.inria.papart.multitouch;
+package fr.inria.papart.multitouch.detection;
 
 import fr.inria.papart.depthcam.devices.KinectDepthData;
 import fr.inria.papart.depthcam.analysis.DepthAnalysis;
+import fr.inria.papart.multitouch.ConnectedComponent;
+import fr.inria.papart.multitouch.TrackedDepthPoint;
 import java.util.ArrayList;
 import java.util.HashSet;
 import toxi.geom.Vec3D;
@@ -29,19 +31,19 @@ import toxi.geom.Vec3D;
  *
  * @author Jeremy Laviole jeremy.laviole@inria.fr
  */
-public class TouchDetectionHand extends TouchDetectionSimple2D {
+public class Hand extends Simple2D {
 
-    public TouchDetectionHand(int size) {
+    public Hand(int size) {
         super(size);
     }
 
     @Override
-    public ArrayList<TouchPoint> compute(KinectDepthData dData) {
+    public ArrayList<TrackedDepthPoint> compute(KinectDepthData dData) {
 
         this.depthData = dData;
 
         if (!hasCCToFind()) {
-            return new ArrayList<TouchPoint>();
+            return new ArrayList<TrackedDepthPoint>();
         }
 
         ArrayList<ConnectedComponent> connectedComponents = findConnectedComponents();
@@ -51,7 +53,7 @@ public class TouchDetectionHand extends TouchDetectionSimple2D {
 
         }
 
-        ArrayList<TouchPoint> touchPoints = this.createTouchPointsFrom(connectedComponents);
+        ArrayList<TrackedDepthPoint> touchPoints = this.createTouchPointsFrom(connectedComponents);
 
         return touchPoints;
     }

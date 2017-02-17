@@ -19,6 +19,7 @@
  */
 package fr.inria.papart.multitouch;
 
+import fr.inria.papart.multitouch.detection.TouchDetection;
 import fr.inria.papart.depthcam.devices.KinectDepthData;
 import fr.inria.papart.depthcam.DepthDataElementKinect;
 import fr.inria.papart.depthcam.DepthPoint;
@@ -28,18 +29,13 @@ import toxi.geom.Vec3D;
 
 // TODO: TrackedTouchPoint ...
 // TODO: Filtered TouchPoint ...
-/**
- * TouchPoint class for multi-touch tracking.
- *
- * @author jeremy
- */
 
 /** 
  * TouchPoint, touch events go through this class. 
  * TODO: add event handling !
  * @author Jeremy Laviole
  */
-public class TouchPoint extends DepthPoint {
+public class TrackedDepthPoint extends DepthPoint {
 
     public static int count = 0;
 
@@ -84,12 +80,12 @@ public class TouchPoint extends DepthPoint {
     public static final int NO_TIME = -1;
     private int NUMBER_OF_FILTERS = 3;
 
-    public TouchPoint(int id) {
+    public TrackedDepthPoint(int id) {
         this();
         this.id = id;
     }
 
-    public TouchPoint() {
+    public TrackedDepthPoint() {
         try {
             filters = new OneEuroFilter[NUMBER_OF_FILTERS];
             for (int i = 0; i < NUMBER_OF_FILTERS; i++) {
@@ -112,7 +108,7 @@ public class TouchPoint extends DepthPoint {
         setPreviousPosition();
     }
 
-    public float distanceTo(TouchPoint tp) {
+    public float distanceTo(TrackedDepthPoint tp) {
         return this.positionKinect.distanceTo(tp.positionKinect);
     }
 
@@ -151,7 +147,7 @@ public class TouchPoint extends DepthPoint {
         }
     }
 
-    public boolean updateWith(TouchPoint tp) {
+    public boolean updateWith(TrackedDepthPoint tp) {
         if (isUpdated || tp.isUpdated) {
             return false;
         }
@@ -197,7 +193,7 @@ public class TouchPoint extends DepthPoint {
         }
     }
 
-    private void updatePosition(TouchPoint tp) {
+    private void updatePosition(TrackedDepthPoint tp) {
         // Error checking: never update 3D with non 3D !
         assert (tp.is3D == this.is3D);
 
@@ -214,7 +210,7 @@ public class TouchPoint extends DepthPoint {
         speed.sub(this.previousPosition);
     }
 
-    private void updateDepthPoints(TouchPoint tp) {
+    private void updateDepthPoints(TrackedDepthPoint tp) {
         this.depthDataElements = tp.getDepthDataElements();
     }
 
@@ -299,7 +295,7 @@ public class TouchPoint extends DepthPoint {
 
     public void delete(int time) {
         this.toDelete = true;
-        TouchPoint.count--;
+        TrackedDepthPoint.count--;
         this.deletionTime = time;
         if (this.attachedObject != null) {
             if (this.attachedObject instanceof TouchPointEventHandler) {
@@ -349,7 +345,7 @@ public class TouchPoint extends DepthPoint {
         return detection;
     }
 
-    protected void setDetection(TouchDetection detection) {
+    public void setDetection(TouchDetection detection) {
         this.detection = detection;
     }
 

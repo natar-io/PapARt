@@ -19,6 +19,8 @@
  */
 package fr.inria.papart.multitouch;
 
+import fr.inria.papart.multitouch.detection.Simple2D;
+import fr.inria.papart.multitouch.detection.Simple3D;
 import fr.inria.papart.calibration.PlanarTouchCalibration;
 import fr.inria.papart.depthcam.devices.KinectDepthData;
 import fr.inria.papart.depthcam.DepthDataElementKinect;
@@ -67,10 +69,10 @@ public class KinectTouchInput extends TouchInput {
     private PlaneAndProjectionCalibration planeAndProjCalibration;
 
     // List of TouchPoints, given to the user
-    private final ArrayList<TouchPoint> touchPoints2D = new ArrayList<>();
-    private final ArrayList<TouchPoint> touchPoints3D = new ArrayList<>();
-    private TouchDetectionSimple2D touchDetection2D;
-    private TouchDetectionSimple3D touchDetection3D;
+    private final ArrayList<TrackedDepthPoint> touchPoints2D = new ArrayList<>();
+    private final ArrayList<TrackedDepthPoint> touchPoints3D = new ArrayList<>();
+    private Simple2D touchDetection2D;
+    private Simple3D touchDetection3D;
 
     private PlanarTouchCalibration touchCalib2D;
     private PlanarTouchCalibration touchCalib3D;
@@ -125,8 +127,8 @@ public class KinectTouchInput extends TouchInput {
             // TODO: all the time ?...
             if (touchDetection2D == null) {
                 int depthSize = kinectDevice.getDepthCamera().width() * kinectDevice.getDepthCamera().height();
-                touchDetection2D = new TouchDetectionSimple2D(depthSize);
-                touchDetection3D = new TouchDetectionSimple3D(depthSize);
+                touchDetection2D = new Simple2D(depthSize);
+                touchDetection3D = new Simple3D(depthSize);
 
                 touchDetection2D.setCalibration(touchCalib2D);
                 touchDetection3D.setCalibration(touchCalib3D);
@@ -169,14 +171,14 @@ public class KinectTouchInput extends TouchInput {
             System.err.println("Semaphore Exception: " + ie);
         }
 
-        for (TouchPoint tp : touchPoints2D) {
+        for (TrackedDepthPoint tp : touchPoints2D) {
             Touch touch = createTouch(screen, display, tp);
             if (touch != INVALID_TOUCH) {
                 touchList.add(touch);
             }
         }
 
-        for (TouchPoint tp : touchPoints3D) {
+        for (TrackedDepthPoint tp : touchPoints3D) {
             try {
                 Touch touch = createTouch(screen, display, tp);
                 if (touch != INVALID_TOUCH) {
@@ -191,7 +193,7 @@ public class KinectTouchInput extends TouchInput {
         return touchList;
     }
 
-    private Touch createTouch(Screen screen, BaseDisplay display, TouchPoint tp) {
+    private Touch createTouch(Screen screen, BaseDisplay display, TrackedDepthPoint tp) {
         Touch touch = tp.getTouch();
         boolean hasProjectedPos = projectPositionAndSpeed(screen, display, touch, tp);
         if (!hasProjectedPos) {
@@ -214,7 +216,7 @@ public class KinectTouchInput extends TouchInput {
 
     private boolean projectPositionAndSpeed(Screen screen,
             BaseDisplay display,
-            Touch touch, TouchPoint tp) {
+            Touch touch, TrackedDepthPoint tp) {
 
         boolean hasProjectedPos = projectPosition(screen, display, touch, tp);
         if (hasProjectedPos) {
@@ -225,7 +227,7 @@ public class KinectTouchInput extends TouchInput {
 
     private boolean projectPosition(Screen screen,
             BaseDisplay display,
-            Touch touch, TouchPoint tp) {
+            Touch touch, TrackedDepthPoint tp) {
 
         PVector paperScreenCoord = projectPointToScreen(screen,
                 display,
@@ -239,7 +241,7 @@ public class KinectTouchInput extends TouchInput {
 
     private boolean projectSpeed(Screen screen,
             BaseDisplay display,
-            Touch touch, TouchPoint tp) {
+            Touch touch, TrackedDepthPoint tp) {
 
         PVector paperScreenCoord = projectPointToScreen(screen,
                 display,
@@ -430,7 +432,7 @@ public class KinectTouchInput extends TouchInput {
     }
 
     public void getTouchColors(IplImage colorImage,
-            ArrayList<TouchPoint> touchPointList) {
+            ArrayList<TrackedDepthPoint> touchPointList) {
 
         if (touchPointList.isEmpty()) {
             return;
@@ -438,7 +440,7 @@ public class KinectTouchInput extends TouchInput {
         ByteBuffer cBuff = colorImage.getByteBuffer();
 
         if (colorImage.nChannels() == 1) {
-            for (TouchPoint tp : touchPointList) {
+            for (TrackedDepthPoint tp : touchPointList) {
                 int offset = depthAnalysis.getDepthCameraDevice().findColorOffset(tp.getPositionKinect());
                 int c = cBuff.get(offset);
                 tp.setColor((255 & 0xFF) << 24
@@ -448,7 +450,7 @@ public class KinectTouchInput extends TouchInput {
             }
         }
         if (colorImage.nChannels() == 3) {
-            for (TouchPoint tp : touchPointList) {
+            for (TrackedDepthPoint tp : touchPointList) {
                 int offset = 3 * depthAnalysis.getDepthCameraDevice().findColorOffset(tp.getPositionKinect());
 
                 tp.setColor((255 & 0xFF) << 24
@@ -461,17 +463,17 @@ public class KinectTouchInput extends TouchInput {
 
     // Raw versions of the algorithm are providing each points at each time. 
     // no updates, no tracking. 
-    public ArrayList<TouchPoint> find2DTouchRaw() {
+    public ArrayList<TrackedDepthPoint> find2DTouchRaw() {
         return touchDetection2D.compute(depthAnalysis.getDepthData());
     }
 
-    public ArrayList<TouchPoint> find3DTouchRaw(int skip) {
+    public ArrayList<TrackedDepthPoint> find3DTouchRaw(int skip) {
         return touchDetection3D.compute(depthAnalysis.getDepthData());
     }
 
     protected void findAndTrack2D() {
         assert (touch2DPrecision != 0);
-        ArrayList<TouchPoint> newList = touchDetection2D.compute(
+        ArrayList<TrackedDepthPoint> newList = touchDetection2D.compute(
                 depthAnalysis.getDepthData());
         TouchPointTracker.trackPoints(touchPoints2D, newList,
                 parent.millis());
@@ -479,18 +481,18 @@ public class KinectTouchInput extends TouchInput {
 
     protected void findAndTrack3D() {
         assert (touch3DPrecision != 0);
-        ArrayList<TouchPoint> newList = touchDetection3D.compute(
+        ArrayList<TrackedDepthPoint> newList = touchDetection3D.compute(
                 depthAnalysis.getDepthData());
         TouchPointTracker.trackPoints(touchPoints3D,
                 newList,
                 parent.millis());
     }
 
-    public ArrayList<TouchPoint> getTouchPoints2D() {
+    public ArrayList<TrackedDepthPoint> getTouchPoints2D() {
         return this.touchPoints2D;
     }
 
-    public ArrayList<TouchPoint> getTouchPoints3D() {
+    public ArrayList<TrackedDepthPoint> getTouchPoints3D() {
         return this.touchPoints3D;
     }
 

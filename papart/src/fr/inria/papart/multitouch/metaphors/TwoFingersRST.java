@@ -21,7 +21,7 @@ package fr.inria.papart.multitouch.metaphors;
 
 import fr.inria.papart.multitouch.Touch;
 import fr.inria.papart.multitouch.TouchList;
-import fr.inria.papart.multitouch.TouchPoint;
+import fr.inria.papart.multitouch.TrackedDepthPoint;
 import fr.inria.papart.multitouch.TouchPointEventHandler;
 import static processing.core.PApplet.acos;
 import processing.core.PVector;

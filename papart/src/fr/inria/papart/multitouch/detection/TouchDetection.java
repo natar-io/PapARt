@@ -17,13 +17,15 @@
  * Public License along with this library; If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package fr.inria.papart.multitouch;
+package fr.inria.papart.multitouch.detection;
 
 import fr.inria.papart.calibration.PlanarTouchCalibration;
 import fr.inria.papart.calibration.PlaneCalibration;
 import fr.inria.papart.depthcam.devices.KinectDepthData;
 import fr.inria.papart.depthcam.analysis.DepthAnalysis;
 import fr.inria.papart.depthcam.DepthData;
+import fr.inria.papart.multitouch.ConnectedComponent;
+import fr.inria.papart.multitouch.TrackedDepthPoint;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -64,7 +66,7 @@ public abstract class TouchDetection {
         allocateMemory(size);
     }
 
-    public abstract ArrayList<TouchPoint> compute(KinectDepthData dData);
+    public abstract ArrayList<TrackedDepthPoint> compute(KinectDepthData dData);
 
     protected void allocateMemory(int size) {
         assignedPoints = new boolean[size];
@@ -91,8 +93,8 @@ public abstract class TouchDetection {
 
     protected abstract void setSearchParameters();
 
-    protected ArrayList<TouchPoint> createTouchPointsFrom(ArrayList<ConnectedComponent> connectedComponents) {
-        ArrayList<TouchPoint> touchPoints = new ArrayList<TouchPoint>();
+    protected ArrayList<TrackedDepthPoint> createTouchPointsFrom(ArrayList<ConnectedComponent> connectedComponents) {
+        ArrayList<TrackedDepthPoint> touchPoints = new ArrayList<TrackedDepthPoint>();
         for (ConnectedComponent connectedComponent : connectedComponents) {
 
             float height = connectedComponent.getHeight(depthData.projectedPoints);
@@ -102,7 +104,7 @@ public abstract class TouchDetection {
                 continue;
             }
 
-            TouchPoint tp = createTouchPoint(connectedComponent);
+            TrackedDepthPoint tp = createTouchPoint(connectedComponent);
             touchPoints.add(tp);
         }
         return touchPoints;
@@ -224,10 +226,10 @@ public abstract class TouchDetection {
     }
 
     // TODO: use another type here ?
-    protected TouchPoint createTouchPoint(ConnectedComponent connectedComponent) {
+    protected TrackedDepthPoint createTouchPoint(ConnectedComponent connectedComponent) {
         Vec3D meanProj = connectedComponent.getMean(depthData.projectedPoints);
         Vec3D meanKinect = connectedComponent.getMean(depthData.depthPoints);
-        TouchPoint tp = new TouchPoint();
+        TrackedDepthPoint tp = new TrackedDepthPoint();
         tp.setDetection(this);
         tp.setPosition(meanProj);
         tp.setPositionKinect(meanKinect);
@@ -302,7 +304,7 @@ public abstract class TouchDetection {
         return calib.getTrackingForgetTime();
     }
 
-    float getTrackingMaxDistance() {
+    public float getTrackingMaxDistance() {
         return calib.getTrackingMaxDistance();
     }
 

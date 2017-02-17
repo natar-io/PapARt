@@ -27,7 +27,7 @@ import fr.inria.papart.multitouch.Touch;
 import fr.inria.papart.multitouch.KinectTouchInput;
 import fr.inria.papart.multitouch.TUIOTouchInput;
 import fr.inria.papart.multitouch.TouchList;
-import fr.inria.papart.multitouch.TouchPoint;
+import fr.inria.papart.multitouch.TrackedDepthPoint;
 import fr.inria.papart.utils.MathUtils;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import java.nio.ByteBuffer;
@@ -179,7 +179,7 @@ public class PaperTouchScreen extends PaperScreen {
     public PVector getCameraViewOf(Touch t) {
         ProjectorDisplay projector = (ProjectorDisplay) getDisplay();
 
-        TouchPoint tp = t.touchPoint;
+        TrackedDepthPoint tp = t.touchPoint;
         PVector screenPos = tp.getPosition();
         PVector tablePos = projector.projectPointer3D(screen, screenPos.x, screenPos.y);
         ProjectiveDeviceP pdp = cameraTracking.getProjectiveDevice();

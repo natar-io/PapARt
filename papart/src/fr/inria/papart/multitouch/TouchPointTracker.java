@@ -35,8 +35,8 @@ public class TouchPointTracker {
      * @param newPoints
      * @param currentTime
      */
-    public static void trackPoints(ArrayList<TouchPoint> currentList,
-            ArrayList<TouchPoint> newPoints, int currentTime) {
+    public static void trackPoints(ArrayList<TrackedDepthPoint> currentList,
+            ArrayList<TrackedDepthPoint> newPoints, int currentTime) {
 
         deleteOldPoints(currentList, currentTime);
         updatePoints(currentList, newPoints);
@@ -44,12 +44,12 @@ public class TouchPointTracker {
         setNonUpdatedPointsSpeed(currentList);
     }
 
-    public static void updatePoints(ArrayList<TouchPoint> currentList, ArrayList<TouchPoint> newPoints) {
+    public static void updatePoints(ArrayList<TrackedDepthPoint> currentList, ArrayList<TrackedDepthPoint> newPoints) {
 
         // many previous points, try to find correspondances.
         ArrayList<TouchPointComparison> tpt = new ArrayList<TouchPointComparison>();
-        for (TouchPoint newPoint : newPoints) {
-            for (TouchPoint oldPoint : currentList) {
+        for (TrackedDepthPoint newPoint : newPoints) {
+            for (TrackedDepthPoint oldPoint : currentList) {
                 tpt.add(new TouchPointComparison(oldPoint, newPoint));
             }
         }
@@ -66,20 +66,20 @@ public class TouchPointTracker {
         }
     }
 
-    public static void addNewPoints(ArrayList<TouchPoint> currentList, ArrayList<TouchPoint> newPoints) {
+    public static void addNewPoints(ArrayList<TrackedDepthPoint> currentList, ArrayList<TrackedDepthPoint> newPoints) {
 
         // Add the new ones ?
-        for (TouchPoint tp : newPoints) {
+        for (TrackedDepthPoint tp : newPoints) {
             if (!tp.isToDelete()) {
                 currentList.add(tp);
             }
         }
     }
 
-    public static void setNonUpdatedPointsSpeed(ArrayList<TouchPoint> currentList) {
+    public static void setNonUpdatedPointsSpeed(ArrayList<TrackedDepthPoint> currentList) {
 
         // Add the new ones ?
-        for (TouchPoint tp : currentList) {
+        for (TrackedDepthPoint tp : currentList) {
             if (tp.isUpdated()) {
                 continue;
             }
@@ -87,11 +87,11 @@ public class TouchPointTracker {
         }
     }
 
-    public static void deleteOldPoints(ArrayList<TouchPoint> currentList, int currentTime) {
+    public static void deleteOldPoints(ArrayList<TrackedDepthPoint> currentList, int currentTime) {
         // Clear the old ones 
-        for (Iterator<TouchPoint> it = currentList.iterator();
+        for (Iterator<TrackedDepthPoint> it = currentList.iterator();
                 it.hasNext();) {
-            TouchPoint tp = it.next();
+            TrackedDepthPoint tp = it.next();
             tp.setUpdated(false);
 
             if (tp.isObselete(currentTime)) {

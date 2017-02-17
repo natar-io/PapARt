@@ -39,7 +39,7 @@ public class Touch {
     
     // TODO: find a solution for this !
     // Always has a TouchPoint linked ? Not clean. 
-    public TouchPoint touchPoint;
+    public TrackedDepthPoint touchPoint;
 
     public PVector size;
 

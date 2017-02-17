@@ -34,8 +34,8 @@ public class TUIOTouchInput extends TouchInput {
 
     private final TuioProcessing tuioClient;
     private final PApplet parent;
-    private final HashMap<Integer, TouchPoint> tuioObjects = new HashMap<>();
-    private final HashMap<Integer, TouchPoint> tuioCursors = new HashMap<>();
+    private final HashMap<Integer, TrackedDepthPoint> tuioObjects = new HashMap<>();
+    private final HashMap<Integer, TrackedDepthPoint> tuioCursors = new HashMap<>();
 
     public TUIOTouchInput(PApplet parent, int port) {
         tuioClient = new TuioProcessing(parent, this, port);
@@ -74,7 +74,7 @@ public class TUIOTouchInput extends TouchInput {
     }
 
     private Touch getCursor(Screen screen, BaseDisplay display, TuioCursor tcur) throws Exception {
-        TouchPoint touchPoint = createTouchPointFrom(tcur);
+        TrackedDepthPoint touchPoint = createTouchPointFrom(tcur);
 
         Touch touch = touchPoint.getTouch();
         TuioPoint tuioPoint = tcur.getPosition();
@@ -85,7 +85,7 @@ public class TUIOTouchInput extends TouchInput {
 
     private Touch getObject(Screen screen, BaseDisplay display, TuioObject tobj) throws Exception {
 
-        TouchPoint tp = tuioObjects.get(tobj.getSymbolID());
+        TrackedDepthPoint tp = tuioObjects.get(tobj.getSymbolID());
         Touch touch = tp.getTouch();
 
         TuioPoint tuioPoint = tobj.getPosition();
@@ -111,15 +111,15 @@ public class TUIOTouchInput extends TouchInput {
 
 
 
-    private TouchPoint createTouchPointFrom(TuioObject tObj) {
-        TouchPoint tp = new TouchPoint();
+    private TrackedDepthPoint createTouchPointFrom(TuioObject tObj) {
+        TrackedDepthPoint tp = new TrackedDepthPoint();
         tp.setCreationTime(parent.millis());
         tp.id = tObj.getSymbolID();
         return tp;
     }
 
-    private TouchPoint createTouchPointFrom(TuioCursor tcur) {
-        TouchPoint tp = new TouchPoint();
+    private TrackedDepthPoint createTouchPointFrom(TuioCursor tcur) {
+        TrackedDepthPoint tp = new TrackedDepthPoint();
         tp.setCreationTime(parent.millis());
         tp.id = tcur.getCursorID();
         return tp;

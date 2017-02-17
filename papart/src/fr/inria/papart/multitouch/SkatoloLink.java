@@ -70,7 +70,7 @@ public class SkatoloLink {
 
         for (Touch t : touchList.get2DTouchs()) {
             PVector p = t.position;
-            if (t.id != TouchPoint.NO_ID) {
+            if (t.id != TrackedDepthPoint.NO_ID) {
 
                 if (!pointers.contains(t.id)) {
                     Pointer pointer = skatolo.addPointer(t.id);

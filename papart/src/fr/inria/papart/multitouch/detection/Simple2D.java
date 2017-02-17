@@ -17,11 +17,13 @@
  * Public License along with this library; If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package fr.inria.papart.multitouch;
+package fr.inria.papart.multitouch.detection;
 
 import fr.inria.papart.depthcam.DepthData;
 import fr.inria.papart.depthcam.analysis.DepthAnalysis;
 import fr.inria.papart.depthcam.devices.KinectDepthData;
+import fr.inria.papart.multitouch.ConnectedComponent;
+import fr.inria.papart.multitouch.TrackedDepthPoint;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -29,23 +31,23 @@ import java.util.HashSet;
  *
  * @author Jeremy Laviole jeremy.laviole@inria.fr
  */
-public class TouchDetectionSimple2D extends TouchDetection {
+public class Simple2D extends TouchDetection {
 
-    public TouchDetectionSimple2D(int size) {
+    public Simple2D(int size) {
         super(size);
         currentPointValidityCondition = new CheckTouchPoint();
     }
 
     @Override
-    public ArrayList<TouchPoint> compute(KinectDepthData dData) {
+    public ArrayList<TrackedDepthPoint> compute(KinectDepthData dData) {
         this.depthData = dData;
 
         if (!hasCCToFind()) {
-            return new ArrayList<TouchPoint>();
+            return new ArrayList<TrackedDepthPoint>();
         }
 
         ArrayList<ConnectedComponent> connectedComponents = findConnectedComponents();
-        ArrayList<TouchPoint> touchPoints = this.createTouchPointsFrom(connectedComponents);
+        ArrayList<TrackedDepthPoint> touchPoints = this.createTouchPointsFrom(connectedComponents);
         return touchPoints;
     }
 

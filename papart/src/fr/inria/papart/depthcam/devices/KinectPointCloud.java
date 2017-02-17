@@ -24,7 +24,7 @@ import fr.inria.papart.depthcam.PointCloud;
 import fr.inria.papart.depthcam.analysis.KinectProcessing;
 import fr.inria.papart.depthcam.analysis.KinectDepthAnalysis;
 import static fr.inria.papart.depthcam.PointCloud.javaToNativeARGB;
-import fr.inria.papart.multitouch.TouchPoint;
+import fr.inria.papart.multitouch.TrackedDepthPoint;
 import java.util.ArrayList;
 import processing.core.PApplet;
 import processing.core.PConstants;
@@ -93,7 +93,7 @@ public class KinectPointCloud extends PointCloud implements PConstants {
         colorsNative.put(colorsJava, 0, nbColors);
     }
 
-    public void updateWithFakeColors(KinectProcessing kinect, ArrayList<TouchPoint> touchs) {
+    public void updateWithFakeColors(KinectProcessing kinect, ArrayList<TrackedDepthPoint> touchs) {
 
         boolean[] valid = kinect.getValidPoints();
         Vec3D[] points = kinect.getDepthPoints();
@@ -106,7 +106,7 @@ public class KinectPointCloud extends PointCloud implements PConstants {
         parentApplet.pushStyle();
         parentApplet.colorMode(HSB, 8, 100, 100);
         int id = 0;
-        for (TouchPoint touch : touchs) {
+        for (TrackedDepthPoint touch : touchs) {
 
             int c = this.parentApplet.color(id % 8, 100, 100);
             id++;
