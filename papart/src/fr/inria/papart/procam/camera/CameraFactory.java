@@ -69,12 +69,6 @@ public class CameraFactory {
                 camera = new CameraProcessing(description);
                 break;
             // Depth Cameras
-            case OPEN_KINECT_2:
-                cameraMulti = new CameraOpenKinect2(cameraNo);
-                break;
-            case REALSENSE:
-                cameraMulti = new CameraRealSense(cameraNo);
-                break;
             case OPEN_KINECT:
                 cameraMulti = new CameraOpenKinect(cameraNo);
                 break;

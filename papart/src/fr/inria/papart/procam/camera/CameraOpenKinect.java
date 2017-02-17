@@ -61,11 +61,11 @@ public class CameraOpenKinect extends CameraRGBIRDepth {
 
     @Override
     public void grabIR() {
-        try {
-            IRCamera.updateCurrentImage(grabber.grabIR());
-        } catch (FrameGrabber.Exception ex) {
-            Logger.getLogger(CameraOpenKinect.class.getName()).log(Level.SEVERE, null, ex);
-        }
+//        try {
+//            // IRCamera.updateCurrentImage(grabber.grabIR());
+//        } catch (FrameGrabber.Exception ex) {
+//            Logger.getLogger(CameraOpenKinect.class.getName()).log(Level.SEVERE, null, ex);
+//        }
     }
 
     @Override

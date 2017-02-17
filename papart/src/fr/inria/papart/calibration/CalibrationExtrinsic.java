@@ -134,9 +134,9 @@ public class CalibrationExtrinsic {
             System.out.println("Moving the plane along Z... " + OPEN_KINECT_Z_OFFSET);
             planeCalib.moveAlongNormal(OPEN_KINECT_Z_OFFSET);
         }
-        if (depthCameraDevice.type() == Camera.Type.REALSENSE) {
-            planeCalib.moveAlongNormal(REALSENSE_Z_OFFSET);
-        }
+//        if (depthCameraDevice.type() == Camera.Type.REALSENSE) {
+//            planeCalib.moveAlongNormal(REALSENSE_Z_OFFSET);
+//        }
 
     }
 

@@ -26,15 +26,13 @@ import fr.inria.papart.depthcam.TouchAttributes;
 import fr.inria.papart.depthcam.devices.Kinect360;
 import fr.inria.papart.depthcam.devices.KinectDepthData;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
-import fr.inria.papart.depthcam.devices.KinectOne;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.INVALID_POINT;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.papplet;
-import fr.inria.papart.depthcam.devices.RealSense;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.utils.MathUtils;
 import fr.inria.papart.utils.ARToolkitPlusUtils;
 import fr.inria.papart.procam.camera.Camera;
-import fr.inria.papart.procam.camera.CameraRealSense;
+//import fr.inria.papart.procam.camera.CameraRealSense;
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
@@ -160,13 +158,13 @@ public class KinectDepthAnalysis extends DepthAnalysis {
         if (depthCameraDevice instanceof Kinect360) {
             depthComputationMethod = new Kinect360Depth();
         }
-        if (depthCameraDevice instanceof KinectOne) {
-            depthComputationMethod = new KinectOneDepth();
-        }
-        if (depthCameraDevice instanceof RealSense) {
-            float depthScale = ((CameraRealSense) ((RealSense) depthCameraDevice).getMainCamera()).getDepthScale();
-            depthComputationMethod = new RealSenseDepth(depthScale);
-        }
+//        if (depthCameraDevice instanceof KinectOne) {
+//            depthComputationMethod = new KinectOneDepth();
+//        }
+//        if (depthCameraDevice instanceof RealSense) {
+//            float depthScale = ((CameraRealSense) ((RealSense) depthCameraDevice).getMainCamera()).getDepthScale();
+//            depthComputationMethod = new RealSenseDepth(depthScale);
+//        }
 
         PixelOffset.initStaticMode(getDepthWidth(), getDepthHeight());
     }
@@ -344,12 +342,12 @@ public class KinectDepthAnalysis extends DepthAnalysis {
     }
 
     protected void updateRawDepth(opencv_core.IplImage depthImage) {
-        if (getDepthCameraDevice().type() == Camera.Type.REALSENSE) {
-            depthRawBuffer = depthImage.getByteBuffer();
-            depthRawShortBuffer = depthRawBuffer.asShortBuffer();
-        } else {
+//        if (getDepthCameraDevice().type() == Camera.Type.REALSENSE) {
+//            depthRawBuffer = depthImage.getByteBuffer();
+//            depthRawShortBuffer = depthRawBuffer.asShortBuffer();
+//        } else {
             depthImage.getByteBuffer().get(depthRaw);
-        }
+//        }
     }
 
     protected void updateRawColor(opencv_core.IplImage colorImage) {

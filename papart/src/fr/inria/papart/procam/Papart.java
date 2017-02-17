@@ -35,8 +35,6 @@ import fr.inria.papart.calibration.ScreenConfiguration;
 import fr.inria.papart.depthcam.devices.Kinect360;
 import fr.inria.papart.depthcam.analysis.KinectDepthAnalysis;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
-import fr.inria.papart.depthcam.devices.KinectOne;
-import fr.inria.papart.depthcam.devices.RealSense;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.multitouch.TUIOTouchInput;
 import fr.inria.papart.multitouch.KinectTouchInput;
@@ -44,7 +42,6 @@ import fr.inria.papart.utils.LibraryUtils;
 import fr.inria.papart.procam.camera.CameraFactory;
 import fr.inria.papart.procam.camera.CameraOpenKinect;
 import fr.inria.papart.procam.camera.CameraRGBIRDepth;
-import fr.inria.papart.procam.camera.CameraRealSense;
 import fr.inria.papart.procam.camera.SubCamera;
 import java.io.File;
 import java.lang.reflect.Constructor;
@@ -698,16 +695,9 @@ public class Papart {
 //        if (cameraTracking == null) {
 //            System.err.println("You must choose a camera to create a DepthCamera.");
 //        }
-        if (kinectConfiguration.getCameraType() == Camera.Type.REALSENSE) {
-            depthCameraDevice = new RealSense(applet, cameraTracking);
-        }
 
         if (kinectConfiguration.getCameraType() == Camera.Type.OPEN_KINECT) {
             depthCameraDevice = new Kinect360(applet, cameraTracking);
-        }
-
-        if (kinectConfiguration.getCameraType() == Camera.Type.OPEN_KINECT_2) {
-            depthCameraDevice = new KinectOne(applet, cameraTracking);
         }
 
         if (depthCameraDevice == null) {

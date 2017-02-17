@@ -23,7 +23,6 @@ package fr.inria.papart.depthcam.analysis;
 import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
 import fr.inria.papart.depthcam.PixelOffset;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
-import fr.inria.papart.depthcam.devices.KinectOne;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.papplet;
 import fr.inria.papart.procam.camera.Camera;
 import java.util.ArrayList;
@@ -54,17 +53,11 @@ public class KinectProcessing extends KinectDepthAnalysis {
         init();
     }
 
-    public KinectProcessing(PApplet parent, KinectOne kinectOne) {
-        super(parent, kinectOne);
-        init();
-    }
-
     private void init() {
         validPointsPImage = papplet.createImage(getDepthWidth(), getDepthHeight(), PConstants.RGB);
         nativeArrayToErode = IplImage.create(getDepthWidth(), getDepthHeight(), IPL_DEPTH_8U, 1);
         erosionIndexer = (UByteIndexer) nativeArrayToErode.createIndexer();
         validCopy = Arrays.copyOf(depthData.validPointsMask, depthData.validPointsMask.length);
-
     }
 
     @Override
