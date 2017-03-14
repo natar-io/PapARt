@@ -63,6 +63,11 @@ public class CameraRealSense extends CameraRGBIRDepth {
         if (useColor) {
             grabber.setImageWidth(colorCamera.width());
             grabber.setImageHeight(colorCamera.height());
+            
+            if (colorCamera.width() == 1280) {
+                colorCamera.setFrameRate(60);
+            }
+            
             grabber.setFrameRate(colorCamera.getFrameRate());
             grabber.enableColorStream();
         }
@@ -193,9 +198,7 @@ public class CameraRealSense extends CameraRGBIRDepth {
 
             // default values
 //            colorCamera.setSize(1280, 720);
-            if (colorCamera.width() == 1280) {
-                grabber.setFrameRate(60);
-            }
+
 
             // Default values to get Color with multi-touch depth tracking. 
 //            this.setSize(1280, 720);

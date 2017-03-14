@@ -84,6 +84,7 @@ public abstract class Camera implements PConstants, HasExtrinsics {
     protected boolean isClosing = false;
     protected boolean isConnected = false;
 
+
     protected boolean undistort = false;
 
     // Properties files
@@ -108,7 +109,22 @@ public abstract class Camera implements PConstants, HasExtrinsics {
     }
 
     abstract public void start();
-
+    
+    /**
+     * Get the information if the camera is started (ready to give images). 
+     * @return 
+     */
+    public boolean isStarted() {
+        return isConnected;
+    }
+     
+    /**
+     * Get the information if the camera is started (ready to give images). 
+     * @return 
+     */
+    public boolean isConnected() {
+        return isConnected;
+    }
     @Override
     public String toString() {
         return "Camera, res " + width() + "x" + height() + " calibration " + this.calibrationFile;
