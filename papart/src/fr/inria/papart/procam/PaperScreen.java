@@ -80,7 +80,7 @@ public class PaperScreen {
     protected boolean isWithoutCamera = false;
     protected boolean useManualLocation = false;
 
-    private float filteringDistance = 20;
+    private float filteringDistance = 30;
     private float filteringFreq = 30;
     private float filteringCutoff = 4;
 

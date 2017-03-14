@@ -87,6 +87,19 @@ public class PaperTouchScreen extends PaperScreen {
         screen.computeScreenPosTransform(cameraTracking);
         updateTouch();
     }
+    
+    private PVector touchOffset = new PVector();
+
+    public PVector getTouchOffset() {
+        return touchOffset.copy();
+    }
+
+    public void setTouchOffset(float x, float y) {
+        this.touchOffset.set(new PVector(x,y));
+    }
+    public void setTouchOffset(PVector touchOffset) {
+        this.touchOffset.set(touchOffset);
+    }
 
     public void updateTouch() {
         if (!(touchInput instanceof TUIOTouchInput)) {
@@ -105,6 +118,8 @@ public class PaperTouchScreen extends PaperScreen {
 
         touchList = touchInput.projectTouchToScreen(screen, getDisplay());
         touchList.sortAlongYAxis();
+        
+        touchList.addOffset(touchOffset);
 
         if (touchInput instanceof KinectTouchInput) {
             if (((KinectTouchInput) (touchInput)).isUseRawDepth()) {
