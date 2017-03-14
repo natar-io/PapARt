@@ -36,6 +36,12 @@ public class TouchList extends ArrayList<Touch> {
         }
     }
 
+    public void addOffset(PVector offset) {
+        for (Touch touch : this) {
+            touch.addOffset(offset);
+        }
+    }
+
     public void sortAlongYAxis() {
         Collections.sort(this, new TouchComparator());
     }

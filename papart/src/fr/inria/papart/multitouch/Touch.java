@@ -74,6 +74,12 @@ public class Touch {
         speed = new PVector();
     }
 
+    public void addOffset(PVector offset) {
+        position.x += offset.x;
+        position.y += offset.y;
+        position.z += offset.z;
+    }
+    
     public void scaleBy(PVector scales) {
         position.x *= scales.x;
         position.y *= scales.y;

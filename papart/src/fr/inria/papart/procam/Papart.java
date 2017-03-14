@@ -821,6 +821,10 @@ public class Papart {
     public void startCameraThread() {
         cameraTracking.start();
 
+        if(depthCameraDevice != null){
+            depthCameraDevice.loadDataFromDevice();
+        }
+        
         // Calibration might be loaded from the device and require an update. 
         if (arDisplay != null && !(arDisplay instanceof ProjectorDisplay)) {
             arDisplay.reloadCalibration();
