@@ -71,8 +71,6 @@ public class KinectDepthAnalysis extends DepthAnalysis {
     protected static final float INVALID_DEPTH = -1;
 
     protected DepthCameraDevice depthCameraDevice;
-    protected DepthComputation depthComputationMethod;
-
     protected Camera colorCamera;
 
     public DepthCameraDevice getDepthCameraDevice() {
@@ -111,11 +109,10 @@ public class KinectDepthAnalysis extends DepthAnalysis {
     public KinectDepthAnalysis(PApplet parent, DepthCameraDevice depthCamera) {
         DepthAnalysis.papplet = parent;
         this.depthCameraDevice = depthCamera;
-        
+
         // DepthCamera sizes should be good here...   (says TouchVisu)
         // why not ?   (calib?)
         //-----
-        
 //        initMemory();
         updateCalibrations(depthCamera);
         // initThreadPool();
@@ -123,7 +120,7 @@ public class KinectDepthAnalysis extends DepthAnalysis {
 
     public void updateCalibrations(DepthCameraDevice depthCamera) {
         depthCameraDevice = depthCamera;
-
+        setDepthMethod();
         if (depthCamera.getMainCamera().isUseIR()) {
             colorCamera = depthCamera.getIRCamera();
         }
@@ -156,7 +153,11 @@ public class KinectDepthAnalysis extends DepthAnalysis {
 
         depthData = new KinectDepthData(this);
         depthData.projectiveDevice = this.calibDepth;
-        
+
+        PixelOffset.initStaticMode(getDepthWidth(), getDepthHeight());
+    }
+
+    private void setDepthMethod() {
         if (depthCameraDevice instanceof Kinect360) {
             depthComputationMethod = new Kinect360Depth();
         }
@@ -164,17 +165,19 @@ public class KinectDepthAnalysis extends DepthAnalysis {
             depthComputationMethod = new KinectOneDepth();
         }
         if (depthCameraDevice instanceof RealSense) {
-            float depthScale = ((CameraRealSense) ((RealSense) depthCameraDevice).getMainCamera()).getDepthScale();
-            depthComputationMethod = new RealSenseDepth(depthScale);
+            if (((CameraRealSense) ((RealSense) depthCameraDevice).getMainCamera()).isStarted()) {
+                float depthScale = ((CameraRealSense) ((RealSense) depthCameraDevice).getMainCamera()).getDepthScale();
+                depthComputationMethod = new RealSenseDepth(depthScale);
+            }
         }
-
-        PixelOffset.initStaticMode(getDepthWidth(), getDepthHeight());
     }
 
+    @Deprecated
     public void update(IplImage depth) {
         update(depth, 1);
     }
 
+    @Deprecated
     public void update(opencv_core.IplImage depth, int skip) {
         depthData.clearDepth();
         updateRawDepth(depth);
@@ -326,15 +329,14 @@ public class KinectDepthAnalysis extends DepthAnalysis {
 
         // Point is now in the Depth coordinates
         depthCameraDevice.getStereoCalibrationInv().mult(v, v2);
-        
-        // v2 is now the location in KinectDepth instead of KinectRGB coordinates.
 
+        // v2 is now the location in KinectDepth instead of KinectRGB coordinates.
         // Point is now in pixel coordinates 
         int worldToPixel = getDepthCameraDevice().getDepthCamera().getProjectiveDevice().worldToPixel(v2);
 
         // Point viewed in the depth camera point of view. 
         PVector pointDepth = MathUtils.toPVector(depthData.depthPoints[worldToPixel]);
-        
+
         return pointDepth;
         // get it back in the RGB point of view.
 //        PVector out = new PVector();
@@ -355,59 +357,6 @@ public class KinectDepthAnalysis extends DepthAnalysis {
     protected void updateRawColor(opencv_core.IplImage colorImage) {
         ByteBuffer colBuff = colorImage.getByteBuffer();
         colBuff.get(colorRaw);
-    }
-
-    /**
-     * @param offset
-     * @return the depth (float).
-     */
-    protected float getDepth(int offset) {
-
-        return depthComputationMethod.findDepth(offset);
-    }
-
-    public interface DepthComputation {
-
-        public float findDepth(int offset);
-    }
-
-    class Kinect360Depth implements DepthComputation {
-
-        @Override
-        public float findDepth(int offset) {
-            float d = (depthRaw[offset * 2] & 0xFF) << 8
-                    | (depthRaw[offset * 2 + 1] & 0xFF);
-
-            return d;
-        }
-    }
-
-    public static final float KINECT_ONE_DEPTH_RATIO = 10f;
-
-    class KinectOneDepth implements DepthComputation {
-
-        @Override
-        public float findDepth(int offset) {
-            float d = (depthRaw[offset * 3 + 1] & 0xFF) * 256
-                    + (depthRaw[offset * 3] & 0xFF);
-
-            return d / KINECT_ONE_DEPTH_RATIO; // / 65535f * 10000f;
-        }
-    }
-
-    class RealSenseDepth implements DepthComputation {
-
-        private float depthRatio;
-
-        public RealSenseDepth(float depthRatio) {
-            this.depthRatio = depthRatio;
-        }
-
-        @Override
-        public float findDepth(int offset) {
-            float d = depthRawShortBuffer.get(offset) * depthRatio * 1000f;
-            return d;
-        }
     }
 
     public void setNearFarValue(float near, float far) {
@@ -665,6 +614,45 @@ public class KinectDepthAnalysis extends DepthAnalysis {
             return null;
         }
 
+    }
+
+    class Kinect360Depth implements DepthComputation {
+
+        @Override
+        public float findDepth(int offset) {
+            float d = (depthRaw[offset * 2] & 0xFF) << 8
+                    | (depthRaw[offset * 2 + 1] & 0xFF);
+
+            return d;
+        }
+    }
+
+    public static final float KINECT_ONE_DEPTH_RATIO = 10f;
+
+    class KinectOneDepth implements DepthComputation {
+
+        @Override
+        public float findDepth(int offset) {
+            float d = (depthRaw[offset * 3 + 1] & 0xFF) * 256
+                    + (depthRaw[offset * 3] & 0xFF);
+
+            return d / KINECT_ONE_DEPTH_RATIO; // / 65535f * 10000f;
+        }
+    }
+
+    class RealSenseDepth implements DepthComputation {
+
+        private float depthRatio;
+
+        public RealSenseDepth(float depthRatio) {
+            this.depthRatio = depthRatio;
+        }
+
+        @Override
+        public float findDepth(int offset) {
+            float d = depthRawShortBuffer.get(offset) * depthRatio * 1000f;
+            return d;
+        }
     }
 
     public void undistortRGB(opencv_core.IplImage rgb, opencv_core.IplImage out) {

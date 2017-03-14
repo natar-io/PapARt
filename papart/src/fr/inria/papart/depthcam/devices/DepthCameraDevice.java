@@ -56,6 +56,8 @@ public abstract class DepthCameraDevice {
     public DepthCameraDevice(PApplet parent) {
         this.parent = parent;
     }
+    
+    public abstract void loadDataFromDevice();
 
     public CameraRGBIRDepth getMainCamera() {
         return camera;

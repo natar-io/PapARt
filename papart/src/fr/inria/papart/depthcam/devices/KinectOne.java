@@ -59,4 +59,9 @@ public final class KinectOne extends DepthCameraDevice {
         return Camera.Type.OPEN_KINECT_2;
     }
 
+    @Override
+    public void loadDataFromDevice() {
+        // Nothing here yet. maybe get calibrations ?
+    }
+
 }

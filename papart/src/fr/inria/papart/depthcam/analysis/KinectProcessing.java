@@ -64,7 +64,6 @@ public class KinectProcessing extends KinectDepthAnalysis {
         nativeArrayToErode = IplImage.create(getDepthWidth(), getDepthHeight(), IPL_DEPTH_8U, 1);
         erosionIndexer = (UByteIndexer) nativeArrayToErode.createIndexer();
         validCopy = Arrays.copyOf(depthData.validPointsMask, depthData.validPointsMask.length);
-
     }
 
     @Override
@@ -92,10 +91,9 @@ public class KinectProcessing extends KinectDepthAnalysis {
 
     }
 
-    
     public void updateMT(opencv_core.IplImage depth, opencv_core.IplImage color, PlaneAndProjectionCalibration calib, int skip2D) {
         updateRawDepth(depth);
-        
+
 // optimisation no Color. 
         updateRawColor(color);
         depthData.clear();
@@ -113,7 +111,7 @@ public class KinectProcessing extends KinectDepthAnalysis {
         doForEachValidPoint(skip2D, new SetImageData());
         validPointsPImage.updatePixels();
     }
-    
+
     private void erodePoints2(ArrayList<Integer> validList, boolean[] arrayToErode, int skip) {
 
         Arrays.fill(validCopy, false);
@@ -226,11 +224,10 @@ public class KinectProcessing extends KinectDepthAnalysis {
 
 //        computeDepthAndDo(skip, new DoNothing());
         // TODO: get the color with Kinect2... 
-        
-        if(this.colorCamera.getPixelFormat() == Camera.PixelFormat.RGB){
+        if (this.colorCamera.getPixelFormat() == Camera.PixelFormat.RGB) {
             computeDepthAndDo(skip, new SetImageDataRGB());
         }
-        if(this.colorCamera.getPixelFormat() == Camera.PixelFormat.BGR){
+        if (this.colorCamera.getPixelFormat() == Camera.PixelFormat.BGR) {
             computeDepthAndDo(skip, new SetImageData());
         }
 
@@ -252,19 +249,24 @@ public class KinectProcessing extends KinectDepthAnalysis {
     }
 
     class SetImageData implements DepthPointManiplation {
-        public SetImageData(){
+
+        public SetImageData() {
             super();
         }
+
         @Override
         public void execute(Vec3D p, PixelOffset px) {
             depthData.validPointsMask[px.offset] = true;
             setPixelColor(px.offset);
         }
     }
+
     class SetImageDataRGB implements DepthPointManiplation {
-        public SetImageDataRGB(){
+
+        public SetImageDataRGB() {
             super();
         }
+
         @Override
         public void execute(Vec3D p, PixelOffset px) {
             depthData.validPointsMask[px.offset] = true;
@@ -281,17 +283,24 @@ public class KinectProcessing extends KinectDepthAnalysis {
 
     // TODO: Generalization here, same functions as those to convert the pixels for OpenGL. 
     private void setPixelColor(int offset) {
-        
+
         // TODO: Get a cleaner way go obtain the color... 
         int colorOffset = depthCameraDevice.findColorOffset(depthData.depthPoints[offset]) * 3;
-        int c = (colorRaw[colorOffset + 2] & 0xFF) << 16
-                | (colorRaw[colorOffset + 1] & 0xFF) << 8
-                | (colorRaw[colorOffset + 0] & 0xFF);
 
+        int c;
+        // Do not set invalid pixels
+        if (colorOffset < 0 || colorOffset > colorRaw.length) {
+            c = 255;
+        } else {
+            c = (colorRaw[colorOffset + 2] & 0xFF) << 16
+                    | (colorRaw[colorOffset + 1] & 0xFF) << 8
+                    | (colorRaw[colorOffset + 0] & 0xFF);
+        }
         validPointsPImage.pixels[offset] = c;
     }
+
     private void setPixelColorRGB(int offset) {
-        
+
         // TODO: Get a cleaner way go obtain the color... 
         int colorOffset = depthCameraDevice.findColorOffset(depthData.depthPoints[offset]) * 3;
         int c = (colorRaw[colorOffset + 0] & 0xFF) << 16

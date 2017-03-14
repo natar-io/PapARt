@@ -38,6 +38,7 @@ public abstract class DepthAnalysis {
     protected KinectDepthData depthData;
 
     public static PApplet papplet;
+    protected DepthComputation depthComputationMethod;
 
     public static final Vec3D INVALID_POINT = new Vec3D(0,0,0);
     public static final int INVALID_COLOR = -1;
@@ -53,6 +54,18 @@ public abstract class DepthAnalysis {
     public abstract int getDepthWidth();
     public abstract int getDepthHeight();
         
+    /**
+     * @param offset
+     * @return the depth (float).
+     */
+    protected float getDepth(int offset) {
+        return depthComputationMethod.findDepth(offset);
+    }
+
+    public interface DepthComputation {
+
+        public float findDepth(int offset);
+    }
     
     public interface InvalidPointManiplation {
 
@@ -235,6 +248,7 @@ public abstract class DepthAnalysis {
     public KinectDepthData getDepthData() {
         return this.depthData;
     }
+    
 
     public static boolean isInside(Vec3D v, float min, float max, float sideError) {
         return v.x > min - sideError && v.x < max + sideError && v.y < max + sideError && v.y > min - sideError;

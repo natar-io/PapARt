@@ -67,4 +67,10 @@ public class Kinect360 extends DepthCameraDevice {
     public Camera.Type type() {
         return Camera.Type.OPEN_KINECT;
     }
+
+    @Override
+    public void loadDataFromDevice() {
+        // Nothing here yet. maybe get calibrations ?
+    }
+
 }
