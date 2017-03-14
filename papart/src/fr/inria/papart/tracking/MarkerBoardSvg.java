@@ -62,16 +62,16 @@ public class MarkerBoardSvg extends MarkerBoard {
     public int MIN_ARTOOLKIT_MARKER_DETECTED = 1;
 
     @Override
-    protected void updatePositionImpl(int id, 
-            int currentTime, 
-            int endTime, 
+    protected void updatePositionImpl(int id,
+            int currentTime,
+            int endTime,
             int mode,
-            Camera camera, 
-            opencv_core.IplImage img, 
+            Camera camera,
+            opencv_core.IplImage img,
             Object globalTracking) {
 
         DetectedMarker[] markers = (DetectedMarker[]) globalTracking;
-        
+
         PMatrix3D newPos = compute3DPos(markers, camera);
 
         if (newPos == INVALID_LOCATION) {
@@ -126,6 +126,11 @@ public class MarkerBoardSvg extends MarkerBoard {
         for (DetectedMarker detected : detectedMarkers) {
             if (markersFromSVG.containsKey(detected.id)) {
 
+//                System.out.println("Detected marker: " + detected.id + " confidence " + detected.confidence);
+                if (detected.confidence < 1.0) {
+                    continue;
+                }
+
                 PVector[] object = markersFromSVG.get(detected.id).getCorners();
                 PVector[] image = detected.getCorners();
                 for (int i = 0; i < 4; i++) {
@@ -178,12 +183,12 @@ public class MarkerBoardSvg extends MarkerBoard {
                 System.out.println("Filtering error " + e);
             }
         }
-        
+
         float pageHeight = markersFromSVG.getSheetHeight();
-        
+
         // Invert the scales so that it fits Inkscape's view. 
         transfo.scale(1, -1, 1);
-        transfo.translate(0, -pageHeight, 0);        
+        transfo.translate(0, -pageHeight, 0);
     }
 
 }

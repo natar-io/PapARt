@@ -114,8 +114,8 @@ public class MarkerBoardARToolKitPlus extends MarkerBoard {
         tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_FULL_RES);
 //        tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_HALF_RES);
 
-//        tracker.setUseDetectLite(false);
-        tracker.setUseDetectLite(true);
+        tracker.setUseDetectLite(false);
+//        tracker.setUseDetectLite(true);
 
         // Deal with the calibration files here...
         Camera.convertARParams(this.applet, camera.getProjectiveDevice(), camCalibARtoolkit);

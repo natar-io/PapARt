@@ -123,7 +123,7 @@ public class DetectedMarker implements Cloneable {
 
 //      tracker.setPoseEstimator(POSE_ESTIMATOR_RPP);
 //      tracker.setPoseEstimator(ARToolKitPlus.POSE_ESTIMATOR_RPP);
-//      tracker.setPoseEstimator(ARToolKitPlus.POSE_ESTIMATOR_ORIGINAL_CONT);
+      tracker.setPoseEstimator(ARToolKitPlus.POSE_ESTIMATOR_ORIGINAL_CONT);
         tracker.setMarkerMode(MARKER_ID_BCH);
 //        tracker.setImageProcessingMode(IMAGE_HALF_RES);
         tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_FULL_RES);
