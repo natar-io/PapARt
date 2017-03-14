@@ -9,22 +9,22 @@ def build(platform, arch)
 
   puts "Build " + platform
 
-  # if(platform == "linux")
-  #   %x(cp pom-linux.xml pom.xml)
-  # else
+  if(platform == "linux")
+    %x(cp pom-linux.xml pom.xml)
+  else
     %x(cp pom-other.xml pom.xml)
-  # end
+  end
     
   puts "Get the library"
 
-  %x(mvn -Dplatform=#{platform}-#{arch} dependency:copy-dependencies)
+  %x(mvn -Djavacpp.platform=#{platform}-#{arch} dependency:copy-dependencies)
 
   %x(rm target/dependency/*linux*)   if platform.eql? "windows"
   %x(rm target/dependency/*linux*)   if platform.eql? "macosx"
 
   `mv target/dependency target/library`
   `mv target javacv`
-  `mv javacv/library/javacv-1.3.jar javacv/library/javacv.jar`
+  `mv javacv/library/javacv-1.3.2-SNAPSHOT.jar javacv/library/javacv.jar`
 
   puts "compress library"
   `tar -zcf javacv-#{platform}-#{arch}.tgz javacv`
@@ -35,9 +35,9 @@ def build(platform, arch)
   %x(rm pom.xml)
 end
 
-build("linux", "armhf")
-build("android", "arm")
-# build("linux", "x86_64")
+# build("linux", "armhf")
+# build("android", "arm")
+build("linux", "x86_64")
 # build("windows", "x86_64")
 # build("macosx", "x86_64")
 # build("windows", "x86")
