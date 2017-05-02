@@ -397,6 +397,11 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
             screenPos.preApply(getExtrinsics());
         }
         this.graphics.applyMatrix(screenPos);
+
+        // Same origin as in DrawOnPaper
+        this.graphics.translate(0, screen.getSize().y);
+        this.graphics.scale(1, -1, 1);
+
         return this.graphics;
     }
 

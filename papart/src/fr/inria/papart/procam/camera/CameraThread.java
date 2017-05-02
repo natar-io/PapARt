@@ -19,6 +19,7 @@
  */
 package fr.inria.papart.procam.camera;
 
+import fr.inria.papart.procam.Papart;
 import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.tracking.DetectedMarker;
 import java.util.ArrayList;
@@ -101,11 +102,10 @@ class CameraThread extends Thread {
     public void compute() {
         try {
             camera.getSheetSemaphore().acquire();
-
             tryComputeGrayScale();
             tryToFindMarkers();
 
-            // updateSequential();
+//             updateSequential();
             updateParallel();
 
             camera.getSheetSemaphore().release();

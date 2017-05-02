@@ -80,7 +80,6 @@ public class Screen implements HasExtrinsics {
         this.scale = scale;
     }
 
-
     public void linkTo(MarkerBoard board) {
         this.markerBoard = board;
     }
@@ -103,7 +102,10 @@ public class Screen implements HasExtrinsics {
 
     public PGraphicsOpenGL getGraphics() {
         if (thisGraphics == null) {
-            thisGraphics = (PGraphicsOpenGL) parent.createGraphics((int) (size.x * scale), (int) (size.y * scale), PApplet.P3D);
+            thisGraphics = (PGraphicsOpenGL) parent.createGraphics(
+                    this.getRenderingSizeX(), 
+                    this.getRenderingSizeY(), 
+                    PApplet.P3D);
         }
 
         return thisGraphics;
@@ -122,14 +124,14 @@ public class Screen implements HasExtrinsics {
     }
 
     public PVector getSize() {
-        return size;
+        return size.copy();
     }
 
-    public int getDrawSizeX() {
+    public int getRenderingSizeX() {
         return (int) (size.x * scale);
     }
 
-    public int getDrawSizeY() {
+    public int getRenderingSizeY() {
         return (int) (size.y * scale);
     }
 
@@ -186,8 +188,8 @@ public class Screen implements HasExtrinsics {
         combinedTransfos.apply(extrinsics);
         return combinedTransfos;
     }
-    
-    protected PMatrix3D getMainLocation(Camera camera){
+
+    protected PMatrix3D getMainLocation(Camera camera) {
         return markerBoard.getTransfoMat(camera).get();
     }
 
@@ -260,7 +262,7 @@ public class Screen implements HasExtrinsics {
 
             initPosM = this.getLocation(cam);
 
-            initPosM.translate(this.getDrawSizeX() / 2, this.getDrawSizeY() / 2);
+            initPosM.translate(this.getRenderingSizeX() / 2, this.getRenderingSizeY() / 2);
             // All is relative to the paper's center. not the corner. 
             initPosM.scale(-1, 1, -1);
 
@@ -269,7 +271,7 @@ public class Screen implements HasExtrinsics {
         // get the current transformation... 
         PMatrix3D newPos = this.getLocation(cam);
 
-        newPos.translate(this.getDrawSizeX() / 2, this.getDrawSizeY() / 2);
+        newPos.translate(this.getRenderingSizeX() / 2, this.getRenderingSizeY() / 2);
         newPos.scale(-1, 1, -1);
 
         newPos.invert();
@@ -332,18 +334,6 @@ public class Screen implements HasExtrinsics {
     public HomographyCalibration getWorldToScreen() {
         return worldToScreen;
     }
-
-    /**
-     * Set the main position (override tracking system). Use only after the call
-     * of paperScreen.useManualLocation(false);
-     * Lock for 10hours. 
-     * @param position
-     * @param cam
-     */
-    public void setMainLocation(PMatrix3D position, Camera cam) {
-        this.setFakeLocation(cam, position);
-    }
-    
 //    /**
 //     * Set the main position by the tracking system. 
 //     * @param cam
@@ -351,38 +341,6 @@ public class Screen implements HasExtrinsics {
 //    public void setTrackedLocation(Camera cam) {
 //        this.blockUpdate(cam, 0); // ms
 //    }
-
-    public void forceUpdate(Camera camera, int time) {
-        markerBoard.forceUpdate(camera, time);
-    }
-
-    public void blockUpdate(Camera camera, int time) {
-        markerBoard.blockUpdate(camera, time);
-    }
-
-    public void setFiltering(Camera camera, double freq, double minCutOff) {
-        markerBoard.setFiltering(camera, freq, minCutOff);
-    }
-
-    public void setDrawingMode(Camera camera, boolean dm) {
-        markerBoard.setDrawingMode(camera, dm);
-    }
-
-    public void setDrawingMode(Camera camera, boolean dm, float dist) {
-        markerBoard.setDrawingMode(camera, dm, dist);
-    }
-
-    public void setFakeLocation(Camera camera, PMatrix3D location) {
-        markerBoard.setFakeLocation(camera, location);
-    }
-
-    public boolean isMoving(Camera camera) {
-        return markerBoard.isMoving(camera);
-    }
-
-    public boolean isSeenBy(Camera camera, ProjectorDisplay projector, float error) {
-        return markerBoard.isSeenBy(camera, projector, error);
-    }
 
     @Override
     public boolean hasExtrinsics() {

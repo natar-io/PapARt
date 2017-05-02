@@ -196,10 +196,10 @@ public class PaperScreen {
 
             isInitialized = true;
         }
-        
+
         // Needed for touch and projection operations
         screen.computeScreenPosTransform(cameraTracking);
-        
+
 //        assert (isInitialized);
 //        if (this.isWithoutCamera || useManualLocation) {
 //            return;
@@ -357,9 +357,9 @@ public class PaperScreen {
         this.useManualLocation = manual;
 
         if (this.useManualLocation) {
-            screen.blockUpdate(cameraTracking, 10 * 60 * 60 * 1000); // ms
+            markerBoard.blockUpdate(cameraTracking, 10 * 60 * 60 * 1000); // ms
         } else {
-            screen.blockUpdate(cameraTracking, 0); // ms
+            markerBoard.blockUpdate(cameraTracking, 0); // ms
         }
     }
 
@@ -503,7 +503,7 @@ public class PaperScreen {
     }
 
     public void setMainLocation(PMatrix3D location) {
-        screen.setMainLocation(location, cameraTracking);
+        markerBoard.setFakeLocation(cameraTracking, location);
     }
 
     public void setLocation(PVector v) {
@@ -542,7 +542,7 @@ public class PaperScreen {
         setMainLocation(HomographyCalibration.getMatFrom(Papart.getPapart().getApplet(), filename));
     }
 
-    public void loadLocationFrom(PMatrix3D mat){
+    public void loadLocationFrom(PMatrix3D mat) {
         this.useManualLocation(true);
         setMainLocation(mat.get());
     }

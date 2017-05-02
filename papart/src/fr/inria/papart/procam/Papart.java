@@ -532,7 +532,7 @@ public class Papart {
      */
     public void moveToTablePosition(PaperScreen paperScreen) {
         paperScreen.useManualLocation(true);
-        paperScreen.screen.setMainLocation(HomographyCalibration.getMatFrom(applet, tablePosition), getPublicCameraTracking());
+        paperScreen.markerBoard.setFakeLocation(getPublicCameraTracking(), HomographyCalibration.getMatFrom(applet, tablePosition));
     }
 
     @Deprecated
