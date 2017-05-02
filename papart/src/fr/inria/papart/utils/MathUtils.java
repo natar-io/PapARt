@@ -229,6 +229,27 @@ public class MathUtils {
         int db = PApplet.abs(b1 - b2);
         return dr < threshold && dg < threshold && db < threshold;
     }
+    /**
+     * RGB distance of two colors. Return true if all channels differences are
+     * below the difference threshold.
+     *
+     * @param c1
+     * @param c2
+     * @param threshold
+     * @return
+     */
+    public static boolean colorDistRGBAverage(int c1, int c2, int threshold) {
+        int r1 = c1 >> 16 & 255;
+        int g1 = c1 >> 8 & 255;
+        int b1 = c1 >> 0 & 255;
+        int r2 = c2 >> 16 & 255;
+        int g2 = c2 >> 8 & 255;
+        int b2 = c2 >> 0 & 255;
+        int dr = PApplet.abs(r1 - r2);
+        int dg = PApplet.abs(g1 - g2);
+        int db = PApplet.abs(b1 - b2);
+        return dr + dg + db < threshold;
+    }
 
     /**
      * Color distance on the HSB scale. The incomingPix is compared with the
@@ -244,6 +265,30 @@ public class MathUtils {
      * @return
      */
     public static boolean colorDistHSB(PGraphics g, int baseline, int incomingPix,
+            float hueTresh, float saturationTresh, float brightnessTresh) {
+        float h1 = g.hue(baseline);
+        float h2 = g.hue(incomingPix);
+
+        return abs(h1 - h2) < hueTresh
+                && // Avoid desaturated pixels
+                abs(g.saturation(incomingPix) - g.saturation(baseline)) > saturationTresh
+                && // avoid pixels not bright enough
+                abs(g.brightness(incomingPix) - g.brightness(baseline)) > brightnessTresh;
+    }
+    /**
+     * Color distance on the HSB scale. The incomingPix is compared with the
+     * baseline. The method returns true if each channel validates the condition
+     * for the given threshold.
+     *
+     * @param g
+     * @param baseline
+     * @param incomingPix
+     * @param hueTresh
+     * @param saturationTresh
+     * @param brightnessTresh
+     * @return
+     */
+    public static boolean colorFinderHSB(PGraphics g, int baseline, int incomingPix,
             float hueTresh, float saturationTresh, float brightnessTresh) {
         float h1 = g.hue(baseline);
         float h2 = g.hue(incomingPix);
