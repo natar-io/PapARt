@@ -488,11 +488,19 @@ public class KinectTouchInput extends TouchInput {
                 parent.millis());
     }
 
+    @Deprecated
     public ArrayList<TrackedDepthPoint> getTouchPoints2D() {
         return this.touchPoints2D;
     }
-
+ @Deprecated
     public ArrayList<TrackedDepthPoint> getTouchPoints3D() {
+        return this.touchPoints3D;
+    }
+    public ArrayList<TrackedDepthPoint> getTrackedDepthPoints2D() {
+        return this.touchPoints2D;
+    }
+
+    public ArrayList<TrackedDepthPoint> getTrackedDepthPoints3D() {
         return this.touchPoints3D;
     }
 

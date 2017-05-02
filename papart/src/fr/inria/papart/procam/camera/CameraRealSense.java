@@ -203,11 +203,11 @@ public class CameraRealSense extends CameraRGBIRDepth {
             grabber.disableColorStream();
         } else {
             String name = device.get_name().getString();
-//            System.out.println("Name : " + name);
-            if (name.endsWith("SR300")) {
+            System.out.println("Name : " + name);
+            if (name.contains("SR300")) {
                 setSR300Color();
             }
-            if (name.endsWith("R200")) {
+            if (name.contains("R200")) {
                 setR200Color();
             }
 
@@ -219,14 +219,14 @@ public class CameraRealSense extends CameraRGBIRDepth {
         // todo: boolean or not ?
         colorCamera.setPixelFormat(PixelFormat.RGB);
         colorCamera.setSize(1280, 720);
-        depthCamera.setFrameRate(60);
+        colorCamera.setFrameRate(60);
     }
 
     public void setR200Color() {
         // todo: boolean or not ?
         colorCamera.setPixelFormat(PixelFormat.RGB);
         colorCamera.setSize(640, 480);
-        depthCamera.setFrameRate(30);
+        colorCamera.setFrameRate(30);
     }
 
     @Override

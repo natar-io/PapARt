@@ -62,15 +62,27 @@ public class PlaneCalibration extends Calibration {
     }
 
     public boolean hasGoodOrientationAndDistance(Vec3D point) {
-        return orientation(point) && plane.getDistanceToPoint(point) <= height;
+        return hasGoodOrientationAndDistance(point, 0);
+    }
+
+    public boolean hasGoodOrientationAndDistance(Vec3D point, float error) {
+        return orientation(point) && plane.getDistanceToPoint(point) <= height + error;
     }
 
     public boolean isUnderPlane(Vec3D point) {
-        return !orientation(point) && plane.getDistanceToPoint(point) <= height;
+        return isUnderPlane(point, 0);
+    }
+
+    public boolean isUnderPlane(Vec3D point, float error) {
+        return !orientation(point) && plane.getDistanceToPoint(point) <= height + error;
     }
 
     public boolean hasGoodDistance(Vec3D point) {
-        return plane.getDistanceToPoint(point) <= height;
+        return hasGoodDistance(point, 0);
+    }
+
+    public boolean hasGoodDistance(Vec3D point, float error) {
+        return plane.getDistanceToPoint(point) <= height + error;
     }
 
     public boolean hasGoodOrientation(Vec3D point) {
@@ -80,7 +92,7 @@ public class PlaneCalibration extends Calibration {
     public float distanceTo(Vec3D point) {
         return plane.getDistanceToPoint(point);
     }
-    
+
     public float distanceTo(PVector point) {
         return plane.getDistanceToPoint(new Vec3D(point.x, point.y, point.z));
     }
@@ -185,16 +197,17 @@ public class PlaneCalibration extends Calibration {
     public static float DEFAULT_PLANE_HEIGHT = 15f;
 
     /**
-     * Get a plane from a 3D  matrix. 
-     * Here the size is not that important, might be removed.  
+     * Get a plane from a 3D matrix. Here the size is not that important, might
+     * be removed.
+     *
      * @param mat
      * @param size
-     * @return 
+     * @return
      */
     public static PlaneCalibration CreatePlaneCalibrationFrom(PMatrix3D mat, PVector size) {
         PMatrix3D matrix = mat.get();
         PlaneCreator planeCreator = new PlaneCreator();
-        
+
         planeCreator.addPoint(new Vec3D(matrix.m03, matrix.m13, matrix.m23));
         matrix.translate(size.x, 0, 0);
         planeCreator.addPoint(new Vec3D(matrix.m03, matrix.m13, matrix.m23));
@@ -204,7 +217,7 @@ public class PlaneCalibration extends Calibration {
         planeCreator.setHeight(DEFAULT_PLANE_HEIGHT);
         assert (planeCreator.isComputed());
         PlaneCalibration planeCalibration = planeCreator.getPlaneCalibration();
-        
+
         planeCalibration.flipNormal();
 //        planeCalibration.moveAlongNormal(DEFAULT_PLANE_SHIFT);
         assert (planeCalibration.isValid());

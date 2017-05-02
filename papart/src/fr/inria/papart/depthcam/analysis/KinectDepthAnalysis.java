@@ -39,6 +39,7 @@ import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -66,6 +67,7 @@ public class KinectDepthAnalysis extends DepthAnalysis {
     protected ByteBuffer depthRawBuffer;
     protected byte[] depthRaw;
     protected byte[] colorRaw;
+    protected float[] depth;
 
     // static values
     protected static final float INVALID_DEPTH = -1;
@@ -147,6 +149,7 @@ public class KinectDepthAnalysis extends DepthAnalysis {
 
         colorRaw = new byte[getColorSize() * 3];
         depthRaw = new byte[depthCameraDevice.rawDepthSize()];
+        depth = new float[depthCameraDevice.getDepthCamera().width() * depthCameraDevice.getDepthCamera().height()];
 
         depthData = new KinectDepthData(this);
         depthData.projectiveDevice = this.calibDepth;
@@ -241,19 +244,18 @@ public class KinectDepthAnalysis extends DepthAnalysis {
 
         for (PixelOffset px : pixels) {
             float d = getDepth(px.offset);
-            if (d != INVALID_DEPTH) {
+            // Experimental
+            depth[px.offset] = d;
 
-//                Vec3D pKinect = calibIR.pixelToWorld(px.x, px.y, d);
-//                depthData.depthPoints[px.offset] = pKinect;
+            if (d != INVALID_DEPTH) {
+                // Compute the depth point.
                 calibDepth.pixelToWorld(px.x, px.y, d, depthData.depthPoints[px.offset]);
-//                 System.out.println("Depth " + depthData.depthPoints[px.offset]);
                 manip.execute(depthData.depthPoints[px.offset], px);
             }
         }
     }
 
     protected void computeDepthAndDo(int precision, DepthPointManiplation manip, InvalidPointManiplation invalidManip) {
-
         PixelList pixels = new PixelList(precision);
 
         for (PixelOffset px : pixels) {
@@ -376,6 +378,106 @@ public class KinectDepthAnalysis extends DepthAnalysis {
                     depthData.validPointsMask[px.offset] = true;
                     depthData.validPointsList.add(px.offset);
                 }
+            }
+        }
+    }
+
+    class Select2DPointPlaneProjectionSR300Error implements DepthPointManiplation {
+
+        @Override
+        public void execute(Vec3D p, PixelOffset px) {
+            float error = Math.abs(p.x / 50f) + p.z / 400f;
+
+            if (depthData.planeAndProjectionCalibration.hasGoodOrientationAndDistance(p, error)) {
+//                Vec3D projected = depthData.planeAndProjectionCalibration.project(p);
+//                depthData.projectedPoints[px.offset] = projected;
+                depthData.planeAndProjectionCalibration.project(p, depthData.projectedPoints[px.offset]);
+
+                if (isInside(depthData.projectedPoints[px.offset], 0.f, 1.f, 0.0f)) {
+                    depthData.validPointsMask[px.offset] = true;
+                    depthData.validPointsList.add(px.offset);
+                }
+            }
+        }
+    }
+
+    class TimeFilterDepth implements DepthPointManiplation {
+
+        private final int frameNumber;
+//        private final Vec3D[][] depthHistory;
+        private final LinkedList<float[]> depthHistory;
+
+        public TimeFilterDepth() {
+            this(3);
+        }
+
+        public TimeFilterDepth(int frameNumber) {
+            this.frameNumber = frameNumber;
+            depthHistory = new LinkedList<float[]>();
+        }
+
+        private float getAverageValue(Vec3D p, PixelOffset px) {
+            int offset = px.offset;
+            float average = 0;
+            int sumAmount = 0;
+            
+            float current = p.z;
+            
+            float variance = 0;
+//            Vec3D average = p.copy();
+//            int sumAmount = 1;
+            for (float[] oldValues : depthHistory) {
+                float oldValue = oldValues[offset];
+                if (oldValue != INVALID_DEPTH) {
+                    sumAmount++;
+                    average += oldValue;
+                    
+                    variance += Math.abs(oldValue - current);
+                }
+            }
+            if (sumAmount == 0 || variance / frameNumber > 6) {
+                return INVALID_DEPTH;
+            }
+            average = average / sumAmount;
+            return average;
+        }
+
+        public void addCurrentDepthPoints(float[] points) {
+            float[] memoryPoints;
+            if (depthHistory.size() == frameNumber) {
+                memoryPoints = depthHistory.removeLast();
+            } else {
+                memoryPoints = new float[points.length];
+            }
+
+            System.arraycopy(points, 0, memoryPoints, 0, points.length);
+            depthHistory.addFirst(memoryPoints);
+        }
+
+        @Override
+        public void execute(Vec3D p, PixelOffset px) {
+            depthData.depthPoints[px.offset].z = getAverageValue(p, px);
+        }
+    }
+
+    class UndistortSR300Depth implements DepthPointManiplation {
+
+        @Override
+        public void execute(Vec3D p, PixelOffset px) {
+
+            if (p.z > 300) {
+//                float depthCoeff = ((p.z) / 200000f) +  1f;
+                float xCoeff;
+                if (p.x < 0) {
+                    xCoeff = (1f - (p.x / 10000f)) ;
+                } else {
+                    xCoeff = (1f + (p.x / 10000f)) ;
+                }
+//                if (px.x == px.y) {
+//                    System.out.println("coeff: " +xCoeff);
+//                }
+                depthData.depthPoints[px.offset].z = p.z * xCoeff;
+
             }
         }
     }

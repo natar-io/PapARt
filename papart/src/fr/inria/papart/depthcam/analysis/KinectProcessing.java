@@ -48,10 +48,12 @@ public class KinectProcessing extends KinectDepthAnalysis {
     IplImage nativeArrayToErode;
     UByteIndexer erosionIndexer;
     boolean[] validCopy;
+    private TimeFilterDepth timeFilterDepth;
 
     public KinectProcessing(PApplet parent, DepthCameraDevice kinect) {
         super(parent, kinect);
         init();
+        timeFilterDepth = new TimeFilterDepth(4);
     }
 
     public KinectProcessing(PApplet parent, KinectOne kinectOne) {
@@ -66,6 +68,8 @@ public class KinectProcessing extends KinectDepthAnalysis {
         validCopy = Arrays.copyOf(depthData.validPointsMask, depthData.validPointsMask.length);
     }
 
+    // TODO: Deprecated To Check
+    @Deprecated
     @Override
     public void updateMT(opencv_core.IplImage depth, opencv_core.IplImage color, PlaneAndProjectionCalibration calib, int skip2D, int skip3D) {
         updateRawDepth(depth);
@@ -92,24 +96,46 @@ public class KinectProcessing extends KinectDepthAnalysis {
     }
 
     public void updateMT(opencv_core.IplImage depth, opencv_core.IplImage color, PlaneAndProjectionCalibration calib, int skip2D) {
-        updateRawDepth(depth);
+
+        try {
+
+            updateRawDepth(depth);
 
 // optimisation no Color. 
-        updateRawColor(color);
-        depthData.clear();
-        depthData.timeStamp = papplet.millis();
-        depthData.planeAndProjectionCalibration = calib;
-        computeDepthAndDo(skip2D, new Select2DPointPlaneProjection());
+            updateRawColor(color);
+            depthData.clear();
+            depthData.timeStamp = papplet.millis();
+            depthData.planeAndProjectionCalibration = calib;
+            computeDepthAndDo(skip2D, new DoNothing());
 
+            // depth is computed at the step before.
+            timeFilterDepth.addCurrentDepthPoints(this.depth);
+            doForEachPoint(skip2D, timeFilterDepth);
+            System.out.println("Time filtering....");
+
+            doForEachPoint(skip2D,
+                    new UndistortSR300Depth());
+            doForEachPoint(skip2D,
+                    new Select2DPointPlaneProjectionSR300Error());
+
+            doForEachPoint(skip2D,
+                    new Select3DPointPlaneProjection());
 //        erodePoints(depthData.validPointsMask);
 //        erodePoints2(depthData.validPointsList, depthData.validPointsMask, skip2D);
-        doForEachPoint(skip2D, new Select3DPointPlaneProjection());
+            doForEachPoint(skip2D,
+                    new Select3DPointPlaneProjection());
 //        erodePoints(depthData.validPointsMask3D);
 
-        validPointsPImage.loadPixels();
-        Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 255));
-        doForEachValidPoint(skip2D, new SetImageData());
-        validPointsPImage.updatePixels();
+            validPointsPImage.loadPixels();
+
+            Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 255));
+            doForEachValidPoint(skip2D,
+                    new SetImageData());
+            validPointsPImage.updatePixels();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void erodePoints2(ArrayList<Integer> validList, boolean[] arrayToErode, int skip) {
@@ -149,6 +175,7 @@ public class KinectProcessing extends KinectDepthAnalysis {
         cvErode(nativeArrayToErode, nativeArrayToErode);
         for (int i = 0; i < getDepthWidth() * getDepthHeight(); i++) {
             arrayToErode[i] = erosionIndexer.get(i) == 1;
+
         }
 
     }
@@ -231,9 +258,15 @@ public class KinectProcessing extends KinectDepthAnalysis {
             computeDepthAndDo(skip, new SetImageData());
         }
 
+// depth is computed at the step before.
+        timeFilterDepth.addCurrentDepthPoints(this.depth);
+        doForEachPoint(skip, timeFilterDepth);
+
+        doForEachPoint(skip, new UndistortSR300Depth());
 //        computeDepthAndDo(skip, new Select2DPointOverPlane());
         validPointsPImage.updatePixels();
         return validPointsPImage;
+
     }
 
     class SetTouchInformation implements DepthPointManiplation {

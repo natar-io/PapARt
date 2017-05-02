@@ -109,13 +109,23 @@ public class PlaneAndProjectionCalibration extends Calibration {
     public boolean isUnderPlane(Vec3D point) {
         return planeCalibration.isUnderPlane(point);
     }
+    public boolean isUnderPlane(Vec3D point, float error) {
+        return planeCalibration.isUnderPlane(point, error);
+    }
 
     public boolean hasGoodOrientationAndDistance(Vec3D point) {
         return planeCalibration.hasGoodOrientationAndDistance(point);
     }
+    public boolean hasGoodOrientationAndDistance(Vec3D point, float error) {
+        return planeCalibration.hasGoodOrientationAndDistance(point, error);
+    }
 
     public boolean hasGoodDistance(Vec3D point) {
-        return planeCalibration.hasGoodDistance(point);
+        return planeCalibration.hasGoodDistance(point, 0);
+    }
+
+    public boolean hasGoodDistance(Vec3D point, float error) {
+        return planeCalibration.hasGoodDistance(point, error);
     }
 
     public boolean hasGoodOrientation(Vec3D point) {
