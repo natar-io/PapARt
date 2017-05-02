@@ -23,6 +23,7 @@ import java.nio.FloatBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bytedeco.javacpp.RealSense;
+import org.bytedeco.javacpp.RealSense.device;
 import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.FrameGrabber;
@@ -36,6 +37,7 @@ import processing.core.PMatrix3D;
 public class CameraRealSense extends CameraRGBIRDepth {
 
     protected RealSenseFrameGrabber grabber;
+    protected device device;
     private boolean useHardwareIntrinsics = true;
 
     protected CameraRealSense(int cameraNo) {
@@ -46,6 +48,12 @@ public class CameraRealSense extends CameraRGBIRDepth {
         }
         this.systemNumber = cameraNo;
         grabber = new RealSenseFrameGrabber(this.systemNumber);
+
+        try {
+            device = grabber.loadDevice();
+        } catch (FrameGrabber.Exception ex) {
+            Logger.getLogger(CameraRealSense.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
     }
 
@@ -63,11 +71,6 @@ public class CameraRealSense extends CameraRGBIRDepth {
         if (useColor) {
             grabber.setImageWidth(colorCamera.width());
             grabber.setImageHeight(colorCamera.height());
-            
-            if (colorCamera.width() == 1280) {
-                colorCamera.setFrameRate(60);
-            }
-            
             grabber.setFrameRate(colorCamera.getFrameRate());
             grabber.enableColorStream();
         }
@@ -108,6 +111,11 @@ public class CameraRealSense extends CameraRGBIRDepth {
         grabber.grab();
     }
 
+    /**
+     * Experimental.
+     *
+     * @return
+     */
     public Frame grabFrame() {
         try {
             return grabber.grab();
@@ -194,16 +202,31 @@ public class CameraRealSense extends CameraRGBIRDepth {
         if (!use) {
             grabber.disableColorStream();
         } else {
-            colorCamera.setPixelFormat(PixelFormat.RGB);
+            String name = device.get_name().getString();
+//            System.out.println("Name : " + name);
+            if (name.endsWith("SR300")) {
+                setSR300Color();
+            }
+            if (name.endsWith("R200")) {
+                setR200Color();
+            }
 
-            // default values
-//            colorCamera.setSize(1280, 720);
-
-
-            // Default values to get Color with multi-touch depth tracking. 
-//            this.setSize(1280, 720);
         }
         this.useColor = use;
+    }
+
+    public void setSR300Color() {
+        // todo: boolean or not ?
+        colorCamera.setPixelFormat(PixelFormat.RGB);
+        colorCamera.setSize(1280, 720);
+        depthCamera.setFrameRate(60);
+    }
+
+    public void setR200Color() {
+        // todo: boolean or not ?
+        colorCamera.setPixelFormat(PixelFormat.RGB);
+        colorCamera.setSize(640, 480);
+        depthCamera.setFrameRate(30);
     }
 
     @Override

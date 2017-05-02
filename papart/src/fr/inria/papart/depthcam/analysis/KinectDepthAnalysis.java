@@ -131,10 +131,7 @@ public class KinectDepthAnalysis extends DepthAnalysis {
         calibRGB = colorCamera.getProjectiveDevice();
         calibDepth = depthCamera.getDepthCamera().getProjectiveDevice();
 
-        if (!memoryInitialized) {
-            initMemory();
-            memoryInitialized = true;
-        }
+        initMemory();
     }
 
     // Thread version... No bonus whatsoever for now.
@@ -153,6 +150,7 @@ public class KinectDepthAnalysis extends DepthAnalysis {
 
         depthData = new KinectDepthData(this);
         depthData.projectiveDevice = this.calibDepth;
+        System.out.println("ColorRaw initialized !" + colorRaw.length);
 
         PixelOffset.initStaticMode(getDepthWidth(), getDepthHeight());
     }

@@ -303,9 +303,17 @@ public class KinectProcessing extends KinectDepthAnalysis {
 
         // TODO: Get a cleaner way go obtain the color... 
         int colorOffset = depthCameraDevice.findColorOffset(depthData.depthPoints[offset]) * 3;
-        int c = (colorRaw[colorOffset + 0] & 0xFF) << 16
-                | (colorRaw[colorOffset + 1] & 0xFF) << 8
-                | (colorRaw[colorOffset + 2] & 0xFF);
+
+        int c;
+        // Do not set invalid pixels
+        if (colorOffset < 0 || colorOffset > colorRaw.length) {
+            c = 255;
+        } else {
+
+            c = (colorRaw[colorOffset + 0] & 0xFF) << 16
+                    | (colorRaw[colorOffset + 1] & 0xFF) << 8
+                    | (colorRaw[colorOffset + 2] & 0xFF);
+        }
 
         validPointsPImage.pixels[offset] = c;
     }
