@@ -44,13 +44,11 @@ public class ColorDetection {
     private int picHeight = 8; // Works better with power  of 2
     private PVector captureOffset;
 
-    private boolean invY;
 
     // output 
     protected int col;
 
     public ColorDetection(PaperScreen paperScreen) {
-        this.invY = paperScreen.isIsDrawingOnScreen();
         this.paperScreen = paperScreen;
         setCaptureOffset(new PVector());
     }
@@ -67,11 +65,7 @@ public class ColorDetection {
     public void setPosition(PVector pos) {
         this.pos.set(pos);
         if (boardView != null) {
-            if (invY) {
-                boardView.setBottomLeftCorner(new PVector(pos.x, paperScreen.drawingSize.y - pos.y));
-            } else {
-                boardView.setBottomLeftCorner(new PVector(pos.x, pos.y));
-            }
+                boardView.setTopLeftCorner(pos);
         }
     }
 
@@ -86,11 +80,7 @@ public class ColorDetection {
 
         paperScreen.pushMatrix();
         paperScreen.translate(pos.x,
-                pos.y, 1);
-
-          if (!invY) {
-//             paperScreen.translate(0, captureSize.y, 0);
-        }
+                pos.y, 0.2f);
 
 //        drawCaptureZonePriv();
         paperScreen.translate(captureSize.x + 20, 0);
@@ -133,15 +123,11 @@ public class ColorDetection {
                 pos.y,
                 0.2f);
 
-        if (!invY) {
-             paperScreen.translate(0, captureSize.y, 0);
-        }
-
         paperScreen.strokeWeight(2);
         paperScreen.noFill();
         paperScreen.stroke(80);
         paperScreen.rectMode(PApplet.CORNER);
-        paperScreen.rect(0, -captureSize.y, captureSize.x, captureSize.y);
+        paperScreen.rect(0, 0, captureSize.x, captureSize.y);
         paperScreen.popMatrix();
     }
 
@@ -266,14 +252,6 @@ public class ColorDetection {
 
     public int getPicHeight() {
         return picHeight;
-    }
-
-    public boolean isInvY() {
-        return invY;
-    }
-
-    public void setInvY(boolean invY) {
-        this.invY = invY;
     }
 
 }

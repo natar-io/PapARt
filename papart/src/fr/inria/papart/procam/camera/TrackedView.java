@@ -210,7 +210,7 @@ public class TrackedView {
         if (isYUp) {
 
             // bottom left
-            tmp.translate(bottomLeftCorner.x, bottomLeftCorner.y);
+            tmp.translate(topLeftCorner.x, topLeftCorner.y);
             corner3DPos[0].x = tmp.m03;
             corner3DPos[0].y = tmp.m13;
             corner3DPos[0].z = tmp.m23;
@@ -222,7 +222,7 @@ public class TrackedView {
             corner3DPos[1].z = tmp.m23;
 
             // top right
-            tmp.translate(0, captureSizeMM.y, 0);
+            tmp.translate(0, -captureSizeMM.y, 0);
             corner3DPos[2].x = tmp.m03;
             corner3DPos[2].y = tmp.m13;
             corner3DPos[2].z = tmp.m23;
@@ -235,7 +235,8 @@ public class TrackedView {
 
         } else {
 
-            // top left
+            // TODO: use BottowLeftCorner here ?!! 
+           // top left
             tmp.translate(topLeftCorner.x, paperScreen.getDrawingSize().y - topLeftCorner.y);
             corner3DPos[3].x = tmp.m03;
             corner3DPos[3].y = tmp.m13;
