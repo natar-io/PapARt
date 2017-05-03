@@ -122,8 +122,10 @@ public class DetectedMarker implements Cloneable {
         tracker.setUndistortionMode(UNDIST_NONE);
 
 //      tracker.setPoseEstimator(POSE_ESTIMATOR_RPP);
-//      tracker.setPoseEstimator(ARToolKitPlus.POSE_ESTIMATOR_RPP);
-      tracker.setPoseEstimator(ARToolKitPlus.POSE_ESTIMATOR_ORIGINAL_CONT);
+//      tracker.setPoseEstimator(ARToolKitPlus.POSE_ESTIMATOR_ORIGINAL);
+//      tracker.setPoseEstimator(ARToolKitPlus.POSE_ESTIMATOR_ORIGINAL_CONT);
+      tracker.setPoseEstimator(ARToolKitPlus.POSE_ESTIMATOR_RPP);
+
         tracker.setMarkerMode(MARKER_ID_BCH);
 //        tracker.setImageProcessingMode(IMAGE_HALF_RES);
         tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_FULL_RES);
@@ -165,7 +167,8 @@ public class DetectedMarker implements Cloneable {
         int n = 0;
         IntPointer markerNum = new IntPointer(1);
         ARToolKitPlus.ARMarkerInfo markers = new ARToolKitPlus.ARMarkerInfo(null);
-        tracker.arDetectMarkerLite(image.imageData(), tracker.getThreshold() /* 100 */, markers, markerNum);
+//        tracker.arDetectMarkerLite(image.imageData(), tracker.getThreshold() /* 100 */, markers, markerNum);
+        tracker.arDetectMarker(image.imageData(), tracker.getThreshold() /* 100 */, markers, markerNum);
 
         DetectedMarker[] markers2 = new DetectedMarker[markerNum.get(0)];
 
