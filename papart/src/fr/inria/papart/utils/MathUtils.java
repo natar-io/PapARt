@@ -5,10 +5,16 @@
  */
 package fr.inria.papart.utils;
 
+import fr.inria.papart.depthcam.PixelOffset;
+import fr.inria.papart.depthcam.analysis.KinectProcessing;
 import fr.inria.papart.procam.PaperTouchScreen;
 import fr.inria.papart.procam.camera.Camera;
 import java.io.FileNotFoundException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import org.bytedeco.javacpp.opencv_core;
 import processing.core.PApplet;
 import static processing.core.PApplet.abs;
@@ -229,6 +235,7 @@ public class MathUtils {
         int db = PApplet.abs(b1 - b2);
         return dr < threshold && dg < threshold && db < threshold;
     }
+
     /**
      * RGB distance of two colors. Return true if all channels differences are
      * below the difference threshold.
@@ -275,6 +282,7 @@ public class MathUtils {
                 && // avoid pixels not bright enough
                 abs(g.brightness(incomingPix) - g.brightness(baseline)) > brightnessTresh;
     }
+
     /**
      * Color distance on the HSB scale. The incomingPix is compared with the
      * baseline. The method returns true if each channel validates the condition
@@ -374,6 +382,83 @@ public class MathUtils {
             }
         }
         return k;
+    }
+
+    /**
+     * Do a simple erosion.
+     *
+     * @param validList will be updated after erosion
+     * @param arrayToErode eroded array.
+     * @param buffer temporary buffer, same size of the arrayToErode.
+     * @param skip quality skip 1/skip values.
+     * @param invalidValue value to fill the invalid states
+     * @param size size of the arrayToErode
+     */
+    public static void erodePoints2(HashSet<Integer> validList,
+            byte[] arrayToErode,
+            byte[] buffer,
+            int skip, byte invalidValue,
+            WithSize size) {
+
+        Arrays.fill(buffer, invalidValue);
+
+        ArrayList<Integer> toRemove = new ArrayList<>();
+
+        for (Integer idx : validList) {
+            int sum = 0;
+            int x = idx % size.getWidth();
+            int y = idx / size.getWidth();
+
+            byte value = arrayToErode[idx];
+
+//            for (int j = y * size.getWidth() - skip; j <= y * size.getWidth() + skip; j += size.getWidth() * skip) {
+//                for (int i = x - skip; i <= x + skip; i += skip) {
+            for (int j = - skip; j <= skip; j += skip) {
+                for (int i = - skip; i <= skip; i += skip) {
+
+                    if (x+i >= 0 && x+i < size.getWidth()
+                            && j+y >= 0 && j+y < size.getHeight()) {
+                        int currentIdx = (x+i) + (j+y) * size.getWidth();
+                        sum += arrayToErode[currentIdx] == value ? 1 : 0;
+                    }
+                }
+            }
+
+            if (sum <= 8) {
+                buffer[idx] = invalidValue;
+                toRemove.add(idx);
+            } else {
+                buffer[idx] = value;
+            }
+        }
+        validList.removeAll(toRemove);
+        System.arraycopy(buffer, 0, arrayToErode, 0, arrayToErode.length);
+        //        erodePoints(depthData.validPointsMask);
+    }
+
+    public void erodePoints2(ArrayList<Integer> validList,
+            boolean[] arrayToErode,
+            boolean[] buffer,
+            int skip,
+            WithSize size) {
+
+        Arrays.fill(buffer, false);
+
+        for (Integer idx : validList) {
+            PixelOffset po = PixelOffset.get(idx);
+            int sum = 0;
+            int x = po.x;
+            int y = po.y;
+            for (int j = y * size.getWidth() - skip; j <= y * size.getWidth() + skip; j += size.getWidth() * skip) {
+                for (int i = x - skip; i <= x + skip; i += skip) {
+                    int currentIdx = i + j;
+                    sum += arrayToErode[currentIdx] ? 1 : 0;
+                }
+            }
+            buffer[idx] = sum >= 3;
+        }
+        System.arraycopy(buffer, 0, arrayToErode, 0, arrayToErode.length);
+        //        erodePoints(depthData.validPointsMask);
     }
 
 }

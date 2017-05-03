@@ -21,6 +21,7 @@ package fr.inria.papart.multitouch.detection;
 
 import fr.inria.papart.multitouch.ConnectedComponent;
 import fr.inria.papart.multitouch.TrackedElement;
+import fr.inria.papart.utils.MathUtils;
 import fr.inria.papart.utils.WithSize;
 import java.util.ArrayList;
 import processing.core.PVector;
@@ -40,7 +41,12 @@ public class TouchDetectionColor extends TouchDetection {
 
     public static final byte INVALID_COLOR = -1;
     private byte[] segmentedImage;
+    private byte[] segmentedImageCopy;
+    private int erosionLevel;
 
+    private void setErosionLevel(int erosionLevel) {
+        this.erosionLevel = erosionLevel;
+    }
 
     public class CheckColorPoint implements PointValidityCondition {
 
@@ -63,8 +69,13 @@ public class TouchDetectionColor extends TouchDetection {
     }
 
     public ArrayList<TrackedElement> compute(byte[] segmentedImage, int timestamp) {
+        return compute(segmentedImage, timestamp, 0);
+    }
+
+    public ArrayList<TrackedElement> compute(byte[] segmentedImage, int timestamp, int erosionLevel) {
         this.setSegmentedImage(segmentedImage);
         this.setCurrentTime(timestamp);
+        this.setErosionLevel(erosionLevel);
 
         ArrayList<ConnectedComponent> connectedComponents = findConnectedComponents();
         ArrayList<TrackedElement> colorPoints = this.createTouchPointsFrom(connectedComponents);
@@ -80,6 +91,18 @@ public class TouchDetectionColor extends TouchDetection {
                 toVisit.add(i);
             }
         }
+
+        if (erosionLevel > 0 && segmentedImageCopy == null) {
+            segmentedImageCopy = new byte[segmentedImage.length];
+        }
+        // Do an erosion to remove the useless elements
+
+        for (int i = 0; i < erosionLevel; i++) {
+            MathUtils.erodePoints2(toVisit,
+                    segmentedImage, segmentedImageCopy,
+                    calib.getPrecision(), INVALID_COLOR, imgSize);
+        }
+
     }
 
 //    protected abstract void setSearchParameters();

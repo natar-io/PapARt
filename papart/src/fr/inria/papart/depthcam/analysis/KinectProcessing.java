@@ -138,34 +138,6 @@ public class KinectProcessing extends KinectDepthAnalysis {
         }
     }
 
-    private void erodePoints2(ArrayList<Integer> validList, boolean[] arrayToErode, int skip) {
-
-        Arrays.fill(validCopy, false);
-
-        for (Integer idx : validList) {
-            PixelOffset po = PixelOffset.get(idx);
-            int sum = 0;
-
-            int x = po.x;
-            int y = po.y;
-
-            for (int j = y * getWidth() - skip;
-                    j <= y * getWidth() + skip;
-                    j += getWidth() * skip) {
-                for (int i = x - skip; i <= x + skip; i += skip) {
-
-                    int currentIdx = i + j;
-                    sum += arrayToErode[currentIdx] ? 1 : 0;
-
-                }
-            }
-            validCopy[idx] = sum >= 3;
-        }
-
-        System.arraycopy(validCopy, 0, arrayToErode, 0, arrayToErode.length);
-
-//        erodePoints(depthData.validPointsMask);
-    }
 
     private void erodePoints(boolean[] arrayToErode) {
 
