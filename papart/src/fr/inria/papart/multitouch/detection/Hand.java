@@ -23,6 +23,7 @@ import fr.inria.papart.depthcam.devices.KinectDepthData;
 import fr.inria.papart.depthcam.analysis.DepthAnalysis;
 import fr.inria.papart.multitouch.ConnectedComponent;
 import fr.inria.papart.multitouch.TrackedDepthPoint;
+import fr.inria.papart.utils.WithSize;
 import java.util.ArrayList;
 import java.util.HashSet;
 import toxi.geom.Vec3D;
@@ -33,7 +34,7 @@ import toxi.geom.Vec3D;
  */
 public class Hand extends Simple2D {
 
-    public Hand(int size) {
+    public Hand(WithSize size) {
         super(size);
     }
 

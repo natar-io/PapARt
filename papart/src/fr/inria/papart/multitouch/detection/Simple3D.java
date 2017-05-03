@@ -24,6 +24,7 @@ import fr.inria.papart.depthcam.DepthData;
 import fr.inria.papart.depthcam.devices.KinectDepthData;
 import fr.inria.papart.multitouch.ConnectedComponent;
 import fr.inria.papart.multitouch.TrackedDepthPoint;
+import fr.inria.papart.utils.WithSize;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -33,19 +34,19 @@ import java.util.List;
  *
  * @author Jeremy Laviole jeremy.laviole@inria.fr
  */
-public class Simple3D extends TouchDetection {
+public class Simple3D extends TouchDetectionDepth {
 
     protected int MINIMUM_COMPONENT_SIZE_3D = 50;
     protected int COMPONENT_SIZE_FOR_POSITION = 10;
 
-    public Simple3D(int size) {
+    public Simple3D(WithSize size) {
         super(size);
         currentPointValidityCondition = new CheckTouchPoint3D();
     }
 
     @Override
     public ArrayList<TrackedDepthPoint> compute(KinectDepthData dData) {
-        this.depthData = dData;
+        this.setDepthData(depthData);
 
         if (!hasCCToFind()) {
             return new ArrayList<TrackedDepthPoint>();

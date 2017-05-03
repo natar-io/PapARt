@@ -39,9 +39,12 @@ public class Touch {
     
     // TODO: find a solution for this !
     // Always has a TouchPoint linked ? Not clean. 
+    public TrackedElement trackedSource;
+    
+    @Deprecated
     public TrackedDepthPoint touchPoint;
     // TODO: switch to TrackedElement
-    public TrackedElement trackedSource;
+//    public TrackedElement trackedSource;
     
     public PVector size;
 
@@ -51,6 +54,14 @@ public class Touch {
 
     public void setPosition(PVector v) {
         setPosition(v.x, v.y, v.z);
+    }
+    
+    /**
+     * Legacy access to the touchPoint, use trackedSource now.
+     * @return 
+     */
+    public TrackedElement touchPoint(){
+        return trackedSource;
     }
 
     public void setPosition(float x, float y, float z) {
@@ -63,7 +74,7 @@ public class Touch {
 
     @Override
     public String toString() {
-        return "Position " + position + " Speed " + speed + " Touch info " + touchPoint;
+        return "Position " + position + " Speed " + speed + " Touch info " + trackedSource;
     }
 
     public void setPrevPos(PVector prevPosition) {

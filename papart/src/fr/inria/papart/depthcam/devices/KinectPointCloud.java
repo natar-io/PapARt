@@ -40,7 +40,7 @@ public class KinectPointCloud extends PointCloud implements PConstants {
     private int precision = 1;
 
     public KinectPointCloud(PApplet parent, KinectDepthAnalysis depthAnalysis, int skip) {
-        super(parent, depthAnalysis.getDepthSize() / (skip * skip));
+        super(parent, depthAnalysis.getSize() / (skip * skip));
         this.depthAnalysis = depthAnalysis;
         precision = skip;
     }
@@ -61,10 +61,10 @@ public class KinectPointCloud extends PointCloud implements PConstants {
 //        for (int i = 0; i < kinect.getDepthSize(); i++) {
         
         int k = 0; // k is the 3D point cloud memory.
-        for (int y = 0; y < depthAnalysis.getDepthHeight(); y += precision) {
-            for (int x = 0; x < depthAnalysis.getDepthWidth(); x += precision) {
+        for (int y = 0; y < depthAnalysis.getHeight(); y += precision) {
+            for (int x = 0; x < depthAnalysis.getWidth(); x += precision) {
 
-                int i = x + y * depthAnalysis.getDepthWidth();
+                int i = x + y * depthAnalysis.getWidth();
                 
                 if (valid[i]) {
                     Vec3D p = points[i];

@@ -21,6 +21,7 @@ package fr.inria.papart.depthcam.analysis;
 
 import fr.inria.papart.depthcam.devices.KinectDepthData;
 import fr.inria.papart.depthcam.PixelOffset;
+import fr.inria.papart.utils.WithSize;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import processing.core.PApplet;
 import processing.core.PVector;
@@ -32,7 +33,7 @@ import toxi.geom.Vec3D;
  *
  * @author jeremy
  */
-public abstract class DepthAnalysis {
+public abstract class DepthAnalysis implements WithSize {
 
     protected int[] connexity;  // TODO: check for Byte instead of int
     protected KinectDepthData depthData;
@@ -50,10 +51,6 @@ public abstract class DepthAnalysis {
     
     public abstract void update(IplImage depth);
 
-    public abstract int getDepthSize();
-    public abstract int getDepthWidth();
-    public abstract int getDepthHeight();
-        
     /**
      * @param offset
      * @return the depth (float).

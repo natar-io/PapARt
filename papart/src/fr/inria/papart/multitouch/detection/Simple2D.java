@@ -24,23 +24,25 @@ import fr.inria.papart.depthcam.analysis.DepthAnalysis;
 import fr.inria.papart.depthcam.devices.KinectDepthData;
 import fr.inria.papart.multitouch.ConnectedComponent;
 import fr.inria.papart.multitouch.TrackedDepthPoint;
+import fr.inria.papart.utils.WithSize;
 import java.util.ArrayList;
 import java.util.HashSet;
+import toxi.geom.Vec3D;
 
 /**
  *
  * @author Jeremy Laviole jeremy.laviole@inria.fr
  */
-public class Simple2D extends TouchDetection {
+public class Simple2D extends TouchDetectionDepth {
 
-    public Simple2D(int size) {
+    public Simple2D(WithSize size) {
         super(size);
         currentPointValidityCondition = new CheckTouchPoint();
     }
 
     @Override
     public ArrayList<TrackedDepthPoint> compute(KinectDepthData dData) {
-        this.depthData = dData;
+        this.setDepthData(depthData);
 
         if (!hasCCToFind()) {
             return new ArrayList<TrackedDepthPoint>();
@@ -51,16 +53,11 @@ public class Simple2D extends TouchDetection {
         return touchPoints;
     }
 
+    
     @Override
     protected void setSearchParameters() {
         this.toVisit.clear();
         this.toVisit.addAll(depthData.validPointsList);
-        
-//        int firstPoint = toVisit.iterator().next();
-//        maxDistance = 10;
-////         setPrecisionFrom(firstPoint);
-//        searchDepth = 40;// TODO: FIX this value !
-//        maximumRecursion = 100; // TODO: fix this value.
     }
 
  

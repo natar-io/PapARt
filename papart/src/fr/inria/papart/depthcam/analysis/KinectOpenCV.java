@@ -45,10 +45,10 @@ public class KinectOpenCV extends KinectDepthAnalysis {
     }
 
     private void init() {
-        validPointsIpl = IplImage.create(cvSize(getDepthWidth(),
-                getDepthHeight()),
+        validPointsIpl = IplImage.create(cvSize(getWidth(),
+                getHeight()),
                 IPL_DEPTH_8U, 3);
-        validPointsRaw = new byte[getDepthSize()* 3];
+        validPointsRaw = new byte[getSize()* 3];
     }
 
     public IplImage update(IplImage depth, IplImage color) {

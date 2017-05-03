@@ -19,7 +19,7 @@
  */
 package fr.inria.papart.multitouch;
 
-import fr.inria.papart.multitouch.detection.TouchDetection;
+import fr.inria.papart.multitouch.detection.TouchDetectionDepth;
 import fr.inria.papart.depthcam.devices.KinectDepthData;
 import fr.inria.papart.depthcam.DepthDataElementKinect;
 import fr.inria.papart.depthcam.DepthPoint;

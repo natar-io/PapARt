@@ -20,21 +20,14 @@
 package fr.inria.papart.multitouch;
 
 import fr.inria.papart.multitouch.detection.TouchDetection;
-import fr.inria.papart.depthcam.devices.KinectDepthData;
-import fr.inria.papart.depthcam.DepthDataElementKinect;
-import fr.inria.papart.depthcam.DepthPoint;
-import java.util.ArrayList;
+import fr.inria.papart.multitouch.detection.TouchDetectionDepth;
 import processing.core.PVector;
 import toxi.geom.Vec3D;
 
-// TODO: Filtered TouchPoint ...
-
-/** 
- * TouchPoint, touch events go through this class. 
- * TODO: add event handling !
+/**
  * @author Jeremy Laviole
  */
-public class TrackedElement  {
+public class TrackedElement {
 
     public static int count = 0;
 
@@ -43,17 +36,16 @@ public class TrackedElement  {
     protected PVector previousPosition = new PVector();
     protected PVector speed = new PVector();
 
-
     // TODO: become this:
     protected Object source;
+
 //    private ArrayList<DepthDataElementKinect> depthDataElements = new ArrayList<DepthDataElementKinect>();
     public int attachedValue = -1;
     public Object attachedObject;
 
-    
     protected float confidence;
 //    public float size;
-    
+
     // Tracking related variables
     public static final int NO_ID = -10;
     private static int globalID = 1;
@@ -67,14 +59,12 @@ public class TrackedElement  {
     private boolean toDelete = false;
     public boolean isUpdated = false;
 
-
-    
     // Element it originates from.
     protected TouchDetection detection;
 
     // Element it goes to 
     protected Touch touch;
-    
+
 // filtering 
     private OneEuroFilter[] filters;
     public static float filterFreq = 30f;
@@ -101,45 +91,76 @@ public class TrackedElement  {
 
     /**
      * DistanceTo is used to compare Points !
+     *
      * @param newTp
-     * @return 
+     * @return
      */
     public float distanceTo(TrackedElement newTp) {
         return this.position.dist(newTp.position);
     }
 
-      
+    /**
+     * Set a new position to this tracked element, it will save the past
+     * location and compute the speed.
+     *
+     * @param pos
+     */
     public void setPosition(Vec3D pos) {
         this.position.set(pos.x, pos.y, pos.z);
         setPreviousPosition();
     }
 
+       /**
+     * Set a new position to this tracked element, it will save the past
+     * location and compute the speed.
+     *
+     * @param pos
+     */
     public void setPosition(PVector pos) {
         this.position.set(pos);
         setPreviousPosition();
     }
-    
-    public PVector getPosition(){
+
+    /**
+     * Get the current position of this element.
+     * @return 
+     */
+    public PVector getPosition() {
         return this.position;
     }
-
-    public Vec3D getPositionVec3D(){
+    
+    /**
+     * Get the current position of this element.
+     * @return 
+     */
+    public Vec3D getPositionVec3D() {
         return new Vec3D(position.x, position.y, position.z);
     }
-    
+
     private void setPreviousPosition() {
         previousPosition.set(this.position);
     }
 
+    /**
+     * Get the current previous position of this element.
+     * @return 
+     */
     public PVector getPreviousPosition() {
         return this.previousPosition;
     }
-
+    
+    /**
+     * Get the current previous position of this element.
+     * @return 
+     */
     public Vec3D getPreviousPositionVec3D() {
         return new Vec3D(previousPosition.x, previousPosition.y, previousPosition.z);
     }
-
-    public void filter() {
+    
+    /**
+     * Use the OneEuroFilter to filter the position.
+     */
+    private void filter() {
         try {
             position.x = (float) filters[0].filter(position.x);
             position.y = (float) filters[1].filter(position.y);
@@ -149,6 +170,13 @@ public class TrackedElement  {
         }
     }
 
+    /**
+     * Update with an external element. This is used for tracking purposes. The 
+     * current element is updated with the data of the new one passed in parameter.
+     * the new one is to be deleted afterwards.
+     * @param tp
+     * @return 
+     */
     public boolean updateWith(TrackedElement tp) {
         if (isUpdated || tp.isUpdated) {
             return false;
@@ -170,20 +198,24 @@ public class TrackedElement  {
 
         updatePosition(tp);
 
-        // TODO: Call  son methods ?
-//        updateDepthPoints(tp);
-
         checkAndSetID();
         filter();
         return true;
     }
-    
+
+    /**
+     * Update the element without an external one. This is called when 
+     * no good candidate is found. The filtering may set a new position and speed.
+     */
     public void updateAlone() {
         updatePosition(this);
         // TODO: check performance ?!
         filter();
     }
 
+    /**
+     * Find a proper ID for this tracked Element
+     */
     private void checkAndSetID() {
         // The touchPoint gets an ID, it is a grown up now. 
         if (this.id == NO_ID) {
@@ -195,6 +227,11 @@ public class TrackedElement  {
         }
     }
 
+    /**
+     * Update the position of this element according to the parameter. 
+     * Updates the position, previous position, confidence and speed. 
+     * @param tp 
+     */
     private void updatePosition(TrackedElement tp) {
         // save the previous position
         previousPosition = position.get();
@@ -205,31 +242,63 @@ public class TrackedElement  {
         speed.set(this.position);
         speed.sub(this.previousPosition);
     }
-    
-    protected void updateAdditionalElements(TrackedElement tp){
-        
-    }
-    
 
+    
+    protected void updateAdditionalElements(TrackedElement tp) {
+
+    }
+
+    /**
+     * Find out if the current Element has not been updated for a long time. 
+     * A long time is given by the detection which created this element
+     * with the method getTrackingForgetTime();
+     * @param currentTime
+     * @return 
+     */
     public boolean isObselete(int currentTime) {
         return (currentTime - updateTime) > this.getDetection().getTrackingForgetTime();
     }
 
+    /**
+     * Return true if the element is flagged to be deleted. A trackedElement 
+     * like this is a "ghost": still here but ready to be removed. 
+     * @param currentTime
+     * @param duration
+     * @return 
+     */
     public boolean isToRemove(int currentTime, int duration) {
         return (currentTime - deletionTime) > duration;
     }
 
+    /**
+     * Get the current ID. 
+     * @return the id or NO_ID if its invalid.
+     */
     public int getID() {
         return this.id;
     }
 
+    /**
+     * Time limit in ms for a "young" point 
+     */
     static final int SHORT_TIME_PERIOD = 200;  // in ms
 
+    /**
+     * Return true if the TrackedElement has been created recently. Currently
+     * a young Element is less than 200ms old.
+     * @param currentTime
+     * @return 
+     */
     public boolean isYoung(int currentTime) {
         int age = getAge(currentTime);
         return age == NO_TIME || age < SHORT_TIME_PERIOD;
     }
 
+    /**
+     * Get the age from creation in milliseconds.
+     * @param currentTime
+     * @return 
+     */
     public int getAge(int currentTime) {
         if (this.createTime == NO_TIME) {
             return NO_TIME;
@@ -238,6 +307,10 @@ public class TrackedElement  {
         }
     }
 
+    /**
+     * Set the time of creation. 
+     * @param timeStamp 
+     */
     public void setCreationTime(int timeStamp) {
         this.createTime = timeStamp;
         this.updateTime = timeStamp;
@@ -286,7 +359,8 @@ public class TrackedElement  {
     public String toString() {
         return "Tracked Element:  position: " + position + ", confidence: " + confidence + ". \n";
     }
-
+    
+    // TODO: find a way to handle in a better way.
 
     public boolean hasTouch() {
         return touch != null;
@@ -315,13 +389,21 @@ public class TrackedElement  {
         return detection;
     }
 
+    
+    public Object getSource() {
+        return source;
+    }
+
+    public void setSource(Object source) {
+        this.source = source;
+    }
     /**
      * TODO: Find the use of this?
-     * @param detection 
+     *
+     * @param detection
      */
     public void setDetection(TouchDetection detection) {
         this.detection = detection;
     }
-
 
 }

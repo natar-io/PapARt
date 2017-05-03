@@ -80,17 +80,17 @@ public class KinectDepthAnalysis extends DepthAnalysis {
     }
 
     @Override
-    public int getDepthSize() {
-        return getDepthWidth() * getDepthHeight();
+    public int getSize() {
+        return getWidth() * getHeight();
     }
 
     @Override
-    public int getDepthWidth() {
+    public int getWidth() {
         return getDepthCameraDevice().getDepthCamera().width();
     }
 
     @Override
-    public int getDepthHeight() {
+    public int getHeight() {
         return getDepthCameraDevice().getDepthCamera().height();
     }
 
@@ -155,7 +155,7 @@ public class KinectDepthAnalysis extends DepthAnalysis {
         depthData.projectiveDevice = this.calibDepth;
         System.out.println("ColorRaw initialized !" + colorRaw.length);
 
-        PixelOffset.initStaticMode(getDepthWidth(), getDepthHeight());
+        PixelOffset.initStaticMode(getWidth(), getHeight());
     }
 
     private void setDepthMethod() {

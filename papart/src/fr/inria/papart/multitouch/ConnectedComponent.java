@@ -19,6 +19,7 @@
  */
 package fr.inria.papart.multitouch;
 
+import fr.inria.papart.utils.WithSize;
 import java.util.ArrayList;
 import toxi.geom.Vec3D;
 
@@ -38,6 +39,29 @@ public class ConnectedComponent extends ArrayList<Integer> {
         this.id = id;
     }
     
+    /**
+     * Find the mean location if offset positions.
+     * @param size
+     * @return 
+     */
+    public Vec3D getMean(WithSize size) {
+        Vec3D mean = new Vec3D(0, 0, 0);
+
+        for (int offset : this) {
+            int x = offset % size.getWidth();
+            int y = (int) offset / size.getWidth();
+            
+            mean.addSelf(x, y, 0);
+        }
+        mean.scaleSelf(1.0f / this.size());
+        return mean;
+    }
+    
+    /**
+     * Get the mean location given an input array of positions.
+     * @param array
+     * @return 
+     */
     public Vec3D getMean(Vec3D[] array) {
         Vec3D mean = new Vec3D(0, 0, 0);
         for (int offset : this) {

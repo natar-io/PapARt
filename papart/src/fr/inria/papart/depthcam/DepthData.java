@@ -66,8 +66,8 @@ public class DepthData {
     public DepthAnalysis source;
 
     public DepthData(DepthAnalysis source) {
-        int width = source.getDepthWidth();
-        int height = source.getDepthHeight();
+        int width = source.getWidth();
+        int height = source.getHeight();
         this.source = source;
         int size = width * height;
         depthPoints = new Vec3D[size];

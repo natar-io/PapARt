@@ -49,7 +49,7 @@ public class TouchList extends ArrayList<Touch> {
     public void removeYoungOnes(int currentTime) {
         for (Iterator<Touch> it = this.iterator(); it.hasNext();) {
             Touch touch = it.next();
-            if (touch.touchPoint.isYoung(currentTime)) {
+            if (touch.trackedSource.isYoung(currentTime)) {
                 it.remove();
             }
         }
@@ -58,7 +58,7 @@ public class TouchList extends ArrayList<Touch> {
     public TouchList getOldOnes(int currentTime) {
         TouchList old = new TouchList();
         for (Touch touch : this) {
-            if (!touch.touchPoint.isYoung(currentTime)) {
+            if (!touch.trackedSource.isYoung(currentTime)) {
                 old.add(touch);
             }
         }

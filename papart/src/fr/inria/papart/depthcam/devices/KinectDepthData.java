@@ -73,7 +73,7 @@ public class KinectDepthData extends DepthData {
     public KinectDepthData(DepthAnalysis source, boolean is3D) {
         super(source);
 
-        int size = source.getDepthSize();
+        int size = source.getSize();
         projectedPoints = new Vec3D[size];
         for (int i = 0; i < size; i++) {
             projectedPoints[i] = new Vec3D();
@@ -85,7 +85,7 @@ public class KinectDepthData extends DepthData {
             validPointsMask3D = new boolean[size];
             validPointsList3D = new ArrayList();
         }
-        connexity = new Connexity(depthPoints, source.getDepthWidth(), source.getDepthHeight());
+        connexity = new Connexity(depthPoints, source.getWidth(), source.getHeight());
 //        connexity = new Connexity(projectedPoints, width, height);
     }
 

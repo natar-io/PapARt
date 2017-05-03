@@ -128,8 +128,8 @@ public class KinectTouchInput extends TouchInput {
             // TODO: all the time ?...
             if (touchDetection2D == null) {
                 int depthSize = kinectDevice.getDepthCamera().width() * kinectDevice.getDepthCamera().height();
-                touchDetection2D = new Simple2D(depthSize);
-                touchDetection3D = new Simple3D(depthSize);
+                touchDetection2D = new Simple2D(depthAnalysis);
+                touchDetection3D = new Simple3D(depthAnalysis);
 
                 touchDetection2D.setCalibration(touchCalib2D);
                 touchDetection3D.setCalibration(touchCalib3D);
@@ -202,7 +202,7 @@ public class KinectTouchInput extends TouchInput {
         }
         touch.isGhost = tp.isToDelete();
         touch.is3D = tp.is3D();
-        touch.touchPoint = tp;
+        touch.trackedSource = tp;
         return touch;
     }
 

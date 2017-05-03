@@ -96,6 +96,7 @@ public class Papart {
     public static String planeCalib = calibrationFolder + "PlaneCalibration.xml";
     public static String homographyCalib = calibrationFolder + "HomographyCalibration.xml";
     public static String planeAndProjectionCalib = calibrationFolder + "PlaneProjectionCalibration.xml";
+    public static String touchColorCalib = calibrationFolder + "TouchColorCalibration.xml";
     public static String touchCalib = calibrationFolder + "Touch2DCalibration.xml";
     public static String touchCalib3D = calibrationFolder + "Touch3DCalibration.xml";
     public int defaultFontSize = 12;
@@ -737,6 +738,12 @@ public class Papart {
         touchInitialized = true;
     }
 
+    public PlanarTouchCalibration getDefaultColorTouchCalibration() {
+        PlanarTouchCalibration calib = new PlanarTouchCalibration();
+        calib.loadFrom(applet, Papart.touchColorCalib);
+        return calib;
+    }
+    
     public PlanarTouchCalibration getDefaultTouchCalibration() {
         PlanarTouchCalibration calib = new PlanarTouchCalibration();
         calib.loadFrom(applet, Papart.touchCalib);
