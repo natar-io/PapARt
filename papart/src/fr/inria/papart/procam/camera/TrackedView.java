@@ -122,14 +122,25 @@ public class TrackedView {
         imagePixelCoordinates[3] = new PVector(0, 0);
     }
 
+    public PVector pixelsToMM(PVector p) {
+        return pixelsToMM(p.x, p.y);
+    }
+
+    public PVector pixelsToMM(float x, float y) {
+
+        float outX = (x / imageWidthPx) * captureSizeMM.x + topLeftCorner.x;
+        float outY = (y / imageHeightPx) * captureSizeMM.y + topLeftCorner.y;
+        return new PVector(outX, outY);
+    }
+
     public PImage getViewOf(Camera camera) {
         camera = Camera.checkActingCamera(camera);
-        
+
         IplImage img = camera.getIplImage();
         if (!isExtractionReady(img)) {
             return null;
         }
-        
+
         this.mainImage = img;
         this.camera = camera;
 
@@ -159,11 +170,11 @@ public class TrackedView {
             System.err.println("You should init the TrackedView before getting the view.");
             return false;
         }
-        
-        if(img != null){
+
+        if (img != null) {
             checkMemory(img);
         }
-        
+
         return img != null && (!useManualConrers || (useManualConrers && cornersSet));
     }
 
@@ -175,8 +186,8 @@ public class TrackedView {
 
     private void checkMemory(IplImage memory) {
         if (extractedIplImage == null) {
-            extractedIplImage = ImageUtils.createNewSizeImageFrom(memory,imageWidthPx, imageHeightPx);
-            
+            extractedIplImage = ImageUtils.createNewSizeImageFrom(memory, imageWidthPx, imageHeightPx);
+
             if (extractedIplImage == null) {
                 System.err.println("Impossible to create a View! " + this + " " + extractedPImage);
             }
@@ -236,7 +247,7 @@ public class TrackedView {
         } else {
 
             // TODO: use BottowLeftCorner here ?!! 
-           // top left
+            // top left
             tmp.translate(topLeftCorner.x, paperScreen.getDrawingSize().y - topLeftCorner.y);
             corner3DPos[3].x = tmp.m03;
             corner3DPos[3].y = tmp.m13;
@@ -289,8 +300,8 @@ public class TrackedView {
         this.bottomLeftCorner.set(bottomLeftCorner);
         this.isYUp = true;
     }
-    
-    public void forceYOrientation(boolean up){
+
+    public void forceYOrientation(boolean up) {
         this.isYUp = up;
     }
 
