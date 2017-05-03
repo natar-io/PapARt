@@ -36,6 +36,7 @@ import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.procam.camera.CameraOpenKinect;
+import fr.inria.papart.utils.MathUtils;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
@@ -232,7 +233,7 @@ public class KinectTouchInput extends TouchInput {
         PVector paperScreenCoord = projectPointToScreen(screen,
                 display,
                 tp.getPositionKinect(),
-                tp.getPositionVec3D());
+                MathUtils.toVec(tp.getPreviousPosition()));
 
         touch.setPosition(paperScreenCoord);
 

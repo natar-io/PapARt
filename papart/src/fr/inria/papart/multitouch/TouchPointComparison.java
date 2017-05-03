@@ -23,24 +23,24 @@ package fr.inria.papart.multitouch;
  *
  * @author jeremy
  */
-public class TouchPointComparison implements Comparable<TouchPointComparison> {
+public class TouchPointComparison<T extends TrackedElement> implements Comparable<TouchPointComparison<T>> {
 
-        TrackedDepthPoint oldTp;
-        TrackedDepthPoint newTp;
+        T oldTp;
+        T newTp;
         float distance;
 
-        public TouchPointComparison(TrackedDepthPoint oldTp, TrackedDepthPoint newTp) {
+        public TouchPointComparison(T oldTp, T newTp) {
             this.oldTp = oldTp;
             this.newTp = newTp;
 
             distance = oldTp.distanceTo(newTp);
         }
 
-        public TrackedDepthPoint getOld() {
+        public T getOld() {
             return oldTp;
         }
 
-        public TrackedDepthPoint getNew() {
+        public T getNew() {
             return newTp;
         }
 

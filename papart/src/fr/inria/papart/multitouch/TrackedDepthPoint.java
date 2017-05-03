@@ -29,83 +29,29 @@ import toxi.geom.Vec3D;
 
 // TODO: TrackedTouchPoint ...
 // TODO: Filtered TouchPoint ...
-
-/** 
- * TouchPoint, touch events go through this class. 
- * TODO: add event handling !
+/**
+ * TouchPoint, touch events go through this class. TODO: add event handling !
+ *
  * @author Jeremy Laviole
  */
-public class TrackedDepthPoint extends DepthPoint {
+public class TrackedDepthPoint extends TrackedElement {
 
-    public static int count = 0;
-
-    // protected PVector position... in DepthPoint
-    private PVector previousPosition = new PVector();
-    private PVector speed = new PVector();
-
-    // TODO: Remove this !
     private Vec3D positionKinect;
     private Vec3D previousPositionKinect;
-//    private PVector speedKinect = new PVector();
-    private ArrayList<DepthDataElementKinect> depthDataElements = new ArrayList<DepthDataElementKinect>();
 
-    private float confidence;
-//    public float size;
+    private ArrayList<DepthDataElementKinect> depthDataElements = new ArrayList<DepthDataElementKinect>();
+    int pointColor;
+
+    
     private boolean is3D;
     private boolean isCloseToPlane;
 
-    // Tracking related variables
-    public static final int NO_ID = -10;
-    private static int globalID = 1;
-    protected int id = NO_ID;
-
-    // time management
-    private int updateTime;
-    private int deletionTime;
-    private int createTime = -1;
-
-    private boolean toDelete = false;
-    public boolean isUpdated = false;
-
-    public int attachedValue = -1;
-    public Object attachedObject;
-
-    private TouchDetection detection;
-
-// filtering 
-    private OneEuroFilter[] filters;
-    public static float filterFreq = 30f;
-    public static float filterCut = 0.2f;
-    public static float filterBeta = 8.000f;
-    public static final int NO_TIME = -1;
-    private int NUMBER_OF_FILTERS = 3;
-
     public TrackedDepthPoint(int id) {
-        this();
-        this.id = id;
+        super(id);
     }
 
     public TrackedDepthPoint() {
-        try {
-            filters = new OneEuroFilter[NUMBER_OF_FILTERS];
-            for (int i = 0; i < NUMBER_OF_FILTERS; i++) {
-                filters[i] = new OneEuroFilter(filterFreq, filterCut, filterBeta);
-            }
-        } catch (Exception e) {
-            System.out.println("OneEuro Exception. Pay now." + e);
-        }
-    }
-
-    @Override
-    public void setPosition(Vec3D pos) {
-        super.setPosition(pos);
-        setPreviousPosition();
-    }
-
-    @Override
-    public void setPosition(PVector pos) {
-        super.setPosition(pos);
-        setPreviousPosition();
+        super();
     }
 
     public float distanceTo(TrackedDepthPoint tp) {
@@ -125,129 +71,15 @@ public class TrackedDepthPoint extends DepthPoint {
         return this.previousPositionKinect;
     }
 
-    private void setPreviousPosition() {
-        previousPosition.set(this.position);
-    }
-
-    public PVector getPreviousPosition() {
-        return this.previousPosition;
-    }
-
-    public Vec3D getPreviousPositionVec3D() {
-        return new Vec3D(previousPosition.x, previousPosition.y, previousPosition.z);
-    }
-
-    public void filter() {
-        try {
-            position.x = (float) filters[0].filter(position.x);
-            position.y = (float) filters[1].filter(position.y);
-            position.z = (float) filters[2].filter(position.z);
-        } catch (Exception e) {
-            System.out.println("OneEuro init Exception. Pay now." + e);
-        }
-    }
-
-    public boolean updateWith(TrackedDepthPoint tp) {
-        if (isUpdated || tp.isUpdated) {
-            return false;
-        }
-
-        assert (this.createTime < tp.createTime);
-
-        // these points are used for update. They will not be used again.
-        this.setUpdated(true);
-        tp.setUpdated(true);
-
-        // mark the last update as the creation of the other point. 
-        this.updateTime = tp.createTime;
-        // not deleted soon, TODO: -> need better way
-        this.deletionTime = tp.createTime;
-
-        // delete the updating point (keep the existing one)
-        tp.toDelete = true;
-
-        updatePosition(tp);
-
-        // TODO: check performance ?!
-        updateDepthPoints(tp);
-
-        checkAndSetID();
-        filter();
-        return true;
-    }
-    
-    public void updateAlone() {
-        updatePosition(this);
-        // TODO: check performance ?!
-        filter();
-    }
-
-    private void checkAndSetID() {
-        // The touchPoint gets an ID, it is a grown up now. 
-        if (this.id == NO_ID) {
-            if (count == 0) {
-                globalID = 0;
-            }
-            this.id = globalID++;
-            count++;
-        }
-    }
-
-    private void updatePosition(TrackedDepthPoint tp) {
-        // Error checking: never update 3D with non 3D !
+    protected void updateAdditionalElements(TrackedDepthPoint tp) {
         assert (tp.is3D == this.is3D);
-
-        // save the previous position
-        previousPosition = position.get();
         previousPositionKinect = positionKinect.copy();
 
-        this.position.set(tp.position);
         this.positionKinect.set(tp.positionKinect);
         this.confidence = tp.confidence;
         this.isCloseToPlane = tp.isCloseToPlane;
 
-        speed.set(this.position);
-        speed.sub(this.previousPosition);
-    }
-
-    private void updateDepthPoints(TrackedDepthPoint tp) {
         this.depthDataElements = tp.getDepthDataElements();
-    }
-
-    public boolean isObselete(int currentTime) {
-        return (currentTime - updateTime) > this.getDetection().getTrackingForgetTime();
-    }
-
-    public boolean isToRemove(int currentTime, int duration) {
-        return (currentTime - deletionTime) > duration;
-    }
-
-    public int getID() {
-        return this.id;
-    }
-
-    static final int SHORT_TIME_PERIOD = 200;  // in ms
-
-    public boolean isYoung(int currentTime) {
-        int age = getAge(currentTime);
-        return age == NO_TIME || age < SHORT_TIME_PERIOD;
-    }
-
-    public int getAge(int currentTime) {
-        if (this.createTime == NO_TIME) {
-            return NO_TIME;
-        } else {
-            return currentTime - this.createTime;
-        }
-    }
-
-    public void setCreationTime(int timeStamp) {
-        this.createTime = timeStamp;
-        this.updateTime = timeStamp;
-    }
-
-    public PVector getSpeed() {
-        return this.speed;
     }
 
     public void setDepthDataElements(KinectDepthData depthData, ConnectedComponent connectedComponent) {
@@ -259,22 +91,6 @@ public class TrackedDepthPoint extends DepthPoint {
 
     public ArrayList<DepthDataElementKinect> getDepthDataElements() {
         return this.depthDataElements;
-    }
-
-    protected void setUpdated(boolean updated) {
-        this.isUpdated = updated;
-    }
-
-    public boolean isUpdated() {
-        return isUpdated;
-    }
-
-    public float getConfidence() {
-        return confidence;
-    }
-
-    public void setConfidence(float confidence) {
-        this.confidence = confidence;
     }
 
     public boolean is3D() {
@@ -293,23 +109,12 @@ public class TrackedDepthPoint extends DepthPoint {
         this.isCloseToPlane = isCloseToPlane;
     }
 
-    public void delete(int time) {
-        this.toDelete = true;
-        TrackedDepthPoint.count--;
-        this.deletionTime = time;
-        if (this.attachedObject != null) {
-            if (this.attachedObject instanceof TouchPointEventHandler) {
-                ((TouchPointEventHandler) this.attachedObject).delete();
-            }
-        }
+    public int getColor() {
+        return pointColor;
     }
 
-    public boolean isToDelete() {
-        return this.toDelete;
-    }
-
-    public int lastUpdate() {
-        return this.updateTime;
+    public void setColor(int pointColor) {
+        this.pointColor = pointColor;
     }
 
     @Override
@@ -317,36 +122,5 @@ public class TrackedDepthPoint extends DepthPoint {
         return "Touch Point, kinect: " + positionKinect + " , proj: " + position + "confidence " + confidence + " ,close to Plane : " + isCloseToPlane;
     }
 
-    Touch touch;
-
-    public boolean hasTouch() {
-        return touch != null;
-    }
-
-    public void createTouch() {
-        touch = new Touch();
-        touch.id = this.id;
-        touch.touchPoint = this;
-    }
-
-    public Touch getTouch() {
-        if (touch == null) {
-            createTouch();
-        }
-        touch.id = this.id;
-        return touch;
-    }
-
-    public void deleteTouch() {
-        touch = null;
-    }
-
-    public TouchDetection getDetection() {
-        return detection;
-    }
-
-    public void setDetection(TouchDetection detection) {
-        this.detection = detection;
-    }
 
 }

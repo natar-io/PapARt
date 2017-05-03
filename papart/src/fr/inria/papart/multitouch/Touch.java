@@ -40,7 +40,9 @@ public class Touch {
     // TODO: find a solution for this !
     // Always has a TouchPoint linked ? Not clean. 
     public TrackedDepthPoint touchPoint;
-
+    // TODO: switch to TrackedElement
+    public TrackedElement trackedSource;
+    
     public PVector size;
 
     // TODO: implementation of this. 
