@@ -239,6 +239,8 @@ public class TrackedElement {
         this.position.set(tp.position);
         this.confidence = tp.confidence;
 
+        this.setSource(tp.source);
+        
         speed.set(this.position);
         speed.sub(this.previousPosition);
     }

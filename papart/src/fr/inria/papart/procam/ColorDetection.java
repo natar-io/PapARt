@@ -53,6 +53,14 @@ public class ColorDetection {
         setCaptureOffset(new PVector());
     }
 
+    /**
+     * Allocates the memory. 
+     */
+    public void init(){
+        initialize();
+    }
+    
+    @Deprecated
     public void initialize() {
         boardView = new TrackedView(paperScreen);
         setPosition(pos);

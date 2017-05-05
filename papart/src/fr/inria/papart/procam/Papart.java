@@ -46,6 +46,8 @@ import fr.inria.papart.procam.camera.CameraOpenKinect;
 import fr.inria.papart.procam.camera.CameraRGBIRDepth;
 import fr.inria.papart.procam.camera.CameraRealSense;
 import fr.inria.papart.procam.camera.SubCamera;
+import fr.inria.papart.tracking.DetectedMarker;
+import fr.inria.papart.utils.MathUtils;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.util.Set;
@@ -70,7 +72,7 @@ public class Papart {
     public final static String markerFolder = folder + "markers/";
 
     public static boolean isInria = false;
-    public static boolean isReality= true;
+    public static boolean isReality = true;
     public static String calibrationFileName = "A4-calib.svg";
 
     public static String cameraCalibName = "camera.yaml";
@@ -646,7 +648,6 @@ public class Papart {
 //            getPublicCameraTracking().setCalibrationARToolkit(camCalibARtoolkit);
 //        }
 //    }
-
     /**
      * *
      * Touch input with a Kinect calibrated with the display area.
@@ -657,13 +658,13 @@ public class Papart {
         loadDefaultTouchKinect();
         updateDepthCameraDeviceExtrinsics();
     }
-    
-    private void updateDepthCameraDeviceExtrinsics(){
-         // Check if depthCamera is the same as the camera !
-        if (projector == null && 
-                cameraTracking instanceof CameraRGBIRDepth &&
-                cameraTracking == depthCameraDevice.getMainCamera()) {
-            
+
+    private void updateDepthCameraDeviceExtrinsics() {
+        // Check if depthCamera is the same as the camera !
+        if (projector == null
+                && cameraTracking instanceof CameraRGBIRDepth
+                && cameraTracking == depthCameraDevice.getMainCamera()) {
+
             // No extrinsic used, it is already in the camera... 
             depthCameraDevice.getDepthCamera().setExtrinsics(depthCameraDevice.getStereoCalibration());
 
@@ -743,7 +744,7 @@ public class Papart {
         calib.loadFrom(applet, Papart.touchColorCalib);
         return calib;
     }
-    
+
     public PlanarTouchCalibration getDefaultTouchCalibration() {
         PlanarTouchCalibration calib = new PlanarTouchCalibration();
         calib.loadFrom(applet, Papart.touchCalib);
@@ -828,10 +829,10 @@ public class Papart {
     public void startCameraThread() {
         cameraTracking.start();
 
-        if(depthCameraDevice != null){
+        if (depthCameraDevice != null) {
             depthCameraDevice.loadDataFromDevice();
         }
-        
+
         // Calibration might be loaded from the device and require an update. 
         if (arDisplay != null && !(arDisplay instanceof ProjectorDisplay)) {
             arDisplay.reloadCalibration();
@@ -849,6 +850,109 @@ public class Papart {
     public void startDepthCameraThread() {
         depthCameraDevice.getMainCamera().start();
         depthCameraDevice.getMainCamera().setThread();
+    }
+
+    /**
+     * Get the Position of a marker. MarkerTracking must be enabled with at
+     * least one SVG marker to find.
+     *
+     * @param markerID id of the marker to find.
+     * @param markerWidth size of square marker in mm.
+     * @return null is the marker is not found.
+     */
+    public PMatrix3D getMarkerMatrix(int markerID, float markerWidth) {
+        if (cameraTracking == null
+                || cameraTracking.getDetectedMarkers() == null) {
+            return null;
+        }
+
+        for (DetectedMarker marker : cameraTracking.getDetectedMarkers()) {
+            if (marker.id == markerID) {
+                return MathUtils.compute3DPos(marker, markerWidth, cameraTracking);
+            }
+        }
+        return null;
+    }
+      /**
+     * Get the Position of a marker. MarkerTracking must be enabled with at
+     * least one SVG marker to find.
+     *
+     * @param markerID id of the marker to find.
+     * @param markerWidth size of square marker in mm.
+     * @return null is the marker is not found.
+     */
+    public DetectedMarker[] getMarkerList() {
+        if (cameraTracking == null
+                || cameraTracking.getDetectedMarkers() == null) {
+            return new DetectedMarker[0];
+        }
+        return cameraTracking.getDetectedMarkers();
+    }
+    
+
+    /**
+     * Return the x,y positions of a 3D location projected onto a given
+     * reference. The Z axis is the angle (in radians) given by the rotation of
+     * the positionToFind.
+     *
+     * @param positionToFind
+     * @param reference
+     * @return
+     */
+    public PVector projectPositionTo2D(PMatrix3D positionToFind,
+            PMatrix3D reference,
+            float referenceHeight) {
+        PMatrix3D referenceInv = reference.get();
+        referenceInv.invert();
+        PMatrix3D relative = positionToFind.get();
+        relative.preApply(referenceInv);
+
+        PMatrix3D positionToFind2 = positionToFind.get();
+        positionToFind2.translate(100, 0, 0);
+        PMatrix3D relative2 = positionToFind2.get();
+        relative2.preApply(referenceInv);
+
+        PVector out = new PVector();
+        float x = relative.m03 - relative2.m03;
+        float y = relative.m13 - relative2.m13;
+        out.z = PApplet.atan2(x, y);
+
+        out.x = relative.m03;
+        out.y = referenceHeight - relative.m13;
+
+        return out;
+    }
+    
+    /**
+     * Return the x,y positions of a 3D location projected onto a given
+     * reference. The Z axis is the angle (in radians) given by the rotation of
+     * the positionToFind.
+     *
+     * @param positionToFind
+     * @param reference
+     * @return
+     */
+    public PVector projectPositionTo(PMatrix3D positionToFind,
+            PaperScreen reference) {
+        PMatrix3D referenceInv = reference.getLocation().get();
+        referenceInv.invert();
+        PMatrix3D relative = positionToFind.get();
+        relative.preApply(referenceInv);
+
+        PMatrix3D positionToFind2 = positionToFind.get();
+        positionToFind2.translate(100, 0, 0);
+        PMatrix3D relative2 = positionToFind2.get();
+        relative2.preApply(referenceInv);
+
+        PVector out = new PVector();
+        float x = relative.m03 - relative2.m03;
+        float y = relative.m13 - relative2.m13;
+        out.z = PApplet.atan2(x, y);
+
+        out.x = relative.m03;
+        out.y = reference.drawingSize.y - relative.m13;
+
+        return out;
     }
 
     public void stop() {

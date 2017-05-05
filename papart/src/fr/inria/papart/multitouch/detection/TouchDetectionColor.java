@@ -24,6 +24,7 @@ import fr.inria.papart.multitouch.TrackedElement;
 import fr.inria.papart.utils.MathUtils;
 import fr.inria.papart.utils.WithSize;
 import java.util.ArrayList;
+import java.util.Arrays;
 import processing.core.PVector;
 import toxi.geom.Vec3D;
 
@@ -40,6 +41,7 @@ public class TouchDetectionColor extends TouchDetection {
     }
 
     public static final byte INVALID_COLOR = -1;
+    private byte[] localSegmentedImage = null;
     private byte[] segmentedImage;
     private byte[] segmentedImageCopy;
     private int erosionLevel;
@@ -68,8 +70,25 @@ public class TouchDetectionColor extends TouchDetection {
         }
     }
 
+    public byte[] createInputArray() {
+        localSegmentedImage = new byte[imgSize.getSize()];
+        return localSegmentedImage;
+    }
+
+    public void resetInputArray() {
+        Arrays.fill(localSegmentedImage, TouchDetectionColor.INVALID_COLOR);
+    }
+
+    public ArrayList<TrackedElement> compute(int timestamp) {
+        return compute(localSegmentedImage, timestamp, 0);
+    }
+
     public ArrayList<TrackedElement> compute(byte[] segmentedImage, int timestamp) {
         return compute(segmentedImage, timestamp, 0);
+    }
+
+    public ArrayList<TrackedElement> compute(int timestamp, int erosionLevel) {
+        return compute(localSegmentedImage, timestamp, erosionLevel);
     }
 
     public ArrayList<TrackedElement> compute(byte[] segmentedImage, int timestamp, int erosionLevel) {

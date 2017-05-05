@@ -8,7 +8,10 @@ package fr.inria.papart.utils;
 import fr.inria.papart.depthcam.PixelOffset;
 import fr.inria.papart.depthcam.analysis.KinectProcessing;
 import fr.inria.papart.procam.PaperTouchScreen;
+import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.procam.camera.Camera;
+import fr.inria.papart.tracking.DetectedMarker;
+import fr.inria.papart.tracking.MarkerBoard;
 import java.io.FileNotFoundException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -190,6 +193,28 @@ public class MathUtils {
         mat.m33 *= scale;
     }
 
+    // ---- Marker Utility ---- 
+    public static PMatrix3D compute3DPos(DetectedMarker detected, float markerWidth, Camera camera) {
+        // We create a pair model ( markersFromSVG) -> observation (markers) 
+
+        if (detected.confidence < 1.0) {
+            return null;
+        }
+        // Build object corners
+        PVector[] object = new PVector[4];
+        object[0] = new PVector(0, 0);
+        object[1] = new PVector(markerWidth, 0);
+
+        object[2] = new PVector(markerWidth, -markerWidth);
+        object[3] = new PVector(0, -markerWidth);
+
+        PVector[] image = detected.getCorners();
+
+        ProjectiveDeviceP pdp = camera.getProjectiveDevice();
+        return pdp.estimateOrientation(object, image);
+//        return pdp.estimateOrientationRansac(objectArray, imageArray);
+    }
+    
     // ---- Color Utility ----
     /**
      * Get a pixel from a PImage.
@@ -303,9 +328,42 @@ public class MathUtils {
 
         return abs(h1 - h2) < hueTresh
                 && // Avoid desaturated pixels
-                g.saturation(incomingPix) > saturationTresh
+                abs(g.saturation(incomingPix) - g.saturation(baseline)) < saturationTresh
                 && // avoid pixels not bright enough
-                g.brightness(incomingPix) > brightnessTresh;
+                abs(g.brightness(incomingPix) - g.brightness(baseline)) < brightnessTresh;
+    }
+
+    public static boolean isRed(PGraphics g, int incomingPix, int baseline, float threshold) {
+        int r1 = incomingPix >> 16 & 255;
+        int r2 = baseline >> 16 & 255;
+        return abs(r1 - r2) < threshold;
+    }
+
+    public static boolean isGreen(PGraphics g, int incomingPix, int baseline, int threshold) {
+        int r1 = incomingPix >> 8 & 255;
+        int r2 = baseline >> 8 & 255;
+        return abs(r1 - r2) < threshold;
+    }
+
+    public static boolean isBlue(PGraphics g, int incomingPix, int baseline, int threshold) {
+        int r1 = incomingPix >> 0 & 255;
+        int r2 = baseline >> 0 & 255;
+        return abs(r1 - r2) < threshold;
+    }
+
+    public static boolean isBlack(PGraphics g, int incomingPix,
+            float brightnessTresh) {
+        return colorDistRGBAverage(incomingPix, 0, (int) brightnessTresh);
+    }
+//    
+//    public static boolean isBlack(PGraphics g, int incomingPix,
+//             float brightnessTresh) {
+//       return g.brightness(incomingPix) < brightnessTresh;
+//    }
+
+    public static boolean isWhite(PGraphics g, int incomingPix,
+            float brightnessTresh) {
+        return g.brightness(incomingPix) > brightnessTresh;
     }
 
     /**
@@ -413,12 +471,12 @@ public class MathUtils {
 
 //            for (int j = y * size.getWidth() - skip; j <= y * size.getWidth() + skip; j += size.getWidth() * skip) {
 //                for (int i = x - skip; i <= x + skip; i += skip) {
-            for (int j = - skip; j <= skip; j += skip) {
-                for (int i = - skip; i <= skip; i += skip) {
+            for (int j = -skip; j <= skip; j += skip) {
+                for (int i = -skip; i <= skip; i += skip) {
 
-                    if (x+i >= 0 && x+i < size.getWidth()
-                            && j+y >= 0 && j+y < size.getHeight()) {
-                        int currentIdx = (x+i) + (j+y) * size.getWidth();
+                    if (x + i >= 0 && x + i < size.getWidth()
+                            && j + y >= 0 && j + y < size.getHeight()) {
+                        int currentIdx = (x + i) + (j + y) * size.getWidth();
                         sum += arrayToErode[currentIdx] == value ? 1 : 0;
                     }
                 }

@@ -21,7 +21,7 @@ package fr.inria.papart.multitouch;
 
 /**
  *
- * @author jeremy
+ * @author jeremy Laviole - laviole@rea.lity.tech
  */
 public class TouchPointComparison<T extends TrackedElement> implements Comparable<TouchPointComparison<T>> {
 

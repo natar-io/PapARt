@@ -74,12 +74,21 @@ public class TrackedView {
         this.setCaptureSizeMM(new PVector(board.getWidth(), board.getHeight()));
     }
 
+    /**
+     * Create a TrackedView of the size of the PaperScreen. The default capture
+     * size in millimeters is the size of the paperScreen). The default pixel
+     * size is 1px / millimeter, so identical to the capture size. You can
+     * change these values before calling the init() method.
+     *
+     * @param paperScreen
+     */
     public TrackedView(PaperScreen paperScreen) {
         this.paperScreen = paperScreen;
         this.usePaperLocation = true;
         allocateMemory();
-//        this.setImageHeightPx((int) board.getHeight());
-//        this.setImageWidthPx((int) board.getWidth());
+        setTopLeftCorner(new PVector(0, 0));
+        this.setImageHeightPx((int) paperScreen.getDrawingSize().x);
+        this.setImageWidthPx((int) paperScreen.getDrawingSize().y);
         this.setCaptureSizeMM(paperScreen.getDrawingSize());
     }
 
@@ -314,6 +323,11 @@ public class TrackedView {
     public void setTopLeftCorner(PVector topLeftCorner) {
         this.topLeftCorner.set(topLeftCorner);
         this.isYUp = false;
+    }
+
+    public void setScale(float scale) {
+        this.imageWidthPx = (int) (captureSizeMM.x * scale);
+        this.imageHeightPx = (int) (captureSizeMM.y * scale);
     }
 
     public PVector getCaptureSizeMM() {
