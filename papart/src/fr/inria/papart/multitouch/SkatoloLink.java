@@ -48,11 +48,8 @@ public class SkatoloLink {
 
         float normX = (float) applet.mouseX / (float) applet.width;
         float normY = (float) applet.mouseY / (float) applet.height;
-//        PVector pointer = paperScreen.getDisplay().projectPointer(paperScreen.getScreen(), normX, normY);
         PVector pointer = paperScreen.getDisplay().project(paperScreen.getScreen(), normX, normY);
-        
-        mouseTouch.setPosition(pointer.x * paperScreen.getDrawingSize().x, 
-                 pointer.y * paperScreen.getDrawingSize().y, 0);
+        mouseTouch.setPosition(pointer.x, pointer.y, 0);
         touchList.add(mouseTouch);
     }
 

@@ -196,7 +196,7 @@ public class KinectTouchInput extends TouchInput {
 
     private Touch createTouch(Screen screen, BaseDisplay display, TrackedDepthPoint tp) {
         Touch touch = tp.getTouch();
-        boolean hasProjectedPos = projectPositionAndSpeed(screen, display, touch, tp);
+        boolean hasProjectedPos = projectAndSetPositionAndSpeed(screen, display, touch, tp);
         if (!hasProjectedPos) {
             return INVALID_TOUCH;
         }
@@ -215,18 +215,18 @@ public class KinectTouchInput extends TouchInput {
 //        this.pdp = camera.getProjectiveDevice();
     }
 
-    private boolean projectPositionAndSpeed(Screen screen,
+    private boolean projectAndSetPositionAndSpeed(Screen screen,
             BaseDisplay display,
             Touch touch, TrackedDepthPoint tp) {
 
-        boolean hasProjectedPos = projectPosition(screen, display, touch, tp);
+        boolean hasProjectedPos = projectAndSetPosition(screen, display, touch, tp);
         if (hasProjectedPos) {
             projectSpeed(screen, display, touch, tp);
         }
         return hasProjectedPos;
     }
 
-    private boolean projectPosition(Screen screen,
+    private boolean projectAndSetPosition(Screen screen,
             BaseDisplay display,
             Touch touch, TrackedDepthPoint tp) {
 

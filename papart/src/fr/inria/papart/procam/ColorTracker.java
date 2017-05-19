@@ -6,6 +6,8 @@
 package fr.inria.papart.procam;
 
 import fr.inria.papart.calibration.PlanarTouchCalibration;
+import fr.inria.papart.multitouch.Touch;
+import fr.inria.papart.multitouch.TouchList;
 import fr.inria.papart.multitouch.TouchPointTracker;
 import fr.inria.papart.multitouch.TrackedElement;
 import fr.inria.papart.multitouch.detection.TouchDetectionColor;
@@ -28,19 +30,18 @@ public class ColorTracker {
     private PImage capturedImage;
 
 //    private final HashMap<String, Integer> trackedColors;
-    
     private final TouchDetectionColor touchDetectionColor;
     private final byte[] colorFoundArray;
     private final ArrayList<TrackedElement> trackedElements;
-    
+
     private float brightness, saturation;
     private float hue;
     private float redThreshold;
-    
-    public ColorTracker(PaperScreen paperScreen){
+
+    public ColorTracker(PaperScreen paperScreen) {
         this(paperScreen, 1);
     }
-    
+
     public ColorTracker(PaperScreen paperScreen, float scale) {
         this.paperScreen = paperScreen;
         this.trackedView = new TrackedView(paperScreen);
@@ -48,17 +49,16 @@ public class ColorTracker {
         trackedView.init();
 
 //        this.trackedColors = new HashMap<>();
-
         SimpleSize size = new SimpleSize(paperScreen.drawingSize);
         touchDetectionColor = new TouchDetectionColor(size);
 
         PlanarTouchCalibration calib = Papart.getPapart().getDefaultColorTouchCalibration();
         calib.setMaximumDistance(calib.getMaximumDistance() * scale);
-        calib.setMinimumComponentSize((int) (calib.getMinimumComponentSize()* scale * scale)); // Quadratic (area)
+        calib.setMinimumComponentSize((int) (calib.getMinimumComponentSize() * scale * scale)); // Quadratic (area)
         calib.setSearchDepth((int) (calib.getSearchDepth() * scale));
         calib.setTrackingMaxDistance(calib.getTrackingMaxDistance() * scale);
         calib.setMaximumRecursion((int) (calib.getMaximumRecursion() * scale));
-        
+
         touchDetectionColor.setCalibration(calib);
         trackedElements = new ArrayList<TrackedElement>();
 
@@ -69,7 +69,6 @@ public class ColorTracker {
         redThreshold = 15;
     }
 
-    
     /**
      * For now it only finds one color.
      *
@@ -116,12 +115,22 @@ public class ColorTracker {
         return trackedElements;
     }
 
-    public PImage getTrackedImage(){
+    public PImage getTrackedImage() {
         return this.capturedImage;
     }
-    
+
     public ArrayList<TrackedElement> getTrackedElements() {
         return trackedElements;
+    }
+
+    public TouchList getTouchList() {
+        TouchList output = new TouchList();
+        for (TrackedElement te : trackedElements) {
+            Touch t = te.getTouch();
+            t.setPosition(te.getPosition());
+            output.add(t);
+        }
+        return output;
     }
 //
 //    /**
@@ -153,13 +162,14 @@ public class ColorTracker {
 //        this.trackedColors.remove(name);
 //    }
 //    
-    
-    public void setThresholds(float hue, float saturation, float brightness){
+
+    public void setThresholds(float hue, float saturation, float brightness) {
         this.hue = hue;
         this.saturation = saturation;
         this.brightness = brightness;
     }
-    public void setRedThreshold(float red){
+
+    public void setRedThreshold(float red) {
         this.redThreshold = red;
     }
 
