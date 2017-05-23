@@ -15,9 +15,11 @@ import fr.inria.papart.procam.camera.TrackedView;
 import fr.inria.papart.utils.MathUtils;
 import fr.inria.papart.utils.SimpleSize;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import processing.core.PConstants;
 import processing.core.PImage;
+import processing.core.PVector;
 
 /**
  *
@@ -33,6 +35,7 @@ public class ColorTracker {
     private final TouchDetectionColor touchDetectionColor;
     private final byte[] colorFoundArray;
     private final ArrayList<TrackedElement> trackedElements;
+    private float scale = 1f;
 
     private float brightness, saturation;
     private float hue;
@@ -47,9 +50,10 @@ public class ColorTracker {
         this.trackedView = new TrackedView(paperScreen);
         this.trackedView.setScale(scale);
         trackedView.init();
+        this.scale = scale;
 
 //        this.trackedColors = new HashMap<>();
-        SimpleSize size = new SimpleSize(paperScreen.drawingSize);
+        SimpleSize size = new SimpleSize(paperScreen.drawingSize.get().mult(scale));
         touchDetectionColor = new TouchDetectionColor(size);
 
         PlanarTouchCalibration calib = Papart.getPapart().getDefaultColorTouchCalibration();
@@ -105,13 +109,17 @@ public class ColorTracker {
                 if (good) {
                     colorFoundArray[offset] = id;
                 }
-
+                
             }
         }
 
-        ArrayList<TrackedElement> newElements = touchDetectionColor.compute(time, erosion);
+        ArrayList<TrackedElement> newElements = 
+                    touchDetectionColor.compute(time, erosion, this.scale);
         TouchPointTracker.trackPoints(trackedElements, newElements, time);
-
+//        for(TrackedElement te : trackedElements){
+//            te.filter(time);
+//        }
+        
         return trackedElements;
     }
 
@@ -129,6 +137,18 @@ public class ColorTracker {
             Touch t = te.getTouch();
             t.setPosition(te.getPosition());
             output.add(t);
+        }
+        return output;
+    }
+
+    public TouchList getTouchListOfOlderThan(int currentTime, int minAge) {
+        TouchList output = new TouchList();
+        for (TrackedElement te : trackedElements) {
+            if (te.getAge(currentTime) > minAge) {
+                Touch t = te.getTouch();
+                t.setPosition(te.getPosition());
+                output.add(t);
+            }
         }
         return output;
     }

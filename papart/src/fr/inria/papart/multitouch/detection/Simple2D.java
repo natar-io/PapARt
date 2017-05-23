@@ -42,7 +42,7 @@ public class Simple2D extends TouchDetectionDepth {
 
     @Override
     public ArrayList<TrackedDepthPoint> compute(KinectDepthData dData) {
-        this.setDepthData(depthData);
+        this.setDepthData(dData);
 
         if (!hasCCToFind()) {
             return new ArrayList<TrackedDepthPoint>();

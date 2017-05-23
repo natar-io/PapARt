@@ -85,6 +85,7 @@ public class PaperScreen {
     private float filteringCutoff = 4;
 
     protected Papart papart = null;
+    private PMatrix3D manualLocation;
 
     /**
      * Create a new PaperScreen, a Papart object has to be created first.
@@ -353,14 +354,21 @@ public class PaperScreen {
         setDrawOnPaper();
     }
 
-    public void useManualLocation(boolean manual) {
+    public void useManualLocation(boolean manual, PMatrix3D loc) {
         this.useManualLocation = manual;
-
-        if (this.useManualLocation) {
-            markerBoard.blockUpdate(cameraTracking, 10 * 60 * 60 * 1000); // ms
+        if (loc != null && manual) {
+            this.screen.useManualLocation(loc);
+            this.manualLocation = loc.get();
         } else {
-            markerBoard.blockUpdate(cameraTracking, 0); // ms
+            this.screen.useTracking();
+            this.manualLocation = new PMatrix3D();
         }
+        // TEST instead of blocking the update, just skip the use of the tracking.
+//        if (this.useManualLocation) {
+//            markerBoard.blockUpdate(cameraTracking, 10 * 60 * 60 * 1000); // ms
+//        } else {
+//            markerBoard.blockUpdate(cameraTracking, 0); // ms
+//        }
     }
 
     // TODO: check this !
@@ -522,11 +530,19 @@ public class PaperScreen {
     }
 
     public PVector getLocationVector() {
-        PMatrix3D p = screen.getLocation(cameraTracking);
+        PMatrix3D p;
+        if (this.useManualLocation) {
+            p = this.manualLocation;
+        } else {
+            p = screen.getLocation(cameraTracking);
+        }
         return new PVector(p.m03, p.m13, p.m23);
     }
 
     public PMatrix3D getLocation() {
+        if (this.useManualLocation) {
+            return this.manualLocation;
+        }
         return this.screen.getLocation(cameraTracking);
     }
 
@@ -538,13 +554,14 @@ public class PaperScreen {
     }
 
     public void loadLocationFrom(String filename) {
-        this.useManualLocation(true);
-        setMainLocation(HomographyCalibration.getMatFrom(Papart.getPapart().getApplet(), filename));
+        PMatrix3D loc = HomographyCalibration.getMatFrom(Papart.getPapart().getApplet(), filename);
+        this.useManualLocation(true, loc);
+//               setMainLocation(loc);
     }
 
     public void loadLocationFrom(PMatrix3D mat) {
-        this.useManualLocation(true);
-        setMainLocation(mat.get());
+        this.useManualLocation(true, mat);
+//        setMainLocation(mat.get());
     }
 
     public ObjectFinder getObjectTracking() {

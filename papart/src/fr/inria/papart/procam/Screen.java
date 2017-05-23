@@ -50,6 +50,7 @@ public class Screen implements HasExtrinsics {
     // The other one is unique to the camera/markerboard couple. 
 //    private PMatrix3D transformation = new PMatrix3D(); // init to avoid nullPointerExceptions 
     private PMatrix3D extrinsics = new PMatrix3D();
+    private PMatrix3D manualLocation = new PMatrix3D();
     private MarkerBoard markerBoard = MarkerBoardInvalid.board;
 
     ////////////
@@ -66,6 +67,7 @@ public class Screen implements HasExtrinsics {
     public float halfEyeDist = 10; // 2cm
     private boolean isDrawing = true;
     private boolean isOpenGL = false;
+    private boolean useManualLocation;
 
     public Screen(PApplet parent) {
         this.parent = parent;
@@ -103,8 +105,8 @@ public class Screen implements HasExtrinsics {
     public PGraphicsOpenGL getGraphics() {
         if (thisGraphics == null) {
             thisGraphics = (PGraphicsOpenGL) parent.createGraphics(
-                    this.getRenderingSizeX(), 
-                    this.getRenderingSizeY(), 
+                    this.getRenderingSizeX(),
+                    this.getRenderingSizeY(),
                     PApplet.P3D);
         }
 
@@ -180,7 +182,7 @@ public class Screen implements HasExtrinsics {
      * @return
      */
     public PMatrix3D getLocation(Camera camera) {
-        if (!markerBoard.isTrackedBy(camera)) {
+        if (!markerBoard.isTrackedBy(camera) && !this.useManualLocation) {
             return extrinsics.get();
         }
 
@@ -189,7 +191,19 @@ public class Screen implements HasExtrinsics {
         return combinedTransfos;
     }
 
+    public void useTracking() {
+        this.useManualLocation = false;
+    }
+
+    protected void useManualLocation(PMatrix3D mat) {
+        this.manualLocation.set(mat);
+        this.useManualLocation = true;
+    }
+
     protected PMatrix3D getMainLocation(Camera camera) {
+        if (useManualLocation) {
+            return manualLocation.get();
+        }
         return markerBoard.getTransfoMat(camera).get();
     }
 

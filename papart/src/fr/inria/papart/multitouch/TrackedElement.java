@@ -160,11 +160,24 @@ public class TrackedElement {
     /**
      * Use the OneEuroFilter to filter the position.
      */
-    private void filter() {
+    public void filter() {
         try {
             position.x = (float) filters[0].filter(position.x);
             position.y = (float) filters[1].filter(position.y);
             position.z = (float) filters[2].filter(position.z);
+        } catch (Exception e) {
+            System.out.println("OneEuro init Exception. Pay now." + e);
+        }
+    }
+    
+    /**
+     * Use the OneEuroFilter to filter the position.
+     */
+    public void filter(int updateTime) {
+        try {
+            position.x = (float) filters[0].filter(position.x, updateTime);
+            position.y = (float) filters[1].filter(position.y, updateTime);
+            position.z = (float) filters[2].filter(position.z, updateTime);
         } catch (Exception e) {
             System.out.println("OneEuro init Exception. Pay now." + e);
         }
@@ -199,6 +212,7 @@ public class TrackedElement {
         updatePosition(tp);
 
         checkAndSetID();
+//        filter(tp.createTime);
         filter();
         return true;
     }

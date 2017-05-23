@@ -113,10 +113,10 @@ public class KinectProcessing extends KinectDepthAnalysis {
             doForEachPoint(skip2D, timeFilterDepth);
             System.out.println("Time filtering....");
 
-            doForEachPoint(skip2D,
-                    new UndistortSR300Depth());
-            doForEachPoint(skip2D,
-                    new Select2DPointPlaneProjectionSR300Error());
+//            doForEachPoint(skip2D,
+//                    new UndistortSR300Depth());
+//            doForEachPoint(skip2D,
+//                    new Select2DPointPlaneProjectionSR300Error());
 
             doForEachPoint(skip2D,
                     new Select3DPointPlaneProjection());

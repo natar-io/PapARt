@@ -88,7 +88,7 @@ public class PaperTouchScreen extends PaperScreen {
         screen.computeScreenPosTransform(cameraTracking);
         updateTouch();
     }
-    
+
     private PVector touchOffset = new PVector();
 
     public PVector getTouchOffset() {
@@ -96,8 +96,9 @@ public class PaperTouchScreen extends PaperScreen {
     }
 
     public void setTouchOffset(float x, float y) {
-        this.touchOffset.set(new PVector(x,y));
+        this.touchOffset.set(new PVector(x, y));
     }
+
     public void setTouchOffset(PVector touchOffset) {
         this.touchOffset.set(touchOffset);
     }
@@ -108,6 +109,11 @@ public class PaperTouchScreen extends PaperScreen {
                 return;
             }
         }
+
+        if (touchInput == null) {
+            return;
+        }
+
         // Warning TODO: Hack.. V_V 
         // Touch in 2D  mode has boundaries. 
         // Touch in 3D mode has no boundaries. 
@@ -119,7 +125,7 @@ public class PaperTouchScreen extends PaperScreen {
 
         touchList = touchInput.projectTouchToScreen(screen, getDisplay());
         touchList.sortAlongYAxis();
-        
+
         touchList.addOffset(touchOffset);
 
         if (touchInput instanceof KinectTouchInput) {

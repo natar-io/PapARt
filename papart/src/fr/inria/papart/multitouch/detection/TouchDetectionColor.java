@@ -80,24 +80,29 @@ public class TouchDetectionColor extends TouchDetection {
     }
 
     public ArrayList<TrackedElement> compute(int timestamp) {
-        return compute(localSegmentedImage, timestamp, 0);
+        return compute(localSegmentedImage, timestamp, 0, 1.0f);
     }
 
     public ArrayList<TrackedElement> compute(byte[] segmentedImage, int timestamp) {
-        return compute(segmentedImage, timestamp, 0);
+        return compute(segmentedImage, timestamp, 0, 1.0f);
     }
 
     public ArrayList<TrackedElement> compute(int timestamp, int erosionLevel) {
-        return compute(localSegmentedImage, timestamp, erosionLevel);
+        return compute(localSegmentedImage, timestamp, erosionLevel, 1.0f);
     }
 
-    public ArrayList<TrackedElement> compute(byte[] segmentedImage, int timestamp, int erosionLevel) {
+    public ArrayList<TrackedElement> compute(int timestamp, int erosionLevel, float scale) {
+        return compute(localSegmentedImage, timestamp, erosionLevel, scale);
+    }
+
+    public ArrayList<TrackedElement> compute(byte[] segmentedImage, 
+            int timestamp, int erosionLevel, float scale) {
         this.setSegmentedImage(segmentedImage);
         this.setCurrentTime(timestamp);
         this.setErosionLevel(erosionLevel);
 
         ArrayList<ConnectedComponent> connectedComponents = findConnectedComponents();
-        ArrayList<TrackedElement> colorPoints = this.createTouchPointsFrom(connectedComponents);
+        ArrayList<TrackedElement> colorPoints = this.createTouchPointsFrom(connectedComponents, scale);
         return colorPoints;
     }
 
@@ -125,7 +130,9 @@ public class TouchDetectionColor extends TouchDetection {
     }
 
 //    protected abstract void setSearchParameters();
-    protected ArrayList<TrackedElement> createTouchPointsFrom(ArrayList<ConnectedComponent> connectedComponents) {
+    protected ArrayList<TrackedElement> createTouchPointsFrom(
+            ArrayList<ConnectedComponent> connectedComponents,
+            float scale) {
         ArrayList<TrackedElement> touchPoints = new ArrayList<TrackedElement>();
         for (ConnectedComponent connectedComponent : connectedComponents) {
 
@@ -133,7 +140,8 @@ public class TouchDetectionColor extends TouchDetection {
                 continue;
             }
 
-            TrackedElement tp = createTouchPoint(connectedComponent);
+            TrackedElement tp = createTouchPoint(connectedComponent,
+                   scale);
             touchPoints.add(tp);
         }
         return touchPoints;
@@ -141,9 +149,15 @@ public class TouchDetectionColor extends TouchDetection {
 
     @Override
     protected TrackedElement createTouchPoint(ConnectedComponent connectedComponent) {
+        return createTouchPoint(connectedComponent, 1);
+    }
+    protected TrackedElement createTouchPoint(ConnectedComponent connectedComponent, 
+            float scale) {
         Vec3D meanProj = connectedComponent.getMean(imgSize);
         TrackedElement tp = new TrackedElement();
         tp.setDetection(this);
+        meanProj.scaleSelf(1f / scale);
+
         tp.setPosition(meanProj);
         tp.setCreationTime(this.currentTime);
         tp.setConfidence(connectedComponent.size());

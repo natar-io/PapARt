@@ -32,17 +32,16 @@ import processing.core.PVector;
 
 /**
  *
- * @author Jérémy Laviole 
+ * @author Jérémy Laviole
  */
 public class SkatoloLink {
 
     public static HashMap<Skatolo, ArrayList<Integer>> pointersMap = new HashMap();
-    
+
     // Warning -> Must be linked to a physical screen // a Renderer. 
     // Warning -> the mouse must be "displayed" ... 
-    
-    public static Touch mouseTouch = new Touch(); 
-  
+    public static Touch mouseTouch = new Touch();
+
     public static void addMouseTo(TouchList touchList, Skatolo skatolo, PaperScreen paperScreen) {
         PApplet applet = Papart.getPapart().getApplet();
 
@@ -84,13 +83,24 @@ public class SkatoloLink {
         }
 
         ArrayList<Integer> currentTouchIds = touchList.get2DTouchs().getIds();
-
         ArrayList<Integer> toDelete = (ArrayList<Integer>) pointers.clone();
         toDelete.removeAll(currentTouchIds);
 
+        // Remove the ones that disappeared
+        for (ArrayList<Integer> knownIDs : pointersMap.values()) {
+            if (!touchList.get2DTouchs().contains(knownIDs)) {
+                toDelete.remove(knownIDs);
+            }
+        }
+
         for (Integer pointerId : toDelete) {
+            // WARNING -1 -1 
+            skatolo.updatePointer(pointerId, (int) -1, (int) -1);
+            skatolo.updatePointerPress(pointerId, true);
+
             skatolo.removePointer(pointerId);
             pointers.remove(pointerId);
+
         }
 
     }
