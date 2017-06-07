@@ -57,5 +57,5 @@ The distribution got better, and the next steps would be to create versions on *
 
 ### Copyright note
 
-PapARt is an open source software owned by Inria, Bordeaux University and CNRS, distributed
+PapARt is an open source software owned by Inria, Bordeaux University, CNRS, and RealityTech distributed
 under the LGPL license.
