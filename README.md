@@ -6,6 +6,14 @@ PapARt is a software development kit (SDK) that enables the creation of interact
 
 The first big release is ready. If you want to try it out download our precompiled version from the [example repository](https://github.com/poqudrof/Papart-examples). 
 
+## Version 1.1 coming soon 
+
+A new release will match the first RealityTech Hardware. Here are the new features to expect:
+* ColorTracking. Color patches will be tracked with the same tracking algorithms as depth tracking. 
+* Offline mode. The library will be easier to use without the dedicated hardware. So you could code your apps before buying or building your own, and of course code in your couch or in a plane. 
+* Polyglot support: PapARt will interface with [Scratch](https://github.com/LLK/scratchx), the JRubyArt examples will be updated to latest version. 
+ 
+
 ## Examples
 
 This repository is for the development of the library.  
