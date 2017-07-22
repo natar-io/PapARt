@@ -69,8 +69,10 @@ public class CalibrationPopup extends PApplet {
     // Corners
     private CalibrationVideoPopup videoPopup;
     protected PVector[] corners;
+    protected PVector[] secondCorners;
     protected int currentCorner = 0;
     protected boolean showZoom = false;
+    protected boolean useSmallCorners = true;
     private String cornersFileName;
     static final String CORNERS_NAME = "cornersProj.json";
 
@@ -371,9 +373,16 @@ public class CalibrationPopup extends PApplet {
         if (videoPopup == null) {
             videoPopup = new CalibrationVideoPopup(this);
         }
+        projector.setCalibrationMode(true);
         videoPopup.getSurface().setVisible(true);
         cornersGroup.show();
         cornerToggle.activate();
+    }
+
+    public void useSmallCorners(boolean input) {
+        useSmallCorners = input;
+        System.out.println("UseSmallCorner pressed");
+        projector.setSmallCornerCalibration(input);
     }
 
     public void stopCornerCalibration() {
@@ -384,6 +393,7 @@ public class CalibrationPopup extends PApplet {
 
     void initCorners() {
         corners = new PVector[4];
+        secondCorners = new PVector[4];
         // Corners of the image of the projector
         corners[0] = new PVector(100, 100);
         corners[1] = new PVector(200, 100);
@@ -465,8 +475,13 @@ public class CalibrationPopup extends PApplet {
                 .setGroup("CornersGroup");
 
         this.zoomToggle = skatolo.addToggle("showZoom")
-                .setPosition(10, 60)
+                .setPosition(10, 47)
                 .setCaptionLabel("Zoom (z)")
+                .setGroup("CornersGroup");
+
+        this.zoomToggle = skatolo.addToggle("useSmallCorners")
+                .setPosition(10, 62)
+                .setCaptionLabel("Small Corners")
                 .setGroup("CornersGroup");
 
         skatolo.addBang("Save")
@@ -504,7 +519,57 @@ public class CalibrationPopup extends PApplet {
 
         // Update the corners.
         // TODO: move this when the corners are actally moved. 
-        projectorView.setCorners(corners);
+        // If small corners... the corners to send are different !
+        if (useSmallCorners) {
+
+            // Find 3D plane of selected points (arbitrary sizes) 
+            PVector object[] = new PVector[4];
+
+            float aspectRatio = ((float) projector.getHeight()) / ((float) projector.getWidth());
+
+            object[0] = new PVector(0, 0);
+            object[1] = new PVector(2, 0);
+            object[2] = new PVector(2, 2 * aspectRatio);
+            object[3] = new PVector(0, 2 * aspectRatio);
+
+            PMatrix3D transfo = cameraTracking.getProjectiveDevice().estimateOrientation(object, this.corners);
+
+            PMatrix3D tr = transfo.get();
+
+            // First point top left corner. 
+            tr.translate(-1, -aspectRatio);
+            PVector c = new PVector(tr.m03, tr.m13, tr.m23);
+            secondCorners[0] = cameraTracking.getProjectiveDevice().worldToPixelUnconstrained(c);
+
+            tr = transfo.get();
+            tr.translate(3, -aspectRatio);
+            c = new PVector(tr.m03, tr.m13, tr.m23);
+            secondCorners[1] = cameraTracking.getProjectiveDevice().worldToPixelUnconstrained(c);
+
+            tr = transfo.get();
+            tr.translate(3, 3 * aspectRatio);
+            c = new PVector(tr.m03, tr.m13, tr.m23);
+            secondCorners[2] = cameraTracking.getProjectiveDevice().worldToPixelUnconstrained(c);
+
+            tr = transfo.get();
+            tr.translate(-1, 3 * aspectRatio);
+            c = new PVector(tr.m03, tr.m13, tr.m23);
+            secondCorners[3] = cameraTracking.getProjectiveDevice().worldToPixelUnconstrained(c);
+
+             projectorView.setCorners(secondCorners);
+             
+             System.out.println("Second Corners found: ");
+             for(PVector cornerOutput : secondCorners){
+                 System.out.print(cornerOutput.toString() + "  ");
+             }
+              System.out.println(" ");
+//            public PMatrix3D estimateOrientation(PVector[] objectPoints,
+//            PVector[] imagePoints)
+            // Find the corners of the projector in image space.
+            // use these corners
+        } else {
+            projectorView.setCorners(corners);
+        }
 
         text(this.isProCamCalibrated, 100, DO_CALIBRATION_HEIGHT + 15);
         text(this.isKinectCalibrated, 300, DO_CALIBRATION_HEIGHT + 15);

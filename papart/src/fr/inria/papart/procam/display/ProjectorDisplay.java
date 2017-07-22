@@ -63,7 +63,11 @@ public class ProjectorDisplay extends ARDisplay {
     public void draw() {
 
         if (isCalibrationMode) {
-            projectCornersImage();
+            if (this.isSmallCalibration) {
+                projectSmallCornersImage();
+            } else {
+                projectCornersImage();
+            }
             return;
         }
 
@@ -75,9 +79,14 @@ public class ProjectorDisplay extends ARDisplay {
     }
 
     private boolean isCalibrationMode = false;
+    private boolean isSmallCalibration = false;
 
     public void setCalibrationMode(boolean isCalibration) {
         this.isCalibrationMode = isCalibration;
+    }
+
+    public void setSmallCornerCalibration(boolean smallC) {
+        this.isSmallCalibration = smallC;
     }
 
     public PGraphicsOpenGL beginDrawOnBoard(Camera camera, MarkerBoard board) {
@@ -139,8 +148,8 @@ public class ProjectorDisplay extends ARDisplay {
 
         Ray3D ray
                 = new Ray3D(new Vec3D(originC.x,
-                                originC.y,
-                                originC.z),
+                        originC.y,
+                        originC.z),
                         new Vec3D(viewedPtC.x,
                                 viewedPtC.y,
                                 viewedPtC.z));
@@ -262,14 +271,16 @@ public class ProjectorDisplay extends ARDisplay {
         this.cornerXL = xl;
     }
 
+    /**
+     * Draws in parent (main) rendering.
+     */
     void projectCornersImage() {
-
         PGraphicsOpenGL g = (PGraphicsOpenGL) parent.g;
-        
+
         g.pushMatrix();
         g.background(0);
         g.ellipseMode(PApplet.CENTER);
-        
+
         g.noStroke();
         // corner 4  Yellow 0, 0
         g.fill(255, 255, 50);
@@ -288,10 +299,10 @@ public class ProjectorDisplay extends ARDisplay {
         drawEllipses(g);
 
         // Corner 1  White 0,y
-        g.fill(255);  
+        g.fill(255);
         g.translate(-g.width, 0);
         drawEllipses(g);
-        
+
         g.popMatrix();
         // In TrackedView 
         // 0 is ->  0, h   (white)
@@ -302,6 +313,59 @@ public class ProjectorDisplay extends ARDisplay {
         g.noFill();
         g.strokeWeight(3);
         g.rect(0, 0, g.width, g.height);
+    }
+
+    /**
+     * Draws in parent (main) rendering.
+     */
+    private void projectSmallCornersImage() {
+        PGraphicsOpenGL g = (PGraphicsOpenGL) parent.g;
+
+        g.pushMatrix();
+        g.background(0);
+        g.ellipseMode(PApplet.CENTER);
+
+        // half from each size ?
+        float nbDivision = 2;
+
+        float xOrig = g.width / (nbDivision * 2);
+        float yOrig = g.height / (nbDivision * 2);
+        float xWidth = nbDivision * (g.width / (nbDivision * 2));
+        float yHeight = nbDivision * (g.height / (nbDivision * 2));
+
+        
+        g.noStroke();
+        // corner 4  Yellow 0, 0
+        g.fill(255, 255, 50);
+        g.translate(xOrig, yOrig);
+        drawEllipses(g);
+
+        // corner 3  green x, 0  
+        g.translate(xWidth, 0);
+        g.fill(50, 255, 50);
+        drawEllipses(g);
+
+        // Corner 2  Red  x,y
+        g.fill(255, 50, 55);
+        g.translate(0, yHeight);
+        drawEllipses(g);
+
+        // Corner 1  White 0,y
+        g.fill(255);
+        g.translate(-xWidth, 0);
+        drawEllipses(g);
+
+        g.popMatrix();
+        // In TrackedView 
+        // 0 is ->  0, h   (white)
+        // 1 is ->  w, h   (Red)
+        // 2 is ->  w, 0   (Green)
+        // 3 is ->  0, 0   (Yellow)
+        g.stroke(200);
+        g.noFill();
+        g.strokeWeight(3);
+        g.rect(xOrig, yOrig, xWidth, yHeight);
+
     }
 
     void drawEllipses(PGraphicsOpenGL g) {

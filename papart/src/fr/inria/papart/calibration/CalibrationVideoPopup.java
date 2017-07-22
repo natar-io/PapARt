@@ -76,6 +76,10 @@ public class CalibrationVideoPopup extends PApplet {
         return calibrationPopup.corners[id];
     }
 
+    public PVector secondCorners(int id) {
+        return calibrationPopup.secondCorners[id];
+    }
+
     public int currentCorner() {
         return calibrationPopup.currentCorner;
     }
@@ -93,12 +97,20 @@ public class CalibrationVideoPopup extends PApplet {
     }
 
     private void drawProjectionZone() {
+
         fill(0, 180, 0, 100);
         quad(corners(0).x, corners(0).y,
                 corners(1).x, corners(1).y,
                 corners(2).x, corners(2).y,
                 corners(3).x, corners(3).y);
 
+        if (calibrationPopup.useSmallCorners) {
+            fill(0, 0, 120, 100);
+            quad(secondCorners(0).x, secondCorners(0).y,
+                    secondCorners(1).x, secondCorners(1).y,
+                    secondCorners(2).x, secondCorners(2).y,
+                    secondCorners(3).x, secondCorners(3).y);
+        }
     }
 
     private void drawRectAroundCurrentCorner() {
