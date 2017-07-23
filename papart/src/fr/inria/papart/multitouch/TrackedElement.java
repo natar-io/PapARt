@@ -110,7 +110,7 @@ public class TrackedElement {
         setPreviousPosition();
     }
 
-       /**
+    /**
      * Set a new position to this tracked element, it will save the past
      * location and compute the speed.
      *
@@ -123,15 +123,17 @@ public class TrackedElement {
 
     /**
      * Get the current position of this element.
-     * @return 
+     *
+     * @return
      */
     public PVector getPosition() {
         return this.position;
     }
-    
+
     /**
      * Get the current position of this element.
-     * @return 
+     *
+     * @return
      */
     public Vec3D getPositionVec3D() {
         return new Vec3D(position.x, position.y, position.z);
@@ -143,20 +145,22 @@ public class TrackedElement {
 
     /**
      * Get the current previous position of this element.
-     * @return 
+     *
+     * @return
      */
     public PVector getPreviousPosition() {
         return this.previousPosition;
     }
-    
+
     /**
      * Get the current previous position of this element.
-     * @return 
+     *
+     * @return
      */
     public Vec3D getPreviousPositionVec3D() {
         return new Vec3D(previousPosition.x, previousPosition.y, previousPosition.z);
     }
-    
+
     /**
      * Use the OneEuroFilter to filter the position.
      */
@@ -169,7 +173,7 @@ public class TrackedElement {
             System.out.println("OneEuro init Exception. Pay now." + e);
         }
     }
-    
+
     /**
      * Use the OneEuroFilter to filter the position.
      */
@@ -184,11 +188,12 @@ public class TrackedElement {
     }
 
     /**
-     * Update with an external element. This is used for tracking purposes. The 
-     * current element is updated with the data of the new one passed in parameter.
-     * the new one is to be deleted afterwards.
+     * Update with an external element. This is used for tracking purposes. The
+     * current element is updated with the data of the new one passed in
+     * parameter. the new one is to be deleted afterwards.
+     *
      * @param tp
-     * @return 
+     * @return
      */
     public boolean updateWith(TrackedElement tp) {
         if (isUpdated || tp.isUpdated) {
@@ -209,20 +214,26 @@ public class TrackedElement {
         // delete the updating point (keep the existing one)
         tp.toDelete = true;
 
-        updatePosition(tp);
-
         checkAndSetID();
 //        filter(tp.createTime);
+        
+        if(tp instanceof TrackedDepthPoint){
+           ((TrackedDepthPoint) this).updateAdditionalElements((TrackedDepthPoint) tp);
+        }
+        updatePosition(tp);
         filter();
+
         return true;
     }
 
     /**
-     * Update the element without an external one. This is called when 
-     * no good candidate is found. The filtering may set a new position and speed.
+     * Update the element without an external one. This is called when no good
+     * candidate is found. The filtering may set a new position and speed.
      */
     public void updateAlone() {
+        this.setUpdated(true);
         updatePosition(this);
+        checkAndSetID();
         // TODO: check performance ?!
         filter();
     }
@@ -234,7 +245,7 @@ public class TrackedElement {
         // The touchPoint gets an ID, it is a grown up now. 
         if (this.id == NO_ID) {
             if (count == 0) {
-                globalID = 0;
+                globalID = 1;
             }
             this.id = globalID++;
             count++;
@@ -242,52 +253,54 @@ public class TrackedElement {
     }
 
     /**
-     * Update the position of this element according to the parameter. 
-     * Updates the position, previous position, confidence and speed. 
-     * @param tp 
+     * Update the position of this element according to the parameter. Updates
+     * the position, previous position, confidence and speed.
+     *
+     * @param tp
      */
     private void updatePosition(TrackedElement tp) {
         // save the previous position
         previousPosition = position.get();
-
         this.position.set(tp.position);
         this.confidence = tp.confidence;
 
         this.setSource(tp.source);
-        
+
         speed.set(this.position);
         speed.sub(this.previousPosition);
     }
 
-    
     protected void updateAdditionalElements(TrackedElement tp) {
 
     }
 
     /**
-     * Find out if the current Element has not been updated for a long time. 
-     * A long time is given by the detection which created this element
-     * with the method getTrackingForgetTime();
+     * Find out if the current Element has not been updated for a long time. A
+     * long time is given by the detection which created this element with the
+     * method getTrackingForgetTime();
+     *
      * @param currentTime
-     * @return 
+     * @return
      */
     public boolean isObselete(int currentTime) {
         return (currentTime - updateTime) > this.getDetection().getTrackingForgetTime();
     }
 
     /**
-     * Return true if the element is flagged to be deleted. A trackedElement 
-     * like this is a "ghost": still here but ready to be removed. 
+     * Return true if the element is flagged to be deleted. A trackedElement
+     * like this is a "ghost": still here but ready to be removed.
+     *
      * @param currentTime
      * @param duration
-     * @return 
+     * @return
      */
     public boolean isToRemove(int currentTime, int duration) {
         return (currentTime - deletionTime) > duration;
     }
 
     /**
-     * Get the current ID. 
+     * Get the current ID.
+     *
      * @return the id or NO_ID if its invalid.
      */
     public int getID() {
@@ -295,15 +308,16 @@ public class TrackedElement {
     }
 
     /**
-     * Time limit in ms for a "young" point 
+     * Time limit in ms for a "young" point
      */
     static final int SHORT_TIME_PERIOD = 200;  // in ms
 
     /**
-     * Return true if the TrackedElement has been created recently. Currently
-     * a young Element is less than 200ms old.
+     * Return true if the TrackedElement has been created recently. Currently a
+     * young Element is less than 200ms old.
+     *
      * @param currentTime
-     * @return 
+     * @return
      */
     public boolean isYoung(int currentTime) {
         int age = getAge(currentTime);
@@ -312,8 +326,9 @@ public class TrackedElement {
 
     /**
      * Get the age from creation in milliseconds.
+     *
      * @param currentTime
-     * @return 
+     * @return
      */
     public int getAge(int currentTime) {
         if (this.createTime == NO_TIME) {
@@ -324,8 +339,9 @@ public class TrackedElement {
     }
 
     /**
-     * Set the time of creation. 
-     * @param timeStamp 
+     * Set the time of creation.
+     *
+     * @param timeStamp
      */
     public void setCreationTime(int timeStamp) {
         this.createTime = timeStamp;
@@ -375,9 +391,8 @@ public class TrackedElement {
     public String toString() {
         return "Tracked Element:  position: " + position + ", confidence: " + confidence + ". \n";
     }
-    
-    // TODO: find a way to handle in a better way.
 
+    // TODO: find a way to handle in a better way.
     public boolean hasTouch() {
         return touch != null;
     }
@@ -405,7 +420,6 @@ public class TrackedElement {
         return detection;
     }
 
-    
     public Object getSource() {
         return source;
     }
@@ -413,8 +427,9 @@ public class TrackedElement {
     public void setSource(Object source) {
         this.source = source;
     }
+
     /**
-     * TODO: Find the use of this?
+     * TODO: Find the use of this? -> Used by the Tracking system.
      *
      * @param detection
      */

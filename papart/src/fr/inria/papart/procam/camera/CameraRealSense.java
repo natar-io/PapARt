@@ -86,7 +86,6 @@ public class CameraRealSense extends CameraRGBIRDepth {
             grabber.setDepthImageWidth(depthCamera.width());
             grabber.setDepthImageHeight(depthCamera.height());
             grabber.setDepthFrameRate(depthCamera.getFrameRate());
-            grabber.setPreset(5);
             grabber.enableDepthStream();
         }
         grabber.start();

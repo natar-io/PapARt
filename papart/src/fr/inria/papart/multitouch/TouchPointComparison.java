@@ -25,35 +25,39 @@ package fr.inria.papart.multitouch;
  */
 public class TouchPointComparison<T extends TrackedElement> implements Comparable<TouchPointComparison<T>> {
 
-        T oldTp;
-        T newTp;
-        float distance;
+    T oldTp;
+    T newTp;
+    float distance;
 
-        public TouchPointComparison(T oldTp, T newTp) {
-            this.oldTp = oldTp;
-            this.newTp = newTp;
+    public TouchPointComparison(T oldTp, T newTp) {
+        this.oldTp = oldTp;
+        this.newTp = newTp;
 
+        if (oldTp instanceof TrackedDepthPoint) {
+            distance = ((TrackedDepthPoint) oldTp).distanceTo((TrackedDepthPoint) newTp);
+        } else {
             distance = oldTp.distanceTo(newTp);
         }
-
-        public T getOld() {
-            return oldTp;
-        }
-
-        public T getNew() {
-            return newTp;
-        }
-
-        public boolean update() {
-            return oldTp.updateWith(newTp);
-        }
-
-        public int compareTo(TouchPointComparison tpt) {
-            return Float.compare(distance, tpt.distance);
-        }
-
-        @Override
-        public String toString() {
-            return "TouchPointTracker : \n " + getOld() + "\n" + getNew() + " \nDistance " + distance + " \n";
-        }
     }
+
+    public T getOld() {
+        return oldTp;
+    }
+
+    public T getNew() {
+        return newTp;
+    }
+
+    public boolean update() {
+        return oldTp.updateWith(newTp);
+    }
+
+    public int compareTo(TouchPointComparison tpt) {
+        return Float.compare(distance, tpt.distance);
+    }
+
+    @Override
+    public String toString() {
+        return "TouchPointTracker : \n " + getOld() + "\n" + getNew() + " \nDistance " + distance + " \n";
+    }
+}

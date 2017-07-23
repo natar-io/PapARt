@@ -107,13 +107,18 @@ public class KinectTouchInput extends TouchInput {
             IplImage depthImage;
             IplImage colImage = null;
 
-            // TODO: to only once ?
+            // TODO: get the main device ?
             if (kinectDevice.getMainCamera().isUseColor()) {
                 colImage = kinectDevice.getColorCamera().getIplImage();
             }
             if (kinectDevice.getMainCamera().isUseIR()) {
                 colImage = kinectDevice.getIRCamera().getIplImage();
             }
+//            if (kinectDevice.getMainCamera() != null) {
+//                colImage = kinectDevice.getMainCamera().getIplImage();
+//            } else {
+//                colImage = kinectDevice.getColorCamera().getIplImage();
+//            }
 
             depthImage = kinectDevice.getDepthCamera().getIplImage();
 
@@ -127,7 +132,6 @@ public class KinectTouchInput extends TouchInput {
             // Allocate the data when everything else is ready. 
             // TODO: all the time ?...
             if (touchDetection2D == null) {
-                int depthSize = kinectDevice.getDepthCamera().width() * kinectDevice.getDepthCamera().height();
                 touchDetection2D = new Simple2D(depthAnalysis);
                 touchDetection3D = new Simple3D(depthAnalysis);
 
@@ -399,8 +403,7 @@ public class KinectTouchInput extends TouchInput {
 //                    pointPosDisplay);
 //            System.out.println("new: " + pointPosDisplay);
 //            return pointPosDisplay;
-                // Not ready yet...
-            
+            // Not ready yet...
 // This is not working with raw Depth, because the coordinates
             // of pNorm is not in display Space, but in a custom space
             // defined for the touch surface... 
@@ -493,10 +496,12 @@ public class KinectTouchInput extends TouchInput {
     public ArrayList<TrackedDepthPoint> getTouchPoints2D() {
         return this.touchPoints2D;
     }
- @Deprecated
+
+    @Deprecated
     public ArrayList<TrackedDepthPoint> getTouchPoints3D() {
         return this.touchPoints3D;
     }
+
     public ArrayList<TrackedDepthPoint> getTrackedDepthPoints2D() {
         return this.touchPoints2D;
     }

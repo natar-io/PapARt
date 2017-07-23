@@ -475,12 +475,12 @@ public class CalibrationPopup extends PApplet {
                 .setGroup("CornersGroup");
 
         this.zoomToggle = skatolo.addToggle("showZoom")
-                .setPosition(10, 47)
+                .setPosition(10, 45)
                 .setCaptionLabel("Zoom (z)")
                 .setGroup("CornersGroup");
 
         this.zoomToggle = skatolo.addToggle("useSmallCorners")
-                .setPosition(10, 62)
+                .setPosition(10, 70)
                 .setCaptionLabel("Small Corners")
                 .setGroup("CornersGroup");
 

@@ -41,6 +41,8 @@ public class SkatoloLink {
     // Warning -> Must be linked to a physical screen // a Renderer. 
     // Warning -> the mouse must be "displayed" ... 
     public static Touch mouseTouch = new Touch();
+//    public static int mouseTouchID = -30;
+    
 
     public static void addMouseTo(TouchList touchList, Skatolo skatolo, PaperScreen paperScreen) {
         PApplet applet = Papart.getPapart().getApplet();
@@ -49,6 +51,8 @@ public class SkatoloLink {
         float normY = (float) applet.mouseY / (float) applet.height;
         PVector pointer = paperScreen.getDisplay().project(paperScreen.getScreen(), normX, normY);
         mouseTouch.setPosition(pointer.x, pointer.y, 0);
+        mouseTouch.setPosition(pointer.x * paperScreen.getDrawingSize().x,
+                pointer.y * paperScreen.getDrawingSize().y, 0);
         touchList.add(mouseTouch);
     }
 

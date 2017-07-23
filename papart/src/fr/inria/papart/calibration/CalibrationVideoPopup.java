@@ -32,6 +32,7 @@ import processing.core.PImage;
 import processing.core.PVector;
 import processing.data.JSONArray;
 import processing.data.JSONObject;
+import tech.lity.rea.skatolo.gui.widgets.PixelSelect;
 
 /**
  *
@@ -43,6 +44,9 @@ public class CalibrationVideoPopup extends PApplet {
     CalibrationPopup calibrationPopup;
     public int previewSize = 10;
     public int previewSizeVisu = 5;
+
+    PixelSelect[] corners;
+    public Skatolo skatolo;
 
     public CalibrationVideoPopup(CalibrationPopup calibrationPopup) {
         super();
@@ -69,6 +73,28 @@ public class CalibrationVideoPopup extends PApplet {
 
     public void setup() {
         setSize();
+        skatolo = new Skatolo(this);
+        corners = new PixelSelect[4];
+
+        corners[0] = skatolo.addPixelSelect("origin")
+                .setArrayValue(new float[]{calibrationPopup.corners[0].x,
+                        calibrationPopup.corners[0].y})
+                .setLabel("white");
+
+        corners[1] = skatolo.addPixelSelect("xAxis")
+                .setLabel("red")
+                .setArrayValue(new float[]{calibrationPopup.corners[1].x,
+                        calibrationPopup.corners[1].y});
+
+        corners[2] = skatolo.addPixelSelect("corner")
+                .setLabel("green")
+                .setArrayValue(new float[]{calibrationPopup.corners[2].x,
+                        calibrationPopup.corners[2].y});
+
+        corners[3] = skatolo.addPixelSelect("yAxis")
+                .setLabel("yellow")
+                .setArrayValue(new float[]{calibrationPopup.corners[3].x,
+                        calibrationPopup.corners[3].y});
 
     }
 
@@ -84,16 +110,31 @@ public class CalibrationVideoPopup extends PApplet {
         return calibrationPopup.currentCorner;
     }
 
+    PImage camImage;
+
     @Override
     public void draw() {
-        image(cameraTracking.getPImageCopy(this), 0, 0, cameraTracking.width(), cameraTracking.height());
+        if (frameCount % 50 == 0 || camImage == null) {
+            camImage = cameraTracking.getPImageCopy(this);
+        }
 
+        image(camImage, 0, 0, cameraTracking.width(), cameraTracking.height());
+        updateCorners();
         drawProjectionZone();
-        drawRectAroundCurrentCorner();
+//        drawRectAroundCurrentCorner();
         if (calibrationPopup.showZoom) {
             drawZoom();
         }
         noStroke();
+
+    }
+
+    private void updateCorners() {
+        for (int i = 0; i < 4; i++) {
+            PixelSelect corner = corners[i];
+            float[] pos = corner.getArrayValue();
+            corners(i).set(pos[0], pos[1]);
+        }
     }
 
     private void drawProjectionZone() {
@@ -118,7 +159,6 @@ public class CalibrationVideoPopup extends PApplet {
         rectMode(CENTER);
         stroke(255);
         strokeWeight(1);
-
         pushMatrix();
         translate(corners(currentCorner()).x,
                 corners(currentCorner()).y);
@@ -146,27 +186,23 @@ public class CalibrationVideoPopup extends PApplet {
     }
 
     @Override
-    public void mouseDragged() {
-        corners(currentCorner()).set(mouseX, mouseY);
-    }
-
-    @Override
     public void keyPressed() {
 
-        if (key == '1') {
-            calibrationPopup.activateCornerNo(0);
-        }
+        if (key != CODED) {
 
-        if (key == '2') {
-            calibrationPopup.activateCornerNo(1);
-        }
+            for (PixelSelect corner : corners) {
+                corner.setKeyboardControlled(false);
+            }
 
-        if (key == '3') {
-            calibrationPopup.activateCornerNo(2);
-        }
+            try {
+                int v = Character.getNumericValue(key);
+                if (v >= 1 && v < 5) {
+                    corners[v - 1].setKeyboardControlled(true);
+                }
+            } catch (Exception e) {
+                // Ignored
+            }
 
-        if (key == '4') {
-            calibrationPopup.activateCornerNo(3);
         }
 
         if (key == 'l') {
@@ -179,24 +215,6 @@ public class CalibrationVideoPopup extends PApplet {
         if (key == 'z') {
             calibrationPopup.zoomToggle.setState(!calibrationPopup.showZoom);
 //            calibrationPopup.showZoom = !calibrationPopup.showZoom;
-        }
-
-        if (key == CODED) {
-            if (keyCode == UP) {
-                calibrationPopup.moveCornerUp(true, 1);
-            }
-
-            if (keyCode == DOWN) {
-                calibrationPopup.moveCornerUp(false, 1);
-            }
-
-            if (keyCode == LEFT) {
-                calibrationPopup.moveCornerLeft(true, 1);
-            }
-
-            if (keyCode == RIGHT) {
-                calibrationPopup.moveCornerLeft(false, 1);
-            }
         }
 
         if (key == 27) { //The ASCII code for esc is 27, so therefore: 27

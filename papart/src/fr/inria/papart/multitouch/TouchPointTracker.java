@@ -44,7 +44,7 @@ public class TouchPointTracker {
         setNonUpdatedPointsSpeed(currentList);
     }
 
-    public static  <T extends TrackedElement>  void updatePoints(ArrayList<T> currentList, ArrayList<T> newPoints) {
+    public static <T extends TrackedElement> void updatePoints(ArrayList<T> currentList, ArrayList<T> newPoints) {
 
         // many previous points, try to find correspondances.
         ArrayList<TouchPointComparison> tpt = new ArrayList<>();
@@ -66,7 +66,7 @@ public class TouchPointTracker {
         }
     }
 
-    public static  <T extends TrackedElement> void addNewPoints(ArrayList<T> currentList, ArrayList<T> newPoints) {
+    public static <T extends TrackedElement> void addNewPoints(ArrayList<T> currentList, ArrayList<T> newPoints) {
 
         // Add the new ones ?
         for (T tp : newPoints) {
@@ -88,10 +88,10 @@ public class TouchPointTracker {
 
         // Add the new ones ?
         for (TrackedElement tp : currentList) {
-            if (tp.isUpdated()) {
-                continue;
+            if (!tp.isUpdated()) {
+                tp.updateAlone();
             }
-            tp.updateAlone();
+            
         }
     }
 

@@ -68,32 +68,32 @@ public class KinectProcessing extends KinectDepthAnalysis {
         validCopy = Arrays.copyOf(depthData.validPointsMask, depthData.validPointsMask.length);
     }
 
-    // TODO: Deprecated To Check
-    @Deprecated
-    @Override
-    public void updateMT(opencv_core.IplImage depth, opencv_core.IplImage color, PlaneAndProjectionCalibration calib, int skip2D, int skip3D) {
-        updateRawDepth(depth);
-        // optimisation no Color. 
-        updateRawColor(color);
-        depthData.clear();
-        depthData.timeStamp = papplet.millis();
-        depthData.planeAndProjectionCalibration = calib;
-
-        computeDepthAndDo(1, new DoNothing());
-
-        validPointsPImage.loadPixels();
-//        Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 255));
-        doForEachPoint(1, new SetImageData());
-        validPointsPImage.updatePixels();
-
-        doForEachPoint(skip2D, new Select2DPointPlaneProjection());
-
-//        erodePoints(depthData.validPointsMask);
-//        erodePoints2(depthData.validPointsList, depthData.validPointsMask, skip2D);
-        doForEachPoint(skip3D, new Select3DPointPlaneProjection());
-//        erodePoints(depthData.validPointsMask3D);
-
-    }
+//    // TODO: Deprecated To Check
+//    @Deprecated
+//    @Override
+//    public void updateMT(opencv_core.IplImage depth, opencv_core.IplImage color, PlaneAndProjectionCalibration calib, int skip2D, int skip3D) {
+//        updateRawDepth(depth);
+//        // optimisation no Color. 
+//        updateRawColor(color);
+//        depthData.clear();
+//        depthData.timeStamp = papplet.millis();
+//        depthData.planeAndProjectionCalibration = calib;
+//
+//        computeDepthAndDo(1, new DoNothing());
+//
+//        validPointsPImage.loadPixels();
+////        Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 255));
+//        doForEachPoint(1, new SetImageData());
+//        validPointsPImage.updatePixels();
+//
+//        doForEachPoint(skip2D, new Select2DPointPlaneProjection());
+//
+////        erodePoints(depthData.validPointsMask);
+////        erodePoints2(depthData.validPointsList, depthData.validPointsMask, skip2D);
+//        doForEachPoint(skip3D, new Select3DPointPlaneProjection());
+////        erodePoints(depthData.validPointsMask3D);
+//
+//    }
 
     public void updateMT(opencv_core.IplImage depth, opencv_core.IplImage color, PlaneAndProjectionCalibration calib, int skip2D) {
 
@@ -109,9 +109,9 @@ public class KinectProcessing extends KinectDepthAnalysis {
             computeDepthAndDo(skip2D, new DoNothing());
 
             // depth is computed at the step before.
-            timeFilterDepth.addCurrentDepthPoints(this.depth);
-            doForEachPoint(skip2D, timeFilterDepth);
-            System.out.println("Time filtering....");
+//            timeFilterDepth.addCurrentDepthPoints(this.depth);
+//            doForEachPoint(skip2D, timeFilterDepth);
+//            System.out.println("Time filtering....");
 
 //            doForEachPoint(skip2D,
 //                    new UndistortSR300Depth());
@@ -119,15 +119,15 @@ public class KinectProcessing extends KinectDepthAnalysis {
 //                    new Select2DPointPlaneProjectionSR300Error());
 
             doForEachPoint(skip2D,
-                    new Select3DPointPlaneProjection());
+                    new Select2DPointPlaneProjection());
 //        erodePoints(depthData.validPointsMask);
 //        erodePoints2(depthData.validPointsList, depthData.validPointsMask, skip2D);
             doForEachPoint(skip2D,
                     new Select3DPointPlaneProjection());
 //        erodePoints(depthData.validPointsMask3D);
 
-            validPointsPImage.loadPixels();
 
+            validPointsPImage.loadPixels();
             Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 255));
             doForEachValidPoint(skip2D,
                     new SetImageData());
@@ -231,10 +231,11 @@ public class KinectProcessing extends KinectDepthAnalysis {
         }
 
 // depth is computed at the step before.
-        timeFilterDepth.addCurrentDepthPoints(this.depth);
-        doForEachPoint(skip, timeFilterDepth);
+//        timeFilterDepth.addCurrentDepthPoints(this.depth);
+//        doForEachPoint(skip, timeFilterDepth);
+//        doForEachPoint(skip, new UndistortSR300Depth());
 
-        doForEachPoint(skip, new UndistortSR300Depth());
+
 //        computeDepthAndDo(skip, new Select2DPointOverPlane());
         validPointsPImage.updatePixels();
         return validPointsPImage;

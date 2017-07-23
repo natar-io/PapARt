@@ -228,6 +228,16 @@ public class Papart {
      * @return
      */
     public static Papart projectionOnly(PApplet applet) {
+        return projectionOnly(applet, 1);
+    }
+
+    /**
+     * Start a projection with a procam, it replaces size().
+     *
+     * @param applet
+     * @return
+     */
+    public static Papart projectionOnly(PApplet applet, float quality) {
 
         ScreenConfiguration screenConfiguration = getDefaultScreenConfiguration(applet);
 
@@ -240,8 +250,9 @@ public class Papart {
         papart.shouldSetWindowLocation = true;
         papart.shouldSetWindowSize = true;
         papart.registerPost();
-        papart.initProjectorDisplay(1.5f);
-
+        papart.initProjectorDisplay(quality);
+        papart.isWithoutCamera = true;
+        
         return papart;
     }
 
