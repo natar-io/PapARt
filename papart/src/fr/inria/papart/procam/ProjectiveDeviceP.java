@@ -227,8 +227,13 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
         return (int) (py * w + px);
     }
 
-    // TODO: find a name...
-    public PVector worldToPixelReal(PVector pt) {
+
+/** 
+ * Similar tor worldToPixel without border checking. 
+ * @param pt
+ * @return 
+ */    
+    public PVector worldToPixelUnconstrained(PVector pt) {
 
         // Reprojection 
         float invZ = 1.0f / pt.z;

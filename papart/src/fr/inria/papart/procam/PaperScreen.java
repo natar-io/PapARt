@@ -24,6 +24,7 @@ import fr.inria.papart.tracking.MarkerBoardInvalid;
 import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.calibration.HomographyCalibration;
+import fr.inria.papart.multitouch.Touch;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.tracking.ObjectFinder;
@@ -31,6 +32,7 @@ import java.awt.Image;
 import java.util.ArrayList;
 import processing.opengl.PGraphicsOpenGL;
 import processing.core.PApplet;
+import processing.core.PConstants;
 import processing.core.PFont;
 import processing.core.PGraphics;
 import processing.core.PImage;
@@ -478,6 +480,28 @@ public class PaperScreen {
         }
 
         return thisViewOfPoint;
+    }
+    
+    /**
+     * Project the Mouse to this PaperScreen.
+     * You can disable it by pressing the right button of the mouse.
+     * Similar to SkatoloLink "AddMouseTo". 
+     * @return Touch to add to your touchList
+     */
+    public Touch createTouchFromMouse(){
+        
+        if (parent.mousePressed && (parent.mouseButton == PConstants.RIGHT)){
+            return Touch.INVALID;
+        }
+        Touch t = new Touch();
+            // Add the mouse a pointer. 
+        PVector p = getDisplay().project(getScreen(), 
+                    (float) parent.mouseX / (float) parent.width,
+                    (float) parent.mouseY /(float)  parent.height);
+        p.x  = p.x * drawingSize.x;
+        p.y  = p.y * drawingSize.y;
+        t.setPosition(p);
+        return t;
     }
 
 //  public PVector getCoordOf(PaperScreen paperScreen, PVector point) {

@@ -41,7 +41,7 @@ public class CameraFFMPEG extends Camera {
     private FFmpegFrameGrabber grabber;
     private final OpenCVFrameConverter.ToIplImage converter;
     private String imageFormat;
-    
+
     protected CameraFFMPEG(String description, String imFormat) {
         this.cameraDescription = description;
 //        this.setPixelFormat(Camera.PixelFormat.RGB);
@@ -49,19 +49,40 @@ public class CameraFFMPEG extends Camera {
         converter = new OpenCVFrameConverter.ToIplImage();
     }
 
+    public void startVideo() {
+        FFmpegFrameGrabber grabberFF = new FFmpegFrameGrabber(this.cameraDescription);
+        try {
+            grabberFF.setFrameRate(30);
+            this.setPixelFormat(PixelFormat.BGR);
+            grabberFF.start();
+            this.grabber = grabberFF;
+            this.setSize(grabber.getImageWidth(), grabber.getImageHeight());
+//            this.setFrameRate((int) grabberFF.getFrameRate());
+            grabberFF.setFrameRate(30);
+            this.isConnected = true;
+        } catch (Exception e) {
+            System.err.println("Could not start frameGrabber... " + e);
+
+            System.err.println("Could not camera start frameGrabber... " + e);
+            System.err.println("Camera ID " + this.systemNumber + " could not start.");
+            System.err.println("Check cable connection, ID and resolution asked.");
+
+            this.grabber = null;
+        }
+    }
+
     @Override
     public void start() {
         FFmpegFrameGrabber grabberFF = new FFmpegFrameGrabber(this.cameraDescription);
 
         grabberFF.setImageMode(FrameGrabber.ImageMode.COLOR);
-        
+
         this.setPixelFormat(PixelFormat.BGR);
-        
+
         grabberFF.setFormat(this.imageFormat);
         grabberFF.setImageWidth(width());
         grabberFF.setImageHeight(height());
         grabberFF.setFrameRate(frameRate);
-        
 
         try {
             grabberFF.start();
@@ -85,7 +106,7 @@ public class CameraFFMPEG extends Camera {
             return;
         }
         try {
-              this.updateCurrentImage(converter.convertToIplImage(grabber.grab()));
+            this.updateCurrentImage(converter.convertToIplImage(grabber.grab()));
         } catch (Exception e) {
             System.err.println("Camera: FFMPEG Grab() Error ! " + e);
             e.printStackTrace();

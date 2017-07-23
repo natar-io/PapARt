@@ -48,6 +48,11 @@ public class ColorDetection {
     // output 
     protected int col;
 
+    /**
+     * Create a color detection on a given PaperScreen. 
+     * It will use this paperScreen's coordinates.
+     * @param paperScreen 
+     */
     public ColorDetection(PaperScreen paperScreen) {
         this.paperScreen = paperScreen;
         setCaptureOffset(new PVector());
@@ -77,10 +82,17 @@ public class ColorDetection {
         }
     }
 
+    /** 
+     * Compute the color. 
+     */
     public void update() {
         computeColor();
     }
 
+    /** 
+     * Compute the color, and draw the detection zone and the detected color. 
+     * For debug purposes. 
+     */
     public void drawSelf() {
         computeColor();
 
@@ -89,8 +101,6 @@ public class ColorDetection {
         paperScreen.pushMatrix();
         paperScreen.translate(pos.x,
                 pos.y, 0.2f);
-
-//        drawCaptureZonePriv();
         paperScreen.translate(captureSize.x + 20, 0);
         drawCapturedImage();
 
@@ -104,6 +114,9 @@ public class ColorDetection {
         return this.pos;
     }
 
+    /**
+     * Draw the image from 'getImage', at the current location.
+     */
     public void drawCapturedImage() {
         PImage out = getImage();
         if (out != null) {
@@ -111,20 +124,19 @@ public class ColorDetection {
         }
     }
 
+    /**
+     * Draw an ellipse with a fill of the captured color.
+     * ellipse(0, 0, 10, 10);
+     */
     public void drawCapturedColor() {
         paperScreen.fill(this.col);
         paperScreen.noStroke();
         paperScreen.ellipse(0, 0, 10, 10);
     }
 
-    public void drawCaptureZonePriv() {
-        paperScreen.strokeWeight(3);
-        paperScreen.noFill();
-        paperScreen.stroke(80);
-        paperScreen.rectMode(PApplet.CORNER);
-        paperScreen.rect(0, 0, captureSize.x, captureSize.y);
-    }
-
+    /** 
+     * Draw the zone captured to compute the color. 
+     */
     public void drawCaptureZone() {
         paperScreen.pushMatrix();
         paperScreen.translate(pos.x,
@@ -139,6 +151,11 @@ public class ColorDetection {
         paperScreen.popMatrix();
     }
 
+    /**
+     * Return the image used for color computation.
+     * Warning, can return null images. 
+     * @return the PImage or null in debug mode. 
+     */
     public PImage getImage() {
         // TODO: NoCamera HACK
         if (paperScreen.cameraTracking == null) {
@@ -149,6 +166,9 @@ public class ColorDetection {
         return out;
     }
 
+    /**
+     * Compute the average color of the patch analyzed.
+     */
     public void computeColor() {
 
         // HACK -> TODO error management. 
@@ -178,6 +198,12 @@ public class ColorDetection {
         this.col = 255 << 24 | avgRed | avgGreen | avgBlue;
     }
 
+    /**
+     * Get the occurences of a given color, given a error. 
+     * @param c  color to find. 
+     * @param threshold error margin
+     * @return number of occurences. 
+     */
     public int computeOccurencesOfColor(int c, int threshold) {
 
         // TODO: Hack for noCamera, better to be done. 
@@ -204,6 +230,10 @@ public class ColorDetection {
         return nbSameColor;
     }
 
+    /**
+     * Color found. Call update() or computeColor() before to get the latest color. 
+     * @return the color as int. 
+     */
     public int getColor() {
         return this.col;
     }
@@ -212,10 +242,17 @@ public class ColorDetection {
         return captureOffset;
     }
 
+    /**
+     * Set the position of the capture in millimeter. 
+     * @param captureOffset 
+     */
     public void setCaptureOffset(PVector captureOffset) {
         this.captureOffset = captureOffset;
     }
-
+  /**
+     * Set the position of the capture in millimeter. 
+     * @param captureOffset 
+     */
     public void setCaptureOffset(float x, float y) {
         this.captureOffset.set(x, y);
     }
