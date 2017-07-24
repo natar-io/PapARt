@@ -22,6 +22,7 @@ package fr.inria.papart.depthcam.devices;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.CameraOpenKinect2;
+import fr.inria.papart.procam.camera.CannotCreateCameraException;
 import processing.core.PApplet;
 
 /**
@@ -30,7 +31,7 @@ import processing.core.PApplet;
  */
 public final class KinectOne extends DepthCameraDevice {
 
-    public KinectOne(PApplet parent, Camera incomingCamera) {
+    public KinectOne(PApplet parent, Camera incomingCamera) throws CannotCreateCameraException {
         super(parent);
         if (incomingCamera instanceof CameraOpenKinect2) {
             this.camera = (CameraOpenKinect2) incomingCamera;

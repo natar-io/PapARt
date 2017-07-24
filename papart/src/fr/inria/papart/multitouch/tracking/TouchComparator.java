@@ -17,28 +17,26 @@
  * Public License along with this library; If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package fr.inria.papart.calibration;
+package fr.inria.papart.multitouch.tracking;
 
-import fr.inria.papart.apps.*;
-import fr.inria.papart.procam.Papart;
-import fr.inria.papart.procam.PaperScreen;
+import fr.inria.papart.multitouch.Touch;
+import fr.inria.papart.multitouch.Touch;
+import java.util.Comparator;
 
-public class CalibrationApp extends PaperScreen {
+/**
+ *
+ */
+public class TouchComparator implements Comparator{
 
-    @Override
-    public void settings() {
-        setDrawingSize(297, 210);
-        loadMarkerBoard(Papart.markerFolder + Papart.calibrationFileName, 162, 104);// 297, 210);
-        setDrawAroundPaper();
-    }
+  public TouchComparator(){
+  }
 
-    @Override
-    public void setup() {
-        // No filtering
-        setDrawingFilter(0);
-    }
-
-    @Override
-    public void drawAroundPaper() {
-    }
+  @Override
+  public int compare(Object touch0, Object touch1){
+    Touch t0 = (Touch) touch0;
+    Touch t1 = (Touch) touch1;
+    if(t0.position.y < t1.position.y)
+      return 1;
+    return -1;
+  }
 }

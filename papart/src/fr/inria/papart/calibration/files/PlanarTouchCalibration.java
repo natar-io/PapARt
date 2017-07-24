@@ -17,8 +17,9 @@
  * Public License along with this library; If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package fr.inria.papart.calibration;
+package fr.inria.papart.calibration.files;
 
+import fr.inria.papart.calibration.files.Calibration;
 import processing.core.PApplet;
 import processing.data.XML;
 import toxi.geom.Vec3D;

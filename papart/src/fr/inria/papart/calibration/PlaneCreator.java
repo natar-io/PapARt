@@ -19,6 +19,7 @@
  */
 package fr.inria.papart.calibration;
 
+import fr.inria.papart.calibration.files.PlaneCalibration;
 import toxi.geom.Plane;
 import toxi.geom.Triangle3D;
 import toxi.geom.Vec3D;

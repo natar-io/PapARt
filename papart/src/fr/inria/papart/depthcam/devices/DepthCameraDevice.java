@@ -1,6 +1,7 @@
 /*
  * Part of the PapARt project - https://project.inria.fr/papart/
  *
+ * Copyright (C) 2017 RealityTech
  * Copyright (C) 2014-2016 Inria
  * Copyright (C) 2011-2013 Bordeaux University
  *
@@ -19,15 +20,18 @@
  */
 package fr.inria.papart.depthcam.devices;
 
-import fr.inria.papart.calibration.HomographyCalibration;
-import fr.inria.papart.multitouch.KinectTouchInput;
+import fr.inria.papart.calibration.files.HomographyCalibration;
+import fr.inria.papart.multitouch.DepthTouchInput;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.utils.ARToolkitPlusUtils;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.CameraFactory;
 import fr.inria.papart.procam.camera.CameraRGBIRDepth;
+import fr.inria.papart.procam.camera.CannotCreateCameraException;
 import fr.inria.papart.procam.camera.SubCamera;
 import fr.inria.papart.procam.camera.SubDepthCamera;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
@@ -56,7 +60,7 @@ public abstract class DepthCameraDevice {
     public DepthCameraDevice(PApplet parent) {
         this.parent = parent;
     }
-    
+
     public abstract void loadDataFromDevice();
 
     public CameraRGBIRDepth getMainCamera() {
@@ -87,7 +91,7 @@ public abstract class DepthCameraDevice {
      * *
      * init a depth camera, depth only as there is another color camera.
      */
-    protected final void initDefaultCamera() {
+    protected final void initDefaultCamera() throws CannotCreateCameraException {
         String id = Papart.getDefaultDepthCameraConfiguration(parent).getCameraName();
         camera = (CameraRGBIRDepth) CameraFactory.createCamera(type(), id);
         camera.setUseDepth(true);
@@ -99,7 +103,7 @@ public abstract class DepthCameraDevice {
         camera.close();
     }
 
-    public void setTouch(KinectTouchInput kinectTouchInput) {
+    public void setTouch(DepthTouchInput kinectTouchInput) {
         camera.getDepthCamera().setTouchInput(kinectTouchInput);
     }
 

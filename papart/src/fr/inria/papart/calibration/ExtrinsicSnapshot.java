@@ -25,13 +25,13 @@ import processing.core.PMatrix3D;
  *
  * @author Jérémy Laviole - jeremy.laviole@inria.fr
  */
-public class CalibrationSnapshot {
+public class ExtrinsicSnapshot {
 
     PMatrix3D mainCameraPaper = null;
     PMatrix3D projectorPaper = null;
     PMatrix3D kinectPaper = null;
 
-    public CalibrationSnapshot(PMatrix3D cameraPaperCalibration,
+    public ExtrinsicSnapshot(PMatrix3D cameraPaperCalibration,
             PMatrix3D projectorPaperCalibration,
             PMatrix3D kinectPaperCalibration) {
 

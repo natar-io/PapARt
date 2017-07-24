@@ -21,7 +21,7 @@
 package fr.inria.papart.multitouch.detection;
 
 import fr.inria.papart.multitouch.ConnectedComponent;
-import fr.inria.papart.multitouch.TrackedElement;
+import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.utils.MathUtils;
 import fr.inria.papart.utils.WithSize;
 import java.util.ArrayList;

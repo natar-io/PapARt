@@ -24,6 +24,7 @@ import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.CameraFactory;
 import fr.inria.papart.procam.camera.CameraOpenKinect;
 import fr.inria.papart.procam.camera.CameraRGBIRDepth;
+import fr.inria.papart.procam.camera.CannotCreateCameraException;
 import processing.core.PApplet;
 
 /**
@@ -41,7 +42,7 @@ public class Kinect360 extends DepthCameraDevice {
 //        setStereoCalibration(Papart.kinectStereoCalib);
 //        camera.start();
 //    }
-    public Kinect360(PApplet parent, Camera anotherCamera) {
+    public Kinect360(PApplet parent, Camera anotherCamera) throws CannotCreateCameraException {
         super(parent);
 
         if (anotherCamera instanceof CameraOpenKinect) {

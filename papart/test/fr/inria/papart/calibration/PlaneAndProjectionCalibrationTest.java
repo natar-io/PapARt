@@ -19,9 +19,9 @@
  */
 package fr.inria.papart.calibration;
 
-import fr.inria.papart.calibration.HomographyCalibration;
-import fr.inria.papart.calibration.PlaneCalibration;
-import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
+import fr.inria.papart.calibration.files.HomographyCalibration;
+import fr.inria.papart.calibration.files.PlaneCalibration;
+import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.Sketch;
 import java.util.logging.Level;
 import java.util.logging.Logger;

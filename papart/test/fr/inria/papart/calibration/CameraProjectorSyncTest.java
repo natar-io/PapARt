@@ -19,7 +19,7 @@
  */
 package fr.inria.papart.calibration;
 
-import fr.inria.papart.calibration.CameraProjectorSync;
+import fr.inria.papart.calibration.files.CameraProjectorSync;
 import fr.inria.papart.calibration.Common;
 import fr.inria.papart.Sketch;
 import fr.inria.papart.scanner.GrayCode;

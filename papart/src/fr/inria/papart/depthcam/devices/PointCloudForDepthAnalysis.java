@@ -19,12 +19,12 @@
  */
 package fr.inria.papart.depthcam.devices;
 
-import fr.inria.papart.depthcam.DepthDataElementKinect;
+import fr.inria.papart.depthcam.DepthDataElementProjected;
 import fr.inria.papart.depthcam.PointCloud;
-import fr.inria.papart.depthcam.analysis.KinectProcessing;
-import fr.inria.papart.depthcam.analysis.KinectDepthAnalysis;
+import fr.inria.papart.depthcam.analysis.DepthAnalysisPImageView;
+import fr.inria.papart.depthcam.analysis.DepthAnalysisImpl;
 import static fr.inria.papart.depthcam.PointCloud.javaToNativeARGB;
-import fr.inria.papart.multitouch.TrackedDepthPoint;
+import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
 import java.util.ArrayList;
 import processing.core.PApplet;
 import processing.core.PConstants;
@@ -34,23 +34,23 @@ import toxi.geom.Vec3D;
 /**
  *
  */
-public class KinectPointCloud extends PointCloud implements PConstants {
+public class PointCloudForDepthAnalysis extends PointCloud implements PConstants {
 
-    private KinectDepthAnalysis depthAnalysis;
+    private DepthAnalysisImpl depthAnalysis;
     private int precision = 1;
 
-    public KinectPointCloud(PApplet parent, KinectDepthAnalysis depthAnalysis, int skip) {
+    public PointCloudForDepthAnalysis(PApplet parent, DepthAnalysisImpl depthAnalysis, int skip) {
         super(parent, depthAnalysis.getSize() / (skip * skip));
         this.depthAnalysis = depthAnalysis;
         precision = skip;
     }
 
-    public KinectPointCloud(PApplet parent, KinectDepthAnalysis depthAnalysis) {
+    public PointCloudForDepthAnalysis(PApplet parent, DepthAnalysisImpl depthAnalysis) {
         this(parent, depthAnalysis, 1);
         this.depthAnalysis = depthAnalysis;
     }
 
-    public void updateWith(KinectProcessing kinect) {
+    public void updateWith(DepthAnalysisPImageView kinect) {
         boolean[] valid = kinect.getValidPoints();
         Vec3D[] points = kinect.getDepthPoints();
         PImage colorsImg = kinect.getColouredDepthImage();
@@ -93,7 +93,7 @@ public class KinectPointCloud extends PointCloud implements PConstants {
         colorsNative.put(colorsJava, 0, nbColors);
     }
 
-    public void updateWithFakeColors(KinectProcessing kinect, ArrayList<TrackedDepthPoint> touchs) {
+    public void updateWithFakeColors(DepthAnalysisPImageView kinect, ArrayList<TrackedDepthPoint> touchs) {
 
         boolean[] valid = kinect.getValidPoints();
         Vec3D[] points = kinect.getDepthPoints();
@@ -112,7 +112,7 @@ public class KinectPointCloud extends PointCloud implements PConstants {
             id++;
             int c2 = javaToNativeARGB(c);
 
-            for (DepthDataElementKinect dde : touch.getDepthDataElements()) {
+            for (DepthDataElementProjected dde : touch.getDepthDataElements()) {
                 Vec3D p = dde.depthPoint;
                 verticesJava[k++] = p.x;
                 verticesJava[k++] = p.y;

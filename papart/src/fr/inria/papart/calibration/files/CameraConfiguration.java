@@ -17,10 +17,12 @@
  * Public License along with this library; If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package fr.inria.papart.calibration;
+package fr.inria.papart.calibration.files;
 
+import fr.inria.papart.calibration.files.Calibration;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.CameraFactory;
+import fr.inria.papart.procam.camera.CannotCreateCameraException;
 import processing.core.PApplet;
 import processing.data.XML;
 
@@ -56,7 +58,7 @@ public class CameraConfiguration  extends Calibration {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
-    public Camera createCamera(){
+    public Camera createCamera() throws CannotCreateCameraException{
        return CameraFactory.createCamera(cameraType, cameraName, cameraFormat);
     }
 

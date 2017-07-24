@@ -17,18 +17,14 @@
  * Public License along with this library; If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package fr.inria.papart.multitouch;
+package fr.inria.papart.multitouch.tracking;
 
-import fr.inria.papart.multitouch.detection.TouchDetectionDepth;
-import fr.inria.papart.depthcam.devices.KinectDepthData;
-import fr.inria.papart.depthcam.DepthDataElementKinect;
-import fr.inria.papart.depthcam.DepthPoint;
+import fr.inria.papart.depthcam.devices.ProjectedDepthData;
+import fr.inria.papart.depthcam.DepthDataElementProjected;
+import fr.inria.papart.multitouch.ConnectedComponent;
 import java.util.ArrayList;
-import processing.core.PVector;
 import toxi.geom.Vec3D;
 
-// TODO: TrackedTouchPoint ...
-// TODO: Filtered TouchPoint ...
 /**
  * TouchPoint, touch events go through this class. TODO: add event handling !
  *
@@ -36,10 +32,10 @@ import toxi.geom.Vec3D;
  */
 public class TrackedDepthPoint extends TrackedElement {
 
-    private Vec3D positionKinect;
-    private Vec3D previousPositionKinect;
+    private Vec3D positionDepthCam;
+    private Vec3D previousPositionDepthCam;
 
-    private ArrayList<DepthDataElementKinect> depthDataElements = new ArrayList<DepthDataElementKinect>();
+    private ArrayList<DepthDataElementProjected> depthDataElements = new ArrayList<DepthDataElementProjected>();
     int pointColor;
 
     
@@ -55,41 +51,41 @@ public class TrackedDepthPoint extends TrackedElement {
     }
 
     public float distanceTo(TrackedDepthPoint tp) {
-        return this.positionKinect.distanceTo(tp.positionKinect);
+        return this.positionDepthCam.distanceTo(tp.positionDepthCam);
     }
 
     public void setPositionKinect(Vec3D pos) {
-        this.positionKinect = new Vec3D(pos);
-        this.previousPositionKinect = new Vec3D(pos);
+        this.positionDepthCam = new Vec3D(pos);
+        this.previousPositionDepthCam = new Vec3D(pos);
     }
 
     public Vec3D getPositionKinect() {
-        return this.positionKinect;
+        return this.positionDepthCam;
     }
 
     public Vec3D getPreviousPositionKinect() {
-        return this.previousPositionKinect;
+        return this.previousPositionDepthCam;
     }
 
     protected void updateAdditionalElements(TrackedDepthPoint tp) {
         assert (tp.is3D == this.is3D);
-        previousPositionKinect = positionKinect.copy();
+        previousPositionDepthCam = positionDepthCam.copy();
 
-        this.positionKinect.set(tp.positionKinect);
+        this.positionDepthCam.set(tp.positionDepthCam);
         this.confidence = tp.confidence;
         this.isCloseToPlane = tp.isCloseToPlane;
 
         this.depthDataElements = tp.getDepthDataElements();
     }
 
-    public void setDepthDataElements(KinectDepthData depthData, ConnectedComponent connectedComponent) {
+    public void setDepthDataElements(ProjectedDepthData depthData, ConnectedComponent connectedComponent) {
         depthDataElements.clear();
         for (Integer i : connectedComponent) {
             depthDataElements.add(depthData.getElementKinect(i));
         }
     }
 
-    public ArrayList<DepthDataElementKinect> getDepthDataElements() {
+    public ArrayList<DepthDataElementProjected> getDepthDataElements() {
         return this.depthDataElements;
     }
 
@@ -119,7 +115,7 @@ public class TrackedDepthPoint extends TrackedElement {
 
     @Override
     public String toString() {
-        return "Touch Point, kinect: " + positionKinect + " , proj: " + position + "confidence " + confidence + " ,close to Plane : " + isCloseToPlane;
+        return "Touch Point, depth: " + positionDepthCam + " , proj: " + position + "confidence " + confidence + " ,close to Plane : " + isCloseToPlane;
     }
 
 

@@ -22,6 +22,7 @@ package fr.inria.papart.depthcam.devices;
 
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.CameraRealSense;
+import fr.inria.papart.procam.camera.CannotCreateCameraException;
 import processing.core.PApplet;
 
 /**
@@ -32,7 +33,7 @@ public final class RealSense extends DepthCameraDevice {
 
     private final CameraRealSense cameraRS;
 
-    public RealSense(PApplet parent, Camera anotherCam) {
+    public RealSense(PApplet parent, Camera anotherCam) throws CannotCreateCameraException {
         super(parent);
 
         if (anotherCam instanceof CameraRealSense) {

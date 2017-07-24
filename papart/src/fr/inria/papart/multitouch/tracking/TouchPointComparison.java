@@ -17,7 +17,10 @@
  * Public License along with this library; If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package fr.inria.papart.multitouch;
+package fr.inria.papart.multitouch.tracking;
+
+import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
+import fr.inria.papart.multitouch.tracking.TrackedElement;
 
 /**
  *

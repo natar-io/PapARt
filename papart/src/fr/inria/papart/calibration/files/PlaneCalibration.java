@@ -17,8 +17,9 @@
  * Public License along with this library; If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package fr.inria.papart.calibration;
+package fr.inria.papart.calibration.files;
 
+import fr.inria.papart.calibration.PlaneCreator;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
@@ -36,13 +37,13 @@ public class PlaneCalibration extends Calibration {
 
     public static final float HEIGHT_NOT_SET = -1;
 
-    static final String PLANE_XML_NAME = "Plane";
-    static final String PLANE_POS_XML_NAME = "Position";
-    static final String PLANE_NORMAL_XML_NAME = "Normal";
-    static final String PLANE_HEIGHT_XML_NAME = "Height";
-    static final String X_XML_NAME = "x";
-    static final String Y_XML_NAME = "y";
-    static final String Z_XML_NAME = "z";
+    public static final String PLANE_XML_NAME = "Plane";
+    public static final String PLANE_POS_XML_NAME = "Position";
+    public static final String PLANE_NORMAL_XML_NAME = "Normal";
+    public static final String PLANE_HEIGHT_XML_NAME = "Height";
+    public static final String X_XML_NAME = "x";
+    public static final String Y_XML_NAME = "y";
+    public static final String Z_XML_NAME = "z";
 
     private float height = HEIGHT_NOT_SET;
     private Plane plane;

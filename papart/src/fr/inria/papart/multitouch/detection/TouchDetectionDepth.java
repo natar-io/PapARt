@@ -1,6 +1,7 @@
 /*
  * Part of the PapARt project - https://project.inria.fr/papart/
  *
+ * Copyright (C) 2017 RealityTech
  * Copyright (C) 2014-2016 Inria
  * Copyright (C) 2011-2013 Bordeaux University
  *
@@ -19,11 +20,11 @@
  */
 package fr.inria.papart.multitouch.detection;
 
-import fr.inria.papart.calibration.PlaneCalibration;
-import fr.inria.papart.depthcam.devices.KinectDepthData;
+import fr.inria.papart.calibration.files.PlaneCalibration;
+import fr.inria.papart.depthcam.devices.ProjectedDepthData;
 import fr.inria.papart.depthcam.analysis.DepthAnalysis;
 import fr.inria.papart.multitouch.ConnectedComponent;
-import fr.inria.papart.multitouch.TrackedDepthPoint;
+import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
 import fr.inria.papart.utils.WithSize;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -38,13 +39,13 @@ import toxi.geom.Vec3D;
 public abstract class TouchDetectionDepth extends TouchDetection {
 
 // set by calling function
-    protected KinectDepthData depthData;
+    protected ProjectedDepthData depthData;
 
-    public KinectDepthData getDepthData() {
+    public ProjectedDepthData getDepthData() {
         return depthData;
     }
 
-    public void setDepthData(KinectDepthData depthData) {
+    public void setDepthData(ProjectedDepthData depthData) {
         this.depthData = depthData;
     }
 
@@ -52,7 +53,7 @@ public abstract class TouchDetectionDepth extends TouchDetection {
         super(imgSize);
     }
 
-    public abstract ArrayList<TrackedDepthPoint> compute(KinectDepthData dData);
+    public abstract ArrayList<TrackedDepthPoint> compute(ProjectedDepthData dData);
 
     protected boolean hasCCToFind() {
         return !depthData.validPointsList.isEmpty();

@@ -38,17 +38,17 @@ import tech.lity.rea.skatolo.gui.widgets.PixelSelect;
  *
  * @author Jérémy Laviole - jeremy.laviole@inria.fr
  */
-public class CalibrationVideoPopup extends PApplet {
+public class VideoPopupApp extends PApplet {
 
     Camera cameraTracking;
-    CalibrationPopup calibrationPopup;
+    CalibrationUI calibrationPopup;
     public int previewSize = 10;
     public int previewSizeVisu = 5;
 
     PixelSelect[] corners;
     public Skatolo skatolo;
 
-    public CalibrationVideoPopup(CalibrationPopup calibrationPopup) {
+    public VideoPopupApp(CalibrationUI calibrationPopup) {
         super();
         PApplet.runSketch(new String[]{this.getClass().getName()}, this);
         this.calibrationPopup = calibrationPopup;

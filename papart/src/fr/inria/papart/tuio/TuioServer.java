@@ -19,7 +19,7 @@
  */
 package fr.inria.papart.tuio;
 
-import fr.inria.papart.multitouch.TrackedDepthPoint;
+import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
 import java.util.ArrayList;
 import netP5.NetAddress;
 import oscP5.OscMessage;

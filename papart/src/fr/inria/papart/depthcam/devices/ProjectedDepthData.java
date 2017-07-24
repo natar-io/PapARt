@@ -21,13 +21,13 @@ package fr.inria.papart.depthcam.devices;
 
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.INVALID_COLOR;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.INVALID_POINT;
-import fr.inria.papart.calibration.HomographyCalibration;
-import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
-import fr.inria.papart.calibration.PlaneCalibration;
+import fr.inria.papart.calibration.files.HomographyCalibration;
+import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
+import fr.inria.papart.calibration.files.PlaneCalibration;
 import fr.inria.papart.depthcam.analysis.Connexity;
 import fr.inria.papart.depthcam.analysis.DepthAnalysis;
 import fr.inria.papart.depthcam.DepthData;
-import fr.inria.papart.depthcam.DepthDataElementKinect;
+import fr.inria.papart.depthcam.DepthDataElementProjected;
 import fr.inria.papart.depthcam.TouchAttributes;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.ProjectiveDeviceP;
@@ -40,7 +40,7 @@ import toxi.geom.Vec3D;
  *
  * @author Jeremy Laviole
  */
-public class KinectDepthData extends DepthData {
+public class ProjectedDepthData extends DepthData {
 
     /**
      * Normalized version of the 3D points
@@ -66,11 +66,11 @@ public class KinectDepthData extends DepthData {
     public HomographyCalibration homographyCalibration;
     public PlaneCalibration planeCalibration;
 
-    public KinectDepthData(DepthAnalysis source) {
+    public ProjectedDepthData(DepthAnalysis source) {
         this(source, true);
     }
 
-    public KinectDepthData(DepthAnalysis source, boolean is3D) {
+    public ProjectedDepthData(DepthAnalysis source, boolean is3D) {
         super(source);
 
         int size = source.getSize();
@@ -89,13 +89,13 @@ public class KinectDepthData extends DepthData {
 //        connexity = new Connexity(projectedPoints, width, height);
     }
 
-    public DepthDataElementKinect getElementKinect(int i) {
-        DepthDataElementKinect dde = new DepthDataElementKinect();
+    public DepthDataElementProjected getElementKinect(int i) {
+        DepthDataElementProjected dde = new DepthDataElementProjected();
         fillDepthDataElement(dde, i);
         return dde;
     }
 
-    protected void fillDepthDataElement(DepthDataElementKinect ddek, int i) {
+    protected void fillDepthDataElement(DepthDataElementProjected ddek, int i) {
         super.fillDepthDataElement(ddek, i);
         ddek.projectedPoint = projectedPoints[i];
         ddek.touchAttribute = touchAttributes[i];

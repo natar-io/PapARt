@@ -19,6 +19,7 @@
  */
 package fr.inria.papart.multitouch;
 
+import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.Screen;
 import TUIO.*;
@@ -102,41 +103,36 @@ public class TUIOTouchInput extends TouchInput {
     public void addTuioObject(TuioObject tobj) {
         tuioObjects.put(tobj.getSymbolID(), createTouchPointFrom(tobj));
     }
-    
+
     // called when a cursor is added to the scene
     public void addTuioCursor(TuioCursor tcur) {
         tuioCursors.put(tcur.getCursorID(), createTouchPointFrom(tcur));
     }
 
-
-
-
     private TrackedDepthPoint createTouchPointFrom(TuioObject tObj) {
         TrackedDepthPoint tp = new TrackedDepthPoint();
         tp.setCreationTime(parent.millis());
-        tp.id = tObj.getSymbolID();
+        tp.forceID(tObj.getSymbolID());
         return tp;
     }
 
     private TrackedDepthPoint createTouchPointFrom(TuioCursor tcur) {
         TrackedDepthPoint tp = new TrackedDepthPoint();
         tp.setCreationTime(parent.millis());
-        tp.id = tcur.getCursorID();
+        tp.forceID(tcur.getCursorID());
         return tp;
     }
-    
 
     public void updateTuioObject(TuioObject tobj) {
         //  System.out.println("update object " + tobj.getSymbolID() + " (" + tobj.getSessionID() + ") " + tobj.getX() + " " + tobj.getY() + " " + tobj.getAngle()
         //          + " " + tobj.getMotionSpeed() + " " + tobj.getRotationSpeed() + " " + tobj.getMotionAccel() + " " + tobj.getRotationAccel());
     }
 
-
     public void updateTuioCursor(TuioCursor tcur) {
         //   System.out.println("update cursor " + tcur.getCursorID() + " (" + tcur.getSessionID() + ") " + tcur.getX() + " " + tcur.getY()
         //        + " " + tcur.getMotionSpeed() + " " + tcur.getMotionAccel());
     }
-    
+
     public void removeTuioObject(TuioObject tobj) {
         int id = tobj.getSymbolID();
         tuioObjects.remove(id);

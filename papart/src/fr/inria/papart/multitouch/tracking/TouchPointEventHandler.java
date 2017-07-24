@@ -17,25 +17,14 @@
  * Public License along with this library; If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package fr.inria.papart.multitouch;
-
-import fr.inria.papart.multitouch.Touch;
-import java.util.Comparator;
+package fr.inria.papart.multitouch.tracking;
 
 /**
  *
+ * @author Jeremy Laviole jeremy.laviole@inria.fr
  */
-public class TouchComparator implements Comparator{
+public interface TouchPointEventHandler {
 
-  public TouchComparator(){
-  }
-
-  @Override
-  public int compare(Object touch0, Object touch1){
-    Touch t0 = (Touch) touch0;
-    Touch t1 = (Touch) touch1;
-    if(t0.position.y < t1.position.y)
-      return 1;
-    return -1;
-  }
+    public void delete();
+    
 }

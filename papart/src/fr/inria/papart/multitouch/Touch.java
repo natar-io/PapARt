@@ -19,6 +19,8 @@
  */
 package fr.inria.papart.multitouch;
 
+import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
+import fr.inria.papart.multitouch.tracking.TrackedElement;
 import processing.core.PVector;
 
 /**

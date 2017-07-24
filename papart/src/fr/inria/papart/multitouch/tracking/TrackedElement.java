@@ -17,8 +17,10 @@
  * Public License along with this library; If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package fr.inria.papart.multitouch;
+package fr.inria.papart.multitouch.tracking;
 
+import fr.inria.papart.multitouch.OneEuroFilter;
+import fr.inria.papart.multitouch.Touch;
 import fr.inria.papart.multitouch.detection.TouchDetection;
 import fr.inria.papart.multitouch.detection.TouchDetectionDepth;
 import processing.core.PVector;
@@ -305,6 +307,14 @@ public class TrackedElement {
      */
     public int getID() {
         return this.id;
+    }
+    
+    /**
+     * Force a given ID, to use when it comes from an external tracking.
+     *
+     */
+    public void forceID(int id) {
+        this.id = id;
     }
 
     /**

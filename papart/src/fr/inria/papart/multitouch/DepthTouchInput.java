@@ -1,6 +1,7 @@
 /*
  * Part of the PapARt project - https://project.inria.fr/papart/
  *
+ * Copyright (C) 2017 RealityTech
  * Copyright (C) 2014-2016 Inria
  * Copyright (C) 2011-2013 Bordeaux University
  *
@@ -19,20 +20,27 @@
  */
 package fr.inria.papart.multitouch;
 
+import fr.inria.papart.multitouch.tracking.TouchPointTracker;
+import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
 import fr.inria.papart.multitouch.detection.Simple2D;
 import fr.inria.papart.multitouch.detection.Simple3D;
-import fr.inria.papart.calibration.PlanarTouchCalibration;
-import fr.inria.papart.depthcam.devices.KinectDepthData;
-import fr.inria.papart.depthcam.DepthDataElementKinect;
+import fr.inria.papart.calibration.files.PlanarTouchCalibration;
+import fr.inria.papart.depthcam.devices.ProjectedDepthData;
+import fr.inria.papart.depthcam.DepthDataElementProjected;
 import fr.inria.papart.depthcam.DepthPoint;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 
 import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.procam.Screen;
 import fr.inria.papart.depthcam.analysis.DepthAnalysis;
-import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
-import fr.inria.papart.depthcam.analysis.KinectDepthAnalysis;
+import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
+import fr.inria.papart.depthcam.analysis.DepthAnalysisImpl;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
+import fr.inria.papart.multitouch.Touch;
+import fr.inria.papart.multitouch.TouchInput;
+import fr.inria.papart.multitouch.TouchList;
+import fr.inria.papart.multitouch.detection.Simple2D;
+import fr.inria.papart.multitouch.detection.Simple3D;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.procam.camera.CameraOpenKinect;
@@ -48,17 +56,15 @@ import processing.core.PVector;
 import toxi.geom.Vec3D;
 
 /**
- * Touch input, using a Kinect device for now.
+ * Touch input, using a depth camera device.
  *
- * TODO: Refactor all this.
- *
- * @author jeremylaviole
+ * @author jeremylaviole -  laviole@rea.lity.tech
  */
-public class KinectTouchInput extends TouchInput {
+public class DepthTouchInput extends TouchInput {
 
     public static final int NO_TOUCH = -1;
     private int touch2DPrecision, touch3DPrecision;
-    private KinectDepthAnalysis depthAnalysis;
+    private DepthAnalysisImpl depthAnalysis;
     private PApplet parent;
 
     private final Semaphore touchPointSemaphore = new Semaphore(1, true);
@@ -78,9 +84,9 @@ public class KinectTouchInput extends TouchInput {
     private PlanarTouchCalibration touchCalib2D;
     private PlanarTouchCalibration touchCalib3D;
 
-    public KinectTouchInput(PApplet applet,
+    public DepthTouchInput(PApplet applet,
             DepthCameraDevice kinectDevice,
-            KinectDepthAnalysis depthAnalysis,
+            DepthAnalysisImpl depthAnalysis,
             PlaneAndProjectionCalibration calibration) {
         this.parent = applet;
         this.depthAnalysis = depthAnalysis;
@@ -157,7 +163,7 @@ public class KinectTouchInput extends TouchInput {
                 }
             }
         } catch (InterruptedException ex) {
-            Logger.getLogger(KinectTouchInput.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DepthTouchInput.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             depthDataSem.release();
         }
@@ -261,11 +267,11 @@ public class KinectTouchInput extends TouchInput {
         return paperScreenCoord != NO_INTERSECTION;
     }
 
-    public ArrayList<DepthDataElementKinect> getDepthData() {
+    public ArrayList<DepthDataElementProjected> getDepthData() {
         try {
             depthDataSem.acquire();
-            KinectDepthData depthData = depthAnalysis.getDepthData();
-            ArrayList<DepthDataElementKinect> output = new ArrayList<>();
+            ProjectedDepthData depthData = depthAnalysis.getDepthData();
+            ArrayList<DepthDataElementProjected> output = new ArrayList<>();
             ArrayList<Integer> list = depthData.validPointsList3D;
             for (Integer i : list) {
                 output.add(depthData.getElementKinect(i));
@@ -274,7 +280,7 @@ public class KinectTouchInput extends TouchInput {
             return output;
 
         } catch (InterruptedException ex) {
-            Logger.getLogger(KinectTouchInput.class
+            Logger.getLogger(DepthTouchInput.class
                     .getName()).log(Level.SEVERE, null, ex);
 
             return null;
@@ -300,7 +306,7 @@ public class KinectTouchInput extends TouchInput {
     private ArrayList<DepthPoint> projectDepthDataXD(ARDisplay display, Screen screen, boolean is2D) {
         try {
             depthDataSem.acquire();
-            KinectDepthData depthData = depthAnalysis.getDepthData();
+            ProjectedDepthData depthData = depthAnalysis.getDepthData();
             ArrayList<DepthPoint> projected = new ArrayList<DepthPoint>();
             ArrayList<Integer> list = is2D ? depthData.validPointsList : depthData.validPointsList3D;
             for (Integer i : list) {
@@ -313,7 +319,7 @@ public class KinectTouchInput extends TouchInput {
             return projected;
 
         } catch (InterruptedException ex) {
-            Logger.getLogger(KinectTouchInput.class
+            Logger.getLogger(DepthTouchInput.class
                     .getName()).log(Level.SEVERE, null, ex);
 
             return null;
@@ -344,7 +350,7 @@ public class KinectTouchInput extends TouchInput {
      * @return the projected point, NULL if no intersection was found.
      */
     public PVector projectPointToScreen(Screen screen,
-            BaseDisplay display, DepthDataElementKinect dde) {
+            BaseDisplay display, DepthDataElementProjected dde) {
 
         PVector out = this.projectPointToScreen(screen,
                 display,

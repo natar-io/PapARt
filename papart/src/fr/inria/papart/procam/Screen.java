@@ -21,7 +21,7 @@ package fr.inria.papart.procam;
 
 import fr.inria.papart.tracking.MarkerBoardInvalid;
 import fr.inria.papart.tracking.MarkerBoard;
-import fr.inria.papart.calibration.HomographyCalibration;
+import fr.inria.papart.calibration.files.HomographyCalibration;
 import fr.inria.papart.calibration.HomographyCreator;
 import fr.inria.papart.utils.MathUtils;
 import fr.inria.papart.procam.camera.Camera;

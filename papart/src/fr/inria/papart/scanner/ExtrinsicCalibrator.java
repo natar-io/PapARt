@@ -19,7 +19,7 @@
  */
 package fr.inria.papart.scanner;
 
-import fr.inria.papart.calibration.PlaneCalibration;
+import fr.inria.papart.calibration.files.PlaneCalibration;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.display.ProjectorDisplay;

@@ -6,7 +6,7 @@
 package fr.inria.papart.utils;
 
 import fr.inria.papart.depthcam.PixelOffset;
-import fr.inria.papart.depthcam.analysis.KinectProcessing;
+import fr.inria.papart.depthcam.analysis.DepthAnalysisPImageView;
 import fr.inria.papart.procam.PaperTouchScreen;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.procam.camera.Camera;

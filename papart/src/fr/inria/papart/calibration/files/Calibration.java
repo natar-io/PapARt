@@ -17,7 +17,7 @@
  * Public License along with this library; If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package fr.inria.papart.calibration;
+package fr.inria.papart.calibration.files;
 
 import java.io.FileNotFoundException;
 import processing.core.PApplet;
@@ -29,7 +29,7 @@ import processing.data.XML;
  */
 public abstract class Calibration {
 
-    static final String CALIBRATION_XML_NAME = "Calibration";
+    public static final String CALIBRATION_XML_NAME = "Calibration";
 
     public abstract boolean isValid();
 

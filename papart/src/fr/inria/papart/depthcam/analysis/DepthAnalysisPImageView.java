@@ -20,7 +20,7 @@
  */
 package fr.inria.papart.depthcam.analysis;
 
-import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
+import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.depthcam.PixelOffset;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.depthcam.devices.KinectOne;
@@ -42,7 +42,7 @@ import toxi.geom.Vec3D;
  *
  * @author Jeremy Laviole
  */
-public class KinectProcessing extends KinectDepthAnalysis {
+public class DepthAnalysisPImageView extends DepthAnalysisImpl {
 
     public PImage validPointsPImage;
     IplImage nativeArrayToErode;
@@ -50,13 +50,13 @@ public class KinectProcessing extends KinectDepthAnalysis {
     boolean[] validCopy;
     private TimeFilterDepth timeFilterDepth;
 
-    public KinectProcessing(PApplet parent, DepthCameraDevice kinect) {
+    public DepthAnalysisPImageView(PApplet parent, DepthCameraDevice kinect) {
         super(parent, kinect);
         init();
         timeFilterDepth = new TimeFilterDepth(4);
     }
 
-    public KinectProcessing(PApplet parent, KinectOne kinectOne) {
+    public DepthAnalysisPImageView(PApplet parent, KinectOne kinectOne) {
         super(parent, kinectOne);
         init();
     }

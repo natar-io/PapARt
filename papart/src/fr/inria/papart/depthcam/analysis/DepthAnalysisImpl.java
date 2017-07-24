@@ -20,11 +20,11 @@
  */
 package fr.inria.papart.depthcam.analysis;
 
-import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
+import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.depthcam.PixelOffset;
 import fr.inria.papart.depthcam.TouchAttributes;
 import fr.inria.papart.depthcam.devices.Kinect360;
-import fr.inria.papart.depthcam.devices.KinectDepthData;
+import fr.inria.papart.depthcam.devices.ProjectedDepthData;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.depthcam.devices.KinectOne;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.INVALID_POINT;
@@ -55,7 +55,7 @@ import toxi.geom.Vec3D;
  *
  * @author Jeremy Laviole
  */
-public class KinectDepthAnalysis extends DepthAnalysis {
+public class DepthAnalysisImpl extends DepthAnalysis {
 
     // Configuration 
     private float closeThreshold = 300f, farThreshold = 12000f;
@@ -108,7 +108,7 @@ public class KinectDepthAnalysis extends DepthAnalysis {
 
     private boolean memoryInitialized = false;
 
-    public KinectDepthAnalysis(PApplet parent, DepthCameraDevice depthCamera) {
+    public DepthAnalysisImpl(PApplet parent, DepthCameraDevice depthCamera) {
         DepthAnalysis.papplet = parent;
         this.depthCameraDevice = depthCamera;
 
@@ -151,7 +151,7 @@ public class KinectDepthAnalysis extends DepthAnalysis {
         depthRaw = new byte[depthCameraDevice.rawDepthSize()];
         depth = new float[depthCameraDevice.getDepthCamera().width() * depthCameraDevice.getDepthCamera().height()];
 
-        depthData = new KinectDepthData(this);
+        depthData = new ProjectedDepthData(this);
         depthData.projectiveDevice = this.calibDepth;
         System.out.println("ColorRaw initialized !" + colorRaw.length);
 

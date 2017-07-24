@@ -23,7 +23,7 @@ import fr.inria.papart.tracking.MarkerBoardFactory;
 import fr.inria.papart.tracking.MarkerBoardInvalid;
 import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.procam.camera.Camera;
-import fr.inria.papart.calibration.HomographyCalibration;
+import fr.inria.papart.calibration.files.HomographyCalibration;
 import fr.inria.papart.multitouch.Touch;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ARDisplay;

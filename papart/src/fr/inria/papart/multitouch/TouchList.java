@@ -19,6 +19,7 @@
  */
 package fr.inria.papart.multitouch;
 
+import fr.inria.papart.multitouch.tracking.TouchComparator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;

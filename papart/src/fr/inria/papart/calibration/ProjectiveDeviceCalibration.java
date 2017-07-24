@@ -19,6 +19,7 @@
  */
 package fr.inria.papart.calibration;
 
+import fr.inria.papart.calibration.files.Calibration;
 import java.util.Arrays;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;

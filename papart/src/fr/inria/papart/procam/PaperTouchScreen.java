@@ -24,11 +24,11 @@ import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.multitouch.Touch;
-import fr.inria.papart.multitouch.KinectTouchInput;
+import fr.inria.papart.multitouch.DepthTouchInput;
 import fr.inria.papart.multitouch.TUIOTouchInput;
 import fr.inria.papart.multitouch.TouchList;
-import fr.inria.papart.multitouch.TrackedDepthPoint;
-import fr.inria.papart.multitouch.TrackedElement;
+import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
+import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.utils.MathUtils;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import java.nio.ByteBuffer;
@@ -128,8 +128,8 @@ public class PaperTouchScreen extends PaperScreen {
 
         touchList.addOffset(touchOffset);
 
-        if (touchInput instanceof KinectTouchInput) {
-            if (((KinectTouchInput) (touchInput)).isUseRawDepth()) {
+        if (touchInput instanceof DepthTouchInput) {
+            if (((DepthTouchInput) (touchInput)).isUseRawDepth()) {
                 touchList.invertY(drawingSize);
             } else if (this.isDraw2D()) {
                 touchList.invertY(drawingSize);

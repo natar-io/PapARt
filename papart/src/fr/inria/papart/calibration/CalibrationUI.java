@@ -1,7 +1,7 @@
 /*
  * Part of the PapARt project - https://project.inria.fr/papart/
  *
- * Copyright (C) 2016 Jérémy Laviole
+ * Copyright (C) 2016-2017 RealityTech
  * Copyright (C) 2014-2016 Inria
  * Copyright (C) 2011-2013 Bordeaux University
  *
@@ -54,7 +54,7 @@ import processing.data.JSONObject;
  *
  * @author Jérémy Laviole - jeremy.laviole@inria.fr
  */
-public class CalibrationPopup extends PApplet {
+public class CalibrationUI extends PApplet {
 
     Papart papart;
 
@@ -67,7 +67,7 @@ public class CalibrationPopup extends PApplet {
     protected Toggle zoomToggle;
 
     // Corners
-    private CalibrationVideoPopup videoPopup;
+    private VideoPopupApp videoPopup;
     protected PVector[] corners;
     protected PVector[] secondCorners;
     protected int currentCorner = 0;
@@ -101,7 +101,7 @@ public class CalibrationPopup extends PApplet {
     private boolean useExternalColorCamera = false;
 
     // calibrations
-    private ArrayList<CalibrationSnapshot> snapshots = new ArrayList<CalibrationSnapshot>();
+    private ArrayList<ExtrinsicSnapshot> snapshots = new ArrayList<ExtrinsicSnapshot>();
     private String isProCamCalibrated = NOTHING;
     private String isKinectCalibrated = NOTHING;
 
@@ -109,10 +109,10 @@ public class CalibrationPopup extends PApplet {
     private static final String OK = "OK";
     private static final String NOTHING = "";
 
-    private CalibrationExtrinsic calibrationExtrinsic;
+    private ExtrinsicCalibrator calibrationExtrinsic;
     private PImage backgroundImg;
 
-    public CalibrationPopup(PaperScreen screen) {
+    public CalibrationUI(PaperScreen screen) {
         super();
         this.calibrationApp = screen;
         PApplet.runSketch(new String[]{this.getClass().getName()}, this);
@@ -141,7 +141,7 @@ public class CalibrationPopup extends PApplet {
         projector = Papart.getPapart().getProjectorDisplay();
         projector.setCalibrationMode(true);
 
-        calibrationExtrinsic = new CalibrationExtrinsic(this);
+        calibrationExtrinsic = new ExtrinsicCalibrator(this);
         initProjectorAsCamera();
         calibrationExtrinsic.setProjector(projector);
 
@@ -288,11 +288,10 @@ public class CalibrationPopup extends PApplet {
     }
 
     public void addCalibration() {
-        snapshots.add(
-                new CalibrationSnapshot(
-                        currentCamBoard(),
-                        currentProjBoard(),
-                        currentDepthCameraBoard()));
+        snapshots.add(new ExtrinsicSnapshot(
+                currentCamBoard(),
+                currentProjBoard(),
+                currentDepthCameraBoard()));
     }
 
     public void clearCalibrations() {
@@ -371,7 +370,7 @@ public class CalibrationPopup extends PApplet {
     public void startCornerCalibration() {
         loadCorners();
         if (videoPopup == null) {
-            videoPopup = new CalibrationVideoPopup(this);
+            videoPopup = new VideoPopupApp(this);
         }
         projector.setCalibrationMode(true);
         videoPopup.getSurface().setVisible(true);
@@ -517,59 +516,7 @@ public class CalibrationPopup extends PApplet {
         }
         popMatrix();
 
-        // Update the corners.
-        // TODO: move this when the corners are actally moved. 
-        // If small corners... the corners to send are different !
-        if (useSmallCorners) {
-
-            // Find 3D plane of selected points (arbitrary sizes) 
-            PVector object[] = new PVector[4];
-
-            float aspectRatio = ((float) projector.getHeight()) / ((float) projector.getWidth());
-
-            object[0] = new PVector(0, 0);
-            object[1] = new PVector(2, 0);
-            object[2] = new PVector(2, 2 * aspectRatio);
-            object[3] = new PVector(0, 2 * aspectRatio);
-
-            PMatrix3D transfo = cameraTracking.getProjectiveDevice().estimateOrientation(object, this.corners);
-
-            PMatrix3D tr = transfo.get();
-
-            // First point top left corner. 
-            tr.translate(-1, -aspectRatio);
-            PVector c = new PVector(tr.m03, tr.m13, tr.m23);
-            secondCorners[0] = cameraTracking.getProjectiveDevice().worldToPixelUnconstrained(c);
-
-            tr = transfo.get();
-            tr.translate(3, -aspectRatio);
-            c = new PVector(tr.m03, tr.m13, tr.m23);
-            secondCorners[1] = cameraTracking.getProjectiveDevice().worldToPixelUnconstrained(c);
-
-            tr = transfo.get();
-            tr.translate(3, 3 * aspectRatio);
-            c = new PVector(tr.m03, tr.m13, tr.m23);
-            secondCorners[2] = cameraTracking.getProjectiveDevice().worldToPixelUnconstrained(c);
-
-            tr = transfo.get();
-            tr.translate(-1, 3 * aspectRatio);
-            c = new PVector(tr.m03, tr.m13, tr.m23);
-            secondCorners[3] = cameraTracking.getProjectiveDevice().worldToPixelUnconstrained(c);
-
-             projectorView.setCorners(secondCorners);
-             
-             System.out.println("Second Corners found: ");
-             for(PVector cornerOutput : secondCorners){
-                 System.out.print(cornerOutput.toString() + "  ");
-             }
-              System.out.println(" ");
-//            public PMatrix3D estimateOrientation(PVector[] objectPoints,
-//            PVector[] imagePoints)
-            // Find the corners of the projector in image space.
-            // use these corners
-        } else {
-            projectorView.setCorners(corners);
-        }
+        updateCorners();
 
         text(this.isProCamCalibrated, 100, DO_CALIBRATION_HEIGHT + 15);
         text(this.isKinectCalibrated, 300, DO_CALIBRATION_HEIGHT + 15);
@@ -594,6 +541,46 @@ public class CalibrationPopup extends PApplet {
             }
         }
 
+    }
+
+    private void updateCorners() {
+        if (useSmallCorners) {
+            // Find 3D plane of selected points (arbitrary sizes) 
+            float aspectRatio = ((float) projector.getHeight()) / ((float) projector.getWidth());
+
+            PVector object[] = new PVector[4];
+            object[0] = new PVector(0, 0);
+            object[1] = new PVector(2, 0);
+            object[2] = new PVector(2, 2 * aspectRatio);
+            object[3] = new PVector(0, 2 * aspectRatio);
+            PMatrix3D transfo = cameraTracking.getProjectiveDevice().estimateOrientation(object, this.corners);
+
+            PMatrix3D tr = transfo.get();
+
+            // First point top left corner. 
+            tr.translate(-1, -aspectRatio);
+            PVector c = new PVector(tr.m03, tr.m13, tr.m23);
+            secondCorners[0] = cameraTracking.getProjectiveDevice().worldToPixelUnconstrained(c);
+
+            tr = transfo.get();
+            tr.translate(3, -aspectRatio);
+            c = new PVector(tr.m03, tr.m13, tr.m23);
+            secondCorners[1] = cameraTracking.getProjectiveDevice().worldToPixelUnconstrained(c);
+
+            tr = transfo.get();
+            tr.translate(3, 3 * aspectRatio);
+            c = new PVector(tr.m03, tr.m13, tr.m23);
+            secondCorners[2] = cameraTracking.getProjectiveDevice().worldToPixelUnconstrained(c);
+
+            tr = transfo.get();
+            tr.translate(-1, 3 * aspectRatio);
+            c = new PVector(tr.m03, tr.m13, tr.m23);
+            secondCorners[3] = cameraTracking.getProjectiveDevice().worldToPixelUnconstrained(c);
+
+            projectorView.setCorners(secondCorners);
+        } else {
+            projectorView.setCorners(corners);
+        }
     }
 
     public void keyPressed() {
@@ -643,6 +630,26 @@ public class CalibrationPopup extends PApplet {
 
     public boolean isHidden() {
         return this.isHidden;
+    }
+
+    class CalibrationApp extends PaperScreen {
+
+        @Override
+        public void settings() {
+            setDrawingSize(297, 210);
+            loadMarkerBoard(Papart.markerFolder + Papart.calibrationFileName, 162, 104);// 297, 210);
+            setDrawAroundPaper();
+        }
+
+        @Override
+        public void setup() {
+            // No filtering
+            setDrawingFilter(0);
+        }
+
+        @Override
+        public void drawAroundPaper() {
+        }
     }
 
 }

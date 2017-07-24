@@ -5,11 +5,11 @@
  */
 package fr.inria.papart.procam;
 
-import fr.inria.papart.calibration.PlanarTouchCalibration;
+import fr.inria.papart.calibration.files.PlanarTouchCalibration;
 import fr.inria.papart.multitouch.Touch;
 import fr.inria.papart.multitouch.TouchList;
-import fr.inria.papart.multitouch.TouchPointTracker;
-import fr.inria.papart.multitouch.TrackedElement;
+import fr.inria.papart.multitouch.tracking.TouchPointTracker;
+import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.multitouch.detection.TouchDetectionColor;
 import fr.inria.papart.procam.camera.TrackedView;
 import fr.inria.papart.utils.MathUtils;

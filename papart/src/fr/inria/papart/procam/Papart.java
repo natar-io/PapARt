@@ -20,31 +20,32 @@
 package fr.inria.papart.procam;
 
 import com.jogamp.newt.opengl.GLWindow;
-import fr.inria.papart.calibration.CalibrationPopup;
+import fr.inria.papart.calibration.CalibrationUI;
 import fr.inria.papart.procam.camera.Camera;
-import fr.inria.papart.calibration.CameraConfiguration;
-import fr.inria.papart.calibration.HomographyCalibration;
-import fr.inria.papart.calibration.PlanarTouchCalibration;
+import fr.inria.papart.calibration.files.CameraConfiguration;
+import fr.inria.papart.calibration.files.HomographyCalibration;
+import fr.inria.papart.calibration.files.PlanarTouchCalibration;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
 import org.bytedeco.javacpp.freenect;
-import fr.inria.papart.calibration.PlaneAndProjectionCalibration;
-import fr.inria.papart.calibration.PlaneCalibration;
-import fr.inria.papart.calibration.ScreenConfiguration;
+import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
+import fr.inria.papart.calibration.files.PlaneCalibration;
+import fr.inria.papart.calibration.files.ScreenConfiguration;
 import fr.inria.papart.depthcam.devices.Kinect360;
-import fr.inria.papart.depthcam.analysis.KinectDepthAnalysis;
+import fr.inria.papart.depthcam.analysis.DepthAnalysisImpl;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.depthcam.devices.KinectOne;
 import fr.inria.papart.depthcam.devices.RealSense;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.multitouch.TUIOTouchInput;
-import fr.inria.papart.multitouch.KinectTouchInput;
+import fr.inria.papart.multitouch.DepthTouchInput;
 import fr.inria.papart.utils.LibraryUtils;
 import fr.inria.papart.procam.camera.CameraFactory;
 import fr.inria.papart.procam.camera.CameraOpenKinect;
 import fr.inria.papart.procam.camera.CameraRGBIRDepth;
 import fr.inria.papart.procam.camera.CameraRealSense;
+import fr.inria.papart.procam.camera.CannotCreateCameraException;
 import fr.inria.papart.procam.camera.SubCamera;
 import fr.inria.papart.tracking.DetectedMarker;
 import fr.inria.papart.utils.MathUtils;
@@ -120,7 +121,7 @@ public class Papart {
     private ProjectorDisplay projector;
 
     private Camera cameraTracking;
-    private KinectDepthAnalysis kinectDepthAnalysis;
+    private DepthAnalysisImpl kinectDepthAnalysis;
 
     private TouchInput touchInput;
     private PVector frameSize = new PVector();
@@ -166,11 +167,11 @@ public class Papart {
         return config;
     }
 
-    private CalibrationPopup calibrationPopup = null;
+    private CalibrationUI calibrationPopup = null;
 
     public void calibration(PaperScreen screen) {
         if (calibrationPopup == null) {
-            calibrationPopup = new CalibrationPopup(screen);
+            calibrationPopup = new CalibrationUI(screen);
         } else if (calibrationPopup.isHidden()) {
             calibrationPopup.show();
         } else {
@@ -209,7 +210,11 @@ public class Papart {
         papart.registerPost();
 
         papart.initProjectorDisplay(quality);
-        papart.initCamera();
+        try {
+            papart.initCamera();
+        } catch (CannotCreateCameraException ex) {
+            throw new RuntimeException("Cannot start the default camera: " + ex);
+        }
 
         papart.tryLoadExtrinsics();
         papart.projector.setCamera(papart.getPublicCameraTracking());
@@ -252,7 +257,7 @@ public class Papart {
         papart.registerPost();
         papart.initProjectorDisplay(quality);
         papart.isWithoutCamera = true;
-        
+
         return papart;
     }
 
@@ -289,7 +294,11 @@ public class Papart {
             papart.registerPost();
         }
 
-        papart.initCamera();
+        try {
+            papart.initCamera();
+        } catch (CannotCreateCameraException ex) {
+            throw new RuntimeException("Cannot start the default camera: " + ex);
+        }
         papart.initARDisplay(quality);
         papart.checkInitialization();
 
@@ -573,12 +582,12 @@ public class Papart {
      * Initialize the default camera for object tracking.
      *
      */
-    public void initCamera() {
+    public void initCamera() throws CannotCreateCameraException {
         CameraConfiguration cameraConfiguration = getDefaultCameraConfiguration(applet);
         initCamera(cameraConfiguration);
     }
 
-    public void initCamera(CameraConfiguration cameraConfiguration) {
+    public void initCamera(CameraConfiguration cameraConfiguration) throws CannotCreateCameraException {
         initCamera(cameraConfiguration.getCameraName(),
                 cameraConfiguration.getCameraType(),
                 cameraConfiguration.getCameraFormat());
@@ -588,7 +597,7 @@ public class Papart {
      * Initialize a camera for object tracking.
      *
      */
-    public void initCamera(String cameraNo, Camera.Type cameraType, String cameraFormat) {
+    public void initCamera(String cameraNo, Camera.Type cameraType, String cameraFormat) throws CannotCreateCameraException {
         assert (!cameraInitialized);
 
         cameraTracking = CameraFactory.createCamera(cameraType, cameraNo, cameraFormat);
@@ -664,7 +673,7 @@ public class Papart {
      * Touch input with a Kinect calibrated with the display area.
      *
      */
-    public void loadTouchInput() {
+    public void loadTouchInput() throws CannotCreateCameraException {        
         loadDefaultDepthCamera();
         loadDefaultTouchKinect();
         updateDepthCameraDeviceExtrinsics();
@@ -681,7 +690,7 @@ public class Papart {
 
             // Specific
             // Important to use it for now ! Used in KinectTouchInput.projectPointToScreen
-            ((KinectTouchInput) this.touchInput).useRawDepth();
+            ((DepthTouchInput) this.touchInput).useRawDepth();
 
 //            System.out.println("Papart: Using Touchextrinsics from the device.");
         } else {
@@ -702,7 +711,7 @@ public class Papart {
 
     /**
      */
-    public DepthCameraDevice loadDefaultDepthCamera() {
+    public DepthCameraDevice loadDefaultDepthCamera() throws CannotCreateCameraException {
 
         // Two cases, either the other camera running of the same type
         CameraConfiguration kinectConfiguration = Papart.getDefaultDepthCameraConfiguration(applet);
@@ -732,13 +741,13 @@ public class Papart {
     }
 
     private void loadDefaultTouchKinect() {
-        kinectDepthAnalysis = new KinectDepthAnalysis(this.applet, depthCameraDevice);
+        kinectDepthAnalysis = new DepthAnalysisImpl(this.applet, depthCameraDevice);
 
         PlaneAndProjectionCalibration calibration = new PlaneAndProjectionCalibration();
         calibration.loadFrom(this.applet, planeAndProjectionCalib);
 
-        KinectTouchInput kinectTouchInput
-                = new KinectTouchInput(this.applet,
+        DepthTouchInput kinectTouchInput
+                = new DepthTouchInput(this.applet,
                         depthCameraDevice,
                         kinectDepthAnalysis, calibration);
 
@@ -884,7 +893,8 @@ public class Papart {
         }
         return null;
     }
-      /**
+
+    /**
      * Get the Position of a marker. MarkerTracking must be enabled with at
      * least one SVG marker to find.
      *
@@ -899,7 +909,6 @@ public class Papart {
         }
         return cameraTracking.getDetectedMarkers();
     }
-    
 
     /**
      * Return the x,y positions of a 3D location projected onto a given
@@ -933,7 +942,7 @@ public class Papart {
 
         return out;
     }
-    
+
     /**
      * Return the x,y positions of a 3D location projected onto a given
      * reference. The Z axis is the angle (in radians) given by the rotation of
@@ -1053,7 +1062,7 @@ public class Papart {
         return depthCameraDevice;
     }
 
-    public KinectDepthAnalysis getKinectAnalysis() {
+    public DepthAnalysisImpl getKinectAnalysis() {
         return this.kinectDepthAnalysis;
     }
 

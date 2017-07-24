@@ -1,6 +1,7 @@
 /*
  * Part of the PapARt project - https://project.inria.fr/papart/
  *
+ * Copyright (C) 2017 RealityTech
  * Copyright (C) 2014-2016 Inria
  * Copyright (C) 2011-2013 Bordeaux University
  *
@@ -17,8 +18,9 @@
  * Public License along with this library; If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package fr.inria.papart.multitouch;
+package fr.inria.papart.multitouch.tracking;
 
+import fr.inria.papart.multitouch.tracking.TrackedElement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -30,7 +32,11 @@ import java.util.Iterator;
 public class TouchPointTracker {
 
     /**
-     *
+     * Update the current list with the new points. 
+     * delete the old points, update the existing with the new ones, adds the 
+     * new points to the current list, and updates the speed of all non-updated
+     * points. 
+     * @param <T>
      * @param currentList
      * @param newPoints
      * @param currentTime

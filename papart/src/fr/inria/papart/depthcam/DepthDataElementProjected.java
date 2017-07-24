@@ -17,14 +17,17 @@
  * Public License along with this library; If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package fr.inria.papart.multitouch;
+package fr.inria.papart.depthcam;
+import toxi.geom.Vec3D;
 
 /**
  *
  * @author Jeremy Laviole jeremy.laviole@inria.fr
  */
-public interface TouchPointEventHandler {
-
-    public void delete();
+public class DepthDataElementProjected extends DepthDataElement{
     
+    public Vec3D projectedPoint;
+    public TouchAttributes touchAttribute;
+    public boolean validPoint3D;
+
 }

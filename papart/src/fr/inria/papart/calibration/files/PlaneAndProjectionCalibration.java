@@ -17,8 +17,10 @@
  * Public License along with this library; If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package fr.inria.papart.calibration;
+package fr.inria.papart.calibration.files;
 
+import fr.inria.papart.calibration.files.Calibration;
+import fr.inria.papart.calibration.files.PlaneCalibration;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.data.XML;

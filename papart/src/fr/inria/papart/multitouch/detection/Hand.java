@@ -19,10 +19,10 @@
  */
 package fr.inria.papart.multitouch.detection;
 
-import fr.inria.papart.depthcam.devices.KinectDepthData;
+import fr.inria.papart.depthcam.devices.ProjectedDepthData;
 import fr.inria.papart.depthcam.analysis.DepthAnalysis;
 import fr.inria.papart.multitouch.ConnectedComponent;
-import fr.inria.papart.multitouch.TrackedDepthPoint;
+import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
 import fr.inria.papart.utils.WithSize;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -39,7 +39,7 @@ public class Hand extends Simple2D {
     }
 
     @Override
-    public ArrayList<TrackedDepthPoint> compute(KinectDepthData dData) {
+    public ArrayList<TrackedDepthPoint> compute(ProjectedDepthData dData) {
 
         this.depthData = dData;
 
