@@ -22,8 +22,6 @@ package fr.inria.papart.multitouch;
 
 import fr.inria.papart.multitouch.tracking.TouchPointTracker;
 import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
-import fr.inria.papart.multitouch.detection.Simple2D;
-import fr.inria.papart.multitouch.detection.Simple3D;
 import fr.inria.papart.calibration.files.PlanarTouchCalibration;
 import fr.inria.papart.depthcam.devices.ProjectedDepthData;
 import fr.inria.papart.depthcam.DepthDataElementProjected;
@@ -32,18 +30,12 @@ import org.bytedeco.javacpp.opencv_core.IplImage;
 
 import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.procam.Screen;
-import fr.inria.papart.depthcam.analysis.DepthAnalysis;
 import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.depthcam.analysis.DepthAnalysisImpl;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
-import fr.inria.papart.multitouch.Touch;
-import fr.inria.papart.multitouch.TouchInput;
-import fr.inria.papart.multitouch.TouchList;
 import fr.inria.papart.multitouch.detection.Simple2D;
 import fr.inria.papart.multitouch.detection.Simple3D;
 import fr.inria.papart.procam.display.BaseDisplay;
-import fr.inria.papart.procam.ProjectiveDeviceP;
-import fr.inria.papart.procam.camera.CameraOpenKinect;
 import fr.inria.papart.utils.MathUtils;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;

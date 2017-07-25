@@ -61,23 +61,15 @@ public class CalibrationUI extends PApplet {
     // todo: setTableLocation ?
     // GUI
     private Skatolo skatolo;
-    private Group cornersGroup;
     private RadioButton cornersRadio;
     private Toggle cornerToggle;
     protected Toggle zoomToggle;
 
     // Corners
     private VideoPopupApp videoPopup;
-    protected PVector[] corners;
-    protected PVector[] secondCorners;
-    protected int currentCorner = 0;
-    protected boolean showZoom = false;
-    protected boolean useSmallCorners = true;
-    private String cornersFileName;
-    static final String CORNERS_NAME = "cornersProj.json";
 
     // projector rendering.
-    private ProjectorDisplay projector;
+    protected ProjectorDisplay projector;
     private ProjectorAsCamera projectorAsCamera;
     static final String PROJECTOR_ARTOOLKIT_NAME = "projectorCalibration.cal";
     static final String KINECT_ARTOOLKIT_NAME = "kinectCalibration.cal";
@@ -85,7 +77,7 @@ public class CalibrationUI extends PApplet {
     private ARToolKitPlus.MultiTracker projectorTracker = null;
 
     // calibration App / board
-    private PaperScreen calibrationApp;
+    protected PaperScreen calibrationApp;
     private MarkerBoard board;
 
     // Matrices
@@ -94,7 +86,7 @@ public class CalibrationUI extends PApplet {
     // Cameras
     private Camera cameraTracking;
     private Camera cameraFromDepthCam;  // can be the same as cameraTracking.
-    private TrackedView projectorView;
+    protected TrackedView projectorView;
 
     // Kinect
     private Camera.Type depthCameraType;
@@ -127,9 +119,6 @@ public class CalibrationUI extends PApplet {
     public void setup() {
 
         // Papart was created before, already with a camera, projector and Dcam. 
-        papart = Papart.getPapart();
-        cornersFileName = Papart.calibrationFolder + CORNERS_NAME;
-
         if (calibrationApp == null) {
             calibrationApp = new CalibrationApp();
             calibrationApp.pre();
@@ -139,12 +128,12 @@ public class CalibrationUI extends PApplet {
 
         cameraTracking = Papart.getPapart().getPublicCameraTracking();
         projector = Papart.getPapart().getProjectorDisplay();
-        projector.setCalibrationMode(true);
 
         calibrationExtrinsic = new ExtrinsicCalibrator(this);
         initProjectorAsCamera();
         calibrationExtrinsic.setProjector(projector);
 
+        papart = Papart.getPapart();
         depthCameraType = papart.getDepthCameraType();
         DepthCameraDevice depthCameraDevice = papart.getDepthCameraDevice();
 
@@ -176,17 +165,12 @@ public class CalibrationUI extends PApplet {
             System.out.println("Calibration with a color camera.");
         }
 
-        initCorners();
-        loadCorners();
-
         skatolo = new Skatolo(this, this);
         initMainGui();
         initMatrixGui();
-        initCornersGUI();
 
         backgroundImg = loadImage(Papart.calibrationFolder + "ressources/background.png");
         this.isReady = true;
-        frameRate(10);
     }
 
     boolean isReady = false;
@@ -368,138 +352,23 @@ public class CalibrationUI extends PApplet {
     }
 
     public void startCornerCalibration() {
-        loadCorners();
         if (videoPopup == null) {
             videoPopup = new VideoPopupApp(this);
+        } else {
+            videoPopup.activate();
         }
         projector.setCalibrationMode(true);
-        videoPopup.getSurface().setVisible(true);
-        cornersGroup.show();
-        cornerToggle.activate();
-    }
-
-    public void useSmallCorners(boolean input) {
-        useSmallCorners = input;
-        System.out.println("UseSmallCorner pressed");
-        projector.setSmallCornerCalibration(input);
+        this.hideForScreenshot();
     }
 
     public void stopCornerCalibration() {
-        videoPopup.getSurface().setVisible(false);
-        cornersGroup.hide();
         cornerToggle.deactivate();
-    }
-
-    void initCorners() {
-        corners = new PVector[4];
-        secondCorners = new PVector[4];
-        // Corners of the image of the projector
-        corners[0] = new PVector(100, 100);
-        corners[1] = new PVector(200, 100);
-        corners[2] = new PVector(200, 200);
-        corners[3] = new PVector(100, 200);
-    }
-
-    public void loadCorners() {
-        try {
-            JSONArray values = loadJSONArray(cornersFileName);
-            for (int i = 0; i < values.size(); i++) {
-                JSONObject cornerJSON = values.getJSONObject(i);
-                corners[i].set(cornerJSON.getFloat("x"),
-                        cornerJSON.getFloat("y"));
-            }
-        } catch (Exception e) {
-            System.out.println("Could not load saved corners. check your file : " + cornersFileName);
-
-        }
-    }
-
-    public void saveCorners() {
-        JSONArray values = new JSONArray();
-        for (int i = 0; i < corners.length; i++) {
-            JSONObject cornerJSON = new JSONObject();
-            cornerJSON.setFloat("x", corners[i].x);
-            cornerJSON.setFloat("y", corners[i].y);
-            values.setJSONObject(i, cornerJSON);
-        }
-        saveJSONArray(values, cornersFileName);
-    }
-
-    public void activateCornerNo(int nb) {
-        cornersRadio.activate(nb);
-        // TODO: why is this not automatic ?
-        activeCorner(nb);
-    }
-
-    public void moveCornerUp(boolean isUp, float amount) {
-        corners[currentCorner].y += isUp ? -amount : amount;
-    }
-
-    public void moveCornerLeft(boolean isLeft, float amount) {
-        corners[currentCorner].x += isLeft ? -amount : amount;
-    }
-
-    public void activeCorner(int value) {
-        if (value == -1) {
-            value = 0;
-        }
-        currentCorner = value;
-    }
-
-    private void initCornersGUI() {
-        cornersGroup = skatolo.addGroup("CornersGroup")
-                .setPosition(250, 30)
-                // .setWidth(300)
-                // .setHeight(300)
-                .activateEvent(true)
-                .setBackgroundColor(color(30))
-                .setLabel("Corners :");
-
-        cornersRadio = skatolo.addRadioButton("Corners")
-                .setPosition(90, 10)
-                .setItemWidth(20)
-                .setItemHeight(20)
-                .addItem("bottom Left (1)", 0) // 0, y
-                .addItem("bottom Right (2)", 1) // x ,y
-                .addItem("top right (3)", 2) // x, 0
-                .addItem("Top Left (4)", 3) // 0, 0
-                .activate(0)
-                .plugTo(this, "activeCorner")
-                .setGroup("CornersGroup");
-
-        skatolo.addBang("Load")
-                .setPosition(10, 10)
-                .setCaptionLabel("Load (l)")
-                .plugTo(this, "loadCorners")
-                .setGroup("CornersGroup");
-
-        this.zoomToggle = skatolo.addToggle("showZoom")
-                .setPosition(10, 45)
-                .setCaptionLabel("Zoom (z)")
-                .setGroup("CornersGroup");
-
-        this.zoomToggle = skatolo.addToggle("useSmallCorners")
-                .setPosition(10, 70)
-                .setCaptionLabel("Small Corners")
-                .setGroup("CornersGroup");
-
-        skatolo.addBang("Save")
-                .setPosition(200, 10)
-                .setCaptionLabel("Save (s)")
-                .plugTo(this, "saveCorners")
-                .setGroup("CornersGroup");
-
-        skatolo.addToggle("stopCornerCalibration")
-                .setCaptionLabel("Validate")
-                .setPosition(200, 60)
-                .setGroup("CornersGroup");
-        cornersGroup.hide();
-
+        projector.setCalibrationMode(false);
+        this.showAfterScreenshot();
     }
 
     @Override
     public void draw() {
-
         image(backgroundImg, 0, 0, backgroundImg.width, backgroundImg.height);
 
         pushMatrix();
@@ -515,8 +384,6 @@ public class CalibrationUI extends PApplet {
             }
         }
         popMatrix();
-
-        updateCorners();
 
         text(this.isProCamCalibrated, 100, DO_CALIBRATION_HEIGHT + 15);
         text(this.isKinectCalibrated, 300, DO_CALIBRATION_HEIGHT + 15);
@@ -543,46 +410,6 @@ public class CalibrationUI extends PApplet {
 
     }
 
-    private void updateCorners() {
-        if (useSmallCorners) {
-            // Find 3D plane of selected points (arbitrary sizes) 
-            float aspectRatio = ((float) projector.getHeight()) / ((float) projector.getWidth());
-
-            PVector object[] = new PVector[4];
-            object[0] = new PVector(0, 0);
-            object[1] = new PVector(2, 0);
-            object[2] = new PVector(2, 2 * aspectRatio);
-            object[3] = new PVector(0, 2 * aspectRatio);
-            PMatrix3D transfo = cameraTracking.getProjectiveDevice().estimateOrientation(object, this.corners);
-
-            PMatrix3D tr = transfo.get();
-
-            // First point top left corner. 
-            tr.translate(-1, -aspectRatio);
-            PVector c = new PVector(tr.m03, tr.m13, tr.m23);
-            secondCorners[0] = cameraTracking.getProjectiveDevice().worldToPixelUnconstrained(c);
-
-            tr = transfo.get();
-            tr.translate(3, -aspectRatio);
-            c = new PVector(tr.m03, tr.m13, tr.m23);
-            secondCorners[1] = cameraTracking.getProjectiveDevice().worldToPixelUnconstrained(c);
-
-            tr = transfo.get();
-            tr.translate(3, 3 * aspectRatio);
-            c = new PVector(tr.m03, tr.m13, tr.m23);
-            secondCorners[2] = cameraTracking.getProjectiveDevice().worldToPixelUnconstrained(c);
-
-            tr = transfo.get();
-            tr.translate(-1, 3 * aspectRatio);
-            c = new PVector(tr.m03, tr.m13, tr.m23);
-            secondCorners[3] = cameraTracking.getProjectiveDevice().worldToPixelUnconstrained(c);
-
-            projectorView.setCorners(secondCorners);
-        } else {
-            projectorView.setCorners(corners);
-        }
-    }
-
     public void keyPressed() {
         if (key == 'c') {
             startCornerCalibration();
@@ -607,15 +434,18 @@ public class CalibrationUI extends PApplet {
     private boolean isHidden = false;
 
     public void hide() {
-
         if (!isReady) {
             return;
         }
         this.isHidden = true;
         this.getSurface().setVisible(false);
         calibrationApp.setDrawing(false);
-        System.out.println("Projector: " + projector);
-        projector.setCalibrationMode(false);
+        this.projectorAsCamera.stopThread();
+    }
+
+    public void hideForScreenshot() {
+        this.isHidden = true;
+        this.getSurface().setVisible(false);
     }
 
     public void show() {
@@ -624,7 +454,15 @@ public class CalibrationUI extends PApplet {
         }
         this.isHidden = false;
         calibrationApp.setDrawing(true);
-        projector.setCalibrationMode(true);
+        this.getSurface().setVisible(true);
+
+        if (!this.projectorAsCamera.useThread()) {
+            this.projectorAsCamera.setThread();
+        }
+    }
+
+    public void showAfterScreenshot() {
+        this.isHidden = false;
         this.getSurface().setVisible(true);
     }
 

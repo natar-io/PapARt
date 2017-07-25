@@ -192,6 +192,7 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         depthData.clear();
         depthData.timeStamp = papplet.millis();
         depthData.planeAndProjectionCalibration = calib;
+        
 //        computeDepthAndDo(skip2D, new DoNothing());
         computeDepthAndDo(skip2D, new Select2DPointPlaneProjection());
 //        doForEachPoint(skip2D, new Select2DPointPlaneProjection());

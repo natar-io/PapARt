@@ -220,7 +220,6 @@ public class Papart {
         papart.projector.setCamera(papart.getPublicCameraTracking());
 
         papart.checkInitialization();
-
         papart.registerKey();
 
         return papart;
@@ -673,9 +672,13 @@ public class Papart {
      * Touch input with a Kinect calibrated with the display area.
      *
      */
-    public void loadTouchInput() throws CannotCreateCameraException {        
-        loadDefaultDepthCamera();
-        loadDefaultTouchKinect();
+    public void loadTouchInput() {
+        try {
+            loadDefaultDepthCamera();
+            loadDefaultTouchKinect();
+        } catch (CannotCreateCameraException cce) {
+              throw new RuntimeException("Cannot start the depth camera");
+        }
         updateDepthCameraDeviceExtrinsics();
     }
 

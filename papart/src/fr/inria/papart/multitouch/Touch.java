@@ -62,7 +62,23 @@ public class Touch {
      * Legacy access to the touchPoint, use trackedSource now.
      * @return 
      */
+    @Deprecated
     public TrackedElement touchPoint(){
+        return trackedSource;
+    }
+    
+    /**
+     * Get the element from the tracking system. This element may store 
+     * information across time. You can register events triggered when the 
+     * point disappears.
+     * To do so you can attach an object in the attachedObject field. If this 
+     * object implements the TouchPointEventHandler interface, delete() will be  the call to 
+     * called when the tracked element gets off the tracking system. 
+     * 
+     * -- Also -> new name of TouchPoint.
+     * @return 
+     */
+    public TrackedElement trackedSource(){
         return trackedSource;
     }
 
