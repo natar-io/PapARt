@@ -192,17 +192,29 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         depthData.clear();
         depthData.timeStamp = papplet.millis();
         depthData.planeAndProjectionCalibration = calib;
-        
-//        computeDepthAndDo(skip2D, new DoNothing());
-        computeDepthAndDo(skip2D, new Select2DPointPlaneProjection());
-//        doForEachPoint(skip2D, new Select2DPointPlaneProjection());
-        doForEachPoint(skip3D, new Select3DPointPlaneProjection());
 
-        // Optimisations -- for demos
-        //        depthData.connexity.setPrecision(skip3D);
-        //        doForEachValid3DPoint(skip3D, new ComputeNormal());
-//        depthData.connexity.computeAll();
-//        doForEachPoint(1, new ComputeNormal());
+        computeDepthAndDo(skip2D, new DoNothing());
+//        computeDepthAndDo(skip2D, new Select2DPointPlaneProjection());
+  
+//        doForEachPoint(skip2D, new Select2DPointPlaneProjection());
+//        doForEachPoint(skip3D, new Select3DPointPlaneProjection());
+
+        // Normal computing is back.
+        try {
+                    depthData.connexity.setPrecision(skip2D);
+            //        doForEachValid3DPoint(skip3D, new ComputeNormal());
+//            depthData.connexity.computeAll();
+            doForEachPoint(skip2D, new ComputeNormal());
+            doForEachPoint(skip2D, new ComputeNormal());
+        } catch (Exception e) {
+            System.out.println("EXception " + e);
+            e.printStackTrace();
+        }
+        
+        doForEachPoint(skip2D, new Select2DPointPlaneProjectionNormal());
+        doForEachPoint(skip2D, new SetNormalRelative());
+        
+        doForEachPoint(skip3D, new Select3DPointPlaneProjectionNormal());
 //        doForEachPoint(skip2D, new SetImageData());
         // Optimisation no Color
         // doForEachValidPoint(skip2D, new SetImageData());
@@ -382,6 +394,27 @@ public class DepthAnalysisImpl extends DepthAnalysis {
             }
         }
     }
+    class Select2DPointPlaneProjectionNormal implements DepthPointManiplation {
+
+        @Override
+        public void execute(Vec3D p, PixelOffset px) {
+            if (depthData.planeAndProjectionCalibration.hasGoodOrientationAndDistance(p)) {
+
+//                System.out.println("Distance " + (depthData.planeAndProjectionCalibration.getPlane().normal).distanceTo(depthData.normals[px.offset]));
+                float normalDistance = (depthData.planeAndProjectionCalibration.getPlane().normal).distanceTo(depthData.normals[px.offset]);
+//                Vec3D projected = depthData.planeAndProjectionCalibration.project(p);
+//                depthData.projectedPoints[px.offset] = projected;
+                depthData.planeAndProjectionCalibration.project(p, depthData.projectedPoints[px.offset]);
+
+                // TODO: tweak the 0.3f
+                if (isInside(depthData.projectedPoints[px.offset], 0.f, 1.f, 0.0f) &&
+                        normalDistance > 0.3f){
+                    depthData.validPointsMask[px.offset] = true;
+                    depthData.validPointsList.add(px.offset);
+                }
+            }
+        }
+    }
 
     class Select2DPointPlaneProjectionSR300Error implements DepthPointManiplation {
 
@@ -421,9 +454,9 @@ public class DepthAnalysisImpl extends DepthAnalysis {
             int offset = px.offset;
             float average = 0;
             int sumAmount = 0;
-            
+
             float current = p.z;
-            
+
             float variance = 0;
 //            Vec3D average = p.copy();
 //            int sumAmount = 1;
@@ -432,7 +465,7 @@ public class DepthAnalysisImpl extends DepthAnalysis {
                 if (oldValue != INVALID_DEPTH) {
                     sumAmount++;
                     average += oldValue;
-                    
+
                     variance += Math.abs(oldValue - current);
                 }
             }
@@ -470,9 +503,9 @@ public class DepthAnalysisImpl extends DepthAnalysis {
 //                float depthCoeff = ((p.z) / 200000f) +  1f;
                 float xCoeff;
                 if (p.x < 0) {
-                    xCoeff = (1f - (p.x / 10000f)) ;
+                    xCoeff = (1f - (p.x / 10000f));
                 } else {
-                    xCoeff = (1f + (p.x / 10000f)) ;
+                    xCoeff = (1f + (p.x / 10000f));
                 }
 //                if (px.x == px.y) {
 //                    System.out.println("coeff: " +xCoeff);
@@ -564,6 +597,25 @@ public class DepthAnalysisImpl extends DepthAnalysis {
             }
         }
     }
+    class Select3DPointPlaneProjectionNormal implements DepthPointManiplation {
+
+        @Override
+        public void execute(Vec3D p, PixelOffset px) {
+            if (depthData.planeAndProjectionCalibration.hasGoodOrientation(p)) {
+//                Vec3D projected = depthData.planeAndProjectionCalibration.project(p);
+//                depthData.projectedPoints[px.offset] = projected;
+                float normalDistance = (depthData.planeAndProjectionCalibration.getPlane().normal).distanceTo(depthData.normals[px.offset]);
+                depthData.planeAndProjectionCalibration.project(p, depthData.projectedPoints[px.offset]);
+
+                if (isInside(depthData.projectedPoints[px.offset], 0.f, 1.f, 0.1f) &&
+                         normalDistance > 0.3f) {
+                    depthData.validPointsMask3D[px.offset] = true;
+                    depthData.validPointsList3D.add(px.offset);
+                }
+            }
+        }
+    }
+    
 
     class SetImageData implements DepthPointManiplation {
 

@@ -71,8 +71,10 @@ public class DepthData {
         this.source = source;
         int size = width * height;
         depthPoints = new Vec3D[size];
+        normals = new Vec3D[size];
         for (int i = 0; i < size; i++) {
             depthPoints[i] = new Vec3D();
+            normals[i] = new Vec3D();
         }
 
         validPointsMask = new boolean[size];
@@ -91,6 +93,7 @@ public class DepthData {
     protected void fillDepthDataElement(DepthDataElement dde, int i) {
         dde.pointColor = pointColors[i];
         dde.depthPoint = depthPoints[i];
+        dde.normal = normals[i];
         dde.validPoint = validPointsMask[i];
         dde.neighbourSum = connexity.connexitySum[i];
         dde.neighbours = connexity.connexity[i];

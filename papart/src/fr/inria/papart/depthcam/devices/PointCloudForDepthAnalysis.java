@@ -93,8 +93,56 @@ public class PointCloudForDepthAnalysis extends PointCloud implements PConstants
         colorsNative.put(colorsJava, 0, nbColors);
     }
 
-    public void updateWithFakeColors(DepthAnalysisPImageView kinect, ArrayList<TrackedDepthPoint> touchs) {
+    public void updateWithNormalColors(DepthAnalysisPImageView kinect, ArrayList<TrackedDepthPoint> touchs) {
+        boolean[] valid = kinect.getValidPoints();
+        Vec3D[] points = kinect.getDepthPoints();
 
+        nbVertices = 0;
+        nbColors = 0;
+        int k = 0;
+
+        parentApplet.pushStyle();
+        //            ID Color
+        parentApplet.colorMode(HSB, 8, 100, 100);
+        
+        // Normal Color 
+        parentApplet.colorMode(RGB, 1,1,1);
+        
+        int id = 0;
+        for (TrackedDepthPoint touch : touchs) {
+//            ID Color
+//            int c = this.parentApplet.color(id % 8, 100, 100);
+//            int c2 = javaToNativeARGB(c);
+            id++;
+
+            for (DepthDataElementProjected dde : touch.getDepthDataElements()) {
+                Vec3D p = dde.depthPoint;
+                verticesJava[k++] = p.x;
+                verticesJava[k++] = p.y;
+                verticesJava[k++] = -p.z;
+                verticesJava[k++] = 1;
+
+                nbVertices++;
+                
+                if (dde.normal != null){
+                 int c = this.parentApplet.color(dde.normal.x, dde.normal.y, dde.normal.z);
+                 int c2 = javaToNativeARGB(c); 
+                         colorsJava[nbColors++] = c2;
+                } else {
+                            colorsJava[nbColors++] = 100;
+                }
+            }
+        }
+
+        parentApplet.popStyle();
+        verticesNative.rewind();
+        verticesNative.put(verticesJava, 0, nbVertices * 4);
+
+        colorsNative.rewind();
+        colorsNative.put(colorsJava, 0, nbColors);
+    }
+    
+    public void updateWithIDColors(DepthAnalysisPImageView kinect, ArrayList<TrackedDepthPoint> touchs) {
         boolean[] valid = kinect.getValidPoints();
         Vec3D[] points = kinect.getDepthPoints();
         PImage colorsImg = kinect.getColouredDepthImage();
@@ -105,12 +153,12 @@ public class PointCloudForDepthAnalysis extends PointCloud implements PConstants
 
         parentApplet.pushStyle();
         parentApplet.colorMode(HSB, 8, 100, 100);
+        
         int id = 0;
         for (TrackedDepthPoint touch : touchs) {
-
             int c = this.parentApplet.color(id % 8, 100, 100);
-            id++;
             int c2 = javaToNativeARGB(c);
+            id++;
 
             for (DepthDataElementProjected dde : touch.getDepthDataElements()) {
                 Vec3D p = dde.depthPoint;
@@ -120,9 +168,7 @@ public class PointCloudForDepthAnalysis extends PointCloud implements PConstants
                 verticesJava[k++] = 1;
 
                 nbVertices++;
-
                 colorsJava[nbColors++] = c2;
-
             }
         }
 

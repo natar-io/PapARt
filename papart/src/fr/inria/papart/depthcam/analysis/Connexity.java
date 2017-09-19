@@ -53,7 +53,7 @@ public class Connexity {
     public byte[] connexity;  // TODO: check for Byte instead of int
     public byte[] connexitySum;  // TODO: check for Byte instead of int
     private Vec3D[] points;
-    private int precision;
+    private int precision = 1;
 
     public Connexity(Vec3D[] points, int w, int h) {
         this.width = w;
@@ -136,8 +136,9 @@ public class Connexity {
         // Todo: Unroll these for loops for optimisation...
         int currentOffset = y * width + x;
 
-        if (points[currentOffset] == null
-                ||  !DepthAnalysis.isValidPoint(points[currentOffset])) {
+        if (points[currentOffset] == null){
+            // We do not care about validity for Normal computing ?!
+//                ||  !DepthAnalysis.isValidPoint(points[currentOffset])) {
             connexity[currentOffset] = 0;
             connexitySum[currentOffset] = 0;
             return;
