@@ -38,9 +38,12 @@ public class TrackedDepthPoint extends TrackedElement {
     private ArrayList<DepthDataElementProjected> depthDataElements = new ArrayList<DepthDataElementProjected>();
     int pointColor;
 
-    
     private boolean is3D;
     private boolean isCloseToPlane;
+
+    private static final int NO_HAND = -1;
+    private int attachedHandID = NO_HAND;
+    private boolean isHand = false;
 
     public TrackedDepthPoint(int id) {
         super(id);
@@ -113,10 +116,42 @@ public class TrackedDepthPoint extends TrackedElement {
         this.pointColor = pointColor;
     }
 
+    public int getAttachedHandID() {
+        return attachedHandID;
+    }
+
+    public void setAttachedHandID(int attachedHandID) {
+        this.attachedHandID = attachedHandID;
+    }
+ 
+    public boolean isHand() {
+        return isHand;
+    }
+
+    public void setHand(boolean isHand) {
+        this.isHand = isHand;
+    }
+    
+    private ArrayList<Integer> fingerIDs = new ArrayList<>();
+    public void addFinger(int id){
+        fingerIDs.add(id);
+    }
+    
+    public void clearFingers(){
+        fingerIDs.clear();
+    }
+    public ArrayList<Integer> getFingers(){
+        return fingerIDs;
+    }
+
     @Override
     public String toString() {
         return "Touch Point, depth: " + positionDepthCam + " , proj: " + position + "confidence " + confidence + " ,close to Plane : " + isCloseToPlane;
     }
 
+    public boolean mainFinger = false;
+    public void setMainFinger() {
+        this.mainFinger = true;
+    }
 
 }

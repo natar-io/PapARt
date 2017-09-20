@@ -43,6 +43,7 @@ import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import processing.core.PApplet;
+import static processing.core.PApplet.println;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import toxi.geom.Vec3D;
@@ -50,7 +51,7 @@ import toxi.geom.Vec3D;
 /**
  * Touch input, using a depth camera device.
  *
- * @author jeremylaviole -  laviole@rea.lity.tech
+ * @author jeremylaviole - laviole@rea.lity.tech
  */
 public class DepthTouchInput extends TouchInput {
 
@@ -144,6 +145,7 @@ public class DepthTouchInput extends TouchInput {
                 depthAnalysis.updateMT(depthImage, colImage, planeAndProjCalibration, touch2DPrecision, touch3DPrecision);
                 findAndTrack2D();
                 findAndTrack3D();
+                findHands();
             } else {
                 if (touch2DPrecision > 0) {
                     depthAnalysis.updateMT2D(depthImage, colImage, planeAndProjCalibration, touch2DPrecision);
@@ -159,6 +161,119 @@ public class DepthTouchInput extends TouchInput {
         } finally {
             depthDataSem.release();
         }
+    }
+
+    private void findHands() {
+        // each 3D component can be hand.
+        // Find which one are
+        ProjectedDepthData depthData = depthAnalysis.getDepthData();
+
+        // check if the component contains border elements.
+        // BORDER METHOD NOT WORKING WITH SR300, arms are not seen in the borders.
+//        for (TrackedDepthPoint pt : touchPoints3D) {
+//            int borders = 0;
+//            for (DepthDataElementProjected depthPoint : pt.getDepthDataElements()) {
+//
+//                int offset = depthPoint.offset;
+//                int x = offset % depthAnalysis.getWidth();
+//                int y = offset / depthAnalysis.getWidth();
+//                if (x  <= touch3DPrecision * 3 ||
+//                        x >= depthAnalysis.getWidth() - (1 + touch3DPrecision * 3) ||
+//                        y <= touch3DPrecision * 3 ||
+//                        y >= depthAnalysis.getHeight() - (1+ touch3DPrecision * 3)) {
+//                    borders++;
+//                }
+//            }
+//            System.out.println("Borders: " + borders + " " +  depthAnalysis.getWidth() + " " + depthAnalysis.getHeight());
+//        }
+        ArrayList<ArrayList<Integer>> offset3D = new ArrayList<>();
+        for (TrackedDepthPoint pt : touchPoints3D) {
+//            float filter = 0.25f;
+//            int xOffset = 0;
+//            int yOffset = 0;
+//            int zOffset = 0;
+            pt.clearFingers();
+
+            ArrayList<Integer> offsets = new ArrayList<>();
+            for (DepthDataElementProjected depthPoint : pt.getDepthDataElements()) {
+                int offset = depthPoint.offset;
+                offsets.add(offset);
+//                Vec3D normal = depthData.normals[offset];
+//                if (normal != null) {
+//                    if (normal.x > filter) {
+//                        xOffset++;
+//                    }
+//                    if (normal.y > filter) {
+//                        yOffset++;
+//                    }
+//                    if (normal.z > filter) {
+//                        zOffset++;
+//                    }
+//                }
+            }
+            offset3D.add(offsets);
+//            System.out.println("x: " + xOffset + " y: " + yOffset + " z: " + zOffset);
+        }
+
+        ArrayList<ArrayList<Integer>> offset2D = new ArrayList<>();
+
+        int fingerID = 0;
+        for (TrackedDepthPoint pt : touchPoints2D) {
+            
+            pt.mainFinger = false;
+            
+            ArrayList<Integer> offsets = new ArrayList<>();
+            for (DepthDataElementProjected depthPoint : pt.getDepthDataElements()) {
+                int offset = depthPoint.offset;
+                offsets.add(offset);
+            }
+            offset2D.add(offsets);
+
+            // Now check if they have a 3D in common.
+            int handID = 0;
+            for (ArrayList<Integer> touch3DOffsets : offset3D) {
+                ArrayList<Integer> copy = new ArrayList<>();
+                copy.addAll(offsets);
+
+                copy.retainAll(touch3DOffsets);
+//                System.out.println("Common: " + copy.size());
+                if (copy.size() > 1) {
+                    pt.setAttachedHandID(handID);
+                    touchPoints3D.get(handID).addFinger(fingerID);
+                    System.out.println("Points in common : " + copy.size());
+                }
+                handID++;
+            }
+            fingerID++;
+        }
+
+        for (TrackedDepthPoint pt : touchPoints3D) {
+            ArrayList<Integer> fingers = pt.getFingers();
+            if (fingers.size() == 0) {
+                continue;
+            }
+            float minDist = Float.MAX_VALUE;
+            int minID = 0;
+System.out.println("nb fingers: " + fingers.size() + " nbTouchPoints " + touchPoints2D.size());
+            for (int i = 0; i < fingers.size(); i++) {
+                
+                TrackedDepthPoint tp = touchPoints2D.get(fingers.get(i));
+                float dist = tp.distanceTo(pt);
+                if (dist < minDist) {
+                    minDist = dist;
+                    minID = fingers.get(i);
+                }
+            }
+
+            touchPoints2D.get(minID).setMainFinger();
+
+        }
+        // Try to match the hand with the points... 
+        // A 3D touch can contain multiple 2D touch or none. 
+        // a 2D touch can belong to none or one 3D. 
+        // Match the elements in the hand, and the ones in the touch
+        // Attach the corresponding hand IDs.
+        // Set as "main" touch the one futher away from the hand. 
     }
 
     private static final Touch INVALID_TOUCH = new Touch();

@@ -58,27 +58,41 @@ public abstract class TouchDetectionDepth extends TouchDetection {
     protected boolean hasCCToFind() {
         return !depthData.validPointsList.isEmpty();
     }
-    
-    protected boolean checkNormalFinger(ConnectedComponent cc){
+
+    protected boolean checkNormalFinger(ConnectedComponent cc) {
         boolean highX = false;
         boolean highZ = false;
         boolean highY = false;
-        
-        float filter = 0.35f;
-        for(Integer offset : cc){
+
+        float filter = 0.25f;
+
+        int xOffset = 0;
+        int yOffset = 0;
+        int zOffset = 0;
+        for (Integer offset : cc) {
             Vec3D normal = depthData.normals[offset];
-            
-            if(normal.x > filter){
-                highX = true;
-            }
-            if(normal.y > filter){
-                highY = true;
-            }
-            if(normal.z > filter){
-                highZ = true;
+            if (normal != null) {
+                if (normal.x > filter) {
+                    highX = true;
+                    xOffset = offset;
+                }
+                if (normal.y > filter) {
+                    highY = true;
+                    yOffset = offset;
+
+                }
+                if (normal.z > filter) {
+                    highZ = true;
+                    zOffset = offset;
+                }
             }
         }
-        
+        if (xOffset != 0 && yOffset != 0 && zOffset != 0
+                && highX && highY && highZ) {
+            float d = depthData.depthPoints[xOffset].distanceTo(depthData.depthPoints[zOffset]);
+            return d < 20 && d > 3 && highX && highY && highZ;
+//        System.out.println(depthData.depthPoints[xOffset].distanceTo(depthData.depthPoints[zOffset]));
+        }
         return highX && highY && highZ;
     }
 
@@ -89,9 +103,9 @@ public abstract class TouchDetectionDepth extends TouchDetection {
 
             float height = connectedComponent.getHeight(depthData.projectedPoints);
             boolean isFinger = checkNormalFinger(connectedComponent);
-            if (connectedComponent.size() < calib.getMinimumComponentSize() ||
-                    height < calib.getMinimumHeight() ||
-                    !isFinger) {
+            if (connectedComponent.size() < calib.getMinimumComponentSize()
+                    || height < calib.getMinimumHeight()
+                    || !isFinger) {
 
                 continue;
             }
@@ -101,17 +115,19 @@ public abstract class TouchDetectionDepth extends TouchDetection {
         }
         return touchPoints;
     }
-    /** Experimental */
-    
-    protected void filterTips(ConnectedComponent connectedComponent){
-        
-         connectedComponent.getMean(depthData.projectedPoints);
-         
-         ConnectedComponent out = new ConnectedComponent();
-         for(Integer i : connectedComponent){
+
+    /**
+     * Experimental
+     */
+    protected void filterTips(ConnectedComponent connectedComponent) {
+
+        connectedComponent.getMean(depthData.projectedPoints);
+
+        ConnectedComponent out = new ConnectedComponent();
+        for (Integer i : connectedComponent) {
             Vec3D depthPoint = depthData.depthPoints[i];
-             
-             // Look left from the point  : 10mm
+
+            // Look left from the point  : 10mm
             Vec3D left = depthPoint.copy();
             left.add(-10, 0, 0);
             int offsetOut = depthData.projectiveDevice.worldToPixel(left);
@@ -119,20 +135,19 @@ public abstract class TouchDetectionDepth extends TouchDetection {
 //            int y = offsetOut / depthData.projectiveDevice.getWidth();
 
             // TODO: check bounds.
-             if(depthData.validPointsMask[offsetOut]){
+            if (depthData.validPointsMask[offsetOut]) {
                 out.add(i);
-             }
-         }
-         connectedComponent.clear();
-         connectedComponent.addAll(out);
+            }
+        }
+        connectedComponent.clear();
+        connectedComponent.addAll(out);
     }
-    
 
     @Override
     protected TrackedDepthPoint createTouchPoint(ConnectedComponent connectedComponent) {
-        
+
         filterTips(connectedComponent);
-        
+
         Vec3D meanProj = connectedComponent.getMean(depthData.projectedPoints);
         Vec3D meanKinect = connectedComponent.getMean(depthData.depthPoints);
         TrackedDepthPoint tp = new TrackedDepthPoint();
@@ -192,7 +207,7 @@ public abstract class TouchDetectionDepth extends TouchDetection {
                     && depthData.depthPoints[offset].distanceTo(depthData.depthPoints[currentPoint]) < calib.getMaximumDistance();
         }
     }
-    
+
     class ClosestComparator implements Comparator {
 
         public Vec3D[] projPoints;

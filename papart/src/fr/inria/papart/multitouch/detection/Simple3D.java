@@ -37,7 +37,7 @@ import java.util.List;
 public class Simple3D extends TouchDetectionDepth {
 
     protected int MINIMUM_COMPONENT_SIZE_3D = 50;
-    protected int COMPONENT_SIZE_FOR_POSITION = 10;
+    protected int COMPONENT_SIZE_FOR_POSITION = 400;
 
     public Simple3D(WithSize size) {
         super(size);
