@@ -76,7 +76,7 @@ public class Simple3D extends TouchDetectionDepth {
 
     @Override
     protected TrackedDepthPoint createTouchPoint(ConnectedComponent connectedComponent) {
-        
+
 //        ClosestComparatorY closestComparator = new ClosestComparatorY(depthData.projectedPoints);
         ClosestComparatorHeight closestComparator = new ClosestComparatorHeight(depthData.projectedPoints, depthData.planeAndProjectionCalibration.getPlaneCalibration());
 
@@ -96,8 +96,15 @@ public class Simple3D extends TouchDetectionDepth {
         tp.set3D(true);
         return tp;
     }
-    
-         public class CheckTouchPoint3D implements PointValidityCondition {
+
+    public class CheckTouchPoint3D implements PointValidityCondition {
+
+        // Not used yet here.
+        private int inititalPoint;
+
+        public void setInitalPoint(int offset) {
+            this.inititalPoint = offset;
+        }
 
         @Override
         public boolean checkPoint(int offset, int currentPoint) {
@@ -109,6 +116,5 @@ public class Simple3D extends TouchDetectionDepth {
                     && distanceToCurrent < calib.getMaximumDistance();
         }
     }
-
 
 }

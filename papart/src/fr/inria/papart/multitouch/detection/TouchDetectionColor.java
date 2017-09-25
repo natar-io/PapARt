@@ -53,6 +53,12 @@ public class TouchDetectionColor extends TouchDetection {
 
     public class CheckColorPoint implements PointValidityCondition {
 
+          private int inititalPoint;
+
+        public void setInitalPoint(int offset) {
+            this.inititalPoint = offset;
+        }
+        
         @Override
         public boolean checkPoint(int offset, int currentPoint) {
 

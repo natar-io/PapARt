@@ -149,7 +149,6 @@ public abstract class TouchDetectionDepth extends TouchDetection {
     protected TrackedDepthPoint createTouchPoint(ConnectedComponent connectedComponent) {
 
 //        filterTips(connectedComponent);
-
         Vec3D meanProj = connectedComponent.getMean(depthData.projectedPoints);
         Vec3D meanKinect = connectedComponent.getMean(depthData.depthPoints);
         TrackedDepthPoint tp = new TrackedDepthPoint();
@@ -199,20 +198,34 @@ public abstract class TouchDetectionDepth extends TouchDetection {
 
     public class CheckTouchPoint implements PointValidityCondition {
 
-        public ProjectedDepthData getData(){
+        private int inititalPoint;
+
+        public void setInitalPoint(int offset) {
+            this.inititalPoint = offset;
+        }
+
+        public ProjectedDepthData getData() {
             return depthData;
         }
-        
+
         @Override
         public boolean checkPoint(int offset, int currentPoint) {
 //            float distanceToCurrent = depthData.depthPoints[offset].distanceTo(depthData.depthPoints[currentPoint]);
 
-            return !assignedPoints[offset] // not assigned  
-                    && depthData.validPointsMask[offset] // is valid
-//                    && depthData.depthPoints[offset] != INVALID_POINT // is valid
-//                    && depthData.depthPoints[offset].distanceTo(INVALID_POINT) >= 0.01f //  TODO WHY invalidpoints here.
-                    && DepthAnalysis.isValidPoint(depthData.depthPoints[offset])
-                    && depthData.depthPoints[offset].distanceTo(depthData.depthPoints[currentPoint]) < calib.getMaximumDistance();
+            float dN = (depthData.planeAndProjectionCalibration.getPlane().normal).distanceToSquared(depthData.normals[currentPoint]);
+            float d1 = (depthData.planeAndProjectionCalibration.getPlane().getDistanceToPoint(depthData.depthPoints[currentPoint]));
+//            System.out.println("d1: " + d1 + " dN: " + dN);
+//TODO: Magic numbers !!
+            boolean goodNormal = (depthData.normals[offset] != null && dN > 3f) || (d1 > 8f);  // Higher  than Xmm
+            return !assignedPoints[offset] // not assigned   
+                    //                    && depthData.validPointsMask[offset] // is valid
+                    //                    && depthData.depthPoints[offset] != INVALID_POINT // is valid
+                    //                    && depthData.depthPoints[offset].distanceTo(INVALID_POINT) >= 0.01f //  TODO WHY invalidpoints here.
+                    //                    && DepthAnalysis.isValidPoint(depthData.depthPoints[offset])
+
+                    && depthData.depthPoints[inititalPoint].distanceTo(depthData.depthPoints[currentPoint]) < calib.getMaximumDistanceInit()
+                    && depthData.depthPoints[offset].distanceTo(depthData.depthPoints[currentPoint]) < calib.getMaximumDistance()
+                    && goodNormal;
         }
     }
 

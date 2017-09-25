@@ -208,7 +208,7 @@ public class DepthAnalysisImpl extends DepthAnalysis {
 
 //        doForEachPoint(skip2D, new Select2DPointPlaneProjectionNormal());
         doForEachPoint(skip2D, new Select2DPointPlaneProjection());
-        doForEachPoint(skip2D, new SetNormalRelative());
+//        doForEachPoint(skip2D, new SetNormalRelative());
 
         doForEachPoint(skip3D, new Select3DPointPlaneProjection()); // Normal useless here
 //        doForEachPoint(skip2D, new SetImageData());

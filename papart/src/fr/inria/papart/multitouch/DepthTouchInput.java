@@ -146,7 +146,7 @@ public class DepthTouchInput extends TouchInput {
             if (touch2DPrecision > 0 && touch3DPrecision > 0) {
                 depthAnalysis.updateMT(depthImage, colImage, planeAndProjCalibration, touch2DPrecision, touch3DPrecision);
                 findAndTrack2D();
-//                findAndTrack3D();
+                findAndTrack3D();
 //                findHands();
                 testPCA();
             } else {
@@ -182,25 +182,20 @@ public class DepthTouchInput extends TouchInput {
                 dataPoints[i][0] = depthPoint.depthPoint.x;
                 dataPoints[i][1] = depthPoint.depthPoint.y;
                 dataPoints[i][2] = depthPoint.depthPoint.z;
-//                System.out.println("Datapoint "
-//                        + depthPoint.depthPoint.x + " "
-//                        + depthPoint.depthPoint.y + " "
-//                        + depthPoint.depthPoint.z);
             }
 
 // ** each column corresponding to dimension. */
             Matrix trainingData = new Matrix(dataPoints);
             PCA pca = new PCA(trainingData);
 
+            // This seem to work pretty good to identify the fingers. 
             try {
-
                 double e0 = pca.getEigenvalue(0);
                 double e1 = pca.getEigenvalue(1);
                 double e2 = pca.getEigenvalue(2);
 
 //                System.out.println("Eigen values: " + e0 + " " + e1 + " " + e2);
-
-                if (e0 > 10 && e0 < 250 && e1 > 10 && e1 < 40) {
+                if (e0 > 10 && e0 < 250 && e1 > 10 && e1 < 40 && e2 < 50) {
                     pt.mainFinger = true;
                 }
 

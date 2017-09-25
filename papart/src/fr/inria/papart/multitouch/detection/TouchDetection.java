@@ -60,6 +60,8 @@ public abstract class TouchDetection {
          * @return true if the offset point can join.
          */
         public boolean checkPoint(int offset, int currentPoint);
+        
+        public void setInitalPoint(int offset);
     }
 
     public TouchDetection(WithSize imgSize) {
@@ -119,6 +121,7 @@ public abstract class TouchDetection {
 
         w = imgSize.getWidth();
         h = imgSize.getHeight();
+        currentPointValidityCondition.setInitalPoint(startingPoint);
         ConnectedComponent cc = findNeighboursRec(startingPoint, 0, getX(startingPoint), getY(startingPoint));
 
            // Do not accept 1 point compo ?!
@@ -130,9 +133,14 @@ public abstract class TouchDetection {
         cc.setId(currentCompo);
         currentCompo++;
 
+        
+        // TODO: Filtering for all ?!!
      // DEBUG
         if (currentPointValidityCondition instanceof CheckTouchPoint) {
 
+            // Filter the points with wrong normals
+            
+            
             ProjectedDepthData data = ((CheckTouchPoint) currentPointValidityCondition).getData();
             Vec3D depthPoint = data.depthPoints[startingPoint];
 //            System.out.println("SIZE: " + cc.size() + " Starting Point: " + depthPoint);

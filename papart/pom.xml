@@ -56,6 +56,14 @@
   
     <dependencies>
         
+        <!--Experimantal PCA library-->
+        <dependency>
+            <groupId>com.mkobos</groupId>
+            <artifactId>pca_transform</artifactId>
+            <version>1.0.2</version>
+        </dependency>
+        
+        
         <!--We distribute with PapARt-->
         <dependency>
             <groupId>org.reflections</groupId>

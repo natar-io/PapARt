@@ -33,6 +33,7 @@ public class PlanarTouchCalibration extends Calibration {
     static final String PLANAR_TOUCH_CALIBRATION_XML_NAME = "PlanarTouchCalibration";
 
     static final String MAX_DIST_XML_NAME = "MaxDistance";
+    static final String MAX_DIST_INIT_XML_NAME = "MaxDistanceInit";
     static final String MIN_COPO_SIZE_XML_NAME = "MinConnectedCompoSize";
     static final String MIN_HEIGHT_XML_NAME = "MinHeight";
     static final String MAX_RECURSION_XML_NAME = "MaxRecursion";
@@ -43,6 +44,7 @@ public class PlanarTouchCalibration extends Calibration {
 
     // Variable parameters... going to a specific class for saving.  
     private float maximumDistance = 10f;    // in mm
+    private float maximumDistanceInit = 50f;    // in mm
     private float minimumHeight = 1; // mm
 
     private int minimumComponentSize = 3;   // in px
@@ -68,6 +70,7 @@ public class PlanarTouchCalibration extends Calibration {
 
     private void setIn(XML xml) {
         xml.setFloat(MAX_DIST_XML_NAME, maximumDistance);
+        xml.setFloat(MAX_DIST_INIT_XML_NAME, maximumDistanceInit);
         xml.setFloat(MIN_HEIGHT_XML_NAME, minimumHeight);
 
         xml.setInt(MIN_COPO_SIZE_XML_NAME, minimumComponentSize);
@@ -81,6 +84,7 @@ public class PlanarTouchCalibration extends Calibration {
 
     private void getFrom(XML xml) {
         maximumDistance = xml.getFloat(MAX_DIST_XML_NAME);
+        maximumDistanceInit = xml.getFloat(MAX_DIST_INIT_XML_NAME);
         minimumComponentSize = xml.getInt(MIN_COPO_SIZE_XML_NAME);
         minimumHeight = xml.getFloat(MIN_HEIGHT_XML_NAME);
         maximumRecursion = xml.getInt(MAX_RECURSION_XML_NAME);
@@ -94,6 +98,7 @@ public class PlanarTouchCalibration extends Calibration {
 
     public void setTo(PlanarTouchCalibration calib) {
         this.maximumDistance = calib.maximumDistance;
+        this.maximumDistanceInit = calib.maximumDistanceInit;
         this.maximumRecursion = calib.maximumRecursion;
         this.minimumComponentSize = calib.minimumComponentSize;
         this.minimumHeight = calib.minimumHeight;
@@ -129,6 +134,14 @@ public class PlanarTouchCalibration extends Calibration {
 
     public void setMaximumDistance(float maximumDistance) {
         this.maximumDistance = maximumDistance;
+    }
+
+    public float getMaximumDistanceInit() {
+        return maximumDistanceInit;
+    }
+
+    public void setMaximumDistanceInit(float maximumDistanceInit) {
+        this.maximumDistanceInit = maximumDistanceInit;
     }
 
     public int getMinimumComponentSize() {

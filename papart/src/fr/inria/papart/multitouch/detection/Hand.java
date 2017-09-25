@@ -87,8 +87,12 @@ public class Hand extends Simple2D {
     public class CheckOverPlane implements PointValidityCondition {
 
         private static final float MAX_HAND_SIZE = 200f; // 20 cm 
-        private final Vec3D firstPoint;
+        private Vec3D firstPoint;
 
+        public void setInitalPoint(int offset) {
+            firstPoint = depthData.depthPoints[offset];
+        }
+        
         public CheckOverPlane(int offset) {
             firstPoint = depthData.depthPoints[offset];
         }
