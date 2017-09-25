@@ -20,6 +20,8 @@
  */
 package fr.inria.papart.multitouch;
 
+import Jama.Matrix;
+import com.mkobos.pca_transform.PCA;
 import fr.inria.papart.multitouch.tracking.TouchPointTracker;
 import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
 import fr.inria.papart.calibration.files.PlanarTouchCalibration;
@@ -144,8 +146,9 @@ public class DepthTouchInput extends TouchInput {
             if (touch2DPrecision > 0 && touch3DPrecision > 0) {
                 depthAnalysis.updateMT(depthImage, colImage, planeAndProjCalibration, touch2DPrecision, touch3DPrecision);
                 findAndTrack2D();
-                findAndTrack3D();
-                findHands();
+//                findAndTrack3D();
+//                findHands();
+                testPCA();
             } else {
                 if (touch2DPrecision > 0) {
                     depthAnalysis.updateMT2D(depthImage, colImage, planeAndProjCalibration, touch2DPrecision);
@@ -160,6 +163,64 @@ public class DepthTouchInput extends TouchInput {
             Logger.getLogger(DepthTouchInput.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             depthDataSem.release();
+        }
+    }
+
+    private void testPCA() {
+
+        for (TrackedDepthPoint pt : touchPoints2D) {
+
+            pt.mainFinger = false;
+
+            // Array of all Points... 
+            double[][] dataPoints = new double[pt.getDepthDataElements().size()][3];
+
+//            System.out.println("CC: Size: " + pt.getDepthDataElements().size());
+            
+            for (int i = 0; i < pt.getDepthDataElements().size(); i++) {
+                DepthDataElementProjected depthPoint = pt.getDepthDataElements().get(i);
+                dataPoints[i][0] = depthPoint.depthPoint.x;
+                dataPoints[i][1] = depthPoint.depthPoint.y;
+                dataPoints[i][2] = depthPoint.depthPoint.z;
+//                System.out.println("Datapoint "
+//                        + depthPoint.depthPoint.x + " "
+//                        + depthPoint.depthPoint.y + " "
+//                        + depthPoint.depthPoint.z);
+            }
+
+// ** each column corresponding to dimension. */
+            Matrix trainingData = new Matrix(dataPoints);
+            PCA pca = new PCA(trainingData);
+
+            try {
+
+                double e0 = pca.getEigenvalue(0);
+                double e1 = pca.getEigenvalue(1);
+                double e2 = pca.getEigenvalue(2);
+
+//                System.out.println("Eigen values: " + e0 + " " + e1 + " " + e2);
+
+                if (e0 > 10 && e0 < 250 && e1 > 10 && e1 < 40) {
+                    pt.mainFinger = true;
+                }
+
+            } catch (Exception e) {
+                System.out.println("Error in eigen value computing " + e + " nb points " + dataPoints.length);
+            }
+
+            /**
+             * Test data to be transformed. The same convention of representing
+             * data points as in the training data matrix is used.
+             */
+//        Matrix testData = new Matrix(new double[][] {
+//                {1, 2, 3, 4, 5, 6},
+//                {1, 2, 1, 2, 1, 2}});
+            /**
+             * The transformed test data.
+             */
+//        Matrix transformedData =
+//            pca.transform(testData, PCA.TransformationType.WHITENING);
+//        }
         }
     }
 
@@ -219,9 +280,9 @@ public class DepthTouchInput extends TouchInput {
 
         int fingerID = 0;
         for (TrackedDepthPoint pt : touchPoints2D) {
-            
+
             pt.mainFinger = false;
-            
+
             ArrayList<Integer> offsets = new ArrayList<>();
             for (DepthDataElementProjected depthPoint : pt.getDepthDataElements()) {
                 int offset = depthPoint.offset;
@@ -254,9 +315,9 @@ public class DepthTouchInput extends TouchInput {
             }
             float minDist = Float.MAX_VALUE;
             int minID = 0;
-System.out.println("nb fingers: " + fingers.size() + " nbTouchPoints " + touchPoints2D.size());
+            System.out.println("nb fingers: " + fingers.size() + " nbTouchPoints " + touchPoints2D.size());
             for (int i = 0; i < fingers.size(); i++) {
-                
+
                 TrackedDepthPoint tp = touchPoints2D.get(fingers.get(i));
                 float dist = tp.distanceTo(pt);
                 if (dist < minDist) {

@@ -6,7 +6,10 @@
 package fr.inria.papart.multitouch.detection;
 
 import fr.inria.papart.calibration.files.PlanarTouchCalibration;
+import fr.inria.papart.depthcam.devices.ProjectedDepthData;
 import fr.inria.papart.multitouch.ConnectedComponent;
+import static fr.inria.papart.multitouch.ConnectedComponent.INVALID_COMPONENT;
+import fr.inria.papart.multitouch.detection.TouchDetectionDepth.CheckTouchPoint;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.utils.WithSize;
 import java.util.ArrayList;
@@ -95,7 +98,9 @@ public abstract class TouchDetection {
         while (toVisit.size() > 0) {
             int startingPoint = toVisit.iterator().next();
             ConnectedComponent cc = findConnectedComponent(startingPoint);
-            connectedComponents.add(cc);
+            if (cc != INVALID_COMPONENT) {
+                connectedComponents.add(cc);
+            }
         }
         return connectedComponents;
     }
@@ -115,8 +120,31 @@ public abstract class TouchDetection {
         w = imgSize.getWidth();
         h = imgSize.getHeight();
         ConnectedComponent cc = findNeighboursRec(startingPoint, 0, getX(startingPoint), getY(startingPoint));
+
+           // Do not accept 1 point compo ?!
+        if (cc.size() == 1) {
+            connectedComponentImage[startingPoint] = NO_CONNECTED_COMPONENT;
+            return INVALID_COMPONENT;
+        }
+
         cc.setId(currentCompo);
         currentCompo++;
+
+     // DEBUG
+        if (currentPointValidityCondition instanceof CheckTouchPoint) {
+
+            ProjectedDepthData data = ((CheckTouchPoint) currentPointValidityCondition).getData();
+            Vec3D depthPoint = data.depthPoints[startingPoint];
+//            System.out.println("SIZE: " + cc.size() + " Starting Point: " + depthPoint);
+
+            // Debug: Print out the connected component
+            for (int i = 0; i < cc.size(); i++) {
+                int offset = cc.get(i);
+                depthPoint = data.depthPoints[offset];
+//                System.out.println("CC(" + currentCompo + ")/Depth Point (" + i + "): " + depthPoint);
+            }
+        }
+
         return cc;
     }
 
@@ -145,7 +173,8 @@ public abstract class TouchDetection {
         }
 
         if (recLevel == calib.getMaximumRecursion()) {
-            addPointInConnectedComponent(neighbourList, currentPoint);
+            // TEST: Do not add latest level
+//            addPointInConnectedComponent(neighbourList, currentPoint);
             return neighbourList;
         }
 
@@ -182,7 +211,7 @@ public abstract class TouchDetection {
                     // Remove If present -> it might not be the case often. 
 //                    toVisit.remove(offset);
                     addPointInConnectedComponent(neighbourList, offset);
-                    neighbourList.add((Integer) offset);
+//                    neighbourList.add((Integer) offset);
 
                     if (isBorderY || isBorderX) {
                         ConnectedComponent subNeighbours = findNeighboursRec(offset, recLevel + 1, i, j);
@@ -243,5 +272,4 @@ public abstract class TouchDetection {
         return calib.getTrackingMaxDistance();
     }
 
-    
 }

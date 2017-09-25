@@ -23,6 +23,7 @@ package fr.inria.papart.multitouch.detection;
 import fr.inria.papart.calibration.files.PlaneCalibration;
 import fr.inria.papart.depthcam.devices.ProjectedDepthData;
 import fr.inria.papart.depthcam.analysis.DepthAnalysis;
+import static fr.inria.papart.depthcam.analysis.DepthAnalysis.INVALID_POINT;
 import fr.inria.papart.multitouch.ConnectedComponent;
 import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
 import fr.inria.papart.utils.WithSize;
@@ -102,7 +103,8 @@ public abstract class TouchDetectionDepth extends TouchDetection {
         for (ConnectedComponent connectedComponent : connectedComponents) {
 
             float height = connectedComponent.getHeight(depthData.projectedPoints);
-            boolean isFinger = checkNormalFinger(connectedComponent);
+            boolean isFinger = true;
+//            boolean isFinger = checkNormalFinger(connectedComponent);
             if (connectedComponent.size() < calib.getMinimumComponentSize()
                     || height < calib.getMinimumHeight()
                     || !isFinger) {
@@ -146,7 +148,7 @@ public abstract class TouchDetectionDepth extends TouchDetection {
     @Override
     protected TrackedDepthPoint createTouchPoint(ConnectedComponent connectedComponent) {
 
-        filterTips(connectedComponent);
+//        filterTips(connectedComponent);
 
         Vec3D meanProj = connectedComponent.getMean(depthData.projectedPoints);
         Vec3D meanKinect = connectedComponent.getMean(depthData.depthPoints);
@@ -197,12 +199,18 @@ public abstract class TouchDetectionDepth extends TouchDetection {
 
     public class CheckTouchPoint implements PointValidityCondition {
 
+        public ProjectedDepthData getData(){
+            return depthData;
+        }
+        
         @Override
         public boolean checkPoint(int offset, int currentPoint) {
 //            float distanceToCurrent = depthData.depthPoints[offset].distanceTo(depthData.depthPoints[currentPoint]);
 
             return !assignedPoints[offset] // not assigned  
                     && depthData.validPointsMask[offset] // is valid
+//                    && depthData.depthPoints[offset] != INVALID_POINT // is valid
+//                    && depthData.depthPoints[offset].distanceTo(INVALID_POINT) >= 0.01f //  TODO WHY invalidpoints here.
                     && DepthAnalysis.isValidPoint(depthData.depthPoints[offset])
                     && depthData.depthPoints[offset].distanceTo(depthData.depthPoints[currentPoint]) < calib.getMaximumDistance();
         }

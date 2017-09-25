@@ -97,7 +97,7 @@ public class ProjectedDepthData extends DepthData {
 
     protected void fillDepthDataElement(DepthDataElementProjected ddek, int i) {
         super.fillDepthDataElement(ddek, i);
-        ddek.projectedPoint = projectedPoints[i];
+        ddek.projectedPoint = projectedPoints[i].copy();
         ddek.touchAttribute = touchAttributes[i];
         ddek.validPoint3D = validPointsMask3D[i];
     }

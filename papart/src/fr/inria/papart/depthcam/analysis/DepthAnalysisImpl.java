@@ -199,17 +199,15 @@ public class DepthAnalysisImpl extends DepthAnalysis {
 //        doForEachPoint(skip2D, new Select2DPointPlaneProjection());
 //        doForEachPoint(skip3D, new Select3DPointPlaneProjection());
         // Normal computing is back.
-        try {
             depthData.connexity.setPrecision(skip2D);
             //        doForEachValid3DPoint(skip3D, new ComputeNormal());
 //            depthData.connexity.computeAll();
-            doForEachPoint(skip2D, new ComputeNormal());
-        } catch (Exception e) {
-            System.out.println("EXception " + e);
-            e.printStackTrace();
-        }
 
-        doForEachPoint(skip2D, new Select2DPointPlaneProjectionNormal());
+
+            doForEachPoint(skip2D, new ComputeNormal());
+
+//        doForEachPoint(skip2D, new Select2DPointPlaneProjectionNormal());
+        doForEachPoint(skip2D, new Select2DPointPlaneProjection());
         doForEachPoint(skip2D, new SetNormalRelative());
 
         doForEachPoint(skip3D, new Select3DPointPlaneProjection()); // Normal useless here

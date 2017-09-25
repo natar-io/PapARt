@@ -29,6 +29,8 @@ import toxi.geom.Vec3D;
  */
 public class ConnectedComponent extends ArrayList<Integer> {
 
+    public static final ConnectedComponent INVALID_COMPONENT = new ConnectedComponent();
+    
     private int id;
 
     public int getId() {

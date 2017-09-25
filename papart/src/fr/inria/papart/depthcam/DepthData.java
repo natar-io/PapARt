@@ -92,8 +92,10 @@ public class DepthData {
 
     protected void fillDepthDataElement(DepthDataElement dde, int i) {
         dde.pointColor = pointColors[i];
-        dde.depthPoint = depthPoints[i];
-        dde.normal = normals[i];
+        dde.depthPoint = depthPoints[i].copy();
+        if (dde.normal != null) {
+            dde.normal = normals[i].copy();
+        }
         dde.validPoint = validPointsMask[i];
         dde.neighbourSum = connexity.connexitySum[i];
         dde.neighbours = connexity.connexity[i];
