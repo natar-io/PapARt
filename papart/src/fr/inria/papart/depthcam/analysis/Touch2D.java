@@ -6,6 +6,7 @@
 package fr.inria.papart.depthcam.analysis;
 
 import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
+import fr.inria.papart.depthcam.DepthData;
 import fr.inria.papart.depthcam.PixelOffset;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.isInside;
 import fr.inria.papart.depthcam.devices.ProjectedDepthData;
@@ -17,6 +18,9 @@ import toxi.geom.Vec3D;
  * @author Jeremy Laviole
  */
 public class Touch2D extends DepthRecognition{
+
+    private DepthData.DepthSelection selection;
+
 
     public Touch2D(DepthAnalysisImpl depthAnalysis) {
         super(depthAnalysis);
@@ -36,7 +40,8 @@ public class Touch2D extends DepthRecognition{
      */
     public void find2DTouch(PlaneAndProjectionCalibration calib, int skip2D) {
         // TODO: ensure that this has been computed.
-         depthData.clearValidPoints();
+//         depthData.clearValidPoints();
+            selection = depthData.createSelection();
          depthData.planeAndProjectionCalibration = calib;
          depthAnalysis.doForEachPoint(skip2D, new Select2DPlaneProjection());
 //        doForEachPoint(skip2D, new Select2DPointPlaneProjection());
@@ -54,8 +59,8 @@ public class Touch2D extends DepthRecognition{
                 depthData.planeAndProjectionCalibration.project(p, depthData.projectedPoints[px.offset]);
 
                 if (isInside(depthData.projectedPoints[px.offset], 0.f, 1.f, 0.0f)) {
-                    depthData.validPointsMask[px.offset] = true;
-                    depthData.validPointsList.add(px.offset);
+                    selection.validPointsMask[px.offset] = true;
+                    selection.validPointsList.add(px.offset);
                 }
             }
         }
@@ -71,8 +76,8 @@ public class Touch2D extends DepthRecognition{
 //                depthData.projectedPoints[px.offset] = projected;
                 depthData.planeAndProjectionCalibration.project(p, depthData.projectedPoints[px.offset]);
 //                if (isInside(depthData.projectedPoints[px.offset], 0.f, 1.f, 0.0f)) {
-                depthData.validPointsMask[px.offset] = true;
-                depthData.validPointsList.add(px.offset);
+                selection.validPointsMask[px.offset] = true;
+                selection.validPointsList.add(px.offset);
 //                }
             }
         }
@@ -93,8 +98,8 @@ public class Touch2D extends DepthRecognition{
                 // TODO: tweak the 0.3f
                 if (isInside(depthData.projectedPoints[px.offset], 0.f, 1.f, 0.0f)
                         && normalDistance > 0.3f) {
-                    depthData.validPointsMask[px.offset] = true;
-                    depthData.validPointsList.add(px.offset);
+                    selection.validPointsMask[px.offset] = true;
+                    selection.validPointsList.add(px.offset);
                 }
             }
         }
@@ -112,8 +117,8 @@ public class Touch2D extends DepthRecognition{
                 depthData.planeAndProjectionCalibration.project(p, depthData.projectedPoints[px.offset]);
 
                 if (isInside(depthData.projectedPoints[px.offset], 0.f, 1.f, 0.0f)) {
-                    depthData.validPointsMask[px.offset] = true;
-                    depthData.validPointsList.add(px.offset);
+                    selection.validPointsMask[px.offset] = true;
+                    selection.validPointsList.add(px.offset);
                 }
             }
         }
@@ -125,8 +130,8 @@ public class Touch2D extends DepthRecognition{
         @Override
         public void execute(Vec3D p, PixelOffset px) {
             if (depthData.planeCalibration.hasGoodOrientation(p)) {
-                depthData.validPointsMask[px.offset] = true;
-                depthData.validPointsList.add(px.offset);
+                selection.validPointsMask[px.offset] = true;
+                selection.validPointsList.add(px.offset);
             }
         }
     }
@@ -136,8 +141,8 @@ public class Touch2D extends DepthRecognition{
         @Override
         public void execute(Vec3D p, PixelOffset px) {
             if (depthData.planeCalibration.hasGoodOrientationAndDistance(p)) {
-                depthData.validPointsMask[px.offset] = true;
-                depthData.validPointsList.add(px.offset);
+                selection.validPointsMask[px.offset] = true;
+                selection.validPointsList.add(px.offset);
             }
         }
     }
@@ -154,12 +159,15 @@ public class Touch2D extends DepthRecognition{
 
             // TODO: Find how to select the points... 
             if (projected.z > 10 && projected.x > 0 && projected.y > 0) {
-                depthData.validPointsMask[px.offset] = true;
-                depthData.validPointsList.add(px.offset);
+                selection.validPointsMask[px.offset] = true;
+                selection.validPointsList.add(px.offset);
             }
         }
     }
 
     
+    public DepthData.DepthSelection getSelection() {
+        return selection;
+    }
     
 }

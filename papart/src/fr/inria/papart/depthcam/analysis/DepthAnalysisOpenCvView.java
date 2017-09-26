@@ -81,7 +81,7 @@ public class DepthAnalysisOpenCvView extends DepthAnalysisImpl {
 
         @Override
         public void execute(Vec3D p, PixelOffset px) {
-            depthData.validPointsMask[px.offset] = true;
+//            depthData.validPointsMask[px.offset] = true;
             int outputOffset = px.offset * 3;
             int colorOffset = depthCameraDevice.findColorOffset(p) * 3;
             validPointsRaw[outputOffset + 2] = colorRaw[colorOffset + 2];

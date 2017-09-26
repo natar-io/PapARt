@@ -70,7 +70,6 @@ public class ProjectedDepthData extends DepthData {
         }
         
         touchAttributes = new TouchAttributes[size];
-        validPointsList = new ArrayList();
         connexity = new Connexity(depthPoints, source.getWidth(), source.getHeight());
 //        connexity = new Connexity(projectedPoints, width, height);
     }
@@ -91,7 +90,6 @@ public class ProjectedDepthData extends DepthData {
     @Override
     public void clear() {
         clearDepth();
-        clearValidPoints();
         clearColor();
         connexity.reset();
         Arrays.fill(touchAttributes, TouchAttributes.NO_ATTRIBUTES);

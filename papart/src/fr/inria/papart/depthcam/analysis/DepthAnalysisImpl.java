@@ -21,6 +21,7 @@
 package fr.inria.papart.depthcam.analysis;
 
 import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
+import fr.inria.papart.depthcam.DepthData;
 import fr.inria.papart.depthcam.PixelOffset;
 import fr.inria.papart.depthcam.TouchAttributes;
 import fr.inria.papart.depthcam.devices.Kinect360;
@@ -241,7 +242,8 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         }
     }
 
-    protected void doForEachValidPoint(int precision, DepthPointManiplation manip) {
+    protected void doForEachValidPoint(int precision, DepthPointManiplation manip, 
+            DepthData.DepthSelection selection) {
         if (precision <= 0) {
             return;
         }
@@ -250,7 +252,7 @@ public class DepthAnalysisImpl extends DepthAnalysis {
 
         for (PixelOffset px : pixels) {
             Vec3D pKinect = depthData.depthPoints[px.offset];
-            if (pKinect != INVALID_POINT && depthData.validPointsMask[px.offset] == true) {
+            if (pKinect != INVALID_POINT && selection.validPointsMask[px.offset] == true) {
                 manip.execute(pKinect, px);
             }
         }
@@ -392,29 +394,29 @@ public class DepthAnalysisImpl extends DepthAnalysis {
      /** Experimental Class to find hands (old).
      * 
      */
-    class SelectPlaneTouchHand implements DepthPointManiplation {
-
-        @Override
-        public void execute(Vec3D p, PixelOffset px) {
-
-            boolean overTouch = depthData.planeAndProjectionCalibration.hasGoodOrientation(p);
-            boolean underTouch = depthData.planeAndProjectionCalibration.isUnderPlane(p);
-            boolean touchSurface = depthData.planeAndProjectionCalibration.hasGoodOrientationAndDistance(p);
-
-            Vec3D projected = depthData.planeAndProjectionCalibration.project(p);
-
-            if (isInside(projected, 0.f, 1.f, 0.0f)) {
-
-                depthData.projectedPoints[px.offset] = projected;
-                depthData.touchAttributes[px.offset] = new TouchAttributes(touchSurface, underTouch, overTouch);
-                depthData.validPointsMask[px.offset] = touchSurface;
-
-                if (touchSurface) {
-                    depthData.validPointsList.add(px.offset);
-                }
-            }
-        }
-    }
+//    class SelectPlaneTouchHand implements DepthPointManiplation {
+//
+//        @Override
+//        public void execute(Vec3D p, PixelOffset px) {
+//
+//            boolean overTouch = depthData.planeAndProjectionCalibration.hasGoodOrientation(p);
+//            boolean underTouch = depthData.planeAndProjectionCalibration.isUnderPlane(p);
+//            boolean touchSurface = depthData.planeAndProjectionCalibration.hasGoodOrientationAndDistance(p);
+//
+//            Vec3D projected = depthData.planeAndProjectionCalibration.project(p);
+//
+//            if (isInside(projected, 0.f, 1.f, 0.0f)) {
+//
+//                depthData.projectedPoints[px.offset] = projected;
+//                depthData.touchAttributes[px.offset] = new TouchAttributes(touchSurface, underTouch, overTouch);
+//                depthData.validPointsMask[px.offset] = touchSurface;
+//
+//                if (touchSurface) {
+//                    depthData.validPointsList.add(px.offset);
+//                }
+//            }
+//        }
+//    }
 
    
     // TODO: What about this image Data ?

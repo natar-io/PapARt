@@ -52,51 +52,7 @@ public abstract class TouchDetectionDepth extends TouchDetection {
 
     public abstract ArrayList<TrackedDepthPoint> compute(ProjectedDepthData dData);
 
-    protected boolean hasCCToFind() {
-        return !depthData.validPointsList.isEmpty();
-    }
-
-    /** WARNING: Experimental, to clean (delete) soon.
-     * 
-     * @param cc
-     * @return 
-     */
-    protected boolean checkNormalFinger(ConnectedComponent cc) {
-        boolean highX = false;
-        boolean highZ = false;
-        boolean highY = false;
-
-        float filter = 0.25f;
-
-        int xOffset = 0;
-        int yOffset = 0;
-        int zOffset = 0;
-        for (Integer offset : cc) {
-            Vec3D normal = depthData.normals[offset];
-            if (normal != null) {
-                if (normal.x > filter) {
-                    highX = true;
-                    xOffset = offset;
-                }
-                if (normal.y > filter) {
-                    highY = true;
-                    yOffset = offset;
-
-                }
-                if (normal.z > filter) {
-                    highZ = true;
-                    zOffset = offset;
-                }
-            }
-        }
-        if (xOffset != 0 && yOffset != 0 && zOffset != 0
-                && highX && highY && highZ) {
-            float d = depthData.depthPoints[xOffset].distanceTo(depthData.depthPoints[zOffset]);
-            return d < 20 && d > 3 && highX && highY && highZ;
-//        System.out.println(depthData.depthPoints[xOffset].distanceTo(depthData.depthPoints[zOffset]));
-        }
-        return highX && highY && highZ;
-    }
+    protected abstract boolean hasCCToFind(); 
 
 //    protected abstract void setSearchParameters();
     protected ArrayList<TrackedDepthPoint> createTouchPointsFrom(ArrayList<ConnectedComponent> connectedComponents) {
@@ -119,33 +75,6 @@ public abstract class TouchDetectionDepth extends TouchDetection {
         return touchPoints;
     }
 
-    /** WARNING: Experimental. 
-     * 
-     * 
-     */
-    protected void filterTips(ConnectedComponent connectedComponent) {
-
-        connectedComponent.getMean(depthData.projectedPoints);
-
-        ConnectedComponent out = new ConnectedComponent();
-        for (Integer i : connectedComponent) {
-            Vec3D depthPoint = depthData.depthPoints[i];
-
-            // Look left from the point  : 10mm
-            Vec3D left = depthPoint.copy();
-            left.add(-10, 0, 0);
-            int offsetOut = depthData.projectiveDevice.worldToPixel(left);
-//            int x = offsetOut % depthData.projectiveDevice.getWidth(); 
-//            int y = offsetOut / depthData.projectiveDevice.getWidth();
-
-            // TODO: check bounds.
-            if (depthData.validPointsMask[offsetOut]) {
-                out.add(i);
-            }
-        }
-        connectedComponent.clear();
-        connectedComponent.addAll(out);
-    }
 
     @Override
     protected TrackedDepthPoint createTouchPoint(ConnectedComponent connectedComponent) {

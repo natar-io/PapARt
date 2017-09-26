@@ -65,7 +65,7 @@ public class Simple3D extends TouchDetectionDepth {
             float distanceToCurrent = depthData.depthPoints[offset].distanceTo(depthData.depthPoints[currentPoint]);
 
             return !assignedPoints[offset] // not assigned  
-                    && depthData.validPointsMask[offset] // is valid
+                    && touchRecognition.getSelection().validPointsMask[offset] // is valid, necessary ?
                     && (depthData.depthPoints[offset] != DepthAnalysis.INVALID_POINT) // not invalid point (invalid depth)
                     && distanceToCurrent < calib.getMaximumDistance();
         }
@@ -88,13 +88,13 @@ public class Simple3D extends TouchDetectionDepth {
 
     @Override
     public boolean hasCCToFind() {
-        return !depthData.validPointsList.isEmpty();
+        return !touchRecognition.getSelection().validPointsList.isEmpty();
     }
 
     @Override
     protected void setSearchParameters() {
         this.toVisit.clear();
-        this.toVisit.addAll(depthData.validPointsList);
+        this.toVisit.addAll(touchRecognition.getSelection().validPointsList);
 
 //        int firstPoint = toVisit.iterator().next();
 //        setPrecisionFrom(firstPoint);

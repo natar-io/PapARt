@@ -231,9 +231,9 @@ public abstract class DepthAnalysis implements WithSize {
         }
     }
 
-    public boolean[] getValidPoints() {
-        return depthData.validPointsMask;
-    }
+//    public boolean[] getValidPoints() {
+//        return depthData.validPointsMask;
+//    }
 
     public int[] getConnexity() {
         return this.connexity;

@@ -45,6 +45,7 @@ public class Simple2D extends TouchDetectionDepth {
     }
 
     public class CheckTouchPoint implements PointValidityCondition {
+
         private int inititalPoint;
 
         public void setInitalPoint(int offset) {
@@ -100,9 +101,14 @@ public class Simple2D extends TouchDetectionDepth {
     }
 
     @Override
+    public boolean hasCCToFind() {
+        return !touchRecognition.getSelection().validPointsList.isEmpty();
+    }
+
+    @Override
     protected void setSearchParameters() {
         this.toVisit.clear();
-        this.toVisit.addAll(depthData.validPointsList);
+        this.toVisit.addAll(touchRecognition.getSelection().validPointsList);
     }
 
 }

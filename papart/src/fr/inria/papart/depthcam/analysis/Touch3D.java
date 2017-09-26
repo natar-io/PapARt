@@ -6,6 +6,7 @@
 package fr.inria.papart.depthcam.analysis;
 
 import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
+import fr.inria.papart.depthcam.DepthData.DepthSelection;
 import fr.inria.papart.depthcam.PixelOffset;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.isInside;
 import fr.inria.papart.depthcam.devices.ProjectedDepthData;
@@ -16,6 +17,9 @@ import toxi.geom.Vec3D;
  * @author Jeremy Laviole
  */
 public class Touch3D extends DepthRecognition {
+
+    private DepthSelection selection;
+
 
     public Touch3D(DepthAnalysisImpl depthAnalysis) {
         super(depthAnalysis);
@@ -35,7 +39,8 @@ public class Touch3D extends DepthRecognition {
      */
     public void find3DTouch(PlaneAndProjectionCalibration calib, int skip3D) {
         // TODO: ensure that this has been computed.
-        depthData.clearValidPoints();
+//        depthData.clearValidPoints();
+        selection = depthData.createSelection();
         depthData.planeAndProjectionCalibration = calib;
         depthAnalysis.doForEachPoint(skip3D, new Select3DPlaneProjection());
 //        doForEachPoint(skip3D, new Select3DPointPlaneProjection()); 
@@ -52,8 +57,8 @@ public class Touch3D extends DepthRecognition {
                 depthData.planeAndProjectionCalibration.project(p, depthData.projectedPoints[px.offset]);
 
                 if (isInside(depthData.projectedPoints[px.offset], 0.f, 1.f, 0.1f)) {
-                    depthData.validPointsMask[px.offset] = true;
-                    depthData.validPointsList.add(px.offset);
+                    selection.validPointsMask[px.offset] = true;
+                    selection.validPointsList.add(px.offset);
                 }
             }
         }
@@ -69,10 +74,15 @@ public class Touch3D extends DepthRecognition {
 
                 depthData.planeAndProjectionCalibration.project(p, depthData.projectedPoints[px.offset]);
 
-                depthData.validPointsMask[px.offset] = true;
-                depthData.validPointsList.add(px.offset);
+                selection.validPointsMask[px.offset] = true;
+                selection.validPointsList.add(px.offset);
             }
         }
+    }
+    
+    
+    public DepthSelection getSelection() {
+        return selection;
     }
 
 }

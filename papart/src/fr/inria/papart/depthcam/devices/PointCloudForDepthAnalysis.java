@@ -50,10 +50,15 @@ public class PointCloudForDepthAnalysis extends PointCloud implements PConstants
         this.depthAnalysis = depthAnalysis;
     }
 
-    public void updateWith(DepthAnalysisPImageView kinect) {
-        boolean[] valid = kinect.getValidPoints();
-        Vec3D[] points = kinect.getDepthPoints();
-        PImage colorsImg = kinect.getColouredDepthImage();
+    /**
+     * Warning: invalid points are also displayed. 
+     * @param depthAnalysis 
+     */
+    public void updateWith(DepthAnalysisPImageView depthAnalysis) {
+//        boolean[] valid = depthAnalysis.getValidPoints();
+
+        Vec3D[] points = depthAnalysis.getDepthPoints();
+        PImage colorsImg = depthAnalysis.getColouredDepthImage();
 
         nbVertices = 0;
         nbColors = 0;
@@ -66,7 +71,7 @@ public class PointCloudForDepthAnalysis extends PointCloud implements PConstants
 
                 int i = x + y * depthAnalysis.getWidth();
                 
-                if (valid[i]) {
+//                if (valid[i]) {
                     Vec3D p = points[i];
                     int c = colorsImg.pixels[i];
 
@@ -81,7 +86,7 @@ public class PointCloudForDepthAnalysis extends PointCloud implements PConstants
 
                     colorsJava[nbColors++] = c2;
                     // Think about dividing the color intensity by 255 in the shader...
-                }
+//                }
 
             }
         }
@@ -93,9 +98,8 @@ public class PointCloudForDepthAnalysis extends PointCloud implements PConstants
         colorsNative.put(colorsJava, 0, nbColors);
     }
 
-    public void updateWithNormalColors(DepthAnalysisPImageView kinect, ArrayList<TrackedDepthPoint> touchs) {
-        boolean[] valid = kinect.getValidPoints();
-        Vec3D[] points = kinect.getDepthPoints();
+    public void updateWithNormalColors(DepthAnalysisImpl depthAnalysis, ArrayList<TrackedDepthPoint> touchs) {
+        Vec3D[] points = depthAnalysis.getDepthPoints();
 
         nbVertices = 0;
         nbColors = 0;
@@ -142,10 +146,8 @@ public class PointCloudForDepthAnalysis extends PointCloud implements PConstants
         colorsNative.put(colorsJava, 0, nbColors);
     }
     
-    public void updateWithIDColors(DepthAnalysisPImageView kinect, ArrayList<TrackedDepthPoint> touchs) {
-        boolean[] valid = kinect.getValidPoints();
+    public void updateWithIDColors(DepthAnalysisImpl kinect, ArrayList<TrackedDepthPoint> touchs) {
         Vec3D[] points = kinect.getDepthPoints();
-        PImage colorsImg = kinect.getColouredDepthImage();
 
         nbVertices = 0;
         nbColors = 0;

@@ -105,23 +105,16 @@ public class DepthTouchInput extends TouchInput {
             IplImage depthImage;
             IplImage colImage = null;
 
-            // TODO: get the main device ?
             if (kinectDevice.getMainCamera().isUseColor()) {
                 colImage = kinectDevice.getColorCamera().getIplImage();
             }
             if (kinectDevice.getMainCamera().isUseIR()) {
                 colImage = kinectDevice.getIRCamera().getIplImage();
             }
-//            if (kinectDevice.getMainCamera() != null) {
-//                colImage = kinectDevice.getMainCamera().getIplImage();
-//            } else {
-//                colImage = kinectDevice.getColorCamera().getIplImage();
-//            }
 
             depthImage = kinectDevice.getDepthCamera().getIplImage();
 
             if (depthImage == null) {
-//                 System.out.println("No Image. " + colImage + " " + depthImage);
                 return;
             }
 
@@ -138,8 +131,6 @@ public class DepthTouchInput extends TouchInput {
 
                 touchDetection2D.setCalibration(touchCalib2D);
                 touchDetection3D.setCalibration(touchCalib3D);
-                
-        
             }
 
             touch2DPrecision = touchDetection2D.getPrecision();
@@ -164,42 +155,6 @@ public class DepthTouchInput extends TouchInput {
                 }
             }
 
-//            if (touch2DPrecision > 0 && touch3DPrecision > 0) {
-//                depthAnalysis.updateMT(depthImage, colImage, planeAndProjCalibration, touch2DPrecision, touch3DPrecision);
-
-                //  Depth Computations 
-//                depthAnalysis.computeDepthAndNormals(depthImage, colImage, touch2DPrecision);
-//
-//                // TODO: This should be done automatically by  touchDetection2D
-//                touchDetection2D.setCurrentTime(parent.millis());
-//                touchDetection2D.findTouch(depthAnalysis, planeAndProjCalibration);
-//
-//                // Search for 2D slices over a plane
-////                depthAnalysis.find2DTouch(planeAndProjCalibration, touch2DPrecision);
-////
-////                // Formerly findAndTrack2D();
-////                // Generate a touch list from these points. 
-////                ArrayList<TrackedDepthPoint> newList; 
-////                newList = touchDetection2D.compute(depthAnalysis.getDepthData());
-////
-////                // Track the points and update the touchPoints2D variable.
-////                TouchPointTracker.trackPoints(touchDetection2D.getTouchPoints(), newList,
-////                        parent.millis());
-//                touchDetection3D.setCurrentTime(parent.millis());
-//                touchDetection3D.findTouch(depthAnalysis, planeAndProjCalibration);
-//
-////                findHands();
-//                testPCA();
-//            } else {
-//                if (touch2DPrecision > 0) {
-//                    depthAnalysis.updateMT2D(depthImage, colImage, planeAndProjCalibration, touch2DPrecision);
-//                    findAndTrack2D();
-//                }
-//                if (touch3DPrecision > 0) {
-//                    depthAnalysis.updateMT3D(depthImage, colImage, planeAndProjCalibration, touch3DPrecision);
-//                    findAndTrack3D();
-//                }
-//            }
         } catch (InterruptedException ex) {
             Logger.getLogger(DepthTouchInput.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();
@@ -473,78 +428,78 @@ public class DepthTouchInput extends TouchInput {
         return paperScreenCoord != NO_INTERSECTION;
     }
 
-    /**
-     * WARNING: To be deprecated soon.
-     *
-     * @param display
-     * @param screen
-     * @return
-     */
-    public ArrayList<DepthDataElementProjected> getDepthData() {
-        try {
-            depthDataSem.acquire();
-            ProjectedDepthData depthData = depthAnalysis.getDepthData();
-            ArrayList<DepthDataElementProjected> output = new ArrayList<>();
-            ArrayList<Integer> list = depthData.validPointsList3D;
-            for (Integer i : list) {
-                output.add(depthData.getElementKinect(i));
-            }
-            depthDataSem.release();
-            return output;
+//    /**
+//     * WARNING: To be deprecated soon.
+//     *
+//     * @param display
+//     * @param screen
+//     * @return
+//     */
+//    public ArrayList<DepthDataElementProjected> getDepthData() {
+//        try {
+//            depthDataSem.acquire();
+//            ProjectedDepthData depthData = depthAnalysis.getDepthData();
+//            ArrayList<DepthDataElementProjected> output = new ArrayList<>();
+//            ArrayList<Integer> list = depthData.validPointsList3D;
+//            for (Integer i : list) {
+//                output.add(depthData.getElementKinect(i));
+//            }
+//            depthDataSem.release();
+//            return output;
+//
+//        } catch (InterruptedException ex) {
+//            Logger.getLogger(DepthTouchInput.class
+//                    .getName()).log(Level.SEVERE, null, ex);
+//
+//            return null;
+//        }
+//    }
 
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DepthTouchInput.class
-                    .getName()).log(Level.SEVERE, null, ex);
-
-            return null;
-        }
-    }
-
-    // TODO: Do the same without the Display, use the extrinsics instead! 
-    // TODO: Do the same with DepthDataElement  instead of  DepthPoint ?
-    /**
-     * WARNING: To be deprecated soon.
-     *
-     * @param display
-     * @param screen
-     * @return
-     */
-    public ArrayList<DepthPoint> projectDepthData(ARDisplay display, Screen screen) {
-        ArrayList<DepthPoint> list = projectDepthData2D(display, screen);
-        list.addAll(projectDepthData3D(display, screen));
-        return list;
-    }
-
-    public ArrayList<DepthPoint> projectDepthData2D(ARDisplay display, Screen screen) {
-        return projectDepthDataXD(display, screen, true);
-    }
-
-    public ArrayList<DepthPoint> projectDepthData3D(ARDisplay display, Screen screen) {
-        return projectDepthDataXD(display, screen, false);
-    }
-
-    private ArrayList<DepthPoint> projectDepthDataXD(ARDisplay display, Screen screen, boolean is2D) {
-        try {
-            depthDataSem.acquire();
-            ProjectedDepthData depthData = depthAnalysis.getDepthData();
-            ArrayList<DepthPoint> projected = new ArrayList<DepthPoint>();
-            ArrayList<Integer> list = is2D ? depthData.validPointsList : depthData.validPointsList3D;
-            for (Integer i : list) {
-                DepthPoint depthPoint = tryCreateDepthPoint(display, screen, i);
-                if (depthPoint != null) {
-                    projected.add(depthPoint);
-                }
-            }
-            depthDataSem.release();
-            return projected;
-
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DepthTouchInput.class
-                    .getName()).log(Level.SEVERE, null, ex);
-
-            return null;
-        }
-    }
+//    // TODO: Do the same without the Display, use the extrinsics instead! 
+//    // TODO: Do the same with DepthDataElement  instead of  DepthPoint ?
+//    /**
+//     * WARNING: To be deprecated soon.
+//     *
+//     * @param display
+//     * @param screen
+//     * @return
+//     */
+//    public ArrayList<DepthPoint> projectDepthData(ARDisplay display, Screen screen) {
+//        ArrayList<DepthPoint> list = projectDepthData2D(display, screen);
+//        list.addAll(projectDepthData3D(display, screen));
+//        return list;
+//    }
+//
+//    public ArrayList<DepthPoint> projectDepthData2D(ARDisplay display, Screen screen) {
+//        return projectDepthDataXD(display, screen, true);
+//    }
+//
+//    public ArrayList<DepthPoint> projectDepthData3D(ARDisplay display, Screen screen) {
+//        return projectDepthDataXD(display, screen, false);
+//    }
+//
+//    private ArrayList<DepthPoint> projectDepthDataXD(ARDisplay display, Screen screen, boolean is2D) {
+//        try {
+//            depthDataSem.acquire();
+//            ProjectedDepthData depthData = depthAnalysis.getDepthData();
+//            ArrayList<DepthPoint> projected = new ArrayList<DepthPoint>();
+//            ArrayList<Integer> list = is2D ? depthData.validPointsList : depthData.validPointsList3D;
+//            for (Integer i : list) {
+//                DepthPoint depthPoint = tryCreateDepthPoint(display, screen, i);
+//                if (depthPoint != null) {
+//                    projected.add(depthPoint);
+//                }
+//            }
+//            depthDataSem.release();
+//            return projected;
+//
+//        } catch (InterruptedException ex) {
+//            Logger.getLogger(DepthTouchInput.class
+//                    .getName()).log(Level.SEVERE, null, ex);
+//
+//            return null;
+//        }
+//    }
 
     private DepthPoint tryCreateDepthPoint(ARDisplay display, Screen screen, int offset) {
         Vec3D projectedPt = depthAnalysis.getDepthData().projectedPoints[offset];
