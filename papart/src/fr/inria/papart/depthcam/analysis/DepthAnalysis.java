@@ -31,7 +31,7 @@ import toxi.geom.Vec3D;
  * TODO: Kinect - Kinect 4 Processing - Kinect OpenCV - Kinect Multi-Touch With
  * inheritance !
  *
- * @author jeremy
+ * @author Jeremy Laviole  - laviole@rea.lity.tech
  */
 public abstract class DepthAnalysis implements WithSize {
 
@@ -40,6 +40,8 @@ public abstract class DepthAnalysis implements WithSize {
 
     public static PApplet papplet;
     protected DepthComputation depthComputationMethod;
+    /**  Link to the depth data */
+    protected Object depthBuffer;
 
     public static final Vec3D INVALID_POINT = new Vec3D(0, 0, 0);
     public static final int INVALID_COLOR = -1;
@@ -48,20 +50,15 @@ public abstract class DepthAnalysis implements WithSize {
         return point.x != 0 && point.y != 0 && point.z != 0;
     }
 
-    public abstract void update(IplImage depth);
-
     /**
      * @param offset
      * @return the depth (float).
      */
     protected float getDepth(int offset) {
-        return depthComputationMethod.findDepth(offset);
+        return depthComputationMethod.findDepth(offset, depthBuffer);
     }
 
-    public interface DepthComputation {
-
-        public float findDepth(int offset);
-    }
+    
 
     public interface InvalidPointManiplation {
 

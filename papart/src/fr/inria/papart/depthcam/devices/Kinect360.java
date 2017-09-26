@@ -19,6 +19,7 @@
  */
 package fr.inria.papart.depthcam.devices;
 
+import fr.inria.papart.depthcam.analysis.DepthComputation;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.CameraFactory;

@@ -29,7 +29,10 @@ import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.depthcam.devices.KinectOne;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.INVALID_POINT;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.papplet;
+import fr.inria.papart.depthcam.devices.Kinect360Depth;
+import fr.inria.papart.depthcam.devices.KinectOneDepth;
 import fr.inria.papart.depthcam.devices.RealSense;
+import fr.inria.papart.depthcam.devices.RealSenseDepth;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.utils.MathUtils;
 import fr.inria.papart.utils.ARToolkitPlusUtils;
@@ -116,11 +119,11 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         // why not ?   (calib?)
         //-----
 //        initMemory();
-        updateCalibrations(depthCamera);
+        initWithCalibrations(depthCamera);
         // initThreadPool();
     }
 
-    public void updateCalibrations(DepthCameraDevice depthCamera) {
+    public void initWithCalibrations(DepthCameraDevice depthCamera) {
         depthCameraDevice = depthCamera;
         setDepthMethod();
         if (depthCamera.getMainCamera().isUseIR()) {
@@ -161,93 +164,32 @@ public class DepthAnalysisImpl extends DepthAnalysis {
     private void setDepthMethod() {
         if (depthCameraDevice instanceof Kinect360) {
             depthComputationMethod = new Kinect360Depth();
+            depthBuffer = this.depthRaw;
         }
         if (depthCameraDevice instanceof KinectOne) {
             depthComputationMethod = new KinectOneDepth();
+             depthBuffer = this.depthRaw;
         }
         if (depthCameraDevice instanceof RealSense) {
             if (((CameraRealSense) ((RealSense) depthCameraDevice).getMainCamera()).isStarted()) {
                 float depthScale = ((CameraRealSense) ((RealSense) depthCameraDevice).getMainCamera()).getDepthScale();
                 depthComputationMethod = new RealSenseDepth(depthScale);
+                depthBuffer = this.depthRawShortBuffer;
             }
         }
     }
 
-    @Deprecated
-    public void update(IplImage depth) {
-        update(depth, 1);
-    }
-
-    @Deprecated
-    public void update(opencv_core.IplImage depth, int skip) {
-        depthData.clearDepth();
-        updateRawDepth(depth);
-        computeDepthAndDo(skip, new DoNothing());
-    }
-
-    public void updateMT(opencv_core.IplImage depth, opencv_core.IplImage color, PlaneAndProjectionCalibration calib, int skip2D, int skip3D) {
+    public void computeDepthAndNormals(opencv_core.IplImage depth, opencv_core.IplImage color, int skip2D) {
         updateRawDepth(depth);
         // optimisation no Color. 
         //        updateRawColor(color);
         depthData.clear();
         depthData.timeStamp = papplet.millis();
-        depthData.planeAndProjectionCalibration = calib;
-
         computeDepthAndDo(skip2D, new DoNothing());
-//        computeDepthAndDo(skip2D, new Select2DPointPlaneProjection());
-
-//        doForEachPoint(skip2D, new Select2DPointPlaneProjection());
-//        doForEachPoint(skip3D, new Select3DPointPlaneProjection());
-        // Normal computing is back.
-            depthData.connexity.setPrecision(skip2D);
-            //        doForEachValid3DPoint(skip3D, new ComputeNormal());
-//            depthData.connexity.computeAll();
-
-
-            doForEachPoint(skip2D, new ComputeNormal());
-
-//        doForEachPoint(skip2D, new Select2DPointPlaneProjectionNormal());
-        doForEachPoint(skip2D, new Select2DPointPlaneProjection());
-//        doForEachPoint(skip2D, new SetNormalRelative());
-
-        doForEachPoint(skip3D, new Select3DPointPlaneProjection()); // Normal useless here
-//        doForEachPoint(skip2D, new SetImageData());
-        // Optimisation no Color
-        // doForEachValidPoint(skip2D, new SetImageData());
-        // doForEachValid3DPoint(skip3D, new SetImageData());
+        depthData.connexity.setPrecision(skip2D);
+        doForEachPoint(skip2D, new ComputeNormal());
     }
-
-    public void updateMT2D(opencv_core.IplImage depth, opencv_core.IplImage color, PlaneAndProjectionCalibration calib, int skip) {
-        updateRawDepth(depth);
-
-        // TechFest Hacks
-//        updateRawColor(color);
-        depthData.clear();
-//        depthData.clearDepth();
-//        depthData.clear2D();
-//        depthData.clearColor();
-        depthData.timeStamp = papplet.millis();
-        depthData.planeAndProjectionCalibration = calib;
-        computeDepthAndDo(skip, new Select2DPointPlaneProjection());
-
-        // TechFest Hacks
-//        doForEachValidPoint(skip, new SetImageData());
-    }
-
-    public void updateMT3D(opencv_core.IplImage depth, opencv_core.IplImage color, PlaneAndProjectionCalibration calib, int skip) {
-        updateRawDepth(depth);
-        // TechFest Hack
-//        updateRawColor(color);
-        depthData.clear();
-//        depthData.clearDepth();
-//        depthData.clear3D();
-//        depthData.clearColor();
-        depthData.timeStamp = papplet.millis();
-        depthData.planeAndProjectionCalibration = calib;
-        computeDepthAndDo(skip, new Select3DPointPlaneProjection());
-//        doForEachValidPoint(skip, new SetImageData());
-    }
-
+    
     public void computeDepthAndDo(int precision, DepthPointManiplation manip) {
         PixelList pixels = new PixelList(precision);
 
@@ -314,20 +256,6 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         }
     }
 
-    protected void doForEachValid3DPoint(int precision, DepthPointManiplation manip) {
-        if (precision <= 0) {
-            return;
-        }
-        PixelList pixels = new PixelList(precision);
-
-        for (PixelOffset px : pixels) {
-            Vec3D pKinect = depthData.depthPoints[px.offset];
-            if (pKinect != INVALID_POINT && depthData.validPointsMask3D[px.offset] == true) {
-                manip.execute(pKinect, px);
-            }
-        }
-    }
-
     public PVector findDepthAtRGB(PVector v) {
         return findDepthAtRGB(v.x, v.y, v.z);
     }
@@ -358,6 +286,7 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         if (getDepthCameraDevice().type() == Camera.Type.REALSENSE) {
             depthRawBuffer = depthImage.getByteBuffer();
             depthRawShortBuffer = depthRawBuffer.asShortBuffer();
+            depthBuffer = this.depthRawShortBuffer;
         } else {
             depthImage.getByteBuffer().get(depthRaw);
         }
@@ -373,65 +302,9 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         this.farThreshold = far;
     }
 
-    class Select2DPointPlaneProjection implements DepthPointManiplation {
-
-        @Override
-        public void execute(Vec3D p, PixelOffset px) {
-            if (depthData.planeAndProjectionCalibration.hasGoodOrientationAndDistance(p)) {
-
-//                Vec3D projected = depthData.planeAndProjectionCalibration.project(p);
-//                depthData.projectedPoints[px.offset] = projected;
-                depthData.planeAndProjectionCalibration.project(p, depthData.projectedPoints[px.offset]);
-
-                if (isInside(depthData.projectedPoints[px.offset], 0.f, 1.f, 0.0f)) {
-                    depthData.validPointsMask[px.offset] = true;
-                    depthData.validPointsList.add(px.offset);
-                }
-            }
-        }
-    }
-
-    class Select2DPointPlaneProjectionNormal implements DepthPointManiplation {
-
-        @Override
-        public void execute(Vec3D p, PixelOffset px) {
-            if (depthData.planeAndProjectionCalibration.hasGoodOrientationAndDistance(p)) {
-
-//                System.out.println("Distance " + (depthData.planeAndProjectionCalibration.getPlane().normal).distanceTo(depthData.normals[px.offset]));
-                float normalDistance = (depthData.planeAndProjectionCalibration.getPlane().normal).distanceTo(depthData.normals[px.offset]);
-//                Vec3D projected = depthData.planeAndProjectionCalibration.project(p);
-//                depthData.projectedPoints[px.offset] = projected;
-                depthData.planeAndProjectionCalibration.project(p, depthData.projectedPoints[px.offset]);
-
-                // TODO: tweak the 0.3f
-                if (isInside(depthData.projectedPoints[px.offset], 0.f, 1.f, 0.0f)
-                        && normalDistance > 0.3f) {
-                    depthData.validPointsMask[px.offset] = true;
-                    depthData.validPointsList.add(px.offset);
-                }
-            }
-        }
-    }
-
-    class Select2DPointPlaneProjectionSR300Error implements DepthPointManiplation {
-
-        @Override
-        public void execute(Vec3D p, PixelOffset px) {
-            float error = Math.abs(p.x / 50f) + p.z / 400f;
-
-            if (depthData.planeAndProjectionCalibration.hasGoodOrientationAndDistance(p, error)) {
-//                Vec3D projected = depthData.planeAndProjectionCalibration.project(p);
-//                depthData.projectedPoints[px.offset] = projected;
-                depthData.planeAndProjectionCalibration.project(p, depthData.projectedPoints[px.offset]);
-
-                if (isInside(depthData.projectedPoints[px.offset], 0.f, 1.f, 0.0f)) {
-                    depthData.validPointsMask[px.offset] = true;
-                    depthData.validPointsList.add(px.offset);
-                }
-            }
-        }
-    }
-
+    /** Experimental Class to filter depth points.
+     * 
+     */
     class TimeFilterDepth implements DepthPointManiplation {
 
         private final int frameNumber;
@@ -491,6 +364,9 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         }
     }
 
+    /** Experimental Class to filter handle SR300 distorsions.
+     * 
+     */
     class UndistortSR300Depth implements DepthPointManiplation {
 
         @Override
@@ -513,6 +389,9 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         }
     }
 
+     /** Experimental Class to find hands (old).
+     * 
+     */
     class SelectPlaneTouchHand implements DepthPointManiplation {
 
         @Override
@@ -537,64 +416,8 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         }
     }
 
-    class Select2DPointOverPlane implements DepthPointManiplation {
-
-        @Override
-        public void execute(Vec3D p, PixelOffset px) {
-            if (depthData.planeCalibration.hasGoodOrientation(p)) {
-                depthData.validPointsMask[px.offset] = true;
-                depthData.validPointsList.add(px.offset);
-            }
-        }
-    }
-
-    class Select2DPointOverPlaneDist implements DepthPointManiplation {
-
-        @Override
-        public void execute(Vec3D p, PixelOffset px) {
-            if (depthData.planeCalibration.hasGoodOrientationAndDistance(p)) {
-                depthData.validPointsMask[px.offset] = true;
-                depthData.validPointsList.add(px.offset);
-            }
-        }
-    }
-
-    class Select2DPointCalibratedHomography implements DepthPointManiplation {
-
-        @Override
-        public void execute(Vec3D p, PixelOffset px) {
-
-            PVector projected = new PVector();
-            PVector init = new PVector(p.x, p.y, p.z);
-
-            depthData.homographyCalibration.getHomographyInv().mult(init, projected);
-
-            // TODO: Find how to select the points... 
-            if (projected.z > 10 && projected.x > 0 && projected.y > 0) {
-                depthData.validPointsMask[px.offset] = true;
-                depthData.validPointsList.add(px.offset);
-            }
-        }
-    }
-
-    class Select3DPointPlaneProjection implements DepthPointManiplation {
-
-        @Override
-        public void execute(Vec3D p, PixelOffset px) {
-            if (depthData.planeAndProjectionCalibration.hasGoodOrientation(p)) {
-//                Vec3D projected = depthData.planeAndProjectionCalibration.project(p);
-//                depthData.projectedPoints[px.offset] = projected;
-
-                depthData.planeAndProjectionCalibration.project(p, depthData.projectedPoints[px.offset]);
-
-                if (isInside(depthData.projectedPoints[px.offset], 0.f, 1.f, 0.1f)) {
-                    depthData.validPointsMask3D[px.offset] = true;
-                    depthData.validPointsList3D.add(px.offset);
-                }
-            }
-        }
-    }
-
+   
+    // TODO: What about this image Data ?
     class SetImageData implements DepthPointManiplation {
 
         @Override
@@ -614,7 +437,6 @@ public class DepthAnalysisImpl extends DepthAnalysis {
 
     // TODO: array ? or what instead ?
     public class PixelList implements Iterable<PixelOffset> {
-
         int precision = 1;
         int begin = 0;
         int end;
@@ -745,45 +567,6 @@ public class DepthAnalysisImpl extends DepthAnalysis {
             return null;
         }
 
-    }
-
-    class Kinect360Depth implements DepthComputation {
-
-        @Override
-        public float findDepth(int offset) {
-            float d = (depthRaw[offset * 2] & 0xFF) << 8
-                    | (depthRaw[offset * 2 + 1] & 0xFF);
-
-            return d;
-        }
-    }
-
-    public static final float KINECT_ONE_DEPTH_RATIO = 10f;
-
-    class KinectOneDepth implements DepthComputation {
-
-        @Override
-        public float findDepth(int offset) {
-            float d = (depthRaw[offset * 3 + 1] & 0xFF) * 256
-                    + (depthRaw[offset * 3] & 0xFF);
-
-            return d / KINECT_ONE_DEPTH_RATIO; // / 65535f * 10000f;
-        }
-    }
-
-    class RealSenseDepth implements DepthComputation {
-
-        private float depthRatio;
-
-        public RealSenseDepth(float depthRatio) {
-            this.depthRatio = depthRatio;
-        }
-
-        @Override
-        public float findDepth(int offset) {
-            float d = depthRawShortBuffer.get(offset) * depthRatio * 1000f;
-            return d;
-        }
     }
 
     public void undistortRGB(opencv_core.IplImage rgb, opencv_core.IplImage out) {

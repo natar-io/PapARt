@@ -24,6 +24,7 @@ import fr.inria.papart.calibration.files.PlaneCalibration;
 import fr.inria.papart.depthcam.devices.ProjectedDepthData;
 import fr.inria.papart.depthcam.analysis.DepthAnalysis;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.INVALID_POINT;
+import fr.inria.papart.depthcam.analysis.DepthAnalysisImpl;
 import fr.inria.papart.multitouch.ConnectedComponent;
 import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
 import fr.inria.papart.utils.WithSize;
@@ -41,17 +42,12 @@ public abstract class TouchDetectionDepth extends TouchDetection {
 
 // set by calling function
     protected ProjectedDepthData depthData;
+    protected final ArrayList<TrackedDepthPoint> touchPoints = new ArrayList<>();
+    protected DepthAnalysisImpl depthAnalysis;
 
-    public ProjectedDepthData getDepthData() {
-        return depthData;
-    }
-
-    public void setDepthData(ProjectedDepthData depthData) {
-        this.depthData = depthData;
-    }
-
-    public TouchDetectionDepth(WithSize imgSize) {
-        super(imgSize);
+    public TouchDetectionDepth(DepthAnalysisImpl depthAnalysis) {
+        super(depthAnalysis);
+        this.depthAnalysis = depthAnalysis;
     }
 
     public abstract ArrayList<TrackedDepthPoint> compute(ProjectedDepthData dData);
@@ -60,6 +56,11 @@ public abstract class TouchDetectionDepth extends TouchDetection {
         return !depthData.validPointsList.isEmpty();
     }
 
+    /** WARNING: Experimental, to clean (delete) soon.
+     * 
+     * @param cc
+     * @return 
+     */
     protected boolean checkNormalFinger(ConnectedComponent cc) {
         boolean highX = false;
         boolean highZ = false;
@@ -118,8 +119,9 @@ public abstract class TouchDetectionDepth extends TouchDetection {
         return touchPoints;
     }
 
-    /**
-     * Experimental
+    /** WARNING: Experimental. 
+     * 
+     * 
      */
     protected void filterTips(ConnectedComponent connectedComponent) {
 
@@ -196,38 +198,7 @@ public abstract class TouchDetectionDepth extends TouchDetection {
         calib.setMaximumDistance((distance + NOISE_ESTIMATION) * ERROR_DISTANCE_MULTIPLIER);
     }
 
-    public class CheckTouchPoint implements PointValidityCondition {
-
-        private int inititalPoint;
-
-        public void setInitalPoint(int offset) {
-            this.inititalPoint = offset;
-        }
-
-        public ProjectedDepthData getData() {
-            return depthData;
-        }
-
-        @Override
-        public boolean checkPoint(int offset, int currentPoint) {
-//            float distanceToCurrent = depthData.depthPoints[offset].distanceTo(depthData.depthPoints[currentPoint]);
-
-            float dN = (depthData.planeAndProjectionCalibration.getPlane().normal).distanceToSquared(depthData.normals[currentPoint]);
-            float d1 = (depthData.planeAndProjectionCalibration.getPlane().getDistanceToPoint(depthData.depthPoints[currentPoint]));
-//            System.out.println("d1: " + d1 + " dN: " + dN);
-//TODO: Magic numbers !!
-            boolean goodNormal = (depthData.normals[offset] != null && dN > 3f) || (d1 > 8f);  // Higher  than Xmm
-            return !assignedPoints[offset] // not assigned   
-                    //                    && depthData.validPointsMask[offset] // is valid
-                    //                    && depthData.depthPoints[offset] != INVALID_POINT // is valid
-                    //                    && depthData.depthPoints[offset].distanceTo(INVALID_POINT) >= 0.01f //  TODO WHY invalidpoints here.
-                    //                    && DepthAnalysis.isValidPoint(depthData.depthPoints[offset])
-
-                    && depthData.depthPoints[inititalPoint].distanceTo(depthData.depthPoints[currentPoint]) < calib.getMaximumDistanceInit()
-                    && depthData.depthPoints[offset].distanceTo(depthData.depthPoints[currentPoint]) < calib.getMaximumDistance()
-                    && goodNormal;
-        }
-    }
+    
 
     class ClosestComparator implements Comparator {
 
@@ -297,6 +268,18 @@ public abstract class TouchDetectionDepth extends TouchDetection {
 
             return -1;
         }
+    }
+
+    public ArrayList<TrackedDepthPoint> getTouchPoints() {
+        return touchPoints;
+    }
+
+    public ProjectedDepthData getDepthData() {
+        return depthData;
+    }
+
+    public void setDepthData(ProjectedDepthData depthData) {
+        this.depthData = depthData;
     }
 
 }

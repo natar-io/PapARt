@@ -104,7 +104,7 @@ public class DepthData {
 
     public void clear() {
         clearDepth();
-        clear2D();
+        clearValidPoints();
         clearColor();
         connexity.reset();
     }
@@ -120,7 +120,7 @@ public class DepthData {
 //        Arrays.fill(this.depthPoints, INVALID_POINT);
     }
 
-    public void clear2D() {
+    public void clearValidPoints() {
         Arrays.fill(this.validPointsMask, false);
         this.validPointsList.clear();
     }

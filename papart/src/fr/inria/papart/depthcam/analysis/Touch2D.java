@@ -1,0 +1,165 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package fr.inria.papart.depthcam.analysis;
+
+import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
+import fr.inria.papart.depthcam.PixelOffset;
+import static fr.inria.papart.depthcam.analysis.DepthAnalysis.isInside;
+import fr.inria.papart.depthcam.devices.ProjectedDepthData;
+import processing.core.PVector;
+import toxi.geom.Vec3D;
+
+/**
+ *
+ * @author Jeremy Laviole
+ */
+public class Touch2D extends DepthRecognition{
+
+    public Touch2D(DepthAnalysisImpl depthAnalysis) {
+        super(depthAnalysis);
+    }
+   
+    @Override
+    public void recognize(Object filter, int quality){
+        find2DTouch((PlaneAndProjectionCalibration) filter, quality);
+    }
+    
+    /**
+     * 
+     * Fills the validPointsMask array and validPointsList list.
+     * Called by Simple2D.java
+     * @param calib incoming plane
+     * @param skip2D precision
+     */
+    public void find2DTouch(PlaneAndProjectionCalibration calib, int skip2D) {
+        // TODO: ensure that this has been computed.
+         depthData.clearValidPoints();
+         depthData.planeAndProjectionCalibration = calib;
+         depthAnalysis.doForEachPoint(skip2D, new Select2DPlaneProjection());
+//        doForEachPoint(skip2D, new Select2DPointPlaneProjection());
+    }
+    
+    
+    
+    class Select2DPointPlaneProjection implements DepthAnalysis.DepthPointManiplation {
+        @Override
+        public void execute(Vec3D p, PixelOffset px) {
+            if (depthData.planeAndProjectionCalibration.hasGoodOrientationAndDistance(p)) {
+
+//                Vec3D projected = depthData.planeAndProjectionCalibration.project(p);
+//                depthData.projectedPoints[px.offset] = projected;
+                depthData.planeAndProjectionCalibration.project(p, depthData.projectedPoints[px.offset]);
+
+                if (isInside(depthData.projectedPoints[px.offset], 0.f, 1.f, 0.0f)) {
+                    depthData.validPointsMask[px.offset] = true;
+                    depthData.validPointsList.add(px.offset);
+                }
+            }
+        }
+    }
+
+    class Select2DPlaneProjection implements DepthAnalysis.DepthPointManiplation {
+
+        @Override
+        public void execute(Vec3D p, PixelOffset px) {
+            if (depthData.planeAndProjectionCalibration.hasGoodOrientationAndDistance(p)) {
+
+//                Vec3D projected = depthData.planeAndProjectionCalibration.project(p);
+//                depthData.projectedPoints[px.offset] = projected;
+                depthData.planeAndProjectionCalibration.project(p, depthData.projectedPoints[px.offset]);
+//                if (isInside(depthData.projectedPoints[px.offset], 0.f, 1.f, 0.0f)) {
+                depthData.validPointsMask[px.offset] = true;
+                depthData.validPointsList.add(px.offset);
+//                }
+            }
+        }
+    }
+
+    class Select2DPointPlaneProjectionNormal implements DepthAnalysis.DepthPointManiplation {
+
+        @Override
+        public void execute(Vec3D p, PixelOffset px) {
+            if (depthData.planeAndProjectionCalibration.hasGoodOrientationAndDistance(p)) {
+
+//                System.out.println("Distance " + (depthData.planeAndProjectionCalibration.getPlane().normal).distanceTo(depthData.normals[px.offset]));
+                float normalDistance = (depthData.planeAndProjectionCalibration.getPlane().normal).distanceTo(depthData.normals[px.offset]);
+//                Vec3D projected = depthData.planeAndProjectionCalibration.project(p);
+//                depthData.projectedPoints[px.offset] = projected;
+                depthData.planeAndProjectionCalibration.project(p, depthData.projectedPoints[px.offset]);
+
+                // TODO: tweak the 0.3f
+                if (isInside(depthData.projectedPoints[px.offset], 0.f, 1.f, 0.0f)
+                        && normalDistance > 0.3f) {
+                    depthData.validPointsMask[px.offset] = true;
+                    depthData.validPointsList.add(px.offset);
+                }
+            }
+        }
+    }
+
+    class Select2DPointPlaneProjectionSR300Error implements DepthAnalysis.DepthPointManiplation {
+
+        @Override
+        public void execute(Vec3D p, PixelOffset px) {
+            float error = Math.abs(p.x / 50f) + p.z / 400f;
+
+            if (depthData.planeAndProjectionCalibration.hasGoodOrientationAndDistance(p, error)) {
+//                Vec3D projected = depthData.planeAndProjectionCalibration.project(p);
+//                depthData.projectedPoints[px.offset] = projected;
+                depthData.planeAndProjectionCalibration.project(p, depthData.projectedPoints[px.offset]);
+
+                if (isInside(depthData.projectedPoints[px.offset], 0.f, 1.f, 0.0f)) {
+                    depthData.validPointsMask[px.offset] = true;
+                    depthData.validPointsList.add(px.offset);
+                }
+            }
+        }
+    }
+
+    
+        class Select2DPointOverPlane implements DepthAnalysis.DepthPointManiplation {
+
+        @Override
+        public void execute(Vec3D p, PixelOffset px) {
+            if (depthData.planeCalibration.hasGoodOrientation(p)) {
+                depthData.validPointsMask[px.offset] = true;
+                depthData.validPointsList.add(px.offset);
+            }
+        }
+    }
+
+    class Select2DPointOverPlaneDist implements DepthAnalysis.DepthPointManiplation {
+
+        @Override
+        public void execute(Vec3D p, PixelOffset px) {
+            if (depthData.planeCalibration.hasGoodOrientationAndDistance(p)) {
+                depthData.validPointsMask[px.offset] = true;
+                depthData.validPointsList.add(px.offset);
+            }
+        }
+    }
+
+    class Select2DPointCalibratedHomography implements DepthAnalysis.DepthPointManiplation {
+
+        @Override
+        public void execute(Vec3D p, PixelOffset px) {
+
+            PVector projected = new PVector();
+            PVector init = new PVector(p.x, p.y, p.z);
+
+            depthData.homographyCalibration.getHomographyInv().mult(init, projected);
+
+            // TODO: Find how to select the points... 
+            if (projected.z > 10 && projected.x > 0 && projected.y > 0) {
+                depthData.validPointsMask[px.offset] = true;
+                depthData.validPointsList.add(px.offset);
+            }
+        }
+    }
+
+    
+    
+}

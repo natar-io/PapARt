@@ -52,16 +52,6 @@ public class ProjectedDepthData extends DepthData {
      */
     public TouchAttributes[] touchAttributes;
 
-    /**
-     * Mask of valid Points
-     */
-    public boolean[] validPointsMask3D;
-
-    /**
-     * List of valid points
-     */
-    public ArrayList<Integer> validPointsList3D;
-
     public PlaneAndProjectionCalibration planeAndProjectionCalibration;
     public HomographyCalibration homographyCalibration;
     public PlaneCalibration planeCalibration;
@@ -81,10 +71,6 @@ public class ProjectedDepthData extends DepthData {
         
         touchAttributes = new TouchAttributes[size];
         validPointsList = new ArrayList();
-        if (is3D) {
-            validPointsMask3D = new boolean[size];
-            validPointsList3D = new ArrayList();
-        }
         connexity = new Connexity(depthPoints, source.getWidth(), source.getHeight());
 //        connexity = new Connexity(projectedPoints, width, height);
     }
@@ -99,14 +85,13 @@ public class ProjectedDepthData extends DepthData {
         super.fillDepthDataElement(ddek, i);
         ddek.projectedPoint = projectedPoints[i].copy();
         ddek.touchAttribute = touchAttributes[i];
-        ddek.validPoint3D = validPointsMask3D[i];
+//        ddek.validPoint3D = validPointsMask3D[i];
     }
 
     @Override
     public void clear() {
         clearDepth();
-        clear2D();
-        clear3D();
+        clearValidPoints();
         clearColor();
         connexity.reset();
         Arrays.fill(touchAttributes, TouchAttributes.NO_ATTRIBUTES);
@@ -120,17 +105,6 @@ public class ProjectedDepthData extends DepthData {
             pt.clear();
         }
 //        Arrays.fill(this.projectedPoints, INVALID_POINT);
-    }
-
-    @Override
-    public void clear2D() {
-        super.clear2D();
-        this.validPointsList.clear();
-    }
-
-    void clear3D() {
-        Arrays.fill(this.validPointsMask3D, false);
-        this.validPointsList3D.clear();
     }
 
 }
