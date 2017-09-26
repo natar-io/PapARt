@@ -141,11 +141,12 @@ public class DepthTouchInput extends TouchInput {
                 touchDetection2D.setCurrentTime(parent.millis());
                 touchDetection2D.findTouch(planeAndProjCalibration);
                 
-                testPCA();
+//                testPCA();
                 boolean multiple = (touch3DPrecision % touch2DPrecision) == 0;
                 if (multiple) {
                     touchDetection3D.setCurrentTime(parent.millis());
                     touchDetection3D.findTouch(planeAndProjCalibration);
+                    findHands();
                 }
             } else {
                 if (touch3DPrecision > 0) {
@@ -242,28 +243,12 @@ public class DepthTouchInput extends TouchInput {
 //        }
         ArrayList<ArrayList<Integer>> offset3D = new ArrayList<>();
         for (TrackedDepthPoint pt : touchDetection3D.getTouchPoints()) {
-//            float filter = 0.25f;
-//            int xOffset = 0;
-//            int yOffset = 0;
-//            int zOffset = 0;
             pt.clearFingers();
 
             ArrayList<Integer> offsets = new ArrayList<>();
             for (DepthDataElementProjected depthPoint : pt.getDepthDataElements()) {
                 int offset = depthPoint.offset;
                 offsets.add(offset);
-//                Vec3D normal = depthData.normals[offset];
-//                if (normal != null) {
-//                    if (normal.x > filter) {
-//                        xOffset++;
-//                    }
-//                    if (normal.y > filter) {
-//                        yOffset++;
-//                    }
-//                    if (normal.z > filter) {
-//                        zOffset++;
-//                    }
-//                }
             }
             offset3D.add(offsets);
 //            System.out.println("x: " + xOffset + " y: " + yOffset + " z: " + zOffset);
@@ -271,6 +256,7 @@ public class DepthTouchInput extends TouchInput {
 
         ArrayList<ArrayList<Integer>> offset2D = new ArrayList<>();
 
+        
         int fingerID = 0;
         for (TrackedDepthPoint pt : touchDetection2D.getTouchPoints()) {
 
@@ -294,33 +280,48 @@ public class DepthTouchInput extends TouchInput {
                 if (copy.size() > 1) {
                     pt.setAttachedHandID(handID);
                     touchDetection3D.getTouchPoints().get(handID).addFinger(fingerID);
-                    System.out.println("Points in common : " + copy.size());
+//                    System.out.println("Points in common : " + copy.size());
                 }
                 handID++;
             }
             fingerID++;
         }
 
+        // For each potential «hand»
         for (TrackedDepthPoint pt : touchDetection3D.getTouchPoints()) {
             ArrayList<Integer> fingers = pt.getFingers();
             if (fingers.size() == 0) {
                 continue;
             }
-            float minDist = Float.MAX_VALUE;
+            float maxDist = Float.MIN_VALUE;
             int minID = 0;
-            System.out.println("nb fingers: " + fingers.size() + " nbTouchPoints " + touchDetection2D.getTouchPoints().size());
+            
+            // find the further finger
+//            System.out.println("nb fingers: " + fingers.size() + " nbTouchPoints " + touchDetection2D.getTouchPoints().size());
             for (int i = 0; i < fingers.size(); i++) {
 
                 TrackedDepthPoint tp = touchDetection2D.getTouchPoints().get(fingers.get(i));
                 float dist = tp.distanceTo(pt);
-                if (dist < minDist) {
-                    minDist = dist;
+                if (dist > maxDist) {
+                    maxDist = dist;
                     minID = fingers.get(i);
                 }
             }
-
+            
+            // set as main
             touchDetection2D.getTouchPoints().get(minID).setMainFinger();
 
+            // move outwards from the hand by x  20 mm.
+            Vec3D fingerPosition = touchDetection2D.getTouchPoints().get(minID).getPositionKinect();
+            
+            if(touchDetection2D.getTouchPoints().get(minID).isUpdated){
+            Vec3D handPosition = pt.getPositionKinect();
+            
+            Vec3D addedVec = fingerPosition.copy();
+            Vec3D dist = addedVec.sub(handPosition).normalize().scale(20);
+//            System.out.println("Distance added: " + dist);
+            fingerPosition.addSelf(dist);
+            }
         }
         // Try to match the hand with the points... 
         // A 3D touch can contain multiple 2D touch or none. 

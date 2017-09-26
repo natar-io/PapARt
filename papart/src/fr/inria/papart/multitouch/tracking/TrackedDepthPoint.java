@@ -69,6 +69,19 @@ public class TrackedDepthPoint extends TrackedElement {
     public Vec3D getPreviousPositionKinect() {
         return this.previousPositionDepthCam;
     }
+    
+    public void setPositionDepthCam(Vec3D pos) {
+        this.positionDepthCam = new Vec3D(pos);
+        this.previousPositionDepthCam = new Vec3D(pos);
+    }
+
+    public Vec3D getPositionDepthCam() {
+        return this.positionDepthCam;
+    }
+
+    public Vec3D getPreviousPositionDepthCam() {
+        return this.previousPositionDepthCam;
+    }
 
     protected void updateAdditionalElements(TrackedDepthPoint tp) {
         assert (tp.is3D == this.is3D);

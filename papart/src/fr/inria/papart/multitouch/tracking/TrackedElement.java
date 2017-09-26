@@ -233,7 +233,7 @@ public class TrackedElement {
      * candidate is found. The filtering may set a new position and speed.
      */
     public void updateAlone() {
-        this.setUpdated(true);
+//        this.setUpdated(true);
         updatePosition(this);
         checkAndSetID();
         // TODO: check performance ?!
