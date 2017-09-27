@@ -291,8 +291,8 @@ public class DepthTouchInput extends TouchInput {
         }
 
         // For each potential «hand»
-        for (TrackedDepthPoint pt : touchDetection3D.getTouchPoints()) {
-            ArrayList<Integer> fingers = pt.getFingers();
+        for (TrackedDepthPoint hand : touchDetection3D.getTouchPoints()) {
+            ArrayList<Integer> fingers = hand.getFingers();
             if (fingers.size() == 0) {
                 continue;
             }
@@ -303,8 +303,11 @@ public class DepthTouchInput extends TouchInput {
 //            System.out.println("nb fingers: " + fingers.size() + " nbTouchPoints " + touchDetection2D.getTouchPoints().size());
             for (int i = 0; i < fingers.size(); i++) {
 
-                TrackedDepthPoint tp = touchDetection2D.getTouchPoints().get(fingers.get(i));
-                float dist = tp.distanceTo(pt);
+                // Refine all the touches
+                TrackedDepthPoint finger = touchDetection2D.getTouchPoints().get(fingers.get(i));
+
+                finger.refineTouchWithHand(hand.getPositionDepthCam(), depthData);
+                float dist = finger.distanceTo(hand);
                 if (dist > maxDist) {
                     maxDist = dist;
                     minID = fingers.get(i);
@@ -318,15 +321,13 @@ public class DepthTouchInput extends TouchInput {
             Vec3D fingerPosition = touchDetection2D.getTouchPoints().get(minID).getPositionKinect();
 
             if (touchDetection2D.getTouchPoints().get(minID).isUpdated) {
-                Vec3D handPosition = pt.getPositionKinect();
+                Vec3D handPosition = hand.getPositionKinect();
 
                 Vec3D addedVec = fingerPosition.copy();
                 Vec3D dist = addedVec.sub(handPosition).normalize().scale(30);
 //            System.out.println("Distance added: " + dist);
                 // DISABLED
 //                fingerPosition.addSelf(dist);
-
-                touchDetection2D.getTouchPoints().get(minID).refineTouchWithHand(pt);
 
                 // project again. 
                 PVector fingerPositionProj = touchDetection2D.getTouchPoints().get(minID).getPosition();

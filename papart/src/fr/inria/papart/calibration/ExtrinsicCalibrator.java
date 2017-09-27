@@ -51,7 +51,7 @@ public class ExtrinsicCalibrator {
     
     // TODO: find a way to tweak this. 
     private static final float OPEN_KINECT_Z_OFFSET = -25f;
-    private static final float REALSENSE_Z_OFFSET = -25f;
+    private static final float REALSENSE_Z_OFFSET = -15f;
     // Cameras
     private ProjectorDisplay projector;
     private final PMatrix3D kinectCameraExtrinsics = new PMatrix3D();

@@ -118,9 +118,9 @@ public class Simple2D extends TouchDetectionDepth {
 //        touchPoints.clear();
 //        touchPoints.addAll(newList);
     }
-    
+
     @Override
-      protected ConnectedComponent findConnectedComponent(int startingPoint) {
+    protected ConnectedComponent findConnectedComponent(int startingPoint) {
 
         // searchDepth is by precision steps. 
         searchDepth = calib.getSearchDepth() * calib.getPrecision();
@@ -129,13 +129,14 @@ public class Simple2D extends TouchDetectionDepth {
         w = imgSize.getWidth();
         h = imgSize.getHeight();
         currentPointValidityCondition.setInitalPoint(startingPoint);
-        
-            assert (isValidPoint(depthData.depthPoints[startingPoint]));
-            assert (isValidPoint(depthData.projectedPoints[startingPoint]));
-        
+
+        // DEBUG
+        assert (isValidPoint(depthData.depthPoints[startingPoint]));
+        assert (isValidPoint(depthData.projectedPoints[startingPoint]));
+
         ConnectedComponent cc = findNeighboursRec(startingPoint, 0, getX(startingPoint), getY(startingPoint));
 
-           // Do not accept 1 point compo ?!
+        // Do not accept 1 point compo ?!
         if (cc.size() == 1) {
             contactPoints.remove(currentCompo);
             connectedComponentImage[startingPoint] = NO_CONNECTED_COMPONENT;
@@ -147,33 +148,30 @@ public class Simple2D extends TouchDetectionDepth {
         return cc;
     }
 
+    // Disabled for testing distance from hand
+    protected ArrayList<TrackedDepthPoint> createTouchPointsWithContacts(ArrayList<ConnectedComponent> connectedComponents) {
 
-//    protected abstract void setSearchParameters();
-    @Override
-    protected ArrayList<TrackedDepthPoint> createTouchPointsFrom(ArrayList<ConnectedComponent> connectedComponents) {
-        
         // Bypass this step and use our now found points.
-        
         ArrayList<TrackedDepthPoint> newPoints = new ArrayList<TrackedDepthPoint>();
         for (ConnectedComponent connectedComponent : connectedComponents) {
 //        for (ConnectedComponent connectedComponent : contactPoints.values()) {
 
             float height = connectedComponent.getHeight(depthData.projectedPoints);
             if (connectedComponent.size() < calib.getMinimumComponentSize()
-                    || height < calib.getMinimumHeight() 
+                    || height < calib.getMinimumHeight()
                     || !contactPoints.containsKey((byte) connectedComponent.getId())) {
 
                 continue;
             }
 
-            TrackedDepthPoint tp = createTouchPoint(contactPoints.get((byte)connectedComponent.getId()));
-             tp.setDepthDataElements(depthData, connectedComponent);
+            TrackedDepthPoint tp = createTouchPoint(contactPoints.get((byte) connectedComponent.getId()));
+            tp.setDepthDataElements(depthData, connectedComponent);
             newPoints.add(tp);
         }
-        
+
         return newPoints;
     }
-    
+
     @Override
     protected TrackedDepthPoint createTouchPoint(ConnectedComponent connectedComponent) {
 

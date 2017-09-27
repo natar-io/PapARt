@@ -1,5 +1,5 @@
 /*
- * Part of the PapARt project - https://project.inria.fr/papart/
+ * Part of the PapARt project - htpts://project.inria.fr/papart/
  *
  * Copyright (C) 2014-2016 Inria
  * Copyright (C) 2011-2013 Bordeaux University
@@ -15,14 +15,17 @@
  *
  * You should have received a copy of the GNU Lesser General
  * Public License along with this library; If not, see
- * <http://www.gnu.org/licenses/>.
+ * <htpt://www.gnu.org/licenses/>.
  */
 package fr.inria.papart.multitouch.tracking;
 
 import fr.inria.papart.depthcam.devices.ProjectedDepthData;
 import fr.inria.papart.depthcam.DepthDataElementProjected;
 import fr.inria.papart.multitouch.ConnectedComponent;
+import fr.inria.papart.multitouch.Touch;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import toxi.geom.Vec3D;
 
 /**
@@ -54,8 +57,8 @@ public class TrackedDepthPoint extends TrackedElement {
         super();
     }
 
-    public float distanceTo(TrackedDepthPoint tp) {
-        return this.positionDepthCam.distanceTo(tp.positionDepthCam);
+    public float distanceTo(TrackedDepthPoint pt) {
+        return this.positionDepthCam.distanceTo(pt.positionDepthCam);
     }
 
     public void setPositionKinect(Vec3D pos) {
@@ -84,15 +87,15 @@ public class TrackedDepthPoint extends TrackedElement {
         return this.previousPositionDepthCam;
     }
 
-    protected void updateAdditionalElements(TrackedDepthPoint tp) {
-        assert (tp.is3D == this.is3D);
+    protected void updateAdditionalElements(TrackedDepthPoint pt) {
+        assert (pt.is3D == this.is3D);
         previousPositionDepthCam = positionDepthCam.copy();
 
-        this.positionDepthCam.set(tp.positionDepthCam);
-        this.confidence = tp.confidence;
-        this.isCloseToPlane = tp.isCloseToPlane;
+        this.positionDepthCam.set(pt.positionDepthCam);
+        this.confidence = pt.confidence;
+        this.isCloseToPlane = pt.isCloseToPlane;
 
-        this.depthDataElements = tp.getDepthDataElements();
+        this.depthDataElements = pt.getDepthDataElements();
     }
 
     public static int numberOfCommonElements(TrackedDepthPoint first,
@@ -123,6 +126,18 @@ public class TrackedDepthPoint extends TrackedElement {
 
     public ArrayList<DepthDataElementProjected> getDepthDataElements() {
         return this.depthDataElements;
+    }
+
+    public ConnectedComponent getDepthDataAsConnectedComponent() {
+        return ListToCC(this.depthDataElements);
+    }
+
+    public static ConnectedComponent ListToCC(List<DepthDataElementProjected> list) {
+        ConnectedComponent cc = new ConnectedComponent();
+        for (DepthDataElementProjected depthPoint : list) {
+            cc.add(depthPoint.offset);
+        }
+        return cc;
     }
 
     public boolean is3D() {
@@ -189,8 +204,49 @@ public class TrackedDepthPoint extends TrackedElement {
      *
      * @param pt
      */
-    public void refineTouchWithHand(TrackedDepthPoint pt) {
+    public void refineTouchWithHand(Vec3D handPos, ProjectedDepthData depthData) {
 
+        ArrayList<DepthDataElementProjected> copy = new ArrayList<>();
+        copy.addAll(getDepthDataElements());
+        copy.sort(new DistanceComparator(handPos));
+        
+        int size = 10;
+        if (copy.size() < 10) {
+            size = copy.size();
+        }
+        // Keep the last 10 points.
+        List<DepthDataElementProjected> subList = copy.subList(0, size);
+
+        ConnectedComponent connectedComponent = ListToCC(subList);
+        Vec3D meanProj, meanDepthCam;
+        meanProj = connectedComponent.getMean(depthData.projectedPoints);
+        meanDepthCam = connectedComponent.getMean(depthData.depthPoints);
+
+        setPosition(meanProj);
+        setPositionKinect(meanDepthCam);
+        setCreationTime(depthData.timeStamp);
+
+//        setDepthDataElements(depthData, connectedComponent);
+//        System.out.println("Points : " + connectedComponent.size());
+    }
+
+    class DistanceComparator implements Comparator {
+
+        private final Vec3D position;
+
+        public DistanceComparator(Vec3D initialObject) {
+            this.position = initialObject.copy();
+        }
+
+        @Override
+        public int compare(Object pos0, Object pos1) {
+            DepthDataElementProjected t0 = (DepthDataElementProjected) pos0;
+            DepthDataElementProjected t1 = (DepthDataElementProjected) pos1;
+
+            float d0 = t0.depthPoint.distanceTo(position);
+            float d1 = t1.depthPoint.distanceTo(position);
+            return Float.compare(d1, d0);
+        }
     }
 
 }
