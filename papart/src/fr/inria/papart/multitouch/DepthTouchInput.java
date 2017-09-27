@@ -119,13 +119,13 @@ public class DepthTouchInput extends TouchInput {
             }
 
             depthDataSem.acquire();
-            
+
             // Allocate the data when everything else is ready. 
             // TODO: all the time ?...
             if (touchDetection2D == null) {
-                        // First run, get calibrations from device after start.
+                // First run, get calibrations from device after start.
                 depthAnalysis.initWithCalibrations(kinectDevice);
-                
+
                 touchDetection2D = new Simple2D(depthAnalysis);
                 touchDetection3D = new Simple3D(depthAnalysis);
 
@@ -138,21 +138,23 @@ public class DepthTouchInput extends TouchInput {
 
             if (touch2DPrecision > 0) {
                 depthAnalysis.computeDepthAndNormals(depthImage, colImage, touch2DPrecision);
-                touchDetection2D.setCurrentTime(parent.millis());
                 touchDetection2D.findTouch(planeAndProjCalibration);
-                
-//                testPCA();
+
                 boolean multiple = (touch3DPrecision % touch2DPrecision) == 0;
                 if (multiple) {
-                    touchDetection3D.setCurrentTime(parent.millis());
                     touchDetection3D.findTouch(planeAndProjCalibration);
                     findHands();
+//                    testPCA();
+                    TouchPointTracker.filterPositions(touchDetection2D.getTouchPoints());
+                    TouchPointTracker.filterPositions(touchDetection3D.getTouchPoints());
+
                 }
             } else {
                 if (touch3DPrecision > 0) {
                     depthAnalysis.computeDepthAndNormals(depthImage, colImage, touch3DPrecision);
                     touchDetection3D.setCurrentTime(parent.millis());
                     touchDetection3D.findTouch(planeAndProjCalibration);
+                    TouchPointTracker.filterPositions(touchDetection3D.getTouchPoints());
                 }
             }
 
@@ -194,8 +196,10 @@ public class DepthTouchInput extends TouchInput {
                 double e2 = pca.getEigenvalue(2);
 
 //                System.out.println("Eigen values: " + e0 + " " + e1 + " " + e2);
-                if (e0 > 10 && e0 < 250 && e1 > 10 && e1 < 40 && e2 < 50) {
-                    pt.mainFinger = true;
+                if (!(e0 < 10 && e0 < 250
+                        && e1 > 10 && e1 < 40
+                        && e2 < 50)) {
+                    pt.mainFinger = false;
                 }
 
             } catch (Exception e) {
@@ -256,7 +260,6 @@ public class DepthTouchInput extends TouchInput {
 
         ArrayList<ArrayList<Integer>> offset2D = new ArrayList<>();
 
-        
         int fingerID = 0;
         for (TrackedDepthPoint pt : touchDetection2D.getTouchPoints()) {
 
@@ -295,7 +298,7 @@ public class DepthTouchInput extends TouchInput {
             }
             float maxDist = Float.MIN_VALUE;
             int minID = 0;
-            
+
             // find the further finger
 //            System.out.println("nb fingers: " + fingers.size() + " nbTouchPoints " + touchDetection2D.getTouchPoints().size());
             for (int i = 0; i < fingers.size(); i++) {
@@ -307,20 +310,33 @@ public class DepthTouchInput extends TouchInput {
                     minID = fingers.get(i);
                 }
             }
-            
+
             // set as main
             touchDetection2D.getTouchPoints().get(minID).setMainFinger();
 
             // move outwards from the hand by x  20 mm.
             Vec3D fingerPosition = touchDetection2D.getTouchPoints().get(minID).getPositionKinect();
-            
-            if(touchDetection2D.getTouchPoints().get(minID).isUpdated){
-            Vec3D handPosition = pt.getPositionKinect();
-            
-            Vec3D addedVec = fingerPosition.copy();
-            Vec3D dist = addedVec.sub(handPosition).normalize().scale(20);
+
+            if (touchDetection2D.getTouchPoints().get(minID).isUpdated) {
+                Vec3D handPosition = pt.getPositionKinect();
+
+                Vec3D addedVec = fingerPosition.copy();
+                Vec3D dist = addedVec.sub(handPosition).normalize().scale(30);
 //            System.out.println("Distance added: " + dist);
-            fingerPosition.addSelf(dist);
+                // DISABLED
+//                fingerPosition.addSelf(dist);
+
+                touchDetection2D.getTouchPoints().get(minID).refineTouchWithHand(pt);
+
+                // project again. 
+                PVector fingerPositionProj = touchDetection2D.getTouchPoints().get(minID).getPosition();
+                Vec3D output = new Vec3D();
+                depthData.planeAndProjectionCalibration.project(fingerPosition, output);
+                // Warning: The touch is updated twice, the speed will be invalid :(
+
+                // Force a position,  so that speed may stay valid  
+                // DISABLED
+//                touchDetection2D.getTouchPoints().get(minID).getPosition().set(output.x, output.y, output.z);
             }
         }
         // Try to match the hand with the points... 
@@ -455,7 +471,6 @@ public class DepthTouchInput extends TouchInput {
 //            return null;
 //        }
 //    }
-
 //    // TODO: Do the same without the Display, use the extrinsics instead! 
 //    // TODO: Do the same with DepthDataElement  instead of  DepthPoint ?
 //    /**
@@ -501,7 +516,6 @@ public class DepthTouchInput extends TouchInput {
 //            return null;
 //        }
 //    }
-
     private DepthPoint tryCreateDepthPoint(ARDisplay display, Screen screen, int offset) {
         Vec3D projectedPt = depthAnalysis.getDepthData().projectedPoints[offset];
 
@@ -684,10 +698,18 @@ public class DepthTouchInput extends TouchInput {
     }
 
     public ArrayList<TrackedDepthPoint> getTrackedDepthPoints2D() {
+        if (touchDetection2D == null) {
+            System.err.println("No 2D touch tracking.");
+            return new ArrayList<>();
+        }
         return touchDetection2D.getTouchPoints();
     }
 
     public ArrayList<TrackedDepthPoint> getTrackedDepthPoints3D() {
+        if (touchDetection3D == null) {
+            System.err.println("No 3D touch tracking.");
+            return new ArrayList<>();
+        }
         return touchDetection3D.getTouchPoints();
     }
 
