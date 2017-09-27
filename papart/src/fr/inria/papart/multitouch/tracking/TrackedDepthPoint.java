@@ -36,6 +36,7 @@ public class TrackedDepthPoint extends TrackedElement {
     private Vec3D previousPositionDepthCam;
 
     private ArrayList<DepthDataElementProjected> depthDataElements = new ArrayList<DepthDataElementProjected>();
+    private ArrayList<DepthDataElementProjected> selectDataElements = new ArrayList<DepthDataElementProjected>();
     int pointColor;
 
     private boolean is3D;
@@ -69,7 +70,7 @@ public class TrackedDepthPoint extends TrackedElement {
     public Vec3D getPreviousPositionKinect() {
         return this.previousPositionDepthCam;
     }
-    
+
     public void setPositionDepthCam(Vec3D pos) {
         this.positionDepthCam = new Vec3D(pos);
         this.previousPositionDepthCam = new Vec3D(pos);
@@ -92,6 +93,25 @@ public class TrackedDepthPoint extends TrackedElement {
         this.isCloseToPlane = tp.isCloseToPlane;
 
         this.depthDataElements = tp.getDepthDataElements();
+    }
+
+    public static int numberOfCommonElements(TrackedDepthPoint first,
+            TrackedDepthPoint second) {
+
+        ArrayList<Integer> firstOffsets = new ArrayList<>();
+        for (DepthDataElementProjected depthPoint : first.depthDataElements) {
+            int offset = depthPoint.offset;
+            firstOffsets.add(offset);
+        }
+
+        ArrayList<Integer> secondOffsets = new ArrayList<>();
+        for (DepthDataElementProjected depthPoint : second.depthDataElements) {
+            int offset = depthPoint.offset;
+            secondOffsets.add(offset);
+        }
+
+        secondOffsets.retainAll(firstOffsets);
+        return secondOffsets.size();
     }
 
     public void setDepthDataElements(ProjectedDepthData depthData, ConnectedComponent connectedComponent) {
@@ -136,7 +156,7 @@ public class TrackedDepthPoint extends TrackedElement {
     public void setAttachedHandID(int attachedHandID) {
         this.attachedHandID = attachedHandID;
     }
- 
+
     public boolean isHand() {
         return isHand;
     }
@@ -144,16 +164,18 @@ public class TrackedDepthPoint extends TrackedElement {
     public void setHand(boolean isHand) {
         this.isHand = isHand;
     }
-    
+
     private ArrayList<Integer> fingerIDs = new ArrayList<>();
-    public void addFinger(int id){
+
+    public void addFinger(int id) {
         fingerIDs.add(id);
     }
-    
-    public void clearFingers(){
+
+    public void clearFingers() {
         fingerIDs.clear();
     }
-    public ArrayList<Integer> getFingers(){
+
+    public ArrayList<Integer> getFingers() {
         return fingerIDs;
     }
 
@@ -162,9 +184,13 @@ public class TrackedDepthPoint extends TrackedElement {
         return "Touch Point, depth: " + positionDepthCam + " , proj: " + position + "confidence " + confidence + " ,close to Plane : " + isCloseToPlane;
     }
 
-    public boolean mainFinger = false;
-    public void setMainFinger() {
-        this.mainFinger = true;
+    /**
+     * Select the points the most away from another tracked depth point
+     *
+     * @param pt
+     */
+    public void refineTouchWithHand(TrackedDepthPoint pt) {
+
     }
 
 }

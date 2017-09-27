@@ -150,8 +150,14 @@ public class PaperTouchScreen extends PaperScreen {
             if (t.is3D) {
                 // fill(185, 142, 62);
             } else {
-                fill(58, 71, 198);
-                ellipse(t.position.x, t.position.y, ellipseSize, ellipseSize);
+            
+                if (t.trackedSource.mainFinger) {
+                       fill(58, 190, 52);
+                    ellipse(t.position.x, t.position.y, ellipseSize*1.5f, ellipseSize*1.5f);
+                } else {
+                        fill(58, 71, 198);
+                    ellipse(t.position.x, t.position.y, ellipseSize, ellipseSize);
+                }
             }
         }
     }

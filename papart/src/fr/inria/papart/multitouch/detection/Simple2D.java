@@ -21,14 +21,19 @@
 package fr.inria.papart.multitouch.detection;
 
 import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
+import static fr.inria.papart.depthcam.analysis.DepthAnalysis.INVALID_POINT;
+import static fr.inria.papart.depthcam.analysis.DepthAnalysis.isValidPoint;
 import fr.inria.papart.depthcam.analysis.DepthAnalysisImpl;
 import fr.inria.papart.depthcam.analysis.Touch2D;
 import fr.inria.papart.depthcam.devices.ProjectedDepthData;
 import fr.inria.papart.multitouch.ConnectedComponent;
+import static fr.inria.papart.multitouch.ConnectedComponent.INVALID_COMPONENT;
 import fr.inria.papart.multitouch.tracking.TouchPointTracker;
 import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
 import fr.inria.papart.utils.WithSize;
 import java.util.ArrayList;
+import java.util.HashMap;
+import toxi.geom.Vec3D;
 
 /**
  *
@@ -37,9 +42,11 @@ import java.util.ArrayList;
 public class Simple2D extends TouchDetectionDepth {
 
     private final Touch2D touchRecognition;
+    private final HashMap<Byte, ConnectedComponent> contactPoints;
 
     public Simple2D(DepthAnalysisImpl depthAnalysisImpl) {
         super(depthAnalysisImpl);
+        this.contactPoints = new HashMap<>();
         touchRecognition = new Touch2D(depthAnalysisImpl);
         currentPointValidityCondition = new CheckTouchPoint();
     }
@@ -57,22 +64,40 @@ public class Simple2D extends TouchDetectionDepth {
         }
 
         @Override
-        public boolean checkPoint(int offset, int currentPoint) {
+        public boolean checkPoint(int candidate, int currentPoint) {
 //            float distanceToCurrent = depthData.depthPoints[offset].distanceTo(depthData.depthPoints[currentPoint]);
 
             float dN = (depthData.planeAndProjectionCalibration.getPlane().normal).distanceToSquared(depthData.normals[currentPoint]);
             float d1 = (depthData.planeAndProjectionCalibration.getPlane().getDistanceToPoint(depthData.depthPoints[currentPoint]));
 //            System.out.println("d1: " + d1 + " dN: " + dN);
 //TODO: Magic numbers !!
-            boolean goodNormal = (depthData.normals[offset] != null && dN > 3f) || (d1 > 8f);  // Higher  than Xmm
-            return !assignedPoints[offset] // not assigned   
+            boolean goodNormal = (depthData.normals[candidate] != null && dN > 3f) || (d1 > 8f);  // Higher  than Xmm
+
+            assert (isValidPoint(depthData.depthPoints[currentPoint]));
+            assert (isValidPoint(depthData.projectedPoints[currentPoint]));
+
+            boolean classicCheck = !assignedPoints[candidate] // not assigned   
                     //                    && depthData.validPointsMask[offset] // is valid
-                    //                    && depthData.depthPoints[offset] != INVALID_POINT // is valid
-                    //                    && depthData.depthPoints[offset].distanceTo(INVALID_POINT) >= 0.01f //  TODO WHY invalidpoints here.
-                    //                    && DepthAnalysis.isValidPoint(depthData.depthPoints[offset])
+                    //                                        && depthData.depthPoints[offset] != INVALID_POINT // is valid
+                    //                                        && depthData.depthPoints[offset].distanceTo(INVALID_POINT) >= 0.01f
+                    && isValidPoint(depthData.projectedPoints[candidate]) //  TODO WHY "0" and non invalidpoints here.
+                    && isValidPoint(depthData.depthPoints[candidate]) //  TODO WHY "0" and non invalidpoints here.
                     && depthData.depthPoints[inititalPoint].distanceTo(depthData.depthPoints[currentPoint]) < calib.getMaximumDistanceInit()
-                    && depthData.depthPoints[offset].distanceTo(depthData.depthPoints[currentPoint]) < calib.getMaximumDistance()
-                    && goodNormal;
+                    && depthData.depthPoints[candidate].distanceTo(depthData.depthPoints[currentPoint]) < calib.getMaximumDistance();
+
+            // A close one does not have a correct normal.
+            if (classicCheck && !goodNormal) {
+                if (!contactPoints.containsKey(currentCompo)) {
+                    contactPoints.put(currentCompo, new ConnectedComponent());
+                }
+                ConnectedComponent list = contactPoints.get(currentCompo);
+                if (!list.contains(currentPoint)) {
+                    list.add(currentPoint);
+                }
+//                System.out.println("Adding non normal point...");
+            }
+
+            return classicCheck && goodNormal;
         }
     }
 
@@ -82,10 +107,99 @@ public class Simple2D extends TouchDetectionDepth {
 
         // Generate a touch list from these points. 
         ArrayList<TrackedDepthPoint> newList;
+
         newList = this.compute(this.depthAnalysis.getDepthData());
 
+        int imageTime = this.depthAnalysis.getDepthData().timeStamp;
         // Track the points and update the touchPoints2D variable.
-        TouchPointTracker.trackPoints(touchPoints, newList, currentTime);
+        TouchPointTracker.trackPoints(touchPoints, newList, imageTime);
+
+        // Uncomment to disable tracking.
+//        touchPoints.clear();
+//        touchPoints.addAll(newList);
+    }
+    
+    @Override
+      protected ConnectedComponent findConnectedComponent(int startingPoint) {
+
+        // searchDepth is by precision steps. 
+        searchDepth = calib.getSearchDepth() * calib.getPrecision();
+        precision = calib.getPrecision();
+
+        w = imgSize.getWidth();
+        h = imgSize.getHeight();
+        currentPointValidityCondition.setInitalPoint(startingPoint);
+        
+            assert (isValidPoint(depthData.depthPoints[startingPoint]));
+            assert (isValidPoint(depthData.projectedPoints[startingPoint]));
+        
+        ConnectedComponent cc = findNeighboursRec(startingPoint, 0, getX(startingPoint), getY(startingPoint));
+
+           // Do not accept 1 point compo ?!
+        if (cc.size() == 1) {
+            contactPoints.remove(currentCompo);
+            connectedComponentImage[startingPoint] = NO_CONNECTED_COMPONENT;
+            return INVALID_COMPONENT;
+        }
+
+        cc.setId(currentCompo);
+        currentCompo++;
+        return cc;
+    }
+
+
+//    protected abstract void setSearchParameters();
+    @Override
+    protected ArrayList<TrackedDepthPoint> createTouchPointsFrom(ArrayList<ConnectedComponent> connectedComponents) {
+        
+        // Bypass this step and use our now found points.
+        
+        ArrayList<TrackedDepthPoint> newPoints = new ArrayList<TrackedDepthPoint>();
+        for (ConnectedComponent connectedComponent : connectedComponents) {
+//        for (ConnectedComponent connectedComponent : contactPoints.values()) {
+
+            float height = connectedComponent.getHeight(depthData.projectedPoints);
+            if (connectedComponent.size() < calib.getMinimumComponentSize()
+                    || height < calib.getMinimumHeight() 
+                    || !contactPoints.containsKey((byte) connectedComponent.getId())) {
+
+                continue;
+            }
+
+            TrackedDepthPoint tp = createTouchPoint(contactPoints.get((byte)connectedComponent.getId()));
+             tp.setDepthDataElements(depthData, connectedComponent);
+            newPoints.add(tp);
+        }
+        
+        return newPoints;
+    }
+    
+    @Override
+    protected TrackedDepthPoint createTouchPoint(ConnectedComponent connectedComponent) {
+
+//        ConnectedComponent cc2 = contactPoints.get((byte) connectedComponent.getId());
+        Vec3D meanProj, meanKinect;
+//        if (cc2 != null) {
+//            System.out.println("Points: ");
+//            for (int offset : cc2) {
+//                System.out.print(depthData.projectedPoints[offset] + " ");
+////            }
+//            connectedComponent = cc2;
+//        }
+        meanProj = connectedComponent.getMean(depthData.projectedPoints);
+        meanKinect = connectedComponent.getMean(depthData.depthPoints);
+
+        TrackedDepthPoint tp = new TrackedDepthPoint();
+        tp.setDetection(this);
+        tp.setPosition(meanProj);
+        tp.setPositionKinect(meanKinect);
+        tp.setCreationTime(depthData.timeStamp);
+        tp.set3D(false);
+        tp.setConfidence(connectedComponent.size() / calib.getMinimumComponentSize());
+        // TODO: re-enable this one day ?
+//        tp.setConnectedComponent(connectedComponent);
+        tp.setDepthDataElements(depthData, connectedComponent);
+        return tp;
     }
 
     @Override
@@ -96,8 +210,8 @@ public class Simple2D extends TouchDetectionDepth {
         }
 
         ArrayList<ConnectedComponent> connectedComponents = findConnectedComponents();
-        ArrayList<TrackedDepthPoint> touchPoints = this.createTouchPointsFrom(connectedComponents);
-        return touchPoints;
+        ArrayList<TrackedDepthPoint> newPoints = this.createTouchPointsFrom(connectedComponents);
+        return newPoints;
     }
 
     @Override
@@ -109,6 +223,7 @@ public class Simple2D extends TouchDetectionDepth {
     protected void setSearchParameters() {
         this.toVisit.clear();
         this.toVisit.addAll(touchRecognition.getSelection().validPointsList);
+        contactPoints.clear();
     }
 
 }

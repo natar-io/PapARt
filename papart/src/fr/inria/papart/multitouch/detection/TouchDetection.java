@@ -136,22 +136,19 @@ public abstract class TouchDetection {
         
         // TODO: Filtering for all ?!!
      // DEBUG
-        if (currentPointValidityCondition instanceof CheckTouchPoint) {
-
-            // Filter the points with wrong normals
-            
-            
-            ProjectedDepthData data = ((CheckTouchPoint) currentPointValidityCondition).getData();
-            Vec3D depthPoint = data.depthPoints[startingPoint];
-//            System.out.println("SIZE: " + cc.size() + " Starting Point: " + depthPoint);
-
-            // Debug: Print out the connected component
-            for (int i = 0; i < cc.size(); i++) {
-                int offset = cc.get(i);
-                depthPoint = data.depthPoints[offset];
-//                System.out.println("CC(" + currentCompo + ")/Depth Point (" + i + "): " + depthPoint);
-            }
-        }
+//        if (currentPointValidityCondition instanceof CheckTouchPoint) {
+//            // Filter the points with wrong normals
+//            ProjectedDepthData data = ((CheckTouchPoint) currentPointValidityCondition).getData();
+//            Vec3D depthPoint = data.depthPoints[startingPoint];
+////            System.out.println("SIZE: " + cc.size() + " Starting Point: " + depthPoint);
+//
+//            // Debug: Print out the connected component
+//            for (int i = 0; i < cc.size(); i++) {
+//                int offset = cc.get(i);
+//                depthPoint = data.depthPoints[offset];
+////                System.out.println("CC(" + currentCompo + ")/Depth Point (" + i + "): " + depthPoint);
+//            }
+//        }
 
         return cc;
     }

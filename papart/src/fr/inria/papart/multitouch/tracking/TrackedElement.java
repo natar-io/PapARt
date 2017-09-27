@@ -70,7 +70,7 @@ public class TrackedElement {
 // filtering 
     private OneEuroFilter[] filters;
     public static float filterFreq = 30f;
-    public static float filterCut = 0.2f;
+    public static float filterCut = 0.02f;
     public static float filterBeta = 8.000f;
     public static final int NO_TIME = -1;
     private int NUMBER_OF_FILTERS = 3;
@@ -223,7 +223,9 @@ public class TrackedElement {
            ((TrackedDepthPoint) this).updateAdditionalElements((TrackedDepthPoint) tp);
         }
         updatePosition(tp);
-        filter();
+        
+        // WARNING FILTERING IS NOW DONE OUTSIDE
+//        filter();
 
         return true;
     }
@@ -237,7 +239,8 @@ public class TrackedElement {
         updatePosition(this);
         checkAndSetID();
         // TODO: check performance ?!
-        filter();
+        
+//        filter();
     }
 
     /**
@@ -445,6 +448,11 @@ public class TrackedElement {
      */
     public void setDetection(TouchDetection detection) {
         this.detection = detection;
+    }
+    
+    public boolean mainFinger = false;
+    public void setMainFinger() {
+        this.mainFinger = true;
     }
 
 }

@@ -49,6 +49,12 @@ public class TouchPointTracker {
         addNewPoints(currentList, newPoints);
         setNonUpdatedPointsSpeed(currentList);
     }
+    public static <T extends TrackedElement> void filterPositions(ArrayList<T> currentList){
+               // Add the new ones ?
+        for (TrackedElement tp : currentList) {
+                tp.filter();
+        }
+    }
 
     public static <T extends TrackedElement> void updatePoints(ArrayList<T> currentList, ArrayList<T> newPoints) {
 

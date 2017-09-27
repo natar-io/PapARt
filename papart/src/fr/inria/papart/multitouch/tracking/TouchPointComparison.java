@@ -31,6 +31,7 @@ public class TouchPointComparison<T extends TrackedElement> implements Comparabl
     T oldTp;
     T newTp;
     float distance;
+    int commonElements;
 
     public TouchPointComparison(T oldTp, T newTp) {
         this.oldTp = oldTp;
@@ -38,6 +39,9 @@ public class TouchPointComparison<T extends TrackedElement> implements Comparabl
 
         if (oldTp instanceof TrackedDepthPoint) {
             distance = ((TrackedDepthPoint) oldTp).distanceTo((TrackedDepthPoint) newTp);
+            // Common elements method not used. -> problematic results of jittering.
+//            commonElements = TrackedDepthPoint.numberOfCommonElements((TrackedDepthPoint) oldTp,
+//                    (TrackedDepthPoint) newTp);
         } else {
             distance = oldTp.distanceTo(newTp);
         }
@@ -56,7 +60,14 @@ public class TouchPointComparison<T extends TrackedElement> implements Comparabl
     }
 
     public int compareTo(TouchPointComparison tpt) {
-        return Float.compare(distance, tpt.distance);
+//            System.out.println("commons" + commonElements + " " + tpt.commonElements);
+//        int haveCommons = Integer.compare(commonElements, tpt.commonElements);
+//        if(haveCommons == 0 ){  // same number in common, or none.
+//            // use the distance
+               return Float.compare(distance, tpt.distance);
+//        } 
+    
+//        return haveCommons;
     }
 
     @Override

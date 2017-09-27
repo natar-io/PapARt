@@ -19,8 +19,6 @@
  */
 package fr.inria.papart.depthcam.devices;
 
-import static fr.inria.papart.depthcam.analysis.DepthAnalysis.INVALID_COLOR;
-import static fr.inria.papart.depthcam.analysis.DepthAnalysis.INVALID_POINT;
 import fr.inria.papart.calibration.files.HomographyCalibration;
 import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.calibration.files.PlaneCalibration;
@@ -29,11 +27,7 @@ import fr.inria.papart.depthcam.analysis.DepthAnalysis;
 import fr.inria.papart.depthcam.DepthData;
 import fr.inria.papart.depthcam.DepthDataElementProjected;
 import fr.inria.papart.depthcam.TouchAttributes;
-import fr.inria.papart.procam.camera.Camera;
-import fr.inria.papart.procam.ProjectiveDeviceP;
-import java.util.ArrayList;
 import java.util.Arrays;
-import org.bytedeco.javacv.ProjectiveDevice;
 import toxi.geom.Vec3D;
 
 /**

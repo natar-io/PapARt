@@ -56,31 +56,32 @@ public abstract class TouchDetectionDepth extends TouchDetection {
 
 //    protected abstract void setSearchParameters();
     protected ArrayList<TrackedDepthPoint> createTouchPointsFrom(ArrayList<ConnectedComponent> connectedComponents) {
-        ArrayList<TrackedDepthPoint> touchPoints = new ArrayList<TrackedDepthPoint>();
+        ArrayList<TrackedDepthPoint> newPoints = new ArrayList<TrackedDepthPoint>();
         for (ConnectedComponent connectedComponent : connectedComponents) {
 
             float height = connectedComponent.getHeight(depthData.projectedPoints);
-            boolean isFinger = true;
-//            boolean isFinger = checkNormalFinger(connectedComponent);
             if (connectedComponent.size() < calib.getMinimumComponentSize()
-                    || height < calib.getMinimumHeight()
-                    || !isFinger) {
+                    || height < calib.getMinimumHeight()) {
 
                 continue;
             }
 
             TrackedDepthPoint tp = createTouchPoint(connectedComponent);
-            touchPoints.add(tp);
+            newPoints.add(tp);
         }
-        return touchPoints;
+        return newPoints;
     }
 
 
     @Override
     protected TrackedDepthPoint createTouchPoint(ConnectedComponent connectedComponent) {
-
-//        filterTips(connectedComponent);
         Vec3D meanProj = connectedComponent.getMean(depthData.projectedPoints);
+        // DEBUG: Print out the points
+//        System.out.println("Points: ");
+//        for(int offset : connectedComponent){
+//            System.out.print(depthData.projectedPoints[offset] + " ");
+//        }
+//        System.out.println("\nMeanProj: " + meanProj);
         Vec3D meanKinect = connectedComponent.getMean(depthData.depthPoints);
         TrackedDepthPoint tp = new TrackedDepthPoint();
         tp.setDetection(this);
@@ -89,7 +90,6 @@ public abstract class TouchDetectionDepth extends TouchDetection {
         tp.setCreationTime(depthData.timeStamp);
         tp.set3D(false);
         tp.setConfidence(connectedComponent.size() / calib.getMinimumComponentSize());
-
         // TODO: re-enable this one day ?
 //        tp.setConnectedComponent(connectedComponent);
         tp.setDepthDataElements(depthData, connectedComponent);

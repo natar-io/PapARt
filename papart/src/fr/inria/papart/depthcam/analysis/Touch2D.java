@@ -7,6 +7,7 @@ package fr.inria.papart.depthcam.analysis;
 
 import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.depthcam.DepthData;
+import fr.inria.papart.depthcam.DepthData.DepthSelection;
 import fr.inria.papart.depthcam.PixelOffset;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.isInside;
 import fr.inria.papart.depthcam.devices.ProjectedDepthData;
@@ -17,38 +18,36 @@ import toxi.geom.Vec3D;
  *
  * @author Jeremy Laviole
  */
-public class Touch2D extends DepthRecognition{
+public class Touch2D extends DepthRecognition {
 
-    private DepthData.DepthSelection selection;
-
+    private DepthSelection selection;
 
     public Touch2D(DepthAnalysisImpl depthAnalysis) {
         super(depthAnalysis);
     }
-   
+
     @Override
-    public void recognize(Object filter, int quality){
+    public void recognize(Object filter, int quality) {
         find2DTouch((PlaneAndProjectionCalibration) filter, quality);
     }
-    
+
     /**
-     * 
-     * Fills the validPointsMask array and validPointsList list.
-     * Called by Simple2D.java
+     *
+     * Fills the validPointsMask array and validPointsList list. Called by
+     * Simple2D.java
+     *
      * @param calib incoming plane
      * @param skip2D precision
      */
     public void find2DTouch(PlaneAndProjectionCalibration calib, int skip2D) {
         // TODO: ensure that this has been computed.
 //         depthData.clearValidPoints();
-            selection = depthData.createSelection();
-         depthData.planeAndProjectionCalibration = calib;
-         depthAnalysis.doForEachPoint(skip2D, new Select2DPlaneProjection());
+        selection = depthData.createSelection();
+        depthData.planeAndProjectionCalibration = calib;
+        depthAnalysis.doForEachPoint(skip2D, new Select2DPlaneProjection());
 //        doForEachPoint(skip2D, new Select2DPointPlaneProjection());
     }
-    
-    
-    
+
     class Select2DPointPlaneProjection implements DepthAnalysis.DepthPointManiplation {
         @Override
         public void execute(Vec3D p, PixelOffset px) {
@@ -70,16 +69,24 @@ public class Touch2D extends DepthRecognition{
 
         @Override
         public void execute(Vec3D p, PixelOffset px) {
-            if (depthData.planeAndProjectionCalibration.hasGoodOrientationAndDistance(p)) {
+            depthData.planeAndProjectionCalibration.project(p, depthData.projectedPoints[px.offset]);
+
+            if (depthData.planeAndProjectionCalibration.hasGoodOrientationAndDistance(p) &&
+                    depthData.projectedPoints[px.offset].x() != 0 && 
+                    depthData.projectedPoints[px.offset].y() != 0 && 
+                    depthData.projectedPoints[px.offset].z() != 0) {
 
 //                Vec3D projected = depthData.planeAndProjectionCalibration.project(p);
 //                depthData.projectedPoints[px.offset] = projected;
-                depthData.planeAndProjectionCalibration.project(p, depthData.projectedPoints[px.offset]);
+
+//                depthData.planeAndProjectionCalibration.project(p, depthData.projectedPoints[px.offset]);
+
 //                if (isInside(depthData.projectedPoints[px.offset], 0.f, 1.f, 0.0f)) {
                 selection.validPointsMask[px.offset] = true;
                 selection.validPointsList.add(px.offset);
 //                }
             }
+
         }
     }
 
@@ -124,8 +131,7 @@ public class Touch2D extends DepthRecognition{
         }
     }
 
-    
-        class Select2DPointOverPlane implements DepthAnalysis.DepthPointManiplation {
+    class Select2DPointOverPlane implements DepthAnalysis.DepthPointManiplation {
 
         @Override
         public void execute(Vec3D p, PixelOffset px) {
@@ -165,9 +171,8 @@ public class Touch2D extends DepthRecognition{
         }
     }
 
-    
     public DepthData.DepthSelection getSelection() {
         return selection;
     }
-    
+
 }

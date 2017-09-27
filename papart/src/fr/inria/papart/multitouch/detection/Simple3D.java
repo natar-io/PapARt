@@ -130,7 +130,8 @@ public class Simple3D extends TouchDetectionDepth {
         touchRecognition.find3DTouch(planeAndProjCalibration, getPrecision());
         ArrayList<TrackedDepthPoint> newList = this.compute(depthAnalysis.getDepthData());
 
-        TouchPointTracker.trackPoints(touchPoints, newList, currentTime);
+        int imageTime = this.depthAnalysis.getDepthData().timeStamp;
+        TouchPointTracker.trackPoints(touchPoints, newList, imageTime);
     }
 
   
