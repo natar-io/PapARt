@@ -41,6 +41,7 @@ import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.utils.MathUtils;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -140,24 +141,24 @@ public class DepthTouchInput extends TouchInput {
                 depthAnalysis.computeDepthAndNormals(depthImage, colImage, touch2DPrecision);
                 touchDetection2D.findTouch(planeAndProjCalibration);
 
+                refineFingers();
+
                 boolean multiple = (touch3DPrecision % touch2DPrecision) == 0;
                 if (multiple) {
                     touchDetection3D.findTouch(planeAndProjCalibration);
                     findHands();
-//                    testPCA();
-                    TouchPointTracker.filterPositions(touchDetection2D.getTouchPoints());
-                    TouchPointTracker.filterPositions(touchDetection3D.getTouchPoints());
 
+//                    TouchPointTracker.filterPositions(touchDetection2D.getTouchPoints());
+//                    TouchPointTracker.filterPositions(touchDetection3D.getTouchPoints());
                 }
             } else {
                 if (touch3DPrecision > 0) {
                     depthAnalysis.computeDepthAndNormals(depthImage, colImage, touch3DPrecision);
                     touchDetection3D.setCurrentTime(parent.millis());
                     touchDetection3D.findTouch(planeAndProjCalibration);
-                    TouchPointTracker.filterPositions(touchDetection3D.getTouchPoints());
+//                    TouchPointTracker.filterPositions(touchDetection3D.getTouchPoints());
                 }
             }
-
         } catch (InterruptedException ex) {
             Logger.getLogger(DepthTouchInput.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();
@@ -168,58 +169,53 @@ public class DepthTouchInput extends TouchInput {
         }
     }
 
-    private void testPCA() {
+    private void refineFingers() {
+        ProjectedDepthData depthData = depthAnalysis.getDepthData();
 
-        for (TrackedDepthPoint pt : touchDetection2D.getTouchPoints()) {
-
-            pt.mainFinger = false;
-
-            // Array of all Points... 
-            double[][] dataPoints = new double[pt.getDepthDataElements().size()][3];
-
-//            System.out.println("CC: Size: " + pt.getDepthDataElements().size());
-            for (int i = 0; i < pt.getDepthDataElements().size(); i++) {
-                DepthDataElementProjected depthPoint = pt.getDepthDataElements().get(i);
-                dataPoints[i][0] = depthPoint.depthPoint.x;
-                dataPoints[i][1] = depthPoint.depthPoint.y;
-                dataPoints[i][2] = depthPoint.depthPoint.z;
+        Iterator<TrackedDepthPoint> it = touchDetection2D.getTouchPoints().iterator();
+        while (it.hasNext()) {
+            TrackedDepthPoint touch = it.next();
+            if (!touch.refineTouchAlongNormal(depthData)) {
+                it.remove();
+            } else {
+                if (!filterPCA(touch)) {
+                    it.remove();
+                }
             }
+        }
+    }
+
+    private boolean filterPCA(TrackedDepthPoint pt) {
+        // Array of all Points... 
+        double[][] dataPoints = new double[pt.getDepthDataElements().size()][3];
+
+        for (int i = 0; i < pt.getDepthDataElements().size(); i++) {
+            DepthDataElementProjected depthPoint = pt.getDepthDataElements().get(i);
+            dataPoints[i][0] = depthPoint.depthPoint.x;
+            dataPoints[i][1] = depthPoint.depthPoint.y;
+            dataPoints[i][2] = depthPoint.depthPoint.z;
+        }
 
 // ** each column corresponding to dimension. */
-            Matrix trainingData = new Matrix(dataPoints);
-            PCA pca = new PCA(trainingData);
+        Matrix trainingData = new Matrix(dataPoints);
+        PCA pca = new PCA(trainingData);
 
-            // This seem to work pretty good to identify the fingers. 
-            try {
-                double e0 = pca.getEigenvalue(0);
-                double e1 = pca.getEigenvalue(1);
-                double e2 = pca.getEigenvalue(2);
+        // This seem to work pretty good to identify the fingers. 
+        try {
+            double e0 = pca.getEigenvalue(0);
+            double e1 = pca.getEigenvalue(1);
+            double e2 = pca.getEigenvalue(2);
 
-//                System.out.println("Eigen values: " + e0 + " " + e1 + " " + e2);
-                if (!(e0 < 10 && e0 < 250
-                        && e1 > 10 && e1 < 40
-                        && e2 < 50)) {
-                    pt.mainFinger = false;
-                }
+            System.out.println("Eigen values: " + e0 + " " + e1 + " " + e2);
+            return e0 > 20
+                    && e0 < 500
+                    && e1 > 1
+                    && e1 < 200;
 
-            } catch (Exception e) {
-                System.out.println("Error in eigen value computing " + e + " nb points " + dataPoints.length);
-            }
-
-            /**
-             * Test data to be transformed. The same convention of representing
-             * data points as in the training data matrix is used.
-             */
-//        Matrix testData = new Matrix(new double[][] {
-//                {1, 2, 3, 4, 5, 6},
-//                {1, 2, 1, 2, 1, 2}});
-            /**
-             * The transformed test data.
-             */
-//        Matrix transformedData =
-//            pca.transform(testData, PCA.TransformationType.WHITENING);
-//        }
+        } catch (Exception e) {
+            return false;
         }
+
     }
 
     private void findHands() {
@@ -260,11 +256,12 @@ public class DepthTouchInput extends TouchInput {
 
         ArrayList<ArrayList<Integer>> offset2D = new ArrayList<>();
 
+        // Get the points from the fingers. 
         int fingerID = 0;
         for (TrackedDepthPoint pt : touchDetection2D.getTouchPoints()) {
 
+            // Reset main finger 
             pt.mainFinger = false;
-
             ArrayList<Integer> offsets = new ArrayList<>();
             for (DepthDataElementProjected depthPoint : pt.getDepthDataElements()) {
                 int offset = depthPoint.offset;
@@ -280,7 +277,7 @@ public class DepthTouchInput extends TouchInput {
 
                 copy.retainAll(touch3DOffsets);
 //                System.out.println("Common: " + copy.size());
-                if (copy.size() > 1) {
+                if (copy.size() > 4) {
                     pt.setAttachedHandID(handID);
                     touchDetection3D.getTouchPoints().get(handID).addFinger(fingerID);
 //                    System.out.println("Points in common : " + copy.size());
@@ -293,11 +290,13 @@ public class DepthTouchInput extends TouchInput {
         // For each potential «hand»
         for (TrackedDepthPoint hand : touchDetection3D.getTouchPoints()) {
             ArrayList<Integer> fingers = hand.getFingers();
-            if (fingers.size() == 0) {
+            if (fingers.isEmpty()) {
                 continue;
             }
             float maxDist = Float.MIN_VALUE;
             int minID = 0;
+
+            hand.filter(depthData.timeStamp);
 
             // find the further finger
 //            System.out.println("nb fingers: " + fingers.size() + " nbTouchPoints " + touchDetection2D.getTouchPoints().size());
@@ -306,46 +305,48 @@ public class DepthTouchInput extends TouchInput {
                 // Refine all the touches
                 TrackedDepthPoint finger = touchDetection2D.getTouchPoints().get(fingers.get(i));
 
+                // Select the points away from the hand.
                 finger.refineTouchWithHand(hand.getPositionDepthCam(), depthData);
+
+                finger.filter(depthData.timeStamp);
+
                 float dist = finger.distanceTo(hand);
+//                System.out.println("fDist: " + dist);
                 if (dist > maxDist) {
                     maxDist = dist;
                     minID = fingers.get(i);
                 }
             }
 
-            // set as main
-            touchDetection2D.getTouchPoints().get(minID).setMainFinger();
+            TrackedDepthPoint furtherAwayFinger = touchDetection2D.getTouchPoints().get(fingers.get(minID));
+                // set as main  -- Disabled for debug
+              furtherAwayFinger.setMainFinger();
 
             // move outwards from the hand by x  20 mm.
-            Vec3D fingerPosition = touchDetection2D.getTouchPoints().get(minID).getPositionKinect();
+            Vec3D fingerPosition =  furtherAwayFinger.getPositionKinect();
 
-            if (touchDetection2D.getTouchPoints().get(minID).isUpdated) {
+            // Move the points towards the opposite size
+            if (furtherAwayFinger.isUpdated) {
                 Vec3D handPosition = hand.getPositionKinect();
 
                 Vec3D addedVec = fingerPosition.copy();
                 Vec3D dist = addedVec.sub(handPosition).normalize().scale(30);
 //            System.out.println("Distance added: " + dist);
                 // DISABLED
-//                fingerPosition.addSelf(dist);
+                fingerPosition.addSelf(dist);
 
                 // project again. 
-                PVector fingerPositionProj = touchDetection2D.getTouchPoints().get(minID).getPosition();
+                PVector fingerPositionProj = furtherAwayFinger.getPosition();
                 Vec3D output = new Vec3D();
-                depthData.planeAndProjectionCalibration.project(fingerPosition, output);
+//                depthData.planeAndProjectionCalibration.project(fingerPosition, output);
+
                 // Warning: The touch is updated twice, the speed will be invalid :(
 
                 // Force a position,  so that speed may stay valid  
                 // DISABLED
-//                touchDetection2D.getTouchPoints().get(minID).getPosition().set(output.x, output.y, output.z);
+//                furtherAwayFinger.getPosition().set(output.x, output.y, output.z);
             }
         }
-        // Try to match the hand with the points... 
-        // A 3D touch can contain multiple 2D touch or none. 
-        // a 2D touch can belong to none or one 3D. 
-        // Match the elements in the hand, and the ones in the touch
-        // Attach the corresponding hand IDs.
-        // Set as "main" touch the one futher away from the hand. 
     }
 
     private static final Touch INVALID_TOUCH = new Touch();

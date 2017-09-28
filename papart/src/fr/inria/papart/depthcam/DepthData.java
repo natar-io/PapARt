@@ -106,7 +106,7 @@ public class DepthData {
     protected void fillDepthDataElement(DepthDataElement dde, int i) {
         dde.pointColor = pointColors[i];
         dde.depthPoint = depthPoints[i].copy();
-        if (dde.normal != null) {
+        if (normals[i] != null) {
             dde.normal = normals[i].copy();
         }
         // Is the selection relevant afterwards ?

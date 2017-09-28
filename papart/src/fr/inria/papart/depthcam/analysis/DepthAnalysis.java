@@ -31,7 +31,7 @@ import toxi.geom.Vec3D;
  * TODO: Kinect - Kinect 4 Processing - Kinect OpenCV - Kinect Multi-Touch With
  * inheritance !
  *
- * @author Jeremy Laviole  - laviole@rea.lity.tech
+ * @author Jeremy Laviole - laviole@rea.lity.tech
  */
 public abstract class DepthAnalysis implements WithSize {
 
@@ -40,7 +40,9 @@ public abstract class DepthAnalysis implements WithSize {
 
     public static PApplet papplet;
     protected DepthComputation depthComputationMethod;
-    /**  Link to the depth data */
+    /**
+     * Link to the depth data
+     */
     protected Object depthBuffer;
 
     public static final Vec3D INVALID_POINT = new Vec3D(0, 0, 0);
@@ -57,8 +59,6 @@ public abstract class DepthAnalysis implements WithSize {
     protected float getDepth(int offset) {
         return depthComputationMethod.findDepth(offset, depthBuffer);
     }
-
-    
 
     public interface InvalidPointManiplation {
 
@@ -81,16 +81,6 @@ public abstract class DepthAnalysis implements WithSize {
         }
     }
 
-    class SetNormalRelative implements DepthPointManiplation {
-
-        @Override
-        public void execute(Vec3D p, PixelOffset px) {
-//            depthData.connexity.compute(px.x, px.y);
-            if (depthData.normals[px.offset] != null) {
-                depthData.normals[px.offset].sub(depthData.planeAndProjectionCalibration.getPlane().normal);
-            }
-        }
-    }
 
     private Vec3D computeNormalImpl(Vec3D point, PixelOffset px) {
 
@@ -114,13 +104,14 @@ public abstract class DepthAnalysis implements WithSize {
                 }
             }
         }
-
+//        System.out.println("Normal computed.");
 //        tryComputeMediumSquare(neighbours, normal);
         // tryComputeOneTriangle(neighbours, point, normal);
         normal.normalize();
         return normal;
     }
 
+    // Null of INVALID ?
     private boolean tryComputeLarge(Vec3D[] neighbours, Vec3D normal) {
         if (neighbours[Connexity.TOPLEFT] != null
                 && neighbours[Connexity.TOPRIGHT] != null
@@ -234,7 +225,6 @@ public abstract class DepthAnalysis implements WithSize {
 //    public boolean[] getValidPoints() {
 //        return depthData.validPointsMask;
 //    }
-
     public int[] getConnexity() {
         return this.connexity;
     }

@@ -51,8 +51,9 @@ public class PointCloudForDepthAnalysis extends PointCloud implements PConstants
     }
 
     /**
-     * Warning: invalid points are also displayed. 
-     * @param depthAnalysis 
+     * Warning: invalid points are also displayed.
+     *
+     * @param depthAnalysis
      */
     public void updateWith(DepthAnalysisPImageView depthAnalysis) {
 //        boolean[] valid = depthAnalysis.getValidPoints();
@@ -64,28 +65,27 @@ public class PointCloudForDepthAnalysis extends PointCloud implements PConstants
         nbColors = 0;
 
 //        for (int i = 0; i < kinect.getDepthSize(); i++) {
-        
         int k = 0; // k is the 3D point cloud memory.
         for (int y = 0; y < depthAnalysis.getHeight(); y += precision) {
             for (int x = 0; x < depthAnalysis.getWidth(); x += precision) {
 
                 int i = x + y * depthAnalysis.getWidth();
-                
+
 //                if (valid[i]) {
-                    Vec3D p = points[i];
-                    int c = colorsImg.pixels[i];
+                Vec3D p = points[i];
+                int c = colorsImg.pixels[i];
 
-                    verticesJava[k++] = p.x;
-                    verticesJava[k++] = p.y;
-                    verticesJava[k++] = -p.z;
-                    verticesJava[k++] = 1;
+                verticesJava[k++] = p.x;
+                verticesJava[k++] = p.y;
+                verticesJava[k++] = -p.z;
+                verticesJava[k++] = 1;
 
-                    int c2 = javaToNativeARGB(c);
+                int c2 = javaToNativeARGB(c);
 
-                    nbVertices++;
+                nbVertices++;
 
-                    colorsJava[nbColors++] = c2;
-                    // Think about dividing the color intensity by 255 in the shader...
+                colorsJava[nbColors++] = c2;
+                // Think about dividing the color intensity by 255 in the shader...
 //                }
 
             }
@@ -107,17 +107,13 @@ public class PointCloudForDepthAnalysis extends PointCloud implements PConstants
 
         parentApplet.pushStyle();
         //            ID Color
-        parentApplet.colorMode(HSB, 8, 100, 100);
-        
+//        parentApplet.colorMode(HSB, 8, 100, 100);
+
         // Normal Color 
-        parentApplet.colorMode(RGB, 1,1,1);
-        
-        int id = 0;
+        parentApplet.colorMode(RGB, 1, 1, 1);
+        int defaultColor = this.parentApplet.color(1, 1, 1);
+        int defaultColor2 = javaToNativeARGB(defaultColor);
         for (TrackedDepthPoint touch : touchs) {
-//            ID Color
-//            int c = this.parentApplet.color(id % 8, 100, 100);
-//            int c2 = javaToNativeARGB(c);
-            id++;
 
             for (DepthDataElementProjected dde : touch.getDepthDataElements()) {
                 Vec3D p = dde.depthPoint;
@@ -127,13 +123,13 @@ public class PointCloudForDepthAnalysis extends PointCloud implements PConstants
                 verticesJava[k++] = 1;
 
                 nbVertices++;
-                
-                if (dde.normal != null){
-                 int c = this.parentApplet.color(dde.normal.x, dde.normal.y, dde.normal.z);
-                 int c2 = javaToNativeARGB(c); 
-                         colorsJava[nbColors++] = c2;
+
+                if (dde.normal != null) {
+                    int c = this.parentApplet.color(dde.normal.x, dde.normal.y, dde.normal.z);
+                    int c2 = javaToNativeARGB(c);
+                    colorsJava[nbColors++] = c2;
                 } else {
-                            colorsJava[nbColors++] = 100;
+                    colorsJava[nbColors++] = defaultColor2;
                 }
             }
         }
@@ -145,7 +141,7 @@ public class PointCloudForDepthAnalysis extends PointCloud implements PConstants
         colorsNative.rewind();
         colorsNative.put(colorsJava, 0, nbColors);
     }
-    
+
     public void updateWithIDColors(DepthAnalysisImpl kinect, ArrayList<TrackedDepthPoint> touchs) {
         Vec3D[] points = kinect.getDepthPoints();
 
@@ -155,7 +151,7 @@ public class PointCloudForDepthAnalysis extends PointCloud implements PConstants
 
         parentApplet.pushStyle();
         parentApplet.colorMode(HSB, 8, 100, 100);
-        
+
         int id = 0;
         for (TrackedDepthPoint touch : touchs) {
             int c = this.parentApplet.color(id % 8, 100, 100);

@@ -50,8 +50,8 @@ public class Connexity {
     private final int width, height;
     private float connexityDist = 10;
     public float DEFAULT_CONNEXITY_DIST = 10;
-    public byte[] connexity;  // TODO: check for Byte instead of int
-    public byte[] connexitySum;  // TODO: check for Byte instead of int
+    public byte[] connexity;
+    public byte[] connexitySum;
     private Vec3D[] points;
     private int precision = 1;
 
@@ -95,7 +95,7 @@ public class Connexity {
         byte connNo = 0;
 //        for (int y1 = y - 1; y1 <= y + 1; y1 = y1 + 1) {
 //            for (int x1 = x - 1; x1 <= x + 1; x1 = x1 + 1) {
-         for (int y1 = y - precision; y1 <= y + precision; y1 = y1 + precision) {
+        for (int y1 = y - precision; y1 <= y + precision; y1 = y1 + precision) {
             for (int x1 = x - precision; x1 <= x + precision; x1 = x1 + precision) {
                 if (x1 == x && y1 == y) {
                     continue;

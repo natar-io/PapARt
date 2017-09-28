@@ -21,6 +21,8 @@
 package fr.inria.papart.multitouch.detection;
 
 import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
+import fr.inria.papart.depthcam.DepthDataElement;
+import fr.inria.papart.depthcam.DepthDataElementProjected;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.INVALID_POINT;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.isValidPoint;
 import fr.inria.papart.depthcam.analysis.DepthAnalysisImpl;
@@ -67,36 +69,42 @@ public class Simple2D extends TouchDetectionDepth {
         public boolean checkPoint(int candidate, int currentPoint) {
 //            float distanceToCurrent = depthData.depthPoints[offset].distanceTo(depthData.depthPoints[currentPoint]);
 
-            float dN = (depthData.planeAndProjectionCalibration.getPlane().normal).distanceToSquared(depthData.normals[currentPoint]);
-            float d1 = (depthData.planeAndProjectionCalibration.getPlane().getDistanceToPoint(depthData.depthPoints[currentPoint]));
-//            System.out.println("d1: " + d1 + " dN: " + dN);
-//TODO: Magic numbers !!
-            boolean goodNormal = (depthData.normals[candidate] != null && dN > 3f) || (d1 > 8f);  // Higher  than Xmm
-
-            assert (isValidPoint(depthData.depthPoints[currentPoint]));
-            assert (isValidPoint(depthData.projectedPoints[currentPoint]));
-
+            // DEBUG
+//            assert (isValidPoint(depthData.depthPoints[currentPoint]));
+//            assert (isValidPoint(depthData.projectedPoints[currentPoint]));
             boolean classicCheck = !assignedPoints[candidate] // not assigned   
                     //                    && depthData.validPointsMask[offset] // is valid
                     //                                        && depthData.depthPoints[offset] != INVALID_POINT // is valid
                     //                                        && depthData.depthPoints[offset].distanceTo(INVALID_POINT) >= 0.01f
+                    && depthData.normals[candidate] != null  //  good normal is good health
                     && isValidPoint(depthData.projectedPoints[candidate]) //  TODO WHY "0" and non invalidpoints here.
                     && isValidPoint(depthData.depthPoints[candidate]) //  TODO WHY "0" and non invalidpoints here.
-                    && depthData.depthPoints[inititalPoint].distanceTo(depthData.depthPoints[currentPoint]) < calib.getMaximumDistanceInit()
+                    && depthData.depthPoints[inititalPoint].distanceTo(depthData.depthPoints[candidate]) < calib.getMaximumDistanceInit()
                     && depthData.depthPoints[candidate].distanceTo(depthData.depthPoints[currentPoint]) < calib.getMaximumDistance();
 
             // A close one does not have a correct normal.
-            if (classicCheck && !goodNormal) {
-                if (!contactPoints.containsKey(currentCompo)) {
-                    contactPoints.put(currentCompo, new ConnectedComponent());
-                }
-                ConnectedComponent list = contactPoints.get(currentCompo);
-                if (!list.contains(currentPoint)) {
-                    list.add(currentPoint);
-                }
-//                System.out.println("Adding non normal point...");
+//            if (classicCheck && !goodNormal) {
+//                if (!contactPoints.containsKey(currentCompo)) {
+//                    contactPoints.put(currentCompo, new ConnectedComponent());
+//                }
+//                ConnectedComponent list = contactPoints.get(currentCompo);
+//                if (!list.contains(currentPoint)) {
+//                    list.add(currentPoint);
+//                }
+////                System.out.println("Adding non normal point...");
+//            }/
+            boolean goodNormal = true;
+            
+            if (depthData.normals[candidate] != null) {
+                float dN = (depthData.planeAndProjectionCalibration.getPlane().normal).distanceToSquared(depthData.normals[candidate]);
+                float d1 = (depthData.planeAndProjectionCalibration.getPlane().getDistanceToPoint(depthData.depthPoints[candidate]));
+                
+                // WARNING MAGIC NUMBER HERE
+//                boolean higher = depthData.projectedPoints[candidate].z < depthData.projectedPoints[currentPoint].z;
+                
+                goodNormal = (depthData.normals[candidate] != null && dN > calib.getNormalFilter()) || d1 > 20f;  // Higher  than Xmm
+               
             }
-
             return classicCheck && goodNormal;
         }
     }
@@ -137,7 +145,10 @@ public class Simple2D extends TouchDetectionDepth {
         ConnectedComponent cc = findNeighboursRec(startingPoint, 0, getX(startingPoint), getY(startingPoint));
 
         // Do not accept 1 point compo ?!
-        if (cc.size() == 1) {
+        if (cc.size() <= calib.getMinimumComponentSize()) {
+
+            clearPoints(cc);
+            // Remove all points
             contactPoints.remove(currentCompo);
             connectedComponentImage[startingPoint] = NO_CONNECTED_COMPONENT;
             return INVALID_COMPONENT;
@@ -146,6 +157,12 @@ public class Simple2D extends TouchDetectionDepth {
         cc.setId(currentCompo);
         currentCompo++;
         return cc;
+    }
+
+    protected void clearPoints(ConnectedComponent cc) {
+        for (Integer pt : cc) {
+            connectedComponentImage[pt] = NO_CONNECTED_COMPONENT;
+        }
     }
 
     // Disabled for testing distance from hand

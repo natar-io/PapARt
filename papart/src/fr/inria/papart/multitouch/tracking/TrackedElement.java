@@ -71,7 +71,7 @@ public class TrackedElement {
     private OneEuroFilter[] filters;
     public static float filterFreq = 30f;
     public static float filterCut = 0.02f;
-    public static float filterBeta = 8.000f;
+    public static float filterBeta = 0.2000f;
     public static final int NO_TIME = -1;
     private int NUMBER_OF_FILTERS = 3;
 
@@ -84,7 +84,7 @@ public class TrackedElement {
         try {
             filters = new OneEuroFilter[NUMBER_OF_FILTERS];
             for (int i = 0; i < NUMBER_OF_FILTERS; i++) {
-                filters[i] = new OneEuroFilter(filterFreq, filterCut, filterBeta);
+                filters[i] = new OneEuroFilter(filterFreq, filterCut, filterBeta, 0.5f);
             }
         } catch (Exception e) {
             System.out.println("OneEuro Exception. Pay now." + e);
@@ -172,6 +172,7 @@ public class TrackedElement {
             position.y = (float) filters[1].filter(position.y);
             position.z = (float) filters[2].filter(position.z);
         } catch (Exception e) {
+            e.printStackTrace();
             System.out.println("OneEuro init Exception. Pay now." + e);
         }
     }
@@ -181,9 +182,9 @@ public class TrackedElement {
      */
     public void filter(int updateTime) {
         try {
-            position.x = (float) filters[0].filter(position.x, updateTime);
-            position.y = (float) filters[1].filter(position.y, updateTime);
-            position.z = (float) filters[2].filter(position.z, updateTime);
+            position.x = (float) filters[0].filter(position.x, updateTime /1000f);
+            position.y = (float) filters[1].filter(position.y, updateTime /1000f);
+            position.z = (float) filters[2].filter(position.z, updateTime /1000f);
         } catch (Exception e) {
             System.out.println("OneEuro init Exception. Pay now." + e);
         }

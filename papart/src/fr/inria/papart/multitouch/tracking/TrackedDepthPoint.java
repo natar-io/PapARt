@@ -25,6 +25,7 @@ import fr.inria.papart.multitouch.ConnectedComponent;
 import fr.inria.papart.multitouch.Touch;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import toxi.geom.Vec3D;
 
@@ -120,7 +121,7 @@ public class TrackedDepthPoint extends TrackedElement {
     public void setDepthDataElements(ProjectedDepthData depthData, ConnectedComponent connectedComponent) {
         depthDataElements.clear();
         for (Integer i : connectedComponent) {
-            depthDataElements.add(depthData.getElementKinect(i));
+            depthDataElements.add(depthData.getDepthElement(i));
         }
     }
 
@@ -202,16 +203,17 @@ public class TrackedDepthPoint extends TrackedElement {
     /**
      * Select the points the most away from another tracked depth point
      *
-     * @param pt
+     * @param handPos
+     * @param depthData
      */
     public void refineTouchWithHand(Vec3D handPos, ProjectedDepthData depthData) {
 
         ArrayList<DepthDataElementProjected> copy = new ArrayList<>();
         copy.addAll(getDepthDataElements());
         copy.sort(new DistanceComparator(handPos));
-        
-        int size = 10;
-        if (copy.size() < 10) {
+
+        int size = 8;
+        if (copy.size() < size) {
             size = copy.size();
         }
         // Keep the last 10 points.
@@ -226,8 +228,81 @@ public class TrackedDepthPoint extends TrackedElement {
         setPositionKinect(meanDepthCam);
         setCreationTime(depthData.timeStamp);
 
-//        setDepthDataElements(depthData, connectedComponent);
+        setDepthDataElements(depthData, connectedComponent);
 //        System.out.println("Points : " + connectedComponent.size());
+    }
+
+    public boolean refineTouchAlongNormal(ProjectedDepthData depthData) {
+        ArrayList<DepthDataElementProjected> dx = new ArrayList<>();
+        dx.addAll(getDepthDataElements());
+        // X filtering.
+
+        float normalThreshold = 0.3f;
+        int numberRequired = 6;
+
+        Iterator<DepthDataElementProjected> it = dx.iterator();
+        while (it.hasNext()) {
+            DepthDataElementProjected dde = it.next();
+            if (dde.normal != null) {
+                if (!(dde.normal.x() > normalThreshold
+                        || dde.normal.x() < -normalThreshold)) {
+                    it.remove();
+                }
+            }
+        }
+
+        ArrayList<DepthDataElementProjected> dy = new ArrayList<>();
+        dy.addAll(getDepthDataElements());
+
+        // Y filtering.
+        it = dy.iterator();
+        while (it.hasNext()) {
+            DepthDataElementProjected dde = it.next();
+
+            if (dde.normal != null) {
+                if (!(dde.normal.y() > normalThreshold
+                        || dde.normal.y() < -normalThreshold)) {
+                    it.remove();
+                }
+            }
+
+//            if (dde.normal == null
+//                    // TODO: MAGIC NUMBER
+//                    // the normal is the orientation relative to the underlying plane.
+//                    || dde.normal.y() < normalThreshold
+//                    || dde.normal.y() > normalThreshold) {
+//                it.remove();
+//            }
+        }
+//        System.out.println("Copy size: " + copy.size());
+// WARNING: MAGIC NUMBER.
+        if (dx.size() < numberRequired || dy.size() < numberRequired) {
+//            this.mainFinger = false;
+            return false;
+        }
+
+        ConnectedComponent connectedComponent;
+        if (dx.size() > dy.size()) {
+            connectedComponent = ListToCC(dx);
+        } else {
+            if (dy.size() > dx.size()) {
+                connectedComponent = ListToCC(dy);
+            } else {
+                connectedComponent = ListToCC(dx);
+                connectedComponent.addAll(ListToCC(dy));
+            }
+        }
+
+//        this.mainFinger = true;
+        Vec3D meanProj, meanDepthCam;
+        meanProj = connectedComponent.getMean(depthData.projectedPoints);
+        meanDepthCam = connectedComponent.getMean(depthData.depthPoints);
+        setPosition(meanProj);
+        setPositionKinect(meanDepthCam);
+        setCreationTime(depthData.timeStamp);
+        setDepthDataElements(depthData, connectedComponent);
+//        System.out.println("Points : " + connectedComponent.size()); }
+        return true;
     }
 
     class DistanceComparator implements Comparator {

@@ -37,6 +37,7 @@ public class PlanarTouchCalibration extends Calibration {
     static final String MIN_COPO_SIZE_XML_NAME = "MinConnectedCompoSize";
     static final String MIN_HEIGHT_XML_NAME = "MinHeight";
     static final String MAX_RECURSION_XML_NAME = "MaxRecursion";
+    static final String NORMAL_FILTER_XML_NAME = "NormalFilter";
     static final String TRACKING_FORGET_TIME_XML_NAME = "TrackingForgetTime";
     static final String TRACKING_MAX_DIST_TIME_XML_NAME = "TrackingMaxDist";
     static final String SEARCH_DEPTH_XML_NAME = "SearchDepth";
@@ -46,6 +47,7 @@ public class PlanarTouchCalibration extends Calibration {
     private float maximumDistance = 10f;    // in mm
     private float maximumDistanceInit = 50f;    // in mm
     private float minimumHeight = 1; // mm
+    private float normalFilter = 1; // normalized distance to angle
 
     private int minimumComponentSize = 3;   // in px
     private int searchDepth = 10;
@@ -72,6 +74,7 @@ public class PlanarTouchCalibration extends Calibration {
         xml.setFloat(MAX_DIST_XML_NAME, maximumDistance);
         xml.setFloat(MAX_DIST_INIT_XML_NAME, maximumDistanceInit);
         xml.setFloat(MIN_HEIGHT_XML_NAME, minimumHeight);
+        xml.setFloat(NORMAL_FILTER_XML_NAME, normalFilter);
 
         xml.setInt(MIN_COPO_SIZE_XML_NAME, minimumComponentSize);
         xml.setInt(MAX_RECURSION_XML_NAME, maximumRecursion);
@@ -92,6 +95,7 @@ public class PlanarTouchCalibration extends Calibration {
         searchDepth = xml.getInt(SEARCH_DEPTH_XML_NAME);
         precision = xml.getInt(PRECISION_XML_NAME);
 
+        normalFilter = xml.getFloat(NORMAL_FILTER_XML_NAME);
         trackingForgetTime = xml.getInt(TRACKING_FORGET_TIME_XML_NAME);
         trackingMaxDistance = xml.getFloat(TRACKING_MAX_DIST_TIME_XML_NAME);
     }
@@ -106,6 +110,7 @@ public class PlanarTouchCalibration extends Calibration {
         this.searchDepth = calib.searchDepth;
         this.precision = calib.precision;
 
+        this.normalFilter = calib.normalFilter;
         this.trackingForgetTime = calib.trackingForgetTime;
         this.trackingMaxDistance = calib.trackingMaxDistance;
     }
@@ -209,6 +214,14 @@ public class PlanarTouchCalibration extends Calibration {
 
     public void setTrackingMaxDistance(float trackDistance) {
         this.trackingMaxDistance = trackDistance;
+    }
+
+    public float getNormalFilter() {
+        return normalFilter;
+    }
+
+    public void setNormalFilter(float normalFilter) {
+        this.normalFilter = normalFilter;
     }
 
     @Override

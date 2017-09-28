@@ -169,7 +169,7 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         }
         if (depthCameraDevice instanceof KinectOne) {
             depthComputationMethod = new KinectOneDepth();
-             depthBuffer = this.depthRaw;
+            depthBuffer = this.depthRaw;
         }
         if (depthCameraDevice instanceof RealSense) {
             if (((CameraRealSense) ((RealSense) depthCameraDevice).getMainCamera()).isStarted()) {
@@ -183,14 +183,18 @@ public class DepthAnalysisImpl extends DepthAnalysis {
     public void computeDepthAndNormals(opencv_core.IplImage depth, opencv_core.IplImage color, int skip2D) {
         updateRawDepth(depth);
         // optimisation no Color. 
-        //        updateRawColor(color);
+        // updateRawColor(color);
         depthData.clear();
         depthData.timeStamp = papplet.millis();
-        computeDepthAndDo(skip2D, new DoNothing());
+
         depthData.connexity.setPrecision(skip2D);
-        doForEachPoint(skip2D, new ComputeNormal());
+
+        computeDepthAndDo(skip2D, new ComputeNormal());
+     
+//        computeDepthAndDo(skip2D, new DoNothing());
+//        doForEachPoint(skip2D, new ComputeNormal());
     }
-    
+
     public void computeDepthAndDo(int precision, DepthPointManiplation manip) {
         PixelList pixels = new PixelList(precision);
 
@@ -242,7 +246,7 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         }
     }
 
-    protected void doForEachValidPoint(int precision, DepthPointManiplation manip, 
+    protected void doForEachValidPoint(int precision, DepthPointManiplation manip,
             DepthData.DepthSelection selection) {
         if (precision <= 0) {
             return;
@@ -304,8 +308,9 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         this.farThreshold = far;
     }
 
-    /** Experimental Class to filter depth points.
-     * 
+    /**
+     * Experimental Class to filter depth points.
+     *
      */
     class TimeFilterDepth implements DepthPointManiplation {
 
@@ -366,8 +371,9 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         }
     }
 
-    /** Experimental Class to filter handle SR300 distorsions.
-     * 
+    /**
+     * Experimental Class to filter handle SR300 distorsions.
+     *
      */
     class UndistortSR300Depth implements DepthPointManiplation {
 
@@ -391,8 +397,9 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         }
     }
 
-     /** Experimental Class to find hands (old).
-     * 
+    /**
+     * Experimental Class to find hands (old).
+     *
      */
 //    class SelectPlaneTouchHand implements DepthPointManiplation {
 //
@@ -417,8 +424,6 @@ public class DepthAnalysisImpl extends DepthAnalysis {
 //            }
 //        }
 //    }
-
-   
     // TODO: What about this image Data ?
     class SetImageData implements DepthPointManiplation {
 
@@ -439,6 +444,7 @@ public class DepthAnalysisImpl extends DepthAnalysis {
 
     // TODO: array ? or what instead ?
     public class PixelList implements Iterable<PixelOffset> {
+
         int precision = 1;
         int begin = 0;
         int end;

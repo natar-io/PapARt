@@ -45,10 +45,24 @@ public class Touch2D extends DepthRecognition {
         selection = depthData.createSelection();
         depthData.planeAndProjectionCalibration = calib;
         depthAnalysis.doForEachPoint(skip2D, new Select2DPlaneProjection());
+
+        depthAnalysis.doForEachPoint(skip2D, new SetNormalRelative());
 //        doForEachPoint(skip2D, new Select2DPointPlaneProjection());
     }
 
+    class SetNormalRelative implements DepthAnalysis.DepthPointManiplation {
+
+        @Override
+        public void execute(Vec3D p, PixelOffset px) {
+//            depthData.connexity.compute(px.x, px.y);
+            if (depthData.normals[px.offset] != null) {
+                depthData.normals[px.offset].sub(depthData.planeAndProjectionCalibration.getPlane().normal);
+            }
+        }
+    }
+
     class Select2DPointPlaneProjection implements DepthAnalysis.DepthPointManiplation {
+
         @Override
         public void execute(Vec3D p, PixelOffset px) {
             if (depthData.planeAndProjectionCalibration.hasGoodOrientationAndDistance(p)) {
@@ -71,16 +85,14 @@ public class Touch2D extends DepthRecognition {
         public void execute(Vec3D p, PixelOffset px) {
             depthData.planeAndProjectionCalibration.project(p, depthData.projectedPoints[px.offset]);
 
-            if (depthData.planeAndProjectionCalibration.hasGoodOrientationAndDistance(p) &&
-                    depthData.projectedPoints[px.offset].x() != 0 && 
-                    depthData.projectedPoints[px.offset].y() != 0 && 
-                    depthData.projectedPoints[px.offset].z() != 0) {
+            if (depthData.planeAndProjectionCalibration.hasGoodOrientationAndDistance(p)
+                    && depthData.projectedPoints[px.offset].x() != 0
+                    && depthData.projectedPoints[px.offset].y() != 0
+                    && depthData.projectedPoints[px.offset].z() != 0) {
 
 //                Vec3D projected = depthData.planeAndProjectionCalibration.project(p);
 //                depthData.projectedPoints[px.offset] = projected;
-
 //                depthData.planeAndProjectionCalibration.project(p, depthData.projectedPoints[px.offset]);
-
 //                if (isInside(depthData.projectedPoints[px.offset], 0.f, 1.f, 0.0f)) {
                 selection.validPointsMask[px.offset] = true;
                 selection.validPointsList.add(px.offset);

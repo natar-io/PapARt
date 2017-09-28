@@ -68,7 +68,12 @@ public class ProjectedDepthData extends DepthData {
 //        connexity = new Connexity(projectedPoints, width, height);
     }
 
+    @Deprecated
     public DepthDataElementProjected getElementKinect(int i) {
+        return getDepthElement(i);
+    }
+    
+    public DepthDataElementProjected getDepthElement(int i) {
         DepthDataElementProjected dde = new DepthDataElementProjected();
         fillDepthDataElement(dde, i);
         return dde;
@@ -78,7 +83,6 @@ public class ProjectedDepthData extends DepthData {
         super.fillDepthDataElement(ddek, i);
         ddek.projectedPoint = projectedPoints[i].copy();
         ddek.touchAttribute = touchAttributes[i];
-//        ddek.validPoint3D = validPointsMask3D[i];
     }
 
     @Override
