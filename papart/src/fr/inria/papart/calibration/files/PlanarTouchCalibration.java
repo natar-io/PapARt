@@ -42,6 +42,11 @@ public class PlanarTouchCalibration extends Calibration {
     static final String TRACKING_MAX_DIST_TIME_XML_NAME = "TrackingMaxDist";
     static final String SEARCH_DEPTH_XML_NAME = "SearchDepth";
     static final String PRECISION_XML_NAME = "Precision";
+    static final String TEST1_XML_NAME = "Test1";
+    static final String TEST2_XML_NAME = "Test2";
+    static final String TEST3_XML_NAME = "Test3";
+    static final String TEST4_XML_NAME = "Test4";
+    static final String TEST5_XML_NAME = "Test5";
 
     // Variable parameters... going to a specific class for saving.  
     private float maximumDistance = 10f;    // in mm
@@ -57,6 +62,13 @@ public class PlanarTouchCalibration extends Calibration {
     // tracking
     private int trackingForgetTime = 250; // ms 
     private float trackingMaxDistance = 30; // in mm
+
+    // Testing
+    private float test1 = 1;
+    private float test2 = 1;
+    private float test3 = 1;
+    private float test4 = 1;
+    private float test5 = 1;
 
     // TODO: implement this !
     @Override
@@ -83,6 +95,12 @@ public class PlanarTouchCalibration extends Calibration {
 
         xml.setInt(TRACKING_FORGET_TIME_XML_NAME, trackingForgetTime);
         xml.setFloat(TRACKING_MAX_DIST_TIME_XML_NAME, trackingMaxDistance);
+
+        xml.setFloat(TEST1_XML_NAME, test1);
+        xml.setFloat(TEST2_XML_NAME, test2);
+        xml.setFloat(TEST3_XML_NAME, test3);
+        xml.setFloat(TEST4_XML_NAME, test4);
+        xml.setFloat(TEST5_XML_NAME, test5);
     }
 
     private void getFrom(XML xml) {
@@ -98,6 +116,12 @@ public class PlanarTouchCalibration extends Calibration {
         normalFilter = xml.getFloat(NORMAL_FILTER_XML_NAME);
         trackingForgetTime = xml.getInt(TRACKING_FORGET_TIME_XML_NAME);
         trackingMaxDistance = xml.getFloat(TRACKING_MAX_DIST_TIME_XML_NAME);
+
+        test1 = xml.getFloat(TEST1_XML_NAME);
+        test2 = xml.getFloat(TEST2_XML_NAME);
+        test3 = xml.getFloat(TEST3_XML_NAME);
+        test4 = xml.getFloat(TEST4_XML_NAME);
+        test5 = xml.getFloat(TEST5_XML_NAME);
     }
 
     public void setTo(PlanarTouchCalibration calib) {
@@ -113,6 +137,13 @@ public class PlanarTouchCalibration extends Calibration {
         this.normalFilter = calib.normalFilter;
         this.trackingForgetTime = calib.trackingForgetTime;
         this.trackingMaxDistance = calib.trackingMaxDistance;
+
+        // test
+        this.test1 = calib.test1;
+        this.test2 = calib.test2;
+        this.test3 = calib.test3;
+        this.test4 = calib.test4;
+        this.test5 = calib.test5;
     }
 
     @Override
@@ -222,6 +253,46 @@ public class PlanarTouchCalibration extends Calibration {
 
     public void setNormalFilter(float normalFilter) {
         this.normalFilter = normalFilter;
+    }
+
+    public float getTest1() {
+        return test1;
+    }
+
+    public void setTest1(float test1) {
+        this.test1 = test1;
+    }
+
+    public float getTest2() {
+        return test2;
+    }
+
+    public void setTest2(float test2) {
+        this.test2 = test2;
+    }
+
+    public float getTest3() {
+        return test3;
+    }
+
+    public void setTest3(float test3) {
+        this.test3 = test3;
+    }
+
+    public float getTest4() {
+        return test4;
+    }
+
+    public void setTest4(float test4) {
+        this.test4 = test4;
+    }
+
+    public float getTest5() {
+        return test5;
+    }
+
+    public void setTest5(float test5) {
+        this.test5 = test5;
     }
 
     @Override

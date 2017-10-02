@@ -90,6 +90,7 @@ public class CameraRealSense extends CameraRGBIRDepth {
         }
         grabber.start();
 
+//        grabber.setPreset(3);
         // Override the calibration... 
         if (useHardwareIntrinsics) {
             if (useColor) {

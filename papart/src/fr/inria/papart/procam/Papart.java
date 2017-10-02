@@ -100,8 +100,12 @@ public class Papart {
     public static String homographyCalib = calibrationFolder + "HomographyCalibration.xml";
     public static String planeAndProjectionCalib = calibrationFolder + "PlaneProjectionCalibration.xml";
     public static String touchColorCalib = calibrationFolder + "TouchColorCalibration.xml";
+
     public static String touchCalib = calibrationFolder + "Touch2DCalibration.xml";
     public static String touchCalib3D = calibrationFolder + "Touch3DCalibration.xml";
+
+    public static String touchCalibrations[];
+
     public int defaultFontSize = 12;
 
     protected static Papart singleton = null;
@@ -145,6 +149,12 @@ public class Papart {
         // TODO: singleton -> Better implementation.
         if (Papart.singleton == null) {
             Papart.singleton = this;
+
+            Papart.touchCalibrations = new String[3];
+            for (int i = 0; i < touchCalibrations.length; i++) {
+                touchCalibrations[i] = calibrationFolder + "TouchCalibration" + i + ".xml";
+            }
+            
             fr.inria.papart.utils.DrawUtils.applet = (PApplet) applet;
         }
     }
@@ -675,9 +685,9 @@ public class Papart {
     public void loadTouchInput() {
         try {
             loadDefaultDepthCamera();
-            loadDefaultTouchKinect();
+            loadDefaultDepthTouch();
         } catch (CannotCreateCameraException cce) {
-              throw new RuntimeException("Cannot start the depth camera");
+            throw new RuntimeException("Cannot start the depth camera");
         }
         updateDepthCameraDeviceExtrinsics();
     }
@@ -743,22 +753,22 @@ public class Papart {
         return depthCameraDevice;
     }
 
-    private void loadDefaultTouchKinect() {
+    private void loadDefaultDepthTouch() {
         kinectDepthAnalysis = new DepthAnalysisImpl(this.applet, depthCameraDevice);
 
         PlaneAndProjectionCalibration calibration = new PlaneAndProjectionCalibration();
         calibration.loadFrom(this.applet, planeAndProjectionCalib);
 
-        DepthTouchInput kinectTouchInput
+        DepthTouchInput depthTouchInput
                 = new DepthTouchInput(this.applet,
                         depthCameraDevice,
                         kinectDepthAnalysis, calibration);
 
-        depthCameraDevice.setTouch(kinectTouchInput);
+        depthCameraDevice.setTouch(depthTouchInput);
 
-        kinectTouchInput.setTouchDetectionCalibration(getDefaultTouchCalibration());
-        kinectTouchInput.setTouchDetectionCalibration3D(getDefaultTouchCalibration3D());
-        this.touchInput = kinectTouchInput;
+        depthTouchInput.setTouchDetectionCalibration(getDefaultTouchCalibration());
+        depthTouchInput.setTouchDetectionCalibration3D(getDefaultTouchCalibration3D());
+        this.touchInput = depthTouchInput;
         touchInitialized = true;
     }
 
@@ -777,6 +787,11 @@ public class Papart {
     public PlanarTouchCalibration getDefaultTouchCalibration3D() {
         PlanarTouchCalibration calib = new PlanarTouchCalibration();
         calib.loadFrom(applet, Papart.touchCalib3D);
+        return calib;
+    }
+    public PlanarTouchCalibration getTouchCalibration(int id) {
+        PlanarTouchCalibration calib = new PlanarTouchCalibration();
+        calib.loadFrom(applet, Papart.touchCalibrations[id]);
         return calib;
     }
 

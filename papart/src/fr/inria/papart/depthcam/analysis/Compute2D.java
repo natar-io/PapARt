@@ -11,6 +11,7 @@ import fr.inria.papart.depthcam.DepthData.DepthSelection;
 import fr.inria.papart.depthcam.PixelOffset;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.isInside;
 import fr.inria.papart.depthcam.devices.ProjectedDepthData;
+import fr.inria.papart.multitouch.ConnectedComponent;
 import processing.core.PVector;
 import toxi.geom.Vec3D;
 
@@ -18,17 +19,12 @@ import toxi.geom.Vec3D;
  *
  * @author Jeremy Laviole
  */
-public class Touch2D extends DepthRecognition {
+public class Compute2D extends DepthRecognition {
 
     private DepthSelection selection;
 
-    public Touch2D(DepthAnalysisImpl depthAnalysis) {
+    public Compute2D(DepthAnalysisImpl depthAnalysis) {
         super(depthAnalysis);
-    }
-
-    @Override
-    public void recognize(Object filter, int quality) {
-        find2DTouch((PlaneAndProjectionCalibration) filter, quality);
     }
 
     /**

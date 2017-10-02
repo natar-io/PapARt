@@ -22,6 +22,4 @@ public abstract class DepthRecognition {
         this.depthData = depthAnalysis.depthData;
     }
     
-    public abstract void recognize(Object filter, int quality); 
-    
 }

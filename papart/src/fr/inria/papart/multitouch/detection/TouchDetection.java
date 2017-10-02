@@ -39,6 +39,7 @@ public abstract class TouchDetection {
 // set by calling function
     protected WithSize imgSize;
 
+    // WARNING HERE toVisit  DIFFERENT FROM THE ONE IN DEPTH SELECTION
     protected final HashSet<Integer> toVisit = new HashSet<>();
     protected PointValidityCondition currentPointValidityCondition;
     protected int currentTime;
@@ -64,6 +65,10 @@ public abstract class TouchDetection {
         public void setInitalPoint(int offset);
     }
 
+    public TouchDetection(WithSize imgSize,PlanarTouchCalibration calibration) {
+        allocateMemory(imgSize);
+        setCalibration(calibration);
+    }
     public TouchDetection(WithSize imgSize) {
         allocateMemory(imgSize);
     }
@@ -132,7 +137,6 @@ public abstract class TouchDetection {
 
         cc.setId(currentCompo);
         currentCompo++;
-
         
         // TODO: Filtering for all ?!!
      // DEBUG

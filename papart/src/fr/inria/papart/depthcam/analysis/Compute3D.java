@@ -16,12 +16,12 @@ import toxi.geom.Vec3D;
  *
  * @author Jeremy Laviole
  */
-public class Touch3D extends DepthRecognition {
+public class Compute3D extends DepthRecognition {
 
     private DepthSelection selection;
 
 
-    public Touch3D(DepthAnalysisImpl depthAnalysis) {
+    public Compute3D(DepthAnalysisImpl depthAnalysis) {
         super(depthAnalysis);
     }
 

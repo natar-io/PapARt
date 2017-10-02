@@ -20,6 +20,8 @@
  */
 package fr.inria.papart.multitouch.detection;
 
+import fr.inria.papart.calibration.files.PlanarTouchCalibration;
+import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.calibration.files.PlaneCalibration;
 import fr.inria.papart.depthcam.devices.ProjectedDepthData;
 import fr.inria.papart.depthcam.analysis.DepthAnalysis;
@@ -45,13 +47,13 @@ public abstract class TouchDetectionDepth extends TouchDetection {
     protected final ArrayList<TrackedDepthPoint> touchPoints = new ArrayList<>();
     protected DepthAnalysisImpl depthAnalysis;
 
-    public TouchDetectionDepth(DepthAnalysisImpl depthAnalysis) {
-        super(depthAnalysis);
+    public TouchDetectionDepth(DepthAnalysisImpl depthAnalysis, PlanarTouchCalibration calib) {
+        super(depthAnalysis, calib);
         this.depthAnalysis = depthAnalysis;
     }
 
     public abstract ArrayList<TrackedDepthPoint> compute(ProjectedDepthData dData);
-
+    
     protected abstract boolean hasCCToFind(); 
 
 //    protected abstract void setSearchParameters();

@@ -20,11 +20,13 @@
  */
 package fr.inria.papart.multitouch.detection;
 
+import fr.inria.papart.calibration.files.PlanarTouchCalibration;
 import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.depthcam.analysis.DepthAnalysis;
 import fr.inria.papart.depthcam.DepthData;
+import fr.inria.papart.depthcam.DepthData.DepthSelection;
 import fr.inria.papart.depthcam.analysis.DepthAnalysisImpl;
-import fr.inria.papart.depthcam.analysis.Touch3D;
+import fr.inria.papart.depthcam.analysis.Compute3D;
 import fr.inria.papart.depthcam.devices.ProjectedDepthData;
 import fr.inria.papart.multitouch.ConnectedComponent;
 import fr.inria.papart.multitouch.tracking.TouchPointTracker;
@@ -33,7 +35,9 @@ import fr.inria.papart.utils.WithSize;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import toxi.geom.Vec3D;
 
 /**
  *
@@ -43,15 +47,19 @@ public class Simple3D extends TouchDetectionDepth {
 
     protected int MINIMUM_COMPONENT_SIZE_3D = 50;
     protected int COMPONENT_SIZE_FOR_POSITION = 400;
-    private final Touch3D touchRecognition;
+    private final Compute3D touchRecognition;
 
-    public Simple3D(DepthAnalysisImpl depthAnalysisImpl) {
-        super(depthAnalysisImpl);
+    public Simple3D(DepthAnalysisImpl depthAnalysisImpl, PlanarTouchCalibration calib) {
+        super(depthAnalysisImpl, calib);
         currentPointValidityCondition = new CheckTouchPoint3D();
-        touchRecognition = new Touch3D(depthAnalysisImpl);
+        touchRecognition = new Compute3D(depthAnalysisImpl);
     }
     
-      public class CheckTouchPoint3D implements PointValidityCondition {
+    public DepthSelection getDepthSelection(){
+        return touchRecognition.getSelection();
+    }
+
+    public class CheckTouchPoint3D implements PointValidityCondition {
 
         // Not used yet here.
         private int inititalPoint;
@@ -70,7 +78,6 @@ public class Simple3D extends TouchDetectionDepth {
                     && distanceToCurrent < calib.getMaximumDistance();
         }
     }
-
 
     @Override
     public ArrayList<TrackedDepthPoint> compute(ProjectedDepthData dData) {
@@ -111,16 +118,35 @@ public class Simple3D extends TouchDetectionDepth {
         // get a subset of the points.
         Collections.sort(connectedComponent, closestComparator);
 
-        int max = COMPONENT_SIZE_FOR_POSITION > connectedComponent.size() ? connectedComponent.size() : COMPONENT_SIZE_FOR_POSITION;
+        
+        // First remove the X closest points (fingers) 
+        
+        int max = connectedComponent.size() - 20 <= 0 ? 0 : 20;
+//        int max = (int) calib.getTest5() > connectedComponent.size() ? connectedComponent.size() : (int) calib.getTest5();
         //  Get a sublist
-        List<Integer> subList = connectedComponent.subList(0, max);
+        List<Integer> subList = connectedComponent.subList(0, connectedComponent.size() - max);
         ConnectedComponent subCompo = new ConnectedComponent();
         subCompo.addAll(subList);
 
+        int maxYOffset = subCompo.get(0);
+        Vec3D maxY = depthData.depthPoints[maxYOffset];
+
+        // Sublist with distance filter instead of number filter
+        // Remove from a distance
+        Iterator<Integer> it = subCompo.iterator();
+//        Iterator<DepthDataElementProjected> it = noCenter.iterator();
+        while (it.hasNext()) {
+            int offset = it.next();
+            if (depthData.depthPoints[offset].distanceTo(maxY) > calib.getTest4()) {
+                it.remove();
+            }
+        }
+
         TrackedDepthPoint tp = super.createTouchPoint(subCompo);
+//        TrackedDepthPoint tp = super.createTouchPoint(connectedComponent);
 
         // TODO: use this, add another with only the ones of the touch ?!
-        tp.setDepthDataElements(depthData, connectedComponent);
+//        tp.setDepthDataElements(depthData, connectedComponent);
         tp.set3D(true);
         return tp;
     }
@@ -134,5 +160,4 @@ public class Simple3D extends TouchDetectionDepth {
         TouchPointTracker.trackPoints(touchPoints, newList, imageTime);
     }
 
-  
 }

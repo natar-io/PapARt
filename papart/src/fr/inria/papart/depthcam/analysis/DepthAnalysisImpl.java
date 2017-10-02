@@ -44,6 +44,7 @@ import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -190,7 +191,7 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         depthData.connexity.setPrecision(skip2D);
 
         computeDepthAndDo(skip2D, new ComputeNormal());
-     
+
 //        computeDepthAndDo(skip2D, new DoNothing());
 //        doForEachPoint(skip2D, new ComputeNormal());
     }
@@ -236,6 +237,36 @@ public class DepthAnalysisImpl extends DepthAnalysis {
             return;
         }
         PixelList pixels = new PixelList(precision);
+
+        for (PixelOffset px : pixels) {
+            Vec3D pKinect = depthData.depthPoints[px.offset];
+            if (pKinect != INVALID_POINT) {
+                manip.execute(pKinect, px);
+            }
+
+        }
+    }
+
+    public void computeDepthAndDoAround(int precision, int offset, int dist, DepthPointManiplation manip) {
+        PixelListAroundPoint pixels = new PixelListAroundPoint(precision, offset, dist);
+        for (PixelOffset px : pixels) {
+            float d = getDepth(px.offset);
+            // Experimental
+            depth[px.offset] = d;
+
+            if (d != INVALID_DEPTH) {
+                // Compute the depth point.
+                calibDepth.pixelToWorld(px.x, px.y, d, depthData.depthPoints[px.offset]);
+                manip.execute(depthData.depthPoints[px.offset], px);
+            }
+        }
+    }
+
+    protected void doForEachPointAround(int precision, int offset, int dist, DepthPointManiplation manip) {
+        if (precision <= 0) {
+            return;
+        }
+        PixelListAroundPoint pixels = new PixelListAroundPoint(precision, offset, dist);
 
         for (PixelOffset px : pixels) {
             Vec3D pKinect = depthData.depthPoints[px.offset];
@@ -446,13 +477,13 @@ public class DepthAnalysisImpl extends DepthAnalysis {
     public class PixelList implements Iterable<PixelOffset> {
 
         int precision = 1;
-        int begin = 0;
-        int end;
+        int beginY = 0;
+        int endY;
 
         public PixelList(int precision) {
             this.precision = precision;
-            this.begin = 0;
-            this.end = calibDepth.getHeight();
+            this.beginY = 0;
+            this.endY = calibDepth.getHeight();
         }
 
         /**
@@ -464,8 +495,8 @@ public class DepthAnalysisImpl extends DepthAnalysis {
          */
         public PixelList(int precision, int begin, int end) {
             this.precision = precision;
-            this.begin = begin;
-            this.end = end;
+            this.beginY = begin;
+            this.endY = end;
         }
 
         @Override
@@ -473,13 +504,13 @@ public class DepthAnalysisImpl extends DepthAnalysis {
             Iterator<PixelOffset> it = new Iterator<PixelOffset>() {
 
                 private int x = 0;
-                private int y = begin;
+                private int y = beginY;
                 private int offset = 0;
                 private final int width = calibDepth.getWidth();
 
                 @Override
                 public boolean hasNext() {
-                    return offset < width * end;
+                    return offset < width * endY;
                 }
 
                 @Override
@@ -495,6 +526,79 @@ public class DepthAnalysisImpl extends DepthAnalysis {
                         x = 0;
                         y += precision;
                         offset = y * width;
+                    }
+
+                    return out;
+                }
+
+                @Override
+                public void remove() {
+                    throw new UnsupportedOperationException();
+                }
+            };
+            return it;
+        }
+    }
+
+    public class PixelListAroundPoint implements Iterable<PixelOffset> {
+
+        private final int width = calibDepth.getWidth();
+        int precision = 1;
+        private int beginX;
+        private int endX;
+        int beginY = 0;
+        int endY;
+
+        public PixelListAroundPoint(int precision, int pointOffset, int amount) {
+            this.precision = precision;
+
+            this.beginX = (pointOffset % width) - amount * precision;
+            if (beginX < 0) {
+                beginX = 0;
+            }
+            this.beginY = (pointOffset / width)- (amount * precision);
+            if (beginY < 0) {
+                beginY = 0;
+            }
+
+            this.endX =  (pointOffset % width) + amount * precision;
+            if (endX > calibDepth.getWidth() - precision) {
+                endX = calibDepth.getWidth() - precision;
+            }
+            this.endY = (pointOffset / width) + (amount * precision);
+            if (endY > calibDepth.getHeight() - precision) {
+                endY = calibDepth.getHeight() - precision;
+            }
+
+        }
+
+        @Override
+        public Iterator<PixelOffset> iterator() {
+            Iterator<PixelOffset> it = new Iterator<PixelOffset>() {
+
+                private int x = beginX;
+                private int y = beginY;
+
+                private int offset = x + y * width;
+
+                @Override
+                public boolean hasNext() {
+                    return offset < endX + (width * endY);
+                }
+
+                @Override
+                public PixelOffset next() {
+                    // no allocation mode -- static
+//                    PixelOffset out = new PixelOffset(x, y, offset);
+
+                    PixelOffset out = PixelOffset.get(offset);
+                    x += precision;
+                    offset += precision;
+
+                    if (x >= endX) {
+                        x = beginX;
+                        y += precision;
+                        offset = x + y * width;
                     }
 
                     return out;
