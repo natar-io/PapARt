@@ -46,12 +46,12 @@ import toxi.geom.Vec3D;
  *
  * @author Jeremy Laviole laviole@rea.lity.tech
  */
-public class Detection2DFrom3D extends TouchDetectionDepth {
+public class FingerDetection extends TouchDetectionDepth {
 
     private final HashMap<Byte, ConnectedComponent> contactPoints;
     private final Compute2DFrom3D touchRecognition;
 
-    public Detection2DFrom3D(DepthAnalysisImpl depthAnalysisImpl, PlanarTouchCalibration calib) {
+    public FingerDetection(DepthAnalysisImpl depthAnalysisImpl, PlanarTouchCalibration calib) {
         super(depthAnalysisImpl, calib);
         this.contactPoints = new HashMap<>();
         touchRecognition = new Compute2DFrom3D(depthAnalysisImpl);
@@ -75,11 +75,6 @@ public class Detection2DFrom3D extends TouchDetectionDepth {
         public boolean checkPoint(int candidate, int currentPoint) {
 
             boolean classicCheck = !assignedPoints[candidate] // not assigned   
-//                    && touchRecognition.getSelection().validPointsMask[candidate] // is valid
-                    //                                        && depthData.depthPoints[offset] != INVALID_POINT // is valid
-                    //                                        && depthData.depthPoints[offset].distanceTo(INVALID_POINT) >= 0.01f
-//                    && depthData.normals[candidate] != null //  good normal is good health
-//                    && isValidPoint(depthData.projectedPoints[candidate]) //  TODO WHY "0" and non invalidpoints here.
                     && isValidPoint(depthData.depthPoints[candidate]) //  TODO WHY "0" and non invalidpoints here.
                     && depthData.depthPoints[inititalPoint].distanceTo(depthData.depthPoints[candidate]) < calib.getMaximumDistanceInit()
                     && depthData.depthPoints[candidate].distanceTo(depthData.depthPoints[currentPoint]) < calib.getMaximumDistance();
@@ -89,10 +84,9 @@ public class Detection2DFrom3D extends TouchDetectionDepth {
             if (depthData.normals[candidate] != null) {
                 float dN = (depthData.planeAndProjectionCalibration.getPlane().normal).distanceToSquared(depthData.normals[candidate]);
                 float d1 = (depthData.planeAndProjectionCalibration.getPlane().getDistanceToPoint(depthData.depthPoints[candidate]));
-
                 // WARNING MAGIC NUMBER HERE
 //                boolean higher = depthData.projectedPoints[candidate].z < depthData.projectedPoints[currentPoint].z;
-                goodNormal = (depthData.normals[candidate] != null); //  && dN > calib.getNormalFilter()) || d1 > 20f;  // Higher  than Xmm
+                goodNormal = (depthData.normals[candidate] != null && dN > calib.getNormalFilter());  // Higher  than Xmm
 
             }
             return classicCheck && goodNormal;
@@ -102,70 +96,55 @@ public class Detection2DFrom3D extends TouchDetectionDepth {
     /**
      *
      * @param planeAndProjCalibration
-     * @param points3D
+     * @param hand
      */
-    public void findTouch(PlaneAndProjectionCalibration planeAndProjCalibration,
-            Simple3D points3D) {
+    public void findTouch(HandDetection hand, PlaneAndProjectionCalibration planeAndProjCalibration) {
 
-        // For each  "hand" 
-//        for (TrackedDepthPoint touchPoint : points3D.getTouchPoints()) {
-//            // Remove points close by  XXmm
-////            touchPoint.removeElementsAwayFromTable(depthAnalysis.getDepthData(),
-////                    planeAndProjCalibration.getPlane(),
-////                    (int) calib.getTest1());
-//  
-//                touchPoint.removeElementsAwayFromCenterDist(depthAnalysis.getDepthData(), 
-//                        points3D.getDepthSelection(), points3D.calib.getTest2());
-//            
-////            ArrayList<DepthDataElementProjected> removeElementsAwayFromCenterDist = touchPoint.removeElementsAwayFromCenterDist(depthAnalysis.getDepthData(), calib.getTest1());
-////            System.out.println("nb at end: " + removeElementsAwayFromCenterDist.size() );
-////            touchPoint.setDepthDataElements(depthData,removeElementsAwayFromCenterDist);
-//            // Away points are ready, find a 2D CC from these points
-//        }
-        
-        // TODO: find a CC after this step ?
-        
-        // Find a CC. 
-//        touchRecognition.find2DTouchFrom3D(planeAndProjCalibration, getPrecision(),
-//                points3D.getTouchPoints(), points3D.getPrecision());
-//        touchRecognition.getSelection().validPointsList.clear();
+        this.touchPoints.clear();
 
+        // For each hand
+        for (TrackedDepthPoint touchPoint : hand.getTouchPoints()) {
 
-        // Add again all the points for the CC computation.
-//        for (TrackedDepthPoint touchPoint : points3D.getTouchPoints()) {
-//                points3D.getDepthSelection().validPointsList.addAll(touchPoint.getDepthDataAsConnectedComponent());
-//        }
-//        
-//        refineTouch.setDepthSelection(points3D.getDepthSelection());
-//        refineTouch.setCalibration(this.getCalibration());
-////        refineTouch.setCalibration(points3D.getCalibration());
-//        refineTouch.findTouch(planeAndProjCalibration);
-//        ArrayList<TrackedDepthPoint> refinedTouchPoints = refineTouch.getTouchPoints();
-//        
-//        this.touchPoints.clear();
-//        this.touchPoints.addAll(refinedTouchPoints);
-//        touchRecognition.find2DTouchFrom3D(planeAndProjCalibration, getPrecision(),
-//                points3D.getTouchPoints(), points3D.getPrecision());
-//
-//        touchRecognition.getSelection().validPointsList.clear();
-//
-//        // Initial points are the ones from the 3D points
-//        this.toVisit.clear();
-//
-//        for (TrackedDepthPoint touchPoint : points3D.getTouchPoints()) {
-//            this.toVisit.addAll(touchPoint.getDepthDataAsConnectedComponent());
-//        }
-//
-//        // Generate a touch list from these points. 
-//        ArrayList<TrackedDepthPoint> newList;
-//        newList = this.compute(this.depthAnalysis.getDepthData());
-//
-//        int imageTime = this.depthAnalysis.getDepthData().timeStamp;
+            System.out.println("Incoming size of hand: " + touchPoint.getDepthDataElements().size());
+
+            int offset = depthAnalysis.getDepthCameraDevice().findDepthOffset(touchPoint.getPositionDepthCam());
+
+            int w =  depthAnalysis.getDepthCameraDevice().getDepthCamera().width();
+            int x = offset % w;
+            int y = offset / w;
+            
+            while(x % getPrecision() != 0){
+                x++;
+                System.out.println("incr x");
+            } 
+            while(y % getPrecision() != 0){
+                y++;
+                  System.out.println("incr y");
+            } 
+             
+            offset = x + y * w ;
+//            System.out.println("Offset: " + (offset % 640) + "  " + (offset / 640));
+            // Look for better depth
+            touchRecognition.find2DTouchFrom3D(planeAndProjCalibration,
+                    getPrecision(),
+                    offset,
+                    (int) this.calib.getTest1());
+
+            System.out.println("nb Valid: " + this.toVisit.size());
+            this.toVisit.addAll(touchRecognition.getSelection().validPointsList);
+         
+
+            // Generate a touch list from these points. 
+            ArrayList<TrackedDepthPoint> newList;
+            newList = this.compute(this.depthAnalysis.getDepthData());
+
+            int imageTime = this.depthAnalysis.getDepthData().timeStamp;
+            // Track the points and update the touchPoints2D variable.
 //        TouchPointTracker.trackPoints(touchPoints, newList, imageTime);
+            this.touchPoints.addAll(newList);
+        }
 
-        // Uncomment to disable tracking.
-//        touchPoints.clear();
-//        touchPoints.addAll(newList);
+        System.out.println("TouchPoints trouvés: " + this.touchPoints.size());
     }
 
     @Override
@@ -190,7 +169,6 @@ public class Detection2DFrom3D extends TouchDetectionDepth {
             connectedComponentImage[startingPoint] = NO_CONNECTED_COMPONENT;
             return INVALID_COMPONENT;
         }
-
         cc.setId(currentCompo);
         currentCompo++;
         return cc;

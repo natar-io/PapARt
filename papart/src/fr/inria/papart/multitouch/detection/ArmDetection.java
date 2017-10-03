@@ -43,13 +43,13 @@ import toxi.geom.Vec3D;
  *
  * @author Jeremy Laviole laviole@rea.lity.tech
  */
-public class Simple3D extends TouchDetectionDepth {
+public class ArmDetection extends TouchDetectionDepth {
 
     protected int MINIMUM_COMPONENT_SIZE_3D = 50;
     protected int COMPONENT_SIZE_FOR_POSITION = 400;
     private final Compute3D touchRecognition;
 
-    public Simple3D(DepthAnalysisImpl depthAnalysisImpl, PlanarTouchCalibration calib) {
+    public ArmDetection(DepthAnalysisImpl depthAnalysisImpl, PlanarTouchCalibration calib) {
         super(depthAnalysisImpl, calib);
         currentPointValidityCondition = new CheckTouchPoint3D();
         touchRecognition = new Compute3D(depthAnalysisImpl);
@@ -74,6 +74,7 @@ public class Simple3D extends TouchDetectionDepth {
 
             return !assignedPoints[offset] // not assigned  
                     && touchRecognition.getSelection().validPointsMask[offset] // is valid, necessary ?
+                    && (depthData.depthPoints[offset].distanceTo(DepthAnalysis.INVALID_POINT) > 1) // NON zero points
                     && (depthData.depthPoints[offset] != DepthAnalysis.INVALID_POINT) // not invalid point (invalid depth)
                     && distanceToCurrent < calib.getMaximumDistance();
         }
@@ -117,32 +118,20 @@ public class Simple3D extends TouchDetectionDepth {
 
         // get a subset of the points.
         Collections.sort(connectedComponent, closestComparator);
-
         
         // First remove the X closest points (fingers) 
-        
-        int max = connectedComponent.size() - 20 <= 0 ? 0 : 20;
-//        int max = (int) calib.getTest5() > connectedComponent.size() ? connectedComponent.size() : (int) calib.getTest5();
-        //  Get a sublist
-        List<Integer> subList = connectedComponent.subList(0, connectedComponent.size() - max);
-        ConnectedComponent subCompo = new ConnectedComponent();
-        subCompo.addAll(subList);
-
-        int maxYOffset = subCompo.get(0);
-        Vec3D maxY = depthData.depthPoints[maxYOffset];
+//        int max = connectedComponent.size() - 20 <= 0 ? 0 : 20;
+////        int max = (int) calib.getTest5() > connectedComponent.size() ? connectedComponent.size() : (int) calib.getTest5();
+//        //  Get a sublist
+//        List<Integer> subList = connectedComponent.subList(0, connectedComponent.size() - max);
+//        ConnectedComponent subCompo = new ConnectedComponent();
+//        subCompo.addAll(subList);
+//        int maxYOffset = subCompo.get(0);
+//        Vec3D maxY = depthData.depthPoints[maxYOffset];
 
         // Sublist with distance filter instead of number filter
         // Remove from a distance
-        Iterator<Integer> it = subCompo.iterator();
-//        Iterator<DepthDataElementProjected> it = noCenter.iterator();
-        while (it.hasNext()) {
-            int offset = it.next();
-            if (depthData.depthPoints[offset].distanceTo(maxY) > calib.getTest4()) {
-                it.remove();
-            }
-        }
-
-        TrackedDepthPoint tp = super.createTouchPoint(subCompo);
+        TrackedDepthPoint tp = super.createTouchPoint(connectedComponent);
 //        TrackedDepthPoint tp = super.createTouchPoint(connectedComponent);
 
         // TODO: use this, add another with only the ones of the touch ?!
@@ -152,7 +141,6 @@ public class Simple3D extends TouchDetectionDepth {
     }
 
     public void findTouch(PlaneAndProjectionCalibration planeAndProjCalibration) {
-
         touchRecognition.find3DTouch(planeAndProjCalibration, getPrecision());
         ArrayList<TrackedDepthPoint> newList = this.compute(depthAnalysis.getDepthData());
 

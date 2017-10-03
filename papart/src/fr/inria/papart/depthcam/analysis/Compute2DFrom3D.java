@@ -35,20 +35,17 @@ public class Compute2DFrom3D extends DepthRecognition {
 
     public void find2DTouchFrom3D(PlaneAndProjectionCalibration planeAndProjCalibration,
             int precision2D,
-            ArrayList<TrackedDepthPoint> touchPoints,
-            int precision3D) {
+            int offset,
+            int area) {
 
         selection = depthData.createSelection();
         depthData.planeAndProjectionCalibration = planeAndProjCalibration;
 
 //        depthAnalysis.doForEachPoint(skip2D, new Select2DPlaneProjection());
-// TEST only around the first point
-        for (TrackedDepthPoint pt : touchPoints) {
-            int offset = pt.getDepthDataAsConnectedComponent().get(0);
-//            depthAnalysis.computeDepthAndDoAround(precision2D, offset, 80, new SelectAll());
-            depthAnalysis.doForEachPointAround(precision2D, offset, 60, new Select2DPlaneProjection());
-        }
-
+        // Around the middle point
+//            depthAnalysis.computeDepthAndDoAround(precision2D, offset, area, new SelectAll());
+//            depthAnalysis.doForEachPointAround(precision2D, offset, area, new SelectAll());
+        depthAnalysis.doForEachPointAround(precision2D, offset, area, new Select2DPlaneProjection());
     }
 
     class Select2DPointPlaneProjection implements DepthAnalysis.DepthPointManiplation {
@@ -83,7 +80,7 @@ public class Compute2DFrom3D extends DepthRecognition {
 
         @Override
         public void execute(Vec3D p, PixelOffset px) {
-            depthData.planeAndProjectionCalibration.project(p, depthData.projectedPoints[px.offset]);
+//            depthData.planeAndProjectionCalibration.project(p, depthData.projectedPoints[px.offset]);
 
 //            if (depthData.planeAndProjectionCalibration.hasGoodOrientationAndDistance(p)
             if (depthData.planeAndProjectionCalibration.hasGoodOrientationAndDistance(p)
@@ -97,6 +94,5 @@ public class Compute2DFrom3D extends DepthRecognition {
 
         }
     }
-
 
 }

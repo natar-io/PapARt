@@ -178,4 +178,40 @@ public class PointCloudForDepthAnalysis extends PointCloud implements PConstants
         colorsNative.put(colorsJava, 0, nbColors);
     }
 
+    public void updateWithCamColors(DepthAnalysisImpl analysis, ArrayList<TrackedDepthPoint> touchs) {
+        Vec3D[] points = analysis.getDepthPoints();
+        int[] pointColors = analysis.getDepthData().pointColors;
+        nbVertices = 0;
+        nbColors = 0;
+        int k = 0;
+
+        parentApplet.pushStyle();
+        parentApplet.colorMode(HSB, 8, 100, 100);
+
+        int id = 0;
+        for (TrackedDepthPoint touch : touchs) {
+
+            for (DepthDataElementProjected dde : touch.getDepthDataElements()) {
+                int c = pointColors[dde.offset];
+                int c2 = javaToNativeARGB(c);
+
+                Vec3D p = dde.depthPoint;
+                verticesJava[k++] = p.x;
+                verticesJava[k++] = p.y;
+                verticesJava[k++] = -p.z;
+                verticesJava[k++] = 1;
+
+                nbVertices++;
+                colorsJava[nbColors++] = c2;
+            }
+        }
+
+        parentApplet.popStyle();
+        verticesNative.rewind();
+        verticesNative.put(verticesJava, 0, nbVertices * 4);
+
+        colorsNative.rewind();
+        colorsNative.put(colorsJava, 0, nbColors);
+    }
+
 }

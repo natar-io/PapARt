@@ -152,7 +152,12 @@ public class DepthAnalysisImpl extends DepthAnalysis {
     private void initMemory() {
 //        System.out.println("Allocations: " + getColorSize() + " " + depthCameraDevice.rawDepthSize());
 
-        colorRaw = new byte[getColorSize() * 3];
+        if (depthCameraDevice.getMainCamera().isPixelFormatGray()) {
+            colorRaw = new byte[getColorSize()];
+        } else {
+            colorRaw = new byte[getColorSize() * 3];
+
+        }
         depthRaw = new byte[depthCameraDevice.rawDepthSize()];
         depth = new float[depthCameraDevice.getDepthCamera().width() * depthCameraDevice.getDepthCamera().height()];
 
@@ -184,7 +189,7 @@ public class DepthAnalysisImpl extends DepthAnalysis {
     public void computeDepthAndNormals(opencv_core.IplImage depth, opencv_core.IplImage color, int skip2D) {
         updateRawDepth(depth);
         // optimisation no Color. 
-        // updateRawColor(color);
+        updateRawColor(color);
         depthData.clear();
         depthData.timeStamp = papplet.millis();
 
@@ -192,7 +197,15 @@ public class DepthAnalysisImpl extends DepthAnalysis {
 
         computeDepthAndDo(skip2D, new ComputeNormal());
 
-//        computeDepthAndDo(skip2D, new DoNothing());
+        if (this.colorCamera.getPixelFormat() == Camera.PixelFormat.GRAY) {
+            computeDepthAndDo(skip2D, new SetImageDataGRAY());
+        }
+        if (this.colorCamera.getPixelFormat() == Camera.PixelFormat.RGB) {
+            computeDepthAndDo(skip2D, new SetImageDataRGB());
+        }
+        if (this.colorCamera.getPixelFormat() == Camera.PixelFormat.BGR) {
+            computeDepthAndDo(skip2D, new SetImageData());
+        }
 //        doForEachPoint(skip2D, new ComputeNormal());
     }
 
@@ -291,6 +304,100 @@ public class DepthAnalysisImpl extends DepthAnalysis {
                 manip.execute(pKinect, px);
             }
         }
+    }
+
+    class SetImageData implements DepthPointManiplation {
+
+        public SetImageData() {
+            super();
+        }
+
+        @Override
+        public void execute(Vec3D p, PixelOffset px) {
+//            depthData.validPointsMask[px.offset] = true;
+            setPixelColor(px.offset);
+        }
+    }
+
+    class SetImageDataRGB implements DepthPointManiplation {
+
+        public SetImageDataRGB() {
+            super();
+        }
+
+        @Override
+        public void execute(Vec3D p, PixelOffset px) {
+//            depthData.validPointsMask[px.offset] = true;
+            setPixelColorRGB(px.offset);
+        }
+    }
+
+    class SetImageDataGRAY implements DepthPointManiplation {
+
+        public SetImageDataGRAY() {
+            super();
+        }
+
+        @Override
+        public void execute(Vec3D p, PixelOffset px) {
+//            depthData.validPointsMask[px.offset] = true;
+            setPixelColorGRAY(px.offset);
+        }
+    }
+
+    // TODO: Generalization here, same functions as those to convert the pixels for OpenGL. 
+    protected int setPixelColor(int offset) {
+
+        // TODO: Get a cleaner way go obtain the color... 
+        int colorOffset = depthCameraDevice.findColorOffset(depthData.depthPoints[offset]) * 3;
+
+        int c;
+        // Do not set invalid pixels
+        if (colorOffset < 0 || colorOffset > colorRaw.length) {
+            c = 255;
+        } else {
+            c = (colorRaw[colorOffset + 2] & 0xFF) << 16
+                    | (colorRaw[colorOffset + 1] & 0xFF) << 8
+                    | (colorRaw[colorOffset + 0] & 0xFF);
+        }
+        depthData.pointColors[offset] = c;
+        return c;
+    }
+
+    protected int setPixelColorRGB(int offset) {
+
+        // TODO: Get a cleaner way go obtain the color... 
+        int colorOffset = depthCameraDevice.findColorOffset(depthData.depthPoints[offset]) * 3;
+
+        int c;
+        // Do not set invalid pixels
+        if (colorOffset < 0 || colorOffset > colorRaw.length) {
+            c = 255;
+        } else {
+
+            c = (colorRaw[colorOffset + 0] & 0xFF) << 16
+                    | (colorRaw[colorOffset + 1] & 0xFF) << 8
+                    | (colorRaw[colorOffset + 2] & 0xFF);
+        }
+        depthData.pointColors[offset] = c;
+        return c;
+    }
+
+    protected int setPixelColorGRAY(int offset) {
+        int colorOffset = depthCameraDevice.findMainImageOffset(depthData.depthPoints[offset]);
+
+        int c;
+        // Do not set invalid pixels
+        if (colorOffset < 0 || colorOffset > colorRaw.length) {
+            c = 255;
+        } else {
+
+            c = (colorRaw[colorOffset + 0] & 0xFF) << 16
+                    | (colorRaw[colorOffset + 0] & 0xFF) << 8
+                    | (colorRaw[colorOffset + 0] & 0xFF);
+        }
+        depthData.pointColors[offset] = c;
+        return c;
     }
 
     public PVector findDepthAtRGB(PVector v) {
@@ -455,16 +562,6 @@ public class DepthAnalysisImpl extends DepthAnalysis {
 //            }
 //        }
 //    }
-    // TODO: What about this image Data ?
-    class SetImageData implements DepthPointManiplation {
-
-        @Override
-        public void execute(Vec3D p, PixelOffset px) {
-            depthData.pointColors[px.offset] = getPixelColor(px.offset);
-
-        }
-    }
-
     protected int getPixelColor(int offset) {
         int colorOffset = depthCameraDevice.findColorOffset(depthData.depthPoints[offset]) * 3;
         int c = (colorRaw[colorOffset + 2] & 0xFF) << 16
@@ -556,12 +653,12 @@ public class DepthAnalysisImpl extends DepthAnalysis {
             if (beginX < 0) {
                 beginX = 0;
             }
-            this.beginY = (pointOffset / width)- (amount * precision);
+            this.beginY = (pointOffset / width) - (amount * precision);
             if (beginY < 0) {
                 beginY = 0;
             }
 
-            this.endX =  (pointOffset % width) + amount * precision;
+            this.endX = (pointOffset % width) + amount * precision;
             if (endX > calibDepth.getWidth() - precision) {
                 endX = calibDepth.getWidth() - precision;
             }

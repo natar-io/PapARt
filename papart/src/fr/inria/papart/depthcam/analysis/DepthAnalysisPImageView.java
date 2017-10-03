@@ -69,14 +69,12 @@ public class DepthAnalysisPImageView extends DepthAnalysisImpl {
     }
 
     /// Erosion tests on binary images.
-    
 ////        erodePoints(depthData.validPointsMask);
 ////        erodePoints2(depthData.validPointsList, depthData.validPointsMask, skip2D);
 ////        erodePoints(depthData.validPointsMask3D);
 ////        erodePoints(depthData.validPointsMask);
 ////        erodePoints2(depthData.validPointsList, depthData.validPointsMask, skip2D);
 ////        erodePoints(depthData.validPointsMask3D);
-
     private void erodePoints(boolean[] arrayToErode) {
 
         for (int i = 0; i < getWidth() * getHeight(); i++) {
@@ -105,7 +103,6 @@ public class DepthAnalysisPImageView extends DepthAnalysisImpl {
 //            }
 //        }
 //    }
-
     /**
      * Simple visualization
      *
@@ -148,32 +145,6 @@ public class DepthAnalysisPImageView extends DepthAnalysisImpl {
         }
     }
 
-    class SetImageData implements DepthPointManiplation {
-
-        public SetImageData() {
-            super();
-        }
-
-        @Override
-        public void execute(Vec3D p, PixelOffset px) {
-//            depthData.validPointsMask[px.offset] = true;
-            setPixelColor(px.offset);
-        }
-    }
-
-    class SetImageDataRGB implements DepthPointManiplation {
-
-        public SetImageDataRGB() {
-            super();
-        }
-
-        @Override
-        public void execute(Vec3D p, PixelOffset px) {
-//            depthData.validPointsMask[px.offset] = true;
-            setPixelColorRGB(px.offset);
-        }
-    }
-
     private void setFakeColor(int offset, int r, int g, int b) {
         int c = (r & 0xFF) << 16
                 | (g & 0xFF) << 8
@@ -182,40 +153,18 @@ public class DepthAnalysisPImageView extends DepthAnalysisImpl {
     }
 
     // TODO: Generalization here, same functions as those to convert the pixels for OpenGL. 
-    private void setPixelColor(int offset) {
-
-        // TODO: Get a cleaner way go obtain the color... 
-        int colorOffset = depthCameraDevice.findColorOffset(depthData.depthPoints[offset]) * 3;
-
-        int c;
-        // Do not set invalid pixels
-        if (colorOffset < 0 || colorOffset > colorRaw.length) {
-            c = 255;
-        } else {
-            c = (colorRaw[colorOffset + 2] & 0xFF) << 16
-                    | (colorRaw[colorOffset + 1] & 0xFF) << 8
-                    | (colorRaw[colorOffset + 0] & 0xFF);
-        }
+    @Override
+    protected int setPixelColor(int offset) {
+        int c = super.setPixelColor(offset);
         validPointsPImage.pixels[offset] = c;
+        return c;
     }
 
-    private void setPixelColorRGB(int offset) {
-
-        // TODO: Get a cleaner way go obtain the color... 
-        int colorOffset = depthCameraDevice.findColorOffset(depthData.depthPoints[offset]) * 3;
-
-        int c;
-        // Do not set invalid pixels
-        if (colorOffset < 0 || colorOffset > colorRaw.length) {
-            c = 255;
-        } else {
-
-            c = (colorRaw[colorOffset + 0] & 0xFF) << 16
-                    | (colorRaw[colorOffset + 1] & 0xFF) << 8
-                    | (colorRaw[colorOffset + 2] & 0xFF);
-        }
-
+    @Override
+    protected int setPixelColorRGB(int offset) {
+        int c = super.setPixelColorRGB(offset);
         validPointsPImage.pixels[offset] = c;
+        return c;
     }
 
     public PImage getColouredDepthImage() {

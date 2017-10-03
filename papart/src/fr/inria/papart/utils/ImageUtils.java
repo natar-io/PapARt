@@ -392,14 +392,20 @@ public class ImageUtils {
                 ret.pixels[i] = (255) << 24 | (buff.get(offset) & 255) << 16 | (buff.get(offset + 1) & 255) << 8 | (buff.get(offset + 2) & 255);
             }
         }
+        // Depth is 8_U 
         if (img.nChannels() == 1) {
             // TODO: no more allocations.
+           
             ByteBuffer buff = img.getByteBuffer();
+//            ByteBuffer buff =  img.imageData().
             byte[] tmpArr = new byte[1];
+//            byte[] tmpArr = new byte[img.width() * img.height()];
+//            buff.get(tmpArr);
+            
             //            byte[] arr = new byte[img.width() * img.height()];
             //            buff.get(arr);
             for (int i = 0; i < img.width() * img.height(); i++) {
-                buff.get(tmpArr);
+                            buff.get(tmpArr);
                 byte d = tmpArr[0];
                 //                int d = (arr[i] & 0xFF);
                 ret.pixels[i] = (255) << 24 | (d & 255) << 16 | (d & 255) << 8 | (d & 255);
