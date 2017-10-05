@@ -51,13 +51,6 @@ public class HandDetection extends TouchDetectionDepth {
 
     public class CheckTouchPoint3D implements PointValidityCondition {
 
-        // Not used yet here.
-        private int inititalPoint;
-
-        public void setInitalPoint(int offset) {
-            this.inititalPoint = offset;
-        }
-
         @Override
         public boolean checkPoint(int candidate, int currentPoint) {
 
@@ -66,6 +59,7 @@ public class HandDetection extends TouchDetectionDepth {
                     // Use the previous depthSelection.
                     && depthSelection.validPointsMask[candidate] // is valid, necessary ?
                     && depthData.planeAndProjectionCalibration.distanceTo(depthData.depthPoints[candidate]) < calib.getTest1()
+                    && depthData.planeAndProjectionCalibration.distanceTo(depthData.depthPoints[candidate]) > calib.getTest2()
                     && (depthData.depthPoints[candidate] != DepthAnalysis.INVALID_POINT) // not invalid point (invalid depth)
                     && depthData.depthPoints[inititalPoint].distanceTo(depthData.depthPoints[candidate]) < calib.getMaximumDistanceInit()
                     && depthData.depthPoints[candidate].distanceTo(depthData.depthPoints[currentPoint]) < calib.getMaximumDistance();
@@ -82,9 +76,8 @@ public class HandDetection extends TouchDetectionDepth {
 
         w = imgSize.getWidth();
         h = imgSize.getHeight();
-        currentPointValidityCondition.setInitalPoint(startingPoint);
-
-        ConnectedComponent cc = findNeighboursRec(startingPoint, 0, getX(startingPoint), getY(startingPoint));
+        ConnectedComponent cc = findNeighboursFloodFill(startingPoint, 0);
+//        ConnectedComponent cc = findNeighboursRec(startingPoint, 0, getX(startingPoint), getY(startingPoint));
 
         // Do not accept 1 point compo ?!
         if (cc.size() == 1) {
@@ -148,21 +141,24 @@ public class HandDetection extends TouchDetectionDepth {
 
     private int currentHand = 0;
 
-    public ArrayList<TrackedDepthPoint> findTouch(ArmDetection touchDetection3D,PlaneAndProjectionCalibration planeAndProjCalibration) {
-            
+    public ArrayList<TrackedDepthPoint> findTouch(ArmDetection touchDetection3D, PlaneAndProjectionCalibration planeAndProjCalibration) {
+
         // WARNING  No tracking 
         this.touchPoints.clear();
 
         for (TrackedDepthPoint touchPoint : touchDetection3D.getTouchPoints()) {
             ArrayList<DepthDataElementProjected> allElements = new ArrayList<>();
-            
+
             currentHand = touchPoint.getID();
-            
+
             // Add the elements for compo finding. 
             for (DepthDataElementProjected dde : touchPoint.getDepthDataElements()) {
-                float d = planeAndProjCalibration.distanceTo(dde.depthPoint);
-                if (d < calib.getTest1()) {
-                    allElements.add(dde);
+
+                if (touchDetection3D.boundaries[dde.offset]) {
+                    float d = planeAndProjCalibration.distanceTo(dde.depthPoint);
+                    if (d < calib.getTest3()) {
+                        allElements.add(dde);
+                    }
                 }
             }
 
@@ -173,7 +169,7 @@ public class HandDetection extends TouchDetectionDepth {
             ConnectedComponent selectedList = TrackedDepthPoint.ListToCC(allElements);
             depthSelection.validPointsList.addAll(selectedList);
             this.toVisit.addAll(depthSelection.validPointsList);
-                
+
             // Find the connected components
             ArrayList<TrackedDepthPoint> newList = this.compute(depthAnalysis.getDepthData());
 
@@ -193,6 +189,8 @@ public class HandDetection extends TouchDetectionDepth {
                     }
                 }
             }
+
+            newList.get(maxId).removeNonBoundaries(depthData, depthSelection, this);
             this.touchPoints.add(newList.get(maxId));
         }
 

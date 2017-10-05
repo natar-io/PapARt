@@ -211,7 +211,7 @@ public class DepthTouchInput extends TouchInput {
             handDetection.findTouch(armDetection, planeAndProjCalibration);
 
             
-            fingerDetection.findTouch(handDetection, planeAndProjCalibration);
+            fingerDetection.findTouch(handDetection, colImage, planeAndProjCalibration);
             // last step, get the color/IR image.
 //                        ArrayList<TrackedDepthPoint> touchPoints = touchDetection3D.getTouchPoints();
             // Get the IR image to refine the touch points...? 

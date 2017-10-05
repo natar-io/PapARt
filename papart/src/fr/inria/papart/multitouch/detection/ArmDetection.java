@@ -54,29 +54,23 @@ public class ArmDetection extends TouchDetectionDepth {
         currentPointValidityCondition = new CheckTouchPoint3D();
         touchRecognition = new Compute3D(depthAnalysisImpl);
     }
-    
-    public DepthSelection getDepthSelection(){
+
+    public DepthSelection getDepthSelection() {
         return touchRecognition.getSelection();
     }
 
     public class CheckTouchPoint3D implements PointValidityCondition {
 
-        // Not used yet here.
-        private int inititalPoint;
-
-        public void setInitalPoint(int offset) {
-            this.inititalPoint = offset;
-        }
-
         @Override
-        public boolean checkPoint(int offset, int currentPoint) {
-            float distanceToCurrent = depthData.depthPoints[offset].distanceTo(depthData.depthPoints[currentPoint]);
+        public boolean checkPoint(int candidate, int currentPoint) {
 
-            return !assignedPoints[offset] // not assigned  
-                    && touchRecognition.getSelection().validPointsMask[offset] // is valid, necessary ?
-                    && (depthData.depthPoints[offset].distanceTo(DepthAnalysis.INVALID_POINT) > 1) // NON zero points
-                    && (depthData.depthPoints[offset] != DepthAnalysis.INVALID_POINT) // not invalid point (invalid depth)
-                    && distanceToCurrent < calib.getMaximumDistance();
+            return !assignedPoints[candidate] // not assigned  
+                    && touchRecognition.getSelection().validPointsMask[candidate] // is valid, necessary ?
+                    && (depthData.depthPoints[candidate].distanceTo(DepthAnalysis.INVALID_POINT) > 1) // NON zero points
+                    && (depthData.depthPoints[candidate] != DepthAnalysis.INVALID_POINT) // not invalid point (invalid depth)
+                    && depthData.depthPoints[inititalPoint].distanceTo(depthData.depthPoints[candidate]) < calib.getMaximumDistanceInit()
+                    && depthData.depthPoints[candidate].distanceTo(depthData.depthPoints[currentPoint]) < calib.getMaximumDistance();
+
         }
     }
 
@@ -118,7 +112,7 @@ public class ArmDetection extends TouchDetectionDepth {
 
         // get a subset of the points.
         Collections.sort(connectedComponent, closestComparator);
-        
+
         // First remove the X closest points (fingers) 
 //        int max = connectedComponent.size() - 20 <= 0 ? 0 : 20;
 ////        int max = (int) calib.getTest5() > connectedComponent.size() ? connectedComponent.size() : (int) calib.getTest5();
@@ -128,7 +122,6 @@ public class ArmDetection extends TouchDetectionDepth {
 //        subCompo.addAll(subList);
 //        int maxYOffset = subCompo.get(0);
 //        Vec3D maxY = depthData.depthPoints[maxYOffset];
-
         // Sublist with distance filter instead of number filter
         // Remove from a distance
         TrackedDepthPoint tp = super.createTouchPoint(connectedComponent);

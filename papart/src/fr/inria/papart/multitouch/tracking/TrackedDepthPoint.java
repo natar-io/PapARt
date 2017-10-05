@@ -24,6 +24,7 @@ import fr.inria.papart.depthcam.devices.ProjectedDepthData;
 import fr.inria.papart.depthcam.DepthDataElementProjected;
 import fr.inria.papart.multitouch.ConnectedComponent;
 import fr.inria.papart.multitouch.Touch;
+import fr.inria.papart.multitouch.detection.TouchDetectionDepth;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -293,7 +294,6 @@ public class TrackedDepthPoint extends TrackedElement {
 
 //        this.depthDataElements.sort(new DistanceComparator(this.getPositionDepthCam()));
 //        noCenter.sort(new DistanceComparator(this.getPositionDepthCam()));
-
         // Remove from a distance
         Iterator<DepthDataElementProjected> it = depthDataElements.iterator();
 //        Iterator<DepthDataElementProjected> it = noCenter.iterator();
@@ -305,7 +305,7 @@ public class TrackedDepthPoint extends TrackedElement {
         }
         return null;
     }
-    
+
     public ArrayList<DepthDataElementProjected> removeElementsAwayFromCenterDist(
             ProjectedDepthData depthData,
             DepthSelection depthSelection,
@@ -316,7 +316,6 @@ public class TrackedDepthPoint extends TrackedElement {
 
 //        this.depthDataElements.sort(new DistanceComparator(this.getPositionDepthCam()));
 //        noCenter.sort(new DistanceComparator(this.getPositionDepthCam()));
-
         // Remove from a distance
         Iterator<DepthDataElementProjected> it = depthDataElements.iterator();
 //        Iterator<DepthDataElementProjected> it = noCenter.iterator();
@@ -330,6 +329,22 @@ public class TrackedDepthPoint extends TrackedElement {
             }
         }
         return output;
+    }
+
+    public void removeNonBoundaries(
+            ProjectedDepthData depthData,
+            DepthSelection depthSelection,
+            TouchDetectionDepth detect) {
+
+        // Remove from a distance
+        Iterator<DepthDataElementProjected> it = depthDataElements.iterator();
+//        Iterator<DepthDataElementProjected> it = noCenter.iterator();
+        while (it.hasNext()) {
+            DepthDataElementProjected dde = it.next();
+            if (!detect.getBoundaries()[dde.offset]) {
+                it.remove();
+            }
+        }
     }
 
     public boolean refineTouchAlongNormal(ProjectedDepthData depthData) {
@@ -405,7 +420,7 @@ public class TrackedDepthPoint extends TrackedElement {
         return true;
     }
 
-    public void setDepthDataElements(ProjectedDepthData depthData, 
+    public void setDepthDataElements(ProjectedDepthData depthData,
             ArrayList<DepthDataElementProjected> removeElementsAwayFromCenterDist) {
         setDepthDataElements(depthData, ListToCC(depthDataElements));
     }

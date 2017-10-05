@@ -137,8 +137,7 @@ public class Simple2D extends TouchDetectionDepth {
 
         w = imgSize.getWidth();
         h = imgSize.getHeight();
-        currentPointValidityCondition.setInitalPoint(startingPoint);
-
+inititalPoint = startingPoint;
         // DEBUG
         assert (isValidPoint(depthData.depthPoints[startingPoint]));
         assert (isValidPoint(depthData.projectedPoints[startingPoint]));

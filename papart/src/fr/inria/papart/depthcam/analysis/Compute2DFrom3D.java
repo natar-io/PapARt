@@ -6,15 +6,10 @@
 package fr.inria.papart.depthcam.analysis;
 
 import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
-import fr.inria.papart.depthcam.DepthData;
 import fr.inria.papart.depthcam.DepthData.DepthSelection;
 import fr.inria.papart.depthcam.PixelOffset;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.isInside;
-import fr.inria.papart.depthcam.devices.ProjectedDepthData;
-import fr.inria.papart.multitouch.ConnectedComponent;
-import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
-import java.util.ArrayList;
-import processing.core.PVector;
+import org.bytedeco.javacpp.opencv_core.IplImage;
 import toxi.geom.Vec3D;
 
 /**
@@ -35,17 +30,23 @@ public class Compute2DFrom3D extends DepthRecognition {
 
     public void find2DTouchFrom3D(PlaneAndProjectionCalibration planeAndProjCalibration,
             int precision2D,
+            IplImage colorImage,
             int offset,
             int area) {
+
+        // Warning RESET ROI ?!
+        depthAnalysis.updateRawColor(colorImage);
 
         selection = depthData.createSelection();
         depthData.planeAndProjectionCalibration = planeAndProjCalibration;
 
 //        depthAnalysis.doForEachPoint(skip2D, new Select2DPlaneProjection());
         // Around the middle point
-//            depthAnalysis.computeDepthAndDoAround(precision2D, offset, area, new SelectAll());
-//            depthAnalysis.doForEachPointAround(precision2D, offset, area, new SelectAll());
-        depthAnalysis.doForEachPointAround(precision2D, offset, area, new Select2DPlaneProjection());
+//        depthAnalysis.computeDepthAndDoAround(precision2D, offset, area, new SelectAll());
+        depthAnalysis.computeDepthAndDoAround(precision2D, offset, area, new Select2DPlaneProjection());
+        depthAnalysis.doForEachPointAround(precision2D, offset, area, new SetImageDataGRAY());
+        // Add the Color Image after Contour detection
+
     }
 
     class Select2DPointPlaneProjection implements DepthAnalysis.DepthPointManiplation {
@@ -63,6 +64,19 @@ public class Compute2DFrom3D extends DepthRecognition {
                     selection.validPointsList.add(px.offset);
                 }
             }
+        }
+    }
+
+    protected class SetImageDataGRAY implements DepthAnalysis.DepthPointManiplation {
+
+        public SetImageDataGRAY() {
+            super();
+        }
+
+        @Override
+        public void execute(Vec3D p, PixelOffset px) {
+//            depthData.validPointsMask[px.offset] = true;
+            depthAnalysis.setPixelColorGRAY(px.offset);
         }
     }
 

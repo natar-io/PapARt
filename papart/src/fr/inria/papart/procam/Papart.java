@@ -154,7 +154,7 @@ public class Papart {
             for (int i = 0; i < touchCalibrations.length; i++) {
                 touchCalibrations[i] = calibrationFolder + "TouchCalibration" + i + ".xml";
             }
-            
+
             fr.inria.papart.utils.DrawUtils.applet = (PApplet) applet;
         }
     }
@@ -766,8 +766,9 @@ public class Papart {
 
         depthCameraDevice.setTouch(depthTouchInput);
 
-        depthTouchInput.setTouchDetectionCalibration(getDefaultTouchCalibration());
-        depthTouchInput.setTouchDetectionCalibration3D(getDefaultTouchCalibration3D());
+        for (int i = 0; i < 3; i++) {
+            depthTouchInput.setTouchDetectionCalibration(i, getTouchCalibration(i));
+        }
         this.touchInput = depthTouchInput;
         touchInitialized = true;
     }
@@ -789,6 +790,7 @@ public class Papart {
         calib.loadFrom(applet, Papart.touchCalib3D);
         return calib;
     }
+
     public PlanarTouchCalibration getTouchCalibration(int id) {
         PlanarTouchCalibration calib = new PlanarTouchCalibration();
         calib.loadFrom(applet, Papart.touchCalibrations[id]);

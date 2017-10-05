@@ -64,7 +64,7 @@ public class DepthAnalysisImpl extends DepthAnalysis {
 
     // Configuration 
     private float closeThreshold = 300f, farThreshold = 12000f;
-    protected ProjectiveDeviceP calibDepth, calibRGB;
+    protected ProjectiveDeviceP calibDepth, calibColor;
 
     // private variables 
     // Raw data from the Kinect Sensor
@@ -135,7 +135,7 @@ public class DepthAnalysisImpl extends DepthAnalysis {
             colorCamera = depthCamera.getColorCamera();
         }
 
-        calibRGB = colorCamera.getProjectiveDevice();
+        calibColor = colorCamera.getProjectiveDevice();
         calibDepth = depthCamera.getDepthCamera().getProjectiveDevice();
 
         initMemory();
@@ -198,13 +198,13 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         computeDepthAndDo(skip2D, new ComputeNormal());
 
         if (this.colorCamera.getPixelFormat() == Camera.PixelFormat.GRAY) {
-            computeDepthAndDo(skip2D, new SetImageDataGRAY());
+            doForEachPoint(skip2D, new SetImageDataGRAY());
         }
         if (this.colorCamera.getPixelFormat() == Camera.PixelFormat.RGB) {
-            computeDepthAndDo(skip2D, new SetImageDataRGB());
+            doForEachPoint(skip2D, new SetImageDataRGB());
         }
         if (this.colorCamera.getPixelFormat() == Camera.PixelFormat.BGR) {
-            computeDepthAndDo(skip2D, new SetImageData());
+            doForEachPoint(skip2D, new SetImageData());
         }
 //        doForEachPoint(skip2D, new ComputeNormal());
     }
@@ -332,7 +332,7 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         }
     }
 
-    class SetImageDataGRAY implements DepthPointManiplation {
+    protected class SetImageDataGRAY implements DepthPointManiplation {
 
         public SetImageDataGRAY() {
             super();
@@ -779,7 +779,7 @@ public class DepthAnalysisImpl extends DepthAnalysis {
     }
 
     public void undistortRGB(opencv_core.IplImage rgb, opencv_core.IplImage out) {
-        calibRGB.getDevice().undistort(rgb, out);
+        calibColor.getDevice().undistort(rgb, out);
     }
 
     // Not Working ! 
@@ -794,7 +794,7 @@ public class DepthAnalysisImpl extends DepthAnalysis {
     }
 
     public ProjectiveDeviceP getColorProjectiveDevice() {
-        return calibRGB;
+        return calibColor;
     }
 
     public ProjectiveDeviceP getDepthProjectiveDevice() {
