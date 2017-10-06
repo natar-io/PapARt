@@ -112,7 +112,44 @@ public class Connexity {
                 connNo++;
             }
         }
+        // TEST
+//        for (int i = 0; i < nbNeighbours; i++) {
+//            assert (output[i] != null);
+//        }
+        return output;
+    }
+    
+    public int[] getNeighbourColorList(int x, int y, int[] colors) {
+        int offset = y * width + x;
+        int nbNeighbours = connexitySum[offset];
+        if (nbNeighbours == 0) {
+            return new int[0];
+        }
 
+        byte c = connexity[offset];
+        int[] output = new int[8];
+
+        int k = 0;
+        byte connNo = 0;
+//        for (int y1 = y - 1; y1 <= y + 1; y1 = y1 + 1) {
+//            for (int x1 = x - 1; x1 <= x + 1; x1 = x1 + 1) {
+        for (int y1 = y - precision; y1 <= y + precision; y1 = y1 + precision) {
+            for (int x1 = x - precision; x1 <= x + precision; x1 = x1 + precision) {
+                if (x1 == x && y1 == y) {
+                    continue;
+                }
+
+                int direction = 1 << connNo;
+                boolean valid = (c & direction) > 0;
+
+                if (valid) {
+                    int neighbourOffset = y1 * width + x1;
+                    output[connNo] = colors[neighbourOffset];
+
+                }
+                connNo++;
+            }
+        }
         // TEST
 //        for (int i = 0; i < nbNeighbours; i++) {
 //            assert (output[i] != null);

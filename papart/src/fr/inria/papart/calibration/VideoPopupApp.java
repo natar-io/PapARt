@@ -163,6 +163,12 @@ public class VideoPopupApp extends PApplet {
 //                .setPosition(240, 120)
 //                .setCaptionLabel("Zoom (z)")
 //                .setGroup("CornersGroup");
+        skatolo.addBang("reset")
+                .setPosition(70, 10)
+                .setSize(10, 10)
+                .setCaptionLabel("Reset")
+                .plugTo(this, "resetCorners")
+                .setGroup("CornersGroup");
 
         skatolo.addBang("Load")
                 .setPosition(10, 10)
@@ -312,6 +318,13 @@ public class VideoPopupApp extends PApplet {
         line(-crossSize, 0, crossSize, 0);
         line(0, -crossSize, 0, crossSize);
         popMatrix();
+    }
+
+    public void resetCorners() {
+        for (int i = 0; i < corners.length; i++) {
+            corners[i].set(50 + 1 * 20, 50);
+            updateCornerWidgets();
+        }
     }
 
     public void loadCorners() {

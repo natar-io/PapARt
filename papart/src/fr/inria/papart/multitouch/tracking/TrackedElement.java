@@ -179,12 +179,13 @@ public class TrackedElement {
 
     /**
      * Use the OneEuroFilter to filter the position.
+     * @param updateTime  Time from Processing.
      */
     public void filter(int updateTime) {
         try {
-            position.x = (float) filters[0].filter(position.x, updateTime /1000f);
-            position.y = (float) filters[1].filter(position.y, updateTime /1000f);
-            position.z = (float) filters[2].filter(position.z, updateTime /1000f);
+            position.x = (float) filters[0].filter(position.x, updateTime);
+            position.y = (float) filters[1].filter(position.y, updateTime);
+            position.z = (float) filters[2].filter(position.z, updateTime);
         } catch (Exception e) {
             System.out.println("OneEuro init Exception. Pay now." + e);
         }
@@ -219,15 +220,14 @@ public class TrackedElement {
 
         checkAndSetID();
 //        filter(tp.createTime);
-        
-        if(tp instanceof TrackedDepthPoint){
-           ((TrackedDepthPoint) this).updateAdditionalElements((TrackedDepthPoint) tp);
+
+        if (tp instanceof TrackedDepthPoint) {
+            ((TrackedDepthPoint) this).updateAdditionalElements((TrackedDepthPoint) tp);
         }
         updatePosition(tp);
-        
+
         // WARNING FILTERING IS NOW DONE OUTSIDE
 //        filter();
-
         return true;
     }
 
@@ -240,7 +240,7 @@ public class TrackedElement {
         updatePosition(this);
         checkAndSetID();
         // TODO: check performance ?!
-        
+
 //        filter();
     }
 
@@ -312,7 +312,7 @@ public class TrackedElement {
     public int getID() {
         return this.id;
     }
-    
+
     /**
      * Force a given ID, to use when it comes from an external tracking.
      *
@@ -430,10 +430,6 @@ public class TrackedElement {
         touch = null;
     }
 
-    public TouchDetection getDetection() {
-        return detection;
-    }
-
     public Object getSource() {
         return source;
     }
@@ -443,15 +439,25 @@ public class TrackedElement {
     }
 
     /**
-     * TODO: Find the use of this? -> Used by the Tracking system.
+     * Get the detection object that created this tracked element.
+     *
+     * @param detection
+     */
+    public TouchDetection getDetection() {
+        return detection;
+    }
+
+    /**
+     * Set the detection object that created this tracked element.
      *
      * @param detection
      */
     public void setDetection(TouchDetection detection) {
         this.detection = detection;
     }
-    
+
     public boolean mainFinger = false;
+
     public void setMainFinger() {
         this.mainFinger = true;
     }

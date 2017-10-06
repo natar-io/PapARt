@@ -40,10 +40,13 @@ public class Compute2DFrom3D extends DepthRecognition {
         selection = depthData.createSelection();
         depthData.planeAndProjectionCalibration = planeAndProjCalibration;
 
+        depthData.connexity.setPrecision(precision2D);
+
 //        depthAnalysis.doForEachPoint(skip2D, new Select2DPlaneProjection());
         // Around the middle point
 //        depthAnalysis.computeDepthAndDoAround(precision2D, offset, area, new SelectAll());
         depthAnalysis.computeDepthAndDoAround(precision2D, offset, area, new Select2DPlaneProjection());
+        depthAnalysis.doForEachPointAround(precision2D, offset, area, new ComputeNormal());
         depthAnalysis.doForEachPointAround(precision2D, offset, area, new SetImageDataGRAY());
         // Add the Color Image after Contour detection
 
@@ -77,6 +80,16 @@ public class Compute2DFrom3D extends DepthRecognition {
         public void execute(Vec3D p, PixelOffset px) {
 //            depthData.validPointsMask[px.offset] = true;
             depthAnalysis.setPixelColorGRAY(px.offset);
+        }
+    }
+
+    class ComputeNormal implements DepthAnalysis.DepthPointManiplation {
+
+        @Override
+        public void execute(Vec3D p, PixelOffset px) {
+            depthData.connexity.compute(px.x, px.y);
+            Vec3D normal = depthAnalysis.computeNormalImpl(depthData.depthPoints[px.offset], px);
+            depthData.normals[px.offset] = normal;
         }
     }
 

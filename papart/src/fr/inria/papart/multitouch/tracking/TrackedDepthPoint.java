@@ -19,17 +19,12 @@
  */
 package fr.inria.papart.multitouch.tracking;
 
-import fr.inria.papart.depthcam.DepthData.DepthSelection;
 import fr.inria.papart.depthcam.devices.ProjectedDepthData;
 import fr.inria.papart.depthcam.DepthDataElementProjected;
 import fr.inria.papart.multitouch.ConnectedComponent;
-import fr.inria.papart.multitouch.Touch;
+import fr.inria.papart.multitouch.detection.DepthElementList;
 import fr.inria.papart.multitouch.detection.TouchDetectionDepth;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import toxi.geom.Plane;
 import toxi.geom.Vec3D;
 
 /**
@@ -42,8 +37,8 @@ public class TrackedDepthPoint extends TrackedElement {
     private Vec3D positionDepthCam;
     private Vec3D previousPositionDepthCam;
 
-    private ArrayList<DepthDataElementProjected> depthDataElements = new ArrayList<DepthDataElementProjected>();
-    private ArrayList<DepthDataElementProjected> selectDataElements = new ArrayList<DepthDataElementProjected>();
+    private DepthElementList depthDataElements = new DepthElementList();
+    private DepthElementList selectDataElements = new DepthElementList();
     int pointColor;
 
     private boolean is3D;
@@ -53,6 +48,16 @@ public class TrackedDepthPoint extends TrackedElement {
     private int attachedHandID = NO_HAND;
     private boolean isHand = false;
 
+    
+    private TrackedDepthPoint parent;
+
+    public void setParent(TrackedDepthPoint p){
+        parent = p;
+    }
+    public TrackedDepthPoint getParent(){
+        return parent;
+    }
+    
     public TrackedDepthPoint(int id) {
         super(id);
     }
@@ -128,20 +133,17 @@ public class TrackedDepthPoint extends TrackedElement {
         }
     }
 
-    public ArrayList<DepthDataElementProjected> getDepthDataElements() {
+    public void setDepthDataElements(ProjectedDepthData depthData, DepthElementList list) {
+        depthDataElements.clear();
+        depthDataElements.addAll(list);
+    }
+
+    public DepthElementList getDepthDataElements() {
         return this.depthDataElements;
     }
 
     public ConnectedComponent getDepthDataAsConnectedComponent() {
-        return ListToCC(this.depthDataElements);
-    }
-
-    public static ConnectedComponent ListToCC(List<DepthDataElementProjected> list) {
-        ConnectedComponent cc = new ConnectedComponent();
-        for (DepthDataElementProjected depthPoint : list) {
-            cc.add(depthPoint.offset);
-        }
-        return cc;
+        return this.depthDataElements.toConnectedComponent();
     }
 
     public boolean is3D() {
@@ -201,266 +203,6 @@ public class TrackedDepthPoint extends TrackedElement {
     @Override
     public String toString() {
         return "Touch Point, depth: " + positionDepthCam + " , proj: " + position + "confidence " + confidence + " ,close to Plane : " + isCloseToPlane;
-    }
-
-    /**
-     * Select the points the most away from another tracked depth point
-     *
-     * @param handPos
-     * @param depthData
-     */
-    public void refineTouchWithHand(Vec3D handPos, ProjectedDepthData depthData) {
-        ArrayList<DepthDataElementProjected> copy = new ArrayList<>();
-        copy.addAll(getDepthDataElements());
-        copy.sort(new DistanceComparator(handPos));
-
-        int size = 8;
-        if (copy.size() < size) {
-            size = copy.size();
-        }
-        // Keep the last 10 points.
-        List<DepthDataElementProjected> subList = copy.subList(0, size);
-
-        ConnectedComponent connectedComponent = ListToCC(subList);
-        Vec3D meanProj, meanDepthCam;
-        meanProj = connectedComponent.getMean(depthData.projectedPoints);
-        meanDepthCam = connectedComponent.getMean(depthData.depthPoints);
-
-        setPosition(meanProj);
-        setPositionKinect(meanDepthCam);
-        setCreationTime(depthData.timeStamp);
-
-        setDepthDataElements(depthData, connectedComponent);
-//        System.out.println("Points : " + connectedComponent.size());
-    }
-
-    public void removeElementsAwayFromTable(
-            ProjectedDepthData depthData,
-            Plane plane, int amount) {
-
-        ArrayList<DepthDataElementProjected> copy = new ArrayList<>();
-        copy.addAll(getDepthDataElements());
-        copy.sort(new DistanceToPlaneComparator(plane));
-
-        int size = amount;
-        if (copy.size() < size) {
-            size = copy.size();
-        }
-        try {
-            List<DepthDataElementProjected> subList = copy.subList(0, size);
-            ConnectedComponent connectedComponent = ListToCC(subList);
-            setDepthDataElements(depthData, connectedComponent);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public ArrayList<DepthDataElementProjected> removeElementsAwayFromCenterNumber(
-            ProjectedDepthData depthData, int amount) {
-        ArrayList<DepthDataElementProjected> noCenter = new ArrayList<>();
-        noCenter.addAll(getDepthDataElements());
-        // X filtering.
-
-        this.depthDataElements.sort(new DistanceComparator(this.getPositionDepthCam()));
-//        noCenter.sort(new DistanceComparator(this.getPositionDepthCam()));
-
-        int size = amount;
-        if (this.getDepthDataElements().size() < size) {
-            size = this.getDepthDataElements().size();
-        }
-        // X points closer
-//        List<DepthDataElementProjected> subList = noCenter.subList(0, size);
-        setDepthDataElements(depthData, ListToCC(depthDataElements.subList(0, size)));
-//        ConnectedComponent connectedComponent = ListToCC(subList);
-//               setDepthDataElements(depthData, connectedComponent);
-
-        // Remove from a distance
-//        Iterator<DepthDataElementProjected> it = noCenter.iterator();
-//        while (it.hasNext()) {
-//            DepthDataElementProjected dde = it.next();
-//            if(dde.depthPoint.distanceTo(this.getPositionDepthCam()) < distance){
-//                    it.remove();
-//            }
-//        }
-        return noCenter;
-    }
-
-    public ArrayList<DepthDataElementProjected> removeElementsAwayFromCenterDist(
-            ProjectedDepthData depthData,
-            float dist) {
-//        ArrayList<DepthDataElementProjected> noCenter = new ArrayList<>();
-//        noCenter.addAll(getDepthDataElements());
-        // X filtering.
-
-//        this.depthDataElements.sort(new DistanceComparator(this.getPositionDepthCam()));
-//        noCenter.sort(new DistanceComparator(this.getPositionDepthCam()));
-        // Remove from a distance
-        Iterator<DepthDataElementProjected> it = depthDataElements.iterator();
-//        Iterator<DepthDataElementProjected> it = noCenter.iterator();
-        while (it.hasNext()) {
-            DepthDataElementProjected dde = it.next();
-            if (dde.depthPoint.distanceTo(this.getPositionDepthCam()) < dist) {
-                it.remove();
-            }
-        }
-        return null;
-    }
-
-    public ArrayList<DepthDataElementProjected> removeElementsAwayFromCenterDist(
-            ProjectedDepthData depthData,
-            DepthSelection depthSelection,
-            float dist) {
-        ArrayList<DepthDataElementProjected> output = new ArrayList<>();
-//        noCenter.addAll(getDepthDataElements());
-        // X filtering.
-
-//        this.depthDataElements.sort(new DistanceComparator(this.getPositionDepthCam()));
-//        noCenter.sort(new DistanceComparator(this.getPositionDepthCam()));
-        // Remove from a distance
-        Iterator<DepthDataElementProjected> it = depthDataElements.iterator();
-//        Iterator<DepthDataElementProjected> it = noCenter.iterator();
-        while (it.hasNext()) {
-            DepthDataElementProjected dde = it.next();
-            if (dde.depthPoint.distanceTo(this.getPositionDepthCam()) < dist) {
-                // flag the point as invalid
-                depthSelection.validPointsMask[dde.offset] = false;
-                output.add(dde);
-//                it.remove();
-            }
-        }
-        return output;
-    }
-
-    public void removeNonBoundaries(
-            ProjectedDepthData depthData,
-            DepthSelection depthSelection,
-            TouchDetectionDepth detect) {
-
-        // Remove from a distance
-        Iterator<DepthDataElementProjected> it = depthDataElements.iterator();
-//        Iterator<DepthDataElementProjected> it = noCenter.iterator();
-        while (it.hasNext()) {
-            DepthDataElementProjected dde = it.next();
-            if (!detect.getBoundaries()[dde.offset]) {
-                it.remove();
-            }
-        }
-    }
-
-    public boolean refineTouchAlongNormal(ProjectedDepthData depthData) {
-        ArrayList<DepthDataElementProjected> dx = new ArrayList<>();
-        dx.addAll(getDepthDataElements());
-        // X filtering.
-
-        float normalThreshold = 0.3f;
-        int numberRequired = 6;
-
-        Iterator<DepthDataElementProjected> it = dx.iterator();
-        while (it.hasNext()) {
-            DepthDataElementProjected dde = it.next();
-            if (dde.normal != null) {
-                if (!(dde.normal.x() > normalThreshold
-                        || dde.normal.x() < -normalThreshold)) {
-                    it.remove();
-                }
-            }
-        }
-
-        ArrayList<DepthDataElementProjected> dy = new ArrayList<>();
-        dy.addAll(getDepthDataElements());
-
-        // Y filtering.
-        it = dy.iterator();
-        while (it.hasNext()) {
-            DepthDataElementProjected dde = it.next();
-
-            if (dde.normal != null) {
-                if (!(dde.normal.y() > normalThreshold
-                        || dde.normal.y() < -normalThreshold)) {
-                    it.remove();
-                }
-            }
-
-//            if (dde.normal == null
-//                    // TODO: MAGIC NUMBER
-//                    // the normal is the orientation relative to the underlying plane.
-//                    || dde.normal.y() < normalThreshold
-//                    || dde.normal.y() > normalThreshold) {
-//                it.remove();
-//            }
-        }
-//        System.out.println("Copy size: " + copy.size());
-// WARNING: MAGIC NUMBER.
-        if (dx.size() < numberRequired || dy.size() < numberRequired) {
-//            this.mainFinger = false;
-            return false;
-        }
-
-        ConnectedComponent connectedComponent;
-        if (dx.size() > dy.size()) {
-            connectedComponent = ListToCC(dx);
-        } else {
-            if (dy.size() > dx.size()) {
-                connectedComponent = ListToCC(dy);
-            } else {
-                connectedComponent = ListToCC(dx);
-                connectedComponent.addAll(ListToCC(dy));
-            }
-        }
-
-//        this.mainFinger = true;
-        Vec3D meanProj, meanDepthCam;
-        meanProj = connectedComponent.getMean(depthData.projectedPoints);
-        meanDepthCam = connectedComponent.getMean(depthData.depthPoints);
-        setPosition(meanProj);
-        setPositionKinect(meanDepthCam);
-        setCreationTime(depthData.timeStamp);
-        setDepthDataElements(depthData, connectedComponent);
-//        System.out.println("Points : " + connectedComponent.size()); }
-        return true;
-    }
-
-    public void setDepthDataElements(ProjectedDepthData depthData,
-            ArrayList<DepthDataElementProjected> removeElementsAwayFromCenterDist) {
-        setDepthDataElements(depthData, ListToCC(depthDataElements));
-    }
-
-    class DistanceComparator implements Comparator {
-
-        private final Vec3D position;
-
-        public DistanceComparator(Vec3D initialObject) {
-            this.position = initialObject.copy();
-        }
-
-        @Override
-        public int compare(Object pos0, Object pos1) {
-            DepthDataElementProjected t0 = (DepthDataElementProjected) pos0;
-            DepthDataElementProjected t1 = (DepthDataElementProjected) pos1;
-
-            float d0 = t0.depthPoint.distanceTo(position);
-            float d1 = t1.depthPoint.distanceTo(position);
-            return Float.compare(d1, d0);
-        }
-    }
-
-    class DistanceToPlaneComparator implements Comparator {
-
-        private final Plane plane;
-
-        public DistanceToPlaneComparator(Plane initialObject) {
-            this.plane = initialObject;
-        }
-
-        @Override
-        public int compare(Object pos0, Object pos1) {
-            DepthDataElementProjected t0 = (DepthDataElementProjected) pos0;
-            DepthDataElementProjected t1 = (DepthDataElementProjected) pos1;
-
-            float d0 = plane.getDistanceToPoint(t0.depthPoint);
-            float d1 = plane.getDistanceToPoint(t1.depthPoint);
-            return Float.compare(d0, d1);
-        }
     }
 
 }

@@ -684,6 +684,10 @@ public class Papart {
      */
     public void loadTouchInput() {
         try {
+            // HACK load also the main camera... :[
+            initCamera(); 
+            
+            
             loadDefaultDepthCamera();
             loadDefaultDepthTouch();
         } catch (CannotCreateCameraException cce) {
@@ -727,26 +731,26 @@ public class Papart {
     public DepthCameraDevice loadDefaultDepthCamera() throws CannotCreateCameraException {
 
         // Two cases, either the other camera running of the same type
-        CameraConfiguration kinectConfiguration = Papart.getDefaultDepthCameraConfiguration(applet);
+        CameraConfiguration depthCamConfiguration = Papart.getDefaultDepthCameraConfiguration(applet);
 
         // If the camera is not instanciated, we use depth + color from the camera.
 //        if (cameraTracking == null) {
 //            System.err.println("You must choose a camera to create a DepthCamera.");
 //        }
-        if (kinectConfiguration.getCameraType() == Camera.Type.REALSENSE) {
+        if (depthCamConfiguration.getCameraType() == Camera.Type.REALSENSE) {
             depthCameraDevice = new RealSense(applet, cameraTracking);
         }
 
-        if (kinectConfiguration.getCameraType() == Camera.Type.OPEN_KINECT) {
+        if (depthCamConfiguration.getCameraType() == Camera.Type.OPEN_KINECT) {
             depthCameraDevice = new Kinect360(applet, cameraTracking);
         }
 
-        if (kinectConfiguration.getCameraType() == Camera.Type.OPEN_KINECT_2) {
+        if (depthCamConfiguration.getCameraType() == Camera.Type.OPEN_KINECT_2) {
             depthCameraDevice = new KinectOne(applet, cameraTracking);
         }
 
         if (depthCameraDevice == null) {
-            System.err.println("Could not load the depth camera !" + "Camera Type " + kinectConfiguration.getCameraType());
+            System.err.println("Could not load the depth camera !" + "Camera Type " + depthCamConfiguration.getCameraType());
         }
 
         // At this point, cameraTracking & depth Camera are ready. 

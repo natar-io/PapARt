@@ -55,6 +55,12 @@ public class TouchPointTracker {
                 tp.filter();
         }
     }
+    public static <T extends TrackedElement> void filterPositions(ArrayList<T> currentList, int time){
+               // Add the new ones ?
+        for (TrackedElement tp : currentList) {
+                tp.filter(time);
+        }
+    }
 
     public static <T extends TrackedElement> void updatePoints(ArrayList<T> currentList, ArrayList<T> newPoints) {
 

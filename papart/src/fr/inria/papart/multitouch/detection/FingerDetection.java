@@ -24,14 +24,8 @@ import Jama.Matrix;
 import com.mkobos.pca_transform.PCA;
 import fr.inria.papart.calibration.files.PlanarTouchCalibration;
 import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
-import fr.inria.papart.depthcam.DepthDataElement;
-import fr.inria.papart.depthcam.DepthDataElementProjected;
-import static fr.inria.papart.depthcam.analysis.DepthAnalysis.INVALID_POINT;
-import static fr.inria.papart.depthcam.analysis.DepthAnalysis.isValidPoint;
 import fr.inria.papart.depthcam.analysis.DepthAnalysisImpl;
-import fr.inria.papart.depthcam.analysis.Compute2D;
 import fr.inria.papart.depthcam.analysis.Compute2DFrom3D;
-import fr.inria.papart.depthcam.analysis.Compute3D;
 import fr.inria.papart.depthcam.devices.ProjectedDepthData;
 import fr.inria.papart.multitouch.ConnectedComponent;
 import static fr.inria.papart.multitouch.ConnectedComponent.INVALID_COMPONENT;
@@ -40,15 +34,13 @@ import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.utils.ImageUtils;
-import fr.inria.papart.utils.WithSize;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_core.IplImage;
+import org.bytedeco.javacpp.opencv_core.Mat;
+import org.bytedeco.javacpp.opencv_core.Size;
 import static org.bytedeco.javacpp.opencv_core.cvCopy;
-import static org.bytedeco.javacpp.opencv_core.cvCreateImage;
-import static org.bytedeco.javacpp.opencv_core.cvGetSize;
 import static org.bytedeco.javacpp.opencv_core.cvRect;
 import static org.bytedeco.javacpp.opencv_core.cvSetImageROI;
 import org.bytedeco.javacpp.opencv_imgproc;
@@ -76,8 +68,6 @@ public class FingerDetection extends TouchDetectionDepth {
 
     public class CheckTouchPoint implements PointValidityCondition {
 
-        private int inititalPoint;
-
         public ProjectedDepthData getData() {
             return depthData;
         }
@@ -85,28 +75,14 @@ public class FingerDetection extends TouchDetectionDepth {
         @Override
         public boolean checkPoint(int candidate, int currentPoint) {
 
-//            MAGIC NUMBER: 20
             boolean classicCheck = !assignedPoints[candidate] // not assigned  
-                    && depthData.planeAndProjectionCalibration.distanceTo(depthData.depthPoints[candidate]) < 20f
-                    && depthData.depthPoints[inititalPoint].distanceTo(depthData.depthPoints[candidate]) < calib.getMaximumDistanceInit()
+
+                    // Lower than the hand.
+                    && depthData.planeAndProjectionCalibration.distanceTo(depthData.depthPoints[candidate]) < (handCalib.getTest2() - 0.5f)
+                    //                    && depthData.planeAndProjectionCalibration.distanceTo(depthData.depthPoints[candidate]) < 20f
+                    && depthData.depthPoints[initialPoint].distanceTo(depthData.depthPoints[candidate]) < calib.getMaximumDistanceInit()
                     && depthData.depthPoints[candidate].distanceTo(depthData.depthPoints[currentPoint]) < calib.getMaximumDistance();
 
-//            // Rotate along with the PCA
-//            Matrix testData = new Matrix(new double[][]{
-//                {
-//                    depthData.depthPoints[candidate].x,
-//                    depthData.depthPoints[candidate].y,
-//                    depthData.depthPoints[candidate].z}});
-//
-//            /**
-//             * The transformed test data.
-//             */
-//            Matrix transformedData
-//                    = handPCA.transform(testData, PCA.TransformationType.ROTATION);
-//            float trX = (float) transformedData.get(0, 0);
-//            float trY = (float) transformedData.get(0, 1);
-//            float trZ = (float) transformedData.get(0, 2);
-//            System.out.println(trX + " " + trY + " " + trZ);
             boolean goodNormal = true;
 
             if (depthData.normals[candidate] != null) {
@@ -117,6 +93,17 @@ public class FingerDetection extends TouchDetectionDepth {
                 goodNormal = (depthData.normals[candidate] != null && dN > calib.getNormalFilter());  // Higher  than Xmm
             }
 
+
+            int[] neighbourColorList = depthData.connexity.getNeighbourColorList(getX(candidate), 
+                    getY(candidate), 
+                    depthData.pointColors);
+            int colorSum = 0;
+            for(int argb : neighbourColorList){
+                  int g = (argb >> 8) & 0xFF;
+                  colorSum += g / 255;
+            }
+            
+
             int argb = depthData.pointColors[candidate];
 //            boolean goodColor = ((depthData.pointColors[candidate] & 0xFF) >> 8) == 255;  // 0xFF = 255
             int r = (argb >> 16) & 0xFF;  // Faster way of getting red(argb)
@@ -124,119 +111,114 @@ public class FingerDetection extends TouchDetectionDepth {
             int b = argb & 0xFF;          // Faster way of getting blue(argb)
             int total = r + g + b;
             
-            boolean handDist = depthData.depthPoints[candidate].distanceTo(handPos) > calib.getTest5();
-            
-//            System.out.print(total + " ");
-            return (classicCheck && handDist && goodNormal); // && (total == 765 && goodNormal));
+//            System.out.println("sum: " + colorSum);
+            return classicCheck && colorSum <= 2 && goodNormal;
         }
     }
 
-    PCA handPCA;
-    int handOffset; 
-    Vec3D handPos; 
+    int handOffset;
+    Vec3D handPos;
+
+    TrackedDepthPoint currentHand;
+    TrackedDepthPoint currentArm;
+    PlanarTouchCalibration handCalib;
+    PlaneAndProjectionCalibration currentPlaneProj;
+
     /**
      *
      * @param planeAndProjCalibration
      * @param colorImg
      * @param hand
      */
-    public void findTouch(HandDetection hand, IplImage colorImg, PlaneAndProjectionCalibration planeAndProjCalibration) {
+    public void findTouch(HandDetection hand, ArmDetection arm,
+            IplImage colorImg,
+            PlaneAndProjectionCalibration planeAndProjCalibration) {
 
         // Warning, this should be done before ?
         this.depthData = depthAnalysis.getDepthData();
+        this.handCalib = hand.getCalibration();
+        this.currentPlaneProj = planeAndProjCalibration;
 
-        this.touchPoints.clear();
-
+        ArrayList<TrackedDepthPoint> allNewFingers = new ArrayList<TrackedDepthPoint>();
         // For each hand
         for (TrackedDepthPoint touchPoint : hand.getTouchPoints()) {
 
-//            System.out.println("Incoming size of hand: " + touchPoint.getDepthDataElements().size());
             int offset = depthAnalysis.getDepthCameraDevice().findDepthOffset(touchPoint.getPositionDepthCam());
 
-            int w = depthAnalysis.getDepthCameraDevice().getDepthCamera().width();
-            int x = offset % w;
-            int y = offset / w;
-            while (x % getPrecision() != 0) {
-                x++;
-//                System.out.println("incr x");
-            }
-            while (y % getPrecision() != 0) {
-                y++;
-//                System.out.println("incr y");
-            }
-
-            offset = x + y * w;
+            offset = getValidOffset(offset);
+            currentHand = touchPoint;
+            currentArm = touchPoint.getParent();
             handOffset = offset;
             handPos = touchPoint.getPositionDepthCam();
-            
-            int rectSize = (int) this.calib.getTest1();
-            computeContour(colorImg, offset, (int) this.calib.getTest1());
 
-//            System.out.println("Offset: " + (offset % 640) + "  " + (offset / 640));
-            // Look for better depth
+            int rectSize = (int) this.calib.getTest1();
+
+            // the IRImage here is the modified one. 
+            // 1. Compute the contours of the hand.
+            IplImage irImg = computeContour(colorImg, offset, (int) this.calib.getTest1());
+
+            // Set the contour Color data. 
             touchRecognition.find2DTouchFrom3D(planeAndProjCalibration,
                     getPrecision(),
-                    colorImg,
+                    irImg,
                     offset,
                     (int) this.calib.getTest2());
 
-            if (touchRecognition.getSelection().validPointsList.size() == 0) {
-                continue;
-            }
+            // 2. Select points that are part of the border 
+            DepthElementList handBounds = touchPoint.getDepthDataElements();
+//            handBounds =  handBounds.getBoundaries(depthData, touchPoint.getDetection());
 
-//            System.out.println("nb Valid: " + this.toVisit.size());
-            this.toVisit.addAll(touchRecognition.getSelection().validPointsList);
+            // 3. Select the ones that not part of the contour. 
+            handBounds.selectDark(depthData);
+//            System.out.println("Bounds in Hand and not in Edge detection: " + handBounds.size());
+            // USELESS?
+            // 4. Remove the points that are also in the arm
+            handBounds.removeAll(currentArm.getDepthDataElements());
+//            System.out.println("Same not in arm: " + handBounds.size());
 
-            // PCA on all valid points (including the table). 
-            int k = 0;
-            int total = touchRecognition.getSelection().validPointsList.size();
-            double[][] dataPoints = new double[total][3];
-            for (Integer offsetPt : touchRecognition.getSelection().validPointsList) {
-                dataPoints[k][0] = depthData.depthPoints[offsetPt].x;
-                dataPoints[k][1] = depthData.depthPoints[offsetPt].y;
-                dataPoints[k][2] = depthData.depthPoints[offsetPt].z;
-                k++;
-            }
-            //  column corresponding to dimension: x, y, z */
-            Matrix trainingData = new Matrix(dataPoints);
-            handPCA = new PCA(trainingData);
-            try {
-                Matrix vectors = handPCA.getEigenvectorsMatrix();
-                double e0 = handPCA.getEigenvalue(0);
-                double e1 = handPCA.getEigenvalue(1);
-                double e2 = handPCA.getEigenvalue(2);
-//
-//                for (int r = 0; r < vectors.getRowDimension(); r++) {
-//                    for (int c = 0; c < vectors.getColumnDimension(); c++) {
-//                        System.out.print(vectors.get(r, c));
-//                        if (c == vectors.getColumnDimension() - 1) {
-//                            continue;
-//                        }
-//                        System.out.print(", ");
-//                    }
-//                    System.out.println("");
-//                }
+            // Start searching from the bounds
+            this.toVisit.addAll(handBounds.toConnectedComponent());
 
-            } catch (Exception e) {
-            }
-
+            // Search points "black"  -> not in bounds ?
             // Generate a touch list from these points. 
             ArrayList<TrackedDepthPoint> newList;
             newList = this.compute(this.depthAnalysis.getDepthData());
 
-            int imageTime = this.depthAnalysis.getDepthData().timeStamp;
-            // Track the points and update the touchPoints2D variable.
-//        TouchPointTracker.trackPoints(touchPoints, newList, imageTime);
-            this.touchPoints.addAll(newList);
+            // WARNING - FINGERS CAN JUMP FROM ONE HAND TO ANOTHER
+            allNewFingers.addAll(newList);
         }
 
-        System.out.println("TouchPoints trouvés: " + this.touchPoints.size());
+        int imageTime = this.depthAnalysis.getDepthData().timeStamp;
+
+        TouchPointTracker.trackPoints(touchPoints, allNewFingers, imageTime);
+        TouchPointTracker.filterPositions(touchPoints, imageTime);
     }
 
-    private void computeContour(opencv_core.IplImage image, int offset, int imageSize) {
+    private IplImage irImage = null;
+    public PImage irPImage = null;
+    private int lastSize = 0;
+    opencv_core.IplImage irDetect;
+
+    private IplImage computeContour(opencv_core.IplImage image, int offset, int imageSize) {
+
+        if (irImage == null) {
+//            irImage = opencv_core.IplImage.create(image.width(), image.height(), 8, 1);
+            irImage = opencv_core.IplImage.create(image.width(), image.height(), image.depth(), image.nChannels());
+
+        }
+
+        if (imageSize != lastSize) {
+            lastSize = imageSize;
+            irDetect = opencv_core.IplImage.create(imageSize, imageSize, 8, 1);
+            irPImage = Papart.getPapart().getApplet().createImage(imageSize, imageSize, ALPHA);
+        }
+
+        // Copy the incoming IR Image.
+        cvCopy(image, irImage);
 
         ProjectiveDeviceP projectiveDevice = depthAnalysis.getColorProjectiveDevice();
 
+        // Find the zone to work on.   
         int fingerX = offset % projectiveDevice.getWidth();
         int fingerY = offset / projectiveDevice.getWidth();
 
@@ -260,46 +242,52 @@ public class FingerDetection extends TouchDetectionDepth {
         opencv_core.CvRect defaultRoi = cvRect(0, 0,
                 projectiveDevice.getWidth(), projectiveDevice.getHeight());
 
-        System.out.println("ROI: " + minX + " " + minY + " " + imageSize + " " + imageSize);
-
         opencv_core.CvRect roi = cvRect(minX, minY, imageSize, imageSize);
-        cvSetImageROI(image, roi);
 
-        opencv_core.IplImage copy = opencv_core.IplImage.create(imageSize, imageSize, 8, 1);
+        // Select the zone 
+        cvSetImageROI(irImage, roi);
 
-        System.out.println("Orig Size: " + image.width() + " " + image.height() + " " + image.depth() + " " + image.nChannels());
-        System.out.println("Copy Size: " + copy.width() + " " + copy.height() + " " + copy.depth() + " " + copy.nChannels());
+        opencv_imgproc.medianBlur(new opencv_core.Mat(irImage), new opencv_core.Mat(irImage), 1);
+//        opencv_imgproc.blur(new Mat(irImage), new Mat(irImage), new Size(2, 2));
 
-        cvCopy(image, copy);
-
-        // WARNING IMAGE CREATION HERE 
-        opencv_core.IplImage dst = cvCreateImage(cvGetSize(copy), copy.depth(), 1);
-
-//        opencv_imgproc.blur(new Mat(copy), new Mat(dst), new Size(2, 2));
-//        cvSmooth(copy, dst);  // OK
-        opencv_imgproc.medianBlur(new opencv_core.Mat(copy), new opencv_core.Mat(dst), 3);
-
-//        colorDst = cvCreateImage(cvGetSize(copy), copy.depth(), 3);
-        cvCanny(dst, dst,
+cvCanny(irImage, irImage,
                 getCalibration().getTest3(),
                 getCalibration().getTest4(),
                 7);
 
-        int morph_size = 2;
+        int morph_size = 1;
         opencv_core.Mat element = opencv_imgproc.getStructuringElement(0, new opencv_core.Size(2 * morph_size + 1, 2 * morph_size + 1), new opencv_core.Point(morph_size, morph_size));
-//        opencv_imgproc.dilate(new opencv_core.Mat(dst), new opencv_core.Mat(dst), element);
-        opencv_imgproc.dilate(new opencv_core.Mat(dst), new opencv_core.Mat(dst), element);
+        opencv_imgproc.dilate(new opencv_core.Mat(irImage), new opencv_core.Mat(irImage), element);
+        opencv_imgproc.dilate(new opencv_core.Mat(irImage), new opencv_core.Mat(irImage), element);
+        opencv_imgproc.erode(new opencv_core.Mat(irImage), new opencv_core.Mat(irImage), element);
+        
+        cvCopy(irImage, irDetect);
 
-//        opencv_imgproc.dilate(new opencv_core.Mat(dst), new opencv_core.Mat(image), element);
-        opencv_imgproc.erode(new opencv_core.Mat(dst), new opencv_core.Mat(image), element);
+        // Copy to PImage to preview  (to delete for production) 
+//        ImageUtils.IplImageToPImage(irDetect, irPImage);
+        // set reset ROI
+        cvSetImageROI(irImage, defaultRoi);
+        return irImage;
+    }
 
-        cvCopy(image, copy);
+    public PImage getIRImage() {
+        if (irDetect == null || irPImage == null) {
+            return null;
+        }
+        // Copy to PImage to preview  (to delete for production) 
+        ImageUtils.IplImageToPImage(irDetect, irPImage);
+        return irPImage;
+    }
 
+    //////////////////////////////////////////
+    // DEAD CODE ZONE 
+    // Contour detection and rectonstruction. 
+    //////////////////////////////////////////
 //        opencv_imgproc.dilate(new Mat(dst), new Mat(dst));
 //        opencv_imgproc.erode(new Mat(dst), new Mat(dst));
 //        cvDilate(dst, dst);
 //        cvErode(dst, dst);
-        //  Contour computations...
+    //  Contour computations...
 //        contourList.clear();
 //        hullList.clear();
 //
@@ -326,7 +314,6 @@ public class FingerDetection extends TouchDetectionDepth {
 //            }
 //            contours = contours.h_next();
 //        }
-//
 //        contourPointsSize = bigContour.total();
 //        if (contourPoints == null || contourPoints.capacity() < contourPointsSize) {
 //            contourPoints = new opencv_core.CvPoint(contourPointsSize);
@@ -340,18 +327,8 @@ public class FingerDetection extends TouchDetectionDepth {
 //            int y = contourPointsBuffer.get(2 * i + 1);
 //            contourList.add(new PVector(x, y, 0));
 //        }
-        // WARNING IMAGE CREATION HERE  
-        out = Papart.getPapart().getApplet().createImage(imageSize, imageSize, ALPHA);
-
-        ImageUtils.IplImageToPImage(copy, out);
-
-        cvSetImageROI(image, defaultRoi);
-
+    // WARNING IMAGE CREATION HERE  
 //        ImageUtils.IplImageToPImage(copy, out);
-    }
-
-    public PImage out = null;
-
     @Override
     protected ConnectedComponent findConnectedComponent(int startingPoint) {
 
@@ -361,12 +338,12 @@ public class FingerDetection extends TouchDetectionDepth {
 
         w = imgSize.getWidth();
         h = imgSize.getHeight();
-inititalPoint = startingPoint;
-        ConnectedComponent cc = findNeighboursRec(startingPoint, 0, getX(startingPoint), getY(startingPoint));
+        initialPoint = startingPoint;
+//        ConnectedComponent cc = findNeighboursRec(startingPoint, 0, getX(startingPoint), getY(startingPoint));
+        ConnectedComponent cc = findNeighboursFloodFill(startingPoint);
 
         // Do not accept 1 point compo ?!
         if (cc.size() <= calib.getMinimumComponentSize()) {
-
             clearPoints(cc);
             // Remove all points
             contactPoints.remove(currentCompo);
@@ -409,11 +386,116 @@ inititalPoint = startingPoint;
     }
 
     @Override
-    protected TrackedDepthPoint createTouchPoint(ConnectedComponent connectedComponent) {
+    public ArrayList<TrackedDepthPoint> compute(ProjectedDepthData dData) {
+
+        this.setDepthData(dData);
+        if (!hasCCToFind()) {
+            return new ArrayList<TrackedDepthPoint>();
+        }
+        ArrayList<ConnectedComponent> connectedComponents = findConnectedComponents();
+        ArrayList<TrackedDepthPoint> newPoints = this.createTouchPointsFrom(connectedComponents);
+        return newPoints;
+    }
+
+    protected ArrayList<TrackedDepthPoint> createTouchPointsFrom(ArrayList<ConnectedComponent> connectedComponents) {
+        ArrayList<TrackedDepthPoint> newPoints = new ArrayList<TrackedDepthPoint>();
+        for (ConnectedComponent connectedComponent : connectedComponents) {
+
+            float height = connectedComponent.getHeight(depthData.projectedPoints);
+            if (connectedComponent.size() < calib.getMinimumComponentSize()
+                    || height < calib.getMinimumHeight()) {
+
+                continue;
+            }
+
+            int k = 0;
+            int total = connectedComponent.size();
+            double[][] dataPoints = new double[total][3];
+            for (Integer offsetPt : connectedComponent) {
+                dataPoints[k][0] = depthData.depthPoints[offsetPt].x;
+                dataPoints[k][1] = depthData.depthPoints[offsetPt].y;
+                dataPoints[k][2] = depthData.depthPoints[offsetPt].z;
+                k++;
+            }
+            //  column corresponding to dimension: x, y, z */
+            Matrix trainingData = new Matrix(dataPoints);
+            PCA fingerPCA = new PCA(trainingData);
+            Matrix vectors = fingerPCA.getEigenvectorsMatrix();
+
+            try {
+
+                if (fingerPCA.getEigenvectorsMatrix().getColumnDimension() != 3
+                        || fingerPCA.getEigenvectorsMatrix().getRowDimension() != 3) {
+                    continue;
+                }
+                double e0 = fingerPCA.getEigenvalue(0);
+                double e1 = fingerPCA.getEigenvalue(1);
+
+//                fingerPCA.transform(vectors, PCA.TransformationType.ROTATION)
+                // e0 -> length  of finger
+                // e1 -> width of finger                // e0 -> length  of finger
+                // e1 -> width of finger
+                Matrix eigenvectorsMatrix = fingerPCA.getEigenvectorsMatrix().copy();
+                eigenvectorsMatrix.inverse();
+
+                Matrix furtherPt = new Matrix(new double[][]{
+                    {
+                        e0 / 8f, 0, 0}});
+
+                Matrix mult = furtherPt.times(eigenvectorsMatrix);
+
+//                System.out.println("Mult: " + mult.get(0, 0)
+//                        + " " + mult.get(0, 1)
+//                        + " " + mult.get(0, 2));
+                Vec3D shift = new Vec3D(
+                        (float) mult.get(0, 0),
+                        (float) mult.get(0, 1), 0);
+//                        (float) mult.get(0, 2));
+
+                TrackedDepthPoint tp = createTouchPoint(connectedComponent, shift);
+
+//                Matrix testData = new Matrix(new double[][]{
+//                    {
+//                        tp.getPositionDepthCam().x,
+//                        tp.getPositionDepthCam().y,
+//                        tp.getPositionDepthCam().z}});
+//                Matrix transformedData
+//                        = fingerPCA.transform(testData, PCA.TransformationType.ROTATION);
+//                float trX = (float) transformedData.get(0, 0);
+//                float trY = (float) transformedData.get(0, 1);
+//                float trZ = (float) transformedData.get(0, 2);
+//                System.out.println(trX + " " + trY + " " + trZ);
+                newPoints.add(tp);
+//
+//                if (e0 < 20f && e0 > 200f
+//                        && e1 < 30) {
+//                    continue;
+//                }
+
+            } catch (Exception e) {
+                System.out.println("Error ");
+                e.printStackTrace();
+            }
+
+        }
+        return newPoints;
+    }
+
+    protected TrackedDepthPoint createTouchPoint(ConnectedComponent connectedComponent,
+            Vec3D shift) {
 
         Vec3D meanProj, meanKinect;
-        meanProj = connectedComponent.getMean(depthData.projectedPoints);
+        meanProj = new Vec3D();
         meanKinect = connectedComponent.getMean(depthData.depthPoints);
+//        meanKinect.addSelf(shift);
+        
+        Vec3D handPos = currentHand.getPositionDepthCam(); 
+        Vec3D dir = meanKinect.sub(handPos).normalize().scale(15f);
+        
+          meanKinect.addSelf(dir);
+        
+        
+        currentPlaneProj.project(meanKinect, meanProj);
 
         TrackedDepthPoint tp = new TrackedDepthPoint();
         tp.setDetection(this);
@@ -429,18 +511,6 @@ inititalPoint = startingPoint;
     }
 
     @Override
-    public ArrayList<TrackedDepthPoint> compute(ProjectedDepthData dData) {
-
-        this.setDepthData(dData);
-        if (!hasCCToFind()) {
-            return new ArrayList<TrackedDepthPoint>();
-        }
-        ArrayList<ConnectedComponent> connectedComponents = findConnectedComponents();
-        ArrayList<TrackedDepthPoint> newPoints = this.createTouchPointsFrom(connectedComponents);
-        return newPoints;
-    }
-
-    @Override
     public boolean hasCCToFind() {
         return !this.toVisit.isEmpty();
     }
@@ -452,7 +522,7 @@ inititalPoint = startingPoint;
         // Done before
 //        this.toVisit.clear();
 //        this.toVisit.addAll(touchRecognition.getSelection().validPointsList);
-        contactPoints.clear();
+//        contactPoints.clear();
     }
 
 }

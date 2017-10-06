@@ -30,7 +30,7 @@ public abstract class TouchDetection {
 
     protected boolean[] assignedPoints = null;
     protected byte[] connectedComponentImage = null;
-    protected int inititalPoint;
+    protected int initialPoint;
 
     protected boolean[] boundaries = null;
 
@@ -136,7 +136,7 @@ public abstract class TouchDetection {
         h = imgSize.getHeight();
 
 //        ConnectedComponent cc = findNeighboursRec(startingPoint, 0, getX(startingPoint), getY(startingPoint));
-        ConnectedComponent cc = findNeighboursFloodFill(startingPoint, 0);
+        ConnectedComponent cc = findNeighboursFloodFill(startingPoint);
 
         // Do not accept 1 point compo ?!
         if (cc.size() == 1) {
@@ -144,7 +144,6 @@ public abstract class TouchDetection {
             boundaries[startingPoint] = false;
             return INVALID_COMPONENT;
         }
-
         cc.setId(currentCompo);
         currentCompo++;
 
@@ -181,7 +180,27 @@ public abstract class TouchDetection {
         return currentPoint / w;
     }
 
-    public ConnectedComponent findNeighboursFloodFill(int currentPoint, int recLevel) {
+    /**
+     * Get an offset valid with the current precision parameter.
+     *
+     * @param offset
+     * @return
+     */
+    protected int getValidOffset(int offset) {
+        int w = imgSize.getWidth();
+        int x = offset % w;
+        int y = offset / w;
+        while (x % getPrecision() != 0) {
+            x++;
+        }
+        while (y % getPrecision() != 0) {
+            y++;
+        }
+        return x + y * w;
+    }
+
+    public ConnectedComponent findNeighboursFloodFill(int currentPoint) {
+        int recLevel = 0;
         ConnectedComponent finalCC = new ConnectedComponent();
         ConnectedComponent currentFill = new ConnectedComponent();
         ConnectedComponent nextFill = new ConnectedComponent();
@@ -200,11 +219,10 @@ public abstract class TouchDetection {
         // Then we create a list of points to visit in the next iteration
         // searchDepth is going to be 1 for now. 
 //        searchDepth = calib.getPrecision();
-        inititalPoint = currentPoint;
+        initialPoint = currentPoint;
 
         // Lets do it with a while 
         while (recLevel <= calib.getMaximumRecursion()) {
-
             // For all points of the current layer
             for (Integer currentOffset : currentFill) {
                 int x = getX(currentOffset);
@@ -215,7 +233,6 @@ public abstract class TouchDetection {
                         || y - searchDepth < 0 || y + searchDepth > h - 1) {
                     continue;
                 }
-
                 int minX = x - searchDepth;
                 int maxX = x + searchDepth;
                 int minY = y - searchDepth;
@@ -277,7 +294,7 @@ public abstract class TouchDetection {
 
         // At least one point in connected compo !
         if (recLevel == 0) {
-            this.inititalPoint = currentPoint;
+            this.initialPoint = currentPoint;
             addPointTo(neighbourList, currentPoint);
         }
 

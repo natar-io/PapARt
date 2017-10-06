@@ -77,7 +77,7 @@ public class Simple2D extends TouchDetectionDepth {
                     //                    && depthData.validPointsMask[offset] // is valid
                     //                                        && depthData.depthPoints[offset] != INVALID_POINT // is valid
                     //                                        && depthData.depthPoints[offset].distanceTo(INVALID_POINT) >= 0.01f
-                    && depthData.normals[candidate] != null  //  good normal is good health
+                    && depthData.normals[candidate] != null //  good normal is good health
                     && isValidPoint(depthData.projectedPoints[candidate]) //  TODO WHY "0" and non invalidpoints here.
                     && isValidPoint(depthData.depthPoints[candidate]) //  TODO WHY "0" and non invalidpoints here.
                     && depthData.depthPoints[inititalPoint].distanceTo(depthData.depthPoints[candidate]) < calib.getMaximumDistanceInit()
@@ -95,16 +95,14 @@ public class Simple2D extends TouchDetectionDepth {
 ////                System.out.println("Adding non normal point...");
 //            }/
             boolean goodNormal = true;
-            
+
             if (depthData.normals[candidate] != null) {
                 float dN = (depthData.planeAndProjectionCalibration.getPlane().normal).distanceToSquared(depthData.normals[candidate]);
                 float d1 = (depthData.planeAndProjectionCalibration.getPlane().getDistanceToPoint(depthData.depthPoints[candidate]));
-                
+
                 // WARNING MAGIC NUMBER HERE
 //                boolean higher = depthData.projectedPoints[candidate].z < depthData.projectedPoints[currentPoint].z;
-                
                 goodNormal = (depthData.normals[candidate] != null && dN > calib.getNormalFilter()) || d1 > 20f;  // Higher  than Xmm
-               
             }
             return classicCheck && goodNormal;
         }
@@ -137,7 +135,7 @@ public class Simple2D extends TouchDetectionDepth {
 
         w = imgSize.getWidth();
         h = imgSize.getHeight();
-inititalPoint = startingPoint;
+        initialPoint = startingPoint;
         // DEBUG
         assert (isValidPoint(depthData.depthPoints[startingPoint]));
         assert (isValidPoint(depthData.projectedPoints[startingPoint]));

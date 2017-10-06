@@ -82,7 +82,7 @@ public abstract class DepthAnalysis implements WithSize {
     }
 
 
-    private Vec3D computeNormalImpl(Vec3D point, PixelOffset px) {
+    protected Vec3D computeNormalImpl(Vec3D point, PixelOffset px) {
 
         Vec3D[] neighbours = depthData.connexity.getNeighbourList(px.x, px.y);
         if (depthData.connexity.connexitySum[px.offset] < 2) {
