@@ -9,6 +9,7 @@ import fr.inria.papart.procam.PaperTouchScreen;
 import fr.inria.papart.procam.camera.Camera;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.util.List;
 import static org.bytedeco.javacpp.opencv_calib3d.cvFindHomography;
 import org.bytedeco.javacpp.opencv_core;
 import static org.bytedeco.javacpp.opencv_core.cvCreateImage;
@@ -41,6 +42,25 @@ public class ImageUtils {
         argb.rewind();
     }
 
+    public static opencv_core.CvMat createHomography(List<PVector> in, List<PVector> out) {
+        opencv_core.CvMat srcPoints;
+        opencv_core.CvMat dstPoints;
+        int nbPoints = in.size();
+        opencv_core.CvMat homography;
+        // TODO: no create map
+        srcPoints = cvCreateMat(2, in.size(), opencv_core.CV_32FC1);
+        dstPoints = cvCreateMat(2, in.size(), opencv_core.CV_32FC1);
+        homography = cvCreateMat(3, 3, opencv_core.CV_32FC1);
+        for (int i = 0; i < in.size(); i++) {
+            srcPoints.put(i, in.get(i).x);
+            srcPoints.put(i + nbPoints, in.get(i).y);
+            dstPoints.put(i, out.get(i).x);
+            dstPoints.put(i + nbPoints, out.get(i).y);
+        }
+        cvFindHomography(srcPoints, dstPoints, homography);
+        //       It is better to use : GetPerspectiveTransform
+        return homography;
+    }
     public static opencv_core.CvMat createHomography(PVector[] in, PVector[] out) {
         opencv_core.CvMat srcPoints;
         opencv_core.CvMat dstPoints;

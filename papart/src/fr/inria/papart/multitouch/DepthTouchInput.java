@@ -20,79 +20,28 @@
  */
 package fr.inria.papart.multitouch;
 
-import Jama.Matrix;
-import com.mkobos.pca_transform.PCA;
 import fr.inria.papart.multitouch.tracking.TouchPointTracker;
 import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
 import fr.inria.papart.calibration.files.PlanarTouchCalibration;
-import fr.inria.papart.depthcam.devices.ProjectedDepthData;
 import fr.inria.papart.depthcam.DepthDataElementProjected;
-import fr.inria.papart.depthcam.DepthPoint;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 
-import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.procam.Screen;
 import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.depthcam.analysis.DepthAnalysisImpl;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
-import fr.inria.papart.multitouch.detection.Simple2D;
 import fr.inria.papart.multitouch.detection.ArmDetection;
 import fr.inria.papart.multitouch.detection.FingerDetection;
 import fr.inria.papart.multitouch.detection.HandDetection;
 import fr.inria.papart.multitouch.detection.TouchDetectionDepth;
-import fr.inria.papart.procam.ProjectiveDeviceP;
-import fr.inria.papart.procam.camera.CameraRGBIRDepth;
 import fr.inria.papart.procam.display.BaseDisplay;
-import fr.inria.papart.utils.ImageUtils;
 import fr.inria.papart.utils.MathUtils;
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.bytedeco.javacpp.IntPointer;
-import org.bytedeco.javacpp.Loader;
-import static org.bytedeco.javacpp.helper.opencv_imgproc.cvFindContours;
-import org.bytedeco.javacpp.opencv_core;
-import static org.bytedeco.javacpp.opencv_core.CV_WHOLE_SEQ;
-import org.bytedeco.javacpp.opencv_core.CvBox2D;
-import org.bytedeco.javacpp.opencv_core.CvContour;
-import org.bytedeco.javacpp.opencv_core.CvMemStorage;
-import org.bytedeco.javacpp.opencv_core.CvRect;
-import org.bytedeco.javacpp.opencv_core.CvSeq;
-import org.bytedeco.javacpp.opencv_core.CvSize2D32f;
-import org.bytedeco.javacpp.opencv_core.IplROI;
-import org.bytedeco.javacpp.opencv_core.Mat;
-import org.bytedeco.javacpp.opencv_core.Point;
-import org.bytedeco.javacpp.opencv_core.Size;
-import static org.bytedeco.javacpp.opencv_core.cvCopy;
-import static org.bytedeco.javacpp.opencv_core.cvCreateImage;
-import static org.bytedeco.javacpp.opencv_core.cvCvtSeqToArray;
-import static org.bytedeco.javacpp.opencv_core.cvGetSize;
-import static org.bytedeco.javacpp.opencv_core.cvRect;
-import static org.bytedeco.javacpp.opencv_core.cvSetImageROI;
-import static org.bytedeco.javacpp.opencv_core.cvSize;
-import org.bytedeco.javacpp.opencv_imgproc;
-import static org.bytedeco.javacpp.opencv_imgproc.CV_CHAIN_APPROX_NONE;
-import static org.bytedeco.javacpp.opencv_imgproc.CV_CHAIN_APPROX_SIMPLE;
-import static org.bytedeco.javacpp.opencv_imgproc.CV_RETR_EXTERNAL;
-import static org.bytedeco.javacpp.opencv_imgproc.CV_RETR_LIST;
-import static org.bytedeco.javacpp.opencv_imgproc.cvCanny;
-import static org.bytedeco.javacpp.opencv_imgproc.cvContourArea;
-import static org.bytedeco.javacpp.opencv_imgproc.cvDilate;
-import static org.bytedeco.javacpp.opencv_imgproc.cvErode;
-import static org.bytedeco.javacpp.opencv_imgproc.cvMinAreaRect2;
-import static org.bytedeco.javacpp.opencv_imgproc.cvMinAreaRect2;
-import static org.bytedeco.javacpp.opencv_imgproc.cvMinAreaRect2;
-import static org.bytedeco.javacpp.opencv_imgproc.cvSmooth;
-import static org.bytedeco.javacpp.opencv_imgproc.cvSmooth;
 import processing.core.PApplet;
-import static processing.core.PApplet.println;
-import static processing.core.PConstants.ALPHA;
-import static processing.core.PConstants.RGB;
-import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import toxi.geom.Vec3D;
@@ -203,10 +152,10 @@ public class DepthTouchInput extends TouchInput {
 
             int initPrecision = 6;
             depthAnalysis.computeDepthAndNormals(depthImage, colImage, initPrecision);
-
             armDetection.findTouch(planeAndProjCalibration);
             handDetection.findTouch(armDetection, planeAndProjCalibration);
             fingerDetection.findTouch(handDetection, armDetection, colImage, planeAndProjCalibration);
+
         } catch (InterruptedException ex) {
             Logger.getLogger(DepthTouchInput.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();
@@ -223,6 +172,11 @@ public class DepthTouchInput extends TouchInput {
     public TouchList projectTouchToScreen(Screen screen, BaseDisplay display) {
 
         TouchList touchList = new TouchList();
+
+        // Not initialized
+        if (fingerDetection == null || armDetection == null) {
+            return touchList;
+        }
 
         try {
             touchPointSemaphore.acquire();
@@ -313,7 +267,6 @@ public class DepthTouchInput extends TouchInput {
         }
         return paperScreenCoord != NO_INTERSECTION;
     }
-
 
     /**
      * *

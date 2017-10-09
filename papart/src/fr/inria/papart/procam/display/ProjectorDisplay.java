@@ -59,23 +59,35 @@ public class ProjectorDisplay extends ARDisplay {
         this.graphics.background(0);
     }
 
+    public PVector mouseClick = new PVector();
+
     @Override
     public void draw() {
 
         if (isCalibrationMode) {
+            parent.g.background(0);
+            if (parent.mousePressed) {
+                mouseClick.set(parent.mouseX, parent.mouseY);
+            }
+            parent.g.ellipse(mouseClick.x, mouseClick.y, 50, 50);
+            parent.g.rect(mouseClick.x - 5, mouseClick.y, 10, 1);
+            parent.g.rect(mouseClick.x, mouseClick.y - 5, 1, 10);
+            parent.g.ellipse(mouseClick.x, mouseClick.y, 50, 50);
+
             if (this.isSmallCalibration) {
                 projectSmallCornersImage();
             } else {
                 projectCornersImage();
             }
             return;
+        } else {
+            drawScreensOver();
+            parent.noStroke();
+            DrawUtils.drawImage((PGraphicsOpenGL) parent.g,
+                    this.render(),
+                    0, 0, this.frameWidth, this.frameHeight);
         }
 
-        drawScreensOver();
-        parent.noStroke();
-        DrawUtils.drawImage((PGraphicsOpenGL) parent.g,
-                this.render(),
-                0, 0, this.frameWidth, this.frameHeight);
     }
 
     private boolean isCalibrationMode = false;
@@ -278,7 +290,6 @@ public class ProjectorDisplay extends ARDisplay {
         PGraphicsOpenGL g = (PGraphicsOpenGL) parent.g;
 
         g.pushMatrix();
-        g.background(0);
         g.ellipseMode(PApplet.CENTER);
 
         g.noStroke();
@@ -322,7 +333,6 @@ public class ProjectorDisplay extends ARDisplay {
         PGraphicsOpenGL g = (PGraphicsOpenGL) parent.g;
 
         g.pushMatrix();
-        g.background(0);
         g.ellipseMode(PApplet.CENTER);
 
         // half from each size ?
@@ -333,7 +343,6 @@ public class ProjectorDisplay extends ARDisplay {
         float xWidth = nbDivision * (g.width / (nbDivision * 2));
         float yHeight = nbDivision * (g.height / (nbDivision * 2));
 
-        
         g.noStroke();
         // corner 4  Yellow 0, 0
         g.fill(255, 255, 50);
@@ -365,7 +374,6 @@ public class ProjectorDisplay extends ARDisplay {
         g.noFill();
         g.strokeWeight(3);
         g.rect(xOrig, yOrig, xWidth, yHeight);
-
     }
 
     void drawEllipses(PGraphicsOpenGL g) {

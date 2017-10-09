@@ -70,7 +70,7 @@ public class CalibrationUI extends PApplet {
 
     // projector rendering.
     protected ProjectorDisplay projector;
-    private ProjectorAsCamera projectorAsCamera;
+
     static final String PROJECTOR_ARTOOLKIT_NAME = "projectorCalibration.cal";
     static final String KINECT_ARTOOLKIT_NAME = "kinectCalibration.cal";
 
@@ -78,6 +78,7 @@ public class CalibrationUI extends PApplet {
 
     // calibration App / board
     protected PaperScreen calibrationApp;
+    protected PaperScreen pointer;
     private MarkerBoard board;
 
     // Matrices
@@ -87,7 +88,8 @@ public class CalibrationUI extends PApplet {
     private Camera cameraTracking;
     private Camera cameraFromDepthCam;  // can be the same as cameraTracking.
     protected TrackedView projectorView;
-
+    protected ProjectorAsCamera projectorAsCamera;
+    
     // Kinect
     private Camera.Type depthCameraType;
     private boolean useExternalColorCamera = false;
@@ -104,9 +106,10 @@ public class CalibrationUI extends PApplet {
     private ExtrinsicCalibrator calibrationExtrinsic;
     private PImage backgroundImg;
 
-    public CalibrationUI(PaperScreen screen) {
+    public CalibrationUI(PaperScreen screen, PaperScreen pointer) {
         super();
         this.calibrationApp = screen;
+        this.pointer = pointer;
         PApplet.runSketch(new String[]{this.getClass().getName()}, this);
     }
 
@@ -187,6 +190,9 @@ public class CalibrationUI extends PApplet {
             projectorView.init(PApplet.RGB);
         }
 
+        projectorView.useListOfPairs(true);
+        projectorView.clearObjectImagePairs();
+        
         projectorAsCamera = new ProjectorAsCamera(projector, cameraTracking, projectorView);
         projectorAsCamera.setCalibration(Papart.projectorCalib);
         projectorAsCamera.setParent(this);

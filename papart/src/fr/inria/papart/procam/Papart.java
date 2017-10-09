@@ -179,9 +179,9 @@ public class Papart {
 
     private CalibrationUI calibrationPopup = null;
 
-    public void calibration(PaperScreen screen) {
+    public void calibration(PaperScreen screen, PaperScreen pointer) {
         if (calibrationPopup == null) {
-            calibrationPopup = new CalibrationUI(screen);
+            calibrationPopup = new CalibrationUI(screen, pointer);
         } else if (calibrationPopup.isHidden()) {
             calibrationPopup.show();
         } else {
@@ -685,9 +685,10 @@ public class Papart {
     public void loadTouchInput() {
         try {
             // HACK load also the main camera... :[
-            initCamera(); 
-            
-            
+            if (this.cameraTracking == null) {
+                initCamera();
+            }
+
             loadDefaultDepthCamera();
             loadDefaultDepthTouch();
         } catch (CannotCreateCameraException cce) {
