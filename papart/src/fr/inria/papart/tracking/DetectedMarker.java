@@ -129,8 +129,6 @@ public class DetectedMarker implements Cloneable {
         tracker.setMarkerMode(MARKER_ID_BCH);
 //        tracker.setImageProcessingMode(IMAGE_HALF_RES);
         tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_FULL_RES);
-
-        tracker.setMarkerMode(ARToolKitPlus.MARKER_ID_BCH);
         tracker.setUseDetectLite(false);
         return tracker;
     }
@@ -164,12 +162,14 @@ public class DetectedMarker implements Cloneable {
         subPixelZeroZone = cvSize(-1, -1);
         subPixelTermCriteria = cvTermCriteria(CV_TERMCRIT_EPS, 100, 0.001);
 
+        
+//        tracker.setThreshold(128);
+
         int n = 0;
         IntPointer markerNum = new IntPointer(1);
         ARToolKitPlus.ARMarkerInfo markers = new ARToolKitPlus.ARMarkerInfo(null);
 //        tracker.arDetectMarkerLite(image.imageData(), tracker.getThreshold() /* 100 */, markers, markerNum);
         tracker.arDetectMarker(image.imageData(), tracker.getThreshold() /* 100 */, markers, markerNum);
-
         DetectedMarker[] markers2 = new DetectedMarker[markerNum.get(0)];
 
         for (int i = 0; i < markers2.length && !markers.isNull(); i++) {

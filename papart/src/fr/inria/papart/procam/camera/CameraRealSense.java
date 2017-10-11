@@ -68,6 +68,10 @@ public class CameraRealSense extends CameraRGBIRDepth {
     @Override
     public void internalStart() throws FrameGrabber.Exception {
 
+//        if (useIR && !useDepth && !useColor) {
+//            IRCamera.setFrameRate(200);
+//        }
+
         if (useColor) {
             grabber.setImageWidth(colorCamera.width());
             grabber.setImageHeight(colorCamera.height());
@@ -88,6 +92,7 @@ public class CameraRealSense extends CameraRGBIRDepth {
             grabber.setDepthFrameRate(depthCamera.getFrameRate());
             grabber.enableDepthStream();
         }
+
         grabber.start();
 
 //        grabber.setPreset(3);
@@ -154,6 +159,9 @@ public class CameraRealSense extends CameraRGBIRDepth {
     @Override
     public void grabIR() {
         IRCamera.updateCurrentImage(grabber.grabIR());
+        if (this.touchInput != null) {
+            touchInput.update();
+        }
     }
 
     @Override

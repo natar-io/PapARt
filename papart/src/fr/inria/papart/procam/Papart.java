@@ -37,6 +37,7 @@ import fr.inria.papart.depthcam.analysis.DepthAnalysisImpl;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.depthcam.devices.KinectOne;
 import fr.inria.papart.depthcam.devices.RealSense;
+import fr.inria.papart.multitouch.ColorTouchInput;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.multitouch.TUIOTouchInput;
 import fr.inria.papart.multitouch.DepthTouchInput;
@@ -619,6 +620,10 @@ public class Papart {
 //        cameraTracking.setThread();
     }
 
+    public void loadDefaultProjector(){
+        initProjectorDisplay(1);
+        projector.manualMode();
+    }    
     private void initProjectorDisplay(float quality) {
         // TODO: check if file exists !
         projector = new ProjectorDisplay(this.applet, projectorCalib);
@@ -695,6 +700,18 @@ public class Papart {
             throw new RuntimeException("Cannot start the depth camera");
         }
         updateDepthCameraDeviceExtrinsics();
+    }
+
+    public void loadIRTouchInput() {
+        try {
+            initCamera();
+            ((CameraRGBIRDepth) cameraTracking).setUseIR(true);
+            loadIRTouch();
+
+        } catch (CannotCreateCameraException cce) {
+            throw new RuntimeException("Cannot start the depth camera");
+        }
+//        updateDepthCameraDeviceExtrinsics();
     }
 
     private void updateDepthCameraDeviceExtrinsics() {
@@ -775,6 +792,18 @@ public class Papart {
             depthTouchInput.setTouchDetectionCalibration(i, getTouchCalibration(i));
         }
         this.touchInput = depthTouchInput;
+        touchInitialized = true;
+    }
+
+    private void loadIRTouch() {
+        
+//        PlaneAndProjectionCalibration calibration = new PlaneAndProjectionCalibration();
+//        calibration.loadFrom(this.applet, planeAndProjectionCalib);
+
+        ColorTouchInput colorTouchInput
+                = new ColorTouchInput(this.applet, ((CameraRGBIRDepth) cameraTracking).getIRCamera());
+        this.touchInput = colorTouchInput;
+        cameraTracking.setTouchInput(colorTouchInput);
         touchInitialized = true;
     }
 

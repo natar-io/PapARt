@@ -23,6 +23,7 @@ package fr.inria.papart.procam.camera;
  *
  * @author jeremylaviole
  */
+import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.procam.HasExtrinsics;
 import fr.inria.papart.utils.ImageUtils;
 import fr.inria.papart.tracking.MarkerBoard;
@@ -30,6 +31,7 @@ import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.utils.ARToolkitPlusUtils;
 import fr.inria.papart.tracking.DetectedMarker;
 import fr.inria.papart.tracking.MarkerList;
+import fr.inria.papart.utils.WithSize;
 import org.bytedeco.javacpp.opencv_core.CvMat;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import java.util.ArrayList;
@@ -45,13 +47,12 @@ import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 
-public abstract class Camera implements PConstants, HasExtrinsics {
+public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
 
     public static Camera INVALID_CAMERA = new CameraOpenCV(-1);
 
     // Images
     protected IplImage currentImage, copyUndist;
-
     protected CamImage camImage = null;
     protected DetectedMarker[] lastMarkers = null;
 
@@ -62,7 +63,7 @@ public abstract class Camera implements PConstants, HasExtrinsics {
     private boolean hasExtrinsics = false;
 
     public enum Type {
-        OPENCV, FFMPEG, PROCESSING, REALSENSE, OPEN_KINECT, OPEN_KINECT_2,  FLY_CAPTURE,
+        OPENCV, FFMPEG, PROCESSING, REALSENSE, OPEN_KINECT, OPEN_KINECT_2, FLY_CAPTURE,
         FAKE
     }
 
@@ -79,11 +80,11 @@ public abstract class Camera implements PConstants, HasExtrinsics {
     protected int systemNumber = -1;
 
     protected int width, height;
+
     protected int frameRate;
     protected boolean trackSheets = false;
     protected boolean isClosing = false;
     protected boolean isConnected = false;
-
 
     protected boolean undistort = false;
 
@@ -109,22 +110,31 @@ public abstract class Camera implements PConstants, HasExtrinsics {
     }
 
     abstract public void start();
-    
+
+    /// TESTING 
+    public TouchInput touchInput;
+    public void setTouchInput(TouchInput touchInput) {
+        this.touchInput = touchInput;
+    }
+
     /**
-     * Get the information if the camera is started (ready to give images). 
-     * @return 
+     * Get the information if the camera is started (ready to give images).
+     *
+     * @return
      */
     public boolean isStarted() {
         return isConnected;
     }
-     
+
     /**
-     * Get the information if the camera is started (ready to give images). 
-     * @return 
+     * Get the information if the camera is started (ready to give images).
+     *
+     * @return
      */
     public boolean isConnected() {
         return isConnected;
     }
+
     @Override
     public String toString() {
         return "Camera, res " + width() + "x" + height() + " calibration " + this.calibrationFile;
@@ -133,7 +143,7 @@ public abstract class Camera implements PConstants, HasExtrinsics {
     public PImage getImage() {
         return getPImage();
     }
-    
+
     public static Camera checkActingCamera(Camera camera) {
         if (camera instanceof CameraRGBIRDepth) {
             Camera acting = ((CameraRGBIRDepth) camera).getActingCamera();
@@ -169,6 +179,7 @@ public abstract class Camera implements PConstants, HasExtrinsics {
     public void setSimpleCalibration(float fx, float fy, float cx, float cy) {
         setSimpleCalibration(fx, fy, cx, cy, width(), height());
     }
+
     public void setSimpleCalibration(float fx, float fy, float cx, float cy, int w, int h) {
         this.calibrationFile = "manual calibration";
         pdp = ProjectiveDeviceP.createSimpleDevice(fx, fy, cx, cy, w, h);
@@ -196,7 +207,7 @@ public abstract class Camera implements PConstants, HasExtrinsics {
 
     public PImage getPImageCopy() {
         PImage out = parent.createImage(this.width, this.height, RGB);
-        if(currentImage == null){
+        if (currentImage == null) {
             System.err.println("Error in PImageCopy(): no current image. ");
             return out;
         }
@@ -212,10 +223,6 @@ public abstract class Camera implements PConstants, HasExtrinsics {
      */
     public PImage getPImageCopy(PApplet context) {
         PImage out = context.createImage(this.width, this.height, RGB);
-
-        if(currentImage.nChannels() == 1){
-
-        }
         ImageUtils.IplImageToPImage(currentImage, this.format == PixelFormat.RGB, out);
         return out;
     }
@@ -478,6 +485,18 @@ public abstract class Camera implements PConstants, HasExtrinsics {
         this.hasExtrinsics = true;
     }
 
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public int getSize() {
+        return width * height;
+    }
+
     /**
      * To use instead of getCamViewpoint
      *
@@ -525,7 +544,7 @@ public abstract class Camera implements PConstants, HasExtrinsics {
             PApplet.println("Conversion error. " + e);
         }
     }
-    
+
     static public void convertARParams(PApplet parent, ProjectiveDeviceP projectiveDevice,
             String calibrationARtoolkit) {
         try {

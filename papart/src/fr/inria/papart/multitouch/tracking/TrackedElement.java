@@ -411,11 +411,12 @@ public class TrackedElement {
         return touch != null;
     }
 
-    public void createTouch() {
+    public Touch createTouch() {
         touch = new Touch();
         touch.id = this.id;
         // 
         touch.trackedSource = this;
+        return touch;
     }
 
     public Touch getTouch() {

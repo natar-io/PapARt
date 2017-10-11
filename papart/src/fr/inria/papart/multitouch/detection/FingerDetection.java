@@ -94,14 +94,14 @@ public class FingerDetection extends TouchDetectionDepth {
             }
 
 
-            int[] neighbourColorList = depthData.connexity.getNeighbourColorList(getX(candidate), 
-                    getY(candidate), 
-                    depthData.pointColors);
-            int colorSum = 0;
-            for(int argb : neighbourColorList){
-                  int g = (argb >> 8) & 0xFF;
-                  colorSum += g / 255;
-            }
+//            int[] neighbourColorList = depthData.connexity.getNeighbourColorList(getX(candidate), 
+//                    getY(candidate), 
+//                    depthData.pointColors);
+//            int colorSum = 0;
+//            for(int argb : neighbourColorList){
+//                  int g = (argb >> 8) & 0xFF;
+//                  colorSum += g / 255;
+//            }
             
 
             int argb = depthData.pointColors[candidate];
@@ -112,7 +112,7 @@ public class FingerDetection extends TouchDetectionDepth {
             int total = r + g + b;
             
 //            System.out.println("sum: " + colorSum);
-            return classicCheck && colorSum <= 2 && goodNormal;
+            return classicCheck && goodNormal;
         }
     }
 
@@ -155,12 +155,15 @@ public class FingerDetection extends TouchDetectionDepth {
 
             // the IRImage here is the modified one. 
             // 1. Compute the contours of the hand.
-            IplImage irImg = computeContour(colorImg, offset, (int) this.calib.getTest1());
+//            IplImage irImg = computeContour(colorImg, offset, (int) this.calib.getTest1());
 
+            IplImage pointColor = colorImg;
+//            IplImage pointColor = irImg;
+            
             // Set the contour Color data. 
             touchRecognition.find2DTouchFrom3D(planeAndProjCalibration,
                     getPrecision(),
-                    irImg,
+                    pointColor,
                     offset,
                     (int) this.calib.getTest2());
 
@@ -169,7 +172,8 @@ public class FingerDetection extends TouchDetectionDepth {
 //            handBounds =  handBounds.getBoundaries(depthData, touchPoint.getDetection());
 
             // 3. Select the ones that not part of the contour. 
-            handBounds.selectDark(depthData);
+//            handBounds.selectDark(depthData);
+
 //            System.out.println("Bounds in Hand and not in Edge detection: " + handBounds.size());
             // USELESS?
             // 4. Remove the points that are also in the arm

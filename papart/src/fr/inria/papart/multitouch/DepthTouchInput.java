@@ -41,6 +41,13 @@ import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.animation.KeyValue;
+import org.bytedeco.javacpp.helper.opencv_imgproc;
+import org.bytedeco.javacpp.opencv_core;
+import org.bytedeco.javacpp.opencv_core.KeyPoint;
+import org.bytedeco.javacpp.opencv_core.KeyPointVector;
+import org.bytedeco.javacpp.opencv_core.Mat;
+import org.bytedeco.javacpp.opencv_features2d.SimpleBlobDetector;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
@@ -156,6 +163,7 @@ public class DepthTouchInput extends TouchInput {
             handDetection.findTouch(armDetection, planeAndProjCalibration);
             fingerDetection.findTouch(handDetection, armDetection, colImage, planeAndProjCalibration);
 
+            
         } catch (InterruptedException ex) {
             Logger.getLogger(DepthTouchInput.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();
@@ -206,7 +214,7 @@ public class DepthTouchInput extends TouchInput {
     }
 
     private Touch createTouch(Screen screen, BaseDisplay display, TrackedDepthPoint tp) {
-        Touch touch = tp.getTouch();
+        Touch touch = tp.createTouch();
         boolean hasProjectedPos = projectAndSetPositionAndSpeed(screen, display, touch, tp);
         if (!hasProjectedPos) {
             return INVALID_TOUCH;
@@ -351,16 +359,16 @@ public class DepthTouchInput extends TouchInput {
             paperScreenCoord.y = (1f - paperScreenCoord.y) * screen.getSize().y;
         }
 
-//        if (computeOutsiders) {
+        if (computeOutsiders) {
         return paperScreenCoord;
-//        }
+        }
 
-//        if (paperScreenCoord.x == PApplet.constrain(paperScreenCoord.x, 0, screen.getSize().x)
-//                && paperScreenCoord.y == PApplet.constrain(paperScreenCoord.y, 0, screen.getSize().y)) {
-//            return paperScreenCoord;
-//        } else {
-//            return NO_INTERSECTION;
-//        }
+        if (paperScreenCoord.x == PApplet.constrain(paperScreenCoord.x, 0, screen.getSize().x)
+                && paperScreenCoord.y == PApplet.constrain(paperScreenCoord.y, 0, screen.getSize().y)) {
+            return paperScreenCoord;
+        } else {
+            return NO_INTERSECTION;
+        }
     }
 
     public void getTouch2DColors(IplImage colorImage) {

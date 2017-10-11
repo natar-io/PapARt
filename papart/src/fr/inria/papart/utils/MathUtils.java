@@ -333,6 +333,10 @@ public class MathUtils {
                 abs(g.brightness(incomingPix) - g.brightness(baseline)) < brightnessTresh;
     }
 
+    public static boolean threshold(PGraphics g, int incomingPix, float threshold) {
+        int r1 = incomingPix >> 16 & 255;
+        return r1 > threshold;
+    }
     public static boolean isRed(PGraphics g, int incomingPix, int baseline, float threshold) {
         int r1 = incomingPix >> 16 & 255;
         int r2 = baseline >> 16 & 255;

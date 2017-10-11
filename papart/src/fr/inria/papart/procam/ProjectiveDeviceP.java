@@ -33,6 +33,7 @@ import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
+import toxi.geom.ReadonlyVec3D;
 import toxi.geom.Vec3D;
 
 /**
@@ -133,8 +134,8 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
 
         float depth = depthValue;
 //        float depth = 1000 * depthLookUp[depthValue]; 
-        result.x = (float) ((x - cx) * depth * ifx);
-        result.y = (float) ((y - cy) * depth * ify);
+        result.x = (float) (((float)x - cx) * depth * ifx);
+        result.y = (float) (((float)y - cy) * depth * ify);
 
         result.z = depth;
     }
@@ -178,6 +179,10 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
         result.y = (y * this.h - cy) / fy;
         result.z = 1;
         return result;
+    }
+
+    public int worldToPixel(ReadonlyVec3D pt) {
+        return worldToPixel(pt.x(), pt.y(), pt.z());
     }
 
     public int worldToPixel(Vec3D pt) {

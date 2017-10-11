@@ -374,6 +374,9 @@ public class ImageUtils {
         if (format == Camera.PixelFormat.BGR) {
             IplImageToPImage(img, false, ret);
         }
+        if (format == Camera.PixelFormat.GRAY) {
+            IplImageToPImage(img, false, ret);
+        }
     }
 
     public static void IplImageToPImage(opencv_core.IplImage img, PImage ret) {

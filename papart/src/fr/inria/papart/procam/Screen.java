@@ -254,7 +254,6 @@ public class Screen implements HasExtrinsics {
     // Version 2.0 :  (0,0) is the top-left corner.
     private void initHomography() {
         homography = new HomographyCreator(3, 2, 4);
-
     }
 
     public void initDraw(Camera cam, PVector userPos) {
