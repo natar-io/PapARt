@@ -91,6 +91,7 @@ public class Papart {
 
     public static String kinectTrackingCalib = "kinectTracking.xml";
     public static String cameraProjExtrinsics = "camProjExtrinsics.xml";
+    public static String cameraProjHomography = "camProjHomography.xml";
 
     public static String screenConfig = calibrationFolder + "screenConfiguration.xml";
     public static String cameraConfig = calibrationFolder + "cameraConfiguration.xml";

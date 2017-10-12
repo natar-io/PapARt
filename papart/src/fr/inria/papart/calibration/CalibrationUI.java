@@ -30,25 +30,16 @@ import fr.inria.papart.procam.camera.SubCamera;
 import fr.inria.papart.procam.camera.TrackedView;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.tracking.DetectedMarker;
-import fr.inria.papart.tracking.MarkerBoardARToolKitPlus;
 import tech.lity.rea.skatolo.Skatolo;
 import tech.lity.rea.skatolo.gui.controllers.Toggle;
-import tech.lity.rea.skatolo.gui.group.Group;
 import tech.lity.rea.skatolo.gui.group.RadioButton;
 import tech.lity.rea.skatolo.gui.group.Textarea;
 import java.util.ArrayList;
 import org.bytedeco.javacpp.ARToolKitPlus;
-import org.bytedeco.javacpp.opencv_core;
-import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;
-import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
-import static org.bytedeco.javacpp.opencv_imgproc.cvCvtColor;
 import processing.core.PApplet;
 import processing.core.PImage;
 import processing.core.PFont;
 import processing.core.PMatrix3D;
-import processing.core.PVector;
-import processing.data.JSONArray;
-import processing.data.JSONObject;
 
 /**
  *
@@ -89,7 +80,7 @@ public class CalibrationUI extends PApplet {
     private Camera cameraFromDepthCam;  // can be the same as cameraTracking.
     protected TrackedView projectorView;
     protected ProjectorAsCamera projectorAsCamera;
-    
+
     // Kinect
     private Camera.Type depthCameraType;
     private boolean useExternalColorCamera = false;
@@ -192,7 +183,7 @@ public class CalibrationUI extends PApplet {
 
         projectorView.useListOfPairs(true);
         projectorView.clearObjectImagePairs();
-        
+
         projectorAsCamera = new ProjectorAsCamera(projector, cameraTracking, projectorView);
         projectorAsCamera.setCalibration(Papart.projectorCalib);
         projectorAsCamera.setParent(this);
@@ -293,8 +284,13 @@ public class CalibrationUI extends PApplet {
         this.isProCamCalibrated = COMPUTING;
         calibrationExtrinsic.computeProjectorCameraExtrinsics(snapshots);
         calibrationExtrinsic.calibrateKinect(snapshots, useExternalColorCamera);
+
+//        projectorView.getHomographyOf(cameraTracking).saveTo(this, Papart.cameraProjHomography);
+        Papart.getPapart().saveCalibration(Papart.cameraProjHomography,
+                projectorView.getHomographyOf(cameraTracking).getHomography());
         this.isProCamCalibrated = OK;
         this.isKinectCalibrated = OK;
+
     }
 
     public void calibrateKinect(boolean useExternal) {

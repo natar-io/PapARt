@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.bytedeco.javacv.ProjectiveDevice;
 
 import processing.core.PApplet;
 import processing.core.PConstants;
@@ -183,6 +184,14 @@ public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
     public void setSimpleCalibration(float fx, float fy, float cx, float cy, int w, int h) {
         this.calibrationFile = "manual calibration";
         pdp = ProjectiveDeviceP.createSimpleDevice(fx, fy, cx, cy, w, h);
+        updateCalibration();
+    }
+    
+       
+    public void setCalibration(float fx, float fy, float cx, float cy, 
+            float d1, float d2, float d3, float d4, float d5) {
+        this.calibrationFile = "manual calibration";
+        pdp = ProjectiveDeviceP.createDevice(fx, fy, cx, cy, width(), height(), d1, d2, d3, d4, d5);
         updateCalibration();
     }
 

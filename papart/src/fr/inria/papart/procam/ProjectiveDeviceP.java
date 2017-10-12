@@ -118,30 +118,12 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
         return this.handleDistorsion;
     }
 
-    public Vec3D pixelToWorld(int x, int y, float depthValue) {
-
-        Vec3D result = new Vec3D();
-        float depth = depthValue;
-//        float depth = 1000 * depthLookUp[depthValue]; 
-        result.x = (float) ((x - cx) * depth * ifx);
-        result.y = (float) ((y - cy) * depth * ify);
-
-        result.z = depth;
-        return result;
-    }
-
-    public void pixelToWorld(int x, int y, float depthValue, Vec3D result) {
-
-        float depth = depthValue;
-//        float depth = 1000 * depthLookUp[depthValue]; 
-        result.x = (float) (((float)x - cx) * depth * ifx);
-        result.y = (float) (((float)y - cy) * depth * ify);
-
-        result.z = depth;
-    }
-
-    /* * Working, use this one for Low error !
-        
+    /**
+     * Compute a pixel position at 1 depth.
+     *
+     * @param x in pixel space
+     * @param y in pixel space
+     * @return
      */
     public PVector pixelToWorldNormP(int x, int y) {
         PVector result = new PVector();
@@ -151,33 +133,65 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
         return result;
     }
 
-//    public PVector pixelToWorldNormPDistort(int x, int y) {
-//
-//        if (this.handleDistorsion) {
-//            double[] out = device.distort(x, y);
-//            x = (int) out[0];
-//            y = (int) out[1];
-//        }
-//
-//        PVector result = new PVector();
-//        result.x = ((float) x - cx) / fx;
-//        result.y = ((float) y - cy) / fy;
-//        result.z = 1;
-//        return result;
-//    }
-
-//    public PVector pixelToWorldNormP(int x, int y) {
-//        PVector result = new PVector();
-//        result.x = ((float) x - cx) / fx;
-//        result.y = ((float) y - cy) / fy;
-//        result.z = 1;
-//        return result;
-//    }
+    /**
+     * Hande distorsions
+     *
+     * @param x
+     * @param y
+     * @return
+     */
     public PVector pixelToWorldNormalized(float x, float y) {
+        return pixelToWorldNormalized(x, y, true);
+    }
+
+    /**
+     * Hande distorsions
+     *
+     * @param x
+     * @param y
+     * @param distort
+     * @return
+     */
+    public PVector pixelToWorldNormalized(float x, float y, boolean distort) {
+
+        if (this.handleDistorsion && distort) {
+            double[] out = device.distort(x * w, y * h);
+//            double[] out = device.distort(x * w, y * h);
+            x = (float) (out[0]) / (float) w;
+            y = (float) (out[1]) / (float) h;
+        }
         PVector result = new PVector();
         result.x = (x * this.w - cx) / fx;
         result.y = (y * this.h - cy) / fy;
         result.z = 1;
+        return result;
+    }
+
+    /**
+     * For internal use, the result is passed, not generated.
+     *
+     * @param x
+     * @param y
+     * @param depthValue
+     * @param result
+     */
+    public void pixelToWorld(int x, int y, float depthValue, Vec3D result) {
+        float depth = depthValue;
+//        float depth = 1000 * depthLookUp[depthValue]; 
+        result.x = (float) (((float) x - cx) * depth * ifx);
+        result.y = (float) (((float) y - cy) * depth * ify);
+        result.z = depth;
+    }
+
+    public Vec3D pixelToWorld(int x, int y, float depthValue) {
+
+        Vec3D result = new Vec3D();
+        float depth = depthValue;
+//        float depth = 1000 * depthLookUp[depthValue]; 
+        result.x = (float) ((x - cx) * depth * ifx);
+        result.y = (float) ((y - cy) * depth * ify);
+
+        result.z = depth;
         return result;
     }
 
@@ -210,13 +224,35 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
         return new PVector(px, py);
     }
 
+    /**
+     * Handle distorsions
+     *
+     * @param pt
+     * @return
+     */
     public PVector worldToPixelCoord(PVector pt) {
+        return worldToPixel(pt, true);
+    }
+
+    /**
+     * Handle distorsions
+     *
+     * @param pt
+     * @return
+     */
+    public PVector worldToPixelCoord(PVector pt, boolean undist) {
 
         // Reprojection 
         float invZ = 1.0f / pt.z;
 
         int px = PApplet.constrain(PApplet.round((pt.x * invZ * fx) + cx), 0, w - 1);
         int py = PApplet.constrain(PApplet.round((pt.y * invZ * fy) + cy), 0, h - 1);
+
+        if (this.handleDistorsion && undist) {
+            double[] out = device.undistort(px, py);
+            px = (int) (out[0]);
+            py = (int) (out[1]);
+        }
 
         return new PVector(px, py);
     }
@@ -232,12 +268,12 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
         return (int) (py * w + px);
     }
 
-
-/** 
- * Similar tor worldToPixel without border checking. 
- * @param pt
- * @return 
- */    
+    /**
+     * Similar tor worldToPixel without border checking.
+     *
+     * @param pt
+     * @return
+     */
     public PVector worldToPixelUnconstrained(PVector pt) {
 
         // Reprojection 
@@ -440,21 +476,57 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
     public void saveProjectorTo(PApplet applet, String filename) {
         saveTo(applet, filename, false);
     }
-    
+
     public static ProjectiveDeviceP createSimpleDevice(float fx, float fy, float cx, float cy, int w, int h) {
         ProjectiveDeviceP p = new ProjectiveDeviceP();
         // Do not update the handle distorsions ?
 //        p.handleDistorsion = false;
         p.w = w;
         p.h = h;
-        p.intrinsics = new PMatrix3D(fx, 0,  cx, 0,
-                                   0,  fy, cy, 0,
-                                   0,  0,  0,  0,
-                                   0,  0,  0,  0);
+        p.intrinsics = new PMatrix3D(fx, 0, cx, 0,
+                0, fy, cy, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0);
         p.updateFromIntrinsics();
         p.device = null;
         return p;
     }
+
+    public static ProjectiveDeviceP createDevice(float fx, float fy, float cx, float cy, int w, int h,
+            float k1, float k2, float k3, float k4, float k5) {
+        ProjectiveDeviceP p = new ProjectiveDeviceP();
+        // Do not update the handle distorsions ?
+//        p.handleDistorsion = false;
+        p.w = w;
+        p.h = h;
+        p.intrinsics = new PMatrix3D(fx, 0, cx, 0,
+                0, fy, cy, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0);
+        p.updateFromIntrinsics();
+
+        p.device = new ProjectiveDevice("device");
+        ProjectiveDevice d = p.device;
+
+        d.cameraMatrix = CvMat.create(3, 3);
+
+        d.cameraMatrix.put(fx, 0.0, cx,
+                0.0, fy, cy,
+                0.0, 0.0, 1);
+
+        d.imageWidth = w;
+        d.imageHeight = h;
+        d.distortionCoeffs = CvMat.create(1, 5);
+        d.distortionCoeffs.put(0, k1);
+        d.distortionCoeffs.put(1, k2);
+        d.distortionCoeffs.put(2, k3);
+        d.distortionCoeffs.put(3, k4);
+        d.distortionCoeffs.put(4, k5);
+        p.handleDistorsion = true;
+
+        return p;
+    }
+
     public static ProjectiveDeviceP loadCameraDevice(PApplet parent, String filename) throws Exception {
         return loadCameraDevice(parent, filename, 0);
     }

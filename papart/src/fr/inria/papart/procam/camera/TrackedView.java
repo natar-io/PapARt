@@ -19,6 +19,8 @@
  */
 package fr.inria.papart.procam.camera;
 
+import fr.inria.papart.calibration.HomographyCreator;
+import fr.inria.papart.calibration.files.HomographyCalibration;
 import fr.inria.papart.utils.ImageUtils;
 import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.tracking.MarkerBoardInvalid;
@@ -171,6 +173,32 @@ public class TrackedView {
         // Convert to the good type... 
         ImageUtils.remapImage(homography, img, extractedIplImage, extractedPImage, useRGB);
         return extractedPImage;
+    }
+
+    public HomographyCalibration getHomographyOf(Camera camera) {
+        camera = Camera.checkActingCamera(camera);
+
+        IplImage img = camera.getIplImage();
+        if (!isExtractionReady(img)) {
+            return null;
+        }
+        this.mainImage = img;
+        this.camera = camera;
+
+        CvMat homography = computeHomography();
+        double[] homoMat = homography.get();
+        HomographyCalibration homoCalib = new HomographyCalibration();
+        homoCalib.setMatrix(new PMatrix3D(
+                (float) homoMat[0], (float) homoMat[1], 0, (float) homoMat[2],
+                (float) homoMat[3], (float) homoMat[4], 0, (float) homoMat[5],
+                0, 0, 1, (float) homoMat[8], 
+                0, 0, 0, 1));
+//        homoCalib.setMatrix(new PMatrix3D(
+//                (float) homoMat[0], (float) homoMat[1], (float) homoMat[2], 0,
+//                (float) homoMat[3], (float) homoMat[4], (float) homoMat[5], 0,
+//                (float) homoMat[6], (float) homoMat[7], (float) homoMat[8], 0,
+//                0, 0, 0, 1));
+        return homoCalib;
     }
 
     public IplImage getIplViewOf(Camera camera) {

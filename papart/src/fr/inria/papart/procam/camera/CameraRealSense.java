@@ -68,9 +68,9 @@ public class CameraRealSense extends CameraRGBIRDepth {
     @Override
     public void internalStart() throws FrameGrabber.Exception {
 
-//        if (useIR && !useDepth && !useColor) {
-//            IRCamera.setFrameRate(200);
-//        }
+        if (useIR && !useDepth && !useColor) {
+            IRCamera.setFrameRate(60); // 200 max -> buggy
+        }
 
         if (useColor) {
             grabber.setImageWidth(colorCamera.width());
@@ -283,6 +283,24 @@ public class CameraRealSense extends CameraRGBIRDepth {
         float cy = fb.get(3);
         float fx = fb.get(4);
         float fy = fb.get(5);
-        camera.setSimpleCalibration(fx, fy, cx, cy);
+        
+        float a = fb.get(7);
+        float b = fb.get(8);
+        float c = fb.get(9);
+        float d = fb.get(10);
+        float e = fb.get(11);
+//8.97E-43    0
+//6.73E-43    1
+//315.39725   2
+//245.53516   3
+//476.25934   4
+//476.25937   5
+//2.8E-45     6
+//0.15865318  7
+//0.040686473 -  8
+//0.0056175636   9
+//0.007322767    10
+//0.1214191      11
+        camera.setCalibration(fx, fy, cx, cy, a, b, c, d, e);
     }
 }

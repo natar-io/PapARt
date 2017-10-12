@@ -5,6 +5,7 @@
  */
 package fr.inria.papart.multitouch;
 
+import fr.inria.papart.calibration.files.HomographyCalibration;
 import fr.inria.papart.calibration.files.PlanarTouchCalibration;
 import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.calibration.files.PlaneCalibration;
@@ -207,72 +208,64 @@ public class ColorTouchInput extends TouchInput {
         ArrayList<TrackedElement> newElements
                 = touchDetectionColor.compute(time, 0, this.scale);
 
-//        System.out.println("Plane1: " + planeCalib.getPlane());
-//        plane.getPlane().invert();
-//        System.out.println("Plane: " + plane.getPlane());
+        ProjectorDisplay projector = Papart.getPapart().getProjectorDisplay();
+
+        PMatrix3D extrinsics = null;
+        ProjectiveDeviceP projDev = null;
+        if (projector != null) {
+            extrinsics = projector.getExtrinsics().get();
+            extrinsics.invert();
+
+            projDev = projector.getProjectiveDeviceP();
+        }
+
+        PMatrix3D camProjHomography = Papart.getPapart().loadCalibration(Papart.cameraProjHomography);
+
         for (TrackedElement te : trackedElements) {
             PVector position = te.getPosition();
-            ProjectiveDeviceP projectiveDeviceP = camera.getProjectiveDevice();
-            PVector originP = new PVector(0, 0, 0);
+            ProjectiveDeviceP camDevice = camera.getProjectiveDevice();
+            PVector origin = new PVector(0, 0, 0);
+            PVector out = new PVector();
+            
+//            camProjHomography.mult(position, out);
+//            te.attachedObject = out.copy();
 
-            PVector viewedPtP = projectiveDeviceP.pixelToWorldNormalized(position.x / camera.width(),
-                    position.y / camera.height());
+            PVector viewed = camDevice.pixelToWorldNormP((int) position.x, (int) position.y);
 
-            PVector originC = originP.copy();
-            PVector viewedPtC = viewedPtP.copy();
-//            if (hasExtrinsics()) {
-//                // Pass it to the camera point of view (origin)
-//                PMatrix3D proCamExtrinsics = getExtrinsicsInv();
-//                originC = new PVector();
-//                viewedPtC = new PVector();
-//                proCamExtrinsics.mult(originP, originC);
-//                proCamExtrinsics.mult(viewedPtP, viewedPtC);
-//            }
+            Ray3D ray = new Ray3D(new Vec3D(origin.x,
+                    origin.y,
+                    origin.z),
+                    new Vec3D(viewed.x,
+                            viewed.y,
+                            viewed.z));
 
-            // Second argument is a direction
-            viewedPtC.sub(originC);
+//            PMatrix3D tableLocation = Papart.getPapart().getTableLocation();
+//            PlaneCalibration plane = CreatePlaneCalibrationFrom(tableLocation, new PVector(100, 100));
+//            plane.flipNormal();
+//            ReadonlyVec3D inter = plane.getPlane().getIntersectionWithRay(ray);
 
-            Ray3D ray = new Ray3D(new Vec3D(originC.x,
-                    originC.y,
-                    originC.z),
-                    new Vec3D(viewedPtC.x,
-                            viewedPtC.y,
-                            viewedPtC.z));
+            ReadonlyVec3D inter = planeCalib.getPlane().getIntersectionWithRay(ray);
 
-            PMatrix3D tableLocation = Papart.getPapart().getTableLocation();
-            PlaneCalibration plane = CreatePlaneCalibrationFrom(tableLocation, new PVector(100, 100));
-            // Intersect ray with Plane
-//            ReadonlyVec3D inter = planeCalib.getPlane().getIntersectionWithRay(ray);
-            ReadonlyVec3D inter = plane.getPlane().getIntersectionWithRay(ray);
-
-//        dist = screen.plane.intersectRayDistance(ray);
             // 3D -> 2D transformation
-            if (inter != null && inter.z() < 2000 && inter.z() > 50) {
-                System.out.println("Intersection: " + inter);
-
-                PVector out = new PVector();
+            if (inter != null){ //  && inter.z() < 2000 && inter.z() > 50) {
                 PVector intersection = new PVector(inter.x(), inter.y(), inter.z());
-                ProjectorDisplay projector = Papart.getPapart().getProjectorDisplay();
-                PMatrix3D extrinsics = projector.getExtrinsics().get();
-//                extrinsics.invert();
-//                ProjectiveDeviceP projDev = projector.getProjectiveDeviceP();
 
-                extrinsics.mult(intersection, out);
-
-                PVector out1 = projector.getProjectiveDeviceP().worldToPixelUnconstrained(out);
-                position.x = out1.x;
-                position.y = out1.y;
-
-//                int p = projDev.worldToPixel(out);
-//                    position.set(intersection);
-//                    position.set(out);
-                //
-//                position.x = p % projDev.getWidth();
-//                position.y = p / projDev.getWidth();
-//                Vec3D res = screen.getWorldToScreen().applyTo(inter);
-//                PVector out = new PVector(res.x() / res.z(),
-//                        1f - (res.y() / res.z()), 1);
-//                touch.position.set(out);
+                // Get the Cam -> proj homography from calibration
+                if (projector != null) {
+                    PMatrix3D mat = new PMatrix3D(
+                            1, 0, 0, intersection.x, 
+                            0, 1, 0, intersection.y, 
+                            0, 0, 1, intersection.z, 
+                            0, 0, 0, 1); 
+                    
+                    mat.preApply(extrinsics);
+                    out.set(mat.m03, mat.m13, mat.m23);
+                     
+//                   extrinsics.mult(intersection, out);
+                    PVector pxProj = projDev.worldToPixelUnconstrained(out);
+//                    PVector pxProj = projDev.worldToPixel(out, true);
+                    te.attachedObject = pxProj;
+                }
             }
         }
         try {

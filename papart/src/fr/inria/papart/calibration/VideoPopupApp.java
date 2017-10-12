@@ -117,12 +117,14 @@ public class VideoPopupApp extends PApplet {
 //        updateCornersFrowWidgets();
 //        drawProjectionZone();
         PVector p = parent.pointer.getLocationVector();
-        PVector v = cameraTracking.getProjectiveDevice().worldToPixelCoord(p);
+        PVector v = cameraTracking.getProjectiveDevice().worldToPixelCoord(p, false);
         noFill();
         stroke(255);
         ellipse(v.x / cameraTracking.width() * 400f,
                 v.y / cameraTracking.height() * 400f,
                 20, 20);
+        
+        // TODO: Add distorsion from the projector
         PVector imagePts = parent.projector.mouseClick.copy();
 
         if (keyPressed && key == 'a' && imagePts.x != 0 && imagePts.y != 0) {
