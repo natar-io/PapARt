@@ -195,6 +195,10 @@ public class Screen implements HasExtrinsics {
         this.useManualLocation = false;
     }
 
+    /**
+     * todo: a manual location should be used for each camera ?
+     * @param mat 
+     */
     protected void useManualLocation(PMatrix3D mat) {
         this.manualLocation.set(mat);
         this.useManualLocation = true;
