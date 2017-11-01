@@ -241,8 +241,13 @@ public abstract class Camera implements PConstants, HasExtrinsics {
 
     public void setParent(PApplet applet) {
         this.parent = applet;
+        applet.registerMethod("dispose", this);
     }
 
+    public void dispose(){
+        close();
+    }
+    
     public void setSystemNumber(int systemNumber) {
         this.systemNumber = systemNumber;
     }

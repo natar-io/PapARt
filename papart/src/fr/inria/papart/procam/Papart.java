@@ -649,8 +649,8 @@ public class Papart {
 
     private void checkInitialization() {
         assert (cameraTracking != null);
-        this.applet.registerMethod("dispose", this);
-        this.applet.registerMethod("stop", this);
+//        this.applet.registerMethod("dispose", this);
+//        this.applet.registerMethod("stop", this);
     }
 
     /**
@@ -818,6 +818,7 @@ public class Papart {
                 constructor.newInstance(this.appletClass.cast(this.applet));
             } catch (Exception ex) {
                 System.out.println("Error loading PapartApp : " + klass.getName());
+                ex.printStackTrace();
             }
         }
 
@@ -978,23 +979,20 @@ public class Papart {
         return out;
     }
 
-    public void stop() {
-        this.dispose();
-    }
-
-    public void dispose() {
-        if (touchInitialized && depthCameraDevice != null) {
-            depthCameraDevice.close();
-        }
-        if (cameraInitialized && cameraTracking != null) {
-            try {
-                cameraTracking.close();
-            } catch (Exception e) {
-                System.err.println("Error closing the tracking camera" + e);
-            }
-        }
+    // NOTE: camera can dispose themselves now... 
+//    public void dispose() {
+//        if (touchInitialized && depthCameraDevice != null) {
+//            depthCameraDevice.close();
+//        }
+//        if (cameraInitialized && cameraTracking != null) {
+//            try {
+//                cameraTracking.close();
+//            } catch (Exception e) {
+//                System.err.println("Error closing the tracking camera" + e);
+//            }
+//        }
 //        System.out.println("Cameras closed.");
-    }
+//    }
 
     public BaseDisplay getDisplay() {
 //        assert (displayInitialized);

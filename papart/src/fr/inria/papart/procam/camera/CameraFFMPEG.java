@@ -108,8 +108,12 @@ public class CameraFFMPEG extends Camera {
         try {
             this.updateCurrentImage(converter.convertToIplImage(grabber.grab()));
         } catch (Exception e) {
-            System.err.println("Camera: FFMPEG Grab() Error ! " + e);
-            e.printStackTrace();
+            if (this.isClosing()) {
+
+            } else {
+                System.err.println("Camera: FFMPEG Grab() Error ! " + e);
+                e.printStackTrace();
+            }
         }
     }
 
@@ -131,7 +135,7 @@ public class CameraFFMPEG extends Camera {
         if (grabber != null) {
             try {
                 grabber.stop();
-                System.out.println("Stopping grabber (OpencV)");
+                System.out.println("Stopping grabber (FFMPEG)");
 
             } catch (Exception e) {
                 System.out.println("Impossible to close " + e);

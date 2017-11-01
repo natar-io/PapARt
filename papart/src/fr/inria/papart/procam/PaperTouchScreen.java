@@ -52,19 +52,34 @@ public class PaperTouchScreen extends PaperScreen {
         super();
     }
 
+    /**
+     * Create a touchScreen from a Papart object. 
+     * It will use the default camera for tracking, display and touchInput.
+     * @param papart 
+     */
     public PaperTouchScreen(Papart papart) {
-        this(papart.getPublicCameraTracking(),
+        this(papart.getApplet(),
+                papart.getPublicCameraTracking(),
                 papart.getDisplay(),
                 papart.getTouchInput());
     }
 
-    public PaperTouchScreen(Camera cam, BaseDisplay proj, TouchInput touchinput) {
-        super(cam, proj);
-
+    /**
+     * Manual instanciation without a Papart object. 
+     * @param applet
+     * @param cam
+     * @param proj
+     * @param touchinput 
+     */
+    public PaperTouchScreen(PApplet applet, Camera cam, BaseDisplay proj, TouchInput touchinput) {
+        super(applet, cam, proj);
         this.touchInput = touchinput;
     }
 
-    ///// Load ressources ////////
+    /**
+     * Called by Processing, do not call.
+     * This method prepares the display if necessary and the start the touch input.
+     */
     @Override
     public void pre() {
         super.pre();

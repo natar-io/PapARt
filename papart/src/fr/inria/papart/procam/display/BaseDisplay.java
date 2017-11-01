@@ -89,7 +89,7 @@ public class BaseDisplay implements HasCamera {
         // At the end of drawing.
         parent.registerMethod("draw", this);
     }
-
+    
     public void manualMode() {
         registered = false;
         parent.unregisterMethod("draw", this);
