@@ -48,9 +48,15 @@ public class SkatoloLink {
     public static void addMouseTo(TouchList touchList, Skatolo skatolo, PaperScreen paperScreen) {
         PApplet applet = Papart.getPapart().getApplet();
 
+        // Use this ?
+//        Touch touchFromMouse = paperScreen.createTouchFromMouse();
+//        touchList.add(touchFromMouse);
+//        mouseTouch = touchFromMouse;
+        
+        /// Compute here or there ?
         float normX = (float) applet.mouseX / (float) applet.width;
         float normY = (float) applet.mouseY / (float) applet.height;
-        PVector pointer = paperScreen.getDisplay().project(paperScreen.getScreen(), normX, normY);
+        PVector pointer = paperScreen.getDisplay().project(paperScreen, normX, normY);
         mouseTouch.setPosition(pointer.x, pointer.y, 0);
         mouseTouch.setPosition(pointer.x * paperScreen.getDrawingSize().x,
                 pointer.y * paperScreen.getDrawingSize().y, 0);

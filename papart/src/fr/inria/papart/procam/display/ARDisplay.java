@@ -26,8 +26,9 @@ import fr.inria.papart.utils.DrawUtils;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.HasExtrinsics;
+import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.ProjectiveDeviceP;
-import fr.inria.papart.procam.Screen;
+
 import processing.core.PApplet;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
@@ -217,26 +218,26 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
     public void renderScreens() {
         this.graphics.noStroke();
 
-        for (Screen screen : screens) {
-            if (!screen.isDrawing()) {
+        for (PaperScreen paperScreen : paperScreens) {
+            if (!paperScreen.isDrawing()) {
                 continue;
             }
             this.graphics.pushMatrix();
 
             // Goto to the screen position
-            this.graphics.applyMatrix(screen.getLocation(this.getCamera()));
+            this.graphics.applyMatrix(paperScreen.getLocation(this.getCamera()));
             // Draw the screen image
 
             // If it is openGL renderer, use the standard  (0, 0) is bottom left
-            if (screen.isOpenGL()) {
-                this.graphics.image(screen.getTexture(), 0, 0, screen.getSize().x, screen.getSize().y);
+            if (paperScreen.isOpenGL()) {
+                this.graphics.image(paperScreen.getGraphics(), 0, 0, paperScreen.getSize().x, paperScreen.getSize().y);
             } else {
-                float w = screen.getSize().x;
-                float h = screen.getSize().y;
+                float w = paperScreen.getSize().x;
+                float h = paperScreen.getSize().y;
 
                 this.graphics.textureMode(PApplet.NORMAL);
                 this.graphics.beginShape(PApplet.QUADS);
-                this.graphics.texture(screen.getTexture());
+                this.graphics.texture(paperScreen.getGraphics());
                 this.graphics.vertex(0, 0, 0, 0, 1);
                 this.graphics.vertex(0, h, 0, 0, 0);
                 this.graphics.vertex(w, h, 0, 1, 0);
@@ -389,8 +390,8 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
     }
 
     @Override
-    public PGraphicsOpenGL beginDrawOnScreen(Screen screen) {
-        PMatrix3D screenPos = screen.getLocation(this.camera);
+    public PGraphicsOpenGL beginDrawOnScreen(PaperScreen paperScreen) {
+        PMatrix3D screenPos = paperScreen.getLocation(this.camera);
 
         this.beginDraw();
         if (this.hasExtrinsics()) {
@@ -399,7 +400,7 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         this.graphics.applyMatrix(screenPos);
 
         // Same origin as in DrawOnPaper
-        this.graphics.translate(0, screen.getSize().y);
+        this.graphics.translate(0, paperScreen.getSize().y);
         this.graphics.scale(1, -1, 1);
 
         return this.graphics;
@@ -466,7 +467,7 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
 
     // We consider px and py are normalized screen or subScreen space... 
     @Override
-    public PVector projectPointer(Screen screen, float px, float py) {
+    public PVector projectPointer(PaperScreen screen, float px, float py) {
 //        double[] undist = proj.undistort(px * getWidth(), py * getHeight());
 //
 //        // go from screen coordinates to normalized coordinates  (-1, 1) 

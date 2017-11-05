@@ -29,12 +29,13 @@ import fr.inria.papart.depthcam.DepthPoint;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 
 import fr.inria.papart.procam.display.ARDisplay;
-import fr.inria.papart.procam.Screen;
+import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.depthcam.analysis.DepthAnalysisImpl;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.multitouch.detection.Simple2D;
 import fr.inria.papart.multitouch.detection.Simple3D;
+import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.utils.MathUtils;
 import java.nio.ByteBuffer;
@@ -164,7 +165,7 @@ public class DepthTouchInput extends TouchInput {
     private static final Touch INVALID_TOUCH = new Touch();
 
     @Override
-    public TouchList projectTouchToScreen(Screen screen, BaseDisplay display) {
+    public TouchList projectTouchToScreen(PaperScreen screen, BaseDisplay display) {
 
         TouchList touchList = new TouchList();
 
@@ -196,7 +197,7 @@ public class DepthTouchInput extends TouchInput {
         return touchList;
     }
 
-    private Touch createTouch(Screen screen, BaseDisplay display, TrackedDepthPoint tp) {
+    private Touch createTouch(PaperScreen screen, BaseDisplay display, TrackedDepthPoint tp) {
         Touch touch = tp.getTouch();
         boolean hasProjectedPos = projectAndSetPositionAndSpeed(screen, display, touch, tp);
         if (!hasProjectedPos) {
@@ -217,7 +218,7 @@ public class DepthTouchInput extends TouchInput {
 //        this.pdp = camera.getProjectiveDevice();
     }
 
-    private boolean projectAndSetPositionAndSpeed(Screen screen,
+    private boolean projectAndSetPositionAndSpeed(PaperScreen screen,
             BaseDisplay display,
             Touch touch, TrackedDepthPoint tp) {
 
@@ -228,7 +229,7 @@ public class DepthTouchInput extends TouchInput {
         return hasProjectedPos;
     }
 
-    private boolean projectAndSetPosition(Screen screen,
+    private boolean projectAndSetPosition(PaperScreen screen,
             BaseDisplay display,
             Touch touch, TrackedDepthPoint tp) {
 
@@ -242,7 +243,7 @@ public class DepthTouchInput extends TouchInput {
         return paperScreenCoord != NO_INTERSECTION;
     }
 
-    private boolean projectSpeed(Screen screen,
+    private boolean projectSpeed(PaperScreen screen,
             BaseDisplay display,
             Touch touch, TrackedDepthPoint tp) {
 
@@ -281,21 +282,21 @@ public class DepthTouchInput extends TouchInput {
 
     // TODO: Do the same without the Display, use the extrinsics instead! 
     // TODO: Do the same with DepthDataElement  instead of  DepthPoint ?
-    public ArrayList<DepthPoint> projectDepthData(ARDisplay display, Screen screen) {
+    public ArrayList<DepthPoint> projectDepthData(ARDisplay display, PaperScreen screen) {
         ArrayList<DepthPoint> list = projectDepthData2D(display, screen);
         list.addAll(projectDepthData3D(display, screen));
         return list;
     }
 
-    public ArrayList<DepthPoint> projectDepthData2D(ARDisplay display, Screen screen) {
+    public ArrayList<DepthPoint> projectDepthData2D(ARDisplay display, PaperScreen screen) {
         return projectDepthDataXD(display, screen, true);
     }
 
-    public ArrayList<DepthPoint> projectDepthData3D(ARDisplay display, Screen screen) {
+    public ArrayList<DepthPoint> projectDepthData3D(ARDisplay display, PaperScreen screen) {
         return projectDepthDataXD(display, screen, false);
     }
 
-    private ArrayList<DepthPoint> projectDepthDataXD(ARDisplay display, Screen screen, boolean is2D) {
+    private ArrayList<DepthPoint> projectDepthDataXD(ARDisplay display, PaperScreen screen, boolean is2D) {
         try {
             depthDataSem.acquire();
             ProjectedDepthData depthData = depthAnalysis.getDepthData();
@@ -318,7 +319,7 @@ public class DepthTouchInput extends TouchInput {
         }
     }
 
-    private DepthPoint tryCreateDepthPoint(ARDisplay display, Screen screen, int offset) {
+    private DepthPoint tryCreateDepthPoint(ARDisplay display, PaperScreen screen, int offset) {
         Vec3D projectedPt = depthAnalysis.getDepthData().projectedPoints[offset];
 
         PVector screenPosition = projectPointToScreen(screen, display,
@@ -341,7 +342,7 @@ public class DepthTouchInput extends TouchInput {
      * @param dde
      * @return the projected point, NULL if no intersection was found.
      */
-    public PVector projectPointToScreen(Screen screen,
+    public PVector projectPointToScreen(PaperScreen screen,
             BaseDisplay display, DepthDataElementProjected dde) {
 
         PVector out = this.projectPointToScreen(screen,
@@ -352,7 +353,7 @@ public class DepthTouchInput extends TouchInput {
     }
 
     // PaperScreen coordinates as computed here. 
-    private PVector projectPointToScreen(Screen screen,
+    private PVector projectPointToScreen(PaperScreen screen,
             BaseDisplay display, Vec3D pKinect, Vec3D pNorm) {
 
         PVector paperScreenCoord;

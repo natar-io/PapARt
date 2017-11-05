@@ -20,22 +20,30 @@
  */
 package fr.inria.papart.procam;
 
+import fr.inria.papart.calibration.HomographyCreator;
 import fr.inria.papart.tracking.MarkerBoardFactory;
 import fr.inria.papart.tracking.MarkerBoardInvalid;
 import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.calibration.files.HomographyCalibration;
 import fr.inria.papart.multitouch.Touch;
+import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
+import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.tracking.ObjectFinder;
+import fr.inria.papart.utils.MathUtils;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import processing.opengl.PGraphicsOpenGL;
 import processing.core.PApplet;
 import processing.core.PConstants;
+import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.event.KeyEvent;
+import toxi.geom.Plane;
+import toxi.geom.Triangle3D;
 
 public class PaperScreen extends DelegatedGraphics {
 
@@ -54,7 +62,6 @@ public class PaperScreen extends DelegatedGraphics {
 
     // only one.
     protected MarkerBoard markerBoard = MarkerBoardInvalid.board;
-    protected Screen screen;
 
     protected PVector drawingSize
             = new PVector(DEFAULT_DRAWING_SIZE, DEFAULT_DRAWING_SIZE, 1);
@@ -72,7 +79,27 @@ public class PaperScreen extends DelegatedGraphics {
     private float filteringFreq = 30;
     private float filteringCutoff = 4;
 
-    private PMatrix3D manualLocation;
+    private PMatrix3D manualLocation = new PMatrix3D();
+
+    // FROM SCREEN: TO ORGANIZE
+    // The current graphics
+    private PGraphicsOpenGL thisGraphics;
+
+    // Either one, or the other is unique to this object. 
+    // The other one is unique to the camera/markerboard couple. 
+    private PMatrix3D extrinsics = new PMatrix3D();
+
+    private PVector size = new PVector(200, 200);
+    private float scale = 1;
+    protected Plane plane = new Plane();
+
+    private static final int nbPaperPosRender = 4;
+    private final PVector[] paperPosCorners3D = new PVector[nbPaperPosRender];
+
+    // TODO: update this again
+    private HomographyCreator homography;
+    protected HomographyCalibration worldToScreen;
+    private boolean isDrawing = true;
 
     /**
      * Create a new PaperScreen, a Papart object has to be created first. A
@@ -129,6 +156,10 @@ public class PaperScreen extends DelegatedGraphics {
         mainDisplay = display;
         displays.add(display);
         register();
+    }
+
+    private void initHomography() {
+        homography = new HomographyCreator(3, 2, 4);
     }
 
     ///////////////////////////////////////
@@ -188,7 +219,7 @@ public class PaperScreen extends DelegatedGraphics {
             }
 
             if (isDrawingOnScreen) {
-                this.currentGraphics = screen.getGraphics();
+                this.currentGraphics = getGraphics();
                 setup();
                 tryInitTracking();
             }
@@ -197,7 +228,7 @@ public class PaperScreen extends DelegatedGraphics {
         }
 
         // Needed for touch and projection operations
-        screen.computeScreenPosTransform(cameraTracking);
+        computeScreenPosTransform(cameraTracking);
 
 //        assert (isInitialized);
 //        if (this.isWithoutCamera || useManualLocation) {
@@ -207,21 +238,223 @@ public class PaperScreen extends DelegatedGraphics {
     }
 
     private void initScreen() {
-        this.screen = new Screen(parent);
-
         if (this.isDrawingOnScreen) {
             for (BaseDisplay display : displays) {
-                display.addScreen(screen);
+                display.addPaperScreen(this);
             }
         }
 
+        // TODO: This screen may be useless
         // resolution and drawingSize are set in settings() now...
-        this.screen.setScale(quality);
-        this.screen.setSize(drawingSize);
+        this.setScale(quality);
+        this.setSize(drawingSize);
     }
 
     private void linkMarkerBoardToScreen() {
-        this.screen.linkTo(markerBoard);
+        this.linkTo(markerBoard);
+    }
+
+    public void setSize(PVector size) {
+        this.size = size;
+    }
+
+    public void setScale(float scale) {
+        this.scale = scale;
+    }
+
+    public void linkTo(MarkerBoard board) {
+        this.markerBoard = board;
+    }
+
+    public boolean hasMarkerBoard() {
+        return this.markerBoard == MarkerBoardInvalid.board;
+    }
+
+    public MarkerBoard getMarkerBoard() {
+        if (!this.hasMarkerBoard()) {
+            System.err.println("The screen " + this + " does not a markerboard...");
+        }
+        return this.markerBoard;
+    }
+
+    public PGraphicsOpenGL getGraphics() {
+        if (thisGraphics == null) {
+            thisGraphics = (PGraphicsOpenGL) parent.createGraphics(
+                    this.getRenderingSizeX(),
+                    this.getRenderingSizeY(),
+                    PApplet.P3D);
+        }
+
+        return thisGraphics;
+    }
+
+    public boolean isDrawing() {
+        return isDrawing;
+    }
+
+    public PVector getSize() {
+        return size.copy();
+    }
+
+    public int getRenderingSizeX() {
+        return (int) (size.x * scale);
+    }
+
+    public int getRenderingSizeY() {
+        return (int) (size.y * scale);
+    }
+
+    /**
+     * Set a second transformation applied after tracking transform.
+     *
+     * @param tr
+     */
+    public void setTransformation(PMatrix3D tr) {
+        if (extrinsics == null) {
+            this.extrinsics = new PMatrix3D(tr);
+        } else {
+            this.extrinsics.set(tr);
+        }
+    }
+
+    /**
+     * Set an additional translation (replace the second transformation)
+     *
+     * @param tr
+     */
+    public void setTranslation(PVector tr) {
+        setTranslation(tr.x, tr.y, tr.z);
+    }
+
+    /**
+     * Set an additional translation (replace the second transformation)
+     *
+     * @param x
+     * @param y
+     * @param z
+     */
+    public void setTranslation(float x, float y, float z) {
+        if (extrinsics == null) {
+            extrinsics = new PMatrix3D();
+        }
+        extrinsics.reset();
+        extrinsics.translate(x, y, z);
+    }
+
+    /**
+     * Get a copy of the overall transform (after tracking and second
+     * transform).
+     *
+     * @param camera
+     * @return
+     */
+    public PMatrix3D getLocation(Camera camera) {
+        if (!markerBoard.isTrackedBy(camera) && !this.useManualLocation) {
+            return extrinsics.get();
+        }
+
+        PMatrix3D combinedTransfos = getMainLocation(camera);
+        combinedTransfos.apply(extrinsics);
+        return combinedTransfos;
+    }
+
+    public void useTracking() {
+        this.useManualLocation = false;
+    }
+
+    /**
+     * todo: a manual location should be used for each camera ?
+     *
+     * @param mat
+     */
+    protected void useManualLocation(PMatrix3D mat) {
+        this.manualLocation.set(mat);
+        this.useManualLocation = true;
+    }
+
+    protected PMatrix3D getMainLocation(Camera camera) {
+        if (useManualLocation) {
+            return manualLocation.get();
+        }
+        return markerBoard.getTransfoMat(camera).get();
+    }
+
+    /**
+     * Get a copy of the overall transform (after tracking and second
+     * transform).
+     *
+     * @return
+     */
+    public PMatrix3D getLocation(PMatrix3D trackedLocation) {
+        PMatrix3D combinedTransfos = trackedLocation.get();
+        combinedTransfos.apply(extrinsics);
+        return combinedTransfos;
+    }
+
+    public float getScale() {
+        return this.scale;
+    }
+
+    public void computeScreenPosTransform(Camera camera) {
+
+        ///////////////////// PLANE COMPUTATION  //////////////////
+        PMatrix3D mat = this.getLocation(camera);
+
+        paperPosCorners3D[0] = new PVector(mat.m03, mat.m13, mat.m23);
+        mat.translate(size.x, 0, 0);
+        paperPosCorners3D[1] = new PVector(mat.m03, mat.m13, mat.m23);
+        mat.translate(0, size.y, 0);
+        paperPosCorners3D[2] = new PVector(mat.m03, mat.m13, mat.m23);
+        mat.translate(-size.x, 0, 0);
+        paperPosCorners3D[3] = new PVector(mat.m03, mat.m13, mat.m23);
+
+        plane = new Plane(new Triangle3D(MathUtils.toVec(paperPosCorners3D[0]), MathUtils.toVec(paperPosCorners3D[1]), MathUtils.toVec(paperPosCorners3D[2])));
+
+        homography.addPoint(paperPosCorners3D[0], new PVector(0, 0));
+        homography.addPoint(paperPosCorners3D[1], new PVector(1, 0));
+        homography.addPoint(paperPosCorners3D[2], new PVector(1, 1));
+        homography.addPoint(paperPosCorners3D[3], new PVector(0, 1));
+        worldToScreen = homography.getHomography();
+    }
+
+    public PVector[] getCornerPos(Camera camera) {
+        computeScreenPosTransform(camera);
+        return paperPosCorners3D;
+    }
+
+    public Plane getPlane() {
+        return plane;
+    }
+
+    public HomographyCalibration getWorldToScreen() {
+        return worldToScreen;
+    }
+//    /**
+//     * Set the main position by the tracking system. 
+//     * @param cam
+//     */
+//    public void setTrackedLocation(Camera cam) {
+//        this.blockUpdate(cam, 0); // ms
+//    }
+
+    private boolean isOpenGL = false;
+
+    // TODO: find another name
+    public boolean isOpenGL() {
+        return isOpenGL;
+    }
+
+    protected void setOpenGL(boolean gl) {
+        this.isOpenGL = gl;
+    }
+
+    // TODO: what about those ?
+    public boolean hasExtrinsics() {
+        return true;
+    }
+
+    public PMatrix3D getExtrinsics() {
+        return this.extrinsics;
     }
 
     private boolean checkInitErrors() {
@@ -270,6 +503,10 @@ public class PaperScreen extends DelegatedGraphics {
 
         // Do this so that the display is the last rendered.
         mainDisplay.registerAgain();
+
+        // TODO: Find where it will be used
+        initHomography();
+
     }
 
     private String loadKey = null, saveKey = null, trackKey = null;
@@ -328,7 +565,7 @@ public class PaperScreen extends DelegatedGraphics {
             } else {
                 filename = saveName;
             }
-            
+
             if (saveKey != null
                     && (e.getKey() == saveKey.charAt(0))) {
                 System.out.println("Saved to : " + filename);
@@ -361,8 +598,8 @@ public class PaperScreen extends DelegatedGraphics {
         Camera mainCamera = cameraTracking;
 
         if (isDrawingOnScreen) {
-            screen.setDrawing(true);
-            PGraphicsOpenGL g = screen.getGraphics();
+            setDrawing(true);
+            PGraphicsOpenGL g = getGraphics();
             this.currentGraphics = g;
             g.beginDraw();
             g.scale(quality);
@@ -376,7 +613,7 @@ public class PaperScreen extends DelegatedGraphics {
                 if (display.hasCamera()) {
                     this.cameraTracking = display.getCamera();
                 }
-                PGraphicsOpenGL g = display.beginDrawOnScreen(this.screen);
+                PGraphicsOpenGL g = display.beginDrawOnScreen(this);
                 this.currentGraphics = g;
                 this.drawAroundPaper();
                 display.endDraw();
@@ -414,13 +651,13 @@ public class PaperScreen extends DelegatedGraphics {
         if (manual) {
             if (loc == null) {
 //                System.err.println("Cannot set a null location.");
-                loc = this.screen.getLocation(cameraTracking);
+                loc = this.getLocation(cameraTracking);
             }
-            this.screen.useManualLocation(loc);
+            this.useManualLocation(loc);
             this.manualLocation = loc.get();
         }
         if (!manual) {
-            this.screen.useTracking();
+            this.useTracking();
             this.manualLocation = new PMatrix3D();
         }
         // TEST instead of blocking the update, just skip the use of the tracking.
@@ -432,14 +669,14 @@ public class PaperScreen extends DelegatedGraphics {
     }
 
     /**
-     * Get the 3D position of the screen.
+     * Get the 3D position of the
      *
      * @return the bottom right corner of the markerboard (tracked position).
      */
     public PVector getScreenPos() {
 
         if (this.isWithoutCamera) {
-            PMatrix3D mat = screen.getExtrinsics();
+            PMatrix3D mat = getExtrinsics();
             return new PVector(mat.m03, mat.m13, mat.m23);
         } else if (mainDisplay.hasCamera()) {
             return markerBoard.getBoardLocation(cameraTracking, (ARDisplay) mainDisplay);
@@ -460,8 +697,8 @@ public class PaperScreen extends DelegatedGraphics {
      * Disable the drawing and clear the offscreen.
      */
     public void noDraw() {
-        screen.setDrawing(false);
-        PGraphicsOpenGL pg = screen.getGraphics();
+        setDrawing(false);
+        PGraphicsOpenGL pg = getGraphics();
         pg.beginDraw();
         pg.clear();
         pg.endDraw();
@@ -544,21 +781,13 @@ public class PaperScreen extends DelegatedGraphics {
         }
         Touch t = new Touch();
         // Add the mouse a pointer. 
-        PVector p = getDisplay().project(getScreen(),
+        PVector p = getDisplay().project(this,
                 (float) parent.mouseX / (float) parent.width,
                 (float) parent.mouseY / (float) parent.height);
         p.x = p.x * drawingSize.x;
         p.y = p.y * drawingSize.y;
         t.setPosition(p);
         return t;
-    }
-
-    public PGraphicsOpenGL getGraphics() {
-        return currentGraphics;
-    }
-
-    public Screen getScreen() {
-        return this.screen;
     }
 
     /**
@@ -596,7 +825,7 @@ public class PaperScreen extends DelegatedGraphics {
      * @param z in millimeters
      */
     public void setLocation(float x, float y, float z) {
-        screen.setTranslation(x, y, z);
+        setTranslation(x, y, z);
     }
 
     /**
@@ -606,7 +835,7 @@ public class PaperScreen extends DelegatedGraphics {
      */
     public void setLocation(PMatrix3D matrix) {
         assert (isInitialized);
-        screen.setTransformation(matrix);
+        setTransformation(matrix);
     }
 
     public PVector getLocationVector() {
@@ -614,7 +843,7 @@ public class PaperScreen extends DelegatedGraphics {
         if (this.useManualLocation) {
             p = this.manualLocation;
         } else {
-            p = screen.getLocation(cameraTracking);
+            p = getLocation(cameraTracking);
         }
         return new PVector(p.m03, p.m13, p.m23);
     }
@@ -629,7 +858,7 @@ public class PaperScreen extends DelegatedGraphics {
         if (this.useManualLocation) {
             return this.manualLocation;
         }
-        return this.screen.getLocation(cameraTracking);
+        return this.getLocation(cameraTracking);
     }
 
     /**
@@ -641,7 +870,7 @@ public class PaperScreen extends DelegatedGraphics {
     public void saveLocationTo(String filename) {
         HomographyCalibration.saveMatTo(
                 Papart.getPapart().getApplet(),
-                screen.getMainLocation(cameraTracking),
+                getMainLocation(cameraTracking),
                 filename);
     }
 
@@ -682,6 +911,120 @@ public class PaperScreen extends DelegatedGraphics {
         }
     }
 
+    /**
+     * Get the location in camera space of a touchPoint.
+     *
+     * @param t touch
+     * @return the coordinates for cameraTracking.
+     */
+    public PVector getCameraViewOf(Touch t) {
+        ProjectorDisplay projector = (ProjectorDisplay) getDisplay();
+
+        TrackedElement tp = t.trackedSource;
+        PVector screenPos = tp.getPosition();
+        PVector tablePos = projector.projectPointer3D(this, screenPos.x, screenPos.y);
+        ProjectiveDeviceP pdp = cameraTracking.getProjectiveDevice();
+        PVector coord = pdp.worldToPixelCoord(tablePos);
+        return coord;
+    }
+
+    /**
+     * Unsafe do not use unless you are sure.
+     */
+    public PImage getImageFrom(PVector coord, PImage src, PImage dst, int radius) {
+        int x = (int) coord.x;
+        int y = (int) coord.y;
+
+        dst.copy(src,
+                x - radius / 2,
+                y - radius / 2,
+                radius,
+                radius,
+                0, 0,
+                radius,
+                radius);
+        return dst;
+    }
+
+    /**
+     * Get the color of a 3D point. The location of the point is from the
+     * cameraTracking origin.
+     *
+     * @param point
+     * @return
+     */
+    public int getColorFrom3D(PVector point) {
+        return getColorAt(getPxCoordinates(point));
+    }
+
+    /**
+     * Get the color of a camera pixel.
+     *
+     * @param coord in cameraTracking space.
+     * @return
+     */
+    public int getColorAt(PVector coord) {
+        int x = (int) coord.x;
+        int y = (int) coord.y;
+        ByteBuffer buff = cameraTracking.getIplImage().getByteBuffer();
+        int offset = x + y * cameraTracking.width();
+        return getColor(buff, offset);
+    }
+
+    /**
+     * Convert the color from Ipl to Processing RGB
+     *
+     * @param buff
+     * @param offset
+     * @return
+     */
+    private int getColor(ByteBuffer buff, int offset) {
+        offset = offset * 3;
+        return (buff.get(offset + 2) & 0xFF) << 16
+                | (buff.get(offset + 1) & 0xFF) << 8
+                | (buff.get(offset) & 0xFF);
+    }
+
+    /**
+     * Get the camera pixel coordinates of a 3D point viewed by the camera.
+     *
+     * @param cameraTracking3DCoord
+     * @return
+     */
+    public PVector getPxCoordinates(PVector cameraTracking3DCoord) {
+        ProjectiveDeviceP pdp = cameraTracking.getProjectiveDevice();
+        PVector coord = pdp.worldToPixelCoord(cameraTracking3DCoord);
+        return coord;
+    }
+
+    /**
+     * Get a square of pixels centered at the coord location of radius size.
+     * WARNING: Unsafe to use, this will be updated/moved
+     *
+     * @param coord
+     * @param cameraImage
+     * @param radius
+     * @return
+     */
+    public int[] getPixelsFrom(PVector coord, PImage cameraImage, int radius) {
+        int[] px = new int[radius * radius];
+        int x = (int) coord.x;
+        int y = (int) coord.y;
+        int minX = PApplet.constrain(x - radius, 0, cameraTracking.width() - 1);
+        int maxX = PApplet.constrain(x + radius, 0, cameraTracking.width() - 1);
+        int minY = PApplet.constrain(y - radius, 0, cameraTracking.height() - 1);
+        int maxY = PApplet.constrain(y + radius, 0, cameraTracking.height() - 1);
+
+        int k = 0;
+        for (int j = minY; j <= maxY; j++) {
+            for (int i = minX; i <= maxX; i++) {
+                int offset = i + j * cameraTracking.width();
+                px[k++] = cameraImage.pixels[offset];
+            }
+        }
+        return px;
+    }
+
     ///////////////////////////
     // Getters and setters. 
     ///////////////////////////
@@ -691,7 +1034,7 @@ public class PaperScreen extends DelegatedGraphics {
      * @param drawing
      */
     public void setDrawing(boolean drawing) {
-        screen.setDrawing(drawing);
+        setDrawing(drawing);
     }
 
     /**
@@ -726,7 +1069,7 @@ public class PaperScreen extends DelegatedGraphics {
      */
     public void addDisplay(BaseDisplay display) {
         this.displays.add(display);
-        display.addScreen(this.screen);
+        display.addPaperScreen(this);
         if (display.hasCamera()) {
             display.getCamera().trackMarkerBoard(markerBoard);
         }
@@ -881,6 +1224,119 @@ public class PaperScreen extends DelegatedGraphics {
     protected void setTrackingFilter(float freq, float cutOff) {
         this.filteringFreq = freq;
         this.filteringCutoff = cutOff;
+    }
+
+    ///////////////////
+    //// VR Rendering 
+    ///////////////////
+    public float halfEyeDist = 10; // 2cm
+    private PMatrix3D initPosM = null;
+
+    ////////////////// 3D SPACE TO PAPER HOMOGRAPHY ///////////////
+    // Version 2.0 :  (0,0) is the top-left corner.
+    /**
+     * Initialize VR rendering.
+     * @param cam
+     * @param userPos 
+     */
+    public void initDraw(Camera cam, PVector userPos) {
+        initDraw(cam, userPos, 40, 5000);
+    }
+
+        /**
+     * Initialize VR rendering.
+     * @param cam
+     * @param userPos 
+     */
+    public void initDraw(Camera cam, PVector userPos, float nearPlane, float farPlane) {
+        initDraw(cam, userPos, nearPlane, farPlane, false, false);
+    }
+    
+    /**
+     * Init VR rendering.
+     * The VR rendering creates a 3D "screen". It is used to create 3D 
+     * pop-up effects. 
+     * @param cam Rendering origin. 
+     * @param userPos  Position of the user, relative to the PaperScreen
+     * @param nearPlane  Close disance for OpengL in millimeters. 
+     * @param farPlane  Far distance for OpenGL in millimeters. 
+     * @param isAnaglyph Use Anaglyph. 
+     * @param isLeft  When analygph is it left or right, ignored otherwise.
+     */
+    public void initDraw(Camera cam, PVector userPos, float nearPlane, float farPlane, boolean isAnaglyph, boolean isLeft) {
+
+        
+        PGraphicsOpenGL graphics = getGraphics();
+
+        if (initPosM == null) {
+            this.isOpenGL = true;
+            // Transformation  Camera -> Marker
+
+            initPosM = this.getLocation(cam);
+
+            initPosM.translate(this.getRenderingSizeX() / 2, this.getRenderingSizeY() / 2);
+            // All is relative to the paper's center. not the corner. 
+            initPosM.scale(-1, 1, -1);
+
+        }
+
+        // get the current transformation... 
+        PMatrix3D newPos = this.getLocation(cam);
+
+        newPos.translate(this.getRenderingSizeX() / 2, this.getRenderingSizeY() / 2);
+        newPos.scale(-1, 1, -1);
+
+        newPos.invert();
+        newPos.apply(initPosM);
+
+        PVector user = new PVector();
+
+        if (isAnaglyph && isLeft) {
+            userPos.add(-halfEyeDist * 2, 0, 0);
+        }
+        newPos.mult(userPos, user);
+        PVector paperCameraPos = user;
+
+        // Camera must look perpendicular to the screen. 
+        graphics.camera(paperCameraPos.x, paperCameraPos.y, paperCameraPos.z,
+                paperCameraPos.x, paperCameraPos.y, 0,
+                0, 1, 0);
+
+        // http://www.gamedev.net/topic/597564-view-and-projection-matrices-for-vr-window-using-head-tracking/
+        float nearFactor = nearPlane / paperCameraPos.z;
+
+        float left = nearFactor * (-size.x / 2f - paperCameraPos.x);
+        float right = nearFactor * (size.x / 2f - paperCameraPos.x);
+        float top = nearFactor * (size.y / 2f - paperCameraPos.y);
+        float bottom = nearFactor * (-size.y / 2f - paperCameraPos.y);
+
+        graphics.frustum(left, right, bottom, top, nearPlane, farPlane);
+        graphics.projection.m11 = -graphics.projection.m11;
+
+        // No detection?
+        PMatrix3D transformation = this.getLocation(cam);
+        if (transformation.m03 == 0 && transformation.m13 == 0 && transformation.m23 == 0) {
+            resetPos();
+        }
+    }
+
+    public void endDrawPerspective() {
+        PGraphicsOpenGL graphics = getGraphics();
+        graphics.perspective();
+        graphics.camera();
+        graphics.projection.m11 = -graphics.projection.m11;
+    }
+
+    public void resetPos() {
+        initPosM = null;
+    }
+
+    public float getHalfEyeDist() {
+        return halfEyeDist;
+    }
+
+    public void setHalfEyeDist(float halfEyeDist) {
+        this.halfEyeDist = halfEyeDist;
     }
 
 }
