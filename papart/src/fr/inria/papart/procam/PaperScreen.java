@@ -254,66 +254,26 @@ public class PaperScreen extends DelegatedGraphics {
         return drawingSize.copy();
     }
 
+    /**
+     * Get the rendering size in pixels.
+     *
+     * width = drawingSize x quality (px) = (mm) x (px/mm)
+     *
+     * @return width in pixels.
+     */
     public int getRenderingSizeX() {
         return (int) (drawingSize.x * quality);
     }
 
+    /**
+     * Get the rendering size in pixels.
+     *
+     * width = drawingSize x quality (px) = (mm) x (px/mm)
+     *
+     * @return height in pixels.
+     */
     public int getRenderingSizeY() {
         return (int) (drawingSize.y * quality);
-    }
-
-    /**
-     * Set a second transformation applied after tracking transform.
-     *
-     * @param tr
-     */
-    public void setTransformation(PMatrix3D tr) {
-        if (extrinsics == null) {
-            this.extrinsics = new PMatrix3D(tr);
-        } else {
-            this.extrinsics.set(tr);
-        }
-    }
-
-    /**
-     * Set an additional translation (replace the second transformation)
-     *
-     * @param tr
-     */
-    public void setTranslation(PVector tr) {
-        setTranslation(tr.x, tr.y, tr.z);
-    }
-
-    /**
-     * Set an additional translation (replace the second transformation)
-     *
-     * @param x
-     * @param y
-     * @param z
-     */
-    public void setTranslation(float x, float y, float z) {
-        if (extrinsics == null) {
-            extrinsics = new PMatrix3D();
-        }
-        extrinsics.reset();
-        extrinsics.translate(x, y, z);
-    }
-
-    /**
-     * Get a copy of the overall transform (after tracking and second
-     * transform).
-     *
-     * @param camera
-     * @return
-     */
-    public PMatrix3D getLocation(Camera camera) {
-        if (!markerBoard.isTrackedBy(camera) && !this.useManualLocation) {
-            return extrinsics.get();
-        }
-
-        PMatrix3D combinedTransfos = getMainLocation(camera);
-        combinedTransfos.apply(extrinsics);
-        return combinedTransfos;
     }
 
     public void useTracking() {
@@ -349,7 +309,6 @@ public class PaperScreen extends DelegatedGraphics {
         return combinedTransfos;
     }
 
-
     public void computeWorldToScreenMat(Camera camera) {
 
         ///////////////////// PLANE COMPUTATION  //////////////////
@@ -383,7 +342,8 @@ public class PaperScreen extends DelegatedGraphics {
 
     /**
      * Get the 3D plane object from the main camera.
-     * @return 
+     *
+     * @return
      */
     public Plane getPlane() {
         computeWorldToScreenMat(cameraTracking);
@@ -392,8 +352,9 @@ public class PaperScreen extends DelegatedGraphics {
 
     /**
      * Get a 3D plane object given a camera.
+     *
      * @param camera
-     * @return 
+     * @return
      */
     public Plane getPlane(Camera camera) {
         computeWorldToScreenMat(camera);
@@ -637,14 +598,81 @@ public class PaperScreen extends DelegatedGraphics {
 //            markerBoard.blockUpdate(cameraTracking, 0); // ms
 //        }
     }
+    
+    
+    ////////////////////////
+    // Location handling. //
+    ////////////////////////
+        
+     /**
+     * Add a vector to the tracked location.
+     * The setLocation do not stack up. It replaces the previous call.
+     *
+     * @param v in millimeters
+     */
+    public void setLocation(PVector v) {
+        setLocation(v.x, v.y, v.z);
+    }
 
     /**
-     * Get the 3D position of the
+     * Add a vector from the tracked location.
+     * 
+     * The setLocation do not stack up. It replaces the previous call.
+     *
+     * @param x in millimeters
+     * @param y in millimeters
+     * @param z in millimeters
+     */
+    public void setLocation(float x, float y, float z) {
+             if (extrinsics == null) {
+            extrinsics = new PMatrix3D();
+        }
+        extrinsics.reset();
+        extrinsics.translate(x, y, z);
+    }
+
+    /**
+     * Add another transformation from the current location.
+     * The setLocation do not stack up. It replaces the previous call.
+     *
+     * @param matrix
+     */
+    public void setLocation(PMatrix3D matrix) {
+        assert (isInitialized);
+          if (extrinsics == null) {
+            this.extrinsics = new PMatrix3D(matrix);
+        } else {
+            this.extrinsics.set(matrix);
+        }
+    }
+    
+
+    /**
+     * Get a copy of the overall transform (after tracking and second
+     * transform).
+     *
+     * @param camera
+     * @return
+     */
+    public PMatrix3D getLocation(Camera camera) {
+        if (!markerBoard.isTrackedBy(camera) && !this.useManualLocation) {
+            return extrinsics.get();
+        }
+
+        PMatrix3D combinedTransfos = getMainLocation(camera);
+        combinedTransfos.apply(extrinsics);
+        return combinedTransfos;
+    }
+
+
+
+    /**
+     * Get the 3D position. Deprecated.
      *
      * @return the bottom right corner of the markerboard (tracked position).
      */
+    @Deprecated
     public PVector getScreenPos() {
-
         if (this.isWithoutCamera) {
             PMatrix3D mat = getExtrinsics();
             return new PVector(mat.m03, mat.m13, mat.m23);
@@ -778,36 +806,12 @@ public class PaperScreen extends DelegatedGraphics {
         markerBoard.setFakeLocation(cameraTracking, location);
     }
 
-    /**
-     * Add a vector to the tracked location.
-     *
-     * @param v in millimeters
-     */
-    public void setLocation(PVector v) {
-        setLocation(v.x, v.y, v.z);
-    }
 
     /**
-     * Add a vector from the tracked location.
-     *
-     * @param x in millimeters
-     * @param y in millimeters
-     * @param z in millimeters
+     * Get the 3D location of the PaperScreen (bottom-right corner).
+     * It takes into account the call to setLocation(). 
+     * @return 
      */
-    public void setLocation(float x, float y, float z) {
-        setTranslation(x, y, z);
-    }
-
-    /**
-     * Add another transformation from the current location.
-     *
-     * @param matrix
-     */
-    public void setLocation(PMatrix3D matrix) {
-        assert (isInitialized);
-        setTransformation(matrix);
-    }
-
     public PVector getLocationVector() {
         PMatrix3D p;
         if (this.useManualLocation) {
@@ -900,8 +904,9 @@ public class PaperScreen extends DelegatedGraphics {
 
     /**
      * Unsafe do not use unless you are sure.
+     * This will be moved to a utility class.
      */
-    public PImage getImageFrom(PVector coord, PImage src, PImage dst, int radius) {
+    public static PImage getImageFrom(PVector coord, PImage src, PImage dst, int radius) {
         int x = (int) coord.x;
         int y = (int) coord.y;
 
@@ -924,9 +929,33 @@ public class PaperScreen extends DelegatedGraphics {
      * @return
      */
     public int getColorFrom3D(PVector point) {
-        return getColorAt(getPxCoordinates(point));
+        return getColorFrom3D(cameraTracking, point);
+    }
+    /**
+     * Get the color of a 3D point. The location of the point is from the
+     * cameraTracking origin.
+     *
+     * @param point
+     * @return
+     */
+    public int getColorFrom3D(Camera camera, PVector point) {
+        return getColorAt(camera, getPxCoordinates(point));
     }
 
+    /**
+     * Get the color of a camera pixel.
+     *
+     * @param camera
+     * @param coord in cameraTracking space.
+     * @return
+     */
+    public int getColorAt(Camera camera, PVector coord) {
+        int x = (int) coord.x;
+        int y = (int) coord.y;
+        ByteBuffer buff = camera.getIplImage().getByteBuffer();
+        int offset = x + y * camera.width();
+        return getColor(buff, offset);
+    }
     /**
      * Get the color of a camera pixel.
      *
@@ -934,11 +963,7 @@ public class PaperScreen extends DelegatedGraphics {
      * @return
      */
     public int getColorAt(PVector coord) {
-        int x = (int) coord.x;
-        int y = (int) coord.y;
-        ByteBuffer buff = cameraTracking.getIplImage().getByteBuffer();
-        int offset = x + y * cameraTracking.width();
-        return getColor(buff, offset);
+        return getColorAt(cameraTracking, coord);
     }
 
     /**
