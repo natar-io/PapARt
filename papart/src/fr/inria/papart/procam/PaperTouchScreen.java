@@ -113,7 +113,7 @@ public class PaperTouchScreen extends PaperScreen {
     @Override
     public void setLocation(float x, float y, float z) {
         super.setLocation(x, y, z);
-        this.computeScreenPosTransform(cameraTracking);
+        this.computeWorldToScreenMat(cameraTracking);
         updateTouch();
     }
 
