@@ -523,7 +523,7 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
         return p;
     }
 
-    private static void loadParameters(ProjectiveDevice dev, ProjectiveDeviceP p) {
+    public static void loadParameters(ProjectiveDevice dev, ProjectiveDeviceP p) {
         double[] camMat = dev.cameraMatrix.get();
 
         p.handleDistorsion = dev.distortionCoeffs != null;
@@ -552,7 +552,7 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
         p.device = dev;
     }
 
-    private static void loadParameters(ProjectiveDeviceCalibration dev, ProjectiveDeviceP p) {
+    public static void loadParameters(ProjectiveDeviceCalibration dev, ProjectiveDeviceP p) {
         // Not implemented yet
         p.handleDistorsion = false;
         p.intrinsics = dev.getIntrinsics();
