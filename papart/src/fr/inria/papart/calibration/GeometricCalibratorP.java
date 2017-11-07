@@ -18,12 +18,14 @@
  */
 package fr.inria.papart.calibration;
 
+import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.tracking.DetectedMarker;
 import fr.inria.papart.tracking.MarkerList;
 import fr.inria.papart.tracking.MarkerSvg;
 import java.util.Arrays;
 import org.bytedeco.javacv.GeometricCalibrator;
 import org.bytedeco.javacv.Marker;
+import org.bytedeco.javacv.MarkerDetector;
 import org.bytedeco.javacv.ProjectiveDevice;
 
 /**
@@ -44,6 +46,8 @@ public class GeometricCalibratorP extends GeometricCalibrator {
         ProjectiveDevice d = new ProjectiveDevice(name);
         d.imageWidth = width;
         d.imageHeight = height;
+        d.setSettings(new ProjectiveDevice.CalibrationSettings());
+
         return new GeometricCalibratorP(d);
     }
 
@@ -53,7 +57,9 @@ public class GeometricCalibratorP extends GeometricCalibrator {
      * @param projectiveDevice
      */
     public GeometricCalibratorP(ProjectiveDevice projectiveDevice) {
-        super(new GeometricCalibrator.Settings(), null, null, projectiveDevice);
+
+        // MarkerDetector.settings is not used
+        super(new GeometricCalibrator.Settings(), new MarkerDetector.Settings(), null, projectiveDevice);
     }
 
     /**
@@ -67,9 +73,10 @@ public class GeometricCalibratorP extends GeometricCalibrator {
     }
 
     /**
-     * Add the markers, both the model and detected markers.
-     * @param model  stored in a MarkerboardSvg object. 
-     * @param detected Found by a camera. 
+     *  Add the markers, both the model and detected markers.
+     *
+     * @param model stored in a MarkerboardSvg object.
+     * @param detected Found by a camera.
      */
     public void addMarkers(MarkerList model, DetectedMarker[] detected) {
 
@@ -97,12 +104,14 @@ public class GeometricCalibratorP extends GeometricCalibrator {
             om = Arrays.copyOf(om, k);
             im = Arrays.copyOf(im, k);
         }
-        this.getAllObjectMarkers().clear();
-        this.getAllImageMarkers().clear();
-        
+
         this.getAllObjectMarkers().add(om);
         this.getAllImageMarkers().add(im);
+    }
 
+    public void clearMarkers() {
+        this.getAllObjectMarkers().clear();
+        this.getAllImageMarkers().clear();
     }
 
 }
