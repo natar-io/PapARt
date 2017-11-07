@@ -19,15 +19,7 @@
  */
 package fr.inria.papart.procam.camera;
 
-import java.nio.Buffer;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.IntBuffer;
-import java.nio.ShortBuffer;
-import static org.bytedeco.javacpp.avutil.AV_PIX_FMT_GRAY16BE;
-import org.bytedeco.javacpp.opencv_core.IplImage;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
-import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.OpenCVFrameConverter;
 import processing.core.PImage;
