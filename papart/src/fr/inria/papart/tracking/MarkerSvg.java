@@ -21,6 +21,7 @@ package fr.inria.papart.tracking;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import org.bytedeco.javacv.Marker;
 import static processing.core.PApplet.println;
 import static processing.core.PConstants.RECT;
 import processing.core.PMatrix;
@@ -43,6 +44,16 @@ public class MarkerSvg implements Cloneable {
         this.id = id;
         this.size = size.get();
         this.matrix = matrix.get();
+    }
+    
+    public Marker copyAsMarker(){
+        double[] corners = new double[this.corners.length * 4];
+        int k = 0;
+        for(int i = 0; i < this.corners.length; i++){
+            corners[k++] = this.corners[i].x;
+            corners[k++] = this.corners[i].y;
+        }
+        return new org.bytedeco.javacv.Marker(id, corners, 1.0);
     }
 
     public int getId() {

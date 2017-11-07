@@ -27,6 +27,7 @@ import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacpp.opencv_core;
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.cvFindCornerSubPix;
+import org.bytedeco.javacv.Marker;
 import processing.core.PGraphics;
 import processing.core.PVector;
 
@@ -41,6 +42,15 @@ public class DetectedMarker implements Cloneable {
         this.corners = corners;
         this.confidence = confidence;
     }
+    
+    public int getId(){
+        return id;
+    }
+    
+    public Marker copyAsMarker(){
+        return new org.bytedeco.javacv.Marker(id, corners, confidence);
+    }
+
 
     public void drawSelf(PGraphics g, int size) {
         for (int i = 0; i < 8; i += 2) {
