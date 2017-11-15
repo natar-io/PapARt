@@ -132,7 +132,7 @@ Projector  0:
       rows: 3
       cols: 3
       dt: d
-      data: [ 1.01525e+03, 0., 6.336e+02, 0.,
+      data: [ 1.015e+03, 0., 6.336e+02, 0.,
           1.01525e+03, 7.6e+2, 0., 0., 1. ]
    distortionCoeffs: !!opencv-matrix
       rows: 1
