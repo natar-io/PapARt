@@ -1,6 +1,7 @@
 /*
  * Part of the PapARt project - https://project.inria.fr/papart/
  *
+ * Copyright (C) 2017 RealityTech
  * Copyright (C) 2014-2016 Inria
  * Copyright (C) 2011-2013 Bordeaux University
  *
@@ -40,7 +41,7 @@ import toxi.geom.Vec3D;
 
 /**
  *
- * @author jeremy
+ * @author Jeremy Laviole - laviole@rea.lity.tech
  */
 public class ARDisplay extends BaseDisplay implements HasExtrinsics {
 
@@ -141,6 +142,10 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         this.setDistort(false);
     }
 
+    /**
+     * Updates the projection matrix. Do not use while drawing. This method
+     * calls beginDraw and endDraw.
+     */
     public void updateIntrinsicsRendering() {
         float p00, p11, p02, p12;
 
@@ -248,50 +253,6 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         }
     }
 
-    /**
-     * graphics.modelview.apply(projExtrinsicsP3D);
-     *
-     * @return
-     */
-    public PMatrix3D getIntrinsics() {
-        return intrinsics;
-    }
-
-    /* *
-     *  For hand-made calibration exercices. 
-     */
-    public void setIntrinsics(PMatrix3D intr) {
-        intrinsics = intr;
-    }
-
-    /* *
-     *  For custom calibration. 
-     */
-    public void setExtrinsics(PMatrix3D extr) {
-        extrinsics = extr.get();
-        extrinsicsInv = extr.get();
-        extrinsicsInv.invert();
-        this.hasExtrinsics = true;
-    }
-
-    /**
-     * graphics.modelview.apply(projExtrinsicsP3D);
-     *
-     * @return
-     */
-    @Override
-    public PMatrix3D getExtrinsics() {
-        assert (hasExtrinsics());
-        return extrinsics.get();
-    }
-
-    /**
-     * @return
-     */
-    public PMatrix3D getExtrinsicsInv() {
-        assert (hasExtrinsics());
-        return extrinsicsInv.get();
-    }
 
     /**
      * This function initializes the distorsion map used by the distorsion
@@ -374,6 +335,13 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         this.graphics.endDraw();
     }
 
+    /**
+     * Start the drawing, to be used in manual mode. This method loads the
+     * projection and modelview matrices. It takes into account the quality.
+     *
+     * @return
+     */
+    @Override
     public PGraphicsOpenGL beginDraw() {
 
         ////////  3D PROJECTION  //////////////
@@ -389,6 +357,14 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         return this.graphics;
     }
 
+    /**
+     * Start the drawing, to be used in manual mode. This method loads the
+     * projection and modelview matrices. It uses the camera member to get the
+     * paperScreen location.
+     *
+     * @param paperScreen
+     * @return
+     */
     @Override
     public PGraphicsOpenGL beginDrawOnScreen(PaperScreen paperScreen) {
         PMatrix3D screenPos = paperScreen.getLocation(this.camera);
@@ -420,6 +396,10 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         this.graphics.scale(1f / quality);
     }
 
+    /**
+     * Ends the drawing: revert the projection matrix.
+     */
+    @Override
     public void endDraw() {
 
         // Put the projection matrix back to normal
@@ -452,6 +432,9 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         return this.graphics;
     }
 
+    /**
+     * Calls beginDraw, renderScreens, endDraw.
+     */
     public void drawScreens() {
         this.beginDraw();
         this.graphics.clear();
@@ -459,6 +442,9 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         this.endDraw();
     }
 
+    /**
+     * Calls beginDraw, renderScreens, endDraw. No clear() before the rendering.
+     */
     public void drawScreensOver() {
         this.beginDraw();
         renderScreens();
@@ -547,6 +533,13 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         return new PVector(inter.x(), inter.y(), inter.z());
     }
 
+    /**
+     * Create the OpenGL projection matrix.
+     *
+     * @param nearFar x is the near value, y the far value for the frustum call.
+     * @return the generated matrix
+     */
+    @Deprecated
     protected PMatrix3D createProjection(PVector nearFar) {
 
         PMatrix3D init = this.graphics.projection.get();
@@ -572,6 +565,47 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         this.zFar = far;
     }
 
+    
+    
+    /**
+     * graphics.modelview.apply(projExtrinsicsP3D);
+     *
+     * @return
+     */
+    public PMatrix3D getIntrinsics() {
+        return intrinsics;
+    }
+
+    /* *
+     *  For hand-made calibration exercices. 
+     */
+    public void setIntrinsics(PMatrix3D intr) {
+        intrinsics = intr;
+    }
+
+    /**
+     * Set the extrinsics of the display. They are relative to the main camera. 
+     *
+     * @param extr
+     */
+    public void setExtrinsics(PMatrix3D extr) {
+        extrinsics = extr.get();
+        extrinsicsInv = extr.get();
+        extrinsicsInv.invert();
+        this.hasExtrinsics = true;
+    }
+
+    @Override
+    public PMatrix3D getExtrinsics() {
+        assert (hasExtrinsics());
+        return extrinsics.get();
+    }
+
+    public PMatrix3D getExtrinsicsInv() {
+        assert (hasExtrinsics());
+        return extrinsicsInv.get();
+    }
+    
     @Override
     public boolean hasExtrinsics() {
         return this.hasExtrinsics;

@@ -72,7 +72,7 @@ public class MarkerBoardSvg extends MarkerBoard {
 
         DetectedMarker[] markers = (DetectedMarker[]) globalTracking;
 
-        PMatrix3D newPos = compute3DPos(markers, camera);
+        PMatrix3D newPos = DetectedMarker.compute3DPos(markers, markersFromSVG, camera);
 
         if (newPos == INVALID_LOCATION) {
             return;
@@ -112,47 +112,6 @@ public class MarkerBoardSvg extends MarkerBoard {
             update(newPos, id);
 
         }
-
-    }
-
-    private PMatrix3D compute3DPos(DetectedMarker[] detectedMarkers, Camera camera) {
-        // We create a pair model ( markersFromSVG) -> observation (markers) 
-
-//         markersFromSVG
-        ArrayList<PVector> objectPoints = new ArrayList<PVector>();
-        ArrayList<PVector> imagePoints = new ArrayList<PVector>();
-        int k = 0;
-
-        for (DetectedMarker detected : detectedMarkers) {
-            if (markersFromSVG.containsKey(detected.id)) {
-
-//                System.out.println("Detected marker: " + detected.id + " confidence " + detected.confidence);
-                if (detected.confidence < 1.0) {
-                    continue;
-                }
-
-                PVector[] object = markersFromSVG.get(detected.id).getCorners();
-                PVector[] image = detected.getCorners();
-                for (int i = 0; i < 4; i++) {
-//                    System.out.println("Model " + object[i] + " image " + image[i]);
-                    objectPoints.add(object[i]);
-                    imagePoints.add(image[i]);
-                }
-                k++;
-            }
-        }
-        if (k < 1) {
-            return MarkerBoard.INVALID_LOCATION;
-        }
-
-        PVector[] objectArray = new PVector[k];
-        PVector[] imageArray = new PVector[k];
-        objectArray = objectPoints.toArray(objectArray);
-        imageArray = imagePoints.toArray(imageArray);
-
-        ProjectiveDeviceP pdp = camera.getProjectiveDevice();
-        return pdp.estimateOrientation(objectArray, imageArray);
-//        return pdp.estimateOrientationRansac(objectArray, imageArray);
 
     }
 

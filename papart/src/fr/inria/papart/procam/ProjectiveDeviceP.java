@@ -19,7 +19,7 @@
  */
 package fr.inria.papart.procam;
 
-import fr.inria.papart.calibration.ProjectiveDeviceCalibration;
+import fr.inria.papart.calibration.files.ProjectiveDeviceCalibration;
 import org.bytedeco.javacv.CameraDevice;
 import org.bytedeco.javacv.ProjectiveDevice;
 import org.bytedeco.javacv.ProjectorDevice;
@@ -412,10 +412,25 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
         }
     }
 
+    /**
+     * Save an intrinsic calibration. 
+     * Store a calibration, either in XML (Papart) or YAML (opencv) format. 
+     * It also stores the extrinsic calibration. 
+     * @param applet
+     * @param filename  path, can end with ".xml" or ".yaml"
+     */
     public void saveTo(PApplet applet, String filename) {
         saveTo(applet, filename, true);
     }
 
+        /**
+     * Save an intrinsic calibration. 
+     * Store a calibration, either in XML (Papart) or YAML (opencv) format. 
+     *  It also stores the extrinsic calibration. 
+     * @param applet
+     * @param filename  path, can end with ".xml" or ".yaml"
+     * @param isCamera  true if it is a camera, false is it is a projector. 
+     */
     public void saveTo(PApplet applet, String filename, boolean isCamera) {
         ProjectiveDeviceCalibration calib = new ProjectiveDeviceCalibration();
         calib.setWidth(this.w);

@@ -92,7 +92,7 @@ public class GeometricCalibratorP extends GeometricCalibrator {
         for (MarkerSvg m1 : model.values()) {
             for (int i = 0; i < detected.length; i++) {
                 DetectedMarker m2 = detected[i];
-                if (m1.getId() == m2.getId()) {
+                if (m1.getId() == m2.getId() && m2.confidence == 1) {
                     om[k] = m1.copyAsMarker();
                     im[k] = m2.copyAsMarker();
                     k++;
@@ -100,13 +100,19 @@ public class GeometricCalibratorP extends GeometricCalibrator {
                 }
             }
         }
-        if (k < maxLength) {
-            om = Arrays.copyOf(om, k);
-            im = Arrays.copyOf(im, k);
+
+        // matching markers
+        if (k > 0) {
+            
+            // resize the array
+            if (k < maxLength) {
+                om = Arrays.copyOf(om, k);
+                im = Arrays.copyOf(im, k);
+            }
+            this.getAllObjectMarkers().add(om);
+            this.getAllImageMarkers().add(im);
         }
 
-        this.getAllObjectMarkers().add(om);
-        this.getAllImageMarkers().add(im);
     }
 
     public void clearMarkers() {
