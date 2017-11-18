@@ -1,6 +1,7 @@
 /*
  * Part of the PapARt project - https://project.inria.fr/papart/
  *
+ * Copyright (C) 2017 RealityTech
  * Copyright (C) 2014-2016 Inria
  * Copyright (C) 2011-2013 Bordeaux University
  *
@@ -19,6 +20,8 @@
  */
 package fr.inria.papart.procam.camera;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.OpenCVFrameConverter;
@@ -32,7 +35,7 @@ public class CameraFFMPEG extends Camera {
 
     private FFmpegFrameGrabber grabber;
     private final OpenCVFrameConverter.ToIplImage converter;
-    private String imageFormat;
+    private final String imageFormat;
 
     protected CameraFFMPEG(String description, String imFormat) {
         this.cameraDescription = description;
@@ -40,7 +43,12 @@ public class CameraFFMPEG extends Camera {
         this.imageFormat = imFormat;
         converter = new OpenCVFrameConverter.ToIplImage();
     }
-
+    
+    /**
+     * TODO: Check the use of this. 
+     * @deprecated
+     */
+    @Deprecated
     public void startVideo() {
         FFmpegFrameGrabber grabberFF = new FFmpegFrameGrabber(this.cameraDescription);
         try {
@@ -53,12 +61,9 @@ public class CameraFFMPEG extends Camera {
             grabberFF.setFrameRate(30);
             this.isConnected = true;
         } catch (Exception e) {
-            System.err.println("Could not start frameGrabber... " + e);
-
-            System.err.println("Could not camera start frameGrabber... " + e);
-            System.err.println("Camera ID " + this.systemNumber + " could not start.");
+            System.err.println("Could not FFMPEG frameGrabber... " + e);
+            System.err.println("Camera ID " + this.cameraDescription + ":" + this.imageFormat + " could not start.");
             System.err.println("Check cable connection, ID and resolution asked.");
-
             this.grabber = null;
         }
     }
@@ -80,13 +85,10 @@ public class CameraFFMPEG extends Camera {
             grabberFF.start();
             this.grabber = grabberFF;
             this.isConnected = true;
-        } catch (Exception e) {
-            System.err.println("Could not start frameGrabber... " + e);
-
-            System.err.println("Could not camera start frameGrabber... " + e);
-            System.err.println("Camera ID " + this.systemNumber + " could not start.");
+        } catch (FrameGrabber.Exception e) {
+            System.err.println("Could not FFMPEG frameGrabber... " + e);
+            System.err.println("Camera ID " + this.cameraDescription + ":" + this.imageFormat + " could not start.");
             System.err.println("Check cable connection, ID and resolution asked.");
-
             this.grabber = null;
         }
     }
@@ -98,13 +100,29 @@ public class CameraFFMPEG extends Camera {
             return;
         }
         try {
+
+            if (grabber.getLengthInFrames() != 0) {
+                checkEndOfVideo();
+            }
             this.updateCurrentImage(converter.convertToIplImage(grabber.grab()));
+
         } catch (Exception e) {
             if (this.isClosing()) {
 
             } else {
                 System.err.println("Camera: FFMPEG Grab() Error ! " + e);
                 e.printStackTrace();
+            }
+        }
+    }
+
+    private void checkEndOfVideo() {
+        // 10 frames from the end.
+        if (grabber.getFrameNumber() + 10 > grabber.getLengthInFrames()) {
+            try {
+                grabber.setFrameNumber(0);
+            } catch (FrameGrabber.Exception ex) {
+                Logger.getLogger(CameraFFMPEG.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
