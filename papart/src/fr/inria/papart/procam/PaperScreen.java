@@ -92,6 +92,11 @@ public class PaperScreen extends DelegatedGraphics {
     protected HomographyCalibration worldToScreen;
     private boolean isDrawing = true;
 
+    // ID is for naming this paper screen.
+    private final int id;
+
+    public static int count = 0;
+
     /**
      * Create a new PaperScreen, a Papart object has to be created first. A
      * PaperScreen is a rendering / interacting space like a Processing Sketch.
@@ -114,7 +119,7 @@ public class PaperScreen extends DelegatedGraphics {
         }
         mainDisplay = papart.getDisplay();
         displays.add(papart.getDisplay());
-
+        this.id = count++;
         // Default to projector graphics.
         // currentGraphics = this.display.getGraphics();
         register();
@@ -133,6 +138,7 @@ public class PaperScreen extends DelegatedGraphics {
         this.cameraTracking = cam;
         mainDisplay = proj;
         displays.add(proj);
+        this.id = count++;
         register();
     }
 
@@ -146,6 +152,7 @@ public class PaperScreen extends DelegatedGraphics {
         this.isWithoutCamera = true;
         mainDisplay = display;
         displays.add(display);
+        this.id = count++;
         register();
     }
 
@@ -440,8 +447,10 @@ public class PaperScreen extends DelegatedGraphics {
         mainDisplay.registerAgain();
     }
 
-    private String loadKey = null, saveKey = null, trackKey = null;
+    private String loadKey = "l", saveKey = "s", trackKey = "t";
     private String saveName = null;
+//    private String loadKey = null, saveKey = null, trackKey = null;
+//    private String saveName = null;
 
     public void setLoadSaveKey(String loadKey, String saveKey) {
         setLoadKey(loadKey);
@@ -480,6 +489,18 @@ public class PaperScreen extends DelegatedGraphics {
         this.saveName = name;
     }
 
+    private boolean useAlt = true;
+
+    /**
+     * Use the alt modifier to save or load the files.
+     * Default is true. 
+     *
+     * @param alt
+     */
+    public void useAlt(boolean alt) {
+        this.useAlt = alt;
+    }
+
     /**
      * Events coming from Processing to handle keys.
      *
@@ -487,31 +508,33 @@ public class PaperScreen extends DelegatedGraphics {
      */
     public void keyEvent(KeyEvent e) {
 
-        String filename = "paper-id.xml";
+        String filename = "paper-" + Integer.toString(id) + ".xml";
 
-        if (e.isAltDown() && e.getAction() == KeyEvent.PRESS) {
+        if (e.isAltDown() || !useAlt) {
+            if (e.getAction() == KeyEvent.PRESS) {
 
-            if (saveName == null) {
-                System.err.println("This paperscreen does not have name ! \n Set it with setSaveName()");
-            } else {
-                filename = saveName;
-            }
+                if (saveName == null) {
+                    System.err.println("This paperscreen does not have name ! \n Set it with setSaveName()");
+                } else {
+                    filename = saveName;
+                }
 
-            if (saveKey != null
-                    && (e.getKey() == saveKey.charAt(0))) {
-                System.out.println("Saved to : " + filename);
-                this.saveLocationTo(filename);
-            }
-            if (trackKey != null
-                    && (e.getKey() == trackKey.charAt(0))) {
-                this.useManualLocation(!this.useManualLocation, null);
-                String status = useManualLocation ? "ON" : "OFF";
-                System.out.println("PaperScreen: " + filename + " tracking: " + status);
-            }
-            if (loadKey != null
-                    && (e.getKey() == loadKey.charAt(0))) {
-                this.loadLocationFrom(filename);
-                System.out.println("Loaded from: " + filename);
+                if (saveKey != null
+                        && (e.getKey() == saveKey.charAt(0))) {
+                    System.out.println("Saved to : " + filename);
+                    this.saveLocationTo(filename);
+                }
+                if (trackKey != null
+                        && (e.getKey() == trackKey.charAt(0))) {
+                    this.useManualLocation(!this.useManualLocation, null);
+                    String status = useManualLocation ? "ON" : "OFF";
+                    System.out.println("PaperScreen: " + filename + " tracking: " + status);
+                }
+                if (loadKey != null
+                        && (e.getKey() == loadKey.charAt(0))) {
+                    this.loadLocationFrom(filename);
+                    System.out.println("Loaded from: " + filename);
+                }
             }
         }
     }
@@ -598,15 +621,13 @@ public class PaperScreen extends DelegatedGraphics {
 //            markerBoard.blockUpdate(cameraTracking, 0); // ms
 //        }
     }
-    
-    
+
     ////////////////////////
     // Location handling. //
     ////////////////////////
-        
-     /**
-     * Add a vector to the tracked location.
-     * The setLocation do not stack up. It replaces the previous call.
+    /**
+     * Add a vector to the tracked location. The setLocation do not stack up. It
+     * replaces the previous call.
      *
      * @param v in millimeters
      */
@@ -616,7 +637,7 @@ public class PaperScreen extends DelegatedGraphics {
 
     /**
      * Add a vector from the tracked location.
-     * 
+     *
      * The setLocation do not stack up. It replaces the previous call.
      *
      * @param x in millimeters
@@ -624,7 +645,7 @@ public class PaperScreen extends DelegatedGraphics {
      * @param z in millimeters
      */
     public void setLocation(float x, float y, float z) {
-             if (extrinsics == null) {
+        if (extrinsics == null) {
             extrinsics = new PMatrix3D();
         }
         extrinsics.reset();
@@ -632,20 +653,19 @@ public class PaperScreen extends DelegatedGraphics {
     }
 
     /**
-     * Add another transformation from the current location.
-     * The setLocation do not stack up. It replaces the previous call.
+     * Add another transformation from the current location. The setLocation do
+     * not stack up. It replaces the previous call.
      *
      * @param matrix
      */
     public void setLocation(PMatrix3D matrix) {
         assert (isInitialized);
-          if (extrinsics == null) {
+        if (extrinsics == null) {
             this.extrinsics = new PMatrix3D(matrix);
         } else {
             this.extrinsics.set(matrix);
         }
     }
-    
 
     /**
      * Get a copy of the overall transform (after tracking and second
@@ -663,8 +683,6 @@ public class PaperScreen extends DelegatedGraphics {
         combinedTransfos.apply(extrinsics);
         return combinedTransfos;
     }
-
-
 
     /**
      * Get the 3D position. Deprecated.
@@ -806,11 +824,11 @@ public class PaperScreen extends DelegatedGraphics {
         markerBoard.setFakeLocation(cameraTracking, location);
     }
 
-
     /**
-     * Get the 3D location of the PaperScreen (bottom-right corner).
-     * It takes into account the call to setLocation(). 
-     * @return 
+     * Get the 3D location of the PaperScreen (bottom-right corner). It takes
+     * into account the call to setLocation().
+     *
+     * @return
      */
     public PVector getLocationVector() {
         PMatrix3D p;
@@ -903,8 +921,8 @@ public class PaperScreen extends DelegatedGraphics {
     }
 
     /**
-     * Unsafe do not use unless you are sure.
-     * This will be moved to a utility class.
+     * Unsafe do not use unless you are sure. This will be moved to a utility
+     * class.
      */
     public static PImage getImageFrom(PVector coord, PImage src, PImage dst, int radius) {
         int x = (int) coord.x;
@@ -931,6 +949,7 @@ public class PaperScreen extends DelegatedGraphics {
     public int getColorFrom3D(PVector point) {
         return getColorFrom3D(cameraTracking, point);
     }
+
     /**
      * Get the color of a 3D point. The location of the point is from the
      * cameraTracking origin.
@@ -956,6 +975,7 @@ public class PaperScreen extends DelegatedGraphics {
         int offset = x + y * camera.width();
         return getColor(buff, offset);
     }
+
     /**
      * Get the color of a camera pixel.
      *
@@ -1029,7 +1049,7 @@ public class PaperScreen extends DelegatedGraphics {
      * @param drawing
      */
     public void setDrawing(boolean drawing) {
-        setDrawing(drawing);
+        this.isDrawing = drawing;
     }
 
     /**
