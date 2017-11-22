@@ -73,7 +73,7 @@ public class PaperScreen extends DelegatedGraphics {
     private boolean isInitialized = false;
     private boolean isRegistered = false;
     protected boolean isWithoutCamera = false;
-    protected boolean useManualLocation = false;
+    protected boolean useManualLocation = true; // Activated at init.
 
     private float filteringDistance = 30;
     private float filteringFreq = 30;
@@ -283,8 +283,14 @@ public class PaperScreen extends DelegatedGraphics {
         return (int) (drawingSize.y * quality);
     }
 
+    /**
+     * Use the tracking for the markerboard.
+     */
     public void useTracking() {
-        this.useManualLocation = false;
+        if (useManualLocation) {
+            this.useManualLocation = false;
+            this.markerBoard.subscribe();
+        }
     }
 
     /**
@@ -294,7 +300,14 @@ public class PaperScreen extends DelegatedGraphics {
      */
     protected void useManualLocation(PMatrix3D mat) {
         this.manualLocation.set(mat);
-        this.useManualLocation = true;
+
+        System.out.println("Set manual loc");
+        if (!useManualLocation) {
+            this.useManualLocation = true;
+            this.markerBoard.unsubscribe();
+        }
+        // Will block the update of all markerboard...
+//        markerBoard.blockUpdate(cameraTracking, 10 * 60 * 60 * 1000); // ms
     }
 
     protected PMatrix3D getMainLocation(Camera camera) {
@@ -308,6 +321,7 @@ public class PaperScreen extends DelegatedGraphics {
      * Get a copy of the overall transform (after tracking and second
      * transform).
      *
+     * @param trackedLocation
      * @return
      */
     public PMatrix3D getLocation(PMatrix3D trackedLocation) {
@@ -430,6 +444,7 @@ public class PaperScreen extends DelegatedGraphics {
             return;
         }
 
+        this.useTracking();
         if (!cameraTracking.tracks(markerBoard)) {
             cameraTracking.trackMarkerBoard(markerBoard);
         }
@@ -492,8 +507,7 @@ public class PaperScreen extends DelegatedGraphics {
     private boolean useAlt = true;
 
     /**
-     * Use the alt modifier to save or load the files.
-     * Default is true. 
+     * Use the alt modifier to save or load the files. Default is true.
      *
      * @param alt
      */
@@ -600,8 +614,6 @@ public class PaperScreen extends DelegatedGraphics {
      * @param loc forced location, or null to use the tracked location
      */
     public void useManualLocation(boolean manual, PMatrix3D loc) {
-        this.useManualLocation = manual;
-
         if (manual) {
             if (loc == null) {
 //                System.err.println("Cannot set a null location.");

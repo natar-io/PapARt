@@ -116,68 +116,75 @@ public class MarkerBoardJavaCV extends MarkerBoard {
     protected void updatePositionImpl(int id, int currentTime, int endTime, int mode,
             Camera camera, opencv_core.IplImage img, Object globalTracking) {
 
-        try{
-        ObjectFinder finder = (ObjectFinder) trackers.get(id);
+//        Do not find when not needed. 
+        if (this.subscribersAmount == 0
+                || (mode == BLOCK_UPDATE && currentTime < endTime)) {
+            return;
+        }
 
-        // Find the markers
-        double[] corners = finder.find(img);
+        try {
+            System.out.println("Subscribers: " + this.subscribersAmount);
+            ObjectFinder finder = (ObjectFinder) trackers.get(id);
 
-        // one use... HACK  -- Why 
-        // why so evil ?
+            // TODO: the  finder.find should be done ONCE per image. Not once per board.
+            // Find the markers
+            double[] corners = finder.find(img);
+
+            // one use... HACK  -- Why 
+            // why so evil ?
 //        finder = new ObjectFinder(finder.getSettings());
 //        trackers.set(id, finder);
+            if (corners == null) {
+                return;
+            }
 
-        if (corners == null) {
-            return;
-        }
+            PMatrix3D newPos = compute3DPos(corners, camera);
 
-        PMatrix3D newPos = compute3DPos(corners, camera);
+            if (newPos == null) {
+                return;
+            }
 
-        if (newPos == null) {
-            return;
-        }
+            PVector currentPos = new PVector(newPos.m03, newPos.m13, newPos.m23);
+            if (currentPos.z < 10f || currentPos.z > 10000) {
+                return;
+            }
 
-        PVector currentPos = new PVector(newPos.m03, newPos.m13, newPos.m23);
-        if (currentPos.z < 10f || currentPos.z > 10000) {
-            return;
-        }
-
-        float distance = currentPos.dist(lastPos.get(id));
+            float distance = currentPos.dist(lastPos.get(id));
 
 //        System.out.println("Distance " + distance);
 //        if (distance > 5000) // 1 meter~?
 //        {
 //            return;
 //        }
-        lastDistance.set(id, distance);
-        // if the update is forced 
-        if (mode == FORCE_UPDATE && currentTime < endTime) {
-            update(newPos, id);
-            return;
-        }
-
-        // the force and block updates are finished, revert back to normal
-        if (mode == FORCE_UPDATE || mode == BLOCK_UPDATE && currentTime > endTime) {
-            updateStatus.set(id, NORMAL);
-        }
-
-        // if it is a drawing mode
-        if (drawingMode.get(id)) {
-
-            if (distance > this.minDistanceDrawingMode.get(id)) {
+            lastDistance.set(id, distance);
+            // if the update is forced 
+            if (mode == FORCE_UPDATE && currentTime < endTime) {
                 update(newPos, id);
-
-                lastPos.set(id, currentPos);
-                updateStatus.set(id, FORCE_UPDATE);
-                nextTimeEvent.set(id, applet.millis() + MarkerBoard.updateTime);
-//                    System.out.println("Next Update for x seconds");
+                return;
             }
 
-        } else {
-            update(newPos, id);
-        }
-        
-        } catch(Exception e ){
+            // the force and block updates are finished, revert back to normal
+            if (mode == FORCE_UPDATE || mode == BLOCK_UPDATE && currentTime > endTime) {
+                updateStatus.set(id, NORMAL);
+            }
+
+            // if it is a drawing mode
+            if (drawingMode.get(id)) {
+
+                if (distance > this.minDistanceDrawingMode.get(id)) {
+                    update(newPos, id);
+
+                    lastPos.set(id, currentPos);
+                    updateStatus.set(id, FORCE_UPDATE);
+                    nextTimeEvent.set(id, applet.millis() + MarkerBoard.updateTime);
+//                    System.out.println("Next Update for x seconds");
+                }
+
+            } else {
+                update(newPos, id);
+            }
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
