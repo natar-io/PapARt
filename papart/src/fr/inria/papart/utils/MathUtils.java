@@ -345,7 +345,7 @@ public class MathUtils {
         return abs(r1 - r2) < threshold;
     }
 
-    public static boolean isBlue(PGraphics g, int incomingPix, int baseline, int threshold) {
+    public static boolean isBlue(PGraphics g, int incomingPix, int baseline, float threshold) {
         int r1 = incomingPix >> 0 & 255;
         int r2 = baseline >> 0 & 255;
         return abs(r1 - r2) < threshold;

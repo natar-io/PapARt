@@ -94,6 +94,9 @@ public class Papart {
     public static String screenConfig = calibrationFolder + "screenConfiguration.xml";
     public static String cameraConfig = calibrationFolder + "cameraConfiguration.xml";
     public static String depthCameraConfig = calibrationFolder + "depthCameraConfiguration.xml";
+    
+    public static String redThresholds = calibrationFolder + "redThresholds.txt";
+    public static String blueThresholds = calibrationFolder + "blueThresholds.txt";
 
     public static String tablePosition = calibrationFolder + "tablePosition.xml";
     public static String planeCalib = calibrationFolder + "PlaneCalibration.xml";

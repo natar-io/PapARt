@@ -2,8 +2,6 @@
  * Part of the PapARt project - https://project.inria.fr/papart/
  *
  * Copyright (C) 2017 RealityTech
- * Copyright (C) 2014-2016 Inria
- * Copyright (C) 2011-2013 Bordeaux University
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

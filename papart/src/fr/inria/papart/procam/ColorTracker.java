@@ -52,13 +52,21 @@ public class ColorTracker {
 
     private float brightness, saturation;
     private float hue;
-    private float redThreshold;
+    private float redThreshold, blueThreshold;
 
     public ColorTracker(PaperScreen paperScreen) {
         this(paperScreen, 1);
     }
-
+    
+    public ColorTracker(PaperScreen paperScreen, PlanarTouchCalibration calibration) {
+        this(paperScreen, calibration ,1);
+    }
+    
     public ColorTracker(PaperScreen paperScreen, float scale) {
+        this(paperScreen, Papart.getPapart().getDefaultColorTouchCalibration(), scale);
+    }
+
+    public ColorTracker(PaperScreen paperScreen, PlanarTouchCalibration calibration, float scale) {
         this.paperScreen = paperScreen;
         this.trackedView = new TrackedView(paperScreen);
         this.trackedView.setScale(scale);
@@ -114,10 +122,15 @@ public class ColorTracker {
                 boolean good = MathUtils.colorFinderHSB(paperScreen.getGraphics(),
                         reference, c, hue, saturation, brightness);
 
-                if (name == "red") {
+                if ("red".equals(name)) {
                     boolean red = MathUtils.isRed(paperScreen.getGraphics(),
                             c, reference, redThreshold);
                     good = good && red;
+                }
+                if ("blue".equals(name)) {
+                    boolean blue = MathUtils.isBlue(paperScreen.getGraphics(),
+                            c, reference, blueThreshold);
+                    good = good && blue;
                 }
                 if (good) {
                     colorFoundArray[offset] = id;
@@ -204,6 +217,10 @@ public class ColorTracker {
 
     public void setRedThreshold(float red) {
         this.redThreshold = red;
+    }
+
+    public void setBlueThreshold(float blue) {
+        this.blueThreshold = blue;
     }
 
     public void setBrightness(float brightness) {
