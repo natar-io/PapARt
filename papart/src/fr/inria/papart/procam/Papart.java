@@ -94,7 +94,7 @@ public class Papart {
     public static String screenConfig = calibrationFolder + "screenConfiguration.xml";
     public static String cameraConfig = calibrationFolder + "cameraConfiguration.xml";
     public static String depthCameraConfig = calibrationFolder + "depthCameraConfiguration.xml";
-    
+
     public static String redThresholds = calibrationFolder + "redThresholds.txt";
     public static String blueThresholds = calibrationFolder + "blueThresholds.txt";
 
@@ -680,7 +680,7 @@ public class Papart {
             loadDefaultDepthCamera();
             loadDefaultTouchKinect();
         } catch (CannotCreateCameraException cce) {
-              throw new RuntimeException("Cannot start the depth camera");
+            throw new RuntimeException("Cannot start the depth camera");
         }
         updateDepthCameraDeviceExtrinsics();
     }
@@ -996,6 +996,29 @@ public class Papart {
 //        }
 //        System.out.println("Cameras closed.");
 //    }
+    public ColorTracker initRedTracking(PaperScreen screen, float quality) {
+        ColorTracker colorTracker = new ColorTracker(screen, quality);
+
+        String[] list = applet.loadStrings(redThresholds);
+        for (int i = 0; i < list.length; i++) {
+            String data = list[i];
+            colorTracker.loadParameter(data);
+        }
+        colorTracker.setName("red");
+        return colorTracker;
+    }
+
+    public ColorTracker initBlueTracking(PaperScreen screen, float quality) {
+        ColorTracker colorTracker = new ColorTracker(screen, quality);
+
+        String[] list = applet.loadStrings(blueThresholds);
+        for (int i = 0; i < list.length; i++) {
+            String data = list[i];
+            colorTracker.loadParameter(data);
+        }
+        colorTracker.setName("blue");
+        return colorTracker;
+    }
 
     public BaseDisplay getDisplay() {
 //        assert (displayInitialized);

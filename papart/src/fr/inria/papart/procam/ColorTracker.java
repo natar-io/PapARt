@@ -53,15 +53,17 @@ public class ColorTracker {
     private float brightness, saturation;
     private float hue;
     private float redThreshold, blueThreshold;
+    private int referenceColor, erosion;
+    private String name;
 
     public ColorTracker(PaperScreen paperScreen) {
         this(paperScreen, 1);
     }
-    
+
     public ColorTracker(PaperScreen paperScreen, PlanarTouchCalibration calibration) {
-        this(paperScreen, calibration ,1);
+        this(paperScreen, calibration, 1);
     }
-    
+
     public ColorTracker(PaperScreen paperScreen, float scale) {
         this(paperScreen, Papart.getPapart().getDefaultColorTouchCalibration(), scale);
     }
@@ -94,12 +96,19 @@ public class ColorTracker {
         redThreshold = 15;
     }
 
+    public ArrayList<TrackedElement> findColor(int time) {
+        return findColor(name, referenceColor, time, erosion);
+    }
+
     /**
      * For now it only finds one color.
      *
-     * @param name
+     * @param name can be "red", "blue" or something else to disable this
+     * matching.
      * @param reference Reference color found by the camera somewhere. -1 to
      * disable it.
+     * @param time currernt time in Processing.
+     * @param erosion Erosion to apply before the tracking.
      */
     public ArrayList<TrackedElement> findColor(String name, int reference, int time, int erosion) {
 
@@ -135,17 +144,17 @@ public class ColorTracker {
                 if (good) {
                     colorFoundArray[offset] = id;
                 }
-                
+
             }
         }
 
-        ArrayList<TrackedElement> newElements = 
-                    touchDetectionColor.compute(time, erosion, this.scale);
+        ArrayList<TrackedElement> newElements
+                = touchDetectionColor.compute(time, erosion, this.scale);
         TouchPointTracker.trackPoints(trackedElements, newElements, time);
 //        for(TrackedElement te : trackedElements){
 //            te.filter(time);
 //        }
-        
+
         return trackedElements;
     }
 
@@ -207,7 +216,37 @@ public class ColorTracker {
 //    public void removeTrackedColor(String name) {
 //        this.trackedColors.remove(name);
 //    }
-//    
+
+    void loadParameter(String data) {
+        try {
+            String[] pair = data.split(":");
+            if (pair[0].startsWith("hue")) {
+                hue = Float.parseFloat(pair[1]);
+            }
+            if (pair[0].startsWith("sat")) {
+                saturation = Float.parseFloat(pair[1]);
+            }
+            if (pair[0].startsWith("intens")) {
+                this.brightness = Float.parseFloat(pair[1]);
+            }
+
+            if (pair[0].startsWith("erosion")) {
+                this.erosion = Integer.parseInt(pair[1]);
+            }
+            if (pair[0].startsWith("col")) {
+                this.referenceColor = Integer.parseInt(pair[1]);
+            }
+
+            if (pair[0].startsWith("red")) {
+                this.redThreshold = Float.parseFloat(pair[1]);
+            }
+            if (pair[0].startsWith("blue")) {
+                this.blueThreshold = Float.parseFloat(pair[1]);
+            }
+        } catch (NumberFormatException nfe) {
+            nfe.printStackTrace();
+        }
+    }
 
     public void setThresholds(float hue, float saturation, float brightness) {
         this.hue = hue;
@@ -249,6 +288,30 @@ public class ColorTracker {
 
     public float getRedThreshold() {
         return redThreshold;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getErosion() {
+        return erosion;
+    }
+
+    public void setErosion(int erosion) {
+        this.erosion = erosion;
+    }
+
+    public int getReferenceColor() {
+        return referenceColor;
+    }
+
+    public void setReferenceColor(int referenceColor) {
+        this.referenceColor = referenceColor;
     }
 
 }
