@@ -36,6 +36,7 @@ import fr.inria.papart.depthcam.devices.Kinect360;
 import fr.inria.papart.depthcam.analysis.DepthAnalysisImpl;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.depthcam.devices.KinectOne;
+import fr.inria.papart.depthcam.devices.OpenNI2;
 import fr.inria.papart.depthcam.devices.RealSense;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.multitouch.TUIOTouchInput;
@@ -838,6 +839,9 @@ public class Papart {
 
         if (kinectConfiguration.getCameraType() == Camera.Type.OPEN_KINECT_2) {
             depthCameraDevice = new KinectOne(applet, cameraTracking);
+        }
+        if (kinectConfiguration.getCameraType() == Camera.Type.OPENNI2) {
+            depthCameraDevice = new OpenNI2(applet, cameraTracking);
         }
 
         if (depthCameraDevice == null) {

@@ -69,9 +69,28 @@ public abstract class Camera implements PConstants, HasExtrinsics {
 
     public enum PixelFormat {
 
-        RGB, BGR, ARGB, RGBA, GRAY, GRAY_32, FLOAT_DEPTH_KINECT2, DEPTH_KINECT_MM, REALSENSE_Z16
+        RGB, BGR, ARGB, RGBA, GRAY, GRAY_32, FLOAT_DEPTH_KINECT2, DEPTH_KINECT_MM, REALSENSE_Z16, OPENNI_2_DEPTH
     }
 
+    public boolean isPixelFormatGray() {
+        PixelFormat pixelFormat = getPixelFormat();
+        return pixelFormat == PixelFormat.GRAY
+                || pixelFormat == PixelFormat.GRAY_32
+                || pixelFormat == PixelFormat.REALSENSE_Z16
+                || pixelFormat == PixelFormat.FLOAT_DEPTH_KINECT2
+                || pixelFormat == PixelFormat.DEPTH_KINECT_MM
+                || pixelFormat == PixelFormat.OPENNI_2_DEPTH;
+    }
+
+    public boolean isPixelFormatColor() {
+        PixelFormat pixelFormat = getPixelFormat();
+        return pixelFormat == PixelFormat.ARGB
+                || pixelFormat == PixelFormat.BGR
+                || pixelFormat == PixelFormat.RGB
+                || pixelFormat == PixelFormat.RGBA;
+    }
+
+    
     protected PixelFormat format;
 
     // Parameters
@@ -420,23 +439,6 @@ public abstract class Camera implements PConstants, HasExtrinsics {
                 System.out.println("Error: No pixel format set for the camera!");
             }
         }
-    }
-
-    public boolean isPixelFormatGray() {
-        PixelFormat pixelFormat = getPixelFormat();
-        return pixelFormat == PixelFormat.GRAY
-                || pixelFormat == PixelFormat.GRAY_32
-                || pixelFormat == PixelFormat.REALSENSE_Z16
-                || pixelFormat == PixelFormat.FLOAT_DEPTH_KINECT2
-                || pixelFormat == PixelFormat.DEPTH_KINECT_MM;
-    }
-
-    public boolean isPixelFormatColor() {
-        PixelFormat pixelFormat = getPixelFormat();
-        return pixelFormat == PixelFormat.ARGB
-                || pixelFormat == PixelFormat.BGR
-                || pixelFormat == PixelFormat.RGB
-                || pixelFormat == PixelFormat.RGBA;
     }
 
 // Public API 

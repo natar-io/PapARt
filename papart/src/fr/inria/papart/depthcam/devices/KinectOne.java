@@ -19,10 +19,13 @@
  */
 package fr.inria.papart.depthcam.devices;
 
+import fr.inria.papart.depthcam.analysis.DepthAnalysis;
+import static fr.inria.papart.depthcam.analysis.DepthAnalysisImpl.KINECT_ONE_DEPTH_RATIO;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.CameraOpenKinect2;
 import fr.inria.papart.procam.camera.CannotCreateCameraException;
+import org.bytedeco.javacpp.opencv_core;
 import processing.core.PApplet;
 
 /**
@@ -63,6 +66,33 @@ public final class KinectOne extends DepthCameraDevice {
     @Override
     public void loadDataFromDevice() {
         // Nothing here yet. maybe get calibrations ?
+    }
+
+    @Override
+    public DepthAnalysis.DepthComputation createDepthComputation() {
+        return new KinectOneDepth();
+    }
+
+    public class KinectOneDepth implements DepthAnalysis.DepthComputation {
+
+        byte[] depthRaw;
+
+        public KinectOneDepth() {
+            depthRaw = new byte[rawDepthSize()];
+        }
+
+        @Override
+        public float findDepth(int offset) {
+            float d = (depthRaw[offset * 3 + 1] & 0xFF) * 256
+                    + (depthRaw[offset * 3] & 0xFF);
+
+            return d / KINECT_ONE_DEPTH_RATIO; // / 65535f * 10000f;
+        }
+
+        @Override
+        public void updateDepth(opencv_core.IplImage depthImage) {
+            depthImage.getByteBuffer().get(depthRaw);
+        }
     }
 
 }

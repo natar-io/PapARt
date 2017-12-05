@@ -41,14 +41,13 @@ public abstract class DepthAnalysis implements WithSize {
     public static PApplet papplet;
     protected DepthComputation depthComputationMethod;
 
-    public static final Vec3D INVALID_POINT = new Vec3D(0,0,0);
+    public static final Vec3D INVALID_POINT = new Vec3D(0, 0, 0);
     public static final int INVALID_COLOR = -1;
 
-    
-    public static final boolean isValidPoint(Vec3D point){
+    public static final boolean isValidPoint(Vec3D point) {
         return point.x != 0 && point.y != 0 && point.z != 0;
     }
-    
+
     public abstract void update(IplImage depth);
 
     /**
@@ -61,9 +60,11 @@ public abstract class DepthAnalysis implements WithSize {
 
     public interface DepthComputation {
 
+        public void updateDepth(IplImage depthImg);
+
         public float findDepth(int offset);
     }
-    
+
     public interface InvalidPointManiplation {
 
         public void execute(PixelOffset px);
@@ -93,7 +94,6 @@ public abstract class DepthAnalysis implements WithSize {
         }
 
         // TODO: no more allocations here ! 
-        
 //        Vec3D normal = computeNormal(point, neighbours[0], neighbours[1]);
         Vec3D normal = new Vec3D();
         // BIG  square around the point. 
@@ -245,7 +245,6 @@ public abstract class DepthAnalysis implements WithSize {
     public ProjectedDepthData getDepthData() {
         return this.depthData;
     }
-    
 
     public static boolean isInside(Vec3D v, float min, float max, float sideError) {
         return v.x > min - sideError && v.x < max + sideError && v.y < max + sideError && v.y > min - sideError;

@@ -23,7 +23,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bytedeco.javacpp.freenect;
 import org.bytedeco.javacv.FrameGrabber;
-import org.bytedeco.javacv.OpenKinectFrameGrabber;
 
 import java.awt.*;
 import java.awt.image.*;
@@ -33,10 +32,11 @@ import java.util.ArrayList;
 import javax.swing.JOptionPane;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.Pointer;
-import org.bytedeco.javacpp.RealSense;
 import org.bytedeco.javacpp.opencv_core;
 import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;
-import static org.bytedeco.javacpp.opencv_core.cvSetData;
+import org.bytedeco.javacpp.opencv_imgproc;
+import static org.bytedeco.javacpp.opencv_imgproc.COLOR_BGR2GRAY;
+import static org.bytedeco.javacpp.opencv_imgproc.COLOR_RGB2BGR;
 
 import org.openni.*;
 import static org.openni.PixelFormat.RGB888;
@@ -45,9 +45,12 @@ import static org.openni.PixelFormat.RGB888;
  *
  * @author Jeremy Laviole
  */
-public class CameraOpenNI2 extends CameraRGBIRDepth implements VideoStream.NewFrameListener {
+public class CameraOpenNI2 extends CameraRGBIRDepth {
 
-    private VideoStream colorStream, irStream, depthStream;
+    private VideoStream colorStream, IRStream, depthStream;
+    private FrameListener colorListener, irListener, depthListener;
+    // From the OpenNI example.
+    Device device;
 
     protected CameraOpenNI2(int cameraNo) {
         this.systemNumber = cameraNo;
@@ -57,88 +60,150 @@ public class CameraOpenNI2 extends CameraRGBIRDepth implements VideoStream.NewFr
 
     @Override
     public void internalStart() throws FrameGrabber.Exception {
+        if (useColor) {
+            colorStream = initStream(
+                    //                    PixelFormat.BGR,
+                    PixelFormat.RGB,
+                    org.openni.PixelFormat.RGB888,
+                    SensorType.COLOR,
+                    new FrameListener(colorCamera),
+                    colorCamera);
+
+            colorStream.setMirroringEnabled(false);
+            colorCamera.setUndistort(false);
+
+            colorStream.start();
+        }
+
+        if (useIR) {
+            IRStream = initStream(
+                    PixelFormat.RGB,
+                    org.openni.PixelFormat.RGB888,
+                    SensorType.IR,
+                    new FrameListener(IRCamera),
+                    IRCamera);
+            IRStream.setMirroringEnabled(false);
+            IRCamera.setUndistort(false);
+            IRStream.start();
+
+        }
+
+        if (useDepth) {
+            depthStream = initStream(
+                    PixelFormat.OPENNI_2_DEPTH,
+                    org.openni.PixelFormat.DEPTH_1_MM,
+                    SensorType.DEPTH,
+                    new FrameListener(depthCamera),
+                    depthCamera);
+            depthStream.setMirroringEnabled(false);
+            depthCamera.setUndistort(false);
+            depthStream.start();
+        }
+
 //        grabber.start();
+//
+//        // Override the calibration... 
+//        if (useHardwareIntrinsics) {
+//            if (useColor) {
+//                useHarwareIntrinsics(colorCamera, grabber);
+//            }
+//            if (useIR) {
+//                useHarwareIntrinsics(IRCamera, grabber);
+//            }
+//            if (useDepth) {
+//                useHarwareIntrinsics(depthCamera, grabber);
+//            }
+//        }
+    }
 
-        setUseColor(true);
-        colorCamera.setPixelFormat(PixelFormat.RGB);
-        actAsColorCamera();
-        colorCamera.setSize(640, 480);
-        colorCamera.setFrameRate(30);
+    private VideoStream initStream(PixelFormat format1,
+            org.openni.PixelFormat format2,
+            SensorType type,
+            FrameListener listener,
+            Camera camera) {
 
-//        colorStream = VideoStream.create(device, SensorType.DEPTH);
-        irStream = VideoStream.create(device, SensorType.IR);
-        
-        colorStream = VideoStream.create(device, SensorType.COLOR);
-        org.openni.PixelFormat fmt = org.openni.PixelFormat.RGB888;
-        // Video mode, w, h, fps, pixel fmt
-        VideoMode vm = new VideoMode(640, 480, 30, fmt.toNative());
-        colorStream.setVideoMode(vm);
+        camera.setPixelFormat(format1);
+        VideoStream videoStream = VideoStream.create(device, type);
+        VideoMode vm = new VideoMode(camera.width(),
+                camera.height(),
+                camera.getFrameRate(), format2.toNative());
 
-        colorStream.start();
-        setStream(colorStream);
+        videoStream.setVideoMode(vm);
 
+        videoStream.addNewFrameListener(listener);
+        return videoStream;
     }
 
     @Override
     public void setSize(int w, int h) {
-//        Camera act = getActingCamera();
-//        if (act == null) {
-//            // it is likely that the set size was for the color camera then.
-//            if (useColor) {
-//                colorCamera.setSize(w, h);
-//            }
-//            return;
-//        } else {
-//            act.setSize(w, h);
-//        }
+        Camera act = getActingCamera();
+        if (act == null) {
+            // it is likely that the set size was for the color camera then.
+            if (useColor) {
+                colorCamera.setSize(w, h);
+            }
+        } else {
+            act.setSize(w, h);
+        }
     }
 
     @Override
     public void close() {
         setClosing();
-//        if (grabber != null) {
-//            try {
-//                System.out.println("Stopping KinectGrabber");
-//                this.stopThread();
-//                grabber.stop();
-//                depthCamera.close();
-//            } catch (Exception e) {
-//            }
-//        }
-
+        try {
+            if (this.colorStream != null) {
+                colorStream.stop();
+            }
+            if (this.IRStream != null) {
+                IRStream.stop();
+            }
+            if (this.depthStream != null) {
+                depthStream.stop();
+            }
+            device.close();
+            // Closing can fail due to bad thread access management.
+        } catch (Exception e) {
+        }
     }
 
     @Override
     public void grabIR() {
-//            IRCamera.updateCurrentImage(grabber.grabIR());
     }
 
     @Override
     public void grabDepth() {
+        System.out.println("Grab Depth");
+        
+        
+        if (getActingCamera() == IRCamera) {
+            ((WithTouchInput) depthCamera).newTouchImageWithColor(IRCamera.currentImage);
+            return;
+        }
+        if (getActingCamera() == colorCamera || useColor) {
+            ((WithTouchInput) depthCamera).newTouchImageWithColor(colorCamera.currentImage);
+            return;
+        }
+        ((WithTouchInput) depthCamera).newTouchImage();
     }
 
     @Override
     public void grabColor() {
-//         opencv_core.IplImage video = grabber.grabVideo();
-//         
-//        if (video != null) {
-//            colorCamera.updateCurrentImage(video);
-//        }
-        System.out.println("Grab color.");
+        try {
+//            System.out.println("Sleeping color cam");
+            Thread.sleep((long) ((1.0f / (float) colorCamera.frameRate) * 1000f));
+//            System.out.println("awake color cam");
+        } catch (InterruptedException ex) {
+            Logger.getLogger(CameraOpenNI2.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
-
-    private Pointer rawDepthImageData = new Pointer((Pointer) null),
-            rawVideoImageData = new Pointer((Pointer) null),
-            rawIRImageData = new Pointer((Pointer) null);
-    private opencv_core.IplImage rawDepthImage = null, rawVideoImage = null, rawIRImage = null, returnImage = null;
 
     @Override
     public void setUseDepth(boolean use) {
         if (use) {
-//            depthCamera.setPixelFormat(PixelFormat.DEPTH_KINECT_MM);
-//            depthCamera.type = SubCamera.Type.DEPTH;
-//            depthCamera.setSize(640, 480);
-//            grabber.setDepthFormat(freenect.FREENECT_DEPTH_MM);
+            depthCamera.setPixelFormat(PixelFormat.OPENNI_2_DEPTH);
+            depthCamera.type = SubCamera.Type.DEPTH;
+            depthCamera.setSize(640, 480);
+            depthCamera.setFrameRate(30);
         }
         this.useDepth = use;
     }
@@ -146,10 +211,10 @@ public class CameraOpenNI2 extends CameraRGBIRDepth implements VideoStream.NewFr
     @Override
     public void setUseIR(boolean use) {
         if (use) {
-//            IRCamera.setPixelFormat(PixelFormat.GRAY);
-//            IRCamera.type = SubCamera.Type.IR;
-//            IRCamera.setSize(640, 480);
-//            // grabber.setvideoformat ?
+            IRCamera.setPixelFormat(PixelFormat.GRAY);
+            IRCamera.type = SubCamera.Type.IR;
+            IRCamera.setSize(640, 480);
+            IRCamera.setFrameRate(30);
         }
         this.useIR = use;
     }
@@ -157,38 +222,21 @@ public class CameraOpenNI2 extends CameraRGBIRDepth implements VideoStream.NewFr
     @Override
     public void setUseColor(boolean use) {
         if (use) {
-//            colorCamera.setPixelFormat(PixelFormat.BGR);
-//            colorCamera.type = SubCamera.Type.COLOR;
-//            colorCamera.setSize(640, 480);
-//
-//            grabber.setImageWidth(colorCamera.width());
-//            grabber.setImageHeight(colorCamera.height());
-//            kinectVideoFormat = freenect.FREENECT_VIDEO_RGB;
-//            grabber.setVideoFormat(kinectVideoFormat);
+            colorCamera.setPixelFormat(PixelFormat.BGR);
+            colorCamera.type = SubCamera.Type.COLOR;
+            colorCamera.setSize(640, 480);
+            colorCamera.setFrameRate(30);
         }
         this.useColor = use;
     }
 
     @Override
     protected void internalGrab() throws Exception {
-        System.out.println("Grab global.");
-
     }
-
-    // From the OpenNI example.
-    float mHistogram[];
-    int[] mImagePixels;
-    int mMaxGray16Value = 0;
-    VideoStream mVideoStream;
-    VideoFrameRef mLastFrame;
-    BufferedImage mBufferedImage;
-    Device device;
-
-    private ArrayList<SensorType> mDeviceSensors;
-    private ArrayList<VideoMode> mSupportedModes;
 
     private void initDevice() {
 
+//        ArrayList<SensorType> mDeviceSensors;
         // initialize OpenNI
         OpenNI.initialize();
 
@@ -199,26 +247,26 @@ public class CameraOpenNI2 extends CameraRGBIRDepth implements VideoStream.NewFr
             JOptionPane.showMessageDialog(null, "No device is connected", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        uri = devicesInfo.get(0).getUri();
+        uri = devicesInfo.get(this.systemNumber).getUri();
         System.out.println("OpenNI URI: " + uri.toString());
 
         device = Device.open(uri);
-        mDeviceSensors = new ArrayList<SensorType>();
-
-        if (device.getSensorInfo(SensorType.COLOR) != null) {
-            mDeviceSensors.add(SensorType.COLOR);
-            System.out.println("Sensor can do color.");
-        }
-
-        if (device.getSensorInfo(SensorType.DEPTH) != null) {
-            mDeviceSensors.add(SensorType.DEPTH);
-            System.out.println("Sensor can do depth.");
-        }
-
-        if (device.getSensorInfo(SensorType.IR) != null) {
-            mDeviceSensors.add(SensorType.IR);
-            System.out.println("Sensor can do ir.");
-        }
+//        mDeviceSensors = new ArrayList<SensorType>();
+//
+//        if (device.getSensorInfo(SensorType.COLOR) != null) {
+//            mDeviceSensors.add(SensorType.COLOR);
+//            System.out.println("Sensor can do color.");
+//        }
+//
+//        if (device.getSensorInfo(SensorType.DEPTH) != null) {
+//            mDeviceSensors.add(SensorType.DEPTH);
+//            System.out.println("Sensor can do depth.");
+//        }
+//
+//        if (device.getSensorInfo(SensorType.IR) != null) {
+//            mDeviceSensors.add(SensorType.IR);
+//            System.out.println("Sensor can do ir.");
+//        }
 
 //        if (mVideoStream != null) {
 //            mVideoStream.stop();
@@ -248,209 +296,7 @@ public class CameraOpenNI2 extends CameraRGBIRDepth implements VideoStream.NewFr
         // now only keep the ones that our application supports
     }
 
-    void selectedVideoModeChanged() {
-        mVideoStream.stop();
-        int modeIndex = 0;
-        VideoMode mode = mSupportedModes.get(modeIndex);
-        mVideoStream.setVideoMode(mode);
-//        mViewer.setStream(mVideoStream);
-//        mViewer.setSize(mode.getResolutionX(), mode.getResolutionY());
-//        mFrame.setSize(mViewer.getWidth() + 20, mViewer.getHeight() + 80);
-        mVideoStream.start();
-    }
-
-    public void setStream(VideoStream videoStream) {
-        if (mLastFrame != null) {
-            mLastFrame.release();
-            mLastFrame = null;
-        }
-
-        if (mVideoStream != null) {
-            mVideoStream.removeNewFrameListener(this);
-        }
-
-        mVideoStream = videoStream;
-
-        if (mVideoStream != null) {
-            mVideoStream.addNewFrameListener(this);
-        }
-    }
-
-    public synchronized void paint(Graphics g) {
-        if (mLastFrame == null) {
-            return;
-        }
-
-        int width = mLastFrame.getWidth();
-        int height = mLastFrame.getHeight();
-
-        // The data is here. 
-        mLastFrame.getData();
-
-        // make sure we have enough room
-        if (mBufferedImage == null || mBufferedImage.getWidth() != width || mBufferedImage.getHeight() != height) {
-            mBufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        }
-        mBufferedImage.setRGB(0, 0, width, height, mImagePixels, 0, width);
-    }
-
-    // This gets a frame ?
-    @Override
-    public synchronized void onFrameReady(VideoStream stream) {
-        System.out.println("Getting a frame.");
-        if (mLastFrame != null) {
-            mLastFrame.release();
-            mLastFrame = null;
-        }
-
-        mLastFrame = mVideoStream.readFrame();
-        ByteBuffer frameData = mLastFrame.getData().order(ByteOrder.LITTLE_ENDIAN);
-        // make sure we have enough room
-        if (mImagePixels == null || mImagePixels.length < mLastFrame.getWidth() * mLastFrame.getHeight()) {
-            mImagePixels = new int[mLastFrame.getWidth() * mLastFrame.getHeight()];
-        }
-
-//  To OpenCV        
-        int iplDepth = IPL_DEPTH_8U, channels = 3;
-//        rawVideoImageData = new BytePointer(frameData);
-
-        byte[] frameDataBytes = new byte[640 * 480 * 3];
-        frameData.get(frameDataBytes);
-
-        int deviceWidth = 640;
-        int deviceHeight = 480;
-//        int deviceWidth = device.get_stream_width(RealSense.color);
-//        int deviceHeight = device.get_stream_height(RealSense.color);
-
-        if (rawVideoImage == null || rawVideoImage.width() != deviceWidth || rawVideoImage.height() != deviceHeight) {
-//            rawVideoImage = opencv_core.IplImage.createHeader(deviceWidth, deviceHeight, iplDepth, channels);
-            rawVideoImage = opencv_core.IplImage.create(deviceWidth, deviceHeight, iplDepth, channels);
-        }
-
-        rawVideoImage.getByteBuffer().put(frameDataBytes, 0, 640 * 480 * 3);
-
-//        rawVideoImage.imageData().put(frameDataBytes, 0, deviceWidth * channels * iplDepth / 8);
-//        cvSetData(rawVideoImage, rawVideoImageData, deviceWidth * channels * iplDepth / 8);
-//
-//        // Update the color camera (HACK)
-        colorCamera.updateCurrentImage(rawVideoImage);
-
-//        if (iplDepth > 8 && !ByteOrder.nativeOrder().equals(byteOrder)) {
-//            // ack, the camera's endianness doesn't correspond to our machine ...
-//            // swap bytes of 16-bit images
-//            ByteBuffer bb = rawVideoImage.getByteBuffer();
-//            ShortBuffer in = bb.order(ByteOrder.BIG_ENDIAN).asShortBuffer();
-//            ShortBuffer out = bb.order(ByteOrder.LITTLE_ENDIAN).asShortBuffer();
-//            out.put(in);
-//        }
-//        if (channels == 3) {
-//            cvCvtColor(rawVideoImage, rawVideoImage, CV_BGR2RGB);
-//        }
-        // To Java/Processing -  Int format
-        // Not used yet
-        switch (mLastFrame.getVideoMode().getPixelFormat()) {
-            case DEPTH_1_MM:
-            case DEPTH_100_UM:
-            case SHIFT_9_2:
-            case SHIFT_9_3:
-                calcHist(frameData);
-                int pos = 0;
-                while (frameData.remaining() > 0) {
-                    int depth = (int) frameData.getShort() & 0xFFFF;
-                    short pixel = (short) mHistogram[depth];
-                    mImagePixels[pos] = 0xFF000000 | (pixel << 16) | (pixel << 8);
-                    pos++;
-                }
-                break;
-            case RGB888:
-                pos = 0;
-                while (frameData.remaining() > 0) {
-                    int red = (int) frameData.get() & 0xFF;
-                    int green = (int) frameData.get() & 0xFF;
-                    int blue = (int) frameData.get() & 0xFF;
-                    mImagePixels[pos] = 0xFF000000 | (red << 16) | (green << 8) | blue;
-                    pos++;
-                }
-                break;
-            case GRAY8:
-                pos = 0;
-                while (frameData.remaining() > 0) {
-                    int pixel = (int) frameData.get() & 0xFF;
-                    mImagePixels[pos] = 0xFF000000 | (pixel << 16) | (pixel << 8) | pixel;
-                    pos++;
-                }
-                break;
-            case GRAY16:
-                calcMaxGray16Value(frameData);
-                pos = 0;
-                while (frameData.remaining() > 0) {
-                    int pixel = (int) frameData.getShort() & 0xFFFF;
-                    pixel = (int) (pixel * 255.0 / mMaxGray16Value);
-                    mImagePixels[pos] = 0xFF000000 | (pixel << 16) | (pixel << 8) | pixel;
-                    pos++;
-                }
-                break;
-            default:
-                // don't know how to draw
-                mLastFrame.release();
-                mLastFrame = null;
-        }
-
-//        repaint();
-    }
-
-    private String pixelFormatToName(org.openni.PixelFormat format) {
-        switch (format) {
-            case DEPTH_1_MM:
-                return "1 mm";
-            case DEPTH_100_UM:
-                return "100 um";
-            case SHIFT_9_2:
-                return "9.2";
-            case SHIFT_9_3:
-                return "9.3";
-            case RGB888:
-                return "RGB";
-            case GRAY8:
-                return "Gray8";
-            case GRAY16:
-                return "Gray16";
-            default:
-                return "UNKNOWN";
-        }
-    }
-
-    private void calcHist(ByteBuffer depthBuffer) {
-        // make sure we have enough room
-        if (mHistogram == null || mHistogram.length < mVideoStream.getMaxPixelValue()) {
-            mHistogram = new float[mVideoStream.getMaxPixelValue()];
-        }
-
-        // reset
-        for (int i = 0; i < mHistogram.length; ++i) {
-            mHistogram[i] = 0;
-        }
-
-        int points = 0;
-        while (depthBuffer.remaining() > 0) {
-            int depth = depthBuffer.getShort() & 0xFFFF;
-            if (depth != 0) {
-                mHistogram[depth]++;
-                points++;
-            }
-        }
-
-        for (int i = 1; i < mHistogram.length; i++) {
-            mHistogram[i] += mHistogram[i - 1];
-        }
-
-        if (points > 0) {
-            for (int i = 1; i < mHistogram.length; i++) {
-                mHistogram[i] = (int) (256 * (1.0f - (mHistogram[i] / (float) points)));
-            }
-        }
-        depthBuffer.rewind();
-    }
+    int mMaxGray16Value;
 
     private void calcMaxGray16Value(ByteBuffer gray16Buffer) {
         while (gray16Buffer.remaining() > 0) {
@@ -460,6 +306,106 @@ public class CameraOpenNI2 extends CameraRGBIRDepth implements VideoStream.NewFr
             }
         }
         gray16Buffer.rewind();
+    }
+
+    class FrameListener implements VideoStream.NewFrameListener {
+
+        VideoFrameRef lastFrame;
+        Camera camera;
+
+        public FrameListener(Camera camera) {
+            this.camera = camera;
+        }
+
+        private Pointer rawDepthImageData = new Pointer((Pointer) null),
+                rawVideoImageData = new Pointer((Pointer) null),
+                rawIRImageData = new Pointer((Pointer) null);
+        private opencv_core.IplImage rawVideoImage = null;
+        private opencv_core.IplImage rawVideoImageGray = null;
+
+        @Override
+        public synchronized void onFrameReady(VideoStream stream) {
+//            if (this.camera == colorCamera) {
+//                System.out.println("Getting a color frame.");
+//            } else {
+//                System.out.println("Getting another frame.");
+//            }
+
+            if (lastFrame != null) {
+                lastFrame.release();
+                lastFrame = null;
+            }
+
+            lastFrame = stream.readFrame();
+            ByteBuffer frameData = lastFrame.getData().order(ByteOrder.LITTLE_ENDIAN);
+
+            // todo this should not change. 
+            // make sure we have enough room
+//            if (mImagePixels == null || mImagePixels.length < lastFrame.getWidth() * lastFrame.getHeight()) {
+//                mImagePixels = new int[lastFrame.getWidth() * lastFrame.getHeight()];
+//            }
+            int deviceWidth = camera.width();
+            int deviceHeight = camera.height();
+
+            // To Java/Processing -  Int format
+            // Not used yet
+            if (camera.getPixelFormat() == PixelFormat.RGB
+                    || camera.getPixelFormat() == PixelFormat.BGR
+                    || camera.getPixelFormat() == PixelFormat.GRAY) {
+                int iplDepth = IPL_DEPTH_8U;
+                int channels = 3;
+                int frameSize = deviceWidth * deviceHeight * channels;
+
+                byte[] frameDataBytes = new byte[frameSize];
+                frameData.get(frameDataBytes);
+                if (rawVideoImage == null || rawVideoImage.width() != deviceWidth || rawVideoImage.height() != deviceHeight) {
+                    rawVideoImage = opencv_core.IplImage.create(deviceWidth, deviceHeight, iplDepth, channels);
+                    rawVideoImageGray = opencv_core.IplImage.create(deviceWidth, deviceHeight, iplDepth, 1);
+                }
+                rawVideoImage.getByteBuffer().put(frameDataBytes, 0, frameSize);
+//                opencv_imgproc.cvCvtColor(rawVideoImage, rawVideoImage, COLOR_RGB2BGR);
+//                opencv_imgproc.cvCvtColor(rawVideoImage, rawVideoImageGray, COLOR_BGR2GRAY);
+
+                camera.updateCurrentImage(rawVideoImage);
+//                camera.updateCurrentImage(rawVideoImageGray);
+            }
+
+            if (camera.getPixelFormat() == PixelFormat.OPENNI_2_DEPTH) {
+                int iplDepth = IPL_DEPTH_8U;
+                int channels = 2;
+
+                int frameSize = deviceWidth * deviceHeight * channels;
+                // TODO: Handle as a sort buffer instead of byte.
+                byte[] frameDataBytes = new byte[frameSize];
+                frameData.get(frameDataBytes);
+                if (rawVideoImage == null || rawVideoImage.width() != deviceWidth || rawVideoImage.height() != deviceHeight) {
+                    rawVideoImage = opencv_core.IplImage.create(deviceWidth, deviceHeight, iplDepth, channels);
+                }
+                rawVideoImage.getByteBuffer().put(frameDataBytes, 0, frameSize);
+                camera.updateCurrentImage(rawVideoImage);
+            }
+
+            // Not supported yet...
+//                case GRAY8:
+//                    pos = 0;
+//                    while (frameData.remaining() > 0) {
+//                        int pixel = (int) frameData.get() & 0xFF;
+//                        mImagePixels[pos] = 0xFF000000 | (pixel << 16) | (pixel << 8) | pixel;
+//                        pos++;
+//                    }
+//                    break;
+//                case GRAY16:
+//                    calcMaxGray16Value(frameData);
+//                    pos = 0;
+//                    while (frameData.remaining() > 0) {
+//                        int pixel = (int) frameData.getShort() & 0xFFFF;
+//                        pixel = (int) (pixel * 255.0 / mMaxGray16Value);
+//                        mImagePixels[pos] = 0xFF000000 | (pixel << 16) | (pixel << 8) | pixel;
+//                        pos++;
+//                    }
+//                    break;
+//        repaint();
+        }
     }
 
 }

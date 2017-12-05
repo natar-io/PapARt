@@ -84,7 +84,7 @@ public class CameraFactory {
                 camera = new CameraFlyCapture(cameraNo);
                 break;
             case OPENNI2:
-                camera = new CameraOpenNI2(cameraNo);
+                cameraMulti = new CameraOpenNI2(cameraNo);
                 break;
             default:
                 throw new RuntimeException("ProCam, Camera: Unspported camera Type");

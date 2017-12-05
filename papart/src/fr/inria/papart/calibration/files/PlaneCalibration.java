@@ -50,8 +50,9 @@ public class PlaneCalibration extends Calibration {
     
     public PlaneCalibration(){}
     
-    public PlaneCalibration(Plane p){
+    public PlaneCalibration(Plane p, float height){
         this.plane = p;
+        this.height = height;
     }
 
     public boolean orientation(Vec3D point, float value) {

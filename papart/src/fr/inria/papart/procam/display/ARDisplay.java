@@ -35,6 +35,7 @@ import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.opengl.PShader;
+import toxi.geom.Plane;
 import toxi.geom.Ray3D;
 import toxi.geom.ReadonlyVec3D;
 import toxi.geom.Vec3D;
@@ -486,6 +487,10 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         return out;
     }
 
+//    public PVector getProjectedPointOnPlane(Plane plane, float px, float py) {
+//        PlaneCalibration planeCalibCam = new PlaneCalibration(plane, 10);
+//        return getProjectedPointOnPlane(planeCalibCam, px, py);
+//    }
     /**
      * Computes the 3D coordinates of a projected pixel in the tracking camera
      * coordinate system.

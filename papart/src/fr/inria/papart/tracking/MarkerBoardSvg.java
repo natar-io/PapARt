@@ -71,7 +71,6 @@ public class MarkerBoardSvg extends MarkerBoard {
             Object globalTracking) {
 
         DetectedMarker[] markers = (DetectedMarker[]) globalTracking;
-
         PMatrix3D newPos = DetectedMarker.compute3DPos(markers, markersFromSVG, camera);
 
         if (newPos == INVALID_LOCATION) {
