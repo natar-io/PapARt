@@ -172,9 +172,6 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
 
     @Override
     public void grabDepth() {
-        System.out.println("Grab Depth");
-        
-        
         if (getActingCamera() == IRCamera) {
             ((WithTouchInput) depthCamera).newTouchImageWithColor(IRCamera.currentImage);
             return;
