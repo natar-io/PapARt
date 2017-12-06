@@ -31,10 +31,14 @@ import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.procam.display.ProjectorDisplay;
+import fr.inria.papart.tracking.DetectedMarker;
 import fr.inria.papart.tracking.ObjectFinder;
 import fr.inria.papart.utils.MathUtils;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import processing.opengl.PGraphicsOpenGL;
 import processing.core.PApplet;
 import processing.core.PConstants;
@@ -634,7 +638,110 @@ public class PaperScreen extends DelegatedGraphics {
 //        }
     }
 
+    HashMap<Integer, Integer> positionsHistory = new HashMap<Integer, Integer>();
+
     ////////////////////////
+    //// Tracking individual markers
+    ////////////////////////
+    
+    /**
+     * Get individual markers, their ID should be between 800 and 1000. 
+     * @param markerWidth
+     * @return 
+     */
+    public Map<Integer, PVector> getSingleMarkers(float markerWidth) {
+        Papart papart = Papart.getPapart();
+//        ArrayList<PVector> positions = new ArrayList<>();
+        HashMap<Integer, PVector> positions = new HashMap<Integer, PVector>();
+
+        DetectedMarker[] markers = papart.getMarkerList();
+
+        for (DetectedMarker marker : markers) {
+            
+            if(marker.id < 800 || marker.id > 1000){
+                continue;
+            }
+            
+            //       next if marker.confidence < 1.0
+            PMatrix3D mat = papart.getMarkerMatrix(marker.id, markerWidth);
+
+            // look at others if the position is not valid
+            if (mat == null) {
+                continue;
+            }
+            PVector pos = papart.projectPositionTo(mat, this);
+
+            if (pos.y < 0 || pos.y > drawingSize.y
+                    || pos.x < 0
+                    || pos.x > drawingSize.x) {
+
+                // Not in this paperscreen - reset history
+                  positionsHistory.put(marker.id, 0);
+            } else {
+                // update history
+                Integer markerID = positionsHistory.get(marker.id);
+                int history = markerID == null ? 0 : markerID;
+                positionsHistory.put(marker.id, ++history);
+
+                // If it is old enough ? ~ 10 frames 
+                if (history > 10) {
+                    positions.put(marker.id, pos);
+                }
+            }
+        }
+        return positions;
+    }
+    
+    // TODO: use Z as the angle of the marker --- source in ruby
+//    
+//       # pos.x = pos.x / filter_scale
+//      # pos.y = pos.y / filter_scale
+//      if @marker_valid_pos[marker.id] == nil
+//        filter_intens = 20.0 # freq
+//##        filter_intens = 1.0 ## alpha
+//        @marker_valid_pos[marker.id] =
+//          {
+//            :x_filter => Papartlib::OneEuroFilter.new(filter_intens),
+//            :y_filter => Papartlib::OneEuroFilter.new(filter_intens),
+//            :angle_filter => Papartlib::OneEuroFilter.new(filter_intens)
+//
+//           #  :x_filter => Papartlib::LowPassFilter.new(filter_intens, pos.x),
+//           # :y_filter => Papartlib::LowPassFilter.new(filter_intens, pos.y),
+//           # :angle_filter => Papartlib::LowPassFilter.new(filter_intens, pos.z)
+//          }
+//      else
+//        pos.x = @marker_valid_pos[marker.id][:x_filter].filter(pos.x)
+//        pos.y = @marker_valid_pos[marker.id][:y_filter].filter(pos.y)
+//
+//        pos.z = pos.z + 2 * Math::PI if pos.z < 0  if in_blue_zone(pos.x)
+//#        pos.z = pos.z + 2 * Math::PI  if in_blue_zone(pos.x)
+//        pos.z = @marker_valid_pos[marker.id][:angle_filter].filter(pos.z)
+//        pos.z = pos.z - 2* Math::PI  if in_blue_zone(pos.x)
+    
+    
+    
+    /**
+     * Get the main marker found, ID between 800 and 1000. 
+     * @param markerWidth
+     * @return id of the marker found, or -1 in none.
+     */
+    public int getMainMarker(float markerWidth){
+        
+        int minimumAge = 10;
+        int selected = -1;
+        
+        Map<Integer, PVector> singleMarkers = getSingleMarkers(markerWidth);
+        for(Integer key : singleMarkers.keySet()){
+            Integer age = positionsHistory.get(key);
+            if(age != null && age > minimumAge){
+                selected = key; 
+                minimumAge = age;
+            }
+        }
+        return selected;
+    }
+
+       ////////////////////////
     // Location handling. //
     ////////////////////////
     /**
