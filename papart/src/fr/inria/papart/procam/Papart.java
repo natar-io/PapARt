@@ -241,7 +241,7 @@ public class Papart {
 
         papart.frameSize.set(screenConfiguration.getProjectionScreenWidth(),
                 screenConfiguration.getProjectionScreenHeight());
-        papart.shouldSetWindowLocation = true;
+        papart.shouldSetWindowLocation = false;
         papart.shouldSetWindowSize = true;
         papart.registerPost();
 
