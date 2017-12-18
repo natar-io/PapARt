@@ -135,34 +135,34 @@ public class HandDetection extends TouchDetectionDepth {
         // TODO: use this, add another with only the ones of the touch ?!
         tp.setDepthDataElements(depthData, connectedComponent);
         tp.set3D(true);
-        tp.setParent(currentHand);
+        tp.setParent(currentArm);
         return tp;
     }
 
-    private TrackedDepthPoint currentHand;
-    public ArrayList<TrackedDepthPoint> findTouch(ArmDetection touchDetection3D, PlaneAndProjectionCalibration planeAndProjCalibration) {
+    private TrackedDepthPoint currentArm;
+    public ArrayList<TrackedDepthPoint> findTouch(ArmDetection armDetection, PlaneAndProjectionCalibration planeAndProjCalibration) {
 
         // WARNING  No tracking 
         this.touchPoints.clear();
 
-        for (TrackedDepthPoint touchPoint : touchDetection3D.getTouchPoints()) {
+        for (TrackedDepthPoint arm : armDetection.getTouchPoints()) {
             DepthElementList allElements = new DepthElementList();
 
-            currentHand = touchPoint;
+            currentArm = arm;
 
             // Add the elements for compo finding. 
-            for (DepthDataElementProjected dde : touchPoint.getDepthDataElements()) {
+            for (DepthDataElementProjected dde : arm.getDepthDataElements()) {
 
-                if (touchDetection3D.boundaries[dde.offset]) {
+                if (armDetection.boundaries[dde.offset]) {
                     float d = planeAndProjCalibration.distanceTo(dde.depthPoint);
-                    if (d < calib.getTest3()) {
+//                    if (d < calib.getTest3()) {
                         allElements.add(dde);
-                    }
+//                    }
                 }
             }
 
             // Select from the known points
-            this.setDepthSelection(touchDetection3D.getDepthSelection());
+            this.setDepthSelection(armDetection.getDepthSelection());
             depthSelection.validPointsList.clear();
 
             ConnectedComponent selectedList = allElements.toConnectedComponent();
@@ -176,7 +176,7 @@ public class HandDetection extends TouchDetectionDepth {
                 return new ArrayList<>();
             }
 
-            // Select the biggest compo as the hand. 
+            // Select the biggest compo as the hand.
             int maxSize = newList.get(0).getDepthDataElements().size();
             int maxId = 0;
             for (int i = 1; i < newList.size(); i++) {

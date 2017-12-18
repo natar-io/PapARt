@@ -164,7 +164,7 @@ public class DepthTouchInput extends TouchInput {
                 initTouchDetections();
             }
 
-            int initPrecision = 6;
+            int initPrecision = 3;
             depthAnalysis.computeDepthAndNormals(depthImage, colImage, initPrecision);
             armDetection.findTouch(planeAndProjCalibration);
             handDetection.findTouch(armDetection, planeAndProjCalibration);

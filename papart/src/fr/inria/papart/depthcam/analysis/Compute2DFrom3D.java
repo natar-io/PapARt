@@ -45,11 +45,14 @@ public class Compute2DFrom3D extends DepthRecognition {
 //        depthAnalysis.doForEachPoint(skip2D, new Select2DPlaneProjection());
         // Around the middle point
 //        depthAnalysis.computeDepthAndDoAround(precision2D, offset, area, new SelectAll());
-        depthAnalysis.computeDepthAndDoAround(precision2D, offset, area, new Select2DPlaneProjection());
-        depthAnalysis.doForEachPointAround(precision2D, offset, area, new ComputeNormal());
-        depthAnalysis.doForEachPointAround(precision2D, offset, area, new SetImageDataGRAY());
-        // Add the Color Image after Contour detection
+        // Computation of elements in a zone
+        // depthAnalysis.computeDepthAndDoAround(precision2D, offset, area, new Select2DPlaneProjection());
+        // depthAnalysis.doForEachPointAround(precision2D, offset, area, new ComputeNormal());
+        depthAnalysis.computeDepthAndDo(precision2D, new Select2DPlaneProjection());
+        depthAnalysis.doForEachPoint(precision2D, new ComputeNormal());
 
+//        depthAnalysis.doForEachPointAround(precision2D, offset, area, new SetImageDataGRAY());
+        // Add the Color Image after Contour detection
     }
 
     class Select2DPointPlaneProjection implements DepthAnalysis.DepthPointManiplation {
