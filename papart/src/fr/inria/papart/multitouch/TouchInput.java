@@ -19,8 +19,9 @@
  */
 package fr.inria.papart.multitouch;
 
+import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.display.ARDisplay;
-import fr.inria.papart.procam.Screen;
+
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import java.util.ArrayList;
@@ -37,7 +38,7 @@ public abstract class TouchInput {
 
     abstract public void update();
 
-    abstract public TouchList projectTouchToScreen(Screen screen, BaseDisplay display);
+    abstract public TouchList projectTouchToScreen(PaperScreen paperScreen, BaseDisplay display);
 
     protected boolean computeOutsiders = false;
 

@@ -22,10 +22,11 @@ package fr.inria.papart.procam.display;
 import fr.inria.papart.calibration.files.PlaneCalibration;
 import fr.inria.papart.utils.DrawUtils;
 import fr.inria.papart.multitouch.TouchInput;
+import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.procam.ProjectiveDeviceP;
-import fr.inria.papart.procam.Screen;
+
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
@@ -141,7 +142,7 @@ public class ProjectorDisplay extends ARDisplay {
         super.renderScreens();
     }
 
-    protected ReadonlyVec3D projectPointer3DVec3D(Screen screen, float px, float py) {
+    protected ReadonlyVec3D projectPointer3DVec3D(PaperScreen screen, float px, float py) {
         // Create ray from the projector (origin / viewed pixel)
         // Intersect this ray with the piece of paper. 
         // Compute the Two points for the ray          
@@ -184,8 +185,8 @@ public class ProjectorDisplay extends ARDisplay {
 //        System.out.println("Error " + px2.mag());
     }
 
-    public PVector projectPointer3D(Screen screen, float px, float py) {
-        ReadonlyVec3D inter = projectPointer3DVec3D(screen, px, py);
+    public PVector projectPointer3D(PaperScreen paperScreen, float px, float py) {
+        ReadonlyVec3D inter = projectPointer3DVec3D(paperScreen, px, py);
         if (inter == null) {
             return TouchInput.NO_INTERSECTION;
         } else {
@@ -196,16 +197,16 @@ public class ProjectorDisplay extends ARDisplay {
     // *** Projects the pixels viewed by the projector to the screen.
     // px and py are normalized -- [0, 1] in screen space
     @Override
-    public PVector projectPointer(Screen screen, float px, float py) {
+    public PVector projectPointer(PaperScreen paperScreen, float px, float py) {
 
-        ReadonlyVec3D inter = projectPointer3DVec3D(screen, px, py);
+        ReadonlyVec3D inter = projectPointer3DVec3D(paperScreen, px, py);
         // It may not intersect.
         if (inter == null) {
             return TouchInput.NO_INTERSECTION;
         }
 
         // Get the normalized coordinates in Paper coordinates
-        Vec3D res = screen.getWorldToScreen().applyTo(inter);
+        Vec3D res = paperScreen.getWorldToScreen().applyTo(inter);
 //        PVector out = new PVector(res.x(), res.y(), res.z());
         PVector out = new PVector(res.x() / res.z(),
                 res.y() / res.z(), 1);

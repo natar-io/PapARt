@@ -1,0 +1,6 @@
+hue:40.0
+sat:50.0
+intens:90.0
+erosion:1
+red:30.0
+col:-5897216

@@ -1,6 +1,7 @@
 /*
  * Part of the PapARt project - https://project.inria.fr/papart/
  *
+ * Copyright (C) 2017 RealityTech
  * Copyright (C) 2014-2016 Inria
  * Copyright (C) 2011-2013 Bordeaux University
  *
@@ -20,8 +21,6 @@
 package fr.inria.papart.procam;
 
 import fr.inria.papart.utils.MathUtils;
-import fr.inria.papart.utils.ARToolkitPlusUtils;
-import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.TrackedView;
 import processing.core.PApplet;
 import processing.core.PImage;
@@ -37,7 +36,7 @@ public class ColorDetection {
     private final PaperScreen paperScreen;
     protected TrackedView boardView;
 
-    private PVector captureSize = new PVector(10, 10);
+    private final PVector captureSize = new PVector(10, 10);
     private final PVector pos = new PVector();
 
     private int picWidth = 8; // Works better with power  of 2
@@ -95,7 +94,6 @@ public class ColorDetection {
      */
     public void drawSelf() {
         computeColor();
-
         drawCaptureZone();
 
         paperScreen.pushMatrix();
@@ -126,12 +124,11 @@ public class ColorDetection {
 
     /**
      * Draw an ellipse with a fill of the captured color.
-     * ellipse(0, 0, 10, 10);
      */
     public void drawCapturedColor() {
         paperScreen.fill(this.col);
         paperScreen.noStroke();
-        paperScreen.ellipse(0, 0, 10, 10);
+        paperScreen.ellipse(0, 5, 10, 10);
     }
 
     /** 

@@ -30,6 +30,22 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+        
+        <!--  http://blog.dub.podval.org/2010/01/maven-in-project-repository.html-->
+        <!--local OpenNI-->
+        
+        <repository>
+            <id>lib</id>
+            <name>lib</name>
+            <releases>
+                <enabled>true</enabled>
+                <checksumPolicy>ignore</checksumPolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <url>file://${project.basedir}/lib/repo/</url>
+        </repository>
     </repositories>
     
     <licenses>
@@ -61,6 +77,18 @@
             <groupId>com.mkobos</groupId>
             <artifactId>pca_transform</artifactId>
             <version>1.0.2</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.openni</groupId>
+            <artifactId>OpenNI</artifactId>
+            <version>2.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openni</groupId>
+            <artifactId>OpenNI-bin</artifactId>
+            <version>2.3</version>
+            <scope>runtime</scope>
         </dependency>
         
         

@@ -1,3 +1,3 @@
 #!/bin/sh
 
-rm papart/src/papart-examples
+rm papart/src/Papart-examples

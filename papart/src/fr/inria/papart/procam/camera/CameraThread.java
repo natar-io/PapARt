@@ -162,8 +162,7 @@ class CameraThread extends Thread {
     }
 
     private void computeGrayScaleImage() {
-        // TODO BRG2Gray or RGB 2 gray ?
-        cvCvtColor(image, grayImage, CV_BGR2GRAY);
+            cvCvtColor(image, grayImage, CV_BGR2GRAY);
     }
 
     private DetectedMarker[] computeMarkerLocations() {

@@ -19,7 +19,9 @@
  */
 package fr.inria.papart.procam.camera;
 
+import fr.inria.papart.depthcam.analysis.DepthAnalysis;
 import java.nio.FloatBuffer;
+import java.nio.ShortBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bytedeco.javacpp.RealSense;
@@ -303,4 +305,5 @@ public class CameraRealSense extends CameraRGBIRDepth {
 //0.1214191      11
         camera.setCalibration(fx, fy, cx, cy, a, b, c, d, e);
     }
+    
 }

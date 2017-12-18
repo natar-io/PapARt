@@ -19,6 +19,7 @@
  */
 package fr.inria.papart.calibration;
 
+import fr.inria.papart.calibration.files.ProjectiveDeviceCalibration;
 import fr.inria.papart.calibration.files.HomographyCalibration;
 import fr.inria.papart.calibration.files.Calibration;
 import fr.inria.papart.Sketch;

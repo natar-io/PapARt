@@ -1,3 +1,4 @@
 #!/bin/sh
 
-ln -s ../../../Papart-examples/papart-examples papart/src/
+cd papart/src
+ln -s ../../../Papart-examples .

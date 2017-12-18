@@ -52,12 +52,21 @@ public abstract class DepthAnalysis implements WithSize {
         return point.x != 0 && point.y != 0 && point.z != 0;
     }
 
+    public abstract void update(IplImage depth);
+
     /**
      * @param offset
      * @return the depth (float).
      */
     protected float getDepth(int offset) {
         return depthComputationMethod.findDepth(offset, depthBuffer);
+    }
+
+    public interface DepthComputation {
+
+        public void updateDepth(IplImage depthImg);
+
+        public float findDepth(int offset);
     }
 
     public interface InvalidPointManiplation {
@@ -222,9 +231,9 @@ public abstract class DepthAnalysis implements WithSize {
         }
     }
 
-//    public boolean[] getValidPoints() {
-//        return depthData.validPointsMask;
-//    }
+    public boolean[] getValidPoints() {
+        return depthData.validPointsMask;
+    }
     public int[] getConnexity() {
         return this.connexity;
     }

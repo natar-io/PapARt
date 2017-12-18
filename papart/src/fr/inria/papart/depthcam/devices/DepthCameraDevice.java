@@ -21,6 +21,7 @@
 package fr.inria.papart.depthcam.devices;
 
 import fr.inria.papart.calibration.files.HomographyCalibration;
+import fr.inria.papart.depthcam.analysis.DepthAnalysis;
 import fr.inria.papart.multitouch.DepthTouchInput;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.utils.ARToolkitPlusUtils;
@@ -62,7 +63,8 @@ public abstract class DepthCameraDevice {
     }
 
     public abstract void loadDataFromDevice();
-
+    public abstract DepthAnalysis.DepthComputation createDepthComputation();
+    
     public CameraRGBIRDepth getMainCamera() {
         return camera;
     }

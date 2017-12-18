@@ -19,6 +19,8 @@
  */
 package fr.inria.papart.tracking;
 
+import fr.inria.papart.procam.ProjectiveDeviceP;
+import java.util.ArrayList;
 import java.util.Arrays;
 import org.bytedeco.javacpp.ARToolKitPlus;
 
@@ -27,7 +29,9 @@ import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacpp.opencv_core;
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.cvFindCornerSubPix;
+import org.bytedeco.javacv.Marker;
 import processing.core.PGraphics;
+import processing.core.PMatrix3D;
 import processing.core.PVector;
 
 public class DetectedMarker implements Cloneable {
@@ -41,6 +45,15 @@ public class DetectedMarker implements Cloneable {
         this.corners = corners;
         this.confidence = confidence;
     }
+    
+    public int getId(){
+        return id;
+    }
+    
+    public Marker copyAsMarker(){
+        return new org.bytedeco.javacv.Marker(id, corners, confidence);
+    }
+
 
     public void drawSelf(PGraphics g, int size) {
         for (int i = 0; i < 8; i += 2) {
@@ -221,6 +234,55 @@ public class DetectedMarker implements Cloneable {
             markers2[n++] = new DetectedMarker(id, d, confidence);
         }
         return Arrays.copyOf(markers2, n);
+    }
+    
+    /**
+     * Find the 3D position of detected markers. 
+     * It uses the solvePnP function of OpenCV.
+     * @param detectedMarkers  Array of markers found. (Image)
+     * @param markersFromSVG  Model. 
+     * @param camera its calibration is used.
+     * @return 
+     */
+    public static PMatrix3D compute3DPos(DetectedMarker[] detectedMarkers, MarkerList markersFromSVG, 
+            fr.inria.papart.procam.camera.Camera camera) {
+        // We create a pair model ( markersFromSVG) -> observation (markers) 
+
+//         markersFromSVG
+        ArrayList<PVector> objectPoints = new ArrayList<PVector>();
+        ArrayList<PVector> imagePoints = new ArrayList<PVector>();
+        int k = 0;
+
+        for (DetectedMarker detected : detectedMarkers) {
+            if (markersFromSVG.containsKey(detected.id)) {
+
+//                System.out.println("Detected marker: " + detected.id + " confidence " + detected.confidence);
+                if (detected.confidence < 1.0) {
+                    continue;
+                }
+
+                PVector[] object = markersFromSVG.get(detected.id).getCorners();
+                PVector[] image = detected.getCorners();
+                for (int i = 0; i < 4; i++) {
+//                    System.out.println("Model " + object[i] + " image " + image[i]);
+                    objectPoints.add(object[i]);
+                    imagePoints.add(image[i]);
+                }
+                k++;
+            }
+        }
+        if (k < 1) {
+            return MarkerBoard.INVALID_LOCATION;
+        }
+
+        PVector[] objectArray = new PVector[k];
+        PVector[] imageArray = new PVector[k];
+        objectArray = objectPoints.toArray(objectArray);
+        imageArray = imagePoints.toArray(imageArray);
+
+        ProjectiveDeviceP pdp = camera.getProjectiveDevice();
+        return pdp.estimateOrientation(objectArray, imageArray);
+//        return pdp.estimateOrientationRansac(objectArray, imageArray);
     }
 
 }

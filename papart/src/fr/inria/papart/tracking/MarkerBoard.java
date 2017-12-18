@@ -143,6 +143,25 @@ public abstract class MarkerBoard {
         transfo.set(location);
     }
 
+    protected int subscribersAmount = 0;
+
+    /**
+     * Tell this markerboard that something is getting the position.
+     */
+    public void subscribe() {
+        subscribersAmount++;
+        System.out.println("DEBUG: subscription: " + subscribersAmount);
+    }
+
+    /**
+     * Tell this markerboard that its position is not used anymore by one
+     * object.
+     */
+    public void unsubscribe() {
+        subscribersAmount--;
+        System.out.println("DEBUG: UNsubscription: " + subscribersAmount);
+    }
+
     private OneEuroFilter[] createFilter(double freq, double minCutOff) {
         OneEuroFilter[] f = new OneEuroFilter[12];
         try {

@@ -1,6 +1,7 @@
 /*
  * Part of the PapARt project - https://project.inria.fr/papart/
  *
+ * Copyright (C) 2017 RealityTech
  * Copyright (C) 2014-2016 Inria
  * Copyright (C) 2011-2013 Bordeaux University
  *
@@ -38,6 +39,7 @@ import processing.core.PVector;
 /**
  *
  * @author jeremylaviole
+ *  IDEA: can it inherit camera ?
  */
 public class TrackedView {
 

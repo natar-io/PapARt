@@ -64,15 +64,35 @@ public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
     private boolean hasExtrinsics = false;
 
     public enum Type {
-        OPENCV, FFMPEG, PROCESSING, REALSENSE, OPEN_KINECT, OPEN_KINECT_2, FLY_CAPTURE,
+        OPENCV, FFMPEG, PROCESSING, REALSENSE, OPEN_KINECT, OPEN_KINECT_2, 
+        FLY_CAPTURE, OPENNI2,
         FAKE
     }
 
     public enum PixelFormat {
 
-        RGB, BGR, ARGB, RGBA, GRAY, GRAY_32, FLOAT_DEPTH_KINECT2, DEPTH_KINECT_MM, REALSENSE_Z16
+        RGB, BGR, ARGB, RGBA, GRAY, GRAY_32, FLOAT_DEPTH_KINECT2, DEPTH_KINECT_MM, REALSENSE_Z16, OPENNI_2_DEPTH
     }
 
+    public boolean isPixelFormatGray() {
+        PixelFormat pixelFormat = getPixelFormat();
+        return pixelFormat == PixelFormat.GRAY
+                || pixelFormat == PixelFormat.GRAY_32
+                || pixelFormat == PixelFormat.REALSENSE_Z16
+                || pixelFormat == PixelFormat.FLOAT_DEPTH_KINECT2
+                || pixelFormat == PixelFormat.DEPTH_KINECT_MM
+                || pixelFormat == PixelFormat.OPENNI_2_DEPTH;
+    }
+
+    public boolean isPixelFormatColor() {
+        PixelFormat pixelFormat = getPixelFormat();
+        return pixelFormat == PixelFormat.ARGB
+                || pixelFormat == PixelFormat.BGR
+                || pixelFormat == PixelFormat.RGB
+                || pixelFormat == PixelFormat.RGBA;
+    }
+
+    
     protected PixelFormat format;
 
     // Parameters
@@ -257,8 +277,13 @@ public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
 
     public void setParent(PApplet applet) {
         this.parent = applet;
+        applet.registerMethod("dispose", this);
     }
 
+    public void dispose(){
+        close();
+    }
+    
     public void setSystemNumber(int systemNumber) {
         this.systemNumber = systemNumber;
     }
@@ -430,23 +455,6 @@ public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
                 System.out.println("Error: No pixel format set for the camera!");
             }
         }
-    }
-
-    public boolean isPixelFormatGray() {
-        PixelFormat pixelFormat = getPixelFormat();
-        return pixelFormat == PixelFormat.GRAY
-                || pixelFormat == PixelFormat.GRAY_32
-                || pixelFormat == PixelFormat.REALSENSE_Z16
-                || pixelFormat == PixelFormat.FLOAT_DEPTH_KINECT2
-                || pixelFormat == PixelFormat.DEPTH_KINECT_MM;
-    }
-
-    public boolean isPixelFormatColor() {
-        PixelFormat pixelFormat = getPixelFormat();
-        return pixelFormat == PixelFormat.ARGB
-                || pixelFormat == PixelFormat.BGR
-                || pixelFormat == PixelFormat.RGB
-                || pixelFormat == PixelFormat.RGBA;
     }
 
 // Public API 

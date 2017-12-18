@@ -1,7 +1,20 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Part of the PapARt project - https://project.inria.fr/papart/
+ *
+ * Copyright (C) 2017 RealityTech
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation, version 2.1.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package fr.inria.papart.multitouch.detection;
 
@@ -41,13 +54,23 @@ public class ColorTracker {
 
     private float brightness, saturation;
     private float hue;
-    private float redThreshold;
+    private float redThreshold, blueThreshold;
+    private int referenceColor, erosion;
+    private String name;
 
     public ColorTracker(PaperScreen paperScreen) {
         this(paperScreen, 1);
     }
 
+    public ColorTracker(PaperScreen paperScreen, PlanarTouchCalibration calibration) {
+        this(paperScreen, calibration, 1);
+    }
+
     public ColorTracker(PaperScreen paperScreen, float scale) {
+        this(paperScreen, Papart.getPapart().getDefaultColorTouchCalibration(), scale);
+    }
+
+    public ColorTracker(PaperScreen paperScreen, PlanarTouchCalibration calibration, float scale) {
         this.paperScreen = paperScreen;
         this.trackedView = new TrackedView(paperScreen);
         this.trackedView.setScale(scale);
@@ -75,12 +98,19 @@ public class ColorTracker {
         redThreshold = 15;
     }
 
+    public ArrayList<TrackedElement> findColor(int time) {
+        return findColor(name, referenceColor, time, erosion);
+    }
+
     /**
      * For now it only finds one color.
      *
-     * @param name
+     * @param name can be "red", "blue" or something else to disable this
+     * matching.
      * @param reference Reference color found by the camera somewhere. -1 to
      * disable it.
+     * @param time currernt time in Processing.
+     * @param erosion Erosion to apply before the tracking.
      */
     public ArrayList<TrackedElement> findColor(String name, int reference, int time, int erosion) {
 
@@ -103,25 +133,30 @@ public class ColorTracker {
                 boolean good = MathUtils.colorFinderHSB(paperScreen.getGraphics(),
                         reference, c, hue, saturation, brightness);
 
-                if (name == "red") {
+                if ("red".equals(name)) {
                     boolean red = MathUtils.isRed(paperScreen.getGraphics(),
                             c, reference, redThreshold);
                     good = good && red;
                 }
+                if ("blue".equals(name)) {
+                    boolean blue = MathUtils.isBlue(paperScreen.getGraphics(),
+                            c, reference, blueThreshold);
+                    good = good && blue;
+                }
                 if (good) {
                     colorFoundArray[offset] = id;
                 }
-                
+
             }
         }
 
-        ArrayList<TrackedElement> newElements = 
-                    touchDetectionColor.compute(time, erosion, this.scale);
+        ArrayList<TrackedElement> newElements
+                = touchDetectionColor.compute(time, erosion, this.scale);
         TouchPointTracker.trackPoints(trackedElements, newElements, time);
 //        for(TrackedElement te : trackedElements){
 //            te.filter(time);
 //        }
-        
+
         return trackedElements;
     }
 
@@ -183,7 +218,37 @@ public class ColorTracker {
 //    public void removeTrackedColor(String name) {
 //        this.trackedColors.remove(name);
 //    }
-//    
+
+    void loadParameter(String data) {
+        try {
+            String[] pair = data.split(":");
+            if (pair[0].startsWith("hue")) {
+                hue = Float.parseFloat(pair[1]);
+            }
+            if (pair[0].startsWith("sat")) {
+                saturation = Float.parseFloat(pair[1]);
+            }
+            if (pair[0].startsWith("intens")) {
+                this.brightness = Float.parseFloat(pair[1]);
+            }
+
+            if (pair[0].startsWith("erosion")) {
+                this.erosion = Integer.parseInt(pair[1]);
+            }
+            if (pair[0].startsWith("col")) {
+                this.referenceColor = Integer.parseInt(pair[1]);
+            }
+
+            if (pair[0].startsWith("red")) {
+                this.redThreshold = Float.parseFloat(pair[1]);
+            }
+            if (pair[0].startsWith("blue")) {
+                this.blueThreshold = Float.parseFloat(pair[1]);
+            }
+        } catch (NumberFormatException nfe) {
+            nfe.printStackTrace();
+        }
+    }
 
     public void setThresholds(float hue, float saturation, float brightness) {
         this.hue = hue;
@@ -193,6 +258,10 @@ public class ColorTracker {
 
     public void setRedThreshold(float red) {
         this.redThreshold = red;
+    }
+
+    public void setBlueThreshold(float blue) {
+        this.blueThreshold = blue;
     }
 
     public void setBrightness(float brightness) {
@@ -221,6 +290,30 @@ public class ColorTracker {
 
     public float getRedThreshold() {
         return redThreshold;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getErosion() {
+        return erosion;
+    }
+
+    public void setErosion(int erosion) {
+        this.erosion = erosion;
+    }
+
+    public int getReferenceColor() {
+        return referenceColor;
+    }
+
+    public void setReferenceColor(int referenceColor) {
+        this.referenceColor = referenceColor;
     }
 
 }

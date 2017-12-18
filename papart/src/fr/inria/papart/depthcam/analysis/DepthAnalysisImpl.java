@@ -70,12 +70,11 @@ public class DepthAnalysisImpl extends DepthAnalysis {
     // Raw data from the Kinect Sensor
     protected ShortBuffer depthRawShortBuffer;
     protected ByteBuffer depthRawBuffer;
-    protected byte[] depthRaw;
     protected byte[] colorRaw;
     protected float[] depth;
 
     // static values
-    protected static final float INVALID_DEPTH = -1;
+    public static final float INVALID_DEPTH = -1;
 
     protected DepthCameraDevice depthCameraDevice;
     protected Camera colorCamera;
@@ -127,7 +126,8 @@ public class DepthAnalysisImpl extends DepthAnalysis {
 
     public void initWithCalibrations(DepthCameraDevice depthCamera) {
         depthCameraDevice = depthCamera;
-        setDepthMethod();
+        depthComputationMethod = depthCameraDevice.createDepthComputation();
+        
         if (depthCamera.getMainCamera().isUseIR()) {
             colorCamera = depthCamera.getIRCamera();
         }
@@ -156,9 +156,7 @@ public class DepthAnalysisImpl extends DepthAnalysis {
             colorRaw = new byte[getColorSize()];
         } else {
             colorRaw = new byte[getColorSize() * 3];
-
         }
-        depthRaw = new byte[depthCameraDevice.rawDepthSize()];
         depth = new float[depthCameraDevice.getDepthCamera().width() * depthCameraDevice.getDepthCamera().height()];
 
         depthData = new ProjectedDepthData(this);
@@ -168,22 +166,36 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         PixelOffset.initStaticMode(getWidth(), getHeight());
     }
 
+    @Deprecated
     private void setDepthMethod() {
-        if (depthCameraDevice instanceof Kinect360) {
-            depthComputationMethod = new Kinect360Depth();
-            depthBuffer = this.depthRaw;
-        }
-        if (depthCameraDevice instanceof KinectOne) {
-            depthComputationMethod = new KinectOneDepth();
-            depthBuffer = this.depthRaw;
-        }
-        if (depthCameraDevice instanceof RealSense) {
-            if (((CameraRealSense) ((RealSense) depthCameraDevice).getMainCamera()).isStarted()) {
-                float depthScale = ((CameraRealSense) ((RealSense) depthCameraDevice).getMainCamera()).getDepthScale();
-                depthComputationMethod = new RealSenseDepth(depthScale);
-                depthBuffer = this.depthRawShortBuffer;
-            }
-        }
+        
+        // Replaced by this line:
+        depthComputationMethod = depthCameraDevice.createDepthComputation();
+        
+        // Old code -- to test before deletion
+//        if (depthCameraDevice instanceof Kinect360) {
+//            depthComputationMethod = ((Kinect360) depthCameraDevice).new Kinect360Depth();
+//        }
+//        if (depthCameraDevice instanceof KinectOne) {
+//            depthComputationMethod = ((KinectOne) depthCameraDevice).new KinectOneDepth();
+//        }
+//        if (depthCameraDevice instanceof RealSense) {
+//            RealSense rs = ((RealSense) depthCameraDevice);
+//            if (((CameraRealSense) ((RealSense) depthCameraDevice).getMainCamera()).isStarted()) {
+//                depthComputationMethod = rs.new RealSenseDepth();
+//            }
+//        }
+//        if (depthCameraDevice instanceof RealSense) {
+//            if (((CameraRealSense) ((RealSense) depthCameraDevice).getMainCamera()).isStarted()) {
+//                float depthScale = ((CameraRealSense) ((RealSense) depthCameraDevice).getMainCamera()).getDepthScale();
+//                depthComputationMethod = new RealSenseDepth(depthScale);
+//            }
+//        }
+    }
+
+    @Deprecated
+    public void update(IplImage depth) {
+        update(depth, 1);
     }
 
     public void computeDepthAndNormals(opencv_core.IplImage depth, opencv_core.IplImage color, int skip2D) {
@@ -427,13 +439,20 @@ public class DepthAnalysisImpl extends DepthAnalysis {
     }
 
     protected void updateRawDepth(opencv_core.IplImage depthImage) {
-        if (getDepthCameraDevice().type() == Camera.Type.REALSENSE) {
-            depthRawBuffer = depthImage.getByteBuffer();
-            depthRawShortBuffer = depthRawBuffer.asShortBuffer();
-            depthBuffer = this.depthRawShortBuffer;
-        } else {
-            depthImage.getByteBuffer().get(depthRaw);
-        }
+        
+        depthComputationMethod.updateDepth(depthImage);
+        
+//        // Realsense 
+//        if (getDepthCameraDevice().type() == Camera.Type.REALSENSE) {
+//            depthRawBuffer = depthImage.getByteBuffer();
+//            depthRawShortBuffer = depthRawBuffer.asShortBuffer();
+//            
+//            depthComputationMethod.setDepthSource(depthRawShortBuffer);
+//        // Kinect
+//        } else {
+//            depthImage.getByteBuffer().get(depthRaw);
+//            depthComputationMethod.setDepthSource(depthRaw);
+//        }
     }
 
     protected void updateRawColor(opencv_core.IplImage colorImage) {
@@ -777,6 +796,13 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         }
 
     }
+
+    
+
+    public static final float KINECT_ONE_DEPTH_RATIO = 10f;
+
+    
+
 
     public void undistortRGB(opencv_core.IplImage rgb, opencv_core.IplImage out) {
         calibColor.getDevice().undistort(rgb, out);

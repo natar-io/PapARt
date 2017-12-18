@@ -21,8 +21,9 @@ package fr.inria.papart.multitouch;
 
 import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
 import fr.inria.papart.procam.display.BaseDisplay;
-import fr.inria.papart.procam.Screen;
+
 import TUIO.*;
+import fr.inria.papart.procam.PaperScreen;
 import processing.core.PApplet;
 import java.util.*;
 import processing.core.PVector;
@@ -48,7 +49,7 @@ public class TUIOTouchInput extends TouchInput {
     }
 
     @Override
-    public TouchList projectTouchToScreen(Screen screen, BaseDisplay display) {
+    public TouchList projectTouchToScreen(PaperScreen screen, BaseDisplay display) {
         TouchList touchList = new TouchList();
 
         Vector<TuioCursor> tuioCursorList = tuioClient.getTuioCursors();
@@ -74,7 +75,7 @@ public class TUIOTouchInput extends TouchInput {
         return touchList;
     }
 
-    private Touch getCursor(Screen screen, BaseDisplay display, TuioCursor tcur) throws Exception {
+    private Touch getCursor(PaperScreen screen, BaseDisplay display, TuioCursor tcur) throws Exception {
         TrackedDepthPoint touchPoint = createTouchPointFrom(tcur);
 
         Touch touch = touchPoint.getTouch();
@@ -84,7 +85,7 @@ public class TUIOTouchInput extends TouchInput {
         return touch;
     }
 
-    private Touch getObject(Screen screen, BaseDisplay display, TuioObject tobj) throws Exception {
+    private Touch getObject(PaperScreen screen, BaseDisplay display, TuioObject tobj) throws Exception {
 
         TrackedDepthPoint tp = tuioObjects.get(tobj.getSymbolID());
         Touch touch = tp.getTouch();

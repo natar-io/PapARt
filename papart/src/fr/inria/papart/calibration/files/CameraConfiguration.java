@@ -19,7 +19,6 @@
  */
 package fr.inria.papart.calibration.files;
 
-import fr.inria.papart.calibration.files.Calibration;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.CameraFactory;
 import fr.inria.papart.procam.camera.CannotCreateCameraException;

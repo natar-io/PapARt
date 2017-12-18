@@ -95,11 +95,9 @@ public class ImageUtils {
         imgOut.updatePixels();
         //        imgL.updatePixels();
     }
-    
-    
+
     // TODO wtf
     private static byte[] kinectByteArray = null;
-
 
     public static void IplImageToPImageKinect(opencv_core.IplImage img, boolean RGB, PImage ret) {
         //        conversionCount++;
@@ -163,6 +161,22 @@ public class ImageUtils {
         argb.rewind();
     }
 
+    // For OpenNI -- test
+    public static void byteBufferShorttoARGB(ByteBuffer gray, ByteBuffer argb) {
+        byte[] depthRaw = new byte[2];
+        for (int i = 0; i < argb.capacity(); i += 4) {
+            gray.get(depthRaw);
+            int d = (depthRaw[0] & 255) << 8 | (depthRaw[1] & 255);
+            // min depth: 400
+            byte dValue = (byte) ((d - 300.0F) / 3000.0F * 255.0F);
+            argb.put(dValue);
+            argb.put(dValue);
+            argb.put(dValue);
+            argb.put((byte) 255);
+        }
+        argb.rewind();
+    }
+
     public static void byteBufferGRAYtoARGB(ByteBuffer gray, ByteBuffer argb) {
         byte[] tmpArr = new byte[1];
         for (int i = 0; i < gray.capacity(); i++) {
@@ -187,8 +201,8 @@ public class ImageUtils {
         outSize.width(Pout.width);
         outSize.height(Pout.height);
         opencv_core.IplImage imgOut = cvCreateImage(outSize, // size
-        imgIn.depth(), // depth
-        imgIn.nChannels());
+                imgIn.depth(), // depth
+                imgIn.nChannels());
         //        imgIn.w
         return imgOut;
     }
@@ -199,8 +213,8 @@ public class ImageUtils {
         outSize.width(imgIn.width());
         outSize.height(imgIn.height());
         opencv_core.IplImage imgOut = cvCreateImage(outSize, // size
-        imgIn.depth(), // depth
-        imgIn.nChannels());
+                imgIn.depth(), // depth
+                imgIn.nChannels());
         //        imgIn.w
         return imgOut;
     }
@@ -214,15 +228,15 @@ public class ImageUtils {
         opencv_core.IplImage imgOut = null;
         if (in.format == PConstants.RGB) {
             imgOut = cvCreateImage(outSize, opencv_core.IPL_DEPTH_8U, // depth
-            3);
+                    3);
         }
         if (in.format == PConstants.ALPHA || in.format == PConstants.GRAY) {
             imgOut = cvCreateImage(outSize, opencv_core.IPL_DEPTH_8U, // depth
-            1);
+                    1);
         }
         if (in.format == PConstants.ARGB) {
             imgOut = cvCreateImage(outSize, opencv_core.IPL_DEPTH_8U, // depth
-            4);
+                    4);
         }
         //        imgIn.w
         return imgOut;
@@ -270,8 +284,8 @@ public class ImageUtils {
         outSize.width(width);
         outSize.height(height);
         opencv_core.IplImage imgOut = cvCreateImage(outSize, // size
-        imgIn.depth(), // depth
-        imgIn.nChannels());
+                imgIn.depth(), // depth
+                imgIn.nChannels());
         //        imgIn.w
         return imgOut;
     }

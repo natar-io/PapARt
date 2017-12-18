@@ -1,6 +1,7 @@
 /*
  * Part of the PapARt project - https://project.inria.fr/papart/
  *
+ * Copyright (C) 2017 RealityTech
  * Copyright (C) 2014-2016 Inria
  * Copyright (C) 2011-2013 Bordeaux University
  *
@@ -19,37 +20,36 @@
  */
 package fr.inria.papart.procam;
 
+import fr.inria.papart.calibration.HomographyCreator;
 import fr.inria.papart.tracking.MarkerBoardFactory;
 import fr.inria.papart.tracking.MarkerBoardInvalid;
 import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.calibration.files.HomographyCalibration;
 import fr.inria.papart.multitouch.Touch;
+import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
+import fr.inria.papart.procam.display.ProjectorDisplay;
+import fr.inria.papart.tracking.DetectedMarker;
 import fr.inria.papart.tracking.ObjectFinder;
-import java.awt.Image;
+import fr.inria.papart.utils.MathUtils;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import processing.opengl.PGraphicsOpenGL;
 import processing.core.PApplet;
 import processing.core.PConstants;
-import processing.core.PFont;
-import processing.core.PGraphics;
 import processing.core.PImage;
-import processing.core.PMatrix;
-import processing.core.PMatrix2D;
 import processing.core.PMatrix3D;
-import processing.core.PShape;
-import processing.core.PStyle;
-import processing.core.PSurface;
 import processing.core.PVector;
 import processing.event.KeyEvent;
-import processing.opengl.FrameBuffer;
-import processing.opengl.PGL;
-import processing.opengl.PShader;
-import processing.opengl.Texture;
+import toxi.geom.Plane;
+import toxi.geom.Triangle3D;
 
-public class PaperScreen {
+public class PaperScreen extends DelegatedGraphics {
 
     private static final int DEFAULT_DRAWING_SIZE = 100;
     private static final float DEFAULT_RESOLUTION = 2;
@@ -66,13 +66,10 @@ public class PaperScreen {
 
     // only one.
     protected MarkerBoard markerBoard = MarkerBoardInvalid.board;
-    protected Screen screen;
 
     protected PVector drawingSize
             = new PVector(DEFAULT_DRAWING_SIZE, DEFAULT_DRAWING_SIZE, 1);
     protected float quality = DEFAULT_RESOLUTION;
-
-    protected PGraphicsOpenGL currentGraphics;
 
     protected boolean isDrawingOnScreen = true;
     protected boolean isDrawingOnDisplay = false;
@@ -80,20 +77,39 @@ public class PaperScreen {
     private boolean isInitialized = false;
     private boolean isRegistered = false;
     protected boolean isWithoutCamera = false;
-    protected boolean useManualLocation = false;
+    protected boolean useManualLocation = true; // Activated at init.
 
     private float filteringDistance = 30;
     private float filteringFreq = 30;
     private float filteringCutoff = 4;
 
-    protected Papart papart = null;
-    private PMatrix3D manualLocation;
+    private PMatrix3D manualLocation = new PMatrix3D();
+
+    // FROM SCREEN: TO ORGANIZE
+    // The current graphics
+    private PGraphicsOpenGL thisGraphics;
+
+    // Either one, or the other is unique to this object. 
+    // The other one is unique to the camera/markerboard couple. 
+    private PMatrix3D extrinsics = new PMatrix3D();
+
+    protected HomographyCalibration worldToScreen;
+    private boolean isDrawing = true;
+
+    // ID is for naming this paper screen.
+    private final int id;
+
+    public static int count = 0;
 
     /**
-     * Create a new PaperScreen, a Papart object has to be created first.
+     * Create a new PaperScreen, a Papart object has to be created first. A
+     * PaperScreen is a rendering / interacting space like a Processing Sketch.
+     * PaperScreen usually have their own rendering (PGraphics object): this is
+     * the drawOnPaper() mode. They can be rendererd directly on the Display,
+     * usually for 3D effects: this is the drawAroundPaper().
      */
     public PaperScreen() {
-        papart = Papart.getPapart();
+        Papart papart = Papart.getPapart();
 
         if (papart == null) {
             throw new RuntimeException("Cannot create the PaperScreen, "
@@ -107,53 +123,46 @@ public class PaperScreen {
         }
         mainDisplay = papart.getDisplay();
         displays.add(papart.getDisplay());
-
+        this.id = count++;
         // Default to projector graphics.
         // currentGraphics = this.display.getGraphics();
         register();
     }
 
-    public PaperScreen(Camera cam, BaseDisplay proj) {
-        papart = Papart.getPapart();
-        this.parent = papart.getApplet();
+    /**
+     * Create a PaperScreen with a given camera and display. Instanciation
+     * without the use of a Papart object.
+     *
+     * @param mainApplet
+     * @param cam
+     * @param proj
+     */
+    public PaperScreen(PApplet mainApplet, Camera cam, BaseDisplay proj) {
+        this.parent = mainApplet;
         this.cameraTracking = cam;
         mainDisplay = proj;
         displays.add(proj);
+        this.id = count++;
         register();
     }
 
+    /**
+     * Start without a camera. The paperScreen location has to be manually set.
+     * This is used for debug mode.
+     *
+     * @param display
+     */
     public PaperScreen(BaseDisplay display) {
         this.isWithoutCamera = true;
         mainDisplay = display;
         displays.add(display);
+        this.id = count++;
         register();
     }
 
-    public void addDisplay(BaseDisplay display) {
-        this.displays.add(display);
-        display.addScreen(this.screen);
-        if (display.hasCamera()) {
-            display.getCamera().trackMarkerBoard(markerBoard);
-        }
-    }
-
-    @Deprecated
-    public void endDraw() {
-        currentGraphics.endDraw();
-    }
-
-    public void setDrawing(boolean drawing) {
-        screen.setDrawing(drawing);
-    }
-
-    /**
-     * Set the quality (resolution) of the drawing in px/mm . e.g.: A board with
-     * 100mm width and 2 resolution will have 200 pixels.
-     */
-    public void setQuality(float quality) {
-        this.quality = quality;
-    }
-
+    ///////////////////////////////////////
+    /// Methods to override in user code 
+    ///////////////////////////////////////
     /**
      * This method must be overloaded in the child class. For example to load
      * images, 3D models etc...
@@ -162,11 +171,27 @@ public class PaperScreen {
         System.out.println("PaperScreen setup. You should not see this unless for debug.");
     }
 
+    /**
+     * This method must be overloaded in the child class. For example to choose
+     * the rendering mode (setDrawAroundPaper, setDrawOnPaper).
+     */
     protected void settings() {
         setDrawStandard();
         System.out.println("PaperScreen settings. You should not see this unless for debug.");
     }
 
+    /**
+     * Call the settings() method again, and initialize the offscreen rendering
+     * if necessary. Will also re-initialize the tracking.
+     */
+    public void reInitialize() {
+        this.isInitialized = false;
+    }
+
+    /**
+     * Do not call, Automatically called by Processing. This method initialises
+     * the display if necessary.
+     */
     public void pre() {
         if (!isInitialized) {
             settings();
@@ -176,9 +201,6 @@ public class PaperScreen {
             if (this.markerBoard == MarkerBoardInvalid.board) {
                 this.isWithoutCamera = true;
             }
-
-            initScreen();
-            linkMarkerBoardToScreen();
 
             if (isDrawingOnDisplay) {
                 for (BaseDisplay display : this.displays) {
@@ -192,7 +214,10 @@ public class PaperScreen {
             }
 
             if (isDrawingOnScreen) {
-                this.currentGraphics = screen.getGraphics();
+                for (BaseDisplay display : displays) {
+                    display.addPaperScreen(this);
+                }
+                this.currentGraphics = getGraphics();
                 setup();
                 tryInitTracking();
             }
@@ -201,7 +226,7 @@ public class PaperScreen {
         }
 
         // Needed for touch and projection operations
-        screen.computeScreenPosTransform(cameraTracking);
+        computeWorldToScreenMat(cameraTracking);
 
 //        assert (isInitialized);
 //        if (this.isWithoutCamera || useManualLocation) {
@@ -210,22 +235,186 @@ public class PaperScreen {
 //        checkCorners();
     }
 
-    private void initScreen() {
-        this.screen = new Screen(parent);
-
-        if (this.isDrawingOnScreen) {
-            for (BaseDisplay display : displays) {
-                display.addScreen(screen);
-            }
-        }
-
-        // resolution and drawingSize are set in settings() now...
-        this.screen.setScale(quality);
-        this.screen.setSize(drawingSize);
+    public boolean hasMarkerBoard() {
+        return this.markerBoard == MarkerBoardInvalid.board;
     }
 
-    private void linkMarkerBoardToScreen() {
-        this.screen.linkTo(markerBoard);
+    public MarkerBoard getMarkerBoard() {
+        if (!this.hasMarkerBoard()) {
+            System.err.println("The screen " + this + " does not a markerboard...");
+        }
+        return this.markerBoard;
+    }
+
+    public PGraphicsOpenGL getGraphics() {
+        if (thisGraphics == null) {
+            thisGraphics = (PGraphicsOpenGL) parent.createGraphics(
+                    this.getRenderingSizeX(),
+                    this.getRenderingSizeY(),
+                    PApplet.P3D);
+        }
+
+        return thisGraphics;
+    }
+
+    public boolean isDrawing() {
+        return isDrawing;
+    }
+
+    public PVector getSize() {
+        return drawingSize.copy();
+    }
+
+    /**
+     * Get the rendering size in pixels.
+     *
+     * width = drawingSize x quality (px) = (mm) x (px/mm)
+     *
+     * @return width in pixels.
+     */
+    public int getRenderingSizeX() {
+        return (int) (drawingSize.x * quality);
+    }
+
+    /**
+     * Get the rendering size in pixels.
+     *
+     * width = drawingSize x quality (px) = (mm) x (px/mm)
+     *
+     * @return height in pixels.
+     */
+    public int getRenderingSizeY() {
+        return (int) (drawingSize.y * quality);
+    }
+
+    /**
+     * Use the tracking for the markerboard.
+     */
+    public void useTracking() {
+        if (useManualLocation) {
+            this.useManualLocation = false;
+            this.markerBoard.subscribe();
+        }
+    }
+
+    /**
+     * todo: a manual location should be used for each camera ?
+     *
+     * @param mat
+     */
+    protected void useManualLocation(PMatrix3D mat) {
+        this.manualLocation.set(mat);
+
+        System.out.println("Set manual loc");
+        if (!useManualLocation) {
+            this.useManualLocation = true;
+            this.markerBoard.unsubscribe();
+        }
+        // Will block the update of all markerboard...
+//        markerBoard.blockUpdate(cameraTracking, 10 * 60 * 60 * 1000); // ms
+    }
+
+    protected PMatrix3D getMainLocation(Camera camera) {
+        if (useManualLocation) {
+            return manualLocation.get();
+        }
+        return markerBoard.getTransfoMat(camera).get();
+    }
+
+    /**
+     * Get a copy of the overall transform (after tracking and second
+     * transform).
+     *
+     * @param trackedLocation
+     * @return
+     */
+    public PMatrix3D getLocation(PMatrix3D trackedLocation) {
+        PMatrix3D combinedTransfos = trackedLocation.get();
+        combinedTransfos.apply(extrinsics);
+        return combinedTransfos;
+    }
+
+    public void computeWorldToScreenMat(Camera camera) {
+
+        ///////////////////// PLANE COMPUTATION  //////////////////
+        PVector[] paperPosCorners3D = computeCorners(camera);
+        plane = new Plane(new Triangle3D(MathUtils.toVec(paperPosCorners3D[0]), MathUtils.toVec(paperPosCorners3D[1]), MathUtils.toVec(paperPosCorners3D[2])));
+
+        HomographyCreator homography = new HomographyCreator(3, 2, 4);
+        homography.addPoint(paperPosCorners3D[0], new PVector(0, 0));
+        homography.addPoint(paperPosCorners3D[1], new PVector(1, 0));
+        homography.addPoint(paperPosCorners3D[2], new PVector(1, 1));
+        homography.addPoint(paperPosCorners3D[3], new PVector(0, 1));
+        worldToScreen = homography.getHomography();
+    }
+
+    public PVector[] computeCorners(Camera camera) {
+        PVector[] paperPosCorners3D = new PVector[4];
+        ///////////////////// PLANE COMPUTATION  //////////////////
+        PMatrix3D mat = this.getLocation(camera);
+
+        paperPosCorners3D[0] = new PVector(mat.m03, mat.m13, mat.m23);
+        mat.translate(drawingSize.x, 0, 0);
+        paperPosCorners3D[1] = new PVector(mat.m03, mat.m13, mat.m23);
+        mat.translate(0, drawingSize.y, 0);
+        paperPosCorners3D[2] = new PVector(mat.m03, mat.m13, mat.m23);
+        mat.translate(-drawingSize.x, 0, 0);
+        paperPosCorners3D[3] = new PVector(mat.m03, mat.m13, mat.m23);
+        return paperPosCorners3D;
+    }
+
+    protected Plane plane = new Plane();
+
+    /**
+     * Get the 3D plane object from the main camera.
+     *
+     * @return
+     */
+    public Plane getPlane() {
+        computeWorldToScreenMat(cameraTracking);
+        return plane;
+    }
+
+    /**
+     * Get a 3D plane object given a camera.
+     *
+     * @param camera
+     * @return
+     */
+    public Plane getPlane(Camera camera) {
+        computeWorldToScreenMat(camera);
+        return plane;
+    }
+
+    public HomographyCalibration getWorldToScreen() {
+        return worldToScreen;
+    }
+//    /**
+//     * Set the main position by the tracking system. 
+//     * @param cam
+//     */
+//    public void setTrackedLocation(Camera cam) {
+//        this.blockUpdate(cam, 0); // ms
+//    }
+
+    private boolean isOpenGL = false;
+
+    // TODO: find another name
+    public boolean isOpenGL() {
+        return isOpenGL;
+    }
+
+    protected void setOpenGL(boolean gl) {
+        this.isOpenGL = gl;
+    }
+
+    // TODO: what about those ?
+    public boolean hasExtrinsics() {
+        return true;
+    }
+
+    public PMatrix3D getExtrinsics() {
+        return this.extrinsics;
     }
 
     private boolean checkInitErrors() {
@@ -238,6 +427,9 @@ public class PaperScreen {
         return true;
     }
 
+    /**
+     * Ask the main camera to track the markerboard, and set the filtering.
+     */
     private void tryInitTracking() {
         // If there is really a camera tracking.
         // There can be multiple camera tracking !!
@@ -248,35 +440,17 @@ public class PaperScreen {
         }
     }
 
-    private void updateBoardFiltering() {
-        if (filteringDistance != 0) {
-            markerBoard.setDrawingMode(cameraTracking, true, filteringDistance);
-        } else {
-            markerBoard.setDrawingMode(cameraTracking, false, 0);
-        }
-        markerBoard.setFiltering(cameraTracking, filteringFreq, filteringCutoff);
-    }
-
-    protected void setDrawingFilter(float distance) {
-        if (distance <= 0) {
-            distance = 0;
-        }
-        this.filteringDistance = distance;
-    }
-
-    protected void setTrackingFilter(float freq, float cutOff) {
-        this.filteringFreq = freq;
-        this.filteringCutoff = cutOff;
-    }
-
+    /**
+     * Ask the cameraTracking to track the current markerboard.
+     */
     private void trackCurrentMarkerBoard() {
         if (isWithoutCamera || this.markerBoard == MarkerBoardInvalid.board) {
             return;
         }
 
+        this.useTracking();
         if (!cameraTracking.tracks(markerBoard)) {
             cameraTracking.trackMarkerBoard(markerBoard);
-//            System.out.println("Camera. " + cameraTracking + " now tracks " + markerBoard);
         }
     }
 
@@ -285,8 +459,102 @@ public class PaperScreen {
         parent.registerMethod("pre", this);
         parent.registerMethod("draw", this);
 
+        // IDEA: register to save/load automatically. 
+        parent.registerMethod("keyEvent", this);
+
         // Do this so that the display is the last rendered.
         mainDisplay.registerAgain();
+    }
+
+    private String loadKey = "l", saveKey = "s", trackKey = "t";
+    private String saveName = null;
+//    private String loadKey = null, saveKey = null, trackKey = null;
+//    private String saveName = null;
+
+    public void setLoadSaveKey(String loadKey, String saveKey) {
+        setLoadKey(loadKey);
+        setSaveKey(saveKey);
+    }
+
+    /**
+     * Set a load to save the location. It will be usable using alt-key.
+     *
+     * @param key
+     */
+    public void setLoadKey(String key) {
+        this.loadKey = key;
+    }
+
+    /**
+     * Set a key to save the location. It will be usable using alt-key.
+     *
+     * @param key
+     */
+    public void setSaveKey(String key) {
+        this.saveKey = key;
+    }
+
+    /**
+     * Set a key to activate/deactivate the trackinge. It will be usable using
+     * alt-key.
+     *
+     * @param key
+     */
+    public void setTrackKey(String key) {
+        this.trackKey = key;
+    }
+
+    public void setSaveName(String name) {
+        this.saveName = name;
+    }
+
+    private boolean useAlt = true;
+
+    /**
+     * Use the alt modifier to save or load the files. Default is true.
+     *
+     * @param alt
+     */
+    public void useAlt(boolean alt) {
+        this.useAlt = alt;
+    }
+
+    /**
+     * Events coming from Processing to handle keys.
+     *
+     * @param e
+     */
+    public void keyEvent(KeyEvent e) {
+
+        String filename = "paper-" + Integer.toString(id) + ".xml";
+
+        if (e.isAltDown() || !useAlt) {
+            if (e.getAction() == KeyEvent.PRESS) {
+
+                if (saveName == null) {
+                    System.err.println("This paperscreen does not have name ! \n Set it with setSaveName()");
+                } else {
+                    filename = saveName;
+                }
+
+                if (saveKey != null
+                        && (e.getKey() == saveKey.charAt(0))) {
+                    System.out.println("Saved to : " + filename);
+                    this.saveLocationTo(filename);
+                }
+                if (trackKey != null
+                        && (e.getKey() == trackKey.charAt(0))) {
+                    this.useManualLocation(!this.useManualLocation, null);
+                    String status = useManualLocation ? "ON" : "OFF";
+                    System.out.println("PaperScreen: " + filename + " tracking: " + status);
+                }
+                if (loadKey != null
+                        && (e.getKey() == loadKey.charAt(0))) {
+                    this.loadLocationFrom(filename);
+                    System.out.println("Loaded from: " + filename);
+                }
+            }
+        }
     }
 
     /**
@@ -302,8 +570,8 @@ public class PaperScreen {
         Camera mainCamera = cameraTracking;
 
         if (isDrawingOnScreen) {
-            screen.setDrawing(true);
-            PGraphicsOpenGL g = screen.getGraphics();
+            setDrawing(true);
+            PGraphicsOpenGL g = getGraphics();
             this.currentGraphics = g;
             g.beginDraw();
             g.scale(quality);
@@ -317,7 +585,7 @@ public class PaperScreen {
                 if (display.hasCamera()) {
                     this.cameraTracking = display.getCamera();
                 }
-                PGraphicsOpenGL g = display.beginDrawOnScreen(this.screen);
+                PGraphicsOpenGL g = display.beginDrawOnScreen(this);
                 this.currentGraphics = g;
                 this.drawAroundPaper();
                 display.endDraw();
@@ -342,27 +610,24 @@ public class PaperScreen {
 //        System.out.println("drawAroundPaper default, you should not see this.");
     }
 
-    public void setDrawAroundPaper() {
-        this.isDrawingOnScreen = false;
-        this.isDrawingOnDisplay = true;
-    }
-
-    public void setDrawOnPaper() {
-        this.isDrawingOnScreen = true;
-        this.isDrawingOnDisplay = false;
-    }
-
-    public void setDrawStandard() {
-        setDrawOnPaper();
-    }
-
+    /**
+     * Activate/Desactivate the tracking. This is called when loadLocationFrom()
+     * is called.
+     *
+     * @param manual true to activate, false to revert to tracking
+     * @param loc forced location, or null to use the tracked location
+     */
     public void useManualLocation(boolean manual, PMatrix3D loc) {
-        this.useManualLocation = manual;
-        if (loc != null && manual) {
-            this.screen.useManualLocation(loc);
+        if (manual) {
+            if (loc == null) {
+//                System.err.println("Cannot set a null location.");
+                loc = this.getLocation(cameraTracking);
+            }
+            this.useManualLocation(loc);
             this.manualLocation = loc.get();
-        } else {
-            this.screen.useTracking();
+        }
+        if (!manual) {
+            this.useTracking();
             this.manualLocation = new PMatrix3D();
         }
         // TEST instead of blocking the update, just skip the use of the tracking.
@@ -373,11 +638,180 @@ public class PaperScreen {
 //        }
     }
 
-    // TODO: check this !
-    public PVector getScreenPos() {
+    HashMap<Integer, Integer> positionsHistory = new HashMap<Integer, Integer>();
 
+    ////////////////////////
+    //// Tracking individual markers
+    ////////////////////////
+    
+    /**
+     * Get individual markers, their ID should be between 800 and 1000. 
+     * @param markerWidth
+     * @return 
+     */
+    public Map<Integer, PVector> getSingleMarkers(float markerWidth) {
+        Papart papart = Papart.getPapart();
+//        ArrayList<PVector> positions = new ArrayList<>();
+        HashMap<Integer, PVector> positions = new HashMap<Integer, PVector>();
+
+        DetectedMarker[] markers = papart.getMarkerList();
+
+        for (DetectedMarker marker : markers) {
+            
+            if(marker.id < 800 || marker.id > 1000){
+                continue;
+            }
+            
+            //       next if marker.confidence < 1.0
+            PMatrix3D mat = papart.getMarkerMatrix(marker.id, markerWidth);
+
+            // look at others if the position is not valid
+            if (mat == null) {
+                continue;
+            }
+            PVector pos = papart.projectPositionTo(mat, this);
+
+            if (pos.y < 0 || pos.y > drawingSize.y
+                    || pos.x < 0
+                    || pos.x > drawingSize.x) {
+
+                // Not in this paperscreen - reset history
+                  positionsHistory.put(marker.id, 0);
+            } else {
+                // update history
+                Integer markerID = positionsHistory.get(marker.id);
+                int history = markerID == null ? 0 : markerID;
+                positionsHistory.put(marker.id, ++history);
+
+                // If it is old enough ? ~ 10 frames 
+                if (history > 10) {
+                    positions.put(marker.id, pos);
+                }
+            }
+        }
+        return positions;
+    }
+    
+    // TODO: use Z as the angle of the marker --- source in ruby
+//    
+//       # pos.x = pos.x / filter_scale
+//      # pos.y = pos.y / filter_scale
+//      if @marker_valid_pos[marker.id] == nil
+//        filter_intens = 20.0 # freq
+//##        filter_intens = 1.0 ## alpha
+//        @marker_valid_pos[marker.id] =
+//          {
+//            :x_filter => Papartlib::OneEuroFilter.new(filter_intens),
+//            :y_filter => Papartlib::OneEuroFilter.new(filter_intens),
+//            :angle_filter => Papartlib::OneEuroFilter.new(filter_intens)
+//
+//           #  :x_filter => Papartlib::LowPassFilter.new(filter_intens, pos.x),
+//           # :y_filter => Papartlib::LowPassFilter.new(filter_intens, pos.y),
+//           # :angle_filter => Papartlib::LowPassFilter.new(filter_intens, pos.z)
+//          }
+//      else
+//        pos.x = @marker_valid_pos[marker.id][:x_filter].filter(pos.x)
+//        pos.y = @marker_valid_pos[marker.id][:y_filter].filter(pos.y)
+//
+//        pos.z = pos.z + 2 * Math::PI if pos.z < 0  if in_blue_zone(pos.x)
+//#        pos.z = pos.z + 2 * Math::PI  if in_blue_zone(pos.x)
+//        pos.z = @marker_valid_pos[marker.id][:angle_filter].filter(pos.z)
+//        pos.z = pos.z - 2* Math::PI  if in_blue_zone(pos.x)
+    
+    
+    
+    /**
+     * Get the main marker found, ID between 800 and 1000. 
+     * @param markerWidth
+     * @return id of the marker found, or -1 in none.
+     */
+    public int getMainMarker(float markerWidth){
+        
+        int minimumAge = 10;
+        int selected = -1;
+        
+        Map<Integer, PVector> singleMarkers = getSingleMarkers(markerWidth);
+        for(Integer key : singleMarkers.keySet()){
+            Integer age = positionsHistory.get(key);
+            if(age != null && age > minimumAge){
+                selected = key; 
+                minimumAge = age;
+            }
+        }
+        return selected;
+    }
+
+       ////////////////////////
+    // Location handling. //
+    ////////////////////////
+    /**
+     * Add a vector to the tracked location. The setLocation do not stack up. It
+     * replaces the previous call.
+     *
+     * @param v in millimeters
+     */
+    public void setLocation(PVector v) {
+        setLocation(v.x, v.y, v.z);
+    }
+
+    /**
+     * Add a vector from the tracked location.
+     *
+     * The setLocation do not stack up. It replaces the previous call.
+     *
+     * @param x in millimeters
+     * @param y in millimeters
+     * @param z in millimeters
+     */
+    public void setLocation(float x, float y, float z) {
+        if (extrinsics == null) {
+            extrinsics = new PMatrix3D();
+        }
+        extrinsics.reset();
+        extrinsics.translate(x, y, z);
+    }
+
+    /**
+     * Add another transformation from the current location. The setLocation do
+     * not stack up. It replaces the previous call.
+     *
+     * @param matrix
+     */
+    public void setLocation(PMatrix3D matrix) {
+        assert (isInitialized);
+        if (extrinsics == null) {
+            this.extrinsics = new PMatrix3D(matrix);
+        } else {
+            this.extrinsics.set(matrix);
+        }
+    }
+
+    /**
+     * Get a copy of the overall transform (after tracking and second
+     * transform).
+     *
+     * @param camera
+     * @return
+     */
+    public PMatrix3D getLocation(Camera camera) {
+        if (!markerBoard.isTrackedBy(camera) && !this.useManualLocation) {
+            return extrinsics.get();
+        }
+
+        PMatrix3D combinedTransfos = getMainLocation(camera);
+        combinedTransfos.apply(extrinsics);
+        return combinedTransfos;
+    }
+
+    /**
+     * Get the 3D position. Deprecated.
+     *
+     * @return the bottom right corner of the markerboard (tracked position).
+     */
+    @Deprecated
+    public PVector getScreenPos() {
         if (this.isWithoutCamera) {
-            PMatrix3D mat = screen.getExtrinsics();
+            PMatrix3D mat = getExtrinsics();
             return new PVector(mat.m03, mat.m13, mat.m23);
         } else if (mainDisplay.hasCamera()) {
             return markerBoard.getBoardLocation(cameraTracking, (ARDisplay) mainDisplay);
@@ -394,52 +828,30 @@ public class PaperScreen {
         }
     }
 
+    /**
+     * Disable the drawing and clear the offscreen.
+     */
     public void noDraw() {
-        screen.setDrawing(false);
-        PGraphicsOpenGL pg = screen.getGraphics();
+        setDrawing(false);
+        PGraphicsOpenGL pg = getGraphics();
         pg.beginDraw();
         pg.clear();
         pg.endDraw();
     }
 
-    @Deprecated
-    public PGraphicsOpenGL beginDraw2D() {
-        screen.setDrawing(true);
-        PGraphicsOpenGL g = screen.getGraphics();
-        this.currentGraphics = g;
-        g.beginDraw();
-        g.scale(quality);
-        this.isDrawingOnScreen = true;
-        return g;
-    }
-
-    @Deprecated
-    public PGraphicsOpenGL beginDraw3D() {
-        screen.setDrawing(false);
-        this.currentGraphics = getDisplay().getGraphics();
-        PGraphicsOpenGL g = getDisplay().beginDrawOnScreen(this.screen);
-        this.isDrawingOnScreen = false;
-        return g;
-    }
-
-    @Deprecated
-    public PGraphicsOpenGL beginDraw3DProjected() {
-        screen.setDrawing(true);
-        PGraphicsOpenGL g = screen.getGraphics();
-        this.currentGraphics = g;
-        g.beginDraw();
-        g.scale(quality);
-        this.isDrawingOnScreen = true;
-        return g;
-    }
-
+    /**
+     *
+     * @return true when this PaperScreen is renderend in an offscreen buffer.
+     */
     public boolean isDraw2D() {
         return this.isDrawingOnScreen;
     }
 
     /**
      * *
-     * Works only in 3D mode with beginDraw3D().
+     * Works only in 3D mode with beginDraw3D(). Change the currernt matrix to
+     * the location of another PaperScreen. This could be used for drawing
+     * objects or putting lights at another PaperScreen location.
      *
      * @param paperScreen PaperScreen to go to.
      */
@@ -462,6 +874,15 @@ public class PaperScreen {
 
     public static final PVector INVALID_VECTOR = new PVector();
 
+    /**
+     * Get the Location of a point located in another PaperScreen. Example: In
+     * paperScreenA, there is an object at location (10, 10). We want to know
+     * the 3D location of this point relative to this PaperScreen.
+     *
+     * @param paperScreen
+     * @param point
+     * @return
+     */
     public PVector getCoordFrom(PaperScreen paperScreen, PVector point) {
 
         // get a copy
@@ -481,113 +902,117 @@ public class PaperScreen {
 
         return thisViewOfPoint;
     }
-    
+
     /**
-     * Project the Mouse to this PaperScreen.
-     * You can disable it by pressing the right button of the mouse.
-     * Similar to SkatoloLink "AddMouseTo". 
+     * Project the Mouse to this PaperScreen. You can disable it by pressing the
+     * right button of the mouse. Similar to SkatoloLink "AddMouseTo".
+     *
      * @return Touch to add to your touchList
      */
-    public Touch createTouchFromMouse(){
-        
-        if (parent.mousePressed && (parent.mouseButton == PConstants.RIGHT)){
+    public Touch createTouchFromMouse() {
+
+        if (parent.mousePressed && (parent.mouseButton == PConstants.RIGHT)) {
             return Touch.INVALID;
         }
         Touch t = new Touch();
-            // Add the mouse a pointer. 
-        PVector p = getDisplay().project(getScreen(), 
-                    (float) parent.mouseX / (float) parent.width,
-                    (float) parent.mouseY /(float)  parent.height);
-        p.x  = p.x * drawingSize.x;
-        p.y  = p.y * drawingSize.y;
+        // Add the mouse a pointer. 
+        PVector p = getDisplay().project(this,
+                (float) parent.mouseX / (float) parent.width,
+                (float) parent.mouseY / (float) parent.height);
+        p.x = p.x * drawingSize.x;
+        p.y = p.y * drawingSize.y;
         t.setPosition(p);
         return t;
     }
 
-//  public PVector getCoordOf(PaperScreen paperScreen, PVector point) {
-//
-//        PMatrix3D thisLocation = this.getLocation();
-//        PVector cameraViewOfPoint = new PVector();
-//        thisLocation.mult(point, cameraViewOfPoint);
-//
-//        PMatrix3D otherLocationInv = paperScreen.getLocation().get();
-//        otherLocationInv.invert();
-//
-//        PVector otherViewOfPoint = new PVector();
-//        otherLocationInv.mult(cameraViewOfPoint, otherViewOfPoint);
-//
-//        if(Float.isNaN(otherViewOfPoint.x)){
-//            return  INVALID_VECTOR;
-//        }
-//
-//        return otherViewOfPoint;
-//    }
-    public PGraphicsOpenGL getGraphics() {
-        return currentGraphics;
-    }
-
-    public Screen getScreen() {
-        return this.screen;
-    }
-
+    /**
+     *
+     * @return true if the markerboard can move through tracking.
+     */
     public boolean isMoving() {
         return markerBoard.isMoving(cameraTracking);
     }
 
+    /**
+     * Force the 3D location of the markerBoard, as if it were coming from
+     * tracking. You can instead add another position with setLocation().
+     *
+     * @param location
+     */
     public void setMainLocation(PMatrix3D location) {
         markerBoard.setFakeLocation(cameraTracking, location);
     }
 
-    public void setLocation(PVector v) {
-        setLocation(v.x, v.y, v.z);
-    }
-
-    // TODO: Bug here, without this call, the rendering is different.
-    public void setLocation(float x, float y, float z) {
-        screen.setTranslation(x, y, z);
-    }
-
-// TODO: Bug here, without this call, the rendering is different.
-    public void setLocation(PMatrix3D matrix) {
-        assert (isInitialized);
-        screen.setTransformation(matrix);
-    }
-
+    /**
+     * Get the 3D location of the PaperScreen (bottom-right corner). It takes
+     * into account the call to setLocation().
+     *
+     * @return
+     */
     public PVector getLocationVector() {
         PMatrix3D p;
         if (this.useManualLocation) {
             p = this.manualLocation;
         } else {
-            p = screen.getLocation(cameraTracking);
+            p = getLocation(cameraTracking);
         }
         return new PVector(p.m03, p.m13, p.m23);
     }
 
+    /**
+     * Get the 3D location of the PaperScreen. This takes into account the
+     * setLocation() calls.
+     *
+     * @return
+     */
     public PMatrix3D getLocation() {
         if (this.useManualLocation) {
             return this.manualLocation;
         }
-        return this.screen.getLocation(cameraTracking);
+        return this.getLocation(cameraTracking);
     }
 
+    /**
+     * Save the tracked location of the PaperScreen. You still need to do the
+     * setLocation after loading this.
+     *
+     * @param filename
+     */
     public void saveLocationTo(String filename) {
         HomographyCalibration.saveMatTo(
                 Papart.getPapart().getApplet(),
-                screen.getMainLocation(cameraTracking),
+                getMainLocation(cameraTracking),
                 filename);
     }
 
+    /**
+     * Load the tracked location of the PaperScreen. You still need to do the
+     * setLocation after loading this. Calling this will disable the tracking.
+     *
+     * @param filename
+     */
     public void loadLocationFrom(String filename) {
         PMatrix3D loc = HomographyCalibration.getMatFrom(Papart.getPapart().getApplet(), filename);
         this.useManualLocation(true, loc);
 //               setMainLocation(loc);
     }
 
+    /**
+     * Load a tracked location of the PaperScreen. Calling this will disable the
+     * tracking.
+     *
+     * @param mat
+     */
     public void loadLocationFrom(PMatrix3D mat) {
         this.useManualLocation(true, mat);
 //        setMainLocation(mat.get());
     }
 
+    /**
+     * Experimental - Get the ObjectFinder used in this PaperScreen.
+     *
+     * @return the object finder or null when not in use.
+     */
     public ObjectFinder getObjectTracking() {
         if (markerBoard.useJavaCVFinder()) {
             return markerBoard.getObjectTracking(cameraTracking);
@@ -597,43 +1022,235 @@ public class PaperScreen {
         }
     }
 
+    /**
+     * Get the location in camera space of a touchPoint.
+     *
+     * @param t touch
+     * @return the coordinates for cameraTracking.
+     */
+    public PVector getCameraViewOf(Touch t) {
+        ProjectorDisplay projector = (ProjectorDisplay) getDisplay();
+
+        TrackedElement tp = t.trackedSource;
+        PVector screenPos = tp.getPosition();
+        PVector tablePos = projector.projectPointer3D(this, screenPos.x, screenPos.y);
+        ProjectiveDeviceP pdp = cameraTracking.getProjectiveDevice();
+        PVector coord = pdp.worldToPixelCoord(tablePos);
+        return coord;
+    }
+
+    /**
+     * Unsafe do not use unless you are sure. This will be moved to a utility
+     * class.
+     */
+    public static PImage getImageFrom(PVector coord, PImage src, PImage dst, int radius) {
+        int x = (int) coord.x;
+        int y = (int) coord.y;
+
+        dst.copy(src,
+                x - radius / 2,
+                y - radius / 2,
+                radius,
+                radius,
+                0, 0,
+                radius,
+                radius);
+        return dst;
+    }
+
+    /**
+     * Get the color of a 3D point. The location of the point is from the
+     * cameraTracking origin.
+     *
+     * @param point
+     * @return
+     */
+    public int getColorFrom3D(PVector point) {
+        return getColorFrom3D(cameraTracking, point);
+    }
+
+    /**
+     * Get the color of a 3D point. The location of the point is from the
+     * cameraTracking origin.
+     *
+     * @param point
+     * @return
+     */
+    public int getColorFrom3D(Camera camera, PVector point) {
+        return getColorAt(camera, getPxCoordinates(point));
+    }
+
+    /**
+     * Get the color of a camera pixel.
+     *
+     * @param camera
+     * @param coord in cameraTracking space.
+     * @return
+     */
+    public int getColorAt(Camera camera, PVector coord) {
+        int x = (int) coord.x;
+        int y = (int) coord.y;
+        ByteBuffer buff = camera.getIplImage().getByteBuffer();
+        int offset = x + y * camera.width();
+        return getColor(buff, offset);
+    }
+
+    /**
+     * Get the color of a camera pixel.
+     *
+     * @param coord in cameraTracking space.
+     * @return
+     */
+    public int getColorAt(PVector coord) {
+        return getColorAt(cameraTracking, coord);
+    }
+
+    /**
+     * Convert the color from Ipl to Processing RGB
+     *
+     * @param buff
+     * @param offset
+     * @return
+     */
+    private int getColor(ByteBuffer buff, int offset) {
+        offset = offset * 3;
+        return (buff.get(offset + 2) & 0xFF) << 16
+                | (buff.get(offset + 1) & 0xFF) << 8
+                | (buff.get(offset) & 0xFF);
+    }
+
+    /**
+     * Get the camera pixel coordinates of a 3D point viewed by the camera.
+     *
+     * @param cameraTracking3DCoord
+     * @return
+     */
+    public PVector getPxCoordinates(PVector cameraTracking3DCoord) {
+        ProjectiveDeviceP pdp = cameraTracking.getProjectiveDevice();
+        PVector coord = pdp.worldToPixelCoord(cameraTracking3DCoord);
+        return coord;
+    }
+
+    /**
+     * Get a square of pixels centered at the coord location of radius size.
+     * WARNING: Unsafe to use, this will be updated/moved
+     *
+     * @param coord
+     * @param cameraImage
+     * @param radius
+     * @return
+     */
+    public int[] getPixelsFrom(PVector coord, PImage cameraImage, int radius) {
+        int[] px = new int[radius * radius];
+        int x = (int) coord.x;
+        int y = (int) coord.y;
+        int minX = PApplet.constrain(x - radius, 0, cameraTracking.width() - 1);
+        int maxX = PApplet.constrain(x + radius, 0, cameraTracking.width() - 1);
+        int minY = PApplet.constrain(y - radius, 0, cameraTracking.height() - 1);
+        int maxY = PApplet.constrain(y + radius, 0, cameraTracking.height() - 1);
+
+        int k = 0;
+        for (int j = minY; j <= maxY; j++) {
+            for (int i = minX; i <= maxX; i++) {
+                int offset = i + j * cameraTracking.width();
+                px[k++] = cameraImage.pixels[offset];
+            }
+        }
+        return px;
+    }
+
+    ///////////////////////////
+    // Getters and setters. 
+    ///////////////////////////
+    /**
+     * Enable or disable rendering of this PaperScreen.
+     *
+     * @param drawing
+     */
+    public void setDrawing(boolean drawing) {
+        this.isDrawing = drawing;
+    }
+
+    /**
+     *
+     * @return the tracked MarkerBoard
+     */
     public MarkerBoard getBoard() {
         return markerBoard;
     }
 
+    /**
+     *
+     * @return drawingSize in millimeters.
+     */
     public PVector getDrawingSize() {
         return drawingSize;
     }
 
+    /**
+     *
+     * @return main camera tracking.
+     */
     public Camera getCameraTracking() {
         return cameraTracking;
     }
 
+    /**
+     * PaperScreen can be rendered for multiple displays. This method add a new
+     * display.
+     *
+     * @param display
+     */
+    public void addDisplay(BaseDisplay display) {
+        this.displays.add(display);
+        display.addPaperScreen(this);
+        if (display.hasCamera()) {
+            display.getCamera().trackMarkerBoard(markerBoard);
+        }
+    }
+
+    /**
+     *
+     * @return the first display
+     */
     public BaseDisplay getDisplay() {
         return displays.get(0);
     }
 
+    /**
+     *
+     * @return list of all the displays
+     */
     public ArrayList<BaseDisplay> getDisplays() {
         return displays;
     }
 
+    /**
+     *
+     * @return the quality of rendering in px/mm.
+     */
     public float getResolution() {
         return quality;
     }
 
+    /**
+     *
+     * @return true when using an offscreen.
+     */
     public boolean isIsDrawingOnScreen() {
         return isDrawingOnScreen;
     }
 
-    public void keyEvent(KeyEvent e) {
-
-    }
-
+    ////////////////////////////////
+    /// Methods to call in settings
+    ////////////////////////////////
     /**
      * Load a Markerboard with the given configuration file and size. The
      * configuration file can end with ".svg" for an ARToolKitPlus tracking
      * technique. (faster) The configuration file can end with ".jpg" or ".png"
      * to track "images" using SURF features. (slower)
+     *
+     * Call from settings();
      *
      * @param configFile svg filename
      * @param width width of the markerboard in millimeters.
@@ -649,1354 +1266,211 @@ public class PaperScreen {
      */
     public void setMarkerBoard(MarkerBoard markerboard) {
         this.markerBoard = markerboard;
-        linkMarkerBoardToScreen();
         trackCurrentMarkerBoard();
+    }
+
+    /**
+     * Set the quality (resolution) of the drawing in px/mm . e.g.: A board with
+     * 100mm width and 2 resolution will have 200 pixels.
+     *
+     * Call from settings
+     */
+    public void setQuality(float quality) {
+        this.quality = quality;
     }
 
     /**
      * Sets the drawing size in millimeters. To get the resolution you must
      * multiply the drawing size by the resolution.
      *
+     * Call from settings()
+     *
+     * @param width in millimeters
+     * @param height in millimeters
      */
     public final void setDrawingSize(float width, float height) {
         this.drawingSize.x = width;
         this.drawingSize.y = height;
     }
 
-//    /**
-//     * Experimental.
-//     */
-//    @Deprecated
-//    private void checkCorners() {
-//        //        // check if drawing is required...
-//
-//        if (!(display instanceof ARDisplay)) {
-//            return;
-//        }
-//
-//        ARDisplay arDisplay = (ARDisplay) display;
-//
-//        PVector[] corners = screen.getCornerPos();
-//
-//        if (arDisplay.getProjectiveDeviceP() == null) {
-//            return;
-//        }
-//
-//        int nbOut = 0;
-//        if (arDisplay.hasExtrinsics()) {
-//            PMatrix3D extr = arDisplay.getExtrinsics();
-//            nbOut = checkCornerExtr(corners, arDisplay, extr);
-//        } else {
-//            nbOut = checkCorner(corners, arDisplay);
-//        }
-//
-//        if (nbOut >= 3) {
-//            screen.setDrawing(false);
-//        } else {
-//            screen.setDrawing(true);
-//        }
-//    }
-//    private int checkCornerExtr(PVector[] corners,
-//            ARDisplay arDisplay, PMatrix3D extr) {
-//        int nbOut = 0;
-//        for (PVector corner : corners) {
-//            // Corners are on the camera Point of view.
-//            PVector projC = new PVector();
-//            extr.mult(corner, projC);
-//            PVector screenCoord = arDisplay.getProjectiveDeviceP().worldToPixelReal(projC);
-//            if (screenCoord.x < 0 || screenCoord.x > arDisplay.getWidth()
-//                    || screenCoord.y < 0 || screenCoord.y > arDisplay.getHeight()) {
-//                nbOut++;
-//            }
-//        }
-//        return nbOut;
-//    }
-//
-//    private int checkCorner(PVector[] corners,
-//            ARDisplay arDisplay) {
-//        int nbOut = 0;
-//        for (PVector corner : corners) {
-//            // Corners are on the camera Point of view.
-//            PVector screenCoord = arDisplay.getProjectiveDeviceP().worldToPixelReal(corner);
-//            if (screenCoord.x < 0 || screenCoord.x > arDisplay.getWidth()
-//                    || screenCoord.y < 0 || screenCoord.y > arDisplay.getHeight()) {
-//                nbOut++;
-//            }
-//        }
-//        return nbOut;
-//    }
-    /////////////////////////////////
-    //////// Automatic generation of delegated methods...
-    /////////////////////////////
-    public void setPrimary(boolean primary) {
-        currentGraphics.setPrimary(primary);
-    }
-
-    public void setSize(int iwidth, int iheight) {
-        currentGraphics.setSize(iwidth, iheight);
-    }
-
-    public void dispose() {
-        currentGraphics.dispose();
-    }
-
-    public PSurface createSurface() {
-        return currentGraphics.createSurface();
-    }
-
-    public void setCache(PImage image, Object storage) {
-        currentGraphics.setCache(image, storage);
-    }
-
-    public Object getCache(PImage image) {
-        return currentGraphics.getCache(image);
-    }
-
-    public void removeCache(PImage image) {
-        currentGraphics.removeCache(image);
-    }
-
-//    public void beginDraw() {
-//        currentGraphics.beginDraw();
-//    }
-//
-//    public void endDraw() {
-//        currentGraphics.endDraw();
-//    }
-    public PGL beginPGL() {
-        return currentGraphics.beginPGL();
-    }
-
-    public void endPGL() {
-        currentGraphics.endPGL();
-    }
-
-    public void updateProjmodelview() {
-        currentGraphics.updateProjmodelview();
-    }
-
-    public void hint(int which) {
-        currentGraphics.hint(which);
-    }
-
-    public void beginShape(int kind) {
-        currentGraphics.beginShape(kind);
-    }
-
-    public void endShape(int mode) {
-        currentGraphics.endShape(mode);
-    }
-
-    public void textureWrap(int wrap) {
-        currentGraphics.textureWrap(wrap);
-    }
-
-    public void textureSampling(int sampling) {
-        currentGraphics.textureSampling(sampling);
-    }
-
-    public void beginContour() {
-        currentGraphics.beginContour();
-    }
-
-    public void endContour() {
-        currentGraphics.endContour();
-    }
-
-    public void vertex(float x, float y) {
-        currentGraphics.vertex(x, y);
-    }
-
-    public void vertex(float x, float y, float u, float v) {
-        currentGraphics.vertex(x, y, u, v);
-    }
-
-    public void vertex(float x, float y, float z) {
-        currentGraphics.vertex(x, y, z);
-    }
-
-    public void vertex(float x, float y, float z, float u, float v) {
-        currentGraphics.vertex(x, y, z, u, v);
-    }
-
-    public void attribPosition(String name, float x, float y, float z) {
-        currentGraphics.attribPosition(name, x, y, z);
-    }
-
-    public void attribNormal(String name, float nx, float ny, float nz) {
-        currentGraphics.attribNormal(name, nx, ny, nz);
-    }
-
-    public void attribColor(String name, int color) {
-        currentGraphics.attribColor(name, color);
-    }
-
-    public void attrib(String name, float... values) {
-        currentGraphics.attrib(name, values);
-    }
-
-    public void attrib(String name, int... values) {
-        currentGraphics.attrib(name, values);
-    }
-
-    public void attrib(String name, boolean... values) {
-        currentGraphics.attrib(name, values);
-    }
-
-    public void noClip() {
-        currentGraphics.noClip();
-    }
-
-    public void flush() {
-        currentGraphics.flush();
-    }
-
-    public void bezierVertex(float x2, float y2, float x3, float y3, float x4, float y4) {
-        currentGraphics.bezierVertex(x2, y2, x3, y3, x4, y4);
-    }
-
-    public void bezierVertex(float x2, float y2, float z2, float x3, float y3, float z3, float x4, float y4, float z4) {
-        currentGraphics.bezierVertex(x2, y2, z2, x3, y3, z3, x4, y4, z4);
-    }
-
-    public void quadraticVertex(float cx, float cy, float x3, float y3) {
-        currentGraphics.quadraticVertex(cx, cy, x3, y3);
-    }
-
-    public void quadraticVertex(float cx, float cy, float cz, float x3, float y3, float z3) {
-        currentGraphics.quadraticVertex(cx, cy, cz, x3, y3, z3);
-    }
-
-    public void curveVertex(float x, float y) {
-        currentGraphics.curveVertex(x, y);
-    }
-
-    public void curveVertex(float x, float y, float z) {
-        currentGraphics.curveVertex(x, y, z);
-    }
-
-    public void point(float x, float y) {
-        currentGraphics.point(x, y);
-    }
-
-    public void point(float x, float y, float z) {
-        currentGraphics.point(x, y, z);
-    }
-
-    public void line(float x1, float y1, float x2, float y2) {
-        currentGraphics.line(x1, y1, x2, y2);
-    }
-
-    public void line(float x1, float y1, float z1, float x2, float y2, float z2) {
-        currentGraphics.line(x1, y1, z1, x2, y2, z2);
-    }
-
-    public void triangle(float x1, float y1, float x2, float y2, float x3, float y3) {
-        currentGraphics.triangle(x1, y1, x2, y2, x3, y3);
-    }
-
-    public void quad(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4) {
-        currentGraphics.quad(x1, y1, x2, y2, x3, y3, x4, y4);
-    }
-
-    public void ellipseImpl(float a, float b, float c, float d) {
-        currentGraphics.ellipseImpl(a, b, c, d);
-    }
-
-    public void box(float w, float h, float d) {
-        currentGraphics.box(w, h, d);
-    }
-
-    public void sphere(float r) {
-        currentGraphics.sphere(r);
-    }
-
-    public PShape loadShape(String filename) {
-        return currentGraphics.loadShape(filename);
-    }
-
-    public float textAscent() {
-        return currentGraphics.textAscent();
-    }
-
-    public float textDescent() {
-        return currentGraphics.textDescent();
-    }
-
-    public void textSize(float size) {
-        currentGraphics.textSize(size);
-    }
-
-    public void pushMatrix() {
-        currentGraphics.pushMatrix();
-    }
-
-    public void popMatrix() {
-        currentGraphics.popMatrix();
-    }
-
-    public void translate(float tx, float ty) {
-        currentGraphics.translate(tx, ty);
-    }
-
-    public void translate(float tx, float ty, float tz) {
-        currentGraphics.translate(tx, ty, tz);
-    }
-
-    public void rotate(float angle) {
-        currentGraphics.rotate(angle);
-    }
-
-    public void rotateX(float angle) {
-        currentGraphics.rotateX(angle);
-    }
-
-    public void rotateY(float angle) {
-        currentGraphics.rotateY(angle);
-    }
-
-    public void rotateZ(float angle) {
-        currentGraphics.rotateZ(angle);
-    }
-
-    public void rotate(float angle, float v0, float v1, float v2) {
-        currentGraphics.rotate(angle, v0, v1, v2);
-    }
-
-    public void scale(float s) {
-        currentGraphics.scale(s);
-    }
-
-    public void scale(float sx, float sy) {
-        currentGraphics.scale(sx, sy);
-    }
-
-    public void scale(float sx, float sy, float sz) {
-        currentGraphics.scale(sx, sy, sz);
-    }
-
-    public void shearX(float angle) {
-        currentGraphics.shearX(angle);
-    }
-
-    public void shearY(float angle) {
-        currentGraphics.shearY(angle);
-    }
-
-    public void resetMatrix() {
-        currentGraphics.resetMatrix();
-    }
-
-    public void applyMatrix(PMatrix2D source) {
-        currentGraphics.applyMatrix(source);
-    }
-
-    public void applyMatrix(float n00, float n01, float n02, float n10, float n11, float n12) {
-        currentGraphics.applyMatrix(n00, n01, n02, n10, n11, n12);
-    }
-
-    public void applyMatrix(PMatrix3D source) {
-        currentGraphics.applyMatrix(source);
-    }
-
-    public void applyMatrix(float n00, float n01, float n02, float n03, float n10, float n11, float n12, float n13, float n20, float n21, float n22, float n23, float n30, float n31, float n32, float n33) {
-        currentGraphics.applyMatrix(n00, n01, n02, n03, n10, n11, n12, n13, n20, n21, n22, n23, n30, n31, n32, n33);
-    }
-
-    public PMatrix getMatrix() {
-        return currentGraphics.getMatrix();
-    }
-
-    public PMatrix3D getMatrix(PMatrix3D target) {
-        return currentGraphics.getMatrix(target);
-    }
-
-    public void setMatrix(PMatrix2D source) {
-        currentGraphics.setMatrix(source);
-    }
-
-    public void setMatrix(PMatrix3D source) {
-        currentGraphics.setMatrix(source);
-    }
-
-    public void printMatrix() {
-        currentGraphics.printMatrix();
-    }
-
-    public void pushProjection() {
-        currentGraphics.pushProjection();
-    }
-
-    public void popProjection() {
-        currentGraphics.popProjection();
-    }
-
-    public void resetProjection() {
-        currentGraphics.resetProjection();
-    }
-
-    public void applyProjection(PMatrix3D mat) {
-        currentGraphics.applyProjection(mat);
-    }
-
-    public void applyProjection(float n00, float n01, float n02, float n03, float n10, float n11, float n12, float n13, float n20, float n21, float n22, float n23, float n30, float n31, float n32, float n33) {
-        currentGraphics.applyProjection(n00, n01, n02, n03, n10, n11, n12, n13, n20, n21, n22, n23, n30, n31, n32, n33);
-    }
-
-    public void setProjection(PMatrix3D mat) {
-        currentGraphics.setProjection(mat);
-    }
-
-    public void beginCamera() {
-        currentGraphics.beginCamera();
-    }
-
-    public void endCamera() {
-        currentGraphics.endCamera();
-    }
-
-    public void camera() {
-        currentGraphics.camera();
-    }
-
-    public void camera(float eyeX, float eyeY, float eyeZ, float centerX, float centerY, float centerZ, float upX, float upY, float upZ) {
-        currentGraphics.camera(eyeX, eyeY, eyeZ, centerX, centerY, centerZ, upX, upY, upZ);
-    }
-
-    public void printCamera() {
-        currentGraphics.printCamera();
-    }
-
-    public void ortho() {
-        currentGraphics.ortho();
-    }
-
-    public void ortho(float left, float right, float bottom, float top) {
-        currentGraphics.ortho(left, right, bottom, top);
-    }
-
-    public void ortho(float left, float right, float bottom, float top, float near, float far) {
-        currentGraphics.ortho(left, right, bottom, top, near, far);
-    }
-
-    public void perspective() {
-        currentGraphics.perspective();
-    }
-
-    public void perspective(float fov, float aspect, float zNear, float zFar) {
-        currentGraphics.perspective(fov, aspect, zNear, zFar);
-    }
-
-    public void frustum(float left, float right, float bottom, float top, float znear, float zfar) {
-        currentGraphics.frustum(left, right, bottom, top, znear, zfar);
-    }
-
-    public void printProjection() {
-        currentGraphics.printProjection();
-    }
-
-    public float screenX(float x, float y) {
-        return currentGraphics.screenX(x, y);
-    }
-
-    public float screenY(float x, float y) {
-        return currentGraphics.screenY(x, y);
-    }
-
-    public float screenX(float x, float y, float z) {
-        return currentGraphics.screenX(x, y, z);
-    }
-
-    public float screenY(float x, float y, float z) {
-        return currentGraphics.screenY(x, y, z);
-    }
-
-    public float screenZ(float x, float y, float z) {
-        return currentGraphics.screenZ(x, y, z);
-    }
-
-    public float modelX(float x, float y, float z) {
-        return currentGraphics.modelX(x, y, z);
-    }
-
-    public float modelY(float x, float y, float z) {
-        return currentGraphics.modelY(x, y, z);
-    }
-
-    public float modelZ(float x, float y, float z) {
-        return currentGraphics.modelZ(x, y, z);
-    }
-
-    public void popStyle() {
-        currentGraphics.popStyle();
-    }
-
-    public void strokeWeight(float weight) {
-        currentGraphics.strokeWeight(weight);
-    }
-
-    public void strokeJoin(int join) {
-        currentGraphics.strokeJoin(join);
-    }
-
-    public void strokeCap(int cap) {
-        currentGraphics.strokeCap(cap);
-    }
-
-    public void lights() {
-        currentGraphics.lights();
-    }
-
-    public void noLights() {
-        currentGraphics.noLights();
-    }
-
-    public void ambientLight(float r, float g, float b) {
-        currentGraphics.ambientLight(r, g, b);
-    }
-
-    public void ambientLight(float r, float g, float b, float x, float y, float z) {
-        currentGraphics.ambientLight(r, g, b, x, y, z);
-    }
-
-    public void directionalLight(float r, float g, float b, float dx, float dy, float dz) {
-        currentGraphics.directionalLight(r, g, b, dx, dy, dz);
-    }
-
-    public void pointLight(float r, float g, float b, float x, float y, float z) {
-        currentGraphics.pointLight(r, g, b, x, y, z);
-    }
-
-    public void spotLight(float r, float g, float b, float x, float y, float z, float dx, float dy, float dz, float angle, float concentration) {
-        currentGraphics.spotLight(r, g, b, x, y, z, dx, dy, dz, angle, concentration);
-    }
-
-    public void lightFalloff(float constant, float linear, float quadratic) {
-        currentGraphics.lightFalloff(constant, linear, quadratic);
-    }
-
-    public void lightSpecular(float x, float y, float z) {
-        currentGraphics.lightSpecular(x, y, z);
-    }
-
-    public boolean isGL() {
-        return currentGraphics.isGL();
-    }
-
-    public void loadPixels() {
-        currentGraphics.loadPixels();
-    }
-
-    public int get(int x, int y) {
-        return currentGraphics.get(x, y);
-    }
-
-    public void set(int x, int y, int argb) {
-        currentGraphics.set(x, y, argb);
-    }
-
-    public boolean save(String filename) {
-        return currentGraphics.save(filename);
-    }
-
-    public void loadTexture() {
-        currentGraphics.loadTexture();
-    }
-
-    public void updateTexture() {
-        currentGraphics.updateTexture();
-    }
-
-    public void updateTexture(int x, int y, int w, int h) {
-        currentGraphics.updateTexture(x, y, w, h);
-    }
-
-    public void updateDisplay() {
-        currentGraphics.updateDisplay();
-    }
-
-    public void mask(PImage alpha) {
-        currentGraphics.mask(alpha);
-    }
-
-    public void filter(int kind) {
-        currentGraphics.filter(kind);
-    }
-
-    public void filter(int kind, float param) {
-        currentGraphics.filter(kind, param);
-    }
-
-    public void filter(PShader shader) {
-        currentGraphics.filter(shader);
-    }
-
-    public void copy(int sx, int sy, int sw, int sh, int dx, int dy, int dw, int dh) {
-        currentGraphics.copy(sx, sy, sw, sh, dx, dy, dw, dh);
-    }
-
-    public void copy(PImage src, int sx, int sy, int sw, int sh, int dx, int dy, int dw, int dh) {
-        currentGraphics.copy(src, sx, sy, sw, sh, dx, dy, dw, dh);
-    }
-
-    public Texture getTexture() {
-        return currentGraphics.getTexture();
-    }
-
-    public Texture getTexture(boolean load) {
-        return currentGraphics.getTexture(load);
-    }
-
-    public Texture getTexture(PImage img) {
-        return currentGraphics.getTexture(img);
-    }
-
-    public FrameBuffer getFrameBuffer() {
-        return currentGraphics.getFrameBuffer();
-    }
-
-    public FrameBuffer getFrameBuffer(boolean multi) {
-        return currentGraphics.getFrameBuffer(multi);
-    }
-
-    public void resize(int wide, int high) {
-        currentGraphics.resize(wide, high);
-    }
-
-    public PShader loadShader(String fragFilename) {
-        return currentGraphics.loadShader(fragFilename);
-    }
-
-    public PShader loadShader(String fragFilename, String vertFilename) {
-        return currentGraphics.loadShader(fragFilename, vertFilename);
-    }
-
-    public void shader(PShader shader) {
-        currentGraphics.shader(shader);
-    }
-
-    public void shader(PShader shader, int kind) {
-        currentGraphics.shader(shader, kind);
-    }
-
-    public void resetShader() {
-        currentGraphics.resetShader();
-    }
-
-    public void resetShader(int kind) {
-        currentGraphics.resetShader(kind);
-    }
-
-    public void setParent(PApplet parent) {
-        currentGraphics.setParent(parent);
-    }
-
-    public void setPath(String path) {
-        currentGraphics.setPath(path);
-    }
-
-    public void beginShape() {
-        currentGraphics.beginShape();
-    }
-
-    public void edge(boolean edge) {
-        currentGraphics.edge(edge);
-    }
-
-    public void normal(float nx, float ny, float nz) {
-        currentGraphics.normal(nx, ny, nz);
-    }
-
-    public void textureMode(int mode) {
-        currentGraphics.textureMode(mode);
-    }
-
-    public void texture(PImage image) {
-        currentGraphics.texture(image);
-    }
-
-    public void noTexture() {
-        currentGraphics.noTexture();
-    }
-
-    public void vertex(float[] v) {
-        currentGraphics.vertex(v);
-    }
-
-    public void endShape() {
-        currentGraphics.endShape();
-    }
-
-    public PShape loadShape(String filename, String options) {
-        return currentGraphics.loadShape(filename, options);
-    }
-
-    public PShape createShape() {
-        return currentGraphics.createShape();
-    }
-
-    public PShape createShape(int type) {
-        return currentGraphics.createShape(type);
-    }
-
-    public PShape createShape(int kind, float... p) {
-        return currentGraphics.createShape(kind, p);
-    }
-
-    public void clip(float a, float b, float c, float d) {
-        currentGraphics.clip(a, b, c, d);
-    }
-
-    public void blendMode(int mode) {
-        currentGraphics.blendMode(mode);
-    }
-
-    public void rectMode(int mode) {
-        currentGraphics.rectMode(mode);
-    }
-
-    public void rect(float a, float b, float c, float d) {
-        currentGraphics.rect(a, b, c, d);
-    }
-
-    public void rect(float a, float b, float c, float d, float r) {
-        currentGraphics.rect(a, b, c, d, r);
-    }
-
-    public void rect(float a, float b, float c, float d, float tl, float tr, float br, float bl) {
-        currentGraphics.rect(a, b, c, d, tl, tr, br, bl);
-    }
-
-    public void ellipseMode(int mode) {
-        currentGraphics.ellipseMode(mode);
-    }
-
-    public void ellipse(float a, float b, float c, float d) {
-        currentGraphics.ellipse(a, b, c, d);
-    }
-
-    public void arc(float a, float b, float c, float d, float start, float stop) {
-        currentGraphics.arc(a, b, c, d, start, stop);
-    }
-
-    public void arc(float a, float b, float c, float d, float start, float stop, int mode) {
-        currentGraphics.arc(a, b, c, d, start, stop, mode);
-    }
-
-    public void box(float size) {
-        currentGraphics.box(size);
-    }
-
-    public void sphereDetail(int res) {
-        currentGraphics.sphereDetail(res);
-    }
-
-    public void sphereDetail(int ures, int vres) {
-        currentGraphics.sphereDetail(ures, vres);
-    }
-
-    public float bezierPoint(float a, float b, float c, float d, float t) {
-        return currentGraphics.bezierPoint(a, b, c, d, t);
-    }
-
-    public float bezierTangent(float a, float b, float c, float d, float t) {
-        return currentGraphics.bezierTangent(a, b, c, d, t);
-    }
-
-    public void bezierDetail(int detail) {
-        currentGraphics.bezierDetail(detail);
-    }
-
-    public void bezier(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4) {
-        currentGraphics.bezier(x1, y1, x2, y2, x3, y3, x4, y4);
-    }
-
-    public void bezier(float x1, float y1, float z1, float x2, float y2, float z2, float x3, float y3, float z3, float x4, float y4, float z4) {
-        currentGraphics.bezier(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4);
-    }
-
-    public float curvePoint(float a, float b, float c, float d, float t) {
-        return currentGraphics.curvePoint(a, b, c, d, t);
-    }
-
-    public float curveTangent(float a, float b, float c, float d, float t) {
-        return currentGraphics.curveTangent(a, b, c, d, t);
-    }
-
-    public void curveDetail(int detail) {
-        currentGraphics.curveDetail(detail);
-    }
-
-    public void curveTightness(float tightness) {
-        currentGraphics.curveTightness(tightness);
-    }
-
-    public void curve(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4) {
-        currentGraphics.curve(x1, y1, x2, y2, x3, y3, x4, y4);
-    }
-
-    public void curve(float x1, float y1, float z1, float x2, float y2, float z2, float x3, float y3, float z3, float x4, float y4, float z4) {
-        currentGraphics.curve(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4);
-    }
-
-    public void smooth() {
-        currentGraphics.smooth();
-    }
-
-    public void smooth(int quality) {
-        currentGraphics.smooth(quality);
-    }
-
-    public void noSmooth() {
-        currentGraphics.noSmooth();
-    }
-
-    public void imageMode(int mode) {
-        currentGraphics.imageMode(mode);
-    }
-
-    public void image(PImage img, float a, float b) {
-        currentGraphics.image(img, a, b);
-    }
-
-    public void image(PImage img, float a, float b, float c, float d) {
-        currentGraphics.image(img, a, b, c, d);
-    }
-
-    public void image(PImage img, float a, float b, float c, float d, int u1, int v1, int u2, int v2) {
-        currentGraphics.image(img, a, b, c, d, u1, v1, u2, v2);
-    }
-
-    public void shapeMode(int mode) {
-        currentGraphics.shapeMode(mode);
-    }
-
-    public void shape(PShape shape) {
-        currentGraphics.shape(shape);
-    }
-
-    public void shape(PShape shape, float x, float y) {
-        currentGraphics.shape(shape, x, y);
-    }
-
-    public void shape(PShape shape, float a, float b, float c, float d) {
-        currentGraphics.shape(shape, a, b, c, d);
-    }
-
-    public void textAlign(int alignX) {
-        currentGraphics.textAlign(alignX);
-    }
-
-    public void textAlign(int alignX, int alignY) {
-        currentGraphics.textAlign(alignX, alignY);
-    }
-
-    public void textFont(PFont which) {
-        currentGraphics.textFont(which);
-    }
-
-    public void textFont(PFont which, float size) {
-        currentGraphics.textFont(which, size);
-    }
-
-    public void textLeading(float leading) {
-        currentGraphics.textLeading(leading);
-    }
-
-    public void textMode(int mode) {
-        currentGraphics.textMode(mode);
-    }
-
-    public float textWidth(char c) {
-        return currentGraphics.textWidth(c);
-    }
-
-    public float textWidth(String str) {
-        return currentGraphics.textWidth(str);
-    }
-
-    public float textWidth(char[] chars, int start, int length) {
-        return currentGraphics.textWidth(chars, start, length);
-    }
-
-    public void text(char c, float x, float y) {
-        currentGraphics.text(c, x, y);
-    }
-
-    public void text(char c, float x, float y, float z) {
-        currentGraphics.text(c, x, y, z);
-    }
-
-    public void text(String str, float x, float y) {
-        currentGraphics.text(str, x, y);
-    }
-
-    public void text(char[] chars, int start, int stop, float x, float y) {
-        currentGraphics.text(chars, start, stop, x, y);
-    }
-
-    public void text(String str, float x, float y, float z) {
-        currentGraphics.text(str, x, y, z);
-    }
-
-    public void text(char[] chars, int start, int stop, float x, float y, float z) {
-        currentGraphics.text(chars, start, stop, x, y, z);
-    }
-
-    public void text(String str, float x1, float y1, float x2, float y2) {
-        currentGraphics.text(str, x1, y1, x2, y2);
-    }
-
-    public void text(int num, float x, float y) {
-        currentGraphics.text(num, x, y);
-    }
-
-    public void text(int num, float x, float y, float z) {
-        currentGraphics.text(num, x, y, z);
-    }
-
-    public void text(float num, float x, float y) {
-        currentGraphics.text(num, x, y);
-    }
-
-    public void text(float num, float x, float y, float z) {
-        currentGraphics.text(num, x, y, z);
-    }
-
-    public void applyMatrix(PMatrix source) {
-        currentGraphics.applyMatrix(source);
-    }
-
-    public PMatrix2D getMatrix(PMatrix2D target) {
-        return currentGraphics.getMatrix(target);
-    }
-
-    public void setMatrix(PMatrix source) {
-        currentGraphics.setMatrix(source);
-    }
-
-    public void pushStyle() {
-        currentGraphics.pushStyle();
-    }
-
-    public void style(PStyle s) {
-        currentGraphics.style(s);
-    }
-
-    public PStyle getStyle() {
-        return currentGraphics.getStyle();
-    }
-
-    public PStyle getStyle(PStyle s) {
-        return currentGraphics.getStyle(s);
-    }
-
-    public void noStroke() {
-        currentGraphics.noStroke();
-    }
-
-    public void stroke(int rgb) {
-        currentGraphics.stroke(rgb);
-    }
-
-    public void stroke(int rgb, float alpha) {
-        currentGraphics.stroke(rgb, alpha);
-    }
-
-    public void stroke(float gray) {
-        currentGraphics.stroke(gray);
-    }
-
-    public void stroke(float gray, float alpha) {
-        currentGraphics.stroke(gray, alpha);
-    }
-
-    public void stroke(float v1, float v2, float v3) {
-        currentGraphics.stroke(v1, v2, v3);
-    }
-
-    public void stroke(float v1, float v2, float v3, float alpha) {
-        currentGraphics.stroke(v1, v2, v3, alpha);
-    }
-
-    public void noTint() {
-        currentGraphics.noTint();
-    }
-
-    public void tint(int rgb) {
-        currentGraphics.tint(rgb);
-    }
-
-    public void tint(int rgb, float alpha) {
-        currentGraphics.tint(rgb, alpha);
-    }
-
-    public void tint(float gray) {
-        currentGraphics.tint(gray);
-    }
-
-    public void tint(float gray, float alpha) {
-        currentGraphics.tint(gray, alpha);
-    }
-
-    public void tint(float v1, float v2, float v3) {
-        currentGraphics.tint(v1, v2, v3);
-    }
-
-    public void tint(float v1, float v2, float v3, float alpha) {
-        currentGraphics.tint(v1, v2, v3, alpha);
-    }
-
-    public void noFill() {
-        currentGraphics.noFill();
-    }
-
-    public void fill(int rgb) {
-        currentGraphics.fill(rgb);
-    }
-
-    public void fill(int rgb, float alpha) {
-        currentGraphics.fill(rgb, alpha);
-    }
-
-    public void fill(float gray) {
-        currentGraphics.fill(gray);
-    }
-
-    public void fill(float gray, float alpha) {
-        currentGraphics.fill(gray, alpha);
-    }
-
-    public void fill(float v1, float v2, float v3) {
-        currentGraphics.fill(v1, v2, v3);
-    }
-
-    public void fill(float v1, float v2, float v3, float alpha) {
-        currentGraphics.fill(v1, v2, v3, alpha);
-    }
-
-    public void ambient(int rgb) {
-        currentGraphics.ambient(rgb);
-    }
-
-    public void ambient(float gray) {
-        currentGraphics.ambient(gray);
-    }
-
-    public void ambient(float v1, float v2, float v3) {
-        currentGraphics.ambient(v1, v2, v3);
-    }
-
-    public void specular(int rgb) {
-        currentGraphics.specular(rgb);
-    }
-
-    public void specular(float gray) {
-        currentGraphics.specular(gray);
-    }
-
-    public void specular(float v1, float v2, float v3) {
-        currentGraphics.specular(v1, v2, v3);
-    }
-
-    public void shininess(float shine) {
-        currentGraphics.shininess(shine);
-    }
-
-    public void emissive(int rgb) {
-        currentGraphics.emissive(rgb);
-    }
-
-    public void emissive(float gray) {
-        currentGraphics.emissive(gray);
-    }
-
-    public void emissive(float v1, float v2, float v3) {
-        currentGraphics.emissive(v1, v2, v3);
-    }
-
-    public void background(int rgb) {
-        currentGraphics.background(rgb);
-    }
-
-    public void background(int rgb, float alpha) {
-        currentGraphics.background(rgb, alpha);
-    }
-
-    public void background(float gray) {
-        currentGraphics.background(gray);
-    }
-
-    public void background(float gray, float alpha) {
-        currentGraphics.background(gray, alpha);
-    }
-
-    public void background(float v1, float v2, float v3) {
-        currentGraphics.background(v1, v2, v3);
-    }
-
-    public void background(float v1, float v2, float v3, float alpha) {
-        currentGraphics.background(v1, v2, v3, alpha);
-    }
-
-    public void clear() {
-        currentGraphics.clear();
-    }
-
-    public void background(PImage image) {
-        currentGraphics.background(image);
-    }
-
-    public void colorMode(int mode) {
-        currentGraphics.colorMode(mode);
-    }
-
-    public void colorMode(int mode, float max) {
-        currentGraphics.colorMode(mode, max);
-    }
-
-    public void colorMode(int mode, float max1, float max2, float max3) {
-        currentGraphics.colorMode(mode, max1, max2, max3);
-    }
-
-    public void colorMode(int mode, float max1, float max2, float max3, float maxA) {
-        currentGraphics.colorMode(mode, max1, max2, max3, maxA);
-    }
-
-    public final int color(int c) {
-        return currentGraphics.color(c);
-    }
-
-    public final int color(float gray) {
-        return currentGraphics.color(gray);
-    }
-
-    public final int color(int c, int alpha) {
-        return currentGraphics.color(c, alpha);
-    }
-
-    public final int color(int c, float alpha) {
-        return currentGraphics.color(c, alpha);
-    }
-
-    public final int color(float gray, float alpha) {
-        return currentGraphics.color(gray, alpha);
-    }
-
-    public final int color(int v1, int v2, int v3) {
-        return currentGraphics.color(v1, v2, v3);
-    }
-
-    public final int color(float v1, float v2, float v3) {
-        return currentGraphics.color(v1, v2, v3);
-    }
-
-    public final int color(int v1, int v2, int v3, int a) {
-        return currentGraphics.color(v1, v2, v3, a);
-    }
-
-    public final int color(float v1, float v2, float v3, float a) {
-        return currentGraphics.color(v1, v2, v3, a);
-    }
-
-    public final float alpha(int rgb) {
-        return currentGraphics.alpha(rgb);
-    }
-
-    public final float red(int rgb) {
-        return currentGraphics.red(rgb);
-    }
-
-    public final float green(int rgb) {
-        return currentGraphics.green(rgb);
-    }
-
-    public final float blue(int rgb) {
-        return currentGraphics.blue(rgb);
-    }
-
-    public final float hue(int rgb) {
-        return currentGraphics.hue(rgb);
-    }
-
-    public final float saturation(int rgb) {
-        return currentGraphics.saturation(rgb);
-    }
-
-    public final float brightness(int rgb) {
-        return currentGraphics.brightness(rgb);
-    }
-
-    public int lerpColor(int c1, int c2, float amt) {
-        return currentGraphics.lerpColor(c1, c2, amt);
-    }
-
-    public static int lerpColor(int c1, int c2, float amt, int mode) {
-        return PGraphics.lerpColor(c1, c2, amt, mode);
-    }
-
-    public void beginRaw(PGraphics rawGraphics) {
-        currentGraphics.beginRaw(rawGraphics);
-    }
-
-    public void endRaw() {
-        currentGraphics.endRaw();
-    }
-
-    public boolean haveRaw() {
-        return currentGraphics.haveRaw();
-    }
-
-    public PGraphics getRaw() {
-        return currentGraphics.getRaw();
-    }
-
-    public static void showWarning(String msg) {
-        PGraphics.showWarning(msg);
-    }
-
-    public static void showWarning(String msg, Object... args) {
-        PGraphics.showWarning(msg, args);
-    }
-
-    public static void showDepthWarning(String method) {
-        PGraphics.showDepthWarning(method);
-    }
-
-    public static void showDepthWarningXYZ(String method) {
-        PGraphics.showDepthWarningXYZ(method);
-    }
-
-    public static void showMethodWarning(String method) {
-        PGraphics.showMethodWarning(method);
-    }
-
-    public static void showVariationWarning(String str) {
-        PGraphics.showVariationWarning(str);
-    }
-
-    public static void showMissingWarning(String method) {
-        PGraphics.showMissingWarning(method);
-    }
-
-    public static void showException(String msg) {
-        PGraphics.showException(msg);
-    }
-
-    public boolean displayable() {
-        return currentGraphics.displayable();
-    }
-
-    public boolean is2D() {
-        return currentGraphics.is2D();
-    }
-
-    public boolean is3D() {
-        return currentGraphics.is3D();
-    }
-
-    public boolean is2X() {
-        return currentGraphics.is2X();
-    }
-
-    public void init(int width, int height, int format) {
-        currentGraphics.init(width, height, format);
-    }
-
-    public void init(int width, int height, int format, int factor) {
-        currentGraphics.init(width, height, format, factor);
-    }
-
-    public Image getImage() {
-        return currentGraphics.getImage();
-    }
-
-    public Object getNative() {
-        return currentGraphics.getNative();
-    }
-
-    public boolean isModified() {
-        return currentGraphics.isModified();
-    }
-
-    public void setModified() {
-        currentGraphics.setModified();
-    }
+    /**
+     * Draw in the Display, beware of the order of drawing. If you call clear()
+     * you may remove rendering from other PaperScreens.
+     *
+     * Call from settings()
+     */
+    public void setDrawAroundPaper() {
+        this.isDrawingOnScreen = false;
+        this.isDrawingOnDisplay = true;
+    }
+
+    /**
+     * Draw in an offscreen buffer. Ideal for 2D rendering. Easy to use.
+     *
+     * Call from settings()
+     */
+    public void setDrawOnPaper() {
+        this.isDrawingOnScreen = true;
+        this.isDrawingOnDisplay = false;
+    }
+
+    /**
+     * Alias for setDrawOnPaper(). Call from settings().
+     */
+    public void setDrawStandard() {
+        setDrawOnPaper();
+    }
+
+    /**
+     * Set the filtering. Filtering has two components, one is the
+     * filteringDistance that disables the tracking when the markerboard has not
+     * moved much. The second component is a time filter for smooth movements.
+     */
+    private void updateBoardFiltering() {
+        if (filteringDistance != 0) {
+            markerBoard.setDrawingMode(cameraTracking, true, filteringDistance);
+        } else {
+            markerBoard.setDrawingMode(cameraTracking, false, 0);
+        }
+        markerBoard.setFiltering(cameraTracking, filteringFreq, filteringCutoff);
+    }
+
+    /**
+     * Disable the tracking if the movement is below the distance distance. Call
+     * from settings()
+     *
+     * @param distance 0 to disable, or any distance in millimeter.
+     */
+    protected void setDrawingFilter(float distance) {
+        if (distance <= 0) {
+            distance = 0;
+        }
+        this.filteringDistance = distance;
+    }
+
+    /**
+     * Set the filters values for the time filters. Call from settings()
+     *
+     * @param freq
+     * @param cutOff
+     */
+    protected void setTrackingFilter(float freq, float cutOff) {
+        this.filteringFreq = freq;
+        this.filteringCutoff = cutOff;
+    }
+
+    ///////////////////
+    //// VR Rendering 
+    ///////////////////
+    public float halfEyeDist = 10; // 2cm
+    private PMatrix3D initPosM = null;
+
+    ////////////////// 3D SPACE TO PAPER HOMOGRAPHY ///////////////
+    // Version 2.0 :  (0,0) is the top-left corner.
+    /**
+     * Initialize VR rendering.
+     *
+     * @param cam
+     * @param userPos
+     */
+    public void initDraw(Camera cam, PVector userPos) {
+        initDraw(cam, userPos, 40, 5000);
+    }
+
+    /**
+     * Initialize VR rendering.
+     *
+     * @param cam
+     * @param userPos
+     */
+    public void initDraw(Camera cam, PVector userPos, float nearPlane, float farPlane) {
+        initDraw(cam, userPos, nearPlane, farPlane, false, false);
+    }
+
+    /**
+     * Init VR rendering. The VR rendering creates a 3D "screen". It is used to
+     * create 3D pop-up effects.
+     *
+     * @param cam Rendering origin.
+     * @param userPos Position of the user, relative to the PaperScreen
+     * @param nearPlane Close disance for OpengL in millimeters.
+     * @param farPlane Far distance for OpenGL in millimeters.
+     * @param isAnaglyph Use Anaglyph.
+     * @param isLeft When analygph is it left or right, ignored otherwise.
+     */
+    public void initDraw(Camera cam, PVector userPos, float nearPlane, float farPlane, boolean isAnaglyph, boolean isLeft) {
 
-    public void setModified(boolean m) {
-        currentGraphics.setModified(m);
-    }
+        PGraphicsOpenGL graphics = getGraphics();
 
-    public int getModifiedX1() {
-        return currentGraphics.getModifiedX1();
-    }
+        if (initPosM == null) {
+            this.isOpenGL = true;
+            // Transformation  Camera -> Marker
 
-    public int getModifiedX2() {
-        return currentGraphics.getModifiedX2();
-    }
+            initPosM = this.getLocation(cam);
 
-    public int getModifiedY1() {
-        return currentGraphics.getModifiedY1();
-    }
+            initPosM.translate(this.getRenderingSizeX() / 2, this.getRenderingSizeY() / 2);
+            // All is relative to the paper's center. not the corner. 
+            initPosM.scale(-1, 1, -1);
 
-    public int getModifiedY2() {
-        return currentGraphics.getModifiedY2();
-    }
+        }
 
-    public void updatePixels() {
-        currentGraphics.updatePixels();
-    }
+        // get the current transformation... 
+        PMatrix3D newPos = this.getLocation(cam);
 
-    public void updatePixels(int x, int y, int w, int h) {
-        currentGraphics.updatePixels(x, y, w, h);
-    }
+        newPos.translate(this.getRenderingSizeX() / 2, this.getRenderingSizeY() / 2);
+        newPos.scale(-1, 1, -1);
 
-    public Object clone() throws CloneNotSupportedException {
-        return currentGraphics.clone();
-    }
+        newPos.invert();
+        newPos.apply(initPosM);
 
-    public boolean isLoaded() {
-        return currentGraphics.isLoaded();
-    }
+        PVector user = new PVector();
 
-    public void setLoaded() {
-        currentGraphics.setLoaded();
-    }
+        if (isAnaglyph && isLeft) {
+            userPos.add(-halfEyeDist * 2, 0, 0);
+        }
+        newPos.mult(userPos, user);
+        PVector paperCameraPos = user;
 
-    public void setLoaded(boolean l) {
-        currentGraphics.setLoaded(l);
-    }
+        // Camera must look perpendicular to the screen. 
+        graphics.camera(paperCameraPos.x, paperCameraPos.y, paperCameraPos.z,
+                paperCameraPos.x, paperCameraPos.y, 0,
+                0, 1, 0);
 
-    public PImage get(int x, int y, int w, int h) {
-        return currentGraphics.get(x, y, w, h);
-    }
+        // http://www.gamedev.net/topic/597564-view-and-projection-matrices-for-vr-window-using-head-tracking/
+        float nearFactor = nearPlane / paperCameraPos.z;
 
-    public PImage get() {
-        return currentGraphics.get();
-    }
+        float left = nearFactor * (-drawingSize.x / 2f - paperCameraPos.x);
+        float right = nearFactor * (drawingSize.x / 2f - paperCameraPos.x);
+        float top = nearFactor * (drawingSize.y / 2f - paperCameraPos.y);
+        float bottom = nearFactor * (-drawingSize.y / 2f - paperCameraPos.y);
 
-    public PImage copy() {
-        return currentGraphics.copy();
-    }
+        graphics.frustum(left, right, bottom, top, nearPlane, farPlane);
+        graphics.projection.m11 = -graphics.projection.m11;
 
-    public void set(int x, int y, PImage img) {
-        currentGraphics.set(x, y, img);
+        // No detection?
+        PMatrix3D transformation = this.getLocation(cam);
+        if (transformation.m03 == 0 && transformation.m13 == 0 && transformation.m23 == 0) {
+            resetPos();
+        }
     }
 
-    public void mask(int[] maskArray) {
-        currentGraphics.mask(maskArray);
+    public void endDrawPerspective() {
+        PGraphicsOpenGL graphics = getGraphics();
+        graphics.perspective();
+        graphics.camera();
+        graphics.projection.m11 = -graphics.projection.m11;
     }
 
-    public static int blendColor(int c1, int c2, int mode) {
-        return PImage.blendColor(c1, c2, mode);
+    public void resetPos() {
+        initPosM = null;
     }
 
-    public void blend(int sx, int sy, int sw, int sh, int dx, int dy, int dw, int dh, int mode) {
-        currentGraphics.blend(sx, sy, sw, sh, dx, dy, dw, dh, mode);
+    public float getHalfEyeDist() {
+        return halfEyeDist;
     }
 
-    public void blend(PImage src, int sx, int sy, int sw, int sh, int dx, int dy, int dw, int dh, int mode) {
-        currentGraphics.blend(src, sx, sy, sw, sh, dx, dy, dw, dh, mode);
+    public void setHalfEyeDist(float halfEyeDist) {
+        this.halfEyeDist = halfEyeDist;
     }
 
 }
