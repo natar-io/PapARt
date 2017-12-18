@@ -1,6 +1,7 @@
 /*
  * Part of the PapARt project - https://project.inria.fr/papart/
  *
+ * Copyright (C) 2017 RealityTech
  * Copyright (C) 2014-2016 Inria
  * Copyright (C) 2011-2013 Bordeaux University
  *
@@ -35,6 +36,7 @@ import processing.core.PVector;
 /**
  *
  * @author jeremylaviole
+ *  IDEA: can it inherit camera ?
  */
 public class TrackedView {
 
@@ -118,7 +120,7 @@ public class TrackedView {
         initiateImageCoordinates();
     }
 
-    private void allocateMemory() {
+    private final void allocateMemory() {
         for (int i = 0; i < 4; i++) {
             corner3DPos[i] = new PVector();
         }
