@@ -11,8 +11,8 @@ Camera  0:
       rows: 3
       cols: 3
       dt: d
-      data: [ 5.05476211e+02, 0., 3.162133e+02, 0.,
-          5.0576211e+02, 2.61446e+02, 0., 0., 1. ]
+      data: [ 4.93e+02, 0., 3.070e+02, 0.,
+          4.93e+02, 2.4846e+02, 0., 0., 1. ]
    distortionCoeffs: !!opencv-matrix
       rows: 1
       cols: 4

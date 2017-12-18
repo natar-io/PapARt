@@ -219,7 +219,7 @@ public class ColorTracker {
 //        this.trackedColors.remove(name);
 //    }
 
-    void loadParameter(String data) {
+    public void loadParameter(String data) {
         try {
             String[] pair = data.split(":");
             if (pair[0].startsWith("hue")) {

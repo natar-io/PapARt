@@ -57,9 +57,9 @@ public final class OpenNI2 extends DepthCameraDevice {
 
         cameraNI = (CameraOpenNI2) camera;
 
-        camera.getDepthCamera().setCalibration(Papart.kinectIRCalib);
-        camera.getColorCamera().setCalibration(Papart.cameraCalib);
-        setStereoCalibration(Papart.kinectStereoCalib);
+        camera.getDepthCamera().setCalibration(Papart.AstraSDepthCalib);
+        camera.getColorCamera().setCalibration(Papart.AstraSRGBCalib);
+        setStereoCalibration(Papart.AstraSStereoCalib);
 
 //        setStereoCalibration(Papart.kinectStereoCalib);
         // TODO: Hacks to try to handle the SR300 distorsions

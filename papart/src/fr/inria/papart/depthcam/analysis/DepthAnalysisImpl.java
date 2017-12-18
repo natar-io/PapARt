@@ -193,10 +193,6 @@ public class DepthAnalysisImpl extends DepthAnalysis {
 //        }
     }
 
-    @Deprecated
-    public void update(IplImage depth) {
-        update(depth, 1);
-    }
 
     public void computeDepthAndNormals(opencv_core.IplImage depth, opencv_core.IplImage color, int skip2D) {
         updateRawDepth(depth);

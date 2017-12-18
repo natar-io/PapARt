@@ -98,6 +98,7 @@ public abstract class DepthCameraDevice {
         camera = (CameraRGBIRDepth) CameraFactory.createCamera(type(), id);
         camera.setUseDepth(true);
         camera.setUseColor(true);
+        camera.actAsColorCamera();
         camera.setParent(parent);
     }
 

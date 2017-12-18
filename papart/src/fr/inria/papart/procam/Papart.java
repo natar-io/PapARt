@@ -42,6 +42,7 @@ import fr.inria.papart.multitouch.ColorTouchInput;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.multitouch.TUIOTouchInput;
 import fr.inria.papart.multitouch.DepthTouchInput;
+import fr.inria.papart.multitouch.detection.ColorTracker;
 import fr.inria.papart.utils.LibraryUtils;
 import fr.inria.papart.procam.camera.CameraFactory;
 import fr.inria.papart.procam.camera.CameraOpenKinect;
@@ -90,6 +91,11 @@ public class Papart {
     public static String SR300IRCalib = calibrationFolder + "calibration-SR300-IR.yaml";
     public static String kinectRGBCalib = calibrationFolder + "calibration-kinect-RGB.yaml";
     public static String kinectStereoCalib = calibrationFolder + "calibration-kinect-Stereo.xml";
+    
+    public static String AstraSDepthCalib = calibrationFolder + "calibration-AstraS-depth.yaml";
+    public static String AstraSRGBCalib = calibrationFolder + "calibration-AstraS-rgb.yaml";
+    public static String AstraSIRCalib = calibrationFolder + "calibration-AstraS-ir.yaml";
+    public static String AstraSStereoCalib = calibrationFolder + "calibration-AstraS-stereo.xml";
 
     public static String kinectTrackingCalib = "kinectTracking.xml";
     public static String cameraProjExtrinsics = "camProjExtrinsics.xml";
@@ -868,7 +874,7 @@ public class Papart {
         if (depthCamConfiguration.getCameraType() == Camera.Type.OPEN_KINECT_2) {
             depthCameraDevice = new KinectOne(applet, cameraTracking);
         }
-        if (kinectConfiguration.getCameraType() == Camera.Type.OPENNI2) {
+        if (depthCamConfiguration.getCameraType() == Camera.Type.OPENNI2) {
             depthCameraDevice = new OpenNI2(applet, cameraTracking);
         }
 

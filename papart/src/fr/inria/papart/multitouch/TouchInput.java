@@ -36,6 +36,10 @@ public abstract class TouchInput {
 
     public static PVector NO_INTERSECTION = new PVector();
 
+    public boolean isReady() {
+        return true;
+    }
+
     abstract public void update();
 
     abstract public TouchList projectTouchToScreen(PaperScreen paperScreen, BaseDisplay display);

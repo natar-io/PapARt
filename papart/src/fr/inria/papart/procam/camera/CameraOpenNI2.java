@@ -176,7 +176,7 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
             ((WithTouchInput) depthCamera).newTouchImageWithColor(IRCamera.currentImage);
             return;
         }
-        if (getActingCamera() == colorCamera || useColor) {
+        if (getActingCamera() == colorCamera || useColor && colorCamera.currentImage != null) {
             ((WithTouchInput) depthCamera).newTouchImageWithColor(colorCamera.currentImage);
             return;
         }
@@ -245,7 +245,7 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
             return;
         }
         uri = devicesInfo.get(this.systemNumber).getUri();
-        System.out.println("OpenNI URI: " + uri.toString());
+//        System.out.println("OpenNI URI: " + uri.toString());
 
         device = Device.open(uri);
 //        mDeviceSensors = new ArrayList<SensorType>();

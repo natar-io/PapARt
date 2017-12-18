@@ -17,8 +17,8 @@ import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.multitouch.detection.TouchDetectionColor;
 import fr.inria.papart.procam.Papart;
 import static fr.inria.papart.procam.Papart.planeAndProjectionCalib;
+import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.ProjectiveDeviceP;
-import fr.inria.papart.procam.Screen;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ProjectorDisplay;
@@ -116,7 +116,7 @@ public class ColorTouchInput extends TouchInput {
     }
 
     @Override
-    public TouchList projectTouchToScreen(Screen screen, BaseDisplay display) {
+    public TouchList projectTouchToScreen(PaperScreen screen, BaseDisplay display) {
         try {
             touchPointSemaphore.acquire();
         } catch (InterruptedException ie) {
@@ -140,7 +140,7 @@ public class ColorTouchInput extends TouchInput {
                                     viewedPtP.y,
                                     viewedPtP.z));
 
-            screen.computeScreenPosTransform(camera);
+            screen.computeWorldToScreenMat(camera);
             // 3D intersection with the screen plane. 
 //            ReadonlyVec3D inter = screen.getPlane().getIntersectionWithRay(ray);
             ReadonlyVec3D inter = planeCalib.getPlane().getIntersectionWithRay(ray);

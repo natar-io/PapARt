@@ -31,8 +31,10 @@ import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.depthcam.analysis.DepthAnalysisImpl;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
-import fr.inria.papart.multitouch.detection.Simple2D;
-import fr.inria.papart.multitouch.detection.Simple3D;
+import fr.inria.papart.multitouch.detection.ArmDetection;
+import fr.inria.papart.multitouch.detection.FingerDetection;
+import fr.inria.papart.multitouch.detection.HandDetection;
+import fr.inria.papart.multitouch.detection.TouchDetectionDepth;
 import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.utils.MathUtils;
@@ -69,7 +71,7 @@ public class DepthTouchInput extends TouchInput {
     private final Semaphore depthDataSem = new Semaphore(1);
 
     // List of TouchPoints, given to the user
-    private final DepthCameraDevice kinectDevice;
+    private final DepthCameraDevice depthCameraDevice;
 
     private PlaneAndProjectionCalibration planeAndProjCalibration;
 
@@ -86,7 +88,7 @@ public class DepthTouchInput extends TouchInput {
             PlaneAndProjectionCalibration calibration) {
         this.parent = applet;
         this.depthAnalysis = depthAnalysis;
-        this.kinectDevice = kinectDevice;
+        this.depthCameraDevice = kinectDevice;
         this.planeAndProjCalibration = calibration;
     }
 
@@ -116,9 +118,14 @@ public class DepthTouchInput extends TouchInput {
 
     private boolean touchDetectionsReady = false;
 
+    @Override
+    public boolean isReady() {
+        return touchDetectionsReady;
+    }
+
     public void initTouchDetections() {
         // First run, get calibrations from device after start.
-        depthAnalysis.initWithCalibrations(kinectDevice);
+        depthAnalysis.initWithCalibrations(depthCameraDevice);
 
         touchDetections[0] = new ArmDetection(depthAnalysis, touchCalibrations[0]);
         armDetection = (ArmDetection) touchDetections[0];
@@ -138,14 +145,14 @@ public class DepthTouchInput extends TouchInput {
             IplImage depthImage;
             IplImage colImage = null;
 
-            if (kinectDevice.getMainCamera().isUseColor()) {
-                colImage = kinectDevice.getColorCamera().getIplImage();
+            if (depthCameraDevice.getMainCamera().isUseColor()) {
+                colImage = depthCameraDevice.getColorCamera().getIplImage();
             }
-            if (kinectDevice.getMainCamera().isUseIR()) {
-                colImage = kinectDevice.getIRCamera().getIplImage();
+            if (depthCameraDevice.getMainCamera().isUseIR()) {
+                colImage = depthCameraDevice.getIRCamera().getIplImage();
             }
 
-            depthImage = kinectDevice.getDepthCamera().getIplImage();
+            depthImage = depthCameraDevice.getDepthCamera().getIplImage();
 
             if (depthImage == null) {
                 return;
@@ -163,7 +170,6 @@ public class DepthTouchInput extends TouchInput {
             handDetection.findTouch(armDetection, planeAndProjCalibration);
             fingerDetection.findTouch(handDetection, armDetection, colImage, planeAndProjCalibration);
 
-            
         } catch (InterruptedException ex) {
             Logger.getLogger(DepthTouchInput.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();
@@ -360,7 +366,7 @@ public class DepthTouchInput extends TouchInput {
         }
 
         if (computeOutsiders) {
-        return paperScreenCoord;
+            return paperScreenCoord;
         }
 
         if (paperScreenCoord.x == PApplet.constrain(paperScreenCoord.x, 0, screen.getSize().x)
@@ -372,7 +378,11 @@ public class DepthTouchInput extends TouchInput {
     }
 
     public void getTouch2DColors(IplImage colorImage) {
-        getTouchColors(colorImage, fingerDetection.getTouchPoints());
+
+        // FingerDetection can be not initialized
+        if (fingerDetection != null) {
+            getTouchColors(colorImage, fingerDetection.getTouchPoints());
+        }
     }
 
     public void getTouchColors(IplImage colorImage,
