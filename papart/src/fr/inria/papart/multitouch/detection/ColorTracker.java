@@ -24,6 +24,7 @@ import fr.inria.papart.multitouch.TouchList;
 import fr.inria.papart.multitouch.tracking.TouchPointTracker;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.multitouch.detection.TouchDetectionColor;
+import fr.inria.papart.procam.FFT;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.camera.TrackedView;
@@ -32,6 +33,10 @@ import fr.inria.papart.utils.SimpleSize;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
+import org.bytedeco.javacpp.opencv_core.IplImage;
+import static processing.core.PApplet.abs;
+import static processing.core.PApplet.sqrt;
 import processing.core.PConstants;
 import processing.core.PImage;
 import processing.core.PVector;
@@ -96,11 +101,28 @@ public class ColorTracker {
         saturation = 70;
         brightness = 80;
         redThreshold = 15;
+
+        fft = new FFT(frameSize);
     }
 
     public ArrayList<TrackedElement> findColor(int time) {
         return findColor(name, referenceColor, time, erosion);
     }
+
+    LinkedList<int[]> images = new LinkedList<>();
+    int frameSize = 128;
+    float frameRate = 30;
+    float elapsedTime = 0;
+    FFT fft;
+    float[] re;
+    float[] im;
+    float rate = 0;
+
+    LinkedList<Integer> framesTime = new LinkedList<>();
+
+    int lastImageTime = 0;
+    int lastcomputeTime = 0;
+    int timeBetweenCompute = 500;
 
     /**
      * For now it only finds one color.
@@ -111,11 +133,53 @@ public class ColorTracker {
      * disable it.
      * @param time currernt time in Processing.
      * @param erosion Erosion to apply before the tracking.
+     * @return List of colored elements found
      */
     public ArrayList<TrackedElement> findColor(String name, int reference, int time, int erosion) {
 
+        int currentImageTime = paperScreen.getCameraTracking().getTimeStamp();
+
+        // once per image
+        if (lastImageTime == currentImageTime) {
+            // return the last known points. 
+            return trackedElements;
+        }
+        lastImageTime = currentImageTime;
+
+        // Get the image
         capturedImage = trackedView.getViewOf(paperScreen.getCameraTracking());
         capturedImage.loadPixels();
+
+        if ("x".equals(name)) {
+            images.push(capturedImage.pixels.clone());
+            framesTime.push(time);
+            if (images.size() > frameSize) {
+                images.removeLast();
+                framesTime.removeLast();
+            }
+            if (images.size() < frameSize) {
+                System.out.println("Frames too short: " + images.size());
+            }
+
+            if (currentImageTime > lastcomputeTime + timeBetweenCompute) {
+                lastcomputeTime = currentImageTime;
+            } else {
+                // return the last known points. 
+                return trackedElements;
+            }
+
+            // compute the real framerate
+            int initFrame = framesTime.getLast();
+            int lastFrame = framesTime.getFirst();
+//        frameRate =  (float)(initFrame - lastFrame) / (float)(framesTime.size());
+            elapsedTime = (float) (lastFrame - initFrame);
+//        System.out.println("Framerate: " + frameRate);
+            rate = (float) frameSize / elapsedTime * 1000f; // in ms
+//       System.out.println("rate:" + rate);
+
+            re = new float[frameSize];
+            im = new float[frameSize];
+        }
 
         // Reset the colorFoundArray
         touchDetectionColor.resetInputArray();
@@ -126,6 +190,7 @@ public class ColorTracker {
         // each pixels.
         byte id = 0;
 
+        // Tag each pixels
         for (int x = 0; x < capturedImage.width; x++) {
             for (int y = 0; y < capturedImage.height; y++) {
                 int offset = x + y * capturedImage.width;
@@ -143,6 +208,12 @@ public class ColorTracker {
                             c, reference, blueThreshold);
                     good = good && blue;
                 }
+
+                // fft finding 5Hz signal.
+                if ("x".equals(name)) {
+                    good = fftPx(offset, 2.5f);
+                }
+
                 if (good) {
                     colorFoundArray[offset] = id;
                 }
@@ -158,6 +229,52 @@ public class ColorTracker {
 //        }
 
         return trackedElements;
+    }
+
+    public byte[] getColorFoundArray() {
+        return colorFoundArray;
+    }
+
+    private boolean fftPx(int offset, float freq) {
+
+        // todo: do this before
+        int nbImages = images.size();
+        if (nbImages < frameSize) {
+            return false;
+        }
+
+        int k = 0;
+        for (int[] image : images) {
+
+            int c1 = image[offset];
+            int r1 = c1 >> 16 & 255;
+            int g1 = c1 >> 8 & 255;
+            int b1 = c1 >> 0 & 255;
+
+            // todo: faster than this
+            re[k] = (float) (r1 + g1 + b1) / 3f * 255f;
+            im[k] = 0;
+            k++;
+        }
+        fft.fft(re, im);
+
+        float max = 0;
+        int id = 0;
+        for (int i = 2; i < re.length / 2; i++) {
+            float v = sqrt(re[i] * re[i] + im[i] * im[i]);
+            if (v > max) {
+                max = v;
+                id = i;
+            }
+        }
+
+        // error can be computed... 
+        float epsilon = 0.3f;
+
+//        float f = +(float) id / (float) frameSize * (float) frameRate * 2;
+//        float f = +(float) id / (float) frameSize * (float) frameRate;
+        float f = ((float) id) / (float) frameSize * rate;
+        return abs(f - freq) < epsilon && max > 10f;
     }
 
     public PImage getTrackedImage() {

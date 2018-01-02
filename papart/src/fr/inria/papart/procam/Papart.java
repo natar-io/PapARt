@@ -1192,6 +1192,17 @@ public class Papart {
     public ColorTracker initBlueTracking(PaperScreen screen, float quality) {
         return initColorTracking("blue", blueThresholds, screen, quality);
     }
+    /**
+     * Create a blue ColorTracker for a PaperScreen.
+     *
+     * @param screen PaperScreen to set the location of the tracking.
+     * @param quality capture quality in px/mm. lower (0.5f) for higher
+     * performance.
+     * @return
+     */
+    public ColorTracker initXTracking(PaperScreen screen, float quality) {
+        return initColorTracking("x", blueThresholds, screen, quality);
+    }
 
     private ColorTracker initColorTracking(String name, String calibFile, PaperScreen screen, float quality) {
         ColorTracker colorTracker = new ColorTracker(screen, quality);
