@@ -187,7 +187,8 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
     public void grabColor() {
         try {
 //            System.out.println("Sleeping color cam");
-            Thread.sleep((long) ((1.0f / (float) colorCamera.frameRate) * 1000f));
+//            Thread.sleep((long) ((1.0f / (float) colorCamera.frameRate) * 1000f));
+            Thread.sleep((long) ((1.0f / (float) colorCamera.frameRate) * 5000f));
 //            System.out.println("awake color cam");
         } catch (InterruptedException ex) {
             Logger.getLogger(CameraOpenNI2.class.getName()).log(Level.SEVERE, null, ex);
