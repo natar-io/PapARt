@@ -36,7 +36,7 @@ import toxi.geom.ReadonlyVec3D;
 import toxi.geom.Vec3D;
 
 /**
- *
+ *  EXPERIMENTAL: for IR Touch
  * @author Jeremy Laviole laviole@rea.lity.tech
  */
 public class ColorTouchInput extends TouchInput {
@@ -123,7 +123,7 @@ public class ColorTouchInput extends TouchInput {
             System.err.println("Semaphore Exception: " + ie);
         }
 
-        System.out.println("Project touch to Screen: " + trackedElements.size());
+//        System.out.println("Project touch to Screen: " + trackedElements.size());
         TouchList touchList = new TouchList();
 
         for (TrackedElement te : trackedElements) {
@@ -159,7 +159,7 @@ public class ColorTouchInput extends TouchInput {
 //                        1f - (res.y() / res.z()), 1);
                 PVector out = new PVector();
                 PVector intersection = new PVector(inter.x(), inter.y(), inter.z());
-                System.out.println("proj1: " + intersection);
+//                System.out.println("proj1: " + intersection);
 
                 PMatrix3D extrinsics = ((ProjectorDisplay) display).getExtrinsics();
 
@@ -167,7 +167,7 @@ public class ColorTouchInput extends TouchInput {
                 screenLoc.invert();
                 screenLoc.mult(intersection, out);
                 extrinsics.mult(out, out);
-                System.out.println("final: " + out.toString());
+//                System.out.println("final: " + out.toString());
 //            pdp.createRayFrom(position);
             }
         }

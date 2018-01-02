@@ -70,7 +70,7 @@ public class TouchDetectionColor extends TouchDetection {
             float dist = PVector.dist(new PVector(x1, y1), new PVector(x2, y2));
 
             return !assignedPoints[offset] // not assigned  
-                    && segmentedImage[offset] == segmentedImage[currentPoint] // is the same color
+                    && segmentedImage[offset] == segmentedImage[currentPoint] // is the same color/compo.
                     && dist < calib.getMaximumDistance();
         }
     }
