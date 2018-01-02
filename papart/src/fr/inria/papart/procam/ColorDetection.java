@@ -24,6 +24,7 @@ import fr.inria.papart.utils.MathUtils;
 import fr.inria.papart.procam.camera.TrackedView;
 import java.util.Arrays;
 import processing.core.PApplet;
+import static processing.core.PApplet.sqrt;
 import processing.core.PImage;
 import processing.core.PVector;
 
@@ -193,11 +194,11 @@ public class ColorDetection {
             avgBlue += c >> 0 & 0xFF;
         }
 
-        avgRed  = (avgRed / pxNb);
+        avgRed = (avgRed / pxNb);
         avgGreen = (avgGreen / pxNb);
         avgBlue = avgBlue / pxNb;
-        int r  = avgRed << 16;
-        int g = avgGreen  << 8;
+        int r = avgRed << 16;
+        int g = avgGreen << 8;
         int b = avgBlue;
         this.col = 255 << 24 | r | g | b;
     }
@@ -248,7 +249,7 @@ public class ColorDetection {
     ////// Find blinking rate -> to capture projection. 
     // max rate: 0.25 Hz  (1 beat every 4 sec / sec) observed 3 to 6 times. 
     public void initBlinkTracker() {
-        initBlinkTracker(30f, 0.25f, 256);
+        initBlinkTracker(30f, 256);
     }
 
     float[] blinkFrames = new float[0];
@@ -263,24 +264,31 @@ public class ColorDetection {
     float[] spectrum;
     int fftSize = 128;  // 2 sec?
     FFT fft;
+    float frameRate;
 
-    public void initBlinkTracker(float frameRate, float minRate, int ffts) {
-        int nbFrames = (int) (MAX_BLINK_OBSERVED * frameRate / minRate);
+    /**
+     * Blink tracker, to find a blinking (sine) pattern.
+     * @param frameRate
+     * @param ffts
+     */
+    public void initBlinkTracker(float frameRate, int ffts) {
+        this.frameRate = frameRate;
 
-        if(nbFrames < ffts){
-            nbFrames = ffts;
-        }
+//        int nbFrames = (int) (MAX_BLINK_OBSERVED * frameRate / minRate);
+//        if (nbFrames < ffts) {
+//            nbFrames = ffts;
+//        }
+        int nbFrames = ffts;
         blinkFrames = new float[nbFrames];
         blinkFramesr = new float[nbFrames];
         blinkFramesg = new float[nbFrames];
         blinkFramesb = new float[nbFrames];
-        
+
         Arrays.fill(blinkFrames, NOT_OBSERVED);
         Arrays.fill(blinkFramesr, NOT_OBSERVED);
         Arrays.fill(blinkFramesg, NOT_OBSERVED);
         Arrays.fill(blinkFramesb, NOT_OBSERVED);
 
-        
         // something else ?
         fftSize = ffts;
         fft = new FFT(ffts);
@@ -323,7 +331,7 @@ public class ColorDetection {
                 frameb[i] = 0;
             } else {
                 frame[i] = blinkFrames[k];
-                
+
                 framer[i] = blinkFramesr[k];
                 frameg[i] = blinkFramesg[k];
                 frameb[i] = blinkFramesb[k];
@@ -335,7 +343,6 @@ public class ColorDetection {
 //        for (int i = 0; i < fftSize; i++) {
 //            System.out.println("b r: " + frame[i] + " " + im[i]);
 //        }
-        
         fft.fft(frame, im);
         fft.fft(framer, imr);
         fft.fft(frameg, img);
@@ -344,7 +351,7 @@ public class ColorDetection {
 //        for (int i = 0; i < fftSize; i++) {
 //            System.out.println("a r: " + frame[i] + ", i:" + im[i]);
 //        }
-        
+
         re = frame;
         ima = im;
         rer = framer;
@@ -358,41 +365,80 @@ public class ColorDetection {
     private float[] rer, imar;
     private float[] reg, imag;
     private float[] reb, imab;
-    
-    public float[] re(){
+
+    public float[] re() {
         return re;
     }
-    public float[] im(){
+
+    public float[] im() {
         return ima;
     }
-    public float[] rer(){
+
+    public float[] rer() {
         return rer;
     }
-    public float[] imr(){
+
+    public float[] imr() {
         return imar;
     }
-    public float[] reg(){
+
+    public float[] reg() {
         return reg;
     }
-    public float[] img(){
+
+    public float[] img() {
         return imag;
     }
-    public float[] reb(){
+
+    public float[] reb() {
         return reb;
     }
-    public float[] imb(){
+
+    public float[] imb() {
         return imab;
+    }
+
+    public PVector getFreq() {
+        return findFreq(re, ima);
+    }
+
+    public PVector getFreqR() {
+        return findFreq(rer, imar);
+    }
+
+    public PVector getFreqG() {
+        return findFreq(reg, imag);
+    }
+
+    public PVector getFreqB() {
+        return findFreq(reb, imab);
+    }
+
+    public PVector findFreq(float[] re, float im[]) {
+        float max = 0;
+        int id = 0;
+        for (int i = 2; i < re.length / 2; i++) {
+            float v = sqrt(re[i] * re[i] + im[i] * im[i]);
+            if (v > max) {
+                max = v;
+                id = i;
+            }
+        }
+//        System.out.println("id: " + id + " max " + max);
+        // -> frameRate * 2  because 60 FPS rendering !
+        float f = +(float) id / (float) fftSize * (float) frameRate;
+        return new PVector(f, max);
     }
 
     public void recordBlinkRate() {
         this.computeColor();
 
         // save light amount
-        blinkFrames[currentBlinkIndex] = (float)(avgRed + avgBlue + avgGreen) / (3f*255f);
+        blinkFrames[currentBlinkIndex] = (float) (avgRed + avgBlue + avgGreen) / (3f * 255f);
 //        blinkFrames[currentBlinkIndex++] = (float)(avgRed) / (255f);
-        blinkFramesr[currentBlinkIndex] = (float)(avgRed)   / (255f);
-        blinkFramesg[currentBlinkIndex] = (float)(avgGreen) / (255f);
-        blinkFramesb[currentBlinkIndex] = (float)(avgBlue)  / (255f);
+        blinkFramesr[currentBlinkIndex] = (float) (avgRed) / (255f);
+        blinkFramesg[currentBlinkIndex] = (float) (avgGreen) / (255f);
+        blinkFramesb[currentBlinkIndex] = (float) (avgBlue) / (255f);
 
         currentBlinkIndex++;
 
@@ -401,6 +447,8 @@ public class ColorDetection {
             currentBlinkIndex = 0;
         }
     }
+    
+    
 
     public PVector getCaptureOffset() {
         return captureOffset;
