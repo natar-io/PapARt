@@ -410,6 +410,11 @@ public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
         updateCurrentImage(img);
     }
 
+    protected int timeStamp = 0;
+
+    public int getTimeStamp() {
+        return timeStamp;
+    }
     /**
      * Update the current Image, from the specific grabber, lens distorsions are
      * handled here.
@@ -417,6 +422,9 @@ public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
      * @param img
      */
     protected void updateCurrentImage(IplImage img) {
+        
+        this.timeStamp = parent.millis();
+        
         if (undistort) {
             if (pdp == null || !pdp.handleDistorsions()) {
                 System.err.println("I cannot distort the image for processing. The "
