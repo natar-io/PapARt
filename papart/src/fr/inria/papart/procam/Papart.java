@@ -43,6 +43,7 @@ import fr.inria.papart.multitouch.ColorTouchInput;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.multitouch.TUIOTouchInput;
 import fr.inria.papart.multitouch.DepthTouchInput;
+import fr.inria.papart.multitouch.detection.BlinkTracker;
 import fr.inria.papart.multitouch.detection.ColorTracker;
 import fr.inria.papart.utils.LibraryUtils;
 import fr.inria.papart.procam.camera.CameraFactory;
@@ -108,12 +109,14 @@ public class Papart {
 
     public static String redThresholds = calibrationFolder + "redThresholds.txt";
     public static String blueThresholds = calibrationFolder + "blueThresholds.txt";
+    public static String blinkThresholds = calibrationFolder + "blinkThresholds.txt";
 
     public static String tablePosition = calibrationFolder + "tablePosition.xml";
     public static String planeCalib = calibrationFolder + "PlaneCalibration.xml";
     public static String homographyCalib = calibrationFolder + "HomographyCalibration.xml";
     public static String planeAndProjectionCalib = calibrationFolder + "PlaneProjectionCalibration.xml";
     public static String touchColorCalib = calibrationFolder + "TouchColorCalibration.xml";
+    public static String touchBlinkCalib = calibrationFolder + "TouchBlinkCalibration.xml";
 
     public static String touchCalib = calibrationFolder + "Touch2DCalibration.xml";
     public static String touchCalib3D = calibrationFolder + "Touch3DCalibration.xml";
@@ -950,6 +953,12 @@ public class Papart {
         return calib;
     }
 
+    public PlanarTouchCalibration getDefaultBlinkTouchCalibration() {
+        PlanarTouchCalibration calib = new PlanarTouchCalibration();
+        calib.loadFrom(applet, Papart.touchBlinkCalib);
+        return calib;
+    }
+
     public PlanarTouchCalibration getDefaultTouchCalibration() {
         PlanarTouchCalibration calib = new PlanarTouchCalibration();
         calib.loadFrom(applet, Papart.touchCalib);
@@ -1222,14 +1231,23 @@ public class Papart {
      * @param screen PaperScreen to set the location of the tracking.
      * @param quality capture quality in px/mm. lower (0.5f) for higher
      * performance.
+     * @param freq
      * @return
      */
-    public ColorTracker initXTracking(PaperScreen screen, float quality) {
-        return initColorTracking("x", blueThresholds, screen, quality);
+    public BlinkTracker initXTracking(PaperScreen screen, float quality, float freq) {
+        BlinkTracker blinkTracker = new BlinkTracker(screen, getDefaultBlinkTouchCalibration(), quality);
+        String[] list = applet.loadStrings(blinkThresholds);
+        for (int i = 0; i < list.length; i++) {
+            String data = list[i];
+            blinkTracker.loadParameter(data);
+        }
+        blinkTracker.setName("x");
+        blinkTracker.setFreq(freq);
+        return blinkTracker;
     }
 
     private ColorTracker initColorTracking(String name, String calibFile, PaperScreen screen, float quality) {
-        ColorTracker colorTracker = new ColorTracker(screen, quality);
+        ColorTracker colorTracker = new ColorTracker(screen, getDefaultColorTouchCalibration(), quality);
         String[] list = applet.loadStrings(calibFile);
         for (int i = 0; i < list.length; i++) {
             String data = list[i];

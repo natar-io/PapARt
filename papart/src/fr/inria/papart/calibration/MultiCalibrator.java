@@ -5,12 +5,21 @@
  */
 package fr.inria.papart.calibration;
 
+import fr.inria.papart.multitouch.TouchList;
+import fr.inria.papart.multitouch.detection.ColorTracker;
+import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.PaperScreen;
+import fr.inria.papart.procam.camera.TrackedView;
 import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.utils.DrawUtils;
+import java.util.ArrayList;
 import processing.core.PApplet;
+import processing.core.PConstants;
+import static processing.core.PConstants.CENTER;
+import static processing.core.PConstants.RGB;
+import processing.core.PGraphics;
 import processing.core.PImage;
 import processing.core.PVector;
 import processing.opengl.PGraphicsOpenGL;
@@ -42,9 +51,18 @@ public class MultiCalibrator extends PaperScreen {
     // 5. Check - Extrinsic calibration ? (How to do it easily?)  
     // 6. Compute color histograms, take the most commons, compute H,S,B + R,G,B  means + stdev. 
     // 7. Check the colors for color tracking across 4-6 screenshots. save the colors. 
+    ColorTracker blinkTrackerTop, blinkTrackerBot;
+    private Papart papart;
+    int capW, capH;
+
+    float freqToFind = 4.5f;
+
+    // debug
+    byte[] found = null;
+
     @Override
     public void settings() {
-
+        papart = Papart.getPapart();
         try {
             // the size of the draw area is 297mm x 210mm.
             setDrawingSize(297, 210);
@@ -66,6 +84,31 @@ public class MultiCalibrator extends PaperScreen {
         try {
             setDrawingFilter(0);
             setTrackingFilter(0, 0);
+
+            capW = 128;
+            capH = 32;
+            // Quality to find !
+            // Start with max...
+            blinkTrackerBot = papart.initXTracking(this, 1f, freqToFind); // 0.5f);
+            TrackedView trackedViewBot = blinkTrackerBot.getTrackedView();
+            trackedViewBot.setTopLeftCorner(new PVector(80, 145));
+
+            // Size ?!
+            trackedViewBot.setCaptureSizeMM(new PVector(142f, 50f));
+            trackedViewBot.setImageWidthPx(capW);
+            trackedViewBot.setImageHeightPx(capH);
+            trackedViewBot.init();
+
+            blinkTrackerTop = papart.initXTracking(this, 1f, freqToFind); // 0.5f);
+            TrackedView trackedViewTop = blinkTrackerTop.getTrackedView();
+            trackedViewTop.setTopLeftCorner(new PVector(76, 11.6f));
+
+            // Size ?!
+            trackedViewTop.setCaptureSizeMM(new PVector(146.6f, 46.4f));
+            trackedViewTop.setImageWidthPx(capW);
+            trackedViewTop.setImageHeightPx(capH);
+
+            trackedViewTop.init();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -84,9 +127,17 @@ public class MultiCalibrator extends PaperScreen {
         background(0, 0, 200, 50);
 
         if (active) {
-            drawDebugZones();
-            System.out.print("Location: " + this.getMarkerBoard());
-            this.getLocation().print();
+
+            ArrayList<TrackedElement> teBot = blinkTrackerBot.findColor(parent.millis());
+            TouchList touchsBot = blinkTrackerBot.getTouchList();
+            found = blinkTrackerBot.getColorFoundArray();
+            System.out.println("teBot: " + teBot.size());
+
+//            ArrayList<TrackedElement> teTop = blinkTrackerTop.findColor(parent.millis());
+//            TouchList touchsTop = blinkTrackerTop.getTouchList();
+//            if (getDisplay() instanceof ARDisplay) {
+//                drawDebugZones();
+//            }
         }
 
     }
@@ -158,6 +209,7 @@ public class MultiCalibrator extends PaperScreen {
         Papart papart = Papart.getPapart();
         MultiCalibrator multiCalibrator = papart.multiCalibrator;
         PApplet parent = multiCalibrator.parent;
+        PGraphicsOpenGL g = (PGraphicsOpenGL) parent.g;
         // Classical rendering (if needed... )
 
         if (!multiCalibrator.isActive()) {
@@ -167,42 +219,117 @@ public class MultiCalibrator extends PaperScreen {
 
         parent.g.clear();
 
-        // AR rendering, for touch and color tracking (and debug). 
-        if (multiCalibrator.getDisplay() instanceof ARDisplay) {
-            ARDisplay display = (ARDisplay) multiCalibrator.getDisplay();
-            display.drawScreensOver();
+        ARDisplay display = null;
 
-            parent.noStroke();
-            PImage img = multiCalibrator.getCameraTracking().getPImage();
-            if (multiCalibrator.getCameraTracking() != null && img != null) {
-                parent.image(img, 0, 0, parent.width, parent.height);
-//            ((PGraphicsOpenGL) (parent.g)).image(camera.getPImage(), 0, 0, frameWidth, frameHeight);
-            }
-
-            // TODO: Distorsion problems with higher image space distorisions (useless ?)
-            DrawUtils.drawImage((PGraphicsOpenGL) parent.g,
-                    display.render(),
-                    0, 0, parent.width, parent.height);
-        }
         if (multiCalibrator.getDisplay() instanceof ProjectorDisplay) {
-            ProjectorDisplay display = (ProjectorDisplay) multiCalibrator.getDisplay();
-            display.drawScreensOver();
+            ProjectorDisplay projector = (ProjectorDisplay) multiCalibrator.getDisplay();
+            display = projector;
+            projector.drawScreensOver();
             parent.noStroke();
             DrawUtils.drawImage((PGraphicsOpenGL) parent.g,
-                    display.render(),
-                    0, 0, display.getWidth(), display.getHeight());
+                    projector.render(),
+                    0, 0, projector.getWidth(), projector.getHeight());
+
+            // TODO:
+//            g = projector.getGraphics();
+        } else {
+            // AR rendering, for touch and color tracking (and debug). 
+            if (multiCalibrator.getDisplay() instanceof ARDisplay) {
+                display = (ARDisplay) multiCalibrator.getDisplay();
+                display.drawScreensOver();
+
+                parent.noStroke();
+                PImage img = multiCalibrator.getCameraTracking().getPImage();
+                if (multiCalibrator.getCameraTracking() != null && img != null) {
+                    parent.image(img, 0, 0, parent.width, parent.height);
+//            ((PGraphicsOpenGL) (parent.g)).image(camera.getPImage(), 0, 0, frameWidth, frameHeight);
+                }
+
+                // TODO: Distorsion problems with higher image space distorisions (useless ?)
+                DrawUtils.drawImage((PGraphicsOpenGL) parent.g,
+                        display.render(),
+                        0, 0, parent.width, parent.height);
+            }
         }
 
         // Both display modes for now. 
         if (parent.mousePressed) {
             mouseClick.set(parent.mouseX, parent.mouseY);
         }
-        parent.g.noFill();
-        parent.g.stroke(255);
-        parent.g.ellipse(mouseClick.x, mouseClick.y, 50, 50);
-        parent.g.rect(mouseClick.x - 5, mouseClick.y, 10, 1);
-        parent.g.rect(mouseClick.x, mouseClick.y - 5, 1, 10);
-        parent.g.ellipse(mouseClick.x, mouseClick.y, 20, 20);
+
+        g.noFill();
+        g.stroke(255);
+        g.ellipse(mouseClick.x, mouseClick.y, 50, 50);
+        g.rect(mouseClick.x - 5, mouseClick.y, 10, 1);
+        g.rect(mouseClick.x, mouseClick.y - 5, 1, 10);
+        g.ellipse(mouseClick.x, mouseClick.y, 20, 20);
+
+        float d = multiCalibrator.getMarkerBoard().lastMovementDistance(multiCalibrator.getCameraTracking());
+        g.text(d, 100, 100);
+
+        // Not moving, draw something.
+        if (d < 2f) {
+            int stillW = 25;
+            g.fill(0, 255, 0);
+            g.rect(display.getWidth() / 2 - stillW, 80,
+                    stillW, stillW);
+            g.fill(255);
+            g.text("Ne bougez plus la feuille.", display.getWidth() / 2, 100); //stillW + 10);
+        }
+
+        PImage img = multiCalibrator.blinkTrackerBot.getTrackedImage();
+
+        if (img != null) {
+            g.image(img, 200, 200, 100, 40);
+
+        }
+        System.out.println("FrameRate: " + parent.frameRate);
+        // Debug sin. 
+        byte[] found = multiCalibrator.found;
+
+        if (found != null) {
+            g.pushMatrix();
+            g.translate(300, 300);
+            
+            g.noStroke();
+            g.colorMode(RGB, 255);
+            int k = 0;
+//	scale(sc);
+            for (int j = 0; j < multiCalibrator.capH; j++) {
+                for (int i = 0; i < multiCalibrator.capW; i++) {
+                    if (k >= found.length) {
+                        continue;
+                    }
+                    if (found[k++] == 0) {
+                        g.fill(20, 255, 10, 180);
+                    } else {
+                        g.fill(30);
+                    }
+                    g.rect(i, j, 1, 1);
+                }
+            }
+            g.popMatrix();
+        }
+
+        //
+        parent.g.pushMatrix();
+        parent.g.translate(mouseClick.x, mouseClick.y - 90);
+        sin(parent, parent.g, 255, multiCalibrator.freqToFind, 60, 14);
+        parent.g.popMatrix();
+
+    }
+
+    // Pixel rendering
+    public static void sin(PApplet parent, PGraphics g, int amt, float freq, int xDiff, float size) {
+
+        float v = (PApplet.sin((float) (parent.millis()) / 1000f * PConstants.TWO_PI * freq) + 1f) / 2f;
+
+        g.noStroke();
+        g.ellipseMode(CENTER);
+        g.fill(v * amt);
+        g.ellipse(-xDiff, 0, size, size);
+        g.ellipse(0, 0, size, size);
+        g.ellipse(xDiff, 0, size, size);
     }
 
 }

@@ -47,21 +47,22 @@ import processing.core.PVector;
  */
 public class ColorTracker {
 
-    private final PaperScreen paperScreen;
-    private final TrackedView trackedView;
-    private PImage capturedImage;
+    protected final PaperScreen paperScreen;
+    protected final TrackedView trackedView;
 
-//    private final HashMap<String, Integer> trackedColors;
-    private final TouchDetectionColor touchDetectionColor;
-    private final byte[] colorFoundArray;
-    private final ArrayList<TrackedElement> trackedElements;
-    private float scale = 1f;
+    protected PImage capturedImage;
 
-    private float brightness, saturation;
-    private float hue;
-    private float redThreshold, blueThreshold;
-    private int referenceColor, erosion;
-    private String name;
+//    protected final HashMap<String, Integer> trackedColors;
+    protected final TouchDetectionColor touchDetectionColor;
+    protected final byte[] colorFoundArray;
+    protected final ArrayList<TrackedElement> trackedElements;
+    protected float scale = 1f;
+
+    protected float brightness, saturation;
+    protected float hue;
+    protected float redThreshold, blueThreshold;
+    protected int referenceColor, erosion;
+    protected String name;
 
     public ColorTracker(PaperScreen paperScreen) {
         this(paperScreen, 1);
@@ -102,28 +103,17 @@ public class ColorTracker {
         brightness = 80;
         redThreshold = 15;
 
-        fft = new FFT(frameSize);
+    }
+
+    public TrackedView getTrackedView() {
+        return trackedView;
     }
 
     public ArrayList<TrackedElement> findColor(int time) {
         return findColor(name, referenceColor, time, erosion);
     }
 
-    LinkedList<int[]> images = new LinkedList<>();
-    int frameSize = 128;
-    float frameRate = 30;
-    float elapsedTime = 0;
-    FFT fft;
-    float epsilon;
-    float[] re;
-    float[] im;
-    float rate = 0;
-
-    LinkedList<Integer> framesTime = new LinkedList<>();
-
-    int lastImageTime = 0;
-    int lastcomputeTime = 0;
-    int timeBetweenCompute = 500;
+    protected int lastImageTime = 0;
 
     /**
      * For now it only finds one color.
@@ -150,41 +140,6 @@ public class ColorTracker {
         // Get the image
         capturedImage = trackedView.getViewOf(paperScreen.getCameraTracking());
         capturedImage.loadPixels();
-
-        if ("x".equals(name)) {
-            images.push(capturedImage.pixels.clone());
-            framesTime.push(time);
-            if (images.size() > frameSize) {
-                images.removeLast();
-                framesTime.removeLast();
-            }
-            if (images.size() < frameSize) {
-//                System.out.println("Frames too short: " + images.size());
-            }
-
-            if (currentImageTime > lastcomputeTime + timeBetweenCompute) {
-                lastcomputeTime = currentImageTime;
-            } else {
-                // return the last known points. 
-                return trackedElements;
-            }
-
-            // compute the real framerate
-            int initFrame = framesTime.getLast();
-            int lastFrame = framesTime.getFirst();
-//        frameRate =  (float)(initFrame - lastFrame) / (float)(framesTime.size());
-            elapsedTime = (float) (lastFrame - initFrame);
-//        System.out.println("Framerate: " + frameRate);
-            rate = (float) frameSize / elapsedTime * 1000f; // in ms
-//       System.out.println("rate:" + rate);
-
-            if (re == null || im == null || re.length != frameSize) {
-                re = new float[frameSize];
-                im = new float[frameSize];
-            }
-
-            epsilon = 2 * frameRate / (int) frameSize;
-        }
 
         // Reset the colorFoundArray
         touchDetectionColor.resetInputArray();
@@ -219,14 +174,8 @@ public class ColorTracker {
                                 c, reference, blueThreshold);
                         good = good && blue;
                     } else {
-
-                        // fft finding 5Hz signal.
-                        if ("x".equals(name)) {
-                            good = fftPx(offset, 4.5f);
-                        } else {
-                            good = MathUtils.colorFinderHSB(paperScreen.getGraphics(),
-                                    reference, c, hue, saturation, brightness);
-                        }
+                        good = MathUtils.colorFinderHSB(paperScreen.getGraphics(),
+                                reference, c, hue, saturation, brightness);
                     }
                 }
 
@@ -239,6 +188,7 @@ public class ColorTracker {
 
         ArrayList<TrackedElement> newElements
                 = touchDetectionColor.compute(time, erosion, this.scale);
+
         TouchPointTracker.trackPoints(trackedElements, newElements, time);
 //        for(TrackedElement te : trackedElements){
 //            te.filter(time);
@@ -249,70 +199,6 @@ public class ColorTracker {
 
     public byte[] getColorFoundArray() {
         return colorFoundArray;
-    }
-
-    private boolean fftPx(int offset, float freq) {
-
-        // todo: do this before
-        int nbImages = images.size();
-        if (nbImages < frameSize) {
-            return false;
-        }
-
-        int k = 0;
-        for (int[] image : images) {
-
-            int c1 = image[offset];
-            int r1 = c1 >> 16 & 255;
-            int g1 = c1 >> 8 & 255;
-            int b1 = c1 >> 0 & 255;
-
-            // todo: faster than this
-            re[k] = (float) (r1 + g1 + b1) / 3f * 255f;
-            im[k] = 0;
-            k++;
-        }
-        fft.fft(re, im);
-
-        float max = 0;
-        int id = 0;
-        for (int i = 2; i < re.length / 2; i++) {
-            float v = strength(i, re, im);
-            if (v > max) {
-                max = v;
-                id = i;
-            }
-        }
-
-        // error can be computed... 
-//        float epsilon = 0.3f;
-//        float f = +(float) id / (float) frameSize * (float) frameRate * 2;
-//        float f = +(float) id / (float) frameSize * (float) frameRate;
-        float f = idToFreq(id);
-
-        // get a finer estimate with 3 values average.
-        if (id > 0 && id < frameSize - 1) {
-            f = (float) id * max;
-            float sm1 = strength(id - 1, re, im);
-            float sp1 = strength(id + 1, re, im);
-            float fNext = ((float) id + 1) * sm1;
-            float fPrev = ((float) id - 1) * sp1;
-            f = ((f + fNext + fPrev) / (max + sm1 + sp1)) / (float) frameSize * rate;
-        }
-        if (abs(f - freq) < epsilon && max > 10f) {
-//            System.out.println("found freq: " + f);
-            return true;
-        }
-        return false;
-    }
-
-    private float idToFreq(float id) {
-        return (id) / (float) frameSize * rate;
-
-    }
-
-    public float strength(int i, float[] re, float[] im) {
-        return sqrt(re[i] * re[i] + im[i] * im[i]);
     }
 
     public PImage getTrackedImage() {

@@ -109,6 +109,7 @@ public class MarkerBoardSvg extends MarkerBoard {
 
         } else {
             update(newPos, id);
+            lastPos.set(id, currentPos);
 
         }
 

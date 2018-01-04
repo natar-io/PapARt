@@ -65,8 +65,7 @@ public class PaperScreen extends DelegatedGraphics {
     protected BaseDisplay mainDisplay;
 
     // only one.
-    protected MarkerBoard markerBoard = MarkerBoardInvalid.board;
-
+    private MarkerBoard markerBoard;
     protected PVector drawingSize
             = new PVector(DEFAULT_DRAWING_SIZE, DEFAULT_DRAWING_SIZE, 1);
     protected float quality = DEFAULT_RESOLUTION;
@@ -124,6 +123,7 @@ public class PaperScreen extends DelegatedGraphics {
         mainDisplay = papart.getDisplay();
         displays.add(papart.getDisplay());
         this.id = count++;
+        this.markerBoard = MarkerBoardInvalid.board;
         // Default to projector graphics.
         // currentGraphics = this.display.getGraphics();
         register();
@@ -143,6 +143,7 @@ public class PaperScreen extends DelegatedGraphics {
         mainDisplay = proj;
         displays.add(proj);
         this.id = count++;
+        this.markerBoard = MarkerBoardInvalid.board;
         register();
     }
 
@@ -157,6 +158,7 @@ public class PaperScreen extends DelegatedGraphics {
         mainDisplay = display;
         displays.add(display);
         this.id = count++;
+        this.markerBoard = MarkerBoardInvalid.board;
         register();
     }
 
@@ -240,9 +242,11 @@ public class PaperScreen extends DelegatedGraphics {
     }
 
     public MarkerBoard getMarkerBoard() {
-        if (!this.hasMarkerBoard()) {
-            System.err.println("The PaperScreen " + this + " does not have a markerboard...");
-        }
+        
+        // TODO: WTF  invalid
+//        if (!this.hasMarkerBoard()) {
+//            System.err.println("The PaperScreen " + this + " does not have a markerboard...");
+//        }
         return this.markerBoard;
     }
 
@@ -445,7 +449,7 @@ public class PaperScreen extends DelegatedGraphics {
      */
     private void trackCurrentMarkerBoard() {
         if (isWithoutCamera || this.markerBoard == MarkerBoardInvalid.board) {
-            System.out.println("Cannot start the tracking with cam: " + isWithoutCamera + ", board: "+ this.markerBoard);
+            System.out.println("Cannot start the tracking with cam: " + isWithoutCamera + ", board: " + this.markerBoard);
             return;
         }
 
@@ -797,7 +801,7 @@ public class PaperScreen extends DelegatedGraphics {
 //        if(markerBoard == MarkerBoardInvalid.board){
 //            System.out.println("Error: no location... Invalid board");
 //        };
-        
+
         if ((!markerBoard.isTrackedBy(camera) && !this.useManualLocation)) {
             return extrinsics.get();
         }
@@ -806,7 +810,7 @@ public class PaperScreen extends DelegatedGraphics {
         combinedTransfos.apply(extrinsics);
         return combinedTransfos;
     }
-    
+
     /**
      * Get the 3D position. Deprecated.
      *
@@ -1261,8 +1265,14 @@ public class PaperScreen extends DelegatedGraphics {
      * @param height height of the markerboard in millimeters.
      */
     public void loadMarkerBoard(String configFile, float width, float height) {
+        System.out.println("Loading a markerboard, before: " + this.markerBoard);
         this.markerBoard = MarkerBoardFactory.create(configFile, width, height);
+
+        if (this.markerBoard == MarkerBoardInvalid.board) {
+            System.out.println("Cannot create the markerboard, setting it to invalid: " + configFile);
+        }
         trackCurrentMarkerBoard();
+        System.out.println("Loading a markerboard after: " + this.markerBoard);
     }
 
     /**

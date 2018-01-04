@@ -194,10 +194,10 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
     @Override
     public void draw() {
         
-//        if(this.isCalibrationMode){
-//            MultiCalibrator.drawCalibration(getGraphics());
-//            return;
-//        }
+        if(this.isCalibrationMode){
+            MultiCalibrator.drawCalibration(getGraphics());
+            return;
+        }
         drawScreensOver();
         parent.noStroke();
         PImage img = camera.getPImage();
