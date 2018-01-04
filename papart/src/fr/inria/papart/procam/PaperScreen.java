@@ -241,7 +241,7 @@ public class PaperScreen extends DelegatedGraphics {
 
     public MarkerBoard getMarkerBoard() {
         if (!this.hasMarkerBoard()) {
-            System.err.println("The screen " + this + " does not a markerboard...");
+            System.err.println("The PaperScreen " + this + " does not have a markerboard...");
         }
         return this.markerBoard;
     }
@@ -445,6 +445,7 @@ public class PaperScreen extends DelegatedGraphics {
      */
     private void trackCurrentMarkerBoard() {
         if (isWithoutCamera || this.markerBoard == MarkerBoardInvalid.board) {
+            System.out.println("Cannot start the tracking with cam: " + isWithoutCamera + ", board: "+ this.markerBoard);
             return;
         }
 
@@ -643,11 +644,11 @@ public class PaperScreen extends DelegatedGraphics {
     ////////////////////////
     //// Tracking individual markers
     ////////////////////////
-    
     /**
-     * Get individual markers, their ID should be between 800 and 1000. 
+     * Get individual markers, their ID should be between 800 and 1000.
+     *
      * @param markerWidth
-     * @return 
+     * @return
      */
     public Map<Integer, PVector> getSingleMarkers(float markerWidth) {
         Papart papart = Papart.getPapart();
@@ -657,11 +658,11 @@ public class PaperScreen extends DelegatedGraphics {
         DetectedMarker[] markers = papart.getMarkerList();
 
         for (DetectedMarker marker : markers) {
-            
-            if(marker.id < 800 || marker.id > 1000){
+
+            if (marker.id < 800 || marker.id > 1000) {
                 continue;
             }
-            
+
             //       next if marker.confidence < 1.0
             PMatrix3D mat = papart.getMarkerMatrix(marker.id, markerWidth);
 
@@ -676,7 +677,7 @@ public class PaperScreen extends DelegatedGraphics {
                     || pos.x > drawingSize.x) {
 
                 // Not in this paperscreen - reset history
-                  positionsHistory.put(marker.id, 0);
+                positionsHistory.put(marker.id, 0);
             } else {
                 // update history
                 Integer markerID = positionsHistory.get(marker.id);
@@ -691,7 +692,7 @@ public class PaperScreen extends DelegatedGraphics {
         }
         return positions;
     }
-    
+
     // TODO: use Z as the angle of the marker --- source in ruby
 //    
 //       # pos.x = pos.x / filter_scale
@@ -717,31 +718,29 @@ public class PaperScreen extends DelegatedGraphics {
 //#        pos.z = pos.z + 2 * Math::PI  if in_blue_zone(pos.x)
 //        pos.z = @marker_valid_pos[marker.id][:angle_filter].filter(pos.z)
 //        pos.z = pos.z - 2* Math::PI  if in_blue_zone(pos.x)
-    
-    
-    
     /**
-     * Get the main marker found, ID between 800 and 1000. 
+     * Get the main marker found, ID between 800 and 1000.
+     *
      * @param markerWidth
      * @return id of the marker found, or -1 in none.
      */
-    public int getMainMarker(float markerWidth){
-        
+    public int getMainMarker(float markerWidth) {
+
         int minimumAge = 10;
         int selected = -1;
-        
+
         Map<Integer, PVector> singleMarkers = getSingleMarkers(markerWidth);
-        for(Integer key : singleMarkers.keySet()){
+        for (Integer key : singleMarkers.keySet()) {
             Integer age = positionsHistory.get(key);
-            if(age != null && age > minimumAge){
-                selected = key; 
+            if (age != null && age > minimumAge) {
+                selected = key;
                 minimumAge = age;
             }
         }
         return selected;
     }
 
-       ////////////////////////
+    ////////////////////////
     // Location handling. //
     ////////////////////////
     /**
@@ -794,7 +793,13 @@ public class PaperScreen extends DelegatedGraphics {
      * @return
      */
     public PMatrix3D getLocation(Camera camera) {
-        if (!markerBoard.isTrackedBy(camera) && !this.useManualLocation) {
+        
+        // WHY invalid
+        if(markerBoard == MarkerBoardInvalid.board){
+            System.out.println("Error: no location... Invalid board");
+        };
+        
+        if (markerBoard == MarkerBoardInvalid.board || (markerBoard.isTrackedBy(camera) && !this.useManualLocation)) {
             return extrinsics.get();
         }
 
@@ -1332,7 +1337,13 @@ public class PaperScreen extends DelegatedGraphics {
         } else {
             markerBoard.setDrawingMode(cameraTracking, false, 0);
         }
-        markerBoard.setFiltering(cameraTracking, filteringFreq, filteringCutoff);
+
+//        if (filteringFreq == 0) {
+//            markerBoard.removeFiltering(cameraTracking);
+//        } else {
+//            markerBoard.setFiltering(cameraTracking, filteringFreq, filteringCutoff);
+//        }
+
     }
 
     /**

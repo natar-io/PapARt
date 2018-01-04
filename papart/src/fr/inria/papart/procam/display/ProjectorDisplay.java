@@ -19,6 +19,7 @@
  */
 package fr.inria.papart.procam.display;
 
+import fr.inria.papart.calibration.MultiCalibrator;
 import fr.inria.papart.calibration.files.PlaneCalibration;
 import fr.inria.papart.utils.DrawUtils;
 import fr.inria.papart.multitouch.TouchInput;
@@ -64,39 +65,38 @@ public class ProjectorDisplay extends ARDisplay {
 
     @Override
     public void draw() {
-
-        if (isCalibrationMode) {
-            parent.g.background(0);
-            if (parent.mousePressed) {
-                mouseClick.set(parent.mouseX, parent.mouseY);
-            }
-            parent.g.ellipse(mouseClick.x, mouseClick.y, 50, 50);
-            parent.g.rect(mouseClick.x - 5, mouseClick.y, 10, 1);
-            parent.g.rect(mouseClick.x, mouseClick.y - 5, 1, 10);
-            parent.g.ellipse(mouseClick.x, mouseClick.y, 50, 50);
-
-            if (this.isSmallCalibration) {
-                projectSmallCornersImage();
-            } else {
-                projectCornersImage();
-            }
+        if (this.isCalibrationMode) {
+            MultiCalibrator.drawCalibration(getGraphics());
             return;
-        } else {
-            drawScreensOver();
-            parent.noStroke();
-            DrawUtils.drawImage((PGraphicsOpenGL) parent.g,
-                    this.render(),
-                    0, 0, this.frameWidth, this.frameHeight);
         }
-
+        drawScreensOver();
+        parent.noStroke();
+        DrawUtils.drawImage((PGraphicsOpenGL) parent.g,
+                this.render(),
+                0, 0, this.frameWidth, this.frameHeight);
     }
 
-    private boolean isCalibrationMode = false;
+    /**
+     * Previous internal corner calibration.
+     */
+    private void drawCalibration() {
+        parent.g.background(0);
+        if (parent.mousePressed) {
+            mouseClick.set(parent.mouseX, parent.mouseY);
+        }
+        parent.g.ellipse(mouseClick.x, mouseClick.y, 50, 50);
+        parent.g.rect(mouseClick.x - 5, mouseClick.y, 10, 1);
+        parent.g.rect(mouseClick.x, mouseClick.y - 5, 1, 10);
+        parent.g.ellipse(mouseClick.x, mouseClick.y, 50, 50);
+
+        if (this.isSmallCalibration) {
+            projectSmallCornersImage();
+        } else {
+            projectCornersImage();
+        }
+    }
+
     private boolean isSmallCalibration = false;
-
-    public void setCalibrationMode(boolean isCalibration) {
-        this.isCalibrationMode = isCalibration;
-    }
 
     public void setSmallCornerCalibration(boolean smallC) {
         this.isSmallCalibration = smallC;
@@ -121,7 +121,7 @@ public class ProjectorDisplay extends ARDisplay {
     }
 
     @Override
-    public void drawScreens() {
+        public void drawScreens() {
         this.beginDraw();
         this.graphics.clear();
         drawScreensProjection();
@@ -129,7 +129,7 @@ public class ProjectorDisplay extends ARDisplay {
     }
 
     @Override
-    public void drawScreensOver() {
+        public void drawScreensOver() {
         this.beginDraw();
         drawScreensProjection();
         this.endDraw();
@@ -197,7 +197,7 @@ public class ProjectorDisplay extends ARDisplay {
     // *** Projects the pixels viewed by the projector to the screen.
     // px and py are normalized -- [0, 1] in screen space
     @Override
-    public PVector projectPointer(PaperScreen paperScreen, float px, float py) {
+        public PVector projectPointer(PaperScreen paperScreen, float px, float py) {
 
         ReadonlyVec3D inter = projectPointer3DVec3D(paperScreen, px, py);
         // It may not intersect.

@@ -162,6 +162,8 @@ public abstract class MarkerBoard {
         System.out.println("DEBUG: UNsubscription: " + subscribersAmount);
     }
 
+    public OneEuroFilter[] NO_FILTERS = new OneEuroFilter[0];
+
     private OneEuroFilter[] createFilter(double freq, double minCutOff) {
         OneEuroFilter[] f = new OneEuroFilter[12];
         try {
@@ -213,6 +215,9 @@ public abstract class MarkerBoard {
     }
 
     public boolean isTrackedBy(Camera camera) {
+        if(this == MarkerBoardInvalid.board){
+            System.out.println("ERROR: cannot get the position of an invalid board.");
+        }
         return cameras.contains(camera);
     }
 

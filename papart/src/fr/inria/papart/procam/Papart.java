@@ -21,6 +21,7 @@ package fr.inria.papart.procam;
 
 import com.jogamp.newt.opengl.GLWindow;
 import fr.inria.papart.calibration.CalibrationUI;
+import fr.inria.papart.calibration.MultiCalibrator;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.calibration.files.CameraConfiguration;
 import fr.inria.papart.calibration.files.HomographyCalibration;
@@ -91,7 +92,7 @@ public class Papart {
     public static String SR300IRCalib = calibrationFolder + "calibration-SR300-IR.yaml";
     public static String kinectRGBCalib = calibrationFolder + "calibration-kinect-RGB.yaml";
     public static String kinectStereoCalib = calibrationFolder + "calibration-kinect-Stereo.xml";
-    
+
     public static String AstraSDepthCalib = calibrationFolder + "calibration-AstraS-depth.yaml";
     public static String AstraSRGBCalib = calibrationFolder + "calibration-AstraS-rgb.yaml";
     public static String AstraSIRCalib = calibrationFolder + "calibration-AstraS-ir.yaml";
@@ -218,6 +219,27 @@ public class Papart {
             calibrationPopup.show();
         } else {
             calibrationPopup.hide();
+        }
+    }
+
+    public MultiCalibrator multiCalibrator;
+
+    public void multiCalibration() {
+
+        try {
+
+            if (multiCalibrator == null) {
+                multiCalibrator = new MultiCalibrator();
+            } else {
+                if (multiCalibrator.isActive()) {
+                    multiCalibrator.stopCalib();
+                } else {
+                    multiCalibrator.startCalib();
+                }
+//            calibrationPopup.hide();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -723,10 +745,11 @@ public class Papart {
         cameraTracking.setCalibration(cameraCalib);
     }
 
-    public void loadDefaultProjector(){
+    public void loadDefaultProjector() {
         initProjectorDisplay(1);
         projector.manualMode();
-    }    
+    }
+
     /**
      * Initialize the default ProjectorDisplay from the projectorCalib file.
      *
@@ -911,10 +934,9 @@ public class Papart {
     }
 
     private void loadIRTouch() {
-        
+
 //        PlaneAndProjectionCalibration calibration = new PlaneAndProjectionCalibration();
 //        calibration.loadFrom(this.applet, planeAndProjectionCalib);
-
         ColorTouchInput colorTouchInput
                 = new ColorTouchInput(this.applet, ((CameraRGBIRDepth) cameraTracking).getIRCamera());
         this.touchInput = colorTouchInput;
@@ -1024,7 +1046,8 @@ public class Papart {
     }
 
     /**
-     * Start the camera(s) in a thread. This call also starts the depth camera when needed.
+     * Start the camera(s) in a thread. This call also starts the depth camera
+     * when needed.
      */
     public void startCameraThread() {
         cameraTracking.start();
@@ -1192,6 +1215,7 @@ public class Papart {
     public ColorTracker initBlueTracking(PaperScreen screen, float quality) {
         return initColorTracking("blue", blueThresholds, screen, quality);
     }
+
     /**
      * Create a blue ColorTracker for a PaperScreen.
      *

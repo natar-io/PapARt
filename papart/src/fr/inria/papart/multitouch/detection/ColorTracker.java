@@ -114,6 +114,7 @@ public class ColorTracker {
     float frameRate = 30;
     float elapsedTime = 0;
     FFT fft;
+    float epsilon;
     float[] re;
     float[] im;
     float rate = 0;
@@ -158,7 +159,7 @@ public class ColorTracker {
                 framesTime.removeLast();
             }
             if (images.size() < frameSize) {
-                System.out.println("Frames too short: " + images.size());
+//                System.out.println("Frames too short: " + images.size());
             }
 
             if (currentImageTime > lastcomputeTime + timeBetweenCompute) {
@@ -177,8 +178,12 @@ public class ColorTracker {
             rate = (float) frameSize / elapsedTime * 1000f; // in ms
 //       System.out.println("rate:" + rate);
 
-            re = new float[frameSize];
-            im = new float[frameSize];
+            if (re == null || im == null || re.length != frameSize) {
+                re = new float[frameSize];
+                im = new float[frameSize];
+            }
+
+            epsilon = 2 * frameRate / (int) frameSize;
         }
 
         // Reset the colorFoundArray
@@ -195,23 +200,34 @@ public class ColorTracker {
             for (int y = 0; y < capturedImage.height; y++) {
                 int offset = x + y * capturedImage.width;
                 int c = capturedImage.pixels[offset];
-                boolean good = MathUtils.colorFinderHSB(paperScreen.getGraphics(),
-                        reference, c, hue, saturation, brightness);
+
+                boolean good = false;
 
                 if ("red".equals(name)) {
+                    good = MathUtils.colorFinderHSB(paperScreen.getGraphics(),
+                            reference, c, hue, saturation, brightness);
+
                     boolean red = MathUtils.isRed(paperScreen.getGraphics(),
                             c, reference, redThreshold);
                     good = good && red;
-                }
-                if ("blue".equals(name)) {
-                    boolean blue = MathUtils.isBlue(paperScreen.getGraphics(),
-                            c, reference, blueThreshold);
-                    good = good && blue;
-                }
+                } else {
+                    if ("blue".equals(name)) {
+                        good = MathUtils.colorFinderHSB(paperScreen.getGraphics(),
+                                reference, c, hue, saturation, brightness);
 
-                // fft finding 5Hz signal.
-                if ("x".equals(name)) {
-                    good = fftPx(offset, 2.5f);
+                        boolean blue = MathUtils.isBlue(paperScreen.getGraphics(),
+                                c, reference, blueThreshold);
+                        good = good && blue;
+                    } else {
+
+                        // fft finding 5Hz signal.
+                        if ("x".equals(name)) {
+                            good = fftPx(offset, 4.5f);
+                        } else {
+                            good = MathUtils.colorFinderHSB(paperScreen.getGraphics(),
+                                    reference, c, hue, saturation, brightness);
+                        }
+                    }
                 }
 
                 if (good) {
@@ -261,7 +277,7 @@ public class ColorTracker {
         float max = 0;
         int id = 0;
         for (int i = 2; i < re.length / 2; i++) {
-            float v = sqrt(re[i] * re[i] + im[i] * im[i]);
+            float v = strength(i, re, im);
             if (v > max) {
                 max = v;
                 id = i;
@@ -269,12 +285,34 @@ public class ColorTracker {
         }
 
         // error can be computed... 
-        float epsilon = 0.3f;
-
+//        float epsilon = 0.3f;
 //        float f = +(float) id / (float) frameSize * (float) frameRate * 2;
 //        float f = +(float) id / (float) frameSize * (float) frameRate;
-        float f = ((float) id) / (float) frameSize * rate;
-        return abs(f - freq) < epsilon && max > 10f;
+        float f = idToFreq(id);
+
+        // get a finer estimate with 3 values average.
+        if (id > 0 && id < frameSize - 1) {
+            f = (float) id * max;
+            float sm1 = strength(id - 1, re, im);
+            float sp1 = strength(id + 1, re, im);
+            float fNext = ((float) id + 1) * sm1;
+            float fPrev = ((float) id - 1) * sp1;
+            f = ((f + fNext + fPrev) / (max + sm1 + sp1)) / (float) frameSize * rate;
+        }
+        if (abs(f - freq) < epsilon && max > 10f) {
+//            System.out.println("found freq: " + f);
+            return true;
+        }
+        return false;
+    }
+
+    private float idToFreq(float id) {
+        return (id) / (float) frameSize * rate;
+
+    }
+
+    public float strength(int i, float[] re, float[] im) {
+        return sqrt(re[i] * re[i] + im[i] * im[i]);
     }
 
     public PImage getTrackedImage() {

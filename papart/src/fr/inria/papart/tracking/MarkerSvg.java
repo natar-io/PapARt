@@ -101,7 +101,12 @@ public class MarkerSvg implements Cloneable {
         return corners;
     }
 
+    /**
+     * Check pixel resolution - TODO
+     * @return 
+     */
     public static float pixelToMm() {
+//        return 25.4f / 96.0f;
         return 25.4f / 90.0f;
     }
 

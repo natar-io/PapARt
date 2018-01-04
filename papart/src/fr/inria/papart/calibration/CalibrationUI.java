@@ -194,6 +194,7 @@ public class CalibrationUI extends PApplet {
             projectorAsCamera.setPixelFormat(Camera.PixelFormat.GRAY);
         }
 
+        /** This might be obselete */
         if (board.getMarkerType() == MarkerBoard.MarkerType.ARTOOLKITPLUS) {
             String ARToolkitCalibFile = Papart.calibrationFolder + "projector.cal";
             ProjectorAsCamera.convertARProjParams(this, projectorAsCamera.getCalibrationFile(),

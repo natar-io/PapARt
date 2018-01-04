@@ -20,7 +20,6 @@
 package fr.inria.papart.procam.display;
 
 import fr.inria.papart.procam.HasCamera;
-import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.PaperScreen;
 
@@ -261,6 +260,9 @@ public class BaseDisplay implements HasCamera {
 
     public void addPaperScreen(PaperScreen s) {
         paperScreens.add(s);
+    }
+    public void removePaperScreen(PaperScreen s) {
+        paperScreens.remove(s);
     }
     
 //    public void addPaperScreen(PaperScreen s) {
