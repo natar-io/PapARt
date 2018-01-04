@@ -793,13 +793,12 @@ public class PaperScreen extends DelegatedGraphics {
      * @return
      */
     public PMatrix3D getLocation(Camera camera) {
-        
         // WHY invalid
-        if(markerBoard == MarkerBoardInvalid.board){
-            System.out.println("Error: no location... Invalid board");
-        };
+//        if(markerBoard == MarkerBoardInvalid.board){
+//            System.out.println("Error: no location... Invalid board");
+//        };
         
-        if (markerBoard == MarkerBoardInvalid.board || (markerBoard.isTrackedBy(camera) && !this.useManualLocation)) {
+        if ((!markerBoard.isTrackedBy(camera) && !this.useManualLocation)) {
             return extrinsics.get();
         }
 
@@ -807,7 +806,7 @@ public class PaperScreen extends DelegatedGraphics {
         combinedTransfos.apply(extrinsics);
         return combinedTransfos;
     }
-
+    
     /**
      * Get the 3D position. Deprecated.
      *
@@ -1337,12 +1336,11 @@ public class PaperScreen extends DelegatedGraphics {
         } else {
             markerBoard.setDrawingMode(cameraTracking, false, 0);
         }
-
-//        if (filteringFreq == 0) {
-//            markerBoard.removeFiltering(cameraTracking);
-//        } else {
-//            markerBoard.setFiltering(cameraTracking, filteringFreq, filteringCutoff);
-//        }
+        if (filteringFreq == 0) {
+            markerBoard.removeFiltering(cameraTracking);
+        } else {
+            markerBoard.setFiltering(cameraTracking, filteringFreq, filteringCutoff);
+        }
 
     }
 
