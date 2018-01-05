@@ -242,7 +242,7 @@ public class PaperScreen extends DelegatedGraphics {
     }
 
     public MarkerBoard getMarkerBoard() {
-        
+
         // TODO: WTF  invalid
 //        if (!this.hasMarkerBoard()) {
 //            System.err.println("The PaperScreen " + this + " does not have a markerboard...");
@@ -365,6 +365,26 @@ public class PaperScreen extends DelegatedGraphics {
         mat.translate(-drawingSize.x, 0, 0);
         paperPosCorners3D[3] = new PVector(mat.m03, mat.m13, mat.m23);
         return paperPosCorners3D;
+    }
+    
+    /**
+     * @param position in mm in the paper screen
+     * @return  position in px in the cameratracking.
+     */
+    public PVector computePxPosition(PVector position){
+       
+        PVector p = position.copy();
+        
+        // Invert Y
+        p.y = p.y - drawingSize.y;
+        p.y = -p.y;
+        // get a copy of the position
+        PMatrix3D mat = this.getLocation(getCameraTracking()).get();
+        mat.translate(p.x, p.y, 0);
+
+        PVector pos3D = new PVector(mat.m03, mat.m13, mat.m23);
+        PVector camCoord = cameraTracking.getProjectiveDevice().worldToPixelCoord(pos3D);
+        return camCoord;
     }
 
     protected Plane plane = new Plane();
@@ -1037,20 +1057,24 @@ public class PaperScreen extends DelegatedGraphics {
      * @return the coordinates for cameraTracking.
      */
     public PVector getCameraViewOf(Touch t) {
-        ProjectorDisplay projector = (ProjectorDisplay) getDisplay();
 
-        TrackedElement tp = t.trackedSource;
-        PVector screenPos = tp.getPosition();
-        PVector tablePos = projector.projectPointer3D(this, screenPos.x, screenPos.y);
-        ProjectiveDeviceP pdp = cameraTracking.getProjectiveDevice();
-        PVector coord = pdp.worldToPixelCoord(tablePos);
-        return coord;
+        if (getDisplay() instanceof ProjectorDisplay) {
+            ProjectorDisplay projector = (ProjectorDisplay) getDisplay();
+            TrackedElement tp = t.trackedSource;
+            PVector screenPos = tp.getPosition();
+            PVector tablePos = projector.projectPointer3D(this, screenPos.x, screenPos.y);
+            ProjectiveDeviceP pdp = cameraTracking.getProjectiveDevice();
+            PVector coord = pdp.worldToPixelCoord(tablePos);
+            return coord;
+        } else {
+// Opposite of project... ?
+            return getDisplay().project(this, t.position.x, t.position.y);
+        }
     }
-
-    /**
-     * Unsafe do not use unless you are sure. This will be moved to a utility
-     * class.
-     */
+        /**
+         * Unsafe do not use unless you are sure. This will be moved to a
+         * utility class.
+         */
     public static PImage getImageFrom(PVector coord, PImage src, PImage dst, int radius) {
         int x = (int) coord.x;
         int y = (int) coord.y;

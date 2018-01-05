@@ -5,6 +5,7 @@
  */
 package fr.inria.papart.calibration;
 
+import fr.inria.papart.multitouch.Touch;
 import fr.inria.papart.multitouch.TouchList;
 import fr.inria.papart.multitouch.detection.BlinkTracker;
 import fr.inria.papart.multitouch.detection.ColorTracker;
@@ -109,7 +110,7 @@ public class MultiCalibrator extends PaperScreen {
             trackedViewTop.setImageWidthPx(capW);
             trackedViewTop.setImageHeightPx(capH);
             trackedViewTop.init();
-            
+
             blinkTrackerTop.initTouchDetection();
 
         } catch (Exception e) {
@@ -131,21 +132,57 @@ public class MultiCalibrator extends PaperScreen {
 
         if (active) {
 
-
-        float d = getMarkerBoard().lastMovementDistance(getCameraTracking());
+            float d = getMarkerBoard().lastMovementDistance(getCameraTracking());
 //        g.text(d, 100, 100);
 
-        // Not moving, draw something.
-        if (d < 8f) {
+            // Not moving, draw something.
+            if (d < 8f) {
 
-            ArrayList<TrackedElement> teBot = blinkTrackerBot.findColor(parent.millis());
-            TouchList touchsBot = blinkTrackerBot.getTouchList();
-            found = blinkTrackerBot.getLastFoundArray();
-            System.out.println("tracked bot: " + teBot.size());
-        } else {
-            System.out.println("Reset Img.");
-            blinkTrackerBot.resetImages();
-        }
+                ArrayList<TrackedElement> teBot = blinkTrackerBot.findColor(parent.millis());
+                TouchList touchsBot = blinkTrackerBot.getTouchList();
+                found = blinkTrackerBot.getLastFoundArray();
+                System.out.println("tracked bot: " + teBot.size());
+
+                ArrayList<TrackedElement> teTop = blinkTrackerTop.findColor(parent.millis());
+                TouchList touchsTop = blinkTrackerTop.getTouchList();
+                System.out.println("tracked top: " + teTop.size());
+
+//            // 3 Found !
+                if (teBot.size() >= 0) {
+                    cameraPointsBot = new PVector[touchsBot.size()];
+                    int k = 0;
+                    for (Touch touch : touchsBot) {
+                        // Position in 2D image space.
+                        PVector positionPxPaper = touch.position;
+                        PVector positionMM = blinkTrackerBot.getTrackedView().pixelsToMM(positionPxPaper);
+                        fill(255, 0, 255f);
+                        ellipseMode(CENTER);
+                        ellipse(positionMM.x, positionMM.y, 10, 10);
+                        // Get the camera pixel value. 
+                        cameraPointsBot[k++] = this.computePxPosition(positionMM);
+//                        System.out.println("Cam pos " + cameraPointsBot[k-1]); 
+                    }
+                }
+                if (teTop.size() >= 0) {
+                    cameraPointsTop = new PVector[touchsTop.size()];
+                    int k = 0;
+                    for (Touch touch : touchsTop) {
+                        // Position in 2D image space.
+                        PVector positionPxPaper = touch.position;
+                        PVector positionMM = blinkTrackerTop.getTrackedView().pixelsToMM(positionPxPaper);
+                        fill(255, 0, 255f);
+                        ellipseMode(CENTER);
+                        ellipse(positionMM.x, positionMM.y, 10, 10);
+                        // Get the camera pixel value. 
+                        cameraPointsTop[k++] = this.computePxPosition(positionMM);
+//                        System.out.println("Cam pos " + cameraPointsTop[k-1]); 
+                    }
+                }
+
+            } else {
+                System.out.println("Reset Img.");
+                blinkTrackerBot.resetImages();
+            }
 //            ArrayList<TrackedElement> teTop = blinkTrackerTop.findColor(parent.millis());
 //            TouchList touchsTop = blinkTrackerTop.getTouchList();
 //            if (getDisplay() instanceof ARDisplay) {
@@ -154,6 +191,9 @@ public class MultiCalibrator extends PaperScreen {
         }
 
     }
+
+    PVector[] cameraPointsBot = new PVector[0];
+    PVector cameraPointsTop[] = new PVector[0];
 
     private void drawDebugZones() {
         noStroke();
@@ -233,6 +273,7 @@ public class MultiCalibrator extends PaperScreen {
         parent.g.clear();
 
         ARDisplay display = null;
+        boolean seeThrough = false;
 
         if (multiCalibrator.getDisplay() instanceof ProjectorDisplay) {
             ProjectorDisplay projector = (ProjectorDisplay) multiCalibrator.getDisplay();
@@ -250,7 +291,7 @@ public class MultiCalibrator extends PaperScreen {
             if (multiCalibrator.getDisplay() instanceof ARDisplay) {
                 display = (ARDisplay) multiCalibrator.getDisplay();
                 display.drawScreensOver();
-
+                seeThrough = true;
                 parent.noStroke();
                 PImage img = multiCalibrator.getCameraTracking().getPImage();
                 if (multiCalibrator.getCameraTracking() != null && img != null) {
@@ -294,8 +335,57 @@ public class MultiCalibrator extends PaperScreen {
 
         if (img != null) {
             g.image(img, 200, 200, 100, 40);
-
         }
+
+        if (seeThrough) {
+            // Camera test 
+            for (PVector v : multiCalibrator.cameraPointsBot) {
+                g.fill(200, 180, 130);
+                if (v != null) {
+                    g.ellipse(v.x, v.y, 3, 3);
+                }
+            }
+            for (PVector v : multiCalibrator.cameraPointsTop) {
+                g.fill(200, 130, 180);
+                if (v != null) {
+                    g.ellipse(v.x, v.y, 3, 3);
+                }
+            }
+        }
+
+        // Middle.. 
+        PVector mid = new PVector();
+        if (multiCalibrator.cameraPointsBot.length == 3 && multiCalibrator.cameraPointsTop.length == 3) {
+            for (PVector v : multiCalibrator.cameraPointsBot) {
+                mid.add(v);
+            }
+            for (PVector v : multiCalibrator.cameraPointsTop) {
+                mid.add(v);
+            }
+
+            mid.mult(1f / 6f);
+
+            PVector pxFromBoard = multiCalibrator.computePxPosition(new PVector(148.6f, 103.3f));
+
+            if (seeThrough) {
+                g.noFill();
+                g.stroke(0, 255, 0);
+                // Debug AR
+                g.ellipse(mid.x, mid.y, 8, 8);
+
+                
+                g.stroke(40, 255, 120);
+                g.ellipse(pxFromBoard.x, pxFromBoard.y, 8, 8);
+            }
+
+            // Find the distance, reset the array, go to the next point.
+            System.out.println("Found: " + mid);
+            System.out.println("board Found: " + pxFromBoard);
+            System.out.println("Dist in px: " + PVector.dist(mid, pxFromBoard));
+
+            // Dist enregistrées ~4-5 px
+        }
+
 //        System.out.println("FrameRate: " + parent.frameRate);
         // Debug sin. 
         byte[] found = multiCalibrator.found;
@@ -303,7 +393,7 @@ public class MultiCalibrator extends PaperScreen {
         if (found != null) {
             g.pushMatrix();
             g.translate(300, 300);
-            
+
             g.noStroke();
             g.colorMode(RGB, 255);
             int k = 0;

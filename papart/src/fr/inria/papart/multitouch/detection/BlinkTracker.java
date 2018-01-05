@@ -47,6 +47,7 @@ public class BlinkTracker extends ColorTracker {
 
     public void resetImages() {
         images.clear();
+        framesTime.clear();
     }
 
     /**

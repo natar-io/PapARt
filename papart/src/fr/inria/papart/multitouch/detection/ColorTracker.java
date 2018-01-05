@@ -85,6 +85,8 @@ public class ColorTracker {
         this.trackedView.setScale(scale);
         trackedView.init();
         this.scale = scale;
+        
+        initTouchDetection();
 
 //        this.trackedColors = new HashMap<>();
         trackedElements = new ArrayList<TrackedElement>();
