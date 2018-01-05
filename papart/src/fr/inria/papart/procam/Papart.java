@@ -1237,8 +1237,7 @@ public class Papart {
     public BlinkTracker initXTracking(PaperScreen screen, float quality, float freq) {
         BlinkTracker blinkTracker = new BlinkTracker(screen, getDefaultBlinkTouchCalibration(), quality);
         String[] list = applet.loadStrings(blinkThresholds);
-        for (int i = 0; i < list.length; i++) {
-            String data = list[i];
+        for (String data : list) {
             blinkTracker.loadParameter(data);
         }
         blinkTracker.setName("x");

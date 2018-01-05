@@ -53,8 +53,8 @@ public class ColorTracker {
     protected PImage capturedImage;
 
 //    protected final HashMap<String, Integer> trackedColors;
-    protected final TouchDetectionColor touchDetectionColor;
-    protected final byte[] colorFoundArray;
+    protected TouchDetectionColor touchDetectionColor;
+    protected byte[] colorFoundArray;
     protected final ArrayList<TrackedElement> trackedElements;
     protected float scale = 1f;
 
@@ -63,6 +63,7 @@ public class ColorTracker {
     protected float redThreshold, blueThreshold;
     protected int referenceColor, erosion;
     protected String name;
+    private final PlanarTouchCalibration calibration;
 
     public ColorTracker(PaperScreen paperScreen) {
         this(paperScreen, 1);
@@ -78,31 +79,38 @@ public class ColorTracker {
 
     public ColorTracker(PaperScreen paperScreen, PlanarTouchCalibration calibration, float scale) {
         this.paperScreen = paperScreen;
+        
+        this.calibration = calibration;
         this.trackedView = new TrackedView(paperScreen);
         this.trackedView.setScale(scale);
         trackedView.init();
         this.scale = scale;
 
 //        this.trackedColors = new HashMap<>();
-        SimpleSize size = new SimpleSize(paperScreen.getDrawingSize().copy().mult(scale));
-        touchDetectionColor = new TouchDetectionColor(size);
-
-        PlanarTouchCalibration calib = Papart.getPapart().getDefaultColorTouchCalibration();
-        calib.setMaximumDistance(calib.getMaximumDistance() * scale);
-        calib.setMinimumComponentSize((int) (calib.getMinimumComponentSize() * scale * scale)); // Quadratic (area)
-        calib.setSearchDepth((int) (calib.getSearchDepth() * scale));
-        calib.setTrackingMaxDistance(calib.getTrackingMaxDistance() * scale);
-        calib.setMaximumRecursion((int) (calib.getMaximumRecursion() * scale));
-
-        touchDetectionColor.setCalibration(calib);
         trackedElements = new ArrayList<TrackedElement>();
 
-        colorFoundArray = touchDetectionColor.createInputArray();
         hue = 40;
         saturation = 70;
         brightness = 80;
         redThreshold = 15;
+    }
 
+    /**
+     * Call this if you modify the trackedView
+     */
+    public void initTouchDetection() {
+//        SimpleSize size = new SimpleSize(paperScreen.getDrawingSize().copy().mult(scale));
+        touchDetectionColor = new TouchDetectionColor(trackedView);
+
+        calibration.setMaximumDistance(calibration.getMaximumDistance() * scale);
+        calibration.setMinimumComponentSize((int) (calibration.getMinimumComponentSize() * scale * scale)); // Quadratic (area)
+        calibration.setSearchDepth((int) (calibration.getSearchDepth() * scale));
+        calibration.setTrackingMaxDistance(calibration.getTrackingMaxDistance() * scale);
+        calibration.setMaximumRecursion((int) (calibration.getMaximumRecursion() * scale));
+
+        touchDetectionColor.setCalibration(calibration);
+
+        colorFoundArray = touchDetectionColor.createInputArray();
     }
 
     public TrackedView getTrackedView() {

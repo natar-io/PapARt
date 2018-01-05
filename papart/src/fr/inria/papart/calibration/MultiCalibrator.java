@@ -6,6 +6,7 @@
 package fr.inria.papart.calibration;
 
 import fr.inria.papart.multitouch.TouchList;
+import fr.inria.papart.multitouch.detection.BlinkTracker;
 import fr.inria.papart.multitouch.detection.ColorTracker;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.procam.Papart;
@@ -51,7 +52,7 @@ public class MultiCalibrator extends PaperScreen {
     // 5. Check - Extrinsic calibration ? (How to do it easily?)  
     // 6. Compute color histograms, take the most commons, compute H,S,B + R,G,B  means + stdev. 
     // 7. Check the colors for color tracking across 4-6 screenshots. save the colors. 
-    ColorTracker blinkTrackerTop, blinkTrackerBot;
+    BlinkTracker blinkTrackerTop, blinkTrackerBot;
     private Papart papart;
     int capW, capH;
 
@@ -98,17 +99,19 @@ public class MultiCalibrator extends PaperScreen {
             trackedViewBot.setImageWidthPx(capW);
             trackedViewBot.setImageHeightPx(capH);
             trackedViewBot.init();
+            blinkTrackerBot.initTouchDetection();
 
             blinkTrackerTop = papart.initXTracking(this, 1f, freqToFind); // 0.5f);
             TrackedView trackedViewTop = blinkTrackerTop.getTrackedView();
             trackedViewTop.setTopLeftCorner(new PVector(76, 11.6f));
 
-            // Size ?!
             trackedViewTop.setCaptureSizeMM(new PVector(146.6f, 46.4f));
             trackedViewTop.setImageWidthPx(capW);
             trackedViewTop.setImageHeightPx(capH);
-
             trackedViewTop.init();
+            
+            blinkTrackerTop.initTouchDetection();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -128,11 +131,21 @@ public class MultiCalibrator extends PaperScreen {
 
         if (active) {
 
+
+        float d = getMarkerBoard().lastMovementDistance(getCameraTracking());
+//        g.text(d, 100, 100);
+
+        // Not moving, draw something.
+        if (d < 8f) {
+
             ArrayList<TrackedElement> teBot = blinkTrackerBot.findColor(parent.millis());
             TouchList touchsBot = blinkTrackerBot.getTouchList();
-            found = blinkTrackerBot.getColorFoundArray();
-            System.out.println("teBot: " + teBot.size());
-
+            found = blinkTrackerBot.getLastFoundArray();
+            System.out.println("tracked bot: " + teBot.size());
+        } else {
+            System.out.println("Reset Img.");
+            blinkTrackerBot.resetImages();
+        }
 //            ArrayList<TrackedElement> teTop = blinkTrackerTop.findColor(parent.millis());
 //            TouchList touchsTop = blinkTrackerTop.getTouchList();
 //            if (getDisplay() instanceof ARDisplay) {
@@ -283,7 +296,7 @@ public class MultiCalibrator extends PaperScreen {
             g.image(img, 200, 200, 100, 40);
 
         }
-        System.out.println("FrameRate: " + parent.frameRate);
+//        System.out.println("FrameRate: " + parent.frameRate);
         // Debug sin. 
         byte[] found = multiCalibrator.found;
 
@@ -314,7 +327,7 @@ public class MultiCalibrator extends PaperScreen {
         //
         parent.g.pushMatrix();
         parent.g.translate(mouseClick.x, mouseClick.y - 90);
-        sin(parent, parent.g, 255, multiCalibrator.freqToFind, 60, 14);
+        sin(parent, parent.g, 255, multiCalibrator.freqToFind, 60, 8);
         parent.g.popMatrix();
 
     }

@@ -28,6 +28,7 @@ import fr.inria.papart.tracking.MarkerBoardInvalid;
 import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.utils.ARToolkitPlusUtils;
 import fr.inria.papart.procam.camera.Camera;
+import fr.inria.papart.utils.WithSize;
 import java.util.ArrayList;
 import org.bytedeco.javacpp.opencv_core.CvMat;
 import org.bytedeco.javacpp.opencv_core.IplImage;
@@ -41,7 +42,7 @@ import processing.core.PVector;
  * @author jeremylaviole
  *  IDEA: can it inherit camera ?
  */
-public class TrackedView {
+public class TrackedView implements WithSize{
 
     private PImage extractedPImage = null;
     private IplImage extractedIplImage = null;
@@ -398,6 +399,29 @@ public class TrackedView {
 
     public int getImageHeightPx() {
         return imageHeightPx;
+    }
+    
+    /**
+     * Get Pixel width.
+     * @return 
+     */
+    public int getWidth(){
+        return imageWidthPx;
+    }
+    /**
+     * Get pixel height.
+     * @return 
+     */
+    public int getHeight(){
+        return imageHeightPx;
+    }
+    
+    /**
+     * Get pixel size.
+     * @return 
+     */
+    public int getSize(){
+        return getWidth() * getHeight();
     }
 
     public TrackedView setImageHeightPx(int imageHeightPx) {
