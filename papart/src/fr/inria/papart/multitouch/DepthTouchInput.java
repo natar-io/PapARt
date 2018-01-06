@@ -26,6 +26,9 @@ import fr.inria.papart.calibration.files.PlanarTouchCalibration;
 import fr.inria.papart.depthcam.DepthDataElementProjected;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 
+import java.time.Duration;
+import java.time.Instant;
+
 import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
@@ -165,11 +168,29 @@ public class DepthTouchInput extends TouchInput {
             }
 
             int initPrecision = 3;
+            Instant start = Instant.now();
+            
             depthAnalysis.computeDepthAndNormals(depthImage, colImage, initPrecision);
+            
+            Instant depth = Instant.now();
+            
             armDetection.findTouch(planeAndProjCalibration);
+            
+            Instant touch1 =  Instant.now();
             handDetection.findTouch(armDetection, planeAndProjCalibration);
+                 
+            Instant touch2 =  Instant.now();
             fingerDetection.findTouch(handDetection, armDetection, colImage, planeAndProjCalibration);
+     
+            Instant touch3 =  Instant.now();
+            Instant end = Instant.now();
+            System.out.println("Depth: " +  Duration.between(start, depth).toMillis() + " milliseconds");
+            System.out.println("Arm: " +  Duration.between(depth, touch1).toMillis() + " milliseconds");
+            System.out.println("hand: " +  Duration.between(touch1, touch2).toMillis() + " milliseconds");
+            System.out.println("finger: " +  Duration.between(touch2, touch3).toMillis() + " milliseconds");
+            System.out.println("Total: " +  Duration.between(start, end).toMillis() + " milliseconds");
 
+            
         } catch (InterruptedException ex) {
             Logger.getLogger(DepthTouchInput.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();

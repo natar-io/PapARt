@@ -183,16 +183,20 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
         ((WithTouchInput) depthCamera).newTouchImage();
     }
 
+    // WARNING, in thread  it does not wait for a new image ?
     @Override
     public void grabColor() {
-        try {
-//            System.out.println("Sleeping color cam");
-//            Thread.sleep((long) ((1.0f / (float) colorCamera.frameRate) * 1000f));
-            Thread.sleep((long) ((1.0f / (float) colorCamera.frameRate) * 5000f));
-//            System.out.println("awake color cam");
-        } catch (InterruptedException ex) {
-            Logger.getLogger(CameraOpenNI2.class.getName()).log(Level.SEVERE, null, ex);
-        }
+//        try {
+////            System.out.println("Sleeping color cam");
+////            Thread.sleep((long) ((1.0f / (float) colorCamera.frameRate) * 1000f));
+////            Thread.sleep((long) ((1.0f / (float) colorCamera.frameRate) * 5000f));
+////            System.out.println("awake color cam");
+//        } catch (InterruptedException ex) {
+//            Logger.getLogger(CameraOpenNI2.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+
+// Try to wait for a new timestamp ?
+//        this.getTimeStamp();
     }
 
     @Override

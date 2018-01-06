@@ -5,6 +5,11 @@
  */
 package fr.inria.papart.calibration;
 
+import fr.inria.papart.calibration.files.HomographyCalibration;
+import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
+import fr.inria.papart.calibration.files.PlaneCalibration;
+import fr.inria.papart.depthcam.devices.DepthCameraDevice;
+import fr.inria.papart.multitouch.DepthTouchInput;
 import fr.inria.papart.multitouch.Touch;
 import fr.inria.papart.multitouch.TouchList;
 import fr.inria.papart.multitouch.detection.BlinkTracker;
@@ -12,6 +17,8 @@ import fr.inria.papart.multitouch.detection.ColorTracker;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.PaperScreen;
+import fr.inria.papart.procam.PaperTouchScreen;
+import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.TrackedView;
 import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.procam.display.ProjectorDisplay;
@@ -23,6 +30,7 @@ import static processing.core.PConstants.CENTER;
 import static processing.core.PConstants.RGB;
 import processing.core.PGraphics;
 import processing.core.PImage;
+import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.opengl.PGraphicsOpenGL;
 
@@ -30,7 +38,7 @@ import processing.opengl.PGraphicsOpenGL;
  *
  * @author Jeremy Laviole laviole@rea.lity.tech
  */
-public class MultiCalibrator extends PaperScreen {
+public class MultiCalibrator extends PaperTouchScreen {
 
     // TODO: Add depth calibration in the scenario. 
     // TODO: add current calibration estimation. 
@@ -52,7 +60,9 @@ public class MultiCalibrator extends PaperScreen {
     // 4. Match 3D positions for extrinsic calibration and save it. 
     // 5. Check - Extrinsic calibration ? (How to do it easily?)  
     // 6. Compute color histograms, take the most commons, compute H,S,B + R,G,B  means + stdev. 
-    // 7. Check the colors for color tracking across 4-6 screenshots. save the colors. 
+    // 7. Check the colors for color tracking across 4-6 screenshots. save the colors.
+    protected boolean active = false;
+
     BlinkTracker blinkTrackerTop, blinkTrackerBot;
     private Papart papart;
     int capW, capH;
@@ -61,6 +71,7 @@ public class MultiCalibrator extends PaperScreen {
 
     // debug
     byte[] found = null;
+    private DepthCameraDevice depthCameraDevice;
 
     @Override
     public void settings() {
@@ -113,13 +124,16 @@ public class MultiCalibrator extends PaperScreen {
 
             blinkTrackerTop.initTouchDetection();
 
+            depthTouchInput = (DepthTouchInput) papart.getTouchInput();
+            depthTouchInput.useRawDepth();
+            depthCameraDevice = papart.getDepthCameraDevice();
         } catch (Exception e) {
             e.printStackTrace();
         }
         startCalib();
     }
 
-    protected boolean active = false;
+    DepthTouchInput depthTouchInput;
 
     @Override
     public void drawOnPaper() {
@@ -131,6 +145,12 @@ public class MultiCalibrator extends PaperScreen {
         background(0, 0, 200, 50);
 
         if (active) {
+            System.out.println("Framerate: " + parent.frameRate);
+            computeTouch();
+            if (toSave) {
+                saveTouch();
+            }
+            drawTouch(10);
 
             float d = getMarkerBoard().lastMovementDistance(getCameraTracking());
 //        g.text(d, 100, 100);
@@ -190,6 +210,89 @@ public class MultiCalibrator extends PaperScreen {
 //            }
         }
 
+    }
+
+    PlaneAndProjectionCalibration planeProjCalib;
+    public boolean toSave = false;
+
+    void computeTouch() {
+        planeProjCalib = getPlaneFromPaperViewedByDepth();
+        depthTouchInput.setPlaneAndProjCalibration(planeProjCalib);
+    }
+
+    void saveTouch() {
+        planeProjCalib.saveTo(parent, Papart.planeAndProjectionCalib);
+//        touchInput.setPlaneAndProjCalibration(planeProjCalib);
+        System.out.println("Calibration saved !");
+        toSave = false;
+    }
+
+    /**
+     * Get the 3D plane from the depth Camera point of view.
+     *
+     * @return
+     */
+    PlaneAndProjectionCalibration getPlaneFromPaperViewedByDepth() {
+        PlaneAndProjectionCalibration planeProjCalib = new PlaneAndProjectionCalibration();
+
+        PMatrix3D paperViewedByCam = this.getLocation().get();
+        PMatrix3D extr = depthCameraDevice.getStereoCalibrationInv().get();
+        paperViewedByCam.apply(extr);
+        PMatrix3D paperViewedByDepth = paperViewedByCam;
+
+        planeProjCalib.setPlane(getPlane(paperViewedByDepth));
+        planeProjCalib.setHomography(findHomography(paperViewedByDepth));
+
+        return planeProjCalib;
+    }
+
+    private PlaneCalibration getPlane(PMatrix3D paperViewedByDepth) {
+
+        PlaneCalibration planeCalib
+                = PlaneCalibration.CreatePlaneCalibrationFrom(paperViewedByDepth,
+                        //app.getLocation(),
+                        new PVector(100, 100));
+        planeCalib.flipNormal();
+
+        // Y shift here. 
+        planeCalib.moveAlongNormal(zShift);
+
+        return planeCalib;
+    }
+
+    public float zShift = 17f;
+
+    private HomographyCalibration findHomography(PMatrix3D paperViewedByDepth) {
+        PVector[] corners = new PVector[4];
+
+        // 3D points of the PaperScreen.  (object)
+        corners[0] = new PVector(paperViewedByDepth.m03, paperViewedByDepth.m13, paperViewedByDepth.m23);
+        paperViewedByDepth.translate(drawingSize.x, 0, 0);
+        corners[1] = new PVector(paperViewedByDepth.m03, paperViewedByDepth.m13, paperViewedByDepth.m23);
+        paperViewedByDepth.translate(0, drawingSize.y, 0);
+        corners[2] = new PVector(paperViewedByDepth.m03, paperViewedByDepth.m13, paperViewedByDepth.m23);
+        paperViewedByDepth.translate(-drawingSize.x, 0, 0);
+        corners[3] = new PVector(paperViewedByDepth.m03, paperViewedByDepth.m13, paperViewedByDepth.m23);
+
+        // Image points
+        PVector originDst = new PVector();
+        PVector xAxisDst = new PVector(1, 0);
+        PVector cornerDst = new PVector(1, 1);
+        PVector yAxisDst = new PVector(0, 1);
+
+        HomographyCreator homographyCreator = new HomographyCreator(3, 3, 4);
+
+        homographyCreator.addPoint(corners[0], originDst);
+        homographyCreator.addPoint(corners[1], xAxisDst);
+        homographyCreator.addPoint(corners[2], cornerDst);
+        boolean success = homographyCreator.addPoint(corners[3], yAxisDst);
+        if (success) {
+            // Yayah
+            return homographyCreator.getHomography();
+        } else {
+            // System.err.println("Error in computing the 3D homography");
+            return HomographyCalibration.INVALID;
+        }
     }
 
     PVector[] cameraPointsBot = new PVector[0];
@@ -373,7 +476,6 @@ public class MultiCalibrator extends PaperScreen {
                 // Debug AR
                 g.ellipse(mid.x, mid.y, 8, 8);
 
-                
                 g.stroke(40, 255, 120);
                 g.ellipse(pxFromBoard.x, pxFromBoard.y, 8, 8);
             }

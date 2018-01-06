@@ -168,8 +168,9 @@ public class FingerDetection extends TouchDetectionDepth {
                     (int) this.calib.getTest2());
 
             // Use arm 
-            depthSelection = arm.getDepthSelection();
-//            depthSelection = touchRecognition.getSelection();
+//            depthSelection = arm.getDepthSelection();
+//       use local
+            depthSelection = touchRecognition.getSelection();
 
             // 2. Select points that are part of the border 
             DepthElementList handBounds = touchPoint.getDepthDataElements();

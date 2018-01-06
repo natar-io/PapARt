@@ -58,9 +58,10 @@ public class HandDetection extends TouchDetectionDepth {
 
                     // Use the previous depthSelection.
                     && depthSelection.validPointsMask[candidate] // is valid, necessary ?
+                    && (depthData.depthPoints[candidate] != DepthAnalysis.INVALID_POINT) // not invalid point (invalid depth)
+
                     && depthData.planeAndProjectionCalibration.distanceTo(depthData.depthPoints[candidate]) < calib.getTest1()
                     && depthData.planeAndProjectionCalibration.distanceTo(depthData.depthPoints[candidate]) > calib.getTest2()
-                    && (depthData.depthPoints[candidate] != DepthAnalysis.INVALID_POINT) // not invalid point (invalid depth)
                     && depthData.depthPoints[initialPoint].distanceTo(depthData.depthPoints[candidate]) < calib.getMaximumDistanceInit()
                     && depthData.depthPoints[candidate].distanceTo(depthData.depthPoints[currentPoint]) < calib.getMaximumDistance();
 
@@ -140,17 +141,29 @@ public class HandDetection extends TouchDetectionDepth {
     }
 
     private TrackedDepthPoint currentArm;
+
     public ArrayList<TrackedDepthPoint> findTouch(ArmDetection armDetection, PlaneAndProjectionCalibration planeAndProjCalibration) {
 
         // WARNING  No tracking 
         this.touchPoints.clear();
 
+        // Start from the arm, find the lower part. 
         for (TrackedDepthPoint arm : armDetection.getTouchPoints()) {
             DepthElementList allElements = new DepthElementList();
 
             currentArm = arm;
 
-            // Add the elements for compo finding. 
+            // No boundaries.
+//            this.setDepthSelection(armDetection.getDepthSelection());
+//            this.toVisit.addAll(depthSelection.validPointsList);
+
+// Simple copy of current cc.
+//            DepthElementList depthElements = arm.getDepthDataElements();
+//            this.toVisit.addAll(depthElements.toConnectedComponent());
+//            this.setDepthSelection(armDetection.getDepthSelection());
+
+//            // Boundaries. 
+//            // Fill the valid points with arm boundaries
             for (DepthDataElementProjected dde : arm.getDepthDataElements()) {
 
                 if (armDetection.boundaries[dde.offset]) {
@@ -160,7 +173,6 @@ public class HandDetection extends TouchDetectionDepth {
 //                    }
                 }
             }
-
             // Select from the known points
             this.setDepthSelection(armDetection.getDepthSelection());
             depthSelection.validPointsList.clear();
@@ -168,28 +180,28 @@ public class HandDetection extends TouchDetectionDepth {
             ConnectedComponent selectedList = allElements.toConnectedComponent();
             depthSelection.validPointsList.addAll(selectedList);
             this.toVisit.addAll(depthSelection.validPointsList);
-
+            
+            
             // Find the connected components
             ArrayList<TrackedDepthPoint> newList = this.compute(depthAnalysis.getDepthData());
 
-            if (newList.isEmpty()) {
-                return new ArrayList<>();
-            }
+            this.touchPoints.addAll(newList);
+            if (!newList.isEmpty()) {
 
-            // Select the biggest compo as the hand.
-            int maxSize = newList.get(0).getDepthDataElements().size();
-            int maxId = 0;
-            for (int i = 1; i < newList.size(); i++) {
-                if (newList.size() > 1) {
-                    int size = newList.get(0).getDepthDataElements().size();
-                    if (size > maxSize) {
-                        maxSize = size;
-                        maxId = i;
-                    }
-                }
+                // Select the biggest compo as the hand.
+//                int maxSize = newList.get(0).getDepthDataElements().size();
+//                int maxId = 0;
+//                for (int i = 1; i < newList.size(); i++) {
+//                    if (newList.size() > 1) {
+//                        int size = newList.get(0).getDepthDataElements().size();
+//                        if (size > maxSize) {
+//                            maxSize = size;
+//                            maxId = i;
+//                        }
+//                    }
+//                }
+//                this.touchPoints.add(newList.get(maxId));
             }
-
-            this.touchPoints.add(newList.get(maxId));
         }
 
 //        System.out.println("nbHands: " + newList.size());
