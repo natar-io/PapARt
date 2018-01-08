@@ -68,7 +68,7 @@ public class MultiCalibrator extends PaperTouchScreen {
     int capW, capH;
 
     float freqToFind = 4.5f;
-    public float zShift = 22f;
+    public float zShift = 10f;
     // debug
     byte[] found = null;
     private DepthCameraDevice depthCameraDevice;
