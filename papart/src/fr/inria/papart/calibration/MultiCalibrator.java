@@ -10,6 +10,7 @@ import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.calibration.files.PlaneCalibration;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.multitouch.DepthTouchInput;
+import fr.inria.papart.multitouch.SkatoloLink;
 import fr.inria.papart.multitouch.Touch;
 import fr.inria.papart.multitouch.TouchList;
 import fr.inria.papart.multitouch.detection.BlinkTracker;
@@ -33,6 +34,7 @@ import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.opengl.PGraphicsOpenGL;
+import tech.lity.rea.skatolo.Skatolo;
 
 /**
  *
@@ -63,7 +65,7 @@ public class MultiCalibrator extends PaperTouchScreen {
     // 7. Check the colors for color tracking across 4-6 screenshots. save the colors.
     protected boolean active = false;
 
-    BlinkTracker blinkTrackerTop, blinkTrackerBot;
+//    BlinkTracker blinkTrackerTop, blinkTrackerBot;
     private Papart papart;
     int capW, capH;
 
@@ -72,6 +74,7 @@ public class MultiCalibrator extends PaperTouchScreen {
     // debug
     byte[] found = null;
     private DepthCameraDevice depthCameraDevice;
+    private Skatolo skatolo;
 
     @Override
     public void settings() {
@@ -92,37 +95,83 @@ public class MultiCalibrator extends PaperTouchScreen {
         }
     }
 
+    public void button() {
+        System.out.println("Button pressed");
+    }
+
+    // 6 points for Homography matching. 
+    public PVector screenPoints[];
+    public int currentScreenPoint = 0;
+
     @Override
     public void setup() {
         try {
             setDrawingFilter(0);
             setTrackingFilter(0, 0);
 
-            capW = 128;
-            capH = 32;
-            // Quality to find !
-            // Start with max...
-            blinkTrackerBot = papart.initXTracking(this, 1f, freqToFind); // 0.5f);
-            TrackedView trackedViewBot = blinkTrackerBot.getTrackedView();
-            trackedViewBot.setTopLeftCorner(new PVector(80, 145));
+            skatolo = new Skatolo(this.parent, this);
+            skatolo.getMousePointer().disable();
+            skatolo.setAutoDraw(false);
 
-            // Size ?!
-            trackedViewBot.setCaptureSizeMM(new PVector(142f, 50f));
-            trackedViewBot.setImageWidthPx(capW);
-            trackedViewBot.setImageHeightPx(capH);
-            trackedViewBot.init();
-            blinkTrackerBot.initTouchDetection();
+            screenPoints = new PVector[6];
 
-            blinkTrackerTop = papart.initXTracking(this, 1f, freqToFind); // 0.5f);
-            TrackedView trackedViewTop = blinkTrackerTop.getTrackedView();
-            trackedViewTop.setTopLeftCorner(new PVector(76, 11.6f));
+            int pw = this.getDisplay().getWidth();
+            int ph = this.getDisplay().getHeight();
+            int deadZone = 100; // in px 
+            // 1 in each quadrant. 
+            // 2 random
+            screenPoints[0] = new PVector(
+                    parent.random(deadZone, pw / 2),
+                    parent.random(deadZone, ph / 2));
+            screenPoints[1] = new PVector(
+                    parent.random(pw / 2, pw - deadZone),
+                    parent.random(deadZone, ph / 2));
 
-            trackedViewTop.setCaptureSizeMM(new PVector(146.6f, 46.4f));
-            trackedViewTop.setImageWidthPx(capW);
-            trackedViewTop.setImageHeightPx(capH);
-            trackedViewTop.init();
+            screenPoints[2] = new PVector(
+                    parent.random(deadZone, pw / 2),
+                    parent.random(ph / 2, ph - deadZone));
+            screenPoints[3] = new PVector(
+                    parent.random(pw / 2, pw - deadZone),
+                    parent.random(ph / 2, ph - deadZone));
+            for (int i = deadZone; i < 2; i++) {
+                screenPoints[i] = new PVector(
+                        parent.random(deadZone, pw - deadZone),
+                        parent.random(deadZone, ph - deadZone));
+            }
 
-            blinkTrackerTop.initTouchDetection();
+            int sizeAdd = 10;
+            skatolo.addHoverButton("button")
+                    .setPosition(79.8f - sizeAdd, 123.8f - sizeAdd)
+                    .setSize(15 + 2 * sizeAdd, 15 + 2 * sizeAdd);
+
+            // GREEN circle 
+//                 fill(0, 255, 0);
+//        rect(79.8f, 123.8f, 15f, 15f);
+//            capW = 128;
+//            capH = 32;
+//            // Quality to find !
+//            // Start with max...
+//            blinkTrackerBot = papart.initXTracking(this, 1f, freqToFind); // 0.5f);
+//            TrackedView trackedViewBot = blinkTrackerBot.getTrackedView();
+//            trackedViewBot.setTopLeftCorner(new PVector(80, 145));
+//
+//            // Size ?!
+//            trackedViewBot.setCaptureSizeMM(new PVector(142f, 50f));
+//            trackedViewBot.setImageWidthPx(capW);
+//            trackedViewBot.setImageHeightPx(capH);
+//            trackedViewBot.init();
+//            blinkTrackerBot.initTouchDetection();
+//
+//            blinkTrackerTop = papart.initXTracking(this, 1f, freqToFind); // 0.5f);
+//            TrackedView trackedViewTop = blinkTrackerTop.getTrackedView();
+//            trackedViewTop.setTopLeftCorner(new PVector(76, 11.6f));
+//
+//            trackedViewTop.setCaptureSizeMM(new PVector(146.6f, 46.4f));
+//            trackedViewTop.setImageWidthPx(capW);
+//            trackedViewTop.setImageHeightPx(capH);
+//            trackedViewTop.init();
+//
+//            blinkTrackerTop.initTouchDetection();
 
             depthTouchInput = (DepthTouchInput) papart.getTouchInput();
             depthTouchInput.useRawDepth();
@@ -157,51 +206,54 @@ public class MultiCalibrator extends PaperTouchScreen {
 
             // Not moving, draw something.
             if (d < 8f) {
+                // Touch
+                SkatoloLink.updateTouch(touchList.get2DTouchs(), skatolo);
+                skatolo.draw(getGraphics());
 
-                ArrayList<TrackedElement> teBot = blinkTrackerBot.findColor(parent.millis());
-                TouchList touchsBot = blinkTrackerBot.getTouchList();
-                found = blinkTrackerBot.getLastFoundArray();
-                System.out.println("tracked bot: " + teBot.size());
-
-                ArrayList<TrackedElement> teTop = blinkTrackerTop.findColor(parent.millis());
-                TouchList touchsTop = blinkTrackerTop.getTouchList();
-                System.out.println("tracked top: " + teTop.size());
-
-//            // 3 Found !
-                if (teBot.size() >= 0) {
-                    cameraPointsBot = new PVector[touchsBot.size()];
-                    int k = 0;
-                    for (Touch touch : touchsBot) {
-                        // Position in 2D image space.
-                        PVector positionPxPaper = touch.position;
-                        PVector positionMM = blinkTrackerBot.getTrackedView().pixelsToMM(positionPxPaper);
-                        fill(255, 0, 255f);
-                        ellipseMode(CENTER);
-                        ellipse(positionMM.x, positionMM.y, 10, 10);
-                        // Get the camera pixel value. 
-                        cameraPointsBot[k++] = this.computePxPosition(positionMM);
-//                        System.out.println("Cam pos " + cameraPointsBot[k-1]); 
-                    }
-                }
-                if (teTop.size() >= 0) {
-                    cameraPointsTop = new PVector[touchsTop.size()];
-                    int k = 0;
-                    for (Touch touch : touchsTop) {
-                        // Position in 2D image space.
-                        PVector positionPxPaper = touch.position;
-                        PVector positionMM = blinkTrackerTop.getTrackedView().pixelsToMM(positionPxPaper);
-                        fill(255, 0, 255f);
-                        ellipseMode(CENTER);
-                        ellipse(positionMM.x, positionMM.y, 10, 10);
-                        // Get the camera pixel value. 
-                        cameraPointsTop[k++] = this.computePxPosition(positionMM);
-//                        System.out.println("Cam pos " + cameraPointsTop[k-1]); 
-                    }
-                }
+//                ArrayList<TrackedElement> teBot = blinkTrackerBot.findColor(parent.millis());
+//                TouchList touchsBot = blinkTrackerBot.getTouchList();
+//                found = blinkTrackerBot.getLastFoundArray();
+////                System.out.println("tracked bot: " + teBot.size());
+//
+//                ArrayList<TrackedElement> teTop = blinkTrackerTop.findColor(parent.millis());
+//                TouchList touchsTop = blinkTrackerTop.getTouchList();
+////                System.out.println("tracked top: " + teTop.size());
+//
+////            // 3 Found !
+//                if (teBot.size() >= 0) {
+//                    cameraPointsBot = new PVector[touchsBot.size()];
+//                    int k = 0;
+//                    for (Touch touch : touchsBot) {
+//                        // Position in 2D image space.
+//                        PVector positionPxPaper = touch.position;
+//                        PVector positionMM = blinkTrackerBot.getTrackedView().pixelsToMM(positionPxPaper);
+//                        fill(255, 0, 255f);
+//                        ellipseMode(CENTER);
+//                        ellipse(positionMM.x, positionMM.y, 10, 10);
+//                        // Get the camera pixel value. 
+//                        cameraPointsBot[k++] = this.computePxPosition(positionMM);
+////                        System.out.println("Cam pos " + cameraPointsBot[k-1]); 
+//                    }
+//                }
+//                if (teTop.size() >= 0) {
+//                    cameraPointsTop = new PVector[touchsTop.size()];
+//                    int k = 0;
+//                    for (Touch touch : touchsTop) {
+//                        // Position in 2D image space.
+//                        PVector positionPxPaper = touch.position;
+//                        PVector positionMM = blinkTrackerTop.getTrackedView().pixelsToMM(positionPxPaper);
+//                        fill(255, 0, 255f);
+//                        ellipseMode(CENTER);
+//                        ellipse(positionMM.x, positionMM.y, 10, 10);
+//                        // Get the camera pixel value. 
+//                        cameraPointsTop[k++] = this.computePxPosition(positionMM);
+////                        System.out.println("Cam pos " + cameraPointsTop[k-1]); 
+//                    }
+//                }
 
             } else {
-                System.out.println("Reset Img.");
-                blinkTrackerBot.resetImages();
+//                System.out.println("Reset Img.");
+//                blinkTrackerBot.resetImages();
             }
 //            ArrayList<TrackedElement> teTop = blinkTrackerTop.findColor(parent.millis());
 //            TouchList touchsTop = blinkTrackerTop.getTouchList();
@@ -260,8 +312,6 @@ public class MultiCalibrator extends PaperTouchScreen {
         return planeCalib;
     }
 
-
-
     private HomographyCalibration findHomography(PMatrix3D paperViewedByDepth) {
         PVector[] corners = new PVector[4];
 
@@ -295,7 +345,7 @@ public class MultiCalibrator extends PaperTouchScreen {
         }
     }
 
-    PVector[] cameraPointsBot = new PVector[0];
+    PVector cameraPointsBot[] = new PVector[0];
     PVector cameraPointsTop[] = new PVector[0];
 
     private void drawDebugZones() {
@@ -331,6 +381,32 @@ public class MultiCalibrator extends PaperTouchScreen {
         fill(255, 200, 30);
         rect(108.1f, 67.1f, 15f, 15f);
         rect(179.4f, 67.1f, 15f, 15f);
+    }
+
+    private void checkBlinkingTracking() {
+        PVector mid = new PVector();
+        if (cameraPointsBot.length == 3 && cameraPointsTop.length == 3) {
+            for (PVector v : cameraPointsBot) {
+                mid.add(v);
+            }
+            for (PVector v : cameraPointsTop) {
+                mid.add(v);
+            }
+            mid.mult(1f / 6f);
+            PVector pxFromBoard = computePxPosition(new PVector(148.6f, 103.3f));
+            // Debug AR
+//            noFill();
+//            stroke(0, 255, 0);
+//            ellipse(mid.x, mid.y, 8, 8);
+//            stroke(40, 255, 120);
+//            ellipse(pxFromBoard.x, pxFromBoard.y, 8, 8);
+
+            // Find the distance, reset the array, go to the next point.
+//            System.out.println("Found: " + mid);
+//            System.out.println("board Found: " + pxFromBoard);
+//            System.out.println("Dist in px: " + PVector.dist(mid, pxFromBoard));
+            // Dist found  ~4-5 px
+        }
     }
 
     public void stopCalib() {
@@ -411,8 +487,10 @@ public class MultiCalibrator extends PaperTouchScreen {
 
         // Both display modes for now. 
         if (parent.mousePressed) {
-            mouseClick.set(parent.mouseX, parent.mouseY);
+            //   mouseClick.set(parent.mouseX, parent.mouseY);
         }
+
+        mouseClick = multiCalibrator.screenPoints[multiCalibrator.currentScreenPoint];
 
         g.noFill();
         g.stroke(255);
@@ -434,11 +512,11 @@ public class MultiCalibrator extends PaperTouchScreen {
             g.text("Ne bougez plus la feuille.", display.getWidth() / 2, 100); //stillW + 10);
         }
 
-        PImage img = multiCalibrator.blinkTrackerBot.getTrackedImage();
-
-        if (img != null) {
-            g.image(img, 200, 200, 100, 40);
-        }
+//        PImage img = multiCalibrator.blinkTrackerBot.getTrackedImage();
+//
+//        if (img != null) {
+//            g.image(img, 200, 200, 100, 40);
+//        }
 
         if (seeThrough) {
             // Camera test 
@@ -454,38 +532,6 @@ public class MultiCalibrator extends PaperTouchScreen {
                     g.ellipse(v.x, v.y, 3, 3);
                 }
             }
-        }
-
-        // Middle.. 
-        PVector mid = new PVector();
-        if (multiCalibrator.cameraPointsBot.length == 3 && multiCalibrator.cameraPointsTop.length == 3) {
-            for (PVector v : multiCalibrator.cameraPointsBot) {
-                mid.add(v);
-            }
-            for (PVector v : multiCalibrator.cameraPointsTop) {
-                mid.add(v);
-            }
-
-            mid.mult(1f / 6f);
-
-            PVector pxFromBoard = multiCalibrator.computePxPosition(new PVector(148.6f, 103.3f));
-
-            if (seeThrough) {
-                g.noFill();
-                g.stroke(0, 255, 0);
-                // Debug AR
-                g.ellipse(mid.x, mid.y, 8, 8);
-
-                g.stroke(40, 255, 120);
-                g.ellipse(pxFromBoard.x, pxFromBoard.y, 8, 8);
-            }
-
-            // Find the distance, reset the array, go to the next point.
-            System.out.println("Found: " + mid);
-            System.out.println("board Found: " + pxFromBoard);
-            System.out.println("Dist in px: " + PVector.dist(mid, pxFromBoard));
-
-            // Dist enregistrées ~4-5 px
         }
 
 //        System.out.println("FrameRate: " + parent.frameRate);
@@ -519,6 +565,9 @@ public class MultiCalibrator extends PaperTouchScreen {
         //
         parent.g.pushMatrix();
         parent.g.translate(mouseClick.x, mouseClick.y - 90);
+        sin(parent, parent.g, 255, multiCalibrator.freqToFind, 60, 8);
+
+        parent.g.translate(0, 180);
         sin(parent, parent.g, 255, multiCalibrator.freqToFind, 60, 8);
         parent.g.popMatrix();
 
