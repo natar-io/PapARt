@@ -35,8 +35,7 @@ public class Compute2DFrom3D extends DepthRecognition {
             int area) {
 
         // Warning RESET ROI ?!
-        depthAnalysis.updateRawColor(colorImage);
-
+//        depthAnalysis.updateRawColor(colorImage);
         selection = depthData.createSelection();
         depthData.planeAndProjectionCalibration = planeAndProjCalibration;
 
@@ -46,11 +45,11 @@ public class Compute2DFrom3D extends DepthRecognition {
         // Around the middle point
 //        depthAnalysis.computeDepthAndDoAround(precision2D, offset, area, new SelectAll());
         // Computation of elements in a zone
-        // depthAnalysis.computeDepthAndDoAround(precision2D, offset, area, new Select2DPlaneProjection());
-        // depthAnalysis.doForEachPointAround(precision2D, offset, area, new ComputeNormal());
-        depthAnalysis.computeDepthAndDo(precision2D, new Select2DPlaneProjection());
-        depthAnalysis.doForEachPoint(precision2D, new ComputeNormal());
+        depthAnalysis.computeDepthAndDoAround(precision2D, offset, area, new Select2DPlaneProjection());
+        depthAnalysis.doForEachPointAround(precision2D, offset, area, new ComputeNormal());
 
+//        depthAnalysis.computeDepthAndDo(precision2D, new Select2DPlaneProjection());
+//        depthAnalysis.doForEachPoint(precision2D, new ComputeNormal());
 //        depthAnalysis.doForEachPointAround(precision2D, offset, area, new SetImageDataGRAY());
         // Add the Color Image after Contour detection
     }
@@ -110,9 +109,10 @@ public class Compute2DFrom3D extends DepthRecognition {
 
         @Override
         public void execute(Vec3D p, PixelOffset px) {
-//            depthData.planeAndProjectionCalibration.project(p, depthData.projectedPoints[px.offset]);
+            
+            // warning ? Project again if precision is higher
+            depthData.planeAndProjectionCalibration.project(p, depthData.projectedPoints[px.offset]);
 
-//            if (depthData.planeAndProjectionCalibration.hasGoodOrientationAndDistance(p)
             if (depthData.planeAndProjectionCalibration.hasGoodOrientationAndDistance(p)
                     && depthData.projectedPoints[px.offset].x() != 0
                     && depthData.projectedPoints[px.offset].y() != 0

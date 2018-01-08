@@ -70,6 +70,12 @@ public class PlanarTouchCalibration extends Calibration {
     private float test4 = 1;
     private float test5 = 1;
 
+    public String toString() {
+        return "maxD: " + maximumDistance + " test1 " + test1
+                + " test2 " + test2 + " test3 " + test3
+                + "test4 " + test4 + " test5 " + test5;
+    }
+
     // TODO: implement this !
     @Override
     public boolean isValid() {

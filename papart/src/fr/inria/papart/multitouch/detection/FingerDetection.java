@@ -59,13 +59,16 @@ public class FingerDetection extends TouchDetectionDepth {
 
     private final HashMap<Byte, ConnectedComponent> contactPoints;
     private final Compute2DFrom3D touchRecognition;
-
+    private final CheckTouchPoint pointCheck;
+    
     public FingerDetection(DepthAnalysisImpl depthAnalysisImpl, PlanarTouchCalibration calib) {
         super(depthAnalysisImpl, calib);
         this.contactPoints = new HashMap<>();
         touchRecognition = new Compute2DFrom3D(depthAnalysisImpl);
-        currentPointValidityCondition = new CheckTouchPoint();
+        pointCheck = new CheckTouchPoint();
+        currentPointValidityCondition = pointCheck;
     }
+    
 
     public class CheckTouchPoint implements PointValidityCondition {
 
@@ -73,13 +76,19 @@ public class FingerDetection extends TouchDetectionDepth {
             return depthData;
         }
 
+        DepthData.DepthSelection localDepthSelection;
+        public void setSelection(DepthData.DepthSelection selection) {
+            this.localDepthSelection = selection;
+            System.out.println("local depth mask: " + localDepthSelection.validPointsMask);
+        }
+
         @Override
         public boolean checkPoint(int candidate, int currentPoint) {
 
             boolean classicCheck = !assignedPoints[candidate] // not assigned  
 
-                      && depthSelection.validPointsMask[candidate] // is valid
-                    
+                    && localDepthSelection.validPointsMask[candidate] // is valid
+
                     // Lower than the hand.
                     && depthData.planeAndProjectionCalibration.distanceTo(depthData.depthPoints[candidate]) < (handCalib.getTest2() - 0.5f)
                     //                    && depthData.planeAndProjectionCalibration.distanceTo(depthData.depthPoints[candidate]) < 20f
@@ -124,7 +133,6 @@ public class FingerDetection extends TouchDetectionDepth {
     PlanarTouchCalibration handCalib;
     PlaneAndProjectionCalibration currentPlaneProj;
 
-    DepthData.DepthSelection depthSelection; 
     /**
      *
      * @param planeAndProjCalibration
@@ -142,15 +150,15 @@ public class FingerDetection extends TouchDetectionDepth {
 
         ArrayList<TrackedDepthPoint> allNewFingers = new ArrayList<TrackedDepthPoint>();
         // For each hand
-        for (TrackedDepthPoint touchPoint : hand.getTouchPoints()) {
+        for (TrackedDepthPoint subHand : hand.getTouchPoints()) {
 
-            int offset = depthAnalysis.getDepthCameraDevice().findDepthOffset(touchPoint.getPositionDepthCam());
-
+            int offset = depthAnalysis.getDepthCameraDevice().findDepthOffset(subHand.getPositionDepthCam());
+//
             offset = getValidOffset(offset);
-            currentHand = touchPoint;
-            currentArm = touchPoint.getParent();
+            currentHand = subHand;
+            currentArm = subHand.getParent();
             handOffset = offset;
-            handPos = touchPoint.getPositionDepthCam();
+            handPos = subHand.getPositionDepthCam();
 
             int rectSize = (int) this.calib.getTest1();
 
@@ -170,23 +178,24 @@ public class FingerDetection extends TouchDetectionDepth {
             // Use arm 
 //            depthSelection = arm.getDepthSelection();
 //       use local
-            depthSelection = touchRecognition.getSelection();
+            DepthData.DepthSelection depthSelection = touchRecognition.getSelection();
+            pointCheck.setSelection(depthSelection);
+            
+//            this.toVisit.addAll(depthSelection.validPointsList);
+            this.toVisit.addAll(depthSelection.validPointsList);
 
             // 2. Select points that are part of the border 
-            DepthElementList handBounds = touchPoint.getDepthDataElements();
+//            DepthElementList handBounds = subHand.getDepthDataElements();
 //            handBounds =  handBounds.getBoundaries(depthData, touchPoint.getDetection());
-
             // 3. Select the ones that not part of the contour. 
 //            handBounds.selectDark(depthData);
 //            System.out.println("Bounds in Hand and not in Edge detection: " + handBounds.size());
             // USELESS?
             // 4. Remove the points that are also in the arm
-            handBounds.removeAll(currentArm.getDepthDataElements());
+//            handBounds.removeAll(currentArm.getDepthDataElements());
 //            System.out.println("Same not in arm: " + handBounds.size());
-
             // Start searching from the bounds
-            this.toVisit.addAll(handBounds.toConnectedComponent());
-
+//            this.toVisit.addAll(handBounds.toConnectedComponent());
             // Search points "black"  -> not in bounds ?
             // Generate a touch list from these points. 
             ArrayList<TrackedDepthPoint> newList;
@@ -200,7 +209,6 @@ public class FingerDetection extends TouchDetectionDepth {
 
 //        touchPoints.clear();
 //        touchPoints.addAll(allNewFingers);
-        
         TouchPointTracker.trackPoints(touchPoints, allNewFingers, imageTime);
         TouchPointTracker.filterPositions(touchPoints, imageTime);
     }
@@ -413,9 +421,9 @@ public class FingerDetection extends TouchDetectionDepth {
         ArrayList<TrackedDepthPoint> newPoints = new ArrayList<TrackedDepthPoint>();
         for (ConnectedComponent connectedComponent : connectedComponents) {
 
-            float height = connectedComponent.getHeight(depthData.projectedPoints);
-            if (connectedComponent.size() < calib.getMinimumComponentSize()
-                    || height < calib.getMinimumHeight()) {
+//            float height = connectedComponent.getHeight(depthData.projectedPoints);
+            if (connectedComponent.size() < calib.getMinimumComponentSize()) {
+//                    || height < calib.getMinimumHeight()) {
 
                 continue;
             }

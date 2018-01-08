@@ -68,7 +68,7 @@ public class MultiCalibrator extends PaperTouchScreen {
     int capW, capH;
 
     float freqToFind = 4.5f;
-
+    public float zShift = 22f;
     // debug
     byte[] found = null;
     private DepthCameraDevice depthCameraDevice;
@@ -260,7 +260,7 @@ public class MultiCalibrator extends PaperTouchScreen {
         return planeCalib;
     }
 
-    public float zShift = 17f;
+
 
     private HomographyCalibration findHomography(PMatrix3D paperViewedByDepth) {
         PVector[] corners = new PVector[4];

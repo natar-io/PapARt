@@ -137,7 +137,17 @@ public class ArmDetection extends TouchDetectionDepth {
         touchRecognition.find3DTouch(planeAndProjCalibration, getPrecision());
         ArrayList<TrackedDepthPoint> newList = this.compute(depthAnalysis.getDepthData());
 
+        // Filter low points ?
+        Iterator<TrackedDepthPoint> iterator = newList.iterator();
+        while (iterator.hasNext()) {
+            TrackedDepthPoint next = iterator.next();
+            if (next.getPosition().z < calib.getTest1()) {
+                iterator.remove();
+            }
+        }
+
         int imageTime = this.depthAnalysis.getDepthData().timeStamp;
+
         TouchPointTracker.trackPoints(touchPoints, newList, imageTime);
     }
 

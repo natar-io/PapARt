@@ -134,7 +134,7 @@ public abstract class TouchDetection {
 
         w = imgSize.getWidth();
         h = imgSize.getHeight();
-
+        
 //        ConnectedComponent cc = findNeighboursRec(startingPoint, 0, getX(startingPoint), getY(startingPoint));
         ConnectedComponent cc = findNeighboursFloodFill(startingPoint);
 
