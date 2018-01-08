@@ -39,10 +39,9 @@ import processing.core.PVector;
 
 /**
  *
- * @author jeremylaviole
- *  IDEA: can it inherit camera ?
+ * @author jeremylaviole IDEA: can it inherit camera ?
  */
-public class TrackedView implements WithSize{
+public class TrackedView implements WithSize {
 
     private PImage extractedPImage = null;
     private IplImage extractedIplImage = null;
@@ -178,6 +177,25 @@ public class TrackedView implements WithSize{
         return extractedPImage;
     }
 
+    public PImage getViewOf(Camera camera, IplImage fakeImage) {
+        camera = Camera.checkActingCamera(camera);
+
+        IplImage img = fakeImage;
+        if (!isExtractionReady(img)) {
+            return null;
+        }
+
+        this.mainImage = img;
+        this.camera = camera;
+
+        CvMat homography = computeHomography();
+
+        boolean useRGB = camera.getPixelFormat() == Camera.PixelFormat.RGB;
+        // Convert to the good type... 
+        ImageUtils.remapImage(homography, img, extractedIplImage, extractedPImage, useRGB);
+        return extractedPImage;
+    }
+
     public HomographyCalibration getHomographyOf(Camera camera) {
         camera = Camera.checkActingCamera(camera);
 
@@ -194,7 +212,7 @@ public class TrackedView implements WithSize{
         homoCalib.setMatrix(new PMatrix3D(
                 (float) homoMat[0], (float) homoMat[1], 0, (float) homoMat[2],
                 (float) homoMat[3], (float) homoMat[4], 0, (float) homoMat[5],
-                0, 0, 1, (float) homoMat[8], 
+                0, 0, 1, (float) homoMat[8],
                 0, 0, 0, 1));
 //        homoCalib.setMatrix(new PMatrix3D(
 //                (float) homoMat[0], (float) homoMat[1], (float) homoMat[2], 0,
@@ -206,6 +224,18 @@ public class TrackedView implements WithSize{
 
     public IplImage getIplViewOf(Camera camera) {
         IplImage img = camera.getIplImage();
+        if (!isExtractionReady(img)) {
+            return null;
+        }
+
+        this.mainImage = img;
+        this.camera = camera;
+        CvMat homography = computeHomography();
+        ImageUtils.remapImageIpl(homography, camera.getIplImage(), extractedIplImage);
+        return extractedIplImage;
+    }
+
+    public IplImage getIplViewOf(Camera camera, IplImage img) {
         if (!isExtractionReady(img)) {
             return null;
         }
@@ -234,6 +264,14 @@ public class TrackedView implements WithSize{
     private CvMat computeHomography() {
         if (!this.useListofPairs) {
             computeCorners();
+        }
+
+        System.out.println("ComputeHomograpy with these points: ");
+        int k = 0;
+        for (PVector screen : screenPixelCoordinates) {
+            PVector img = imagePixelCoordinates.get(k);
+            System.out.println("id: " + k + " scr: " + screen + " img: " + img);
+            k++;
         }
         CvMat homography = ImageUtils.createHomography(screenPixelCoordinates, imagePixelCoordinates);
         return homography;
@@ -400,27 +438,31 @@ public class TrackedView implements WithSize{
     public int getImageHeightPx() {
         return imageHeightPx;
     }
-    
+
     /**
      * Get Pixel width.
-     * @return 
+     *
+     * @return
      */
-    public int getWidth(){
+    public int getWidth() {
         return imageWidthPx;
     }
+
     /**
      * Get pixel height.
-     * @return 
+     *
+     * @return
      */
-    public int getHeight(){
+    public int getHeight() {
         return imageHeightPx;
     }
-    
+
     /**
      * Get pixel size.
-     * @return 
+     *
+     * @return
      */
-    public int getSize(){
+    public int getSize() {
         return getWidth() * getHeight();
     }
 

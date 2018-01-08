@@ -39,7 +39,7 @@ import static org.bytedeco.javacpp.opencv_imgproc.cvCvtColor;
  *
  * @author jeremylaviole
  */
-class CameraThread extends Thread {
+public class CameraThread extends Thread {
 
     private final Camera camera;
     Camera cameraForMarkerboard;
@@ -52,6 +52,8 @@ class CameraThread extends Thread {
     public CameraThread(Camera camera) {
         this.camera = camera;
         stop = false;
+
+        cameraForMarkerboard = camera;
 
         // Thread version... No bonus whatsoever for now.
         initThreadPool();
@@ -73,7 +75,6 @@ class CameraThread extends Thread {
 
     @Override
     public void run() {
-        cameraForMarkerboard = camera;
 
         while (!stop) {
             checkSubCamera();
@@ -89,6 +90,14 @@ class CameraThread extends Thread {
         }
     }
 
+    /**
+     * Set an image, used without starting the thread...
+     * @param image 
+     */
+    public void setImage(IplImage image) {
+        this.image = image;
+    }
+
     private void checkSubCamera() {
         if (!(camera instanceof CameraRGBIRDepth)) {
             return;
@@ -99,6 +108,10 @@ class CameraThread extends Thread {
         }
     }
 
+    /**
+     * Find the Markers, or features. 
+     * Can be used without a running thread with setImage. 
+     */
     public void compute() {
         try {
             camera.getSheetSemaphore().acquire();
@@ -162,7 +175,7 @@ class CameraThread extends Thread {
     }
 
     private void computeGrayScaleImage() {
-            cvCvtColor(image, grayImage, CV_BGR2GRAY);
+        cvCvtColor(image, grayImage, CV_BGR2GRAY);
     }
 
     private DetectedMarker[] computeMarkerLocations() {

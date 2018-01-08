@@ -168,27 +168,29 @@ public class DepthTouchInput extends TouchInput {
             }
 
             int initPrecision = 3;
-            Instant start = Instant.now();
+//            Instant start = Instant.now();
             
             depthAnalysis.computeDepthAndNormals(depthImage, colImage, initPrecision);
             
-            Instant depth = Instant.now();
+//            Instant depth = Instant.now();
             
             armDetection.findTouch(planeAndProjCalibration);
             
-            Instant touch1 =  Instant.now();
+//            Instant touch1 =  Instant.now();
             handDetection.findTouch(armDetection, planeAndProjCalibration);
                  
-            Instant touch2 =  Instant.now();
+//            Instant touch2 =  Instant.now();
             fingerDetection.findTouch(handDetection, armDetection, colImage, planeAndProjCalibration);
      
-            Instant touch3 =  Instant.now();
-            Instant end = Instant.now();
-            System.out.println("Depth: " +  Duration.between(start, depth).toMillis() + " milliseconds");
-            System.out.println("Arm: " +  Duration.between(depth, touch1).toMillis() + " milliseconds");
-            System.out.println("hand: " +  Duration.between(touch1, touch2).toMillis() + " milliseconds");
-            System.out.println("finger: " +  Duration.between(touch2, touch3).toMillis() + " milliseconds");
-            System.out.println("Total: " +  Duration.between(start, end).toMillis() + " milliseconds");
+//            Instant touch3 =  Instant.now();
+//            Instant end = Instant.now();
+//            
+//            
+//            System.out.println("Depth: " +  Duration.between(start, depth).toMillis() + " milliseconds");
+//            System.out.println("Arm: " +  Duration.between(depth, touch1).toMillis() + " milliseconds");
+//            System.out.println("hand: " +  Duration.between(touch1, touch2).toMillis() + " milliseconds");
+//            System.out.println("finger: " +  Duration.between(touch2, touch3).toMillis() + " milliseconds");
+//            System.out.println("Total: " +  Duration.between(start, end).toMillis() + " milliseconds");
 
             
         } catch (InterruptedException ex) {

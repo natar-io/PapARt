@@ -20,14 +20,19 @@ import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.PaperTouchScreen;
 import fr.inria.papart.procam.camera.Camera;
+import fr.inria.papart.procam.camera.ProjectorAsCamera;
 import fr.inria.papart.procam.camera.TrackedView;
 import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.procam.display.ProjectorDisplay;
+import fr.inria.papart.tracking.DetectedMarker;
+import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.utils.DrawUtils;
 import java.util.ArrayList;
+import org.bytedeco.javacpp.opencv_core.IplImage;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import static processing.core.PConstants.CENTER;
+import static processing.core.PConstants.HALF_PI;
 import static processing.core.PConstants.RGB;
 import processing.core.PGraphics;
 import processing.core.PImage;
@@ -35,11 +40,17 @@ import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.opengl.PGraphicsOpenGL;
 import tech.lity.rea.skatolo.Skatolo;
+import tech.lity.rea.skatolo.gui.controllers.HoverButton;
 
 /**
  *
  * @author Jeremy Laviole laviole@rea.lity.tech
  */
+import fr.inria.papart.procam.camera.CameraThread;
+import org.bytedeco.javacpp.opencv_imgcodecs;
+import static processing.core.PConstants.LEFT;
+import static processing.core.PConstants.RIGHT;
+
 public class MultiCalibrator extends PaperTouchScreen {
 
     // TODO: Add depth calibration in the scenario. 
@@ -65,30 +76,36 @@ public class MultiCalibrator extends PaperTouchScreen {
     // 7. Check the colors for color tracking across 4-6 screenshots. save the colors.
     protected boolean active = false;
 
-//    BlinkTracker blinkTrackerTop, blinkTrackerBot;
     private Papart papart;
-    int capW, capH;
-
-    float freqToFind = 4.5f;
-    public float zShift = 10f;
-    // debug
-    byte[] found = null;
+    DepthTouchInput depthTouchInput;
     private DepthCameraDevice depthCameraDevice;
+
+    public float zShift = 10f;
+
     private Skatolo skatolo;
+    private HoverButton hoverButton, resetButton;
+    int pressedAmt = 0;
+    int maxPressedAmt = 30 * 3; // 2 secs
+
+    int pressedAmtReset = 0;
+
+    // 6 points for Homography matching. 
+    public PVector screenPoints[];
+    public int currentScreenPoint = 0;
+    int nbScreenPoints = 6;
+
+    IplImage savedImages[];
+    PMatrix3D savedLocations[];
+    private TrackedView projectorView;
+    private ProjectorAsCamera projectorAsCamera;
+    public boolean evaluateMode = false;
 
     @Override
     public void settings() {
         papart = Papart.getPapart();
         try {
-            // the size of the draw area is 297mm x 210mm.
             setDrawingSize(297, 210);
-
-            // loads the marker that are actually printed and tracked by the camera.
             loadMarkerBoard(Papart.markerFolder + "calib1.svg", 297, 210);
-
-            System.out.print("Markerboard after init: " + this.getMarkerBoard());
-
-            // the application will render drawings and shapes only on the surface of the sheet of paper.
             setDrawOnPaper();
         } catch (Exception e) {
             e.printStackTrace();
@@ -96,12 +113,7 @@ public class MultiCalibrator extends PaperTouchScreen {
     }
 
     public void button() {
-        System.out.println("Button pressed");
     }
-
-    // 6 points for Homography matching. 
-    public PVector screenPoints[];
-    public int currentScreenPoint = 0;
 
     @Override
     public void setup() {
@@ -109,80 +121,127 @@ public class MultiCalibrator extends PaperTouchScreen {
             setDrawingFilter(0);
             setTrackingFilter(0, 0);
 
-            skatolo = new Skatolo(this.parent, this);
-            skatolo.getMousePointer().disable();
-            skatolo.setAutoDraw(false);
+            savedImages = new IplImage[nbScreenPoints];
+            savedLocations = new PMatrix3D[nbScreenPoints];
 
-            screenPoints = new PVector[6];
-
-            int pw = this.getDisplay().getWidth();
-            int ph = this.getDisplay().getHeight();
-            int deadZone = 100; // in px 
-            // 1 in each quadrant. 
-            // 2 random
-            screenPoints[0] = new PVector(
-                    parent.random(deadZone, pw / 2),
-                    parent.random(deadZone, ph / 2));
-            screenPoints[1] = new PVector(
-                    parent.random(pw / 2, pw - deadZone),
-                    parent.random(deadZone, ph / 2));
-
-            screenPoints[2] = new PVector(
-                    parent.random(deadZone, pw / 2),
-                    parent.random(ph / 2, ph - deadZone));
-            screenPoints[3] = new PVector(
-                    parent.random(pw / 2, pw - deadZone),
-                    parent.random(ph / 2, ph - deadZone));
-            for (int i = deadZone; i < 2; i++) {
-                screenPoints[i] = new PVector(
-                        parent.random(deadZone, pw - deadZone),
-                        parent.random(deadZone, ph - deadZone));
-            }
-
-            int sizeAdd = 10;
-            skatolo.addHoverButton("button")
-                    .setPosition(79.8f - sizeAdd, 123.8f - sizeAdd)
-                    .setSize(15 + 2 * sizeAdd, 15 + 2 * sizeAdd);
-
+            initButtons();
+            initScreenPoints();
+            initProjectorAsCamera();
             // GREEN circle 
 //                 fill(0, 255, 0);
 //        rect(79.8f, 123.8f, 15f, 15f);
-//            capW = 128;
-//            capH = 32;
-//            // Quality to find !
-//            // Start with max...
-//            blinkTrackerBot = papart.initXTracking(this, 1f, freqToFind); // 0.5f);
-//            TrackedView trackedViewBot = blinkTrackerBot.getTrackedView();
-//            trackedViewBot.setTopLeftCorner(new PVector(80, 145));
-//
-//            // Size ?!
-//            trackedViewBot.setCaptureSizeMM(new PVector(142f, 50f));
-//            trackedViewBot.setImageWidthPx(capW);
-//            trackedViewBot.setImageHeightPx(capH);
-//            trackedViewBot.init();
-//            blinkTrackerBot.initTouchDetection();
-//
-//            blinkTrackerTop = papart.initXTracking(this, 1f, freqToFind); // 0.5f);
-//            TrackedView trackedViewTop = blinkTrackerTop.getTrackedView();
-//            trackedViewTop.setTopLeftCorner(new PVector(76, 11.6f));
-//
-//            trackedViewTop.setCaptureSizeMM(new PVector(146.6f, 46.4f));
-//            trackedViewTop.setImageWidthPx(capW);
-//            trackedViewTop.setImageHeightPx(capH);
-//            trackedViewTop.init();
-//
-//            blinkTrackerTop.initTouchDetection();
-
             depthTouchInput = (DepthTouchInput) papart.getTouchInput();
             depthTouchInput.useRawDepth();
             depthCameraDevice = papart.getDepthCameraDevice();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
         startCalib();
     }
 
-    DepthTouchInput depthTouchInput;
+    void initButtons() {
+        skatolo = new Skatolo(this.parent, this);
+        skatolo.getMousePointer().disable();
+        skatolo.setAutoDraw(false);
+        int sizeAdd = 10;
+        hoverButton = skatolo.addHoverButton("button")
+                .setPosition(79.8f - sizeAdd, 123.8f - sizeAdd)
+                .setSize(15 + 2 * sizeAdd, 15 + 2 * sizeAdd);
+        resetButton = skatolo.addHoverButton("resetPoint")
+                .setPosition(208.2f - sizeAdd, 123.8f - sizeAdd)
+                .setSize(15 + 2 * sizeAdd, 15 + 2 * sizeAdd);
+    }
+
+    private int deadZone = 100;
+    int pw, ph;
+
+    void initScreenPoints() {
+        screenPoints = new PVector[nbScreenPoints];
+        pw = this.getDisplay().getWidth();
+        ph = this.getDisplay().getHeight();
+        // 1 in each quadrant. 
+        // 2 random
+        screenPoints[0] = new PVector(
+                parent.random(deadZone, pw / 2),
+                parent.random(deadZone, ph / 2),
+                parent.random(HALF_PI));
+        screenPoints[1] = new PVector(
+                parent.random(pw / 2, pw - deadZone),
+                parent.random(deadZone, ph / 2),
+                parent.random(HALF_PI));
+
+        screenPoints[2] = new PVector(
+                parent.random(deadZone, pw / 2),
+                parent.random(ph / 2, ph - deadZone),
+                parent.random(HALF_PI));
+        screenPoints[3] = new PVector(
+                parent.random(pw / 2, pw - deadZone),
+                parent.random(ph / 2, ph - deadZone),
+                parent.random(HALF_PI));
+
+        for (int i = 4; i < nbScreenPoints; i++) {
+            screenPoints[i] = createRandomPoint();
+        }
+    }
+
+    private PVector createRandomPoint() {
+        return new PVector(
+                parent.random(deadZone, pw - deadZone),
+                parent.random(deadZone, ph - deadZone),
+                parent.random(HALF_PI));
+    }
+
+    // projector rendering.
+    protected ProjectorDisplay projector;
+
+    private void initProjectorAsCamera() {
+
+        if (!(getDisplay() instanceof ProjectorDisplay)) {
+            System.out.println("No Projector to calibrate...");
+            return;
+        }
+        projector = (ProjectorDisplay) getDisplay();
+
+        projectorView = new TrackedView();
+        projectorView.setImageWidthPx(projector.getWidth());
+        projectorView.setImageHeightPx(projector.getHeight());
+
+        if (cameraTracking.isPixelFormatGray()) {
+            projectorView.init(PApplet.GRAY);
+        }
+        if (cameraTracking.isPixelFormatColor()) {
+            projectorView.init(PApplet.RGB);
+        }
+
+        projectorView.useListOfPairs(true);
+        projectorView.clearObjectImagePairs();
+
+        projectorAsCamera = new ProjectorAsCamera(projector, cameraTracking, projectorView);
+        projectorAsCamera.setCalibration(Papart.projectorCalib);
+        projectorAsCamera.setParent(parent);
+
+        MarkerBoard board = this.getMarkerBoard();
+        // if it uses gray images.
+        // All of this needs to be more explicit. 
+        if (board.useGrayImages()) {
+            projectorAsCamera.setPixelFormat(Camera.PixelFormat.GRAY);
+        }
+
+        // Warning -> Only works with SVG tracking. 
+//        if (board.getMarkerType() == MarkerBoard.MarkerType.SVG) {
+//            projectorTracker = DetectedMarker.createDetector(projector.getWidth(), projector.getHeight());
+//        }
+        projectorAsCamera.trackSheets(true);
+        projectorAsCamera.trackMarkerBoard(board);
+
+// No filtering        
+        board.setDrawingMode(projectorAsCamera, false, 0);
+        board.removeFiltering(projectorAsCamera);
+
+        // warrning experimental
+//        projectorAsCamera.setThread();
+    }
 
     @Override
     public void drawOnPaper() {
@@ -194,7 +253,7 @@ public class MultiCalibrator extends PaperTouchScreen {
         background(0, 0, 200, 50);
 
         if (active) {
-            System.out.println("Framerate: " + parent.frameRate);
+//            System.out.println("Framerate: " + parent.frameRate);
             computeTouch();
             if (toSave) {
                 saveTouch();
@@ -202,66 +261,178 @@ public class MultiCalibrator extends PaperTouchScreen {
             drawTouch(10);
 
             float d = getMarkerBoard().lastMovementDistance(getCameraTracking());
-//        g.text(d, 100, 100);
+
+            if (waitForMovement && d > 20) {
+                waitForMovement = false;
+            }
+
+            SkatoloLink.updateTouch(touchList.get2DTouchs(), skatolo);
+            skatolo.draw(getGraphics());
+
+            if (evaluateMode) {
+                drawDebugZones();
+            }
+
+//            PMatrix3D camPos = currentCamBoard();
+//            PVector pos3D = new PVector(camPos.m03, camPos.m13, camPos.m23);
+//            PVector pxCam = cameraTracking.getProjectiveDevice().worldToPixelCoord(pos3D, false);
+//            System.out.println("PXCam: " + pxCam);
 
             // Not moving, draw something.
-            if (d < 8f) {
+            if (!waitForMovement && d < 8f) {
                 // Touch
-                SkatoloLink.updateTouch(touchList.get2DTouchs(), skatolo);
-                skatolo.draw(getGraphics());
 
-//                ArrayList<TrackedElement> teBot = blinkTrackerBot.findColor(parent.millis());
-//                TouchList touchsBot = blinkTrackerBot.getTouchList();
-//                found = blinkTrackerBot.getLastFoundArray();
-////                System.out.println("tracked bot: " + teBot.size());
-//
-//                ArrayList<TrackedElement> teTop = blinkTrackerTop.findColor(parent.millis());
-//                TouchList touchsTop = blinkTrackerTop.getTouchList();
-////                System.out.println("tracked top: " + teTop.size());
-//
-////            // 3 Found !
-//                if (teBot.size() >= 0) {
-//                    cameraPointsBot = new PVector[touchsBot.size()];
-//                    int k = 0;
-//                    for (Touch touch : touchsBot) {
-//                        // Position in 2D image space.
-//                        PVector positionPxPaper = touch.position;
-//                        PVector positionMM = blinkTrackerBot.getTrackedView().pixelsToMM(positionPxPaper);
-//                        fill(255, 0, 255f);
-//                        ellipseMode(CENTER);
-//                        ellipse(positionMM.x, positionMM.y, 10, 10);
-//                        // Get the camera pixel value. 
-//                        cameraPointsBot[k++] = this.computePxPosition(positionMM);
-////                        System.out.println("Cam pos " + cameraPointsBot[k-1]); 
-//                    }
-//                }
-//                if (teTop.size() >= 0) {
-//                    cameraPointsTop = new PVector[touchsTop.size()];
-//                    int k = 0;
-//                    for (Touch touch : touchsTop) {
-//                        // Position in 2D image space.
-//                        PVector positionPxPaper = touch.position;
-//                        PVector positionMM = blinkTrackerTop.getTrackedView().pixelsToMM(positionPxPaper);
-//                        fill(255, 0, 255f);
-//                        ellipseMode(CENTER);
-//                        ellipse(positionMM.x, positionMM.y, 10, 10);
-//                        // Get the camera pixel value. 
-//                        cameraPointsTop[k++] = this.computePxPosition(positionMM);
-////                        System.out.println("Cam pos " + cameraPointsTop[k-1]); 
-//                    }
-//                }
+                if (parent.mousePressed) {
+                    if (parent.mouseButton == LEFT) {
+                        valid();
+                    }
+                    if (parent.mouseButton == RIGHT) {
+                        cancel();
+                    }
+                }
 
+//                if (resetButton.isActive()) {
+//                    cancel();
+//                }
+//                if (hoverButton.isActive()) {
+//                    valid();
+//                }
             } else {
-//                System.out.println("Reset Img.");
-//                blinkTrackerBot.resetImages();
+                pressedAmt = 0;
+                pressedAmtReset = 0;
             }
-//            ArrayList<TrackedElement> teTop = blinkTrackerTop.findColor(parent.millis());
-//            TouchList touchsTop = blinkTrackerTop.getTouchList();
-//            if (getDisplay() instanceof ARDisplay) {
-//                drawDebugZones();
-//            }
+        }
+    }
+
+    void valid() {
+        pressedAmt++;
+        if (pressedAmt == maxPressedAmt) {
+            savePicture();
+            nextScreenshot();
+            System.out.println("Saving location: ");
+            getLocation().print();
+            this.hoverButton.isActive = false;
+        }
+    }
+
+    void cancel() {
+        pressedAmtReset++;
+        if (pressedAmtReset == maxPressedAmt) {
+            resetCurrentPoint();
+            pressedAmtReset = 0;
+            this.resetButton.isActive = false;
+        }
+    }
+
+    void resetCurrentPoint() {
+        this.screenPoints[currentScreenPoint] = createRandomPoint();
+    }
+
+    // Move the piece of paper between poses
+    boolean waitForMovement = true;
+
+    void savePicture() {
+        this.savedImages[currentScreenPoint] = cameraTracking.getIplImage().clone();
+            
+        this.savedLocations[currentScreenPoint] = currentCamBoard();
+        
+        PMatrix3D loc = currentCamBoard();
+
+        // MIDDLE translate !
+        loc.translate(179.4f, 67.1f);
+
+        PMatrix3D camPos = loc;
+        PVector pos3D = new PVector(camPos.m03, camPos.m13, camPos.m23);
+        PVector pxCam = cameraTracking.getProjectiveDevice().worldToPixelCoord(pos3D, false);
+
+        PVector pt = new PVector(this.screenPoints[currentScreenPoint].x, this.screenPoints[currentScreenPoint].y);
+        System.out.println("adding pair: " + pxCam + " " + pt);
+
+        projectorView.addObjectImagePair(pxCam, pt);
+    }
+
+    private PMatrix3D currentCamBoard() {
+        return getMarkerBoard().getTransfoMat(cameraTracking).get();
+    }
+
+    void nextScreenshot() {
+        pressedAmt = 0;
+        currentScreenPoint++;
+        if (currentScreenPoint == this.nbScreenPoints) {
+            System.out.println("Ended !");
+            calibrate();
+
+            projectorView.clearObjectImagePairs();
+            currentScreenPoint = 0;
+            this.evaluateMode = true;
+        }
+    }
+
+    // Loads of color data for color points. 
+    // 1. Homography computation:  Camera - projector.
+    // 2. Extract 4-6 projector images. 
+    // 3. Find markers if these projector images +  find markers in Cam images. 
+    // 4. Match 3D positions for extrinsic calibration and save it. 
+    // 5. Check - Extrinsic calibration ? (How to do it easily?)  
+    // 6. Compute color histograms, take the most commons, compute H,S,B + R,G,B  means + stdev. 
+    // 7. Check the colors for color tracking across 4-6 screenshots. save the colors.
+    void calibrate() {
+
+        // Do homography here. 
+//        for (int i = 0; i < nbScreenPoints; i++) {
+//            PMatrix3D camPos = savedLocations[i];
+//            PVector pos3D = new PVector(camPos.m03, camPos.m13, camPos.m23);
+//            PVector pxCam = cameraTracking.getProjectiveDevice().worldToPixelCoord(pos3D, false);
+//
+//            PVector pt = new PVector(this.screenPoints[i].x, this.screenPoints[i].y);
+//            System.out.println("adding pair: " + pxCam + " " + pt);
+//
+////            projectorView.addObjectImagePair(pxCam, pt);
+//            projectorView.addObjectImagePair(pt, pxCam);
+//        }
+        // Save homography
+        Papart.getPapart().saveCalibration(Papart.cameraProjHomography,
+                projectorView.getHomographyOf(cameraTracking).getHomography());
+
+        ArrayList<ExtrinsicSnapshot> snapshots = new ArrayList<ExtrinsicSnapshot>();
+
+        CameraThread projectorFakeThread = new CameraThread(projectorAsCamera);
+
+        // Homography is ready
+        // we can get images from it. 
+        for (int i = 0; i < nbScreenPoints; i++) {
+
+            // Set the image in the projector
+            projectorAsCamera.grab(savedImages[i]);
+
+            // Send to the thread, for pose estimation. 
+            projectorFakeThread.setImage(projectorAsCamera.getIplImage());
+
+            projectorFakeThread.compute();
+
+            opencv_imgcodecs.cvSaveImage("/home/jiii/tmp/cam-" + i + ".bmp", savedImages[i]);
+            opencv_imgcodecs.cvSaveImage("/home/jiii/tmp/proj-" + i + ".bmp", projectorAsCamera.getIplImage());
+            System.out.println("Saved " + "/home/jiii/tmp/cam-" + i + ".bmp");
+            System.out.println("Saved " + "/home/jiii/tmp/proj-" + i + ".bmp");
+            System.out.println("Location found: ");
+
+            PMatrix3D projPos = getMarkerBoard().getTransfoMat(projectorAsCamera);
+            projPos.print();
+
+            snapshots.add(new ExtrinsicSnapshot(savedLocations[i],
+                    projPos, null));
         }
 
+        ExtrinsicCalibrator calibrationExtrinsic = new ExtrinsicCalibrator(parent);
+        calibrationExtrinsic.setProjector(projector);
+
+        // Compute, save and set !...
+        calibrationExtrinsic.computeProjectorCameraExtrinsics(snapshots);
+
+        // Get average of 3D planes and set the table location !?
+//        calibrationExtrinsic.calibrateKinect(snapshots, useExternalColorCamera);
+//        projectorView.getHomographyOf(cameraTracking).saveTo(this, Papart.cameraProjHomography);       
+        // Set it !
     }
 
     PlaneAndProjectionCalibration planeProjCalib;
@@ -435,7 +606,7 @@ public class MultiCalibrator extends PaperTouchScreen {
         return active;
     }
 
-    private static PVector mouseClick = new PVector(0, 0);
+    private static PVector projPoint = new PVector(0, 0);
 
     public static void drawCalibration(PGraphicsOpenGL screenGraphics) {
         Papart papart = Papart.getPapart();
@@ -490,94 +661,78 @@ public class MultiCalibrator extends PaperTouchScreen {
             //   mouseClick.set(parent.mouseX, parent.mouseY);
         }
 
-        mouseClick = multiCalibrator.screenPoints[multiCalibrator.currentScreenPoint];
+//        if (multiCalibrator.projectorView.getNbPairs() >= 4) {
+//            PImage img = multiCalibrator.projectorView.getViewOf(multiCalibrator.cameraTracking);
+//            if (img != null) {
+//                g.image(img,
+//                        400, 400,
+//                        400, 400);
+//            }
+//        }
+        projPoint = multiCalibrator.screenPoints[multiCalibrator.currentScreenPoint];
 
+        g.pushMatrix();
+        g.translate(projPoint.x, projPoint.y);
         g.noFill();
         g.stroke(255);
-        g.ellipse(mouseClick.x, mouseClick.y, 50, 50);
-        g.rect(mouseClick.x - 5, mouseClick.y, 10, 1);
-        g.rect(mouseClick.x, mouseClick.y - 5, 1, 10);
-        g.ellipse(mouseClick.x, mouseClick.y, 20, 20);
+        g.ellipseMode(CENTER);
+
+        g.rotate(projPoint.z);
+
+        // PIXEL sizes. (projector resolution dependent)
+        g.ellipse(0, 0, 50, 50);
+        g.rect(-5, 0, 10, 1);
+        g.rect(0, - 5, 1, 10);
+        g.ellipse(0, 0, 20, 20);
+
+//        float freq = 0.2f + 2f * ((float) multiCalibrator.pressedAmt / (float) multiCalibrator.maxPressedAmt);
+        float freq = 0.5f;
+
+        if (multiCalibrator.pressedAmt > 3f) {
+            freq = 2f;
+        }
+        float v = (PApplet.sin((parent.millis() / 1000f) * PConstants.TWO_PI * freq) + 1f) / 2f;
+
+        if (multiCalibrator.hoverButton.isActive) {
+            g.stroke(0, 255, 0);
+        }
+        if (multiCalibrator.resetButton.isActive) {
+            g.stroke(255, 0, 0);
+        }
+        g.fill(255 * v);
+
+        for (int i = 0; i < papart.getMarkerList().length; i++) {
+            g.rect(10 * i, 40, 20, 20);
+        }
+
+        g.rect(-50, 100, 100, 20);
+        g.rect(-50, -100, 100, 20);
 
         float d = multiCalibrator.getMarkerBoard().lastMovementDistance(multiCalibrator.getCameraTracking());
-        g.text(d, 100, 100);
+//        g.text(d, 100, 100);
 
+        if (projPoint.y < display.getHeight() - 180) {
+            g.translate(0, 150);
+        } else {
+            g.translate(0, -150);
+        }
         // Not moving, draw something.
         if (d < 2f) {
             int stillW = 25;
             g.fill(0, 255, 0);
-            g.rect(display.getWidth() / 2 - stillW, 80,
-                    stillW, stillW);
+//            g.rect(0, 0, stillW, stillW);
             g.fill(255);
-            g.text("Ne bougez plus la feuille.", display.getWidth() / 2, 100); //stillW + 10);
+//            g.scale(1, -1f);
+            g.text("Ne bougez plus la feuille.", 0, 0); //stillW + 10);
         }
 
-//        PImage img = multiCalibrator.blinkTrackerBot.getTrackedImage();
-//
-//        if (img != null) {
-//            g.image(img, 200, 200, 100, 40);
-//        }
-
-        if (seeThrough) {
-            // Camera test 
-            for (PVector v : multiCalibrator.cameraPointsBot) {
-                g.fill(200, 180, 130);
-                if (v != null) {
-                    g.ellipse(v.x, v.y, 3, 3);
-                }
-            }
-            for (PVector v : multiCalibrator.cameraPointsTop) {
-                g.fill(200, 130, 180);
-                if (v != null) {
-                    g.ellipse(v.x, v.y, 3, 3);
-                }
-            }
-        }
-
-//        System.out.println("FrameRate: " + parent.frameRate);
-        // Debug sin. 
-        byte[] found = multiCalibrator.found;
-
-        if (found != null) {
-            g.pushMatrix();
-            g.translate(300, 300);
-
-            g.noStroke();
-            g.colorMode(RGB, 255);
-            int k = 0;
-//	scale(sc);
-            for (int j = 0; j < multiCalibrator.capH; j++) {
-                for (int i = 0; i < multiCalibrator.capW; i++) {
-                    if (k >= found.length) {
-                        continue;
-                    }
-                    if (found[k++] == 0) {
-                        g.fill(20, 255, 10, 180);
-                    } else {
-                        g.fill(30);
-                    }
-                    g.rect(i, j, 1, 1);
-                }
-            }
-            g.popMatrix();
-        }
-
-        //
-        parent.g.pushMatrix();
-        parent.g.translate(mouseClick.x, mouseClick.y - 90);
-        sin(parent, parent.g, 255, multiCalibrator.freqToFind, 60, 8);
-
-        parent.g.translate(0, 180);
-        sin(parent, parent.g, 255, multiCalibrator.freqToFind, 60, 8);
-        parent.g.popMatrix();
+        g.popMatrix();
 
     }
 
     // Pixel rendering
     public static void sin(PApplet parent, PGraphics g, int amt, float freq, int xDiff, float size) {
-
         float v = (PApplet.sin((float) (parent.millis()) / 1000f * PConstants.TWO_PI * freq) + 1f) / 2f;
-
         g.noStroke();
         g.ellipseMode(CENTER);
         g.fill(v * amt);

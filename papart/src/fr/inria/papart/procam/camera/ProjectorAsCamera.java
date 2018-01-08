@@ -123,6 +123,16 @@ public class ProjectorAsCamera extends Camera {
         }
     }
 
+    public void grab(IplImage source) {
+        IplImage img = projectorView.getIplViewOf(cameraTracking, source);
+        if (img != null) {
+            currentImage = img;
+            if (this.format == PixelFormat.GRAY) {
+                currentImage = greyProjectorImage(img);
+            }
+        }
+    }
+
     private opencv_core.IplImage greyProjectorImage(opencv_core.IplImage projImage) {
 
         if (projImage.nChannels() == 1) {

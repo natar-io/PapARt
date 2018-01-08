@@ -129,10 +129,10 @@ public class VideoPopupApp extends PApplet {
 
         if (keyPressed && key == 'a' && imagePts.x != 0 && imagePts.y != 0) {
             parent.pointer.getLocationVector().set(0, 0);
-            PVector opjectPts = v.copy();
+            PVector objectPts = v.copy();
             System.out.println("Adding pair.");
             
-            parent.projectorView.addObjectImagePair(opjectPts, imagePts);
+            parent.projectorView.addObjectImagePair(objectPts, imagePts);
             parent.projector.mouseClick.x = 0;
             parent.projector.mouseClick.y = 0;
         }
