@@ -79,7 +79,6 @@ public class FingerDetection extends TouchDetectionDepth {
         DepthData.DepthSelection localDepthSelection;
         public void setSelection(DepthData.DepthSelection selection) {
             this.localDepthSelection = selection;
-            System.out.println("local depth mask: " + localDepthSelection.validPointsMask);
         }
 
         @Override
@@ -514,7 +513,7 @@ public class FingerDetection extends TouchDetectionDepth {
 //        meanKinect.addSelf(shift);
 
         Vec3D handPos = currentHand.getPositionDepthCam();
-        Vec3D dir = meanKinect.sub(handPos).normalize().scale(15f);
+        Vec3D dir = meanKinect.sub(handPos).normalize().scale(12f);
 
         meanKinect.addSelf(dir);
 
