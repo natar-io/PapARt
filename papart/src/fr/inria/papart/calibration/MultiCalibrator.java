@@ -87,14 +87,15 @@ public class MultiCalibrator extends PaperTouchScreen {
     private Skatolo skatolo;
     private HoverButton hoverButton, resetButton;
     int pressedAmt = 0;
-    int maxPressedAmt = 30 * 3; // 2 secs
+//    int maxPressedAmt = 30 * 3; // 2 secs
+    int maxPressedAmt = 20; // 2 secs
 
     int pressedAmtReset = 0;
 
     // 6 points for Homography matching. 
     public PVector screenPoints[];
     public int currentScreenPoint = 0;
-    int nbScreenPoints = 6;
+    int nbScreenPoints = 8;
 
     IplImage savedImages[];
     PMatrix3D savedLocations[];
@@ -238,6 +239,7 @@ public class MultiCalibrator extends PaperTouchScreen {
         projectorAsCamera.trackMarkerBoard(board);
 
 // No filtering        
+        board.forceUpdate(projectorAsCamera, Integer.MAX_VALUE);
         board.setDrawingMode(projectorAsCamera, false, 0);
         board.removeFiltering(projectorAsCamera);
 
@@ -397,17 +399,29 @@ public class MultiCalibrator extends PaperTouchScreen {
 
             // Send to the thread, for pose estimation. 
             projectorFakeThread.setImage(projectorAsCamera.getIplImage());
+            projectorFakeThread.setImage(projectorAsCamera.getIplImage());
+            projectorFakeThread.setImage(projectorAsCamera.getIplImage());
+
+            PMatrix3D projPos = getMarkerBoard().getTransfoMat(projectorAsCamera);
 
             projectorFakeThread.compute();
+            projectorFakeThread.compute();
+            projectorFakeThread.compute();
+            projectorFakeThread.compute();
+            projectorFakeThread.compute();
+            projectorFakeThread.compute();
 
+            // 5 Max and he found 8 !
+            DetectedMarker[] detectedMarkers = projectorAsCamera.getDetectedMarkers();
+            System.out.println("Number of markers found: " + detectedMarkers.length);
+            System.out.println("in (fake) Camera: " + projectorAsCamera);
+            projPos = getMarkerBoard().getTransfoMat(projectorAsCamera);
+            projPos.print();
             opencv_imgcodecs.cvSaveImage("/home/jiii/tmp/cam-" + i + ".bmp", img);
             opencv_imgcodecs.cvSaveImage("/home/jiii/tmp/proj-" + i + ".bmp", projectorAsCamera.getIplImage());
             System.out.println("Saved " + "/home/jiii/tmp/cam-" + i + ".bmp");
             System.out.println("Saved " + "/home/jiii/tmp/proj-" + i + ".bmp");
             System.out.println("Location found: ");
-
-            PMatrix3D projPos = getMarkerBoard().getTransfoMat(projectorAsCamera);
-            projPos.print();
 
             snapshots.add(new ExtrinsicSnapshot(savedLocations[i],
                     projPos, null));

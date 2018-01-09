@@ -45,7 +45,6 @@ public class ExtrinsicCalibrator {
 
     private final PApplet parent;
 
-    
     // TODO: find a way to tweak this. 
     private static final float OPEN_KINECT_Z_OFFSET = -25f;
     private static final float REALSENSE_Z_OFFSET = -15f;
@@ -87,10 +86,16 @@ public class ExtrinsicCalibrator {
         for (ExtrinsicSnapshot snapshot : snapshots) {
             PMatrix3D extr = computeExtrinsics(snapshot.mainCameraPaper,
                     snapshot.projectorPaper);
+
+            System.out.println("Extrinsics: ");
+            extr.print();
+
             Utils.addMatrices(sum, extr);
         }
         Utils.multMatrix(sum, 1f / (float) snapshots.size());
 
+        System.out.println("Extrinsics average: ");
+        sum.print();
         saveProCamExtrinsics(sum);
     }
 

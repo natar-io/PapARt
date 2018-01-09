@@ -266,13 +266,13 @@ public class TrackedView implements WithSize {
             computeCorners();
         }
 
-        System.out.println("ComputeHomograpy with these points: ");
-        int k = 0;
-        for (PVector screen : screenPixelCoordinates) {
-            PVector img = imagePixelCoordinates.get(k);
-            System.out.println("id: " + k + " scr: " + screen + " img: " + img);
-            k++;
-        }
+//        System.out.println("ComputeHomograpy with these points: ");
+//        int k = 0;
+//        for (PVector screen : screenPixelCoordinates) {
+//            PVector img = imagePixelCoordinates.get(k);
+////            System.out.println("id: " + k + " scr: " + screen + " img: " + img);
+//            k++;
+//        }
         CvMat homography = ImageUtils.createHomography(screenPixelCoordinates, imagePixelCoordinates);
         return homography;
     }

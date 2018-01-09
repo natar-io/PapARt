@@ -110,6 +110,7 @@ public class ProjectorAsCamera extends Camera {
     }
 
     /**
+     * Grab an image from the camera associated. 
      * Not used.
      */
     @Override
@@ -123,6 +124,10 @@ public class ProjectorAsCamera extends Camera {
         }
     }
 
+    /**
+     * Grab a fake (given image). 
+     * @param source given image.
+     */
     public void grab(IplImage source) {
         IplImage img = projectorView.getIplViewOf(cameraTracking, source);
         if (img != null) {

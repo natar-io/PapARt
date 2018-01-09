@@ -32,8 +32,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bytedeco.javacpp.ARToolKitPlus;
 import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;
+import org.bytedeco.javacpp.opencv_imgcodecs;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
 import static org.bytedeco.javacpp.opencv_imgproc.cvCvtColor;
+import processing.core.PVector;
 
 /**
  *
@@ -118,8 +120,8 @@ public class CameraThread extends Thread {
             tryComputeGrayScale();
             tryToFindMarkers();
 
-//             updateSequential();
-            updateParallel();
+             updateSequential();
+//            updateParallel();
 
             camera.getSheetSemaphore().release();
         } catch (InterruptedException ex) {
@@ -154,7 +156,17 @@ public class CameraThread extends Thread {
                 }
                 this.detectedMarkers = computeMarkerLocations();
                 camera.setMarkers(this.detectedMarkers);
+//                for(DetectedMarker m : detectedMarkers){
+//                    
+//                    PVector corners[] = m.getCorners();
+//                    System.out.println("marker: " + m.id + " :" );
+//                    for(PVector c : corners){
+//                        System.out.print("c: " + c);
+//                    }
+//                     System.out.println("");
+//                }
 //                System.out.println("Detected markers: " + detectedMarkers.length);
+//                System.out.println("In camera: " + camera);
                 break;
             }
         }
@@ -178,7 +190,16 @@ public class CameraThread extends Thread {
         cvCvtColor(image, grayImage, CV_BGR2GRAY);
     }
 
+    static int k  = 0;
     private DetectedMarker[] computeMarkerLocations() {
+        
+        // DEBUG
+        
+        if(camera instanceof ProjectorAsCamera){
+             opencv_imgcodecs.cvSaveImage("/home/jiii/tmp/art-" + k++ + ".bmp", grayImage);
+        }   
+        
+        
         return DetectedMarker.detect(tracker, grayImage);
     }
 
