@@ -243,7 +243,7 @@ public class TrackedView implements WithSize {
         this.mainImage = img;
         this.camera = camera;
         CvMat homography = computeHomography();
-        ImageUtils.remapImageIpl(homography, camera.getIplImage(), extractedIplImage);
+        ImageUtils.remapImageIpl(homography, img, extractedIplImage);
         return extractedIplImage;
     }
 

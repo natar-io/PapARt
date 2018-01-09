@@ -47,6 +47,7 @@ import tech.lity.rea.skatolo.gui.controllers.HoverButton;
  * @author Jeremy Laviole laviole@rea.lity.tech
  */
 import fr.inria.papart.procam.camera.CameraThread;
+import fr.inria.papart.procam.display.BaseDisplay;
 import org.bytedeco.javacpp.opencv_imgcodecs;
 import static processing.core.PConstants.LEFT;
 import static processing.core.PConstants.RIGHT;
@@ -74,6 +75,7 @@ public class MultiCalibrator extends PaperTouchScreen {
     // 5. Check - Extrinsic calibration ? (How to do it easily?)  
     // 6. Compute color histograms, take the most commons, compute H,S,B + R,G,B  means + stdev. 
     // 7. Check the colors for color tracking across 4-6 screenshots. save the colors.
+    // IDEA for touch / test: add 2-3 cubes or cylinder for touch testing ?
     protected boolean active = false;
 
     private Papart papart;
@@ -99,6 +101,9 @@ public class MultiCalibrator extends PaperTouchScreen {
     private TrackedView projectorView;
     private ProjectorAsCamera projectorAsCamera;
     public boolean evaluateMode = false;
+
+    // projector rendering.
+    protected ProjectorDisplay projector;
 
     @Override
     public void settings() {
@@ -192,9 +197,6 @@ public class MultiCalibrator extends PaperTouchScreen {
                 parent.random(HALF_PI));
     }
 
-    // projector rendering.
-    protected ProjectorDisplay projector;
-
     private void initProjectorAsCamera() {
 
         if (!(getDisplay() instanceof ProjectorDisplay)) {
@@ -277,7 +279,6 @@ public class MultiCalibrator extends PaperTouchScreen {
 //            PVector pos3D = new PVector(camPos.m03, camPos.m13, camPos.m23);
 //            PVector pxCam = cameraTracking.getProjectiveDevice().worldToPixelCoord(pos3D, false);
 //            System.out.println("PXCam: " + pxCam);
-
             // Not moving, draw something.
             if (!waitForMovement && d < 8f) {
                 // Touch
@@ -333,14 +334,13 @@ public class MultiCalibrator extends PaperTouchScreen {
 
     void savePicture() {
         this.savedImages[currentScreenPoint] = cameraTracking.getIplImage().clone();
-            
         this.savedLocations[currentScreenPoint] = currentCamBoard();
-        
+
         PMatrix3D loc = currentCamBoard();
 
         // MIDDLE translate !
-        loc.translate(179.4f, 67.1f);
-
+//        loc.translate(179.4f, 67.1f);
+        loc.translate(148f, 103.1f);
         PMatrix3D camPos = loc;
         PVector pos3D = new PVector(camPos.m03, camPos.m13, camPos.m23);
         PVector pxCam = cameraTracking.getProjectiveDevice().worldToPixelCoord(pos3D, false);
@@ -379,17 +379,6 @@ public class MultiCalibrator extends PaperTouchScreen {
     void calibrate() {
 
         // Do homography here. 
-//        for (int i = 0; i < nbScreenPoints; i++) {
-//            PMatrix3D camPos = savedLocations[i];
-//            PVector pos3D = new PVector(camPos.m03, camPos.m13, camPos.m23);
-//            PVector pxCam = cameraTracking.getProjectiveDevice().worldToPixelCoord(pos3D, false);
-//
-//            PVector pt = new PVector(this.screenPoints[i].x, this.screenPoints[i].y);
-//            System.out.println("adding pair: " + pxCam + " " + pt);
-//
-////            projectorView.addObjectImagePair(pxCam, pt);
-//            projectorView.addObjectImagePair(pt, pxCam);
-//        }
         // Save homography
         Papart.getPapart().saveCalibration(Papart.cameraProjHomography,
                 projectorView.getHomographyOf(cameraTracking).getHomography());
@@ -402,15 +391,16 @@ public class MultiCalibrator extends PaperTouchScreen {
         // we can get images from it. 
         for (int i = 0; i < nbScreenPoints; i++) {
 
+            IplImage img = savedImages[i];
             // Set the image in the projector
-            projectorAsCamera.grab(savedImages[i]);
+            projectorAsCamera.grab(img);
 
             // Send to the thread, for pose estimation. 
             projectorFakeThread.setImage(projectorAsCamera.getIplImage());
 
             projectorFakeThread.compute();
 
-            opencv_imgcodecs.cvSaveImage("/home/jiii/tmp/cam-" + i + ".bmp", savedImages[i]);
+            opencv_imgcodecs.cvSaveImage("/home/jiii/tmp/cam-" + i + ".bmp", img);
             opencv_imgcodecs.cvSaveImage("/home/jiii/tmp/proj-" + i + ".bmp", projectorAsCamera.getIplImage());
             System.out.println("Saved " + "/home/jiii/tmp/cam-" + i + ".bmp");
             System.out.println("Saved " + "/home/jiii/tmp/proj-" + i + ".bmp");
@@ -438,6 +428,178 @@ public class MultiCalibrator extends PaperTouchScreen {
     PlaneAndProjectionCalibration planeProjCalib;
     public boolean toSave = false;
 
+    public void stopCalib() {
+        if (active) {
+            // stop rendering.
+//            mainDisplay.removePaperScreen(this);
+            active = false;
+
+            ((ARDisplay) getDisplay()).setCalibrationMode(false);
+            System.out.println("Stopping multi-calib...");
+        }
+    }
+
+    public void startCalib() {
+        // start rendering again.
+//        if (!mainDisplay.paperScreens.contains(this)) {
+//            mainDisplay.addPaperScreen(this);
+//        }
+        active = true;
+        ((ARDisplay) getDisplay()).setCalibrationMode(true);
+
+        System.out.println("Starting multi-calib...");
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public static void drawCalibration(PGraphicsOpenGL screenGraphics) {
+        Papart papart = Papart.getPapart();
+        MultiCalibrator multiCalibrator = papart.multiCalibrator;
+        PApplet parent = multiCalibrator.parent;
+        PGraphicsOpenGL g = (PGraphicsOpenGL) parent.g;
+        // Classical rendering (if needed... )
+
+        if (!multiCalibrator.isActive()) {
+            System.out.println("ERROR: cannot calibrate with inactive calibrator.");
+            return;
+        }
+
+        parent.g.clear();
+
+        ARDisplay display = null;
+        boolean seeThrough = false;
+
+        if (multiCalibrator.getDisplay() instanceof ProjectorDisplay) {
+            ProjectorDisplay projector = (ProjectorDisplay) multiCalibrator.getDisplay();
+            display = projector;
+            projector.drawScreensOver();
+            parent.noStroke();
+            DrawUtils.drawImage((PGraphicsOpenGL) parent.g,
+                    projector.render(),
+                    0, 0, projector.getWidth(), projector.getHeight());
+
+            // TODO:
+//            g = projector.getGraphics();
+        } else {
+            // AR rendering, for touch and color tracking (and debug). 
+            if (multiCalibrator.getDisplay() instanceof ARDisplay) {
+                display = (ARDisplay) multiCalibrator.getDisplay();
+                display.drawScreensOver();
+                seeThrough = true;
+                parent.noStroke();
+                PImage img = multiCalibrator.getCameraTracking().getPImage();
+                if (multiCalibrator.getCameraTracking() != null && img != null) {
+                    parent.image(img, 0, 0, parent.width, parent.height);
+//            ((PGraphicsOpenGL) (parent.g)).image(camera.getPImage(), 0, 0, frameWidth, frameHeight);
+                }
+
+                // TODO: Distorsion problems with higher image space distorisions (useless ?)
+                DrawUtils.drawImage((PGraphicsOpenGL) parent.g,
+                        display.render(),
+                        0, 0, parent.width, parent.height);
+            }
+        }
+
+        // Both display modes for now. 
+        if (parent.mousePressed) {
+            //   mouseClick.set(parent.mouseX, parent.mouseY);
+        }
+
+//        if (multiCalibrator.projectorView.getNbPairs() >= 4) {
+//            PImage img = multiCalibrator.projectorView.getViewOf(multiCalibrator.cameraTracking);
+//            if (img != null) {
+//                g.image(img,
+//                        400, 400,
+//                        400, 400);
+//            }
+//        }
+        PVector pt = multiCalibrator.screenPoints[multiCalibrator.currentScreenPoint];
+
+        g.pushMatrix();
+        g.translate(pt.x, pt.y);
+        g.rotate(pt.z);
+        drawTarget(g, multiCalibrator);
+        drawHints(g, multiCalibrator, pt);
+
+        g.popMatrix();
+    }
+
+    public static void drawTarget(PGraphicsOpenGL g, MultiCalibrator multiCalibrator) {
+        g.noFill();
+        g.stroke(255);
+        g.ellipseMode(CENTER);
+
+        // PIXEL sizes. (projector resolution dependent)
+        g.ellipse(0, 0, 50, 50);
+        g.rect(-5, 0, 10, 1);
+        g.rect(0, - 5, 1, 10);
+        g.ellipse(0, 0, 20, 20);
+
+    }
+
+    public static void drawHints(PGraphicsOpenGL g,
+            MultiCalibrator multiCalibrator, PVector pt) {
+
+        Papart papart = Papart.getPapart();
+        PApplet parent = multiCalibrator.parent;
+        BaseDisplay display = multiCalibrator.getDisplay();
+
+//        float freq = 0.2f + 2f * ((float) multiCalibrator.pressedAmt / (float) multiCalibrator.maxPressedAmt);
+        float freq = 0.5f;
+
+        if (multiCalibrator.pressedAmt > 3f) {
+            freq = 2f;
+        }
+        float v = (PApplet.sin((parent.millis() / 1000f) * PConstants.TWO_PI * freq) + 1f) / 2f;
+
+//        if (multiCalibrator.hoverButton.isActive) {
+//            g.stroke(0, 255, 0);
+//        }
+//        if (multiCalibrator.resetButton.isActive) {
+//            g.stroke(255, 0, 0);
+//        }
+        g.fill(255 * v);
+
+        for (int i = 0; i < papart.getMarkerList().length; i++) {
+            g.rect(10 * i, 40, 20, 20);
+        }
+
+        g.rect(-50, 100, 100, 20);
+        g.rect(-50, -100, 100, 20);
+
+        float d = multiCalibrator.getMarkerBoard().lastMovementDistance(multiCalibrator.getCameraTracking());
+//        g.text(d, 100, 100);
+
+        if (pt.y < display.getHeight() - 180) {
+            g.translate(0, 150);
+        } else {
+            g.translate(0, -150);
+        }
+        // Not moving, draw something.
+        if (d < 2f) {
+            g.fill(0, 255, 0);
+            g.fill(255);
+            g.text("Ne bougez plus la feuille.", 0, 0); //stillW + 10);
+        }
+
+    }
+
+    // Pixel rendering
+    public static void sin(PApplet parent, PGraphics g, int amt, float freq, int xDiff, float size) {
+        float v = (PApplet.sin((float) (parent.millis()) / 1000f * PConstants.TWO_PI * freq) + 1f) / 2f;
+        g.noStroke();
+        g.ellipseMode(CENTER);
+        g.fill(v * amt);
+        g.ellipse(-xDiff, 0, size, size);
+        g.ellipse(0, 0, size, size);
+        g.ellipse(xDiff, 0, size, size);
+    }
+
+    /////////////////
+    ////////// Touch calibration
+    /////////////////
     void computeTouch() {
         planeProjCalib = getPlaneFromPaperViewedByDepth();
         depthTouchInput.setPlaneAndProjCalibration(planeProjCalib);
@@ -463,13 +625,13 @@ public class MultiCalibrator extends PaperTouchScreen {
         paperViewedByCam.apply(extr);
         PMatrix3D paperViewedByDepth = paperViewedByCam;
 
-        planeProjCalib.setPlane(getPlane(paperViewedByDepth));
-        planeProjCalib.setHomography(findHomography(paperViewedByDepth));
+        planeProjCalib.setPlane(getTouchPlane(paperViewedByDepth));
+        planeProjCalib.setHomography(findTouchHomography(paperViewedByDepth));
 
         return planeProjCalib;
     }
 
-    private PlaneCalibration getPlane(PMatrix3D paperViewedByDepth) {
+    private PlaneCalibration getTouchPlane(PMatrix3D paperViewedByDepth) {
 
         PlaneCalibration planeCalib
                 = PlaneCalibration.CreatePlaneCalibrationFrom(paperViewedByDepth,
@@ -483,7 +645,7 @@ public class MultiCalibrator extends PaperTouchScreen {
         return planeCalib;
     }
 
-    private HomographyCalibration findHomography(PMatrix3D paperViewedByDepth) {
+    private HomographyCalibration findTouchHomography(PMatrix3D paperViewedByDepth) {
         PVector[] corners = new PVector[4];
 
         // 3D points of the PaperScreen.  (object)
@@ -552,193 +714,6 @@ public class MultiCalibrator extends PaperTouchScreen {
         fill(255, 200, 30);
         rect(108.1f, 67.1f, 15f, 15f);
         rect(179.4f, 67.1f, 15f, 15f);
-    }
-
-    private void checkBlinkingTracking() {
-        PVector mid = new PVector();
-        if (cameraPointsBot.length == 3 && cameraPointsTop.length == 3) {
-            for (PVector v : cameraPointsBot) {
-                mid.add(v);
-            }
-            for (PVector v : cameraPointsTop) {
-                mid.add(v);
-            }
-            mid.mult(1f / 6f);
-            PVector pxFromBoard = computePxPosition(new PVector(148.6f, 103.3f));
-            // Debug AR
-//            noFill();
-//            stroke(0, 255, 0);
-//            ellipse(mid.x, mid.y, 8, 8);
-//            stroke(40, 255, 120);
-//            ellipse(pxFromBoard.x, pxFromBoard.y, 8, 8);
-
-            // Find the distance, reset the array, go to the next point.
-//            System.out.println("Found: " + mid);
-//            System.out.println("board Found: " + pxFromBoard);
-//            System.out.println("Dist in px: " + PVector.dist(mid, pxFromBoard));
-            // Dist found  ~4-5 px
-        }
-    }
-
-    public void stopCalib() {
-        if (active) {
-            // stop rendering.
-//            mainDisplay.removePaperScreen(this);
-            active = false;
-
-            ((ARDisplay) getDisplay()).setCalibrationMode(false);
-            System.out.println("Stopping multi-calib...");
-        }
-    }
-
-    public void startCalib() {
-        // start rendering again.
-//        if (!mainDisplay.paperScreens.contains(this)) {
-//            mainDisplay.addPaperScreen(this);
-//        }
-        active = true;
-        ((ARDisplay) getDisplay()).setCalibrationMode(true);
-
-        System.out.println("Starting multi-calib...");
-    }
-
-    public boolean isActive() {
-        return active;
-    }
-
-    private static PVector projPoint = new PVector(0, 0);
-
-    public static void drawCalibration(PGraphicsOpenGL screenGraphics) {
-        Papart papart = Papart.getPapart();
-        MultiCalibrator multiCalibrator = papart.multiCalibrator;
-        PApplet parent = multiCalibrator.parent;
-        PGraphicsOpenGL g = (PGraphicsOpenGL) parent.g;
-        // Classical rendering (if needed... )
-
-        if (!multiCalibrator.isActive()) {
-            System.out.println("ERROR: cannot calibrate with inactive calibrator.");
-            return;
-        }
-
-        parent.g.clear();
-
-        ARDisplay display = null;
-        boolean seeThrough = false;
-
-        if (multiCalibrator.getDisplay() instanceof ProjectorDisplay) {
-            ProjectorDisplay projector = (ProjectorDisplay) multiCalibrator.getDisplay();
-            display = projector;
-            projector.drawScreensOver();
-            parent.noStroke();
-            DrawUtils.drawImage((PGraphicsOpenGL) parent.g,
-                    projector.render(),
-                    0, 0, projector.getWidth(), projector.getHeight());
-
-            // TODO:
-//            g = projector.getGraphics();
-        } else {
-            // AR rendering, for touch and color tracking (and debug). 
-            if (multiCalibrator.getDisplay() instanceof ARDisplay) {
-                display = (ARDisplay) multiCalibrator.getDisplay();
-                display.drawScreensOver();
-                seeThrough = true;
-                parent.noStroke();
-                PImage img = multiCalibrator.getCameraTracking().getPImage();
-                if (multiCalibrator.getCameraTracking() != null && img != null) {
-                    parent.image(img, 0, 0, parent.width, parent.height);
-//            ((PGraphicsOpenGL) (parent.g)).image(camera.getPImage(), 0, 0, frameWidth, frameHeight);
-                }
-
-                // TODO: Distorsion problems with higher image space distorisions (useless ?)
-                DrawUtils.drawImage((PGraphicsOpenGL) parent.g,
-                        display.render(),
-                        0, 0, parent.width, parent.height);
-            }
-        }
-
-        // Both display modes for now. 
-        if (parent.mousePressed) {
-            //   mouseClick.set(parent.mouseX, parent.mouseY);
-        }
-
-//        if (multiCalibrator.projectorView.getNbPairs() >= 4) {
-//            PImage img = multiCalibrator.projectorView.getViewOf(multiCalibrator.cameraTracking);
-//            if (img != null) {
-//                g.image(img,
-//                        400, 400,
-//                        400, 400);
-//            }
-//        }
-        projPoint = multiCalibrator.screenPoints[multiCalibrator.currentScreenPoint];
-
-        g.pushMatrix();
-        g.translate(projPoint.x, projPoint.y);
-        g.noFill();
-        g.stroke(255);
-        g.ellipseMode(CENTER);
-
-        g.rotate(projPoint.z);
-
-        // PIXEL sizes. (projector resolution dependent)
-        g.ellipse(0, 0, 50, 50);
-        g.rect(-5, 0, 10, 1);
-        g.rect(0, - 5, 1, 10);
-        g.ellipse(0, 0, 20, 20);
-
-//        float freq = 0.2f + 2f * ((float) multiCalibrator.pressedAmt / (float) multiCalibrator.maxPressedAmt);
-        float freq = 0.5f;
-
-        if (multiCalibrator.pressedAmt > 3f) {
-            freq = 2f;
-        }
-        float v = (PApplet.sin((parent.millis() / 1000f) * PConstants.TWO_PI * freq) + 1f) / 2f;
-
-        if (multiCalibrator.hoverButton.isActive) {
-            g.stroke(0, 255, 0);
-        }
-        if (multiCalibrator.resetButton.isActive) {
-            g.stroke(255, 0, 0);
-        }
-        g.fill(255 * v);
-
-        for (int i = 0; i < papart.getMarkerList().length; i++) {
-            g.rect(10 * i, 40, 20, 20);
-        }
-
-        g.rect(-50, 100, 100, 20);
-        g.rect(-50, -100, 100, 20);
-
-        float d = multiCalibrator.getMarkerBoard().lastMovementDistance(multiCalibrator.getCameraTracking());
-//        g.text(d, 100, 100);
-
-        if (projPoint.y < display.getHeight() - 180) {
-            g.translate(0, 150);
-        } else {
-            g.translate(0, -150);
-        }
-        // Not moving, draw something.
-        if (d < 2f) {
-            int stillW = 25;
-            g.fill(0, 255, 0);
-//            g.rect(0, 0, stillW, stillW);
-            g.fill(255);
-//            g.scale(1, -1f);
-            g.text("Ne bougez plus la feuille.", 0, 0); //stillW + 10);
-        }
-
-        g.popMatrix();
-
-    }
-
-    // Pixel rendering
-    public static void sin(PApplet parent, PGraphics g, int amt, float freq, int xDiff, float size) {
-        float v = (PApplet.sin((float) (parent.millis()) / 1000f * PConstants.TWO_PI * freq) + 1f) / 2f;
-        g.noStroke();
-        g.ellipseMode(CENTER);
-        g.fill(v * amt);
-        g.ellipse(-xDiff, 0, size, size);
-        g.ellipse(0, 0, size, size);
-        g.ellipse(xDiff, 0, size, size);
     }
 
 }
