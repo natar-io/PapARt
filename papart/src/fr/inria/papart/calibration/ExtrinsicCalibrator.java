@@ -77,8 +77,12 @@ public class ExtrinsicCalibrator {
         return this.kinectCameraExtrinsics;
     }
 
-    public void computeProjectorCameraExtrinsics(ArrayList<ExtrinsicSnapshot> snapshots) {
+    public PMatrix3D computeProjectorCameraExtrinsics(ArrayList<ExtrinsicSnapshot> snapshots) {
         PMatrix3D sum = new PMatrix3D(0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0);
+        PMatrix3D sum2 = new PMatrix3D(0, 0, 0, 0,
                 0, 0, 0, 0,
                 0, 0, 0, 0,
                 0, 0, 0, 0);
@@ -87,16 +91,35 @@ public class ExtrinsicCalibrator {
             PMatrix3D extr = computeExtrinsics(snapshot.mainCameraPaper,
                     snapshot.projectorPaper);
 
-            System.out.println("Extrinsics: ");
-            extr.print();
-
+//            System.out.println("Extrinsics: ");
+//            extr.print();
             Utils.addMatrices(sum, extr);
         }
         Utils.multMatrix(sum, 1f / (float) snapshots.size());
 
-        System.out.println("Extrinsics average: ");
+//        System.out.println("Extrinsics average: ");
         sum.print();
-        saveProCamExtrinsics(sum);
+        PVector sumPos = Utils.posFromMatrix(sum);
+
+        // Second pass - remove the outliers  (distant from X mm)
+        int k = 0;
+        for (ExtrinsicSnapshot snapshot : snapshots) {
+            PMatrix3D extr = computeExtrinsics(snapshot.mainCameraPaper,
+                    snapshot.projectorPaper);
+
+            float dist = Utils.posFromMatrix(extr).dist(sumPos);
+            if (dist < 20f) { // 2 cm !
+                Utils.addMatrices(sum2, extr);
+                k++;
+            }
+        }
+        Utils.multMatrix(sum2, 1f / (float) k);
+
+        sum.print();
+        sum2.print();
+
+        saveProCamExtrinsics(sum2);
+        return sum2;
     }
 
     public void saveProCamExtrinsics(PMatrix3D extr) {
@@ -298,7 +321,7 @@ public class ExtrinsicCalibrator {
         return calibration;
     }
 
-    private PlaneCalibration computeAveragePlaneCam(ArrayList<ExtrinsicSnapshot> snapshots) {
+     public PlaneCalibration computeAveragePlaneCam(ArrayList<ExtrinsicSnapshot> snapshots) {
         PVector paperSize = new PVector(297, 210);
 
         Plane sumCam = new Plane(new Vec3D(0, 0, 0),

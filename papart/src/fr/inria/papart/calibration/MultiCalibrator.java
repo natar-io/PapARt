@@ -51,6 +51,8 @@ import fr.inria.papart.procam.display.BaseDisplay;
 import org.bytedeco.javacpp.opencv_imgcodecs;
 import static processing.core.PConstants.LEFT;
 import static processing.core.PConstants.RIGHT;
+import toxi.geom.Plane;
+import toxi.geom.Vec3D;
 
 public class MultiCalibrator extends PaperTouchScreen {
 
@@ -97,8 +99,12 @@ public class MultiCalibrator extends PaperTouchScreen {
     public int currentScreenPoint = 0;
     int nbScreenPoints = 8;
 
+    PlaneAndProjectionCalibration planeProjCalib;
+    public boolean toSave = false;
+
     IplImage savedImages[];
     PMatrix3D savedLocations[];
+    PlaneCalibration savedPlanes[];
     private TrackedView projectorView;
     private ProjectorAsCamera projectorAsCamera;
     public boolean evaluateMode = false;
@@ -129,6 +135,7 @@ public class MultiCalibrator extends PaperTouchScreen {
 
             savedImages = new IplImage[nbScreenPoints];
             savedLocations = new PMatrix3D[nbScreenPoints];
+            savedPlanes = new PlaneCalibration[nbScreenPoints];
 
             initButtons();
             initScreenPoints();
@@ -338,6 +345,9 @@ public class MultiCalibrator extends PaperTouchScreen {
         this.savedImages[currentScreenPoint] = cameraTracking.getIplImage().clone();
         this.savedLocations[currentScreenPoint] = currentCamBoard();
 
+        // Save the touch plane
+        this.savedPlanes[currentScreenPoint] = this.planeProjCalib.getPlaneCalibration();
+
         PMatrix3D loc = currentCamBoard();
 
         // MIDDLE translate !
@@ -348,9 +358,10 @@ public class MultiCalibrator extends PaperTouchScreen {
         PVector pxCam = cameraTracking.getProjectiveDevice().worldToPixelCoord(pos3D, false);
 
         PVector pt = new PVector(this.screenPoints[currentScreenPoint].x, this.screenPoints[currentScreenPoint].y);
-        System.out.println("adding pair: " + pxCam + " " + pt);
+//        System.out.println("adding pair: " + pxCam + " " + pt);
 
         projectorView.addObjectImagePair(pxCam, pt);
+
     }
 
     private PMatrix3D currentCamBoard() {
@@ -404,6 +415,8 @@ public class MultiCalibrator extends PaperTouchScreen {
 
             PMatrix3D projPos = getMarkerBoard().getTransfoMat(projectorAsCamera);
 
+            // TODO: WARNING - IT requires 3 or 4 compute for it to work. 
+            // NO IDEA WHY. 
             projectorFakeThread.compute();
             projectorFakeThread.compute();
             projectorFakeThread.compute();
@@ -412,17 +425,17 @@ public class MultiCalibrator extends PaperTouchScreen {
             projectorFakeThread.compute();
 
             // 5 Max and he found 8 !
-            DetectedMarker[] detectedMarkers = projectorAsCamera.getDetectedMarkers();
-            System.out.println("Number of markers found: " + detectedMarkers.length);
-            System.out.println("in (fake) Camera: " + projectorAsCamera);
+//            DetectedMarker[] detectedMarkers = projectorAsCamera.getDetectedMarkers();
+//            System.out.println("Number of markers found: " + detectedMarkers.length);
+//            System.out.println("in (fake) Camera: " + projectorAsCamera);
             projPos = getMarkerBoard().getTransfoMat(projectorAsCamera);
-            projPos.print();
-            opencv_imgcodecs.cvSaveImage("/home/jiii/tmp/cam-" + i + ".bmp", img);
-            opencv_imgcodecs.cvSaveImage("/home/jiii/tmp/proj-" + i + ".bmp", projectorAsCamera.getIplImage());
-            System.out.println("Saved " + "/home/jiii/tmp/cam-" + i + ".bmp");
-            System.out.println("Saved " + "/home/jiii/tmp/proj-" + i + ".bmp");
-            System.out.println("Location found: ");
 
+//            opencv_imgcodecs.cvSaveImage("/home/jiii/tmp/cam-" + i + ".bmp", img);
+//            opencv_imgcodecs.cvSaveImage("/home/jiii/tmp/proj-" + i + ".bmp", projectorAsCamera.getIplImage());
+//            System.out.println("Saved " + "/home/jiii/tmp/cam-" + i + ".bmp");
+//            System.out.println("Saved " + "/home/jiii/tmp/proj-" + i + ".bmp");
+//            System.out.println("Location found: ");
+//            projPos.print();
             snapshots.add(new ExtrinsicSnapshot(savedLocations[i],
                     projPos, null));
         }
@@ -433,14 +446,51 @@ public class MultiCalibrator extends PaperTouchScreen {
         // Compute, save and set !...
         calibrationExtrinsic.computeProjectorCameraExtrinsics(snapshots);
 
-        // Get average of 3D planes and set the table location !?
-//        calibrationExtrinsic.calibrateKinect(snapshots, useExternalColorCamera);
-//        projectorView.getHomographyOf(cameraTracking).saveTo(this, Papart.cameraProjHomography);       
-        // Set it !
-    }
+        // Save average plane, and table touch !
+        Plane sumPlanes = new Plane(new Vec3D(0, 0, 0),
+                new Vec3D(0, 0, 0));
+        PMatrix3D extr = depthCameraDevice.getStereoCalibrationInv().get();
+        
+        for (int i = 0; i < nbScreenPoints; i++) {
 
-    PlaneAndProjectionCalibration planeProjCalib;
-    public boolean toSave = false;
+            // Re-compute the plane...
+            PMatrix3D paperViewedByCam = savedLocations[i];
+            paperViewedByCam.apply(extr);
+            PMatrix3D paperViewedByDepth = paperViewedByCam;
+
+            PlaneCalibration planeCalib
+                    = PlaneCalibration.CreatePlaneCalibrationFrom(paperViewedByDepth,
+                            //app.getLocation(),
+                            new PVector(100, 100));
+            Utils.sumPlane(sumPlanes, planeCalib.getPlane());
+        }
+
+        Utils.averagePlane(sumPlanes, 1f/ nbScreenPoints);
+
+        PlaneCalibration planeCalib = new PlaneCalibration();
+        planeCalib.setPlane(sumPlanes);
+        planeCalib.setHeight(10f); // NOT used anymore -> to remove.
+        planeCalib.flipNormal();
+        planeCalib.moveAlongNormal(zShift);
+
+        this.planeProjCalib.setPlane(planeCalib);
+
+        // Now the projection for screen-space.
+        // planes from the camera perspective. 
+        PlaneCalibration planeCalibCam = calibrationExtrinsic.computeAveragePlaneCam(snapshots);
+        planeCalibCam.flipNormal();
+
+        // identity - no external camera for ProCam calibration
+        PMatrix3D depthCamExtrinsics = new PMatrix3D();
+        // Depth -> Color calibration.
+        depthCamExtrinsics.set(extr);
+
+        HomographyCalibration homography = ExtrinsicCalibrator.computeScreenPaperIntersection(projector, planeCalibCam, depthCamExtrinsics);
+
+        this.planeProjCalib.setHomography(homography);
+        this.saveTouch();
+        // Now projector-space homography. 
+    }
 
     public void stopCalib() {
         if (active) {
@@ -646,7 +696,6 @@ public class MultiCalibrator extends PaperTouchScreen {
     }
 
     private PlaneCalibration getTouchPlane(PMatrix3D paperViewedByDepth) {
-
         PlaneCalibration planeCalib
                 = PlaneCalibration.CreatePlaneCalibrationFrom(paperViewedByDepth,
                         //app.getLocation(),
