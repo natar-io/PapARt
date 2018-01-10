@@ -107,6 +107,7 @@ public class Papart {
     public static String cameraConfig = calibrationFolder + "cameraConfiguration.xml";
     public static String depthCameraConfig = calibrationFolder + "depthCameraConfiguration.xml";
 
+    public static String colorThresholds = calibrationFolder + "colorThreshold";
     public static String redThresholds = calibrationFolder + "redThresholds.txt";
     public static String blueThresholds = calibrationFolder + "blueThresholds.txt";
     public static String blinkThresholds = calibrationFolder + "blinkThresholds.txt";

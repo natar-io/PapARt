@@ -45,11 +45,11 @@ public class MarkerSvg implements Cloneable {
         this.size = size.get();
         this.matrix = matrix.get();
     }
-    
-    public Marker copyAsMarker(){
+
+    public Marker copyAsMarker() {
         double[] corners = new double[this.corners.length * 4];
         int k = 0;
-        for(int i = 0; i < this.corners.length; i++){
+        for (int i = 0; i < this.corners.length; i++) {
             corners[k++] = this.corners[i].x;
             corners[k++] = this.corners[i].y;
         }
@@ -101,9 +101,22 @@ public class MarkerSvg implements Cloneable {
         return corners;
     }
 
+    public PVector getCenter() {
+        double x = 0, y = 0;
+        computeCorners();
+        for (int i = 0; i < 4; i++) {
+            x += corners[i].x;
+            y += corners[i].y;
+        }
+        x /= 4;
+        y /= 4;
+        return new PVector((float) x, (float)y);
+    }
+
     /**
      * Check pixel resolution - TODO
-     * @return 
+     *
+     * @return
      */
     public static float pixelToMm() {
 //        return 25.4f / 96.0f;
@@ -150,11 +163,11 @@ public class MarkerSvg implements Cloneable {
 
 //        ArrayList<MarkerSvg> markers = new ArrayList<>();
         MarkerList markers = new MarkerList();
-        
-        float sheetWidth =  computeSize(xml.getString("width"))  * pixelToMm();
-        float sheetHeight =  computeSize(xml.getString("height")) * pixelToMm();
+
+        float sheetWidth = computeSize(xml.getString("width")) * pixelToMm();
+        float sheetHeight = computeSize(xml.getString("height")) * pixelToMm();
         markers.setSheetSize(sheetWidth, sheetHeight);
-        
+
         for (PShape markerSvg : markersSVG) {
 
             int id = Integer.parseInt(markerSvg.getName().substring(6));
@@ -193,7 +206,7 @@ public class MarkerSvg implements Cloneable {
 
     private static PMatrix getMatrix(PShape shape) {
 
-        PMatrix matrix = ((PShapeSVGExtended)shape).getMatrix();
+        PMatrix matrix = ((PShapeSVGExtended) shape).getMatrix();
 
         boolean useParams = true;
         float[] params = null;

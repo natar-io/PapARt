@@ -45,15 +45,14 @@ public class DetectedMarker implements Cloneable {
         this.corners = corners;
         this.confidence = confidence;
     }
-    
-    public int getId(){
+
+    public int getId() {
         return id;
     }
-    
-    public Marker copyAsMarker(){
+
+    public Marker copyAsMarker() {
         return new org.bytedeco.javacv.Marker(id, corners, confidence);
     }
-
 
     public void drawSelf(PGraphics g, int size) {
         for (int i = 0; i < 8; i += 2) {
@@ -137,7 +136,7 @@ public class DetectedMarker implements Cloneable {
 //      tracker.setPoseEstimator(POSE_ESTIMATOR_RPP);
 //      tracker.setPoseEstimator(ARToolKitPlus.POSE_ESTIMATOR_ORIGINAL);
 //      tracker.setPoseEstimator(ARToolKitPlus.POSE_ESTIMATOR_ORIGINAL_CONT);
-      tracker.setPoseEstimator(ARToolKitPlus.POSE_ESTIMATOR_RPP);
+        tracker.setPoseEstimator(ARToolKitPlus.POSE_ESTIMATOR_RPP);
 
         tracker.setMarkerMode(MARKER_ID_BCH);
 //        tracker.setImageProcessingMode(IMAGE_HALF_RES);
@@ -161,12 +160,12 @@ public class DetectedMarker implements Cloneable {
         int cameraWidth = image.width();
         int cameraHeight = image.height();
         // TODO: check imgWith and init width.
-        
+
         CvPoint2D32f corners = new CvPoint2D32f(4);
         CvMemStorage memory = CvMemStorage.create();
 //        CvMat points = CvMat.create(1, 4, CV_32F, 2);
         Mat points = new Mat(1, 4, CV_32F, 2);
-        
+
         CvSize subPixelSize = null, subPixelZeroZone = null;
         CvTermCriteria subPixelTermCriteria = null;
         int subPixelWindow = 11;
@@ -175,9 +174,7 @@ public class DetectedMarker implements Cloneable {
         subPixelZeroZone = cvSize(-1, -1);
         subPixelTermCriteria = cvTermCriteria(CV_TERMCRIT_EPS, 100, 0.001);
 
-        
 //        tracker.setThreshold(128);
-
         int n = 0;
         IntPointer markerNum = new IntPointer(1);
         ARToolKitPlus.ARMarkerInfo markers = new ARToolKitPlus.ARMarkerInfo(null);
@@ -220,7 +217,6 @@ public class DetectedMarker implements Cloneable {
 //                // marker is too "flat" to have been IDed correctly...
 //                continue;
 //            }
-
             for (int j = 0; j < 4; j++) {
                 corners.position(j).put(vertex[2 * j], vertex[2 * j + 1]);
             }
@@ -235,16 +231,17 @@ public class DetectedMarker implements Cloneable {
         }
         return Arrays.copyOf(markers2, n);
     }
-    
+
     /**
-     * Find the 3D position of detected markers. 
-     * It uses the solvePnP function of OpenCV.
-     * @param detectedMarkers  Array of markers found. (Image)
-     * @param markersFromSVG  Model. 
+     * Find the 3D position of detected markers. It uses the solvePnP function
+     * of OpenCV.
+     *
+     * @param detectedMarkers Array of markers found. (Image)
+     * @param markersFromSVG Model.
      * @param camera its calibration is used.
-     * @return 
+     * @return
      */
-    public static PMatrix3D compute3DPos(DetectedMarker[] detectedMarkers, MarkerList markersFromSVG, 
+    public static PMatrix3D compute3DPos(DetectedMarker[] detectedMarkers, MarkerList markersFromSVG,
             fr.inria.papart.procam.camera.Camera camera) {
         // We create a pair model ( markersFromSVG) -> observation (markers) 
 
@@ -261,6 +258,15 @@ public class DetectedMarker implements Cloneable {
                     continue;
                 }
 
+                // Center instead ? 
+//                PVector object = markersFromSVG.get(detected.id).getCenter();
+////                PVector image = detected.getCenter();
+//                double[] im = detected.getCenter();
+//                PVector image = new PVector((float) im[0], (float) im[1]);
+//                objectPoints.add(object);
+//                imagePoints.add(image);
+
+                ////// Corners 
                 PVector[] object = markersFromSVG.get(detected.id).getCorners();
                 PVector[] image = detected.getCorners();
                 for (int i = 0; i < 4; i++) {
@@ -271,6 +277,7 @@ public class DetectedMarker implements Cloneable {
                 k++;
             }
         }
+//        if (k < 4) {
         if (k < 1) {
             return MarkerBoard.INVALID_LOCATION;
         }

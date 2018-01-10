@@ -16,6 +16,7 @@ import fr.inria.papart.multitouch.TouchList;
 import fr.inria.papart.multitouch.detection.BlinkTracker;
 import fr.inria.papart.multitouch.detection.ColorTracker;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
+import fr.inria.papart.procam.ColorDetection;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.PaperTouchScreen;
@@ -49,6 +50,8 @@ import tech.lity.rea.skatolo.gui.controllers.HoverButton;
 import fr.inria.papart.procam.camera.CameraThread;
 import fr.inria.papart.procam.display.BaseDisplay;
 import org.bytedeco.javacpp.opencv_imgcodecs;
+import static processing.core.PApplet.abs;
+import static processing.core.PApplet.split;
 import static processing.core.PConstants.LEFT;
 import static processing.core.PConstants.RIGHT;
 import toxi.geom.Plane;
@@ -98,13 +101,14 @@ public class MultiCalibrator extends PaperTouchScreen {
     public PVector screenPoints[];
     public int currentScreenPoint = 0;
     int nbScreenPoints = 8;
+    int nbColors = 5;
 
     PlaneAndProjectionCalibration planeProjCalib;
     public boolean toSave = false;
 
     IplImage savedImages[];
     PMatrix3D savedLocations[];
-    PlaneCalibration savedPlanes[];
+    int savedColors[][];
     private TrackedView projectorView;
     private ProjectorAsCamera projectorAsCamera;
     public boolean evaluateMode = false;
@@ -135,11 +139,14 @@ public class MultiCalibrator extends PaperTouchScreen {
 
             savedImages = new IplImage[nbScreenPoints];
             savedLocations = new PMatrix3D[nbScreenPoints];
-            savedPlanes = new PlaneCalibration[nbScreenPoints];
+            savedColors = new int[nbScreenPoints * 2][nbColors];
 
+            this.seeThrough = !(getDisplay() instanceof ProjectorDisplay);
             initButtons();
             initScreenPoints();
             initProjectorAsCamera();
+
+            initColorTrackers();
             // GREEN circle 
 //                 fill(0, 255, 0);
 //        rect(79.8f, 123.8f, 15f, 15f);
@@ -151,6 +158,42 @@ public class MultiCalibrator extends PaperTouchScreen {
             e.printStackTrace();
         }
         startCalib();
+    }
+
+    void initColorTrackers() {
+        // RED    
+        rect(79.8f, 95.2f, 15f, 15f);
+        rect(208.2f, 95.2f, 15f, 15f);
+
+        PVector red1P = new PVector(79.8f, 95.2f);
+        PVector red2P = new PVector(208.2f, 95.2f);
+
+        red1 = createColorDetection(red1P);
+        red2 = createColorDetection(red2P);
+
+        PVector blue1P = new PVector(79.8f, 67.1f);
+        PVector blue2P = new PVector(208.2f, 67.1f);
+
+        blue1 = createColorDetection(blue1P);
+        blue2 = createColorDetection(blue2P);
+    }
+
+    ColorDetection red1, red2;
+    ColorDetection blue1, blue2;
+
+    ColorDetection createColorDetection(PVector position) {
+        int captureW = 15; // 15mm
+        float smallSquareHalfWidth = 2.7f;
+        int capSizePx = 4;
+
+        ColorDetection detection = new ColorDetection((PaperScreen) this);
+        detection.setPosition(new PVector(position.x + captureW / 2 - smallSquareHalfWidth,
+                position.y + captureW / 2 - smallSquareHalfWidth));
+        detection.setCaptureSize(new PVector(smallSquareHalfWidth * 2, smallSquareHalfWidth * 2));
+        // in PX
+        detection.setPicSize(capSizePx, capSizePx);
+        detection.init();
+        return detection;
     }
 
     void initButtons() {
@@ -205,9 +248,11 @@ public class MultiCalibrator extends PaperTouchScreen {
                 parent.random(HALF_PI));
     }
 
+    boolean seeThrough = false;
+
     private void initProjectorAsCamera() {
 
-        if (!(getDisplay() instanceof ProjectorDisplay)) {
+        if (seeThrough) {
             System.out.println("No Projector to calibrate...");
             return;
         }
@@ -264,6 +309,9 @@ public class MultiCalibrator extends PaperTouchScreen {
         background(0, 0, 200, 50);
 
         if (active) {
+
+            red1.drawSelf();
+
 //            System.out.println("Framerate: " + parent.frameRate);
             computeTouch();
             if (toSave) {
@@ -345,23 +393,28 @@ public class MultiCalibrator extends PaperTouchScreen {
         this.savedImages[currentScreenPoint] = cameraTracking.getIplImage().clone();
         this.savedLocations[currentScreenPoint] = currentCamBoard();
 
-        // Save the touch plane
-        this.savedPlanes[currentScreenPoint] = this.planeProjCalib.getPlaneCalibration();
+        // Save the touch plane  TODO: not used remove this
+        red1.computeColor();
+        red2.computeColor();
+        blue1.computeColor();
+        blue2.computeColor();
+        this.savedColors[currentScreenPoint * 2][0] = red1.getColor();
+        this.savedColors[currentScreenPoint * 2 + 1][0] = red2.getColor();
+        this.savedColors[currentScreenPoint * 2][1] = blue1.getColor();
+        this.savedColors[currentScreenPoint * 2 + 1][1] = blue1.getColor();
 
         PMatrix3D loc = currentCamBoard();
 
         // MIDDLE translate !
-//        loc.translate(179.4f, 67.1f);
-        loc.translate(148f, 103.1f);
+        loc.translate(148.6f, 103.1f);
         PMatrix3D camPos = loc;
         PVector pos3D = new PVector(camPos.m03, camPos.m13, camPos.m23);
         PVector pxCam = cameraTracking.getProjectiveDevice().worldToPixelCoord(pos3D, false);
-
         PVector pt = new PVector(this.screenPoints[currentScreenPoint].x, this.screenPoints[currentScreenPoint].y);
-//        System.out.println("adding pair: " + pxCam + " " + pt);
 
-        projectorView.addObjectImagePair(pxCam, pt);
-
+        if (!seeThrough) {
+            projectorView.addObjectImagePair(pxCam, pt);
+        }
     }
 
     private PMatrix3D currentCamBoard() {
@@ -373,9 +426,12 @@ public class MultiCalibrator extends PaperTouchScreen {
         currentScreenPoint++;
         if (currentScreenPoint == this.nbScreenPoints) {
             System.out.println("Ended !");
-            calibrate();
 
-            projectorView.clearObjectImagePairs();
+            if (!seeThrough) {
+                calibrate();
+                projectorView.clearObjectImagePairs();
+            }
+
             currentScreenPoint = 0;
             this.evaluateMode = true;
         }
@@ -450,7 +506,7 @@ public class MultiCalibrator extends PaperTouchScreen {
         Plane sumPlanes = new Plane(new Vec3D(0, 0, 0),
                 new Vec3D(0, 0, 0));
         PMatrix3D extr = depthCameraDevice.getStereoCalibrationInv().get();
-        
+
         for (int i = 0; i < nbScreenPoints; i++) {
 
             // Re-compute the plane...
@@ -465,7 +521,7 @@ public class MultiCalibrator extends PaperTouchScreen {
             Utils.sumPlane(sumPlanes, planeCalib.getPlane());
         }
 
-        Utils.averagePlane(sumPlanes, 1f/ nbScreenPoints);
+        Utils.averagePlane(sumPlanes, 1f / nbScreenPoints);
 
         PlaneCalibration planeCalib = new PlaneCalibration();
         planeCalib.setPlane(sumPlanes);
@@ -490,6 +546,81 @@ public class MultiCalibrator extends PaperTouchScreen {
         this.planeProjCalib.setHomography(homography);
         this.saveTouch();
         // Now projector-space homography. 
+
+        // Save the color calibration 
+        colorMode(RGB, 255);
+
+        for (int colorId = 0; colorId < nbColors; colorId++) {
+            float averageHue = 0;
+            float averageSat = 0;
+            float averageIntens = 0;
+
+            float averageR = 0;
+            float averageG = 0;
+            float averageB = 0;
+
+            float stdevHue = 0;
+            float stdevSat = 0;
+            float stdevIntens = 0;
+
+            float stdevR = 0;
+            float stdevG = 0;
+            float stdevB = 0;
+
+// Red is main component... 
+            for (int i = 0; i < nbScreenPoints * 2; i++) {
+                int c = this.savedColors[i][colorId];
+                averageHue += this.hue(c);
+                averageSat += this.saturation(c);
+                averageIntens += this.brightness(c);
+                averageR += this.red(c);
+                averageG += this.green(c);
+                averageB += this.blue(c);
+            }
+
+            averageHue /= nbScreenPoints * 2;
+            averageSat /= nbScreenPoints * 2;
+            averageIntens /= nbScreenPoints * 2;
+            averageR /= nbScreenPoints * 2;
+            averageG /= nbScreenPoints * 2;
+            averageB /= nbScreenPoints * 2;
+            
+            int averageCol = color(averageR, averageG, averageB);
+
+            for (int i = 0; i < nbScreenPoints * 2; i++) {
+                int c = this.savedColors[i][colorId];
+                stdevHue += abs(this.hue(c) - averageHue);
+                stdevSat += abs(this.saturation(c) - averageSat);
+                stdevIntens += abs(this.brightness(c) - averageIntens);
+                stdevR += abs(this.red(c) - averageR);
+                stdevG += abs(this.green(c) - averageG);
+                stdevB += abs(this.blue(c) - averageB);
+            }
+
+            stdevHue /= nbScreenPoints * 2;
+            stdevSat /= nbScreenPoints * 2;
+            stdevIntens /= nbScreenPoints * 2;
+            stdevR /= nbScreenPoints * 2;
+            stdevG /= nbScreenPoints * 2;
+            stdevB /= nbScreenPoints * 2;
+
+            String words = "hue:" + Float.toString(stdevHue * 2) + " "
+                    + "sat:" + Float.toString(stdevSat) + " "
+                    + "intens:" + Float.toString(stdevIntens) + " "
+                    + "erosion:" + Integer.toString(1) + " ";
+            //	"red:"+  Float.toString(redThresh) + " "+
+            //	"blue:"+  Float.toString(blueThresh) + " "+
+            //	"col:"+  Integer.toString(redColor);
+
+            String saveFile = Papart.colorThresholds + colorId + ".txt";
+            words = words + "id:" + Integer.toString(colorId) + "\n";
+            words = words + "col:" + Integer.toString(averageCol);
+
+            String[] list = split(words, ' ');
+            parent.saveStrings(saveFile, list);
+
+        }
+
     }
 
     public void stopCalib() {
@@ -570,6 +701,16 @@ public class MultiCalibrator extends PaperTouchScreen {
         if (parent.mousePressed) {
             //   mouseClick.set(parent.mouseX, parent.mouseY);
         }
+        int[][] savedColors = multiCalibrator.savedColors;
+
+        g.noStroke();
+        int rectSize = 15;
+        for (int i = 0; i < multiCalibrator.nbScreenPoints; i++) {
+            g.fill(savedColors[i * 2][0]);
+            g.rect(i * rectSize, 0, rectSize, rectSize);
+            g.fill(savedColors[i * 2 + 1][0]);
+            g.rect(i * rectSize, rectSize, rectSize, rectSize);
+        }
 
 //        if (multiCalibrator.projectorView.getNbPairs() >= 4) {
 //            PImage img = multiCalibrator.projectorView.getViewOf(multiCalibrator.cameraTracking);
@@ -597,8 +738,12 @@ public class MultiCalibrator extends PaperTouchScreen {
 
         // PIXEL sizes. (projector resolution dependent)
         g.ellipse(0, 0, 50, 50);
-        g.rect(-5, 0, 10, 1);
-        g.rect(0, - 5, 1, 10);
+        g.line(-5, 0, 5, 0);
+        g.line(0, -5, 0, 50);
+
+//        g.stroke(200, 0, 200);
+//        g.rect(-5, 0, 10, 1);
+//        g.rect(0, - 5, 1, 10);
         g.ellipse(0, 0, 20, 20);
 
     }
@@ -748,10 +893,10 @@ public class MultiCalibrator extends PaperTouchScreen {
         noStroke();
         // draw a green rectangle
         // top projection
-        rect(76f, 11.6f, 146.4f, 46.4f);
+        rect(75f, 11f, 146f, 50f);
 
         // bot projection 
-        rect(80f, 145f, 142.7f, 50f);
+        rect(75f, 145f, 146f, 50f);
 
         // green circles
         fill(0, 255, 0);
@@ -764,6 +909,7 @@ public class MultiCalibrator extends PaperTouchScreen {
         rect(179.4f, 123.8f, 15f, 15f);
 
         // red circles
+        // 2 color trackers ici
         fill(255, 0, 0);
         rect(79.8f, 95.2f, 15f, 15f);
         rect(208.2f, 95.2f, 15f, 15f);
