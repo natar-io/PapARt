@@ -207,7 +207,7 @@ public class PaperTouchScreen extends PaperScreen {
                 // fill(185, 142, 62);
             } else {
             
-                if (t.trackedSource.mainFinger) {
+                if (t.trackedSource != null && t.trackedSource.mainFinger) {
                        fill(58, 190, 52);
                     ellipse(t.position.x, t.position.y, ellipseSize*1.5f, ellipseSize*1.5f);
                 } else {
