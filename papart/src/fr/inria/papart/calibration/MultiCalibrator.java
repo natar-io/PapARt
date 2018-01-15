@@ -8,13 +8,16 @@ package fr.inria.papart.calibration;
 import fr.inria.papart.calibration.files.HomographyCalibration;
 import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.calibration.files.PlaneCalibration;
+import fr.inria.papart.depthcam.DepthDataElementProjected;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.multitouch.DepthTouchInput;
 import fr.inria.papart.multitouch.SkatoloLink;
 import fr.inria.papart.multitouch.Touch;
+import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.multitouch.TouchList;
 import fr.inria.papart.multitouch.detection.BlinkTracker;
 import fr.inria.papart.multitouch.detection.ColorTracker;
+import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.procam.ColorDetection;
 import fr.inria.papart.procam.Papart;
@@ -52,10 +55,48 @@ import fr.inria.papart.procam.display.BaseDisplay;
 import org.bytedeco.javacpp.opencv_imgcodecs;
 import static processing.core.PApplet.abs;
 import static processing.core.PApplet.split;
+import static processing.core.PConstants.CORNER;
 import static processing.core.PConstants.LEFT;
 import static processing.core.PConstants.RIGHT;
+import tech.lity.rea.skatolo.gui.controllers.Button;
+import tech.lity.rea.skatolo.gui.controllers.Toggle;
 import toxi.geom.Plane;
 import toxi.geom.Vec3D;
+
+class TableTest extends PaperTouchScreen {
+
+    public void settings() {
+        try {
+            setDrawingSize(200, 200);
+//            loadMarkerBoard(Papart.markerFolder + "calib1.svg", 297, 210);
+            setDrawOnPaper();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void setup() {
+         useManualLocation(true, Papart.getPapart().getTableLocation());
+    }
+
+    public void drawOnPaper() {
+//        setLocation(Papart.getPapart().getTableLocation());
+//        setLocation(-100, -100, 0);
+//        background(180, 20, 20);
+
+        stroke(180);
+        noFill();
+        for (int i = 0; i < 200; i += 10) {
+            line(0, i, drawingSize.x, i);
+        }
+        for (int i = 0; i < 200; i += 10) {
+            line(i, 0, i, drawingSize.y);
+        }
+//        fill(200, 200, 20);
+//        rect(0, 0, 50, 50);
+    }
+
+}
 
 public class MultiCalibrator extends PaperTouchScreen {
 
@@ -89,8 +130,8 @@ public class MultiCalibrator extends PaperTouchScreen {
 
     public float zShift = 10f;
 
-    private Skatolo skatolo;
-    private HoverButton hoverButton, resetButton;
+//    private Skatolo skatolo;
+//    private HoverButton hoverButton, resetButton;
     int pressedAmt = 0;
 //    int maxPressedAmt = 30 * 3; // 2 secs
     int maxPressedAmt = 20; // 2 secs
@@ -100,7 +141,7 @@ public class MultiCalibrator extends PaperTouchScreen {
     // 6 points for Homography matching. 
     public PVector screenPoints[];
     public int currentScreenPoint = 0;
-    int nbScreenPoints = 8;
+    int nbScreenPoints = 6;
     int nbColors = 5;
 
     PlaneAndProjectionCalibration planeProjCalib;
@@ -111,7 +152,6 @@ public class MultiCalibrator extends PaperTouchScreen {
     int savedColors[][];
     private TrackedView projectorView;
     private ProjectorAsCamera projectorAsCamera;
-    public boolean evaluateMode = false;
 
     // projector rendering.
     protected ProjectorDisplay projector;
@@ -129,11 +169,37 @@ public class MultiCalibrator extends PaperTouchScreen {
     }
 
     public void button() {
+        System.out.println("Button pressed.");
     }
 
+    public void undo() {
+        currentScreenPoint = currentScreenPoint - 1;
+        if (currentScreenPoint < 0) {
+            currentScreenPoint = 0;
+        }
+    }
+
+    public static TableTest tableTest = null;
+
+    /**
+     * Premier marqueur au milieu -> Enregistre la position comme le milieu...
+     * Jauge de quantité de marqueurs. Cadre un peu large autour de la feuille.
+     *
+     * Instructions imprimées, et projetées. Verification que la feuille à bougé
+     * avant de prendre le srceenshot suivant ! Cadre global de la projection.
+     * Projection trop près du pied pour certaines images. Verification du
+     * touch.
+     *
+     * Boutons pour lancer/couper ? // annuler la dernière photo.
+     */
     @Override
     public void setup() {
         try {
+
+            if (tableTest == null) {
+                tableTest = new TableTest();
+                tableTest.setDrawing(false);
+            }
             setDrawingFilter(0);
             setTrackingFilter(0, 0);
 
@@ -142,7 +208,7 @@ public class MultiCalibrator extends PaperTouchScreen {
             savedColors = new int[nbScreenPoints * 2][nbColors];
 
             this.seeThrough = !(getDisplay() instanceof ProjectorDisplay);
-            initButtons();
+//            initButtons();
             initScreenPoints();
             initProjectorAsCamera();
 
@@ -196,20 +262,19 @@ public class MultiCalibrator extends PaperTouchScreen {
         return detection;
     }
 
-    void initButtons() {
-        skatolo = new Skatolo(this.parent, this);
-        skatolo.getMousePointer().disable();
-        skatolo.setAutoDraw(false);
-        int sizeAdd = 10;
-        hoverButton = skatolo.addHoverButton("button")
-                .setPosition(79.8f - sizeAdd, 123.8f - sizeAdd)
-                .setSize(15 + 2 * sizeAdd, 15 + 2 * sizeAdd);
-        resetButton = skatolo.addHoverButton("resetPoint")
-                .setPosition(208.2f - sizeAdd, 123.8f - sizeAdd)
-                .setSize(15 + 2 * sizeAdd, 15 + 2 * sizeAdd);
-    }
-
-    private int deadZone = 100;
+//    void initButtons() {
+//        skatolo = new Skatolo(this.parent, this);
+//        skatolo.getMousePointer().disable();
+//        skatolo.setAutoDraw(false);
+//        int sizeAdd = 10;
+//        hoverButton = skatolo.addHoverButton("button")
+//                .setPosition(79.8f - sizeAdd, 123.8f - sizeAdd)
+//                .setSize(15 + 2 * sizeAdd, 15 + 2 * sizeAdd);
+//        resetButton = skatolo.addHoverButton("resetPoint")
+//                .setPosition(208.2f - sizeAdd, 123.8f - sizeAdd)
+//                .setSize(15 + 2 * sizeAdd, 15 + 2 * sizeAdd);
+//    }
+    private int deadZone = 150;
     int pw, ph;
 
     void initScreenPoints() {
@@ -218,25 +283,26 @@ public class MultiCalibrator extends PaperTouchScreen {
         ph = this.getDisplay().getHeight();
         // 1 in each quadrant. 
         // 2 random
-        screenPoints[0] = new PVector(
-                parent.random(deadZone, pw / 2),
-                parent.random(deadZone, ph / 2),
-                parent.random(HALF_PI));
+        screenPoints[0] = new PVector(pw / 2, ph / 2, 0);
         screenPoints[1] = new PVector(
-                parent.random(pw / 2, pw - deadZone),
-                parent.random(deadZone, ph / 2),
+                parent.random(deadZone, pw / 2 - deadZone),
+                parent.random(deadZone, ph / 2 - deadZone),
                 parent.random(HALF_PI));
-
         screenPoints[2] = new PVector(
-                parent.random(deadZone, pw / 2),
-                parent.random(ph / 2, ph - deadZone),
-                parent.random(HALF_PI));
-        screenPoints[3] = new PVector(
-                parent.random(pw / 2, pw - deadZone),
-                parent.random(ph / 2, ph - deadZone),
+                parent.random(pw / 2 + deadZone, pw - deadZone),
+                parent.random(deadZone, ph / 2 - deadZone),
                 parent.random(HALF_PI));
 
-        for (int i = 4; i < nbScreenPoints; i++) {
+        screenPoints[3] = new PVector(
+                parent.random(deadZone, pw / 2 - deadZone),
+                parent.random(ph / 2 + deadZone, ph - deadZone),
+                parent.random(HALF_PI));
+        screenPoints[4] = new PVector(
+                parent.random(pw / 2 + deadZone, pw - deadZone),
+                parent.random(ph / 2 + deadZone, ph - deadZone),
+                parent.random(HALF_PI));
+
+        for (int i = 5; i < nbScreenPoints; i++) {
             screenPoints[i] = createRandomPoint();
         }
     }
@@ -310,14 +376,13 @@ public class MultiCalibrator extends PaperTouchScreen {
 
         if (active) {
 
-            red1.drawSelf();
-
+//            red1.drawSelf();
 //            System.out.println("Framerate: " + parent.frameRate);
             computeTouch();
             if (toSave) {
                 saveTouch();
             }
-            drawTouch(10);
+//            drawTouch(10);
 
             float d = getMarkerBoard().lastMovementDistance(getCameraTracking());
 
@@ -325,10 +390,9 @@ public class MultiCalibrator extends PaperTouchScreen {
                 waitForMovement = false;
             }
 
-            SkatoloLink.updateTouch(touchList.get2DTouchs(), skatolo);
-            skatolo.draw(getGraphics());
-
-            if (evaluateMode) {
+//            SkatoloLink.updateTouch(touchList.get2DTouchs(), skatolo);
+//            skatolo.draw(getGraphics());
+            if (showProjection) {
                 drawDebugZones();
             }
 
@@ -339,7 +403,6 @@ public class MultiCalibrator extends PaperTouchScreen {
             // Not moving, draw something.
             if (!waitForMovement && d < 8f) {
                 // Touch
-
                 if (parent.mousePressed) {
                     if (parent.mouseButton == LEFT) {
                         valid();
@@ -367,9 +430,10 @@ public class MultiCalibrator extends PaperTouchScreen {
         if (pressedAmt == maxPressedAmt) {
             savePicture();
             nextScreenshot();
-            System.out.println("Saving location: ");
-            getLocation().print();
-            this.hoverButton.isActive = false;
+            waitForMovement = true;
+//            System.out.println("Saving location: ");
+//            getLocation().print();
+//            this.hoverButton.isActive = false;
         }
     }
 
@@ -378,12 +442,19 @@ public class MultiCalibrator extends PaperTouchScreen {
         if (pressedAmtReset == maxPressedAmt) {
             resetCurrentPoint();
             pressedAmtReset = 0;
-            this.resetButton.isActive = false;
+//            this.resetButton.isActive = false;
         }
     }
 
+    public void changePoint() {
+        resetCurrentPoint();
+    }
+
+    // Except first point
     void resetCurrentPoint() {
-        this.screenPoints[currentScreenPoint] = createRandomPoint();
+        if (currentScreenPoint != 0) {
+            this.screenPoints[currentScreenPoint] = createRandomPoint();
+        }
     }
 
     // Move the piece of paper between poses
@@ -423,17 +494,23 @@ public class MultiCalibrator extends PaperTouchScreen {
 
     void nextScreenshot() {
         pressedAmt = 0;
-        currentScreenPoint++;
-        if (currentScreenPoint == this.nbScreenPoints) {
+
+        if (currentScreenPoint == this.nbScreenPoints - 1) {
+            currentScreenPoint = 0;
             System.out.println("Ended !");
 
             if (!seeThrough) {
                 calibrate();
+                isCalibratingToggle.show();
+                showProjectionToggle.show();
+                showTouchToggle.show();
+                showProjectionToggle.setState(true);
+                showTouchToggle.setState(true);
+                isCalibratingToggle.setState(false);
                 projectorView.clearObjectImagePairs();
             }
-
-            currentScreenPoint = 0;
-            this.evaluateMode = true;
+        } else {
+            currentScreenPoint++;
         }
     }
 
@@ -455,6 +532,11 @@ public class MultiCalibrator extends PaperTouchScreen {
         ArrayList<ExtrinsicSnapshot> snapshots = new ArrayList<ExtrinsicSnapshot>();
 
         CameraThread projectorFakeThread = new CameraThread(projectorAsCamera);
+
+        PMatrix3D tableCenter = savedLocations[0].get();
+        tableCenter.translate(148.6f, 103.1f);
+
+        Papart.getPapart().setTableLocation(tableCenter);
 
         // Homography is ready
         // we can get images from it. 
@@ -584,7 +666,7 @@ public class MultiCalibrator extends PaperTouchScreen {
             averageR /= nbScreenPoints * 2;
             averageG /= nbScreenPoints * 2;
             averageB /= nbScreenPoints * 2;
-            
+
             int averageCol = color(averageR, averageG, averageB);
 
             for (int i = 0; i < nbScreenPoints * 2; i++) {
@@ -649,86 +731,86 @@ public class MultiCalibrator extends PaperTouchScreen {
         return active;
     }
 
+    private static Skatolo skatolo;
+    private static Button button;
+
+    // Button activated
+    public boolean showProjection, showTouch, doCalibration;
+    public Toggle showProjectionToggle, showTouchToggle, isCalibratingToggle;
+
     public static void drawCalibration(PGraphicsOpenGL screenGraphics) {
         Papart papart = Papart.getPapart();
         MultiCalibrator multiCalibrator = papart.multiCalibrator;
         PApplet parent = multiCalibrator.parent;
         PGraphicsOpenGL g = (PGraphicsOpenGL) parent.g;
-        // Classical rendering (if needed... )
 
         if (!multiCalibrator.isActive()) {
             System.out.println("ERROR: cannot calibrate with inactive calibrator.");
             return;
         }
 
-        parent.g.clear();
-
-        ARDisplay display = null;
-        boolean seeThrough = false;
-
-        if (multiCalibrator.getDisplay() instanceof ProjectorDisplay) {
-            ProjectorDisplay projector = (ProjectorDisplay) multiCalibrator.getDisplay();
-            display = projector;
-            projector.drawScreensOver();
-            parent.noStroke();
-            DrawUtils.drawImage((PGraphicsOpenGL) parent.g,
-                    projector.render(),
-                    0, 0, projector.getWidth(), projector.getHeight());
-
-            // TODO:
-//            g = projector.getGraphics();
-        } else {
-            // AR rendering, for touch and color tracking (and debug). 
-            if (multiCalibrator.getDisplay() instanceof ARDisplay) {
-                display = (ARDisplay) multiCalibrator.getDisplay();
-                display.drawScreensOver();
-                seeThrough = true;
-                parent.noStroke();
-                PImage img = multiCalibrator.getCameraTracking().getPImage();
-                if (multiCalibrator.getCameraTracking() != null && img != null) {
-                    parent.image(img, 0, 0, parent.width, parent.height);
-//            ((PGraphicsOpenGL) (parent.g)).image(camera.getPImage(), 0, 0, frameWidth, frameHeight);
-                }
-
-                // TODO: Distorsion problems with higher image space distorisions (useless ?)
-                DrawUtils.drawImage((PGraphicsOpenGL) parent.g,
-                        display.render(),
-                        0, 0, parent.width, parent.height);
-            }
+        if (skatolo == null) {
+            initGUI(parent, g, multiCalibrator);
         }
 
-        // Both display modes for now. 
-        if (parent.mousePressed) {
-            //   mouseClick.set(parent.mouseX, parent.mouseY);
+        g.clear();
+
+        drawAR(parent, g, multiCalibrator, INVALID_VECTOR);
+
+        drawFrame(parent, g, multiCalibrator);
+
+        // number of valid 
+        PVector point = multiCalibrator.screenPoints[multiCalibrator.currentScreenPoint];
+
+        drawProgress(g, multiCalibrator, point);
+
+        if (multiCalibrator.doCalibration) {
+            PVector pt = multiCalibrator.screenPoints[multiCalibrator.currentScreenPoint];
+            g.pushMatrix();
+            g.translate(pt.x, pt.y);
+            g.rotate(pt.z);
+            drawTarget(g, multiCalibrator);
+            drawHints(g, multiCalibrator, pt);
+            g.popMatrix();
         }
-        int[][] savedColors = multiCalibrator.savedColors;
 
-        g.noStroke();
-        int rectSize = 15;
-        for (int i = 0; i < multiCalibrator.nbScreenPoints; i++) {
-            g.fill(savedColors[i * 2][0]);
-            g.rect(i * rectSize, 0, rectSize, rectSize);
-            g.fill(savedColors[i * 2 + 1][0]);
-            g.rect(i * rectSize, rectSize, rectSize, rectSize);
+        if (multiCalibrator.showTouch) {
+            drawTouchCalibrated(g, multiCalibrator);
         }
 
-//        if (multiCalibrator.projectorView.getNbPairs() >= 4) {
-//            PImage img = multiCalibrator.projectorView.getViewOf(multiCalibrator.cameraTracking);
-//            if (img != null) {
-//                g.image(img,
-//                        400, 400,
-//                        400, 400);
-//            }
-//        }
-        PVector pt = multiCalibrator.screenPoints[multiCalibrator.currentScreenPoint];
+        skatolo.draw(g);
+    }
 
-        g.pushMatrix();
-        g.translate(pt.x, pt.y);
-        g.rotate(pt.z);
-        drawTarget(g, multiCalibrator);
-        drawHints(g, multiCalibrator, pt);
+    public static void initGUI(PApplet parent, PGraphicsOpenGL g, MultiCalibrator multiCalibrator) {
+        skatolo = new Skatolo(parent, multiCalibrator);
+//            button = skatolo.addButton("button")
+//                    .setPosition(200, 100)
+//                    .setSize(50, 20);
+        skatolo.addButton("undo")
+                .setPosition(240, 70)
+                .setSize(50, 20);
+        skatolo.addButton("resetCurrentPoint")
+                .setPosition(300, 70)
+                .setLabel("reset")
+                .setSize(50, 20);
 
-        g.popMatrix();
+        multiCalibrator.isCalibratingToggle = skatolo.addToggle("doCalibration")
+                .setPosition(380, 70)
+                .setSize(50, 20);
+        multiCalibrator.showProjectionToggle = skatolo.addToggle("showProjection")
+                .setPosition(380, 120)
+                .setSize(50, 20);
+        multiCalibrator.showTouchToggle = skatolo.addToggle("showTouch")
+                .setPosition(380, 170)
+                .setSize(50, 20);
+        multiCalibrator.isCalibratingToggle.hide();
+//            multiCalibrator.showProjectionToggle.hide();
+//            multiCalibrator.showTouchToggle.hide();
+
+        // calibration displayed
+        multiCalibrator.isCalibratingToggle.setState(true);
+        skatolo.setAutoDraw(false);
+
     }
 
     public static void drawTarget(PGraphicsOpenGL g, MultiCalibrator multiCalibrator) {
@@ -745,6 +827,90 @@ public class MultiCalibrator extends PaperTouchScreen {
 //        g.rect(-5, 0, 10, 1);
 //        g.rect(0, - 5, 1, 10);
         g.ellipse(0, 0, 20, 20);
+
+        int w = 200;
+        int h = 150;
+        g.rect(-w, -h, w * 2, h * 2);
+
+    }
+
+    public static void drawFrame(PApplet parent, PGraphicsOpenGL g,
+            MultiCalibrator multiCalibrator) {
+
+        g.rectMode(CORNER);
+        // GlobalFrame
+        g.noFill();
+        g.strokeWeight(2f);
+        g.stroke(255f);
+        g.rect(0, 0, parent.width, parent.height);
+    }
+
+    public static void drawAR(PApplet parent, PGraphicsOpenGL g,
+            MultiCalibrator multiCalibrator, PVector pt) {
+
+        if (multiCalibrator.getDisplay() instanceof ProjectorDisplay) {
+            ProjectorDisplay projector = (ProjectorDisplay) multiCalibrator.getDisplay();
+//            display = projector;
+            projector.drawScreensOver();
+            parent.noStroke();
+            DrawUtils.drawImage((PGraphicsOpenGL) parent.g,
+                    projector.render(),
+                    0, 0, projector.getWidth(), projector.getHeight());
+        } else {
+            // AR rendering, for touch and color tracking (and debug). 
+            if (multiCalibrator.getDisplay() instanceof ARDisplay) {
+                ARDisplay display = (ARDisplay) multiCalibrator.getDisplay();
+                display.drawScreensOver();
+                parent.noStroke();
+                PImage img = multiCalibrator.getCameraTracking().getPImage();
+                if (multiCalibrator.getCameraTracking() != null && img != null) {
+                    parent.image(img, 0, 0, parent.width, parent.height);
+//            ((PGraphicsOpenGL) (parent.g)).image(camera.getPImage(), 0, 0, frameWidth, frameHeight);
+                }
+
+                // TODO: Distorsion problems with higher image space distorisions (useless ?)
+                DrawUtils.drawImage((PGraphicsOpenGL) parent.g,
+                        display.render(),
+                        0, 0, parent.width, parent.height);
+            }
+        }
+
+    }
+
+    public static void drawProgress(PGraphicsOpenGL g,
+            MultiCalibrator multiCalibrator, PVector pt) {
+        g.pushMatrix();
+        g.translate(120, 150);
+        g.fill(255);  // necessary for text
+        g.text("Photos: ", 0, 8);
+//        g.text("Markers: ", 150, 200 + 8);
+        g.strokeWeight(1);
+        g.stroke(255);
+
+        for (int i = 0; i < multiCalibrator.nbScreenPoints; i++) {
+            if (i < multiCalibrator.currentScreenPoint) {
+                g.fill(0, 255, 0); // green
+            } else {
+                if (i == multiCalibrator.currentScreenPoint) {
+                    g.fill(242, 193, 48); // orange
+                } else {
+                    g.fill(66, 66, 66); // nothing
+                }
+            }
+            g.rect(50 + i * 20, 0, 20, 20);
+        }
+        g.popMatrix();
+
+        // Color captures
+        int[][] savedColors = multiCalibrator.savedColors;
+        g.noStroke();
+        int rectSize = 15;
+        for (int i = 0; i < multiCalibrator.nbScreenPoints; i++) {
+            g.fill(savedColors[i * 2][0]);
+            g.rect(i * rectSize, 0, rectSize, rectSize);
+            g.fill(savedColors[i * 2 + 1][0]);
+            g.rect(i * rectSize, rectSize, rectSize, rectSize);
+        }
 
     }
 
@@ -770,29 +936,101 @@ public class MultiCalibrator extends PaperTouchScreen {
 //            g.stroke(255, 0, 0);
 //        }
         g.fill(255 * v);
+//
+//        for (int i = 0; i < papart.getMarkerList().length; i++) {
+//            g.rect(10 * i, 40, 20, 20);
+//        }
 
-        for (int i = 0; i < papart.getMarkerList().length; i++) {
-            g.rect(10 * i, 40, 20, 20);
+        int dx = 70;
+        int dy = 70;
+        int h = 60;
+//        g.rect(-w, -h, w * 2, h * 2);
+
+        g.rect(-dx, -dy - h, dx * 2, h);
+        g.rect(-dx, dy, dx * 2, h);
+
+        for (int i = 0; i < 8; i++) {
+            if (i < papart.getMarkerList().length) {
+                g.fill(129, 247, 156); // green
+            } else {
+                g.fill(247, 206, 56); //orange
+            }
+            g.rect(-dx + i * 16, dy + 15, 15, 15);
         }
 
-        g.rect(-50, 100, 100, 20);
-        g.rect(-50, -100, 100, 20);
-
-        float d = multiCalibrator.getMarkerBoard().lastMovementDistance(multiCalibrator.getCameraTracking());
+//        g.rect(-50, 100, 150, 80);
+//        g.rect(-50, -100, 150, 80);
+//        float d = multiCalibrator.getMarkerBoard().lastMovementDistance(multiCalibrator.getCameraTracking());
 //        g.text(d, 100, 100);
-
-        if (pt.y < display.getHeight() - 180) {
-            g.translate(0, 150);
-        } else {
-            g.translate(0, -150);
-        }
+//        if (pt.y < display.getHeight() - 180) {
+//            g.translate(0, 150);
+//        } else {
+//            g.translate(0, -150);
+//        }
         // Not moving, draw something.
-        if (d < 2f) {
-            g.fill(0, 255, 0);
-            g.fill(255);
-            g.text("Ne bougez plus la feuille.", 0, 0); //stillW + 10);
+//        if (d < 2f) {
+//            g.fill(0, 255, 0);
+//            g.fill(255);
+//            g.text("Ne bougez plus la feuille.", 0, 0); //stillW + 10);
+//        }
+    }
+
+    public static void drawTouchCalibrated(PGraphicsOpenGL g,
+            MultiCalibrator multiCalibrator) {
+        Papart papart = Papart.getPapart();
+        PApplet parent = multiCalibrator.parent;
+        DepthTouchInput touchInput = (DepthTouchInput) papart.getTouchInput();
+        if (!touchInput.isReady()) {
+            return;
         }
 
+        // Get a copy, as the arrayList is constantly modified
+        ArrayList<TrackedDepthPoint> touchs2D = new ArrayList<TrackedDepthPoint>(touchInput.getTrackedDepthPoints2D());
+        for (TrackedDepthPoint tp : touchs2D) {
+
+            ArrayList<DepthDataElementProjected> depthDataElements = tp.getDepthDataElements();
+            for (DepthDataElementProjected dde : depthDataElements) {
+                Vec3D v = dde.projectedPoint;
+                g.noStroke();
+                setColor(g, dde.pointColor, 255);
+                g.ellipse(v.x * parent.width,
+                        v.y * parent.height,
+                        10, 10);
+            }
+
+            g.fill(50, 50, 255);
+            PVector pos = tp.getPosition();
+            g.ellipse(pos.x * parent.width,
+                    pos.y * parent.height, 20, 20);
+        }
+
+        g.fill(255, 0, 0);
+        ArrayList<TrackedDepthPoint> touchs3D = new ArrayList<TrackedDepthPoint>(touchInput.getTrackedDepthPoints3D());
+        for (TrackedDepthPoint tp : touchs3D) {
+
+            ArrayList<DepthDataElementProjected> depthDataElements = tp.getDepthDataElements();
+
+            for (DepthDataElementProjected dde : depthDataElements) {
+                Vec3D v = dde.projectedPoint;
+                g.noStroke();
+                setColor(g, dde.pointColor, 100);
+
+                g.ellipse(v.x * parent.width,
+                        v.y * parent.height,
+                        10, 10);
+            }
+
+            PVector pos = tp.getPosition();
+            g.ellipse(pos.x * parent.width,
+                    pos.y * parent.height, 40, 40);
+        }
+    }
+
+    static void setColor(PGraphicsOpenGL graphics, int rgb, float intens) {
+        int r = (rgb >> 16) & 0xFF;  // Faster way of getting red(argb)
+        int g = (rgb >> 8) & 0xFF;   // Faster way of getting green(argb)
+        int b = rgb & 0xFF;          // Faster way of getting blue(argb)
+        graphics.fill(r, g, b, intens);
     }
 
     // Pixel rendering
@@ -811,7 +1049,7 @@ public class MultiCalibrator extends PaperTouchScreen {
     /////////////////
     void computeTouch() {
         planeProjCalib = getPlaneFromPaperViewedByDepth();
-        depthTouchInput.setPlaneAndProjCalibration(planeProjCalib);
+//        depthTouchInput.setPlaneAndProjCalibration(planeProjCalib);
     }
 
     void saveTouch() {

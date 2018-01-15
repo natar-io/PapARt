@@ -216,7 +216,7 @@ public abstract class MarkerBoard {
 
     public boolean isTrackedBy(Camera camera) {
         if(this == MarkerBoardInvalid.board){
-            System.out.println("ERROR: cannot get the position of an invalid board.");
+//            System.out.println("ERROR: cannot get the position of an invalid board.");
         }
         return cameras.contains(camera);
     }

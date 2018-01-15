@@ -31,7 +31,7 @@ public class MarkerBoardInvalid extends MarkerBoard {
     public static MarkerBoardInvalid board = new MarkerBoardInvalid();
 
     public MarkerBoardInvalid() {
-        super();
+        super("Invalid", 0,0);
     }
 
     @Override
