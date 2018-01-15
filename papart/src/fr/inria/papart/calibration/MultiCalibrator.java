@@ -197,8 +197,8 @@ public class MultiCalibrator extends PaperTouchScreen {
         try {
 
             if (tableTest == null) {
-                tableTest = new TableTest();
-                tableTest.setDrawing(false);
+//                tableTest = new TableTest();
+//                tableTest.setDrawing(false);
             }
             setDrawingFilter(0);
             setTrackingFilter(0, 0);
