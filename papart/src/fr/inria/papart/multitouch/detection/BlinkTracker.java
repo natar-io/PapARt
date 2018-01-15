@@ -126,7 +126,7 @@ public class BlinkTracker extends ColorTracker {
         }
 
         ArrayList<TrackedElement> newElements
-                = touchDetectionColor.compute(time, erosion, this.scale);
+                = touchDetectionColor.compute(time, reference.erosion, this.scale);
         TouchPointTracker.trackPoints(trackedElements, newElements, time);
 //        for(TrackedElement te : trackedElements){
 //            te.filter(time);

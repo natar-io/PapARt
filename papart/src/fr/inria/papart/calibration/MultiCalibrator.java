@@ -76,7 +76,7 @@ class TableTest extends PaperTouchScreen {
     }
 
     public void setup() {
-         useManualLocation(true, Papart.getPapart().getTableLocation());
+        useManualLocation(true, Papart.getPapart().getTableLocation());
     }
 
     public void drawOnPaper() {
@@ -227,9 +227,6 @@ public class MultiCalibrator extends PaperTouchScreen {
     }
 
     void initColorTrackers() {
-        // RED    
-        rect(79.8f, 95.2f, 15f, 15f);
-        rect(208.2f, 95.2f, 15f, 15f);
 
         PVector red1P = new PVector(79.8f, 95.2f);
         PVector red2P = new PVector(208.2f, 95.2f);
@@ -242,10 +239,30 @@ public class MultiCalibrator extends PaperTouchScreen {
 
         blue1 = createColorDetection(blue1P);
         blue2 = createColorDetection(blue2P);
+
+        detections = new ColorDetection[this.nbColors * 2];
+
+        detections[0] = red1;
+        detections[1] = red2;
+        detections[2] = blue1;
+        detections[3] = blue2;
+
+        // green
+        detections[4] = createColorDetection(new PVector(79.8f, 123.8f));
+        detections[5] = createColorDetection(new PVector(208.2f, 123.8f));
+
+        // purple
+        detections[6] = createColorDetection(new PVector(108.1f, 123.8f));
+        detections[7] = createColorDetection(new PVector(179.4f, 123.8f));
+
+        // orange
+        detections[8] = createColorDetection(new PVector(108.1f, 67.1f));
+        detections[9] = createColorDetection(new PVector(179.4f, 67.1f));
     }
 
     ColorDetection red1, red2;
     ColorDetection blue1, blue2;
+    ColorDetection[] detections;
 
     ColorDetection createColorDetection(PVector position) {
         int captureW = 15; // 15mm
@@ -465,14 +482,20 @@ public class MultiCalibrator extends PaperTouchScreen {
         this.savedLocations[currentScreenPoint] = currentCamBoard();
 
         // Save the touch plane  TODO: not used remove this
-        red1.computeColor();
-        red2.computeColor();
-        blue1.computeColor();
-        blue2.computeColor();
-        this.savedColors[currentScreenPoint * 2][0] = red1.getColor();
-        this.savedColors[currentScreenPoint * 2 + 1][0] = red2.getColor();
-        this.savedColors[currentScreenPoint * 2][1] = blue1.getColor();
-        this.savedColors[currentScreenPoint * 2 + 1][1] = blue1.getColor();
+//        red1.computeColor();
+//        red2.computeColor();
+//        blue1.computeColor();
+//        blue2.computeColor();
+//        this.savedColors[currentScreenPoint * 2][0] = red1.getColor();
+//        this.savedColors[currentScreenPoint * 2 + 1][0] = red2.getColor();
+//        this.savedColors[currentScreenPoint * 2][1] = blue1.getColor();
+//        this.savedColors[currentScreenPoint * 2 + 1][1] = blue1.getColor();
+        for (int i = 0; i < this.nbColors; i++) {
+            this.detections[i * 2].computeColor();
+            this.detections[i * 2 + 1].computeColor();
+            savedColors[currentScreenPoint * 2][i] = detections[i * 2].getColor();
+            savedColors[currentScreenPoint * 2 + 1][i] = detections[i * 2 + 1].getColor();
+        }
 
         PMatrix3D loc = currentCamBoard();
 
@@ -509,6 +532,8 @@ public class MultiCalibrator extends PaperTouchScreen {
                 isCalibratingToggle.setState(false);
                 projectorView.clearObjectImagePairs();
             }
+            calibrateColors();
+
         } else {
             currentScreenPoint++;
         }
@@ -629,6 +654,9 @@ public class MultiCalibrator extends PaperTouchScreen {
         this.saveTouch();
         // Now projector-space homography. 
 
+    }
+
+    void calibrateColors() {
         // Save the color calibration 
         colorMode(RGB, 255);
 
@@ -649,7 +677,6 @@ public class MultiCalibrator extends PaperTouchScreen {
             float stdevG = 0;
             float stdevB = 0;
 
-// Red is main component... 
             for (int i = 0; i < nbScreenPoints * 2; i++) {
                 int c = this.savedColors[i][colorId];
                 averageHue += this.hue(c);
@@ -821,7 +848,7 @@ public class MultiCalibrator extends PaperTouchScreen {
         // PIXEL sizes. (projector resolution dependent)
         g.ellipse(0, 0, 50, 50);
         g.line(-5, 0, 5, 0);
-        g.line(0, -5, 0, 50);
+        g.line(0, -5, 0, 5);
 
 //        g.stroke(200, 0, 200);
 //        g.rect(-5, 0, 10, 1);
@@ -906,10 +933,14 @@ public class MultiCalibrator extends PaperTouchScreen {
         g.noStroke();
         int rectSize = 15;
         for (int i = 0; i < multiCalibrator.nbScreenPoints; i++) {
-            g.fill(savedColors[i * 2][0]);
-            g.rect(i * rectSize, 0, rectSize, rectSize);
-            g.fill(savedColors[i * 2 + 1][0]);
-            g.rect(i * rectSize, rectSize, rectSize, rectSize);
+
+            for (int j = 0; j < multiCalibrator.nbColors; j++) {
+                g.fill(savedColors[i * 2][j]);
+                g.rect(i * rectSize, j*2 * rectSize, rectSize, rectSize);
+
+                g.fill(savedColors[i * 2 + 1][j]);
+                g.rect(i * rectSize, (j*2 + 1)* rectSize, rectSize, rectSize);
+            }
         }
 
     }

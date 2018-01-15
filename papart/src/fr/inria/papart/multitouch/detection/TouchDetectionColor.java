@@ -167,6 +167,8 @@ public class TouchDetectionColor extends TouchDetection {
         tp.setCreationTime(this.currentTime);
         tp.setConfidence(connectedComponent.size());
 
+        // We attach the colorID here.
+        tp.attachedValue = segmentedImage[connectedComponent.get(0)];
         // TODO: re-enable this one day ?
 //        tp.setConnectedComponent(connectedComponent);
 // EXPERIMENTAL, check if a copy is necessary

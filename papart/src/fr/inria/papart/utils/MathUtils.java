@@ -260,6 +260,27 @@ public class MathUtils {
         int db = PApplet.abs(b1 - b2);
         return dr < threshold && dg < threshold && db < threshold;
     }
+    /**
+     * RGB distance of two colors. Return true if all channels differences are
+     * below the difference threshold.
+     *
+     * @param c1
+     * @param c2
+     * @param threshold
+     * @return
+     */
+    public static boolean colorDistRGB(int c1, int c2, int tr, int tg,int tb) {
+        int r1 = c1 >> 16 & 255;
+        int g1 = c1 >> 8 & 255;
+        int b1 = c1 >> 0 & 255;
+        int r2 = c2 >> 16 & 255;
+        int g2 = c2 >> 8 & 255;
+        int b2 = c2 >> 0 & 255;
+        int dr = PApplet.abs(r1 - r2);
+        int dg = PApplet.abs(g1 - g2);
+        int db = PApplet.abs(b1 - b2);
+        return dr < tr && dg < tg && db < tb;
+    }
 
     /**
      * RGB distance of two colors. Return true if all channels differences are

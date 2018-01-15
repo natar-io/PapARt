@@ -44,6 +44,7 @@ import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.multitouch.TUIOTouchInput;
 import fr.inria.papart.multitouch.DepthTouchInput;
 import fr.inria.papart.multitouch.detection.BlinkTracker;
+import fr.inria.papart.multitouch.detection.CalibratedColorTracker;
 import fr.inria.papart.multitouch.detection.ColorTracker;
 import fr.inria.papart.utils.LibraryUtils;
 import fr.inria.papart.procam.camera.CameraFactory;
@@ -1202,6 +1203,19 @@ public class Papart {
 //        }
 //        System.out.println("Cameras closed.");
 //    }
+    /**
+     * Create a red ColorTracker for a PaperScreen.
+     *
+     * @param screen PaperScreen to set the location of the tracking.
+     * @param quality capture quality in px/mm. lower (0.5f) for higher
+     * performance.
+     * @return
+     */
+    public CalibratedColorTracker initAllTracking(PaperScreen screen, float quality) {
+        CalibratedColorTracker colorTracker = new CalibratedColorTracker(screen, quality);
+        return colorTracker;
+    }
+
     /**
      * Create a red ColorTracker for a PaperScreen.
      *
