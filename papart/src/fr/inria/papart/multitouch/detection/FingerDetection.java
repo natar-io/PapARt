@@ -180,8 +180,10 @@ public class FingerDetection extends TouchDetectionDepth {
             DepthData.DepthSelection depthSelection = touchRecognition.getSelection();
             pointCheck.setSelection(depthSelection);
             
+            // Start from the hand -- not the detected points !
+            
 //            this.toVisit.addAll(depthSelection.validPointsList);
-            this.toVisit.addAll(depthSelection.validPointsList);
+            this.toVisit.addAll(currentArm.getDepthDataAsConnectedComponent());
 
             // 2. Select points that are part of the border 
 //            DepthElementList handBounds = subHand.getDepthDataElements();
