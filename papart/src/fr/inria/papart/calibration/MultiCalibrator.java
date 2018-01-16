@@ -141,7 +141,7 @@ public class MultiCalibrator extends PaperTouchScreen {
     // 6 points for Homography matching. 
     public PVector screenPoints[];
     public int currentScreenPoint = 0;
-    int nbScreenPoints = 6;
+    int nbScreenPoints = 8;
     int nbColors = 5;
 
     PlaneAndProjectionCalibration planeProjCalib;
@@ -597,7 +597,6 @@ public class MultiCalibrator extends PaperTouchScreen {
 //            opencv_imgcodecs.cvSaveImage("/home/jiii/tmp/proj-" + i + ".bmp", projectorAsCamera.getIplImage());
 //            System.out.println("Saved " + "/home/jiii/tmp/cam-" + i + ".bmp");
 //            System.out.println("Saved " + "/home/jiii/tmp/proj-" + i + ".bmp");
-//            System.out.println("Location found: ");
 //            projPos.print();
             snapshots.add(new ExtrinsicSnapshot(savedLocations[i],
                     projPos, null));
