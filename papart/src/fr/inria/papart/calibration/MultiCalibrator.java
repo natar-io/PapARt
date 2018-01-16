@@ -128,7 +128,7 @@ public class MultiCalibrator extends PaperTouchScreen {
     DepthTouchInput depthTouchInput;
     private DepthCameraDevice depthCameraDevice;
 
-    public float zShift = 10f;
+    public float zShift = 5f;
 
 //    private Skatolo skatolo;
 //    private HoverButton hoverButton, resetButton;
@@ -382,6 +382,8 @@ public class MultiCalibrator extends PaperTouchScreen {
 //        projectorAsCamera.setThread();
     }
 
+    float maxMovement = 8f;
+
     @Override
     public void drawOnPaper() {
         // setLocation(63, 45, 0);
@@ -399,7 +401,9 @@ public class MultiCalibrator extends PaperTouchScreen {
             if (toSave) {
                 saveTouch();
             }
-//            drawTouch(10);
+            if (showTouch) {
+                drawTouch(10);
+            }
 
             float d = getMarkerBoard().lastMovementDistance(getCameraTracking());
 
@@ -418,7 +422,7 @@ public class MultiCalibrator extends PaperTouchScreen {
 //            PVector pxCam = cameraTracking.getProjectiveDevice().worldToPixelCoord(pos3D, false);
 //            System.out.println("PXCam: " + pxCam);
             // Not moving, draw something.
-            if (!waitForMovement && d < 8f) {
+            if (!waitForMovement && d < maxMovement) {
                 // Touch
                 if (parent.mousePressed) {
                     if (parent.mouseButton == LEFT) {
@@ -935,10 +939,10 @@ public class MultiCalibrator extends PaperTouchScreen {
 
             for (int j = 0; j < multiCalibrator.nbColors; j++) {
                 g.fill(savedColors[i * 2][j]);
-                g.rect(i * rectSize, j*2 * rectSize, rectSize, rectSize);
+                g.rect(i * rectSize, j * 2 * rectSize, rectSize, rectSize);
 
                 g.fill(savedColors[i * 2 + 1][j]);
-                g.rect(i * rectSize, (j*2 + 1)* rectSize, rectSize, rectSize);
+                g.rect(i * rectSize, (j * 2 + 1) * rectSize, rectSize, rectSize);
             }
         }
 
@@ -952,28 +956,30 @@ public class MultiCalibrator extends PaperTouchScreen {
         BaseDisplay display = multiCalibrator.getDisplay();
 
 //        float freq = 0.2f + 2f * ((float) multiCalibrator.pressedAmt / (float) multiCalibrator.maxPressedAmt);
-        float freq = 0.5f;
+//        float freq = 0.5f;
+//        if (multiCalibrator.pressedAmt > 3f) {
+//            freq = 2f;
+//        }
 
-        if (multiCalibrator.pressedAmt > 3f) {
-            freq = 2f;
+        if (multiCalibrator.waitForMovement) {
+            g.fill(200, 0, 0);
+        } else {
+            float d = multiCalibrator.getMarkerBoard().lastMovementDistance(multiCalibrator.getCameraTracking());
+            if (d < multiCalibrator.maxMovement) {
+                g.fill(180);
+                if(multiCalibrator.pressedAmt > 3f){
+                    g.fill(255f);
+                }
+            } else {
+                g.fill(60);
+            }
         }
-        float v = (PApplet.sin((parent.millis() / 1000f) * PConstants.TWO_PI * freq) + 1f) / 2f;
+//        float v = (PApplet.sin((parent.millis() / 1000f) * PConstants.TWO_PI * freq) + 1f) / 2f;
+//        g.fill(255 * v);
 
-//        if (multiCalibrator.hoverButton.isActive) {
-//            g.stroke(0, 255, 0);
-//        }
-//        if (multiCalibrator.resetButton.isActive) {
-//            g.stroke(255, 0, 0);
-//        }
-        g.fill(255 * v);
-//
-//        for (int i = 0; i < papart.getMarkerList().length; i++) {
-//            g.rect(10 * i, 40, 20, 20);
-//        }
-
-        int dx = 70;
+        int dx = 60;
         int dy = 70;
-        int h = 60;
+        int h = 50;
 //        g.rect(-w, -h, w * 2, h * 2);
 
         g.rect(-dx, -dy - h, dx * 2, h);
