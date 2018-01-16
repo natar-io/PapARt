@@ -108,7 +108,7 @@ public class ExtrinsicCalibrator {
                     snapshot.projectorPaper);
 
             float dist = Utils.posFromMatrix(extr).dist(sumPos);
-            if (dist < 20f) { // 2 cm !
+            if (dist < 40f) { // 2 cm !
                 Utils.addMatrices(sum2, extr);
                 k++;
             }
@@ -118,7 +118,11 @@ public class ExtrinsicCalibrator {
         sum.print();
         sum2.print();
 
-        saveProCamExtrinsics(sum2);
+        if (k == 0) {
+            saveProCamExtrinsics(sum);
+        } else {
+            saveProCamExtrinsics(sum2);
+        }
         return sum2;
     }
 
@@ -321,7 +325,7 @@ public class ExtrinsicCalibrator {
         return calibration;
     }
 
-     public PlaneCalibration computeAveragePlaneCam(ArrayList<ExtrinsicSnapshot> snapshots) {
+    public PlaneCalibration computeAveragePlaneCam(ArrayList<ExtrinsicSnapshot> snapshots) {
         PVector paperSize = new PVector(297, 210);
 
         Plane sumCam = new Plane(new Vec3D(0, 0, 0),
