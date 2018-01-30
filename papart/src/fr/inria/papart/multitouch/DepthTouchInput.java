@@ -26,11 +26,6 @@ import fr.inria.papart.calibration.files.PlanarTouchCalibration;
 import fr.inria.papart.depthcam.DepthDataElementProjected;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 
-import java.time.Duration;
-import java.time.Instant;
-
-import fr.inria.papart.procam.display.ARDisplay;
-import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.depthcam.analysis.DepthAnalysisImpl;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
@@ -46,13 +41,6 @@ import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.animation.KeyValue;
-import org.bytedeco.javacpp.helper.opencv_imgproc;
-import org.bytedeco.javacpp.opencv_core;
-import org.bytedeco.javacpp.opencv_core.KeyPoint;
-import org.bytedeco.javacpp.opencv_core.KeyPointVector;
-import org.bytedeco.javacpp.opencv_core.Mat;
-import org.bytedeco.javacpp.opencv_features2d.SimpleBlobDetector;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
