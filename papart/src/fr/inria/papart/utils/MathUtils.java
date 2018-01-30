@@ -353,6 +353,23 @@ public class MathUtils {
                 && // avoid pixels not bright enough
                 abs(g.brightness(incomingPix) - g.brightness(baseline)) < brightnessTresh;
     }
+    
+    public static boolean colorFinderHSBRedish(PGraphics g, int baseline, int incomingPix,
+            float hueTresh, float saturationTresh, float brightnessTresh) {
+        float h1 = g.hue(baseline);
+        float h2 = g.hue(incomingPix);
+        
+        // If the hue is low but still red, shit it.
+        if(h2 < 30){
+            h2 = h2 + 255f;
+        }
+
+        return abs(h1 - h2) < hueTresh
+                && // Avoid desaturated pixels
+                abs(g.saturation(incomingPix) - g.saturation(baseline)) < saturationTresh
+                && // avoid pixels not bright enough
+                abs(g.brightness(incomingPix) - g.brightness(baseline)) < brightnessTresh;
+    }
 
     public static boolean threshold(PGraphics g, int incomingPix, float threshold) {
         int r1 = incomingPix >> 16 & 255;

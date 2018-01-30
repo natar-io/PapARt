@@ -157,7 +157,7 @@ public class ColorTracker {
                 boolean good = false;
 
                 if ("red".equals(name)) {
-                    good = MathUtils.colorFinderHSB(paperScreen.getGraphics(),
+                    good = MathUtils.colorFinderHSBRedish(paperScreen.getGraphics(),
                             ref2, c, reference.hue, reference.saturation, reference.brightness);
 
                     boolean red = true;

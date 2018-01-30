@@ -680,8 +680,11 @@ public class MultiCalibrator extends PaperTouchScreen {
             float stdevG = 0;
             float stdevB = 0;
 
+            // todo: IF Red > 180, hue gets shifted ?
             for (int i = 0; i < nbScreenPoints * 2; i++) {
                 int c = this.savedColors[i][colorId];
+
+                float r = this.red(c);
                 averageHue += this.hue(c);
                 averageSat += this.saturation(c);
                 averageIntens += this.brightness(c);
@@ -697,11 +700,35 @@ public class MultiCalibrator extends PaperTouchScreen {
             averageG /= nbScreenPoints * 2;
             averageB /= nbScreenPoints * 2;
 
+            // potentially problematic hue for red
+            // Solution, we shift it by 255 for low values.
+            if (averageR > 180) {
+                averageHue = 0;
+                for (int i = 0; i < nbScreenPoints * 2; i++) {
+                    int c = this.savedColors[i][colorId];
+                    float h = this.hue(c);
+                    if (h < 30) {
+                        h = h + 255;
+                    }
+                    averageHue += h;
+                }
+                averageHue /= nbScreenPoints * 2;
+//                if (averageHue > 255) {
+//                    averageHue = averageHue - 255;
+//                }
+            }
+
             int averageCol = color(averageR, averageG, averageB);
 
             for (int i = 0; i < nbScreenPoints * 2; i++) {
                 int c = this.savedColors[i][colorId];
-                stdevHue += abs(this.hue(c) - averageHue);
+
+                // high red intensity with a redish rue.
+                if (averageR > 180 && this.hue(c) < 30) {
+                    stdevHue += abs(this.hue(c) + 255 - averageHue);
+                } else {
+                    stdevHue += abs(this.hue(c) - averageHue);
+                }
                 stdevSat += abs(this.saturation(c) - averageSat);
                 stdevIntens += abs(this.brightness(c) - averageIntens);
                 stdevR += abs(this.red(c) - averageR);
@@ -960,14 +987,13 @@ public class MultiCalibrator extends PaperTouchScreen {
 //        if (multiCalibrator.pressedAmt > 3f) {
 //            freq = 2f;
 //        }
-
         if (multiCalibrator.waitForMovement) {
             g.fill(200, 0, 0);
         } else {
             float d = multiCalibrator.getMarkerBoard().lastMovementDistance(multiCalibrator.getCameraTracking());
             if (d < multiCalibrator.maxMovement) {
                 g.fill(180);
-                if(multiCalibrator.pressedAmt > 3f){
+                if (multiCalibrator.pressedAmt > 3f) {
                     g.fill(255f);
                 }
             } else {
