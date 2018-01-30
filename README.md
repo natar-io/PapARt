@@ -2,17 +2,33 @@
 
 PapARt is a software development kit (SDK) that enables the creation of interactive projection mapping. Today, it is developed by the Inria Potioc team. It comes from the augmented physical drawing tools created by Jeremy Laviole, which are documented in his PhD thesis (free to read).
 
-## Version 1.0
+## Version 1.0 (summer 2017)
 
-The first big release is ready. If you want to try it out download our precompiled version from the [example repository](https://github.com/poqudrof/Papart-examples). 
+The first big release is ready. If you want to try it out download our precompiled version from the [example repository]
+(https://github.com/poqudrof/Papart-examples). 
 
-## Version 1.1 coming soon 
+## Version 1.1 and 1.2 (January 2018)
 
-A new release will match the first RealityTech Hardware. Here are the new features to expect:
-* ColorTracking. Color patches will be tracked with the same tracking algorithms as depth tracking. 
-* Offline mode. The library will be easier to use without the dedicated hardware. So you could code your apps before buying or building your own, and of course code in your couch or in a plane. 
-* Polyglot support: PapARt will interface with [Scratch](https://github.com/LLK/scratchx), the JRubyArt examples will be updated to latest version. 
- 
+The first 2018 release will be directly to 1.2. This label is explained by two major updates: 
+
+* ColorTracking: The library enables color tracking. The system learns to recognize and track five colors which can be used to activate buttons, or identify objects. 
+* Hand recognition and tracking is improved to segment the arm - hands and fingers. The API is in progress and will evolve 
+with the 1.2.x versions. 
+
+Other features: 
+
+* Easier to compile thanks to the release of JavaCV/JavaCPP 1.4.  
+* Support of intel Realsense cameras (SR300 and F200). 
+* Support of Orbbec cameras (Astra S).
+* JRubyArt support is getting extended.
+* Community support is moved from the wiki to the [forum](http://forum.rea.lity.tech). 
+
+## Version 1.3 (April - June 2018)
+
+* Unity3D client: You will be able to create applications with Unity3D with a dedicated plugin.
+* Touch Tracking will get new features: object detection (not a hand), and mid-air touch will be back. 
+* Offline mode API. The library will be easier to use without the dedicated hardware.
+
 
 ## Examples
 
