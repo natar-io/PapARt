@@ -14,14 +14,14 @@ import java.util.ArrayList;
 import processing.core.PConstants;
 
 /**
- * Like the ColorTracker but for all the calibrated colors.
+ * [experimental] Similar to the ColorTracker but for all the calibrated colors.
  *
  * @author Jérémy Laviole
  */
 public class CalibratedColorTracker extends ColorTracker {
 
     int numberOfRefs = 5;
-    private ColorReferenceThresholds references[];
+    private final ColorReferenceThresholds references[];
 
     public CalibratedColorTracker(PaperScreen paperScreen, float scale) {
         super(paperScreen, scale);
@@ -39,7 +39,10 @@ public class CalibratedColorTracker extends ColorTracker {
                 references[fileId].loadParameter(data);
             }
         }
-
+    }
+    
+    public int getReferenceColor(int id){
+        return references[id].getReferenceColor();
     }
 
     @Override
