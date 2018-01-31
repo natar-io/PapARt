@@ -150,7 +150,7 @@ public abstract class MarkerBoard {
      */
     public void subscribe() {
         subscribersAmount++;
-        System.out.println("DEBUG: subscription: " + subscribersAmount);
+//        System.out.println("DEBUG: subscription: " + subscribersAmount);
     }
 
     /**
@@ -159,7 +159,7 @@ public abstract class MarkerBoard {
      */
     public void unsubscribe() {
         subscribersAmount--;
-        System.out.println("DEBUG: UNsubscription: " + subscribersAmount);
+//        System.out.println("DEBUG: UNsubscription: " + subscribersAmount);
     }
 
     public OneEuroFilter[] NO_FILTERS = new OneEuroFilter[0];
