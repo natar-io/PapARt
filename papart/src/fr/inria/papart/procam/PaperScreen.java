@@ -1289,14 +1289,12 @@ public class PaperScreen extends DelegatedGraphics {
      * @param height height of the markerboard in millimeters.
      */
     public void loadMarkerBoard(String configFile, float width, float height) {
-        System.out.println("Loading a markerboard, before: " + this.markerBoard);
         this.markerBoard = MarkerBoardFactory.create(configFile, width, height);
 
         if (this.markerBoard == MarkerBoardInvalid.board) {
             System.out.println("Cannot create the markerboard, setting it to invalid: " + configFile);
         }
         trackCurrentMarkerBoard();
-        System.out.println("Loading a markerboard after: " + this.markerBoard);
     }
 
     /**
