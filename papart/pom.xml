@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fr.inria</groupId>
     <artifactId>papart</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.2-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>PapARt</name>
@@ -84,12 +84,12 @@
             <artifactId>OpenNI</artifactId>
             <version>2.3</version>
         </dependency>
-        <dependency>
+<!--        <dependency>
             <groupId>org.openni</groupId>
             <artifactId>OpenNI-bin</artifactId>
             <version>2.3</version>
             <scope>runtime</scope>
-        </dependency>
+        </dependency>-->
         
         
         <!--We distribute with PapARt-->
@@ -125,7 +125,7 @@
             <version>2.3.2</version>
         </dependency>
         
-        <dependency>
+<!--        <dependency>
             <groupId>org.jogamp.jogl</groupId>
             <artifactId>newt-main</artifactId>
             <version>2.3.2</version>
@@ -135,7 +135,7 @@
             <groupId>org.jogamp.jogl</groupId>
             <artifactId>nativewindow-main</artifactId>
             <version>2.3.2</version>
-        </dependency>
+        </dependency>-->
         
         <!--Processing Video-->
         <dependency>
