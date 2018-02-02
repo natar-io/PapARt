@@ -4,8 +4,7 @@ PapARt is a software development kit (SDK) that enables the creation of interact
 
 ## Version 1.0 (summer 2017)
 
-The first big release is ready. If you want to try it out download our precompiled version from the [example repository]
-(https://github.com/poqudrof/Papart-examples). 
+The first big release is ready. If you want to try it out download our precompiled version from the [example repository](https://github.com/poqudrof/Papart-examples). 
 
 ## Version 1.1 and 1.2 (January 2018)
 
