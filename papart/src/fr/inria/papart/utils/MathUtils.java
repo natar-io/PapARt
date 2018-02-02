@@ -266,7 +266,9 @@ public class MathUtils {
      *
      * @param c1
      * @param c2
-     * @param threshold
+     * @param tr
+     * @param tg
+     * @param tb
      * @return
      */
     public static boolean colorDistRGB(int c1, int c2, int tr, int tg,int tb) {

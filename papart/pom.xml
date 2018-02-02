@@ -3,13 +3,24 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fr.inria</groupId>
     <artifactId>papart</artifactId>
-    <version>1.2</version>
+    <version>1.2-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>PapARt</name>
     <description>Paper Augmented Reality Toolkit</description>
-    <url>http://papart.gforge.inria.fr</url>
+    <url>https://github.com/poqudrof/PapARt</url>
     
+<!--<distributionManagement>
+  <snapshotRepository>
+    <id>ossrh</id>
+    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+  </snapshotRepository>
+  <repository>
+    <id>ossrh</id>
+    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+  </repository>
+</distributionManagement>-->
+                
     <repositories>
         <repository>
             <id>clojars.org</id>
@@ -330,6 +341,20 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
+            <!--            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.5</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>-->
         </plugins>
         
         <resources>

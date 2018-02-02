@@ -466,7 +466,8 @@ public class ColorDetection {
     /**
      * Set the position of the capture in millimeter.
      *
-     * @param captureOffset
+     * @param x
+     * @param y
      */
     public void setCaptureOffset(float x, float y) {
         this.captureOffset.set(x, y);

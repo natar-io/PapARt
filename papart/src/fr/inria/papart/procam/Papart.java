@@ -1112,8 +1112,6 @@ public class Papart {
      * Get the Position of a marker. MarkerTracking must be enabled with at
      * least one SVG marker to find.
      *
-     * @param markerID id of the marker to find.
-     * @param markerWidth size of square marker in mm.
      * @return null is the marker is not found.
      */
     public DetectedMarker[] getMarkerList() {

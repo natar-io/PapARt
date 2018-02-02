@@ -442,7 +442,7 @@ public class TrackedElement {
     /**
      * Get the detection object that created this tracked element.
      *
-     * @param detection
+     * @return 
      */
     public TouchDetection getDetection() {
         return detection;

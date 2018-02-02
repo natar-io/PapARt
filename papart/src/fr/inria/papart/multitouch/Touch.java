@@ -75,7 +75,7 @@ public class Touch {
      * object implements the TouchPointEventHandler interface, delete() will be  the call to 
      * called when the tracked element gets off the tracking system. 
      * 
-     * -- Also -> new name of TouchPoint.
+     * -- Also:  new name of TouchPoint.
      * @return 
      */
     public TrackedElement trackedSource(){

@@ -181,17 +181,6 @@ public class MultiCalibrator extends PaperTouchScreen {
 
     public static TableTest tableTest = null;
 
-    /**
-     * Premier marqueur au milieu -> Enregistre la position comme le milieu...
-     * Jauge de quantité de marqueurs. Cadre un peu large autour de la feuille.
-     *
-     * Instructions imprimées, et projetées. Verification que la feuille à bougé
-     * avant de prendre le srceenshot suivant ! Cadre global de la projection.
-     * Projection trop près du pied pour certaines images. Verification du
-     * touch.
-     *
-     * Boutons pour lancer/couper ? // annuler la dernière photo.
-     */
     @Override
     public void setup() {
         try {
