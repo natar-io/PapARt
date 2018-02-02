@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fr.inria</groupId>
     <artifactId>papart</artifactId>
-    <version>1.2-SNAPSHOT</version>
+    <version>1.2</version>
     <packaging>jar</packaging>
 
     <name>PapARt</name>
@@ -20,6 +20,13 @@
     <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
   </repository>
 </distributionManagement>-->
+                <!--http://litytechmw.cluster020.hosting.ovh.net/repository/-->
+   <distributionManagement>
+    <repository>
+      <id>ftp-repository</id>
+      <url>ftp://ftp.cluster020.hosting.ovh.net/www/repository</url>
+    </repository>
+  </distributionManagement>      
                 
     <repositories>
         <repository>
@@ -305,6 +312,14 @@
         <sourceDirectory>src</sourceDirectory>
         <testSourceDirectory>test</testSourceDirectory>
         <outputDirectory>target/classes</outputDirectory>
+        <extensions>
+            <!-- Enabling the use of FTP -->
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-ftp</artifactId>
+                <version>3.0.0</version>
+            </extension>
+        </extensions>
         
         <plugins> 
             <plugin>
