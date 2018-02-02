@@ -74,5 +74,7 @@ cd javacv-build
 ruby createLibs.rb
 mv javacv-*.tgz ..
 
+## Missing: OpenNI
+
 echo "compile all"
 zip -r libraries.zip libraries

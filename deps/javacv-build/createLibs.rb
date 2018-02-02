@@ -24,7 +24,7 @@ def build(platform, arch)
 
   `mv target/dependency target/library`
   `mv target javacv`
-  `mv javacv/library/javacv-1.3.2-SNAPSHOT.jar javacv/library/javacv.jar`
+  `mv javacv/library/javacv-1.4.jar javacv/library/javacv.jar`
 
   puts "compress library"
   `tar -zcf javacv-#{platform}-#{arch}.tgz javacv`
@@ -37,8 +37,8 @@ end
 
 # build("linux", "armhf")
 # build("android", "arm")
-build("linux", "x86_64")
-# build("windows", "x86_64")
+# build("linux", "x86_64")
+build("windows", "x86_64")
 # build("macosx", "x86_64")
 # build("windows", "x86")
 
