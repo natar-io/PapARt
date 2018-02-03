@@ -118,7 +118,7 @@
         <dependency>
             <groupId>tech.lity.rea</groupId>
             <artifactId>SVGExtended</artifactId>
-            <version>3.2.1</version>
+            <version>3.3.4</version>
         </dependency>
         
          <!--We package and distribute--> 
@@ -241,13 +241,6 @@
             <groupId>org.bytedeco.javacpp-presets</groupId>
             <artifactId>libfreenect2</artifactId>
             <version>0.2.0-1.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>libfreenect2</artifactId>
-            <version>0.2.0-1.3</version>
-            <classifier>${platform}</classifier>
-            <scope>runtime</scope>
         </dependency>
         
         <dependency>
