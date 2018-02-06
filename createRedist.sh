@@ -20,7 +20,7 @@ echo "Copy the sources"
 # copy the source also
 cp -R papart/src $TMP/$NAME/
 cp -R papart/pom.xml $TMP/$NAME/
-cp -R papart/test $TMP/$NAME/
+# cp -R papart/test $TMP/$NAME/
 
 echo "Copy the JavaDoc"
 cp -R papart/target/site/apidocs $TMP/$NAME/
