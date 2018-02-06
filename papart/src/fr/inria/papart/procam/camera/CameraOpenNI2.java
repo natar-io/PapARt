@@ -124,6 +124,7 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
 
         camera.setPixelFormat(format1);
         VideoStream videoStream = VideoStream.create(device, type);
+        videoStream.setMirroringEnabled(false);
         VideoMode vm = new VideoMode(camera.width(),
                 camera.height(),
                 camera.getFrameRate(), format2.toNative());
