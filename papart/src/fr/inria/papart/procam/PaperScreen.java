@@ -650,18 +650,35 @@ public class PaperScreen extends DelegatedGraphics {
             return;
         }
 
-        PMatrix3D location = this.getLocation().get();
+//        PMatrix3D location = this.getLocation().get();
+//        PMatrix3D t = tableInv.get();
+//        t.apply(location);
+//        PVector tableRelativePos = new PVector(t.m03, t.m13, t.m23);
+        PVector p2 = getRelativePos(new PVector(20, 20, 0));
+        PVector tableRelativePos = getRelativePos(new PVector(0, 0, 0));
+
+        float r = PApplet.atan2(p2.y - tableRelativePos.y, p2.x - tableRelativePos.x);
+
         PMatrix3D locationInv = this.getLocation().get();
         locationInv.invert();
-        PMatrix3D t = tableInv.get();
-        t.apply(location);
-        PVector tableRelativePos = new PVector(t.m03, t.m13, t.m23);
         currentGraphics.scale(1, -1, 1);
         currentGraphics.translate(0, -getSize().y, 0);
         currentGraphics.applyMatrix(locationInv);
         currentGraphics.applyMatrix(table);
         currentGraphics.translate(tableRelativePos.x, tableRelativePos.y);
+        currentGraphics.rotate(r);
         currentGraphics.scale(1, -1, 1);
+    }
+
+    private PVector getRelativePos(PVector v) {
+
+        PMatrix3D location = this.getLocation().get();
+        location.translate(v.x, v.y, v.z);
+        PMatrix3D t = tableInv.get();
+        t.apply(location);
+        PVector tableRelativePos = new PVector(t.m03, t.m13, t.m23);
+
+        return tableRelativePos;
     }
 
     /**
