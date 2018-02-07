@@ -99,6 +99,7 @@ public class PaperScreen extends DelegatedGraphics {
     private final int id;
 
     public static int count = 0;
+    private final PMatrix3D table, tableInv;
 
     /**
      * Create a new PaperScreen, a Papart object has to be created first. A
@@ -126,6 +127,9 @@ public class PaperScreen extends DelegatedGraphics {
         this.markerBoard = MarkerBoardInvalid.board;
         // Default to projector graphics.
         // currentGraphics = this.display.getGraphics();
+        table = Papart.getPapart().getTableLocation();
+        tableInv = Papart.getPapart().getTableLocation();
+        tableInv.invert();
         register();
     }
 
@@ -144,6 +148,9 @@ public class PaperScreen extends DelegatedGraphics {
         displays.add(proj);
         this.id = count++;
         this.markerBoard = MarkerBoardInvalid.board;
+        table = Papart.getPapart().getTableLocation().get();
+        tableInv = Papart.getPapart().getTableLocation();
+        tableInv.invert();
         register();
     }
 
@@ -159,6 +166,9 @@ public class PaperScreen extends DelegatedGraphics {
         displays.add(display);
         this.id = count++;
         this.markerBoard = MarkerBoardInvalid.board;
+        table = Papart.getPapart().getTableLocation().get();
+        tableInv = Papart.getPapart().getTableLocation();
+        tableInv.invert();
         register();
     }
 
@@ -366,15 +376,15 @@ public class PaperScreen extends DelegatedGraphics {
         paperPosCorners3D[3] = new PVector(mat.m03, mat.m13, mat.m23);
         return paperPosCorners3D;
     }
-    
+
     /**
      * @param position in mm in the paper screen
-     * @return  position in px in the cameratracking.
+     * @return position in px in the cameratracking.
      */
-    public PVector computePxPosition(PVector position){
-       
+    public PVector computePxPosition(PVector position) {
+
         PVector p = position.copy();
-        
+
         // Invert Y
         p.y = p.y - drawingSize.y;
         p.y = -p.y;
@@ -635,6 +645,25 @@ public class PaperScreen extends DelegatedGraphics {
 //        System.out.println("drawAroundPaper default, you should not see this.");
     }
 
+    public void drawOnTable() {
+        if (!isDrawingOnDisplay) {
+            return;
+        }
+
+        PMatrix3D location = this.getLocation().get();
+        PMatrix3D locationInv = this.getLocation().get();
+        locationInv.invert();
+        PMatrix3D t = tableInv.get();
+        t.apply(location);
+        PVector tableRelativePos = new PVector(t.m03, t.m13, t.m23);
+        currentGraphics.scale(1, -1, 1);
+        currentGraphics.translate(0, -getSize().y, 0);
+        currentGraphics.applyMatrix(locationInv);
+        currentGraphics.applyMatrix(table);
+        currentGraphics.translate(tableRelativePos.x, tableRelativePos.y);
+        currentGraphics.scale(1, -1, 1);
+    }
+
     /**
      * Activate/Desactivate the tracking. This is called when loadLocationFrom()
      * is called.
@@ -817,15 +846,9 @@ public class PaperScreen extends DelegatedGraphics {
      * @return
      */
     public PMatrix3D getLocation(Camera camera) {
-        // WHY invalid
-//        if(markerBoard == MarkerBoardInvalid.board){
-//            System.out.println("Error: no location... Invalid board");
-//        };
-
         if ((!markerBoard.isTrackedBy(camera) && !this.useManualLocation)) {
             return extrinsics.get();
         }
-
         PMatrix3D combinedTransfos = getMainLocation(camera);
         combinedTransfos.apply(extrinsics);
         return combinedTransfos;
@@ -1071,10 +1094,11 @@ public class PaperScreen extends DelegatedGraphics {
             return getDisplay().project(this, t.position.x, t.position.y);
         }
     }
-        /**
-         * Unsafe do not use unless you are sure. This will be moved to a
-         * utility class.
-         */
+
+    /**
+     * Unsafe do not use unless you are sure. This will be moved to a utility
+     * class.
+     */
     public static PImage getImageFrom(PVector coord, PImage src, PImage dst, int radius) {
         int x = (int) coord.x;
         int y = (int) coord.y;
