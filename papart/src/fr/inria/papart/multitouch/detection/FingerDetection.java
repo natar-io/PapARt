@@ -506,6 +506,8 @@ public class FingerDetection extends TouchDetectionDepth {
         return newPoints;
     }
 
+    public static float fingerSize = 8f;
+    
     protected TrackedDepthPoint createTouchPoint(ConnectedComponent connectedComponent,
             Vec3D shift) {
 
@@ -515,7 +517,7 @@ public class FingerDetection extends TouchDetectionDepth {
 //        meanKinect.addSelf(shift);
 
         Vec3D handPos = currentHand.getPositionDepthCam();
-        Vec3D dir = meanKinect.sub(handPos).normalize().scale(12f);
+        Vec3D dir = meanKinect.sub(handPos).normalize().scale(fingerSize);
 
         meanKinect.addSelf(dir);
 

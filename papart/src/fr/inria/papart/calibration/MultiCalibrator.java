@@ -128,7 +128,7 @@ public class MultiCalibrator extends PaperTouchScreen {
     DepthTouchInput depthTouchInput;
     private DepthCameraDevice depthCameraDevice;
 
-    public float zShift = 5f;
+    public float zShift = -10f;
 
 //    private Skatolo skatolo;
 //    private HoverButton hoverButton, resetButton;
@@ -191,7 +191,7 @@ public class MultiCalibrator extends PaperTouchScreen {
             }
             setDrawingFilter(0);
             setTrackingFilter(0, 0);
-
+//            planeProjCalib = new PlaneAndProjectionCalibration();
             savedImages = new IplImage[nbScreenPoints];
             savedLocations = new PMatrix3D[nbScreenPoints];
             savedColors = new int[nbScreenPoints * 2][nbColors];
@@ -386,10 +386,10 @@ public class MultiCalibrator extends PaperTouchScreen {
 
 //            red1.drawSelf();
 //            System.out.println("Framerate: " + parent.frameRate);
-            computeTouch();
-            if (toSave) {
-                saveTouch();
-            }
+//            computeTouch();
+//            if (toSave) {
+//                saveTouch();
+//            }
             if (showTouch) {
                 drawTouch(10);
             }
@@ -609,7 +609,7 @@ public class MultiCalibrator extends PaperTouchScreen {
         for (int i = 0; i < nbScreenPoints; i++) {
 
             // Re-compute the plane...
-            PMatrix3D paperViewedByCam = savedLocations[i];
+            PMatrix3D paperViewedByCam = savedLocations[i].get();
             paperViewedByCam.apply(extr);
             PMatrix3D paperViewedByDepth = paperViewedByCam;
 
@@ -628,7 +628,7 @@ public class MultiCalibrator extends PaperTouchScreen {
         planeCalib.flipNormal();
         planeCalib.moveAlongNormal(zShift);
 
-        this.planeProjCalib.setPlane(planeCalib);
+//        this.planeProjCalib.setPlane(planeCalib);
 
         // Now the projection for screen-space.
         // planes from the camera perspective. 
@@ -642,8 +642,8 @@ public class MultiCalibrator extends PaperTouchScreen {
 
         HomographyCalibration homography = ExtrinsicCalibrator.computeScreenPaperIntersection(projector, planeCalibCam, depthCamExtrinsics);
 
-        this.planeProjCalib.setHomography(homography);
-        this.saveTouch();
+//        this.planeProjCalib.setHomography(homography);
+        this.saveTouch(planeCalib, homography);
         // Now projector-space homography. 
 
     }
@@ -1103,12 +1103,23 @@ public class MultiCalibrator extends PaperTouchScreen {
 //        depthTouchInput.setPlaneAndProjCalibration(planeProjCalib);
     }
 
-    void saveTouch() {
-        planeProjCalib.saveTo(parent, Papart.planeAndProjectionCalib);
+    void saveTouch(PlaneCalibration pc, HomographyCalibration hc) {
+        PlaneAndProjectionCalibration phc = new PlaneAndProjectionCalibration();
+        phc.setHomography(hc);
+        phc.setPlane(pc);
+        phc.saveTo(parent, Papart.planeAndProjectionCalib);
 //        touchInput.setPlaneAndProjCalibration(planeProjCalib);
-        System.out.println("Calibration saved !");
+        depthTouchInput.setPlaneAndProjCalibration(phc);
+        System.out.println("Plane and Projection calibration saved !");
         toSave = false;
     }
+
+//    void saveTouch() {
+//        planeProjCalib.saveTo(parent, Papart.planeAndProjectionCalib);
+////        touchInput.setPlaneAndProjCalibration(planeProjCalib);
+//        System.out.println("Calibration saved !");
+//        toSave = false;
+//    }
 
     /**
      * Get the 3D plane from the depth Camera point of view.
@@ -1137,8 +1148,7 @@ public class MultiCalibrator extends PaperTouchScreen {
         planeCalib.flipNormal();
 
         // Y shift here. 
-        planeCalib.moveAlongNormal(zShift);
-
+//        planeCalib.moveAlongNormal(zShift);
         return planeCalib;
     }
 
