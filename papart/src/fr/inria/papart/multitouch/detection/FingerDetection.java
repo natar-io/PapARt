@@ -206,6 +206,8 @@ public class FingerDetection extends TouchDetectionDepth {
             allNewFingers.addAll(newList);
         }
 
+        // TODO: Hand have IDs, we track the IDs, assign a list of touchPoints 
+        // that is tracked within this array.
         int imageTime = this.depthAnalysis.getDepthData().timeStamp;
 
 //        touchPoints.clear();
