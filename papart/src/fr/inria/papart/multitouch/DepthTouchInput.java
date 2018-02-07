@@ -35,6 +35,7 @@ import fr.inria.papart.multitouch.detection.HandDetection;
 import fr.inria.papart.multitouch.detection.TouchDetectionDepth;
 import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.display.BaseDisplay;
+import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.utils.MathUtils;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -157,19 +158,18 @@ public class DepthTouchInput extends TouchInput {
 
             int initPrecision = 3;
 //            Instant start = Instant.now();
-            
+
             depthAnalysis.computeDepthAndNormals(depthImage, colImage, initPrecision);
-            
+
 //            Instant depth = Instant.now();
-            
             armDetection.findTouch(planeAndProjCalibration);
-            
+
 //            Instant touch1 =  Instant.now();
             handDetection.findTouch(armDetection, planeAndProjCalibration);
-                 
+
 //            Instant touch2 =  Instant.now();
             fingerDetection.findTouch(handDetection, armDetection, colImage, planeAndProjCalibration);
-     
+
 //            Instant touch3 =  Instant.now();
 //            Instant end = Instant.now();
 //            
@@ -179,8 +179,6 @@ public class DepthTouchInput extends TouchInput {
 //            System.out.println("hand: " +  Duration.between(touch1, touch2).toMillis() + " milliseconds");
 //            System.out.println("finger: " +  Duration.between(touch2, touch3).toMillis() + " milliseconds");
 //            System.out.println("Total: " +  Duration.between(start, end).toMillis() + " milliseconds");
-
-            
         } catch (InterruptedException ex) {
             Logger.getLogger(DepthTouchInput.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();
@@ -244,6 +242,7 @@ public class DepthTouchInput extends TouchInput {
 
     // TODO: Raw Depth is for Kinect Only, find a cleaner solution.
 //    private ProjectiveDeviceP pdp;
+//    private boolean useRawDepth = false;
     private boolean useRawDepth = false;
 
     public void useRawDepth() {
@@ -338,8 +337,17 @@ public class DepthTouchInput extends TouchInput {
             // TODO: Here change the display.getCamera() to 
             // another way to get the screen location... 
             PMatrix3D transfo = screen.getLocation(display.getCamera());
+//            if (display instanceof ProjectorDisplay) {
+//                ProjectorDisplay proj = (ProjectorDisplay) display;
+//                transfo.apply(proj.getExtrinsicsInv());
+//            }
+            PVector depthColorCam = new PVector();
+                depthCameraDevice.getStereoCalibration().mult(pKinectP, depthColorCam);
+
+            // TODO: ADD the depth camera extrinsics
+
             transfo.invert();
-            transfo.mult(pKinectP, paperScreenCoord);
+            transfo.mult(depthColorCam, paperScreenCoord);
 
             // TODO: check bounds too ?!
         } else {

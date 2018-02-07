@@ -78,6 +78,7 @@ public class TrackedElement {
     public TrackedElement(int id) {
         this();
         this.id = id;
+        createTouch();
     }
 
     public TrackedElement() {
@@ -420,10 +421,6 @@ public class TrackedElement {
     }
 
     public Touch getTouch() {
-        if (touch == null) {
-            createTouch();
-        }
-        touch.id = this.id;
         return touch;
     }
 
