@@ -127,7 +127,6 @@ public class ColorTouchInput extends TouchInput {
         TouchList touchList = new TouchList();
 
         for (TrackedElement te : trackedElements) {
-            Touch touch = te.createTouch();
             PVector position = te.getPosition();
             ProjectiveDeviceP projectiveDeviceP = camera.getProjectiveDevice();
             PVector originP = new PVector(0, 0, 0);
