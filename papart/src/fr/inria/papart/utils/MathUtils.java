@@ -351,6 +351,8 @@ public class MathUtils {
 
         return abs(h1 - h2) < hueTresh
                 && // Avoid desaturated pixels
+                g.saturation(incomingPix) > 180
+                && // Good saturation
                 abs(g.saturation(incomingPix) - g.saturation(baseline)) < saturationTresh
                 && // avoid pixels not bright enough
                 abs(g.brightness(incomingPix) - g.brightness(baseline)) < brightnessTresh;
