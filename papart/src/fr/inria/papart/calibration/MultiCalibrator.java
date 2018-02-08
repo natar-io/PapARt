@@ -441,6 +441,14 @@ public class MultiCalibrator extends PaperTouchScreen {
             savePicture();
             nextScreenshot();
             waitForMovement = true;
+
+            if (this.currentScreenPoint == 1) {
+                System.out.println("Save the table location.");
+                PMatrix3D tableCenter = savedLocations[0].get();
+                tableCenter.translate(148.6f, 103.1f);
+                Papart.getPapart().setTableLocation(tableCenter);
+            }
+
 //            System.out.println("Saving location: ");
 //            getLocation().print();
 //            this.hoverButton.isActive = false;
@@ -629,7 +637,6 @@ public class MultiCalibrator extends PaperTouchScreen {
         planeCalib.moveAlongNormal(zShift);
 
 //        this.planeProjCalib.setPlane(planeCalib);
-
         // Now the projection for screen-space.
         // planes from the camera perspective. 
         PlaneCalibration planeCalibCam = calibrationExtrinsic.computeAveragePlaneCam(snapshots);
@@ -732,21 +739,48 @@ public class MultiCalibrator extends PaperTouchScreen {
             stdevG /= nbScreenPoints * 2;
             stdevB /= nbScreenPoints * 2;
 
-            String words = "hue:" + Float.toString(stdevHue * 2) + " "
-                    + "sat:" + Float.toString(stdevSat) + " "
-                    + "intens:" + Float.toString(stdevIntens) + " "
-                    + "erosion:" + Integer.toString(1) + " ";
-            //	"red:"+  Float.toString(redThresh) + " "+
-            //	"blue:"+  Float.toString(blueThresh) + " "+
-            //	"col:"+  Integer.toString(redColor);
+            // Check the stdev... when too high the value is not stored.
+            if(stdevHue > 40 || stdevSat > 40 || stdevIntens > 50){
+                System.out.println("Could not determine color: " + colorId);
+                continue;
+            }
+            
+            // Good dev, make it larger
+            if(stdevHue < 3){
+                stdevHue = 4;
+            }
+            // Good dev, make it larger
+            if(stdevSat < 5){
+                stdevSat = 10;
+            }
+            // Good dev, make it larger
+            if(stdevIntens < 5){
+                stdevIntens = 10;
+            }
+            
+            
+            String words = "hue:" + Float.toString(stdevHue * 3) + " "
+                    + "sat:" + Float.toString(stdevSat*3) + " "
+                    + "intens:" + Float.toString(stdevIntens*3) + " "
+                    + "erosion:" + Integer.toString(1) + " "+
+            	"red:"+  Float.toString(stdevR * 3) + " "+
+            	"blue:"+  Float.toString(stdevB * 3) + " "+
+            	"green:"+  Float.toString(stdevB * 3) + "\n";
 
-            String saveFile = Papart.colorThresholds + colorId + ".txt";
             words = words + "id:" + Integer.toString(colorId) + "\n";
             words = words + "col:" + Integer.toString(averageCol);
 
             String[] list = split(words, ' ');
+            
+            String saveFile = Papart.colorThresholds + colorId + ".txt";
             parent.saveStrings(saveFile, list);
-
+            
+            if(colorId == 0){
+            parent.saveStrings(Papart.redThresholds, list);
+            }
+            if(colorId == 1){
+            parent.saveStrings(Papart.blueThresholds, list);
+            }
         }
 
     }
@@ -1120,7 +1154,6 @@ public class MultiCalibrator extends PaperTouchScreen {
 //        System.out.println("Calibration saved !");
 //        toSave = false;
 //    }
-
     /**
      * Get the 3D plane from the depth Camera point of view.
      *

@@ -40,8 +40,8 @@ public class CalibratedColorTracker extends ColorTracker {
             }
         }
     }
-    
-    public int getReferenceColor(int id){
+
+    public int getReferenceColor(int id) {
         return references[id].getReferenceColor();
     }
 
@@ -77,10 +77,15 @@ public class CalibratedColorTracker extends ColorTracker {
                 for (byte id = 0; id < numberOfRefs; id++) {
 
                     reference = references[id];
-                    
-                    boolean good = MathUtils.colorFinderHSB(paperScreen.getGraphics(),
+                    boolean good = false;
+
+                    if (id == 0) {
+                        good = MathUtils.colorFinderHSBRedish(paperScreen.getGraphics(),
+                                reference.referenceColor, c, reference.hue, reference.saturation, reference.brightness);
+                    } else {
+                        good = MathUtils.colorFinderHSB(paperScreen.getGraphics(),
                                 c, reference.referenceColor, reference.hue, reference.saturation, reference.brightness);
-                  
+                    }
                     // HSB only for now.
                     if (good) {
 //                    if (references[id].colorFinderHSB(paperScreen.getGraphics(), c)) {

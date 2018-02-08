@@ -108,7 +108,7 @@ public class ColorTracker {
     }
 
     public ArrayList<TrackedElement> findColor(int time) {
-        return findColor(name, reference.referenceColor, time, reference.erosion);
+        return findColor(name, time, reference.erosion);
     }
 
     protected int lastImageTime = 0;
@@ -118,13 +118,11 @@ public class ColorTracker {
      *
      * @param name can be "red", "blue" or something else to disable this
      * matching.
-     * @param ref2 Reference color found by the camera somewhere. -1 to disable
-     * it.
      * @param time currernt time in Processing.
      * @param erosion Erosion to apply before the tracking.
      * @return List of colored elements found
      */
-    public ArrayList<TrackedElement> findColor(String name, int ref2, int time, int erosion) {
+    public ArrayList<TrackedElement> findColor(String name, int time, int erosion) {
 
         int currentImageTime = paperScreen.getCameraTracking().getTimeStamp();
 
@@ -158,7 +156,7 @@ public class ColorTracker {
 
                 if ("red".equals(name)) {
                     good = MathUtils.colorFinderHSBRedish(paperScreen.getGraphics(),
-                            ref2, c, reference.hue, reference.saturation, reference.brightness);
+                            reference.referenceColor, c, reference.hue, reference.saturation, reference.brightness);
 
                     boolean red = true;
 //                    boolean red = MathUtils.isRed(paperScreen.getGraphics(),
@@ -167,14 +165,14 @@ public class ColorTracker {
                 } else {
                     if ("blue".equals(name)) {
                         good = MathUtils.colorFinderHSB(paperScreen.getGraphics(),
-                                ref2, c, reference.hue, reference.saturation, reference.brightness);
+                                reference.referenceColor, c, reference.hue, reference.saturation, reference.brightness);
 
                         boolean blue = MathUtils.isBlue(paperScreen.getGraphics(),
-                                c, ref2, reference.blueThreshold);
+                                c, reference.referenceColor, reference.blueThreshold);
                         good = good && blue;
                     } else {
                         good = MathUtils.colorFinderHSB(paperScreen.getGraphics(),
-                                ref2, c, reference.hue, reference.saturation, reference.brightness);
+                               reference.referenceColor, c, reference.hue, reference.saturation, reference.brightness);
                     }
                 }
 
@@ -189,9 +187,9 @@ public class ColorTracker {
                 = touchDetectionColor.compute(time, erosion, this.scale);
 
         TouchPointTracker.trackPoints(trackedElements, newElements, time);
-//        for(TrackedElement te : trackedElements){
-//            te.filter(time);
-//        }
+        for(TrackedElement te : trackedElements){
+            te.filter(time);
+        }
 
         return trackedElements;
     }
@@ -212,6 +210,9 @@ public class ColorTracker {
         TouchList output = new TouchList();
         for (TrackedElement te : trackedElements) {
             Touch t = te.getTouch();
+            t.is3D = false;
+            System.out.println("pid: " + t.id);
+            System.out.println("p: " + te.getPosition());
             t.setPosition(te.getPosition());
             output.add(t);
         }

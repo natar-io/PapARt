@@ -270,9 +270,10 @@ public class DepthTouchInput extends TouchInput {
                 tp.getPositionKinect(),
                 MathUtils.toVec(tp.getPosition()));
 
-        touch.setPosition(paperScreenCoord);
-
-        return paperScreenCoord != NO_INTERSECTION;
+        if (paperScreenCoord != null) {
+            touch.setPosition(paperScreenCoord);
+        }
+        return paperScreenCoord != null && paperScreenCoord != NO_INTERSECTION;
     }
 
     private boolean projectSpeed(PaperScreen screen,
@@ -342,10 +343,9 @@ public class DepthTouchInput extends TouchInput {
 //                transfo.apply(proj.getExtrinsicsInv());
 //            }
             PVector depthColorCam = new PVector();
-                depthCameraDevice.getStereoCalibration().mult(pKinectP, depthColorCam);
+            depthCameraDevice.getStereoCalibration().mult(pKinectP, depthColorCam);
 
             // TODO: ADD the depth camera extrinsics
-
             transfo.invert();
             transfo.mult(depthColorCam, paperScreenCoord);
 

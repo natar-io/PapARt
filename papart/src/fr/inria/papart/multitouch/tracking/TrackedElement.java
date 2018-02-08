@@ -65,7 +65,7 @@ public class TrackedElement {
     protected TouchDetection detection;
 
     // Element it goes to 
-    protected Touch touch;
+    protected final Touch touch;
 
 // filtering 
     private OneEuroFilter[] filters;
@@ -75,12 +75,19 @@ public class TrackedElement {
     public static final int NO_TIME = -1;
     private int NUMBER_OF_FILTERS = 3;
 
+    /**
+     * Create a trackedElement and force an ID to it.
+     * @param id 
+     */
     public TrackedElement(int id) {
         this();
         this.id = id;
-        createTouch();
+        initTouch();
     }
 
+    /**
+     * Create a TrackedElement, a new ID will be assigned to it.
+     */
     public TrackedElement() {
         try {
             filters = new OneEuroFilter[NUMBER_OF_FILTERS];
@@ -90,6 +97,13 @@ public class TrackedElement {
         } catch (Exception e) {
             System.out.println("OneEuro Exception. Pay now." + e);
         }
+        touch = new Touch();
+        initTouch();
+    }
+
+    private void initTouch() {
+        touch.id = this.id;
+        touch.trackedSource = this;
     }
 
     /**
@@ -180,7 +194,8 @@ public class TrackedElement {
 
     /**
      * Use the OneEuroFilter to filter the position.
-     * @param updateTime  Time from Processing.
+     *
+     * @param updateTime Time from Processing.
      */
     public void filter(int updateTime) {
         try {
@@ -412,20 +427,9 @@ public class TrackedElement {
         return touch != null;
     }
 
-    public Touch createTouch() {
-        touch = new Touch();
-        touch.id = this.id;
-        // 
-        touch.trackedSource = this;
-        return touch;
-    }
-
     public Touch getTouch() {
+        touch.id = this.id;
         return touch;
-    }
-
-    public void deleteTouch() {
-        touch = null;
     }
 
     public Object getSource() {
@@ -439,7 +443,7 @@ public class TrackedElement {
     /**
      * Get the detection object that created this tracked element.
      *
-     * @return 
+     * @return
      */
     public TouchDetection getDetection() {
         return detection;

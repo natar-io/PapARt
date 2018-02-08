@@ -16,7 +16,7 @@ public class ColorReferenceThresholds {
 
     public float brightness, saturation;
     public float hue;
-    public float redThreshold, blueThreshold;
+    public float redThreshold, blueThreshold, greenThreshold;
     public int referenceColor, erosion;
 
     
@@ -65,6 +65,9 @@ public class ColorReferenceThresholds {
             }
             if (pair[0].startsWith("blue")) {
                 this.blueThreshold = Float.parseFloat(pair[1]);
+            }
+            if (pair[0].startsWith("green")) {
+                this.greenThreshold = Float.parseFloat(pair[1]);
             }
         } catch (NumberFormatException nfe) {
             nfe.printStackTrace();
