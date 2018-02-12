@@ -111,7 +111,7 @@
         <dependency>
             <groupId>org.processing</groupId>
             <artifactId>core</artifactId>
-            <version>3.3.4</version>
+            <version>3.3.6</version>
         </dependency>
 
         <!--Processing OpenGL-->
@@ -203,13 +203,13 @@
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacv</artifactId>
-            <version>1.4</version>
+            <version>${javacpp.version}</version>
         </dependency>
         
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacv-platform</artifactId>
-            <version>1.4</version>
+            <version>${javacpp.version}</version>
             <scope>runtime</scope>
         </dependency>
         
@@ -254,7 +254,7 @@
         <dependency>
             <groupId>org.bytedeco.javacpp-presets</groupId>
             <artifactId>librealsense</artifactId>
-            <version>1.12.1-1.4.1-SNAPSHOT</version>
+            <version>1.12.1-${javacpp.version}</version>
         </dependency>
         <dependency>
             <groupId>org.bytedeco.javacpp-presets</groupId>
