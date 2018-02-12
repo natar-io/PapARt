@@ -79,7 +79,7 @@ public abstract class TouchDetectionDepth extends TouchDetection {
     protected TrackedDepthPoint createTouchPoint(ConnectedComponent connectedComponent) {
         Vec3D meanProj = connectedComponent.getMean(depthData.projectedPoints);
         // DEBUG: Print out the points
-//        System.out.println("Points: ");
+//        System.out.println("Points size: " + connectedComponent.size());
 //        for(int offset : connectedComponent){
 //            System.out.print(depthData.projectedPoints[offset] + " ");
 //        }

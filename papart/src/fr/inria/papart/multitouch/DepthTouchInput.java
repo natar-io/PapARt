@@ -32,6 +32,7 @@ import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.multitouch.detection.ArmDetection;
 import fr.inria.papart.multitouch.detection.FingerDetection;
 import fr.inria.papart.multitouch.detection.HandDetection;
+import fr.inria.papart.multitouch.detection.Simple2D;
 import fr.inria.papart.multitouch.detection.TouchDetectionDepth;
 import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.display.BaseDisplay;
@@ -68,11 +69,13 @@ public class DepthTouchInput extends TouchInput {
     private PlaneAndProjectionCalibration planeAndProjCalibration;
 
     private FingerDetection fingerDetection;
+    private Simple2D simpleDetection;
     private ArmDetection armDetection;
     private HandDetection handDetection;
     private TouchDetectionDepth touchDetections[] = new TouchDetectionDepth[3];
 
     private PlanarTouchCalibration touchCalibrations[] = new PlanarTouchCalibration[3];
+    private PlanarTouchCalibration simpleTouchCalibration;
 
     public DepthTouchInput(PApplet applet,
             DepthCameraDevice kinectDevice,
@@ -91,6 +94,9 @@ public class DepthTouchInput extends TouchInput {
     public void setTouchDetectionCalibration(int i, PlanarTouchCalibration touchCalib) {
         touchCalibrations[i] = touchCalib;
     }
+    public void setSimpleTouchDetectionCalibration(PlanarTouchCalibration touchCalib) {
+        simpleTouchCalibration = touchCalib;
+    }
 
     public TouchDetectionDepth getTouchDetection(int i) {
         return touchDetections[i];
@@ -98,6 +104,10 @@ public class DepthTouchInput extends TouchInput {
 
     public TouchDetectionDepth[] getTouchDetections() {
         return touchDetections;
+    }
+
+    public Simple2D getTouchDetectionSimple2D() {
+        return simpleDetection;
     }
 
     public FingerDetection getTouchDetection2D() {
@@ -118,6 +128,8 @@ public class DepthTouchInput extends TouchInput {
     public void initTouchDetections() {
         // First run, get calibrations from device after start.
         depthAnalysis.initWithCalibrations(depthCameraDevice);
+
+        simpleDetection = new Simple2D(depthAnalysis, simpleTouchCalibration);
 
         touchDetections[0] = new ArmDetection(depthAnalysis, touchCalibrations[0]);
         armDetection = (ArmDetection) touchDetections[0];
@@ -161,15 +173,14 @@ public class DepthTouchInput extends TouchInput {
 
             depthAnalysis.computeDepthAndNormals(depthImage, colImage, initPrecision);
 
+            simpleDetection.findTouch(planeAndProjCalibration);
+
 //            Instant depth = Instant.now();
             armDetection.findTouch(planeAndProjCalibration);
-
 //            Instant touch1 =  Instant.now();
             handDetection.findTouch(armDetection, planeAndProjCalibration);
-
 //            Instant touch2 =  Instant.now();
             fingerDetection.findTouch(handDetection, armDetection, colImage, planeAndProjCalibration);
-
 //            Instant touch3 =  Instant.now();
 //            Instant end = Instant.now();
 //            
@@ -463,12 +474,14 @@ public class DepthTouchInput extends TouchInput {
 
     @Deprecated
     public ArrayList<TrackedDepthPoint> getTouchPoints2D() {
-        return fingerDetection.getTouchPoints();
+        return simpleDetection.getTouchPoints();
+//        return fingerDetection.getTouchPoints();
     }
 
     @Deprecated
     public ArrayList<TrackedDepthPoint> getTouchPoints3D() {
-        return armDetection.getTouchPoints();
+        return simpleDetection.getTouchPoints();
+//        return armDetection.getTouchPoints();
     }
 
     public ArrayList<TrackedDepthPoint> getTrackedDepthPoints2D() {
@@ -476,7 +489,8 @@ public class DepthTouchInput extends TouchInput {
             System.err.println("No 2D touch tracking.");
             return new ArrayList<>();
         }
-        return fingerDetection.getTouchPoints();
+        return simpleDetection.getTouchPoints();
+//        return fingerDetection.getTouchPoints();
     }
 
     public ArrayList<TrackedDepthPoint> getTrackedDepthPoints3D() {
@@ -484,7 +498,8 @@ public class DepthTouchInput extends TouchInput {
             System.err.println("No 3D touch tracking.");
             return new ArrayList<>();
         }
-        return armDetection.getTouchPoints();
+        return simpleDetection.getTouchPoints();
+//        return armDetection.getTouchPoints();
     }
 
     public PlaneAndProjectionCalibration getCalibration() {

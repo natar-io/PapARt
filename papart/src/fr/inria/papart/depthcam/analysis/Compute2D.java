@@ -42,7 +42,7 @@ public class Compute2D extends DepthRecognition {
         depthData.planeAndProjectionCalibration = calib;
         depthAnalysis.doForEachPoint(skip2D, new Select2DPlaneProjection());
 
-        depthAnalysis.doForEachPoint(skip2D, new SetNormalRelative());
+//        depthAnalysis.doForEachPoint(skip2D, new SetNormalRelative());
 //        doForEachPoint(skip2D, new Select2DPointPlaneProjection());
     }
 
