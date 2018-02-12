@@ -1,6 +1,9 @@
-hue:40.0
-sat:50.0
-intens:90.0
-erosion:1
-blue:30.0
-col:-16764579
+hue:20
+sat:59.501907
+intens:30.0
+erosion:0
+red:53.8125
+blue:14.4375
+green:14.4375
+id:1
+col:-14841374
