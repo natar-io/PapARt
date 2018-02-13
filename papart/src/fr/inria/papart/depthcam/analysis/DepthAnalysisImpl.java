@@ -20,38 +20,26 @@
  */
 package fr.inria.papart.depthcam.analysis;
 
-import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.depthcam.DepthData;
 import fr.inria.papart.depthcam.PixelOffset;
-import fr.inria.papart.depthcam.TouchAttributes;
-import fr.inria.papart.depthcam.devices.Kinect360;
 import fr.inria.papart.depthcam.ProjectedDepthData;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
-import fr.inria.papart.depthcam.devices.KinectOne;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.INVALID_POINT;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.papplet;
-import fr.inria.papart.depthcam.devices.Kinect360Depth;
-import fr.inria.papart.depthcam.devices.KinectOneDepth;
-import fr.inria.papart.depthcam.devices.RealSense;
-import fr.inria.papart.depthcam.devices.RealSenseDepth;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.utils.MathUtils;
-import fr.inria.papart.utils.ARToolkitPlusUtils;
 import fr.inria.papart.procam.camera.Camera;
-import fr.inria.papart.procam.camera.CameraRealSense;
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 import org.bytedeco.javacpp.opencv_core;
-import org.bytedeco.javacpp.opencv_core.IplImage;
 import processing.core.PApplet;
 import processing.core.PVector;
 import toxi.geom.Vec3D;
@@ -110,7 +98,6 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         return getColorWidth() * getColorHeight();
     }
 
-    private boolean memoryInitialized = false;
 
     public DepthAnalysisImpl(PApplet parent, DepthCameraDevice depthCamera) {
         DepthAnalysis.papplet = parent;
@@ -121,7 +108,6 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         //-----
 //        initMemory();
 //        initWithCalibrations(depthCamera);
-        
         // initThreadPool();
     }
 
@@ -140,6 +126,10 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         calibDepth = depthCamera.getDepthCamera().getProjectiveDevice();
 
         initMemory();
+    }
+    
+    public boolean isReady(){
+        return depthComputationMethod != null;
     }
 
     // Thread version... No bonus whatsoever for now.
@@ -165,33 +155,6 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         System.out.println("ColorRaw initialized !" + colorRaw.length);
 
         PixelOffset.initStaticMode(getWidth(), getHeight());
-    }
-
-    @Deprecated
-    private void setDepthMethod() {
-
-        // Replaced by this line:
-        depthComputationMethod = depthCameraDevice.createDepthComputation();
-
-        // Old code -- to test before deletion
-//        if (depthCameraDevice instanceof Kinect360) {
-//            depthComputationMethod = ((Kinect360) depthCameraDevice).new Kinect360Depth();
-//        }
-//        if (depthCameraDevice instanceof KinectOne) {
-//            depthComputationMethod = ((KinectOne) depthCameraDevice).new KinectOneDepth();
-//        }
-//        if (depthCameraDevice instanceof RealSense) {
-//            RealSense rs = ((RealSense) depthCameraDevice);
-//            if (((CameraRealSense) ((RealSense) depthCameraDevice).getMainCamera()).isStarted()) {
-//                depthComputationMethod = rs.new RealSenseDepth();
-//            }
-//        }
-//        if (depthCameraDevice instanceof RealSense) {
-//            if (((CameraRealSense) ((RealSense) depthCameraDevice).getMainCamera()).isStarted()) {
-//                float depthScale = ((CameraRealSense) ((RealSense) depthCameraDevice).getMainCamera()).getDepthScale();
-//                depthComputationMethod = new RealSenseDepth(depthScale);
-//            }
-//        }
     }
 
     public void computeDepthAndNormals(opencv_core.IplImage depth, opencv_core.IplImage color, int skip2D) {
