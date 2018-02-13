@@ -69,7 +69,7 @@
         <dependency>
             <groupId>org.processing</groupId>
             <artifactId>core</artifactId>
-            <version>3.2.3</version>
+            <version>3.3.6</version>
         </dependency>
 
         <!--Processing OpenGL-->
