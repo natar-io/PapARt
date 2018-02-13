@@ -23,6 +23,12 @@ wget https://github.com/Rea-lity-Tech/SVGExtended/releases/download/2.3.1/SVGExt
 tar xvzf SVGExtended.tgz 
 mv SVGExtended libraries/
 
+echo "Compile SimplePointCloud"
+wget https://github.com/Rea-lity-Tech/SimplePointCloud/releases/download/0.1/SimplePointCloud.tgz
+tar xvzf SimplePointCloud.tgz
+mv SimplePointCloud libraries/
+
+
 echo "Get Processing Video"
 #wget https://github.com/processing/processing-video/releases/download/latest/video.zip
 
@@ -68,6 +74,9 @@ cp reflections.tgz ..
 cd ..
 tar xvzf reflections.tgz
 mv reflections libraries/
+
+
+
 
 echo "Compile JavaCV"
 cd javacv-build
