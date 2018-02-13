@@ -498,8 +498,8 @@ public class DepthTouchInput extends TouchInput {
             System.err.println("No 3D touch tracking.");
             return new ArrayList<>();
         }
-        return simpleDetection.getTouchPoints();
-//        return armDetection.getTouchPoints();
+//        return simpleDetection.getTouchPoints();
+        return armDetection.getTouchPoints();
     }
 
     public PlaneAndProjectionCalibration getCalibration() {

@@ -934,6 +934,8 @@ public class Papart {
         for (int i = 0; i < 3; i++) {
             depthTouchInput.setTouchDetectionCalibration(i, getTouchCalibration(i));
         }
+        depthTouchInput.setSimpleTouchDetectionCalibration(getPapart().getDefaultTouchCalibration());
+
         this.touchInput = depthTouchInput;
         touchInitialized = true;
     }
