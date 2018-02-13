@@ -27,10 +27,15 @@ import processing.core.PVector;
 import toxi.geom.Vec3D;
 
 /**
+ * Tracked element with a position and speed. The position can be filtered, the 
+ * filtering must be called directly, it is not automatic.
  * @author Jeremy Laviole
  */
 public class TrackedElement {
 
+    /**
+     * Global counter of tracked elements.
+     */
     public static int count = 0;
 
     // protected PVector position... in DepthPoint
@@ -39,10 +44,15 @@ public class TrackedElement {
     protected PVector speed = new PVector();
 
     // TODO: become this:
-    protected Object source;
+//    protected Object source;
 
-//    private ArrayList<DepthDataElementKinect> depthDataElements = new ArrayList<DepthDataElementKinect>();
+    /**
+     * You can attach a value to a Tracked Element, it will be passed along tracking.
+     */
     public int attachedValue = -1;
+        /**
+     * You can attach an object to a Tracked Element, it will be passed along tracking.
+     */
     public Object attachedObject;
 
     protected float confidence;
@@ -286,14 +296,13 @@ public class TrackedElement {
         this.position.set(tp.position);
         this.confidence = tp.confidence;
 
-        this.setSource(tp.source);
+//        this.setSource(tp.source);
 
         speed.set(this.position);
         speed.sub(this.previousPosition);
     }
 
     protected void updateAdditionalElements(TrackedElement tp) {
-
     }
 
     /**
@@ -431,14 +440,14 @@ public class TrackedElement {
         touch.id = this.id;
         return touch;
     }
-
-    public Object getSource() {
-        return source;
-    }
-
-    public void setSource(Object source) {
-        this.source = source;
-    }
+//
+//    public Object getSource() {
+//        return source;
+//    }
+//
+//    public void setSource(Object source) {
+//        this.source = source;
+//    }
 
     /**
      * Get the detection object that created this tracked element.

@@ -20,7 +20,7 @@
 package fr.inria.papart.depthcam;
 
 /**
- *
+ * EXPERIMENTAL CLASS: add information to touch. 
  * @author Jeremy Laviole jeremy.laviole@inria.fr
  */
 public class TouchAttributes {

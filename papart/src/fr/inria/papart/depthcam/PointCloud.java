@@ -37,7 +37,8 @@ import processing.opengl.PShader;
 import toxi.geom.Vec3D;
 
 /**
- *
+ * Point Cloud rendering in Processing. This class will move out of PapARt and start
+ * a life on its own soon.
  * @author Jeremy Laviole
  */
 public class PointCloud {

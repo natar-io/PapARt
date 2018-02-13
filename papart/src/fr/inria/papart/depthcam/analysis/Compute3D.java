@@ -9,11 +9,11 @@ import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.depthcam.DepthData.DepthSelection;
 import fr.inria.papart.depthcam.PixelOffset;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.isInside;
-import fr.inria.papart.depthcam.devices.ProjectedDepthData;
+import fr.inria.papart.depthcam.ProjectedDepthData;
 import toxi.geom.Vec3D;
 
 /**
- *
+ * Find a 3D point cloud over a plane. Used for arm tracking.
  * @author Jeremy Laviole
  */
 public class Compute3D extends DepthRecognition {

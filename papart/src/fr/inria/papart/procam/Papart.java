@@ -144,7 +144,7 @@ public class Papart {
     private ProjectorDisplay projector;
 
     private Camera cameraTracking;
-    private DepthAnalysisImpl kinectDepthAnalysis;
+    private DepthAnalysisImpl depthAnalysis;
 
     private TouchInput touchInput;
     private PVector frameSize = new PVector();
@@ -919,7 +919,7 @@ public class Papart {
      * first.
      */
     private void loadDefaultDepthTouchInput() {
-        kinectDepthAnalysis = new DepthAnalysisImpl(this.applet, depthCameraDevice);
+        depthAnalysis = new DepthAnalysisImpl(this.applet, depthCameraDevice);
 
         PlaneAndProjectionCalibration calibration = new PlaneAndProjectionCalibration();
         calibration.loadFrom(this.applet, planeAndProjectionCalib);
@@ -927,7 +927,7 @@ public class Papart {
         DepthTouchInput depthTouchInput
                 = new DepthTouchInput(this.applet,
                         depthCameraDevice,
-                        kinectDepthAnalysis, calibration);
+                        depthAnalysis, calibration);
 
         depthCameraDevice.setTouch(depthTouchInput);
 
@@ -1339,7 +1339,7 @@ public class Papart {
     }
 
     public DepthAnalysisImpl getKinectAnalysis() {
-        return this.kinectDepthAnalysis;
+        return this.depthAnalysis;
     }
 
     public Camera.Type getDepthCameraType() {

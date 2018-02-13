@@ -1,7 +1,7 @@
 /*
  * Part of the PapARt project - https://project.inria.fr/papart/
  *
- * Copyright (C) 2016 Jérémy Laviole
+ * Copyright (C) 2016-2017 RealityTech
  * Copyright (C) 2014-2016 Inria
  * Copyright (C) 2011-2013 Bordeaux University
  *
@@ -25,7 +25,7 @@ import fr.inria.papart.depthcam.DepthData;
 import fr.inria.papart.depthcam.PixelOffset;
 import fr.inria.papart.depthcam.TouchAttributes;
 import fr.inria.papart.depthcam.devices.Kinect360;
-import fr.inria.papart.depthcam.devices.ProjectedDepthData;
+import fr.inria.papart.depthcam.ProjectedDepthData;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.depthcam.devices.KinectOne;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.INVALID_POINT;
@@ -435,20 +435,7 @@ public class DepthAnalysisImpl extends DepthAnalysis {
     }
 
     protected void updateRawDepth(opencv_core.IplImage depthImage) {
-        
         depthComputationMethod.updateDepth(depthImage);
-        
-//        // Realsense 
-//        if (getDepthCameraDevice().type() == Camera.Type.REALSENSE) {
-//            depthRawBuffer = depthImage.getByteBuffer();
-//            depthRawShortBuffer = depthRawBuffer.asShortBuffer();
-//            
-//            depthComputationMethod.setDepthSource(depthRawShortBuffer);
-//        // Kinect
-//        } else {
-//            depthImage.getByteBuffer().get(depthRaw);
-//            depthComputationMethod.setDepthSource(depthRaw);
-//        }
     }
 
     protected void updateRawColor(opencv_core.IplImage colorImage) {
@@ -550,33 +537,6 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         }
     }
 
-    /**
-     * Experimental Class to find hands (old).
-     *
-     */
-//    class SelectPlaneTouchHand implements DepthPointManiplation {
-//
-//        @Override
-//        public void execute(Vec3D p, PixelOffset px) {
-//
-//            boolean overTouch = depthData.planeAndProjectionCalibration.hasGoodOrientation(p);
-//            boolean underTouch = depthData.planeAndProjectionCalibration.isUnderPlane(p);
-//            boolean touchSurface = depthData.planeAndProjectionCalibration.hasGoodOrientationAndDistance(p);
-//
-//            Vec3D projected = depthData.planeAndProjectionCalibration.project(p);
-//
-//            if (isInside(projected, 0.f, 1.f, 0.0f)) {
-//
-//                depthData.projectedPoints[px.offset] = projected;
-//                depthData.touchAttributes[px.offset] = new TouchAttributes(touchSurface, underTouch, overTouch);
-//                depthData.validPointsMask[px.offset] = touchSurface;
-//
-//                if (touchSurface) {
-//                    depthData.validPointsList.add(px.offset);
-//                }
-//            }
-//        }
-//    }
     protected int getPixelColor(int offset) {
         int colorOffset = depthCameraDevice.findColorOffset(depthData.depthPoints[offset]) * 3;
         int c = (colorRaw[colorOffset + 2] & 0xFF) << 16
@@ -585,7 +545,10 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         return c;
     }
 
-    // TODO: array ? or what instead ?
+    /** 
+     * List of pixels, used to iterate in images.
+     * 
+     */
     public class PixelList implements Iterable<PixelOffset> {
 
         int precision = 1;
@@ -652,6 +615,9 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         }
     }
 
+    /**
+     * Pixel list that creates a square around a given pixel.
+     */
     public class PixelListAroundPoint implements Iterable<PixelOffset> {
 
         private final int width = calibDepth.getWidth();
@@ -726,7 +692,7 @@ public class DepthAnalysisImpl extends DepthAnalysis {
     }
 
     /**
-     * Slower than sequential for now.
+     * Do the computing in a parallel manner. - Slower than sequential for now.
      *
      * @param precision
      * @param manip
@@ -748,6 +714,9 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         }
     }
 
+    /**
+     * Task that does pixel manipulation.
+     */
     class DepthPixelTask implements Callable {
 
         private int part;
@@ -793,24 +762,11 @@ public class DepthAnalysisImpl extends DepthAnalysis {
 
     }
 
-    
-
-    public static final float KINECT_ONE_DEPTH_RATIO = 10f;
-
-    
-
-
+    @Deprecated
     public void undistortRGB(opencv_core.IplImage rgb, opencv_core.IplImage out) {
         calibColor.getDevice().undistort(rgb, out);
     }
-
-    // Not Working ! 
-    /**
-     * DO NOT USE - not working (distorsion estimation fail ?).
-     *
-     * @param ir
-     * @param out
-     */
+    @Deprecated
     public void undistortIR(opencv_core.IplImage ir, opencv_core.IplImage out) {
         calibDepth.getDevice().undistort(ir, out);
     }

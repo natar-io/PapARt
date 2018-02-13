@@ -18,8 +18,6 @@
  */
 package fr.inria.papart.depthcam.devices;
 
-import fr.inria.papart.depthcam.analysis.DepthComputation;
-
 /**
  *
  * @author Jeremy Laviole

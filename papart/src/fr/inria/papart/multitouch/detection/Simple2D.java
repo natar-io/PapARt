@@ -30,7 +30,7 @@ import static fr.inria.papart.depthcam.analysis.DepthAnalysis.isValidPoint;
 import fr.inria.papart.depthcam.analysis.DepthAnalysisImpl;
 import fr.inria.papart.depthcam.analysis.Compute2D;
 import fr.inria.papart.depthcam.analysis.DepthAnalysis;
-import fr.inria.papart.depthcam.devices.ProjectedDepthData;
+import fr.inria.papart.depthcam.ProjectedDepthData;
 import fr.inria.papart.multitouch.ConnectedComponent;
 import static fr.inria.papart.multitouch.ConnectedComponent.INVALID_COMPONENT;
 import fr.inria.papart.multitouch.tracking.TouchPointTracker;

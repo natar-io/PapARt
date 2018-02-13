@@ -20,7 +20,6 @@
 package fr.inria.papart.depthcam.devices;
 
 import fr.inria.papart.depthcam.analysis.DepthAnalysis;
-import static fr.inria.papart.depthcam.analysis.DepthAnalysisImpl.KINECT_ONE_DEPTH_RATIO;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.CameraOpenKinect2;
@@ -74,6 +73,8 @@ public final class KinectOne extends DepthCameraDevice {
     }
 
     public class KinectOneDepth implements DepthAnalysis.DepthComputation {
+
+        public static final float KINECT_ONE_DEPTH_RATIO = 10f;
 
         byte[] depthRaw;
 

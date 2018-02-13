@@ -17,7 +17,7 @@
  * Public License along with this library; If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package fr.inria.papart.depthcam.devices;
+package fr.inria.papart.depthcam;
 
 import fr.inria.papart.calibration.files.HomographyCalibration;
 import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
@@ -31,7 +31,7 @@ import java.util.Arrays;
 import toxi.geom.Vec3D;
 
 /**
- *
+ * DepthData with additional information such as plane calibration and its results.
  * @author Jeremy Laviole
  */
 public class ProjectedDepthData extends DepthData {
@@ -42,7 +42,7 @@ public class ProjectedDepthData extends DepthData {
     public Vec3D[] projectedPoints;
 
     /**
-     * Attributes of the 3D points
+     * EXPERIMENTAL: Attributes of the 3D points
      */
     public TouchAttributes[] touchAttributes;
 

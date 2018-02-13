@@ -32,7 +32,7 @@ import java.util.Arrays;
 import toxi.geom.Vec3D;
 
 /**
- *
+ * DepthData: 3D point, normal, color, connexity map and origin device.
  * @author Jeremy Laviole
  */
 public class DepthData {

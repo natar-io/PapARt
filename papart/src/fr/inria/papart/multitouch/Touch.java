@@ -24,7 +24,7 @@ import fr.inria.papart.multitouch.tracking.TrackedElement;
 import processing.core.PVector;
 
 /**
- * Public (Processing) API for a touch point. Touches are for PaperScreens
+ * Public (Processing) API for a touch point. Touches are for PaperScreens.
  *
  * @author Jeremy Laviole
  */

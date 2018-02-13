@@ -1,6 +1,7 @@
 /*
  * Part of the PapARt project - https://project.inria.fr/papart/
  *
+ * Copyright (C) 2017-2018 RealityTech
  * Copyright (C) 2014-2016 Inria
  * Copyright (C) 2011-2013 Bordeaux University
  *
@@ -17,20 +18,13 @@
  * Public License along with this library; If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package fr.inria.papart.procam;
-
-import processing.opengl.PGraphicsOpenGL;
+package fr.inria.papart.depthcam.devices;
 
 /**
- *
+ * Abstraction for finding depth for each device.
  * @author Jeremy Laviole
  */
-public class ARGraphics extends PGraphicsOpenGL{
-    
-    static public final String GRAPHICS    = "fr.inria.papart.procam.ARGraphics";
-    
-    public ARGraphics() {
-        super();
-    }
-    
+public interface DepthComputation {
+
+    public float findDepth(int offset, Object buffer);
 }

@@ -39,7 +39,7 @@ import processing.core.PImage;
 import toxi.geom.Vec3D;
 
 /**
- *
+ * DepthAnalysis that produces PImages.
  * @author Jeremy Laviole
  */
 public class DepthAnalysisPImageView extends DepthAnalysisImpl {

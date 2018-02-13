@@ -24,7 +24,7 @@ import java.util.Arrays;
 import toxi.geom.Vec3D;
 
 /**
- *
+ * Connexity information, to find neighbours of a point.
  * @author Jeremy Laviole
  */
 public class Connexity {
@@ -49,7 +49,7 @@ public class Connexity {
 //    public static final int BOTRIGHT = 1 << 7;
     private final int width, height;
     private float connexityDist = 10;
-    public float DEFAULT_CONNEXITY_DIST = 10;
+    public static final float DEFAULT_CONNEXITY_DIST = 10;
     public byte[] connexity;
     public byte[] connexitySum;
     private Vec3D[] points;
@@ -80,6 +80,12 @@ public class Connexity {
         return this.connexitySum;
     }
 
+    /**
+     * Get a list of neighbours from a given point.
+     * @param x
+     * @param y
+     * @return 
+     */
     public Vec3D[] getNeighbourList(int x, int y) {
         int offset = y * width + x;
         int nbNeighbours = connexitySum[offset];
@@ -157,6 +163,9 @@ public class Connexity {
         return output;
     }
 
+    /**
+     * Compute the connexity map of all the points.
+     */
     void computeAll() {
         for (int y = 0; y < this.height; y++) {
             for (int x = 0; x < this.width; x++) {
@@ -165,6 +174,11 @@ public class Connexity {
         }
     }
 
+    /**
+     * Compute the connexity map of a point.
+     * @param x
+     * @param y 
+     */
     void compute(int x, int y) {
         // Connexity map 
         //  0 1 2 
@@ -227,6 +241,10 @@ public class Connexity {
         this.connexityDist = DEFAULT_CONNEXITY_DIST * precision;
     }
 
+    /**
+     * Distance from which points are no longer neighbors (euclidean).
+     * @param dist 
+     */
     public void setConnexityDist(float dist) {
         this.connexityDist = dist;
     }

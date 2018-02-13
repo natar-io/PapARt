@@ -13,7 +13,8 @@ import org.bytedeco.javacpp.opencv_core.IplImage;
 import toxi.geom.Vec3D;
 
 /**
- *
+ * This is used for finger detection, as a last step to find better information
+ * about potential fingers. 
  * @author Jeremy Laviole
  */
 public class Compute2DFrom3D extends DepthRecognition {

@@ -31,7 +31,7 @@ import processing.core.PApplet;
 import toxi.geom.Vec3D;
 
 /**
- *
+ * DepthAnalysis that produces  IPLImages.
  * @author Jeremy Laviole
  */
 public class DepthAnalysisOpenCvView extends DepthAnalysisImpl {

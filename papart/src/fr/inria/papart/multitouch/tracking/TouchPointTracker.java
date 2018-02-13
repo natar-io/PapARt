@@ -26,7 +26,7 @@ import java.util.Collections;
 import java.util.Iterator;
 
 /**
- *
+ * Tracking methods, quite abstract for many uses.
  * @author Jeremy Laviole jeremy.laviole@inria.fr
  */
 public class TouchPointTracker {

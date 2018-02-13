@@ -19,7 +19,7 @@
  */
 package fr.inria.papart.multitouch.tracking;
 
-import fr.inria.papart.depthcam.devices.ProjectedDepthData;
+import fr.inria.papart.depthcam.ProjectedDepthData;
 import fr.inria.papart.depthcam.DepthDataElementProjected;
 import fr.inria.papart.multitouch.ConnectedComponent;
 import fr.inria.papart.multitouch.detection.DepthElementList;

@@ -18,7 +18,6 @@
  */
 package fr.inria.papart.depthcam.devices;
 
-import fr.inria.papart.depthcam.analysis.DepthComputation;
 import java.nio.ShortBuffer;
 
 /**

@@ -10,13 +10,12 @@ import fr.inria.papart.depthcam.DepthData;
 import fr.inria.papart.depthcam.DepthData.DepthSelection;
 import fr.inria.papart.depthcam.PixelOffset;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.isInside;
-import fr.inria.papart.depthcam.devices.ProjectedDepthData;
-import fr.inria.papart.multitouch.ConnectedComponent;
+import fr.inria.papart.depthcam.ProjectedDepthData;
 import processing.core.PVector;
 import toxi.geom.Vec3D;
 
 /**
- *
+ * Find 2D information, used in Simple2D touchInput.
  * @author Jeremy Laviole
  */
 public class Compute2D extends DepthRecognition {

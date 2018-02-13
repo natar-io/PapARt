@@ -172,7 +172,7 @@ public class TouchDetectionColor extends TouchDetection {
         // TODO: re-enable this one day ?
 //        tp.setConnectedComponent(connectedComponent);
 // EXPERIMENTAL, check if a copy is necessary
-        tp.setSource(connectedComponent);
+//        tp.setSource(connectedComponent);
         return tp;
     }
 

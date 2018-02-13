@@ -18,8 +18,6 @@
  */
 package fr.inria.papart.depthcam.devices;
 
-import fr.inria.papart.depthcam.analysis.DepthComputation;
-
 public class KinectOneDepth implements DepthComputation {
 
     public static final float KINECT_ONE_DEPTH_RATIO = 10f;
