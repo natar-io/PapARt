@@ -9,31 +9,20 @@
     <name>PapARt</name>
     <description>Paper Augmented Reality Toolkit</description>
     <url>https://github.com/poqudrof/PapARt</url>
-    
-<!--<distributionManagement>
-  <snapshotRepository>
-    <id>ossrh</id>
-    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-  </snapshotRepository>
-  <repository>
-    <id>ossrh</id>
-    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-  </repository>
-</distributionManagement>-->
-                <!--http://litytechmw.cluster020.hosting.ovh.net/repository/-->
-   <distributionManagement>
-    <repository>
-      <id>ftp-repository</id>
-      <url>ftp://ftp.cluster020.hosting.ovh.net/www/repository</url>
-    </repository>
-  </distributionManagement>      
                 
+  <distributionManagement>
+    <repository>
+      <id>internal</id>
+      <url>http://forum.rea.lity.tech:8081/repository/internal/</url>
+    </repository>
+  </distributionManagement>
+    
     <repositories>
 
-        <repository>
+<!--        <repository>
             <id>realitytech</id>
             <url>http://repository.rea.lity.tech/</url>
-        </repository>
+        </repository>-->
         
         <repository>
             <id>clojars.org</id>
@@ -53,6 +42,11 @@
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
+        </repository>
+        
+        <repository>
+            <id>realitytech public</id>
+             <url>http://forum.rea.lity.tech:8081/repository/public/</url>
         </repository>
     </repositories>
     
@@ -165,7 +159,7 @@
         <dependency>
             <groupId>tech.lity.rea</groupId>
             <artifactId>SVGExtended</artifactId>
-            <version>3.3.4</version>
+            <version>3.3.6</version>
         </dependency>
         
         <!--We package and distribute--> 
