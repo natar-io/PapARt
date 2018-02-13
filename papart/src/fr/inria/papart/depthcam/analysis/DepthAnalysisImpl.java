@@ -127,7 +127,7 @@ public class DepthAnalysisImpl extends DepthAnalysis {
     public void initWithCalibrations(DepthCameraDevice depthCamera) {
         depthCameraDevice = depthCamera;
         depthComputationMethod = depthCameraDevice.createDepthComputation();
-        
+
         if (depthCamera.getMainCamera().isUseIR()) {
             colorCamera = depthCamera.getIRCamera();
         }
@@ -168,10 +168,10 @@ public class DepthAnalysisImpl extends DepthAnalysis {
 
     @Deprecated
     private void setDepthMethod() {
-        
+
         // Replaced by this line:
         depthComputationMethod = depthCameraDevice.createDepthComputation();
-        
+
         // Old code -- to test before deletion
 //        if (depthCameraDevice instanceof Kinect360) {
 //            depthComputationMethod = ((Kinect360) depthCameraDevice).new Kinect360Depth();
@@ -193,11 +193,12 @@ public class DepthAnalysisImpl extends DepthAnalysis {
 //        }
     }
 
-
     public void computeDepthAndNormals(opencv_core.IplImage depth, opencv_core.IplImage color, int skip2D) {
         updateRawDepth(depth);
         // optimisation no Color. 
-        updateRawColor(color);
+        if (color != null) {
+            updateRawColor(color);
+        }
         depthData.clear();
         depthData.timeStamp = papplet.millis();
 
@@ -545,9 +546,9 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         return c;
     }
 
-    /** 
+    /**
      * List of pixels, used to iterate in images.
-     * 
+     *
      */
     public class PixelList implements Iterable<PixelOffset> {
 
@@ -766,6 +767,7 @@ public class DepthAnalysisImpl extends DepthAnalysis {
     public void undistortRGB(opencv_core.IplImage rgb, opencv_core.IplImage out) {
         calibColor.getDevice().undistort(rgb, out);
     }
+
     @Deprecated
     public void undistortIR(opencv_core.IplImage ir, opencv_core.IplImage out) {
         calibDepth.getDevice().undistort(ir, out);

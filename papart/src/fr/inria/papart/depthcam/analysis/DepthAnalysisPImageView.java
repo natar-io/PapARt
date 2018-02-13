@@ -113,7 +113,9 @@ public class DepthAnalysisPImageView extends DepthAnalysisImpl {
      */
     public PImage update(IplImage depth, IplImage color, int skip) {
         updateRawDepth(depth);
-        updateRawColor(color);
+        if (color != null) {
+            updateRawColor(color);
+        }
         depthData.clear();
         depthData.timeStamp = papplet.millis();
         validPointsPImage.loadPixels();

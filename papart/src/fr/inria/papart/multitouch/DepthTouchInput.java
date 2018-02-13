@@ -486,7 +486,7 @@ public class DepthTouchInput extends TouchInput {
 
     public ArrayList<TrackedDepthPoint> getTrackedDepthPoints2D() {
         if (fingerDetection == null) {
-            System.err.println("No 2D touch tracking.");
+//            System.err.println("No 2D touch tracking.");
             return new ArrayList<>();
         }
         return simpleDetection.getTouchPoints();
@@ -495,7 +495,7 @@ public class DepthTouchInput extends TouchInput {
 
     public ArrayList<TrackedDepthPoint> getTrackedDepthPoints3D() {
         if (armDetection == null) {
-            System.err.println("No 3D touch tracking.");
+//            System.err.println("No 3D touch tracking.");
             return new ArrayList<>();
         }
 //        return simpleDetection.getTouchPoints();

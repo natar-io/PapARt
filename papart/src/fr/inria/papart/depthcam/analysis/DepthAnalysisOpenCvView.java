@@ -58,7 +58,9 @@ public class DepthAnalysisOpenCvView extends DepthAnalysisImpl {
     public IplImage update(IplImage depth, IplImage color, int skip) {
 
         updateRawDepth(depth);
-        updateRawColor(color);
+        if (color != null) {
+            updateRawColor(color);
+        }
         clearImageBuffer();
         computeDepthAndDo(1, new setImageData());
         updateImageBuffer();
