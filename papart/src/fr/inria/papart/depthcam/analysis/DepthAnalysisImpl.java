@@ -120,7 +120,8 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         // why not ?   (calib?)
         //-----
 //        initMemory();
-        initWithCalibrations(depthCamera);
+//        initWithCalibrations(depthCamera);
+        
         // initThreadPool();
     }
 
