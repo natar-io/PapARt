@@ -12,8 +12,8 @@
                 
   <distributionManagement>
     <repository>
-      <id>internal</id>
-      <url>http://forum.rea.lity.tech:8081/repository/internal/</url>
+      <id>public</id>
+      <url>http://forum.rea.lity.tech:8081/repository/public</url>
     </repository>
   </distributionManagement>
     
@@ -26,9 +26,6 @@
       <releases>
         <enabled>true</enabled>
       </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
     </repository>
         
         <repository>
@@ -347,7 +344,7 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
-            <!--            <plugin>
+<!--            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>
                 <version>1.5</version>
