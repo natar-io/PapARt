@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calibration>
+  <PlanarTouchCalibration MaxDistance="7.0" MaxDistanceInit="52.0" MaxRecursion="10" MinConnectedCompoSize="8" MinHeight="0.0" NormalFilter="-0.04000002" Precision="3" SearchDepth="5" Test1="18.465" Test2="39.913334" Test3="2467.3584" Test4="4633.87" Test5="23.800003" TrackingForgetTime="610" TrackingMaxDist="386.19998"/>
+</Calibration>

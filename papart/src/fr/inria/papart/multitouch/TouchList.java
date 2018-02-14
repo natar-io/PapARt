@@ -19,13 +19,14 @@
  */
 package fr.inria.papart.multitouch;
 
+import fr.inria.papart.multitouch.tracking.TouchComparator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import processing.core.PVector;
 
 /**
- *
+ * List of touchs: helper methods to filter touch events. 
  * @author Jeremy Laviole
  */
 public class TouchList extends ArrayList<Touch> {
@@ -36,6 +37,12 @@ public class TouchList extends ArrayList<Touch> {
         }
     }
 
+    public void addOffset(PVector offset) {
+        for (Touch touch : this) {
+            touch.addOffset(offset);
+        }
+    }
+
     public void sortAlongYAxis() {
         Collections.sort(this, new TouchComparator());
     }
@@ -43,7 +50,7 @@ public class TouchList extends ArrayList<Touch> {
     public void removeYoungOnes(int currentTime) {
         for (Iterator<Touch> it = this.iterator(); it.hasNext();) {
             Touch touch = it.next();
-            if (touch.touchPoint.isYoung(currentTime)) {
+            if (touch.trackedSource.isYoung(currentTime)) {
                 it.remove();
             }
         }
@@ -52,7 +59,7 @@ public class TouchList extends ArrayList<Touch> {
     public TouchList getOldOnes(int currentTime) {
         TouchList old = new TouchList();
         for (Touch touch : this) {
-            if (!touch.touchPoint.isYoung(currentTime)) {
+            if (!touch.trackedSource.isYoung(currentTime)) {
                 old.add(touch);
             }
         }

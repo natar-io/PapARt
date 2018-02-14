@@ -62,17 +62,16 @@ public class MarkerBoardSvg extends MarkerBoard {
     public int MIN_ARTOOLKIT_MARKER_DETECTED = 1;
 
     @Override
-    protected void updatePositionImpl(int id, 
-            int currentTime, 
-            int endTime, 
+    protected void updatePositionImpl(int id,
+            int currentTime,
+            int endTime,
             int mode,
-            Camera camera, 
-            opencv_core.IplImage img, 
+            Camera camera,
+            opencv_core.IplImage img,
             Object globalTracking) {
 
         DetectedMarker[] markers = (DetectedMarker[]) globalTracking;
-        
-        PMatrix3D newPos = compute3DPos(markers, camera);
+        PMatrix3D newPos = DetectedMarker.compute3DPos(markers, markersFromSVG, camera);
 
         if (newPos == INVALID_LOCATION) {
             return;
@@ -110,44 +109,9 @@ public class MarkerBoardSvg extends MarkerBoard {
 
         } else {
             update(newPos, id);
-
+            lastPos.set(id, currentPos);
+            
         }
-
-    }
-
-    private PMatrix3D compute3DPos(DetectedMarker[] detectedMarkers, Camera camera) {
-        // We create a pair model ( markersFromSVG) -> observation (markers) 
-
-//         markersFromSVG
-        ArrayList<PVector> objectPoints = new ArrayList<PVector>();
-        ArrayList<PVector> imagePoints = new ArrayList<PVector>();
-        int k = 0;
-
-        for (DetectedMarker detected : detectedMarkers) {
-            if (markersFromSVG.containsKey(detected.id)) {
-
-                PVector[] object = markersFromSVG.get(detected.id).getCorners();
-                PVector[] image = detected.getCorners();
-                for (int i = 0; i < 4; i++) {
-//                    System.out.println("Model " + object[i] + " image " + image[i]);
-                    objectPoints.add(object[i]);
-                    imagePoints.add(image[i]);
-                }
-                k++;
-            }
-        }
-        if (k < 1) {
-            return MarkerBoard.INVALID_LOCATION;
-        }
-
-        PVector[] objectArray = new PVector[k];
-        PVector[] imageArray = new PVector[k];
-        objectArray = objectPoints.toArray(objectArray);
-        imageArray = imagePoints.toArray(imageArray);
-
-        ProjectiveDeviceP pdp = camera.getProjectiveDevice();
-        return pdp.estimateOrientation(objectArray, imageArray);
-//        return pdp.estimateOrientationRansac(objectArray, imageArray);
 
     }
 
@@ -178,12 +142,12 @@ public class MarkerBoardSvg extends MarkerBoard {
                 System.out.println("Filtering error " + e);
             }
         }
-        
+
         float pageHeight = markersFromSVG.getSheetHeight();
-        
+
         // Invert the scales so that it fits Inkscape's view. 
         transfo.scale(1, -1, 1);
-        transfo.translate(0, -pageHeight, 0);        
+        transfo.translate(0, -pageHeight, 0);
     }
 
 }

@@ -20,13 +20,12 @@
 package fr.inria.papart.depthcam;
 
 /**
- *
+ * PixelOffset is used for depth manipulations. It simply binds x,y and the offset.
  * @author Jeremy Laviole
  */
 public class PixelOffset {
 
     public final int x, y, offset;
-    public static int width;
 
     public PixelOffset(int x, int y, int offset) {
         this.x = x;

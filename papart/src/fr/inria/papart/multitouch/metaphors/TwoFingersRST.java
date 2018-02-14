@@ -21,8 +21,8 @@ package fr.inria.papart.multitouch.metaphors;
 
 import fr.inria.papart.multitouch.Touch;
 import fr.inria.papart.multitouch.TouchList;
-import fr.inria.papart.multitouch.TouchPoint;
-import fr.inria.papart.multitouch.TouchPointEventHandler;
+import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
+import fr.inria.papart.multitouch.tracking.TouchPointEventHandler;
 import static processing.core.PApplet.acos;
 import processing.core.PVector;
 
@@ -82,7 +82,7 @@ public class TwoFingersRST extends RSTTransform {
 
             if (touchs[i] != Touch.INVALID) {
                 if (isInValidTouch(touchs[i])) {
-                    touchs[i].touchPoint.attachedObject = null;
+                    touchs[i].trackedSource.attachedObject = null;
 //                    System.out.println("Touch " + i + " not valid anymore." + touchs[i]);
                     touchs[i] = Touch.INVALID;
                 }
@@ -123,15 +123,15 @@ public class TwoFingersRST extends RSTTransform {
         for (Touch touch : touchList) {
 
             if (!validBounds(touch)
-                    || touch.touchPoint.attachedObject != null
+                    || touch.trackedSource.attachedObject != null
                     || touch.isGhost) {
                 continue;
             }
 
             // touch without "attachment"
-            if (touch.touchPoint.attachedObject == null) {
+            if (touch.trackedSource.attachedObject == null) {
                 // tag it.
-                touch.touchPoint.attachedObject = new TouchHandler(id);
+                touch.trackedSource.attachedObject = new TouchHandler(id);
                 return touch;
             }
         }

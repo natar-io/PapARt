@@ -18,10 +18,15 @@ mv verletphysics libraries/
 mv volumeutils libraries/
 
 echo "Get SVGExtended"
-wget https://github.com/Rea-lity-Tech/SVGExtended/releases/download/2.3.1/SVGExtended.tgz 
+wget https://github.com/Rea-lity-Tech/SVGExtended/releases/download/3.3.5/SVGExtended.tgz
 
 tar xvzf SVGExtended.tgz 
 mv SVGExtended libraries/
+
+echo "Compile SimplePointCloud"
+wget https://github.com/Rea-lity-Tech/SimplePointCloud/releases/download/0.1/SimplePointCloud.tgz
+tar xvzf SimplePointCloud.tgz
+mv SimplePointCloud libraries/
 
 echo "Get Processing Video"
 #wget https://github.com/processing/processing-video/releases/download/latest/video.zip
@@ -45,7 +50,7 @@ unzip oscP5-0.9.8.zip
 mv oscP5 libraries/
 
 echo "Get Skatolo"
-wget https://github.com/poqudrof/Skatolo/releases/download/1.0.1/skatolo.tgz
+wget https://github.com/rea-lity-tech/Skatolo/releases/download/1.1/skatolo.tgz
 
 tar xvzf skatolo.tgz
 mv skatolo libraries/
@@ -73,6 +78,8 @@ echo "Compile JavaCV"
 cd javacv-build
 ruby createLibs.rb
 mv javacv-*.tgz ..
+
+## Missing: OpenNI
 
 echo "compile all"
 zip -r libraries.zip libraries

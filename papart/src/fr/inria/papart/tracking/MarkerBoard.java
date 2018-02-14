@@ -20,7 +20,6 @@
 package fr.inria.papart.tracking;
 
 import fr.inria.papart.procam.camera.Camera;
-import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.multitouch.OneEuroFilter;
 import fr.inria.papart.procam.camera.CameraRGBIRDepth;
@@ -143,6 +142,27 @@ public abstract class MarkerBoard {
         transfo.set(location);
     }
 
+    protected int subscribersAmount = 0;
+
+    /**
+     * Tell this markerboard that something is getting the position.
+     */
+    public void subscribe() {
+        subscribersAmount++;
+//        System.out.println("DEBUG: subscription: " + subscribersAmount);
+    }
+
+    /**
+     * Tell this markerboard that its position is not used anymore by one
+     * object.
+     */
+    public void unsubscribe() {
+        subscribersAmount--;
+//        System.out.println("DEBUG: UNsubscription: " + subscribersAmount);
+    }
+
+    public OneEuroFilter[] NO_FILTERS = new OneEuroFilter[0];
+
     private OneEuroFilter[] createFilter(double freq, double minCutOff) {
         OneEuroFilter[] f = new OneEuroFilter[12];
         try {
@@ -194,6 +214,9 @@ public abstract class MarkerBoard {
     }
 
     public boolean isTrackedBy(Camera camera) {
+        if(this == MarkerBoardInvalid.board){
+//            System.out.println("ERROR: cannot get the position of an invalid board.");
+        }
         return cameras.contains(camera);
     }
 
@@ -219,13 +242,6 @@ public abstract class MarkerBoard {
         return px;
     }
 
-    public boolean isSeenBy(Camera camera, ProjectorDisplay projector, float error) {
-        PVector px = this.getBoardLocation(camera, projector);
-        return !(px.x < (0 - error)
-                || px.x > projector.getWidth()
-                || px.y < (0 - error)
-                || px.y > (projector.getHeight() + error));
-    }
 
     public synchronized void updateLocation(Camera camera, IplImage img, Object globalTracking) {
 

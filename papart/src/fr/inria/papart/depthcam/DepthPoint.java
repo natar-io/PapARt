@@ -23,7 +23,7 @@ import processing.core.PVector;
 import toxi.geom.Vec3D;
 
 /**
- *
+ * DepthPoint is used for PointCloud rendering.
  * @author Jeremy Laviole
  */
 public class DepthPoint{

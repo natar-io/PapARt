@@ -19,7 +19,7 @@
  */
 package fr.inria.papart.tuio;
 
-import fr.inria.papart.multitouch.TouchPoint;
+import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
 import java.util.ArrayList;
 import netP5.NetAddress;
 import oscP5.OscMessage;
@@ -49,11 +49,11 @@ public class TuioServer {
         myRemoteLocation = new NetAddress(outAddress, outPort);
     }
 
-    public void send(ArrayList<TouchPoint> touchs) {
+    public void send(ArrayList<TrackedDepthPoint> touchs) {
         send2D(touchs);
     }
 
-    public void send2D(ArrayList<TouchPoint> touchs) {
+    public void send2D(ArrayList<TrackedDepthPoint> touchs) {
 
         OscMessage[] messages = new OscMessage[touchs.size() + 2];
         String messageType = "/tuio/2Dcur";
@@ -62,7 +62,7 @@ public class TuioServer {
         messages[0].add("alive");
 
         int k = 1;
-        for (TouchPoint tp : touchs) {
+        for (TrackedDepthPoint tp : touchs) {
             PVector pos = tp.getPosition();
             PVector speed = tp.getSpeed();
            
@@ -96,7 +96,7 @@ public class TuioServer {
 
     }
 
-    public void send25D(ArrayList<TouchPoint> touchs, float maxZ) {
+    public void send25D(ArrayList<TrackedDepthPoint> touchs, float maxZ) {
 
         OscMessage[] messages = new OscMessage[touchs.size() + 2];
 
@@ -106,7 +106,7 @@ public class TuioServer {
         messages[0].add("alive");
 
         int k = 1;
-        for (TouchPoint tp : touchs) {
+        for (TrackedDepthPoint tp : touchs) {
             PVector pos = tp.getPosition();
             PVector speed = tp.getSpeed();
 //            int id = tp.getID();

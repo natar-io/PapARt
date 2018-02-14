@@ -82,6 +82,9 @@ public class CamImageGray extends CamImage {
         if (incomingFormat == PixelFormat.REALSENSE_Z16) {
             ImageUtils.byteBufferZ16toARGB(imageBuffer, argbBuffer);
         }
+        if (incomingFormat == PixelFormat.OPENNI_2_DEPTH) {
+            ImageUtils.byteBufferShorttoARGB(imageBuffer, argbBuffer);
+        }
 
 //         Utils.byteBufferBRGtoARGB(bgrBuffer, argbBuffer);
         tex.copyBufferFromSource(null, argbBuffer, width, height);

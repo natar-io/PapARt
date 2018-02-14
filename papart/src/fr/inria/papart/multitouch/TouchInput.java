@@ -19,10 +19,10 @@
  */
 package fr.inria.papart.multitouch;
 
+import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.display.ARDisplay;
-import fr.inria.papart.procam.Screen;
+
 import fr.inria.papart.procam.display.BaseDisplay;
-import fr.inria.papart.procam.display.ProjectorDisplay;
 import java.util.ArrayList;
 import processing.core.PVector;
 import toxi.geom.Vec3D;
@@ -35,9 +35,18 @@ public abstract class TouchInput {
 
     public static PVector NO_INTERSECTION = new PVector();
 
+    
+    public enum Type {
+        SIMPLE, HAND, COLOR0, COLOR1, COLOR2, TUIO
+    }
+
+    public boolean isReady() {
+        return true;
+    }
+
     abstract public void update();
 
-    abstract public TouchList projectTouchToScreen(Screen screen, BaseDisplay display);
+    abstract public TouchList projectTouchToScreen(PaperScreen paperScreen, BaseDisplay display);
 
     protected boolean computeOutsiders = false;
 

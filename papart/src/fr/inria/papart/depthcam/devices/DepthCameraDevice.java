@@ -1,6 +1,7 @@
 /*
  * Part of the PapARt project - https://project.inria.fr/papart/
  *
+ * Copyright (C) 2017 RealityTech
  * Copyright (C) 2014-2016 Inria
  * Copyright (C) 2011-2013 Bordeaux University
  *
@@ -19,15 +20,19 @@
  */
 package fr.inria.papart.depthcam.devices;
 
-import fr.inria.papart.calibration.HomographyCalibration;
-import fr.inria.papart.multitouch.KinectTouchInput;
+import fr.inria.papart.calibration.files.HomographyCalibration;
+import fr.inria.papart.depthcam.analysis.DepthAnalysis;
+import fr.inria.papart.multitouch.DepthTouchInput;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.utils.ARToolkitPlusUtils;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.CameraFactory;
 import fr.inria.papart.procam.camera.CameraRGBIRDepth;
+import fr.inria.papart.procam.camera.CannotCreateCameraException;
 import fr.inria.papart.procam.camera.SubCamera;
 import fr.inria.papart.procam.camera.SubDepthCamera;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
@@ -57,6 +62,9 @@ public abstract class DepthCameraDevice {
         this.parent = parent;
     }
 
+    public abstract void loadDataFromDevice();
+    public abstract DepthAnalysis.DepthComputation createDepthComputation();
+    
     public CameraRGBIRDepth getMainCamera() {
         return camera;
     }
@@ -85,11 +93,12 @@ public abstract class DepthCameraDevice {
      * *
      * init a depth camera, depth only as there is another color camera.
      */
-    protected final void initDefaultCamera() {
+    protected final void initDefaultCamera() throws CannotCreateCameraException {
         String id = Papart.getDefaultDepthCameraConfiguration(parent).getCameraName();
         camera = (CameraRGBIRDepth) CameraFactory.createCamera(type(), id);
         camera.setUseDepth(true);
         camera.setUseColor(true);
+        camera.actAsColorCamera();
         camera.setParent(parent);
     }
 
@@ -97,7 +106,7 @@ public abstract class DepthCameraDevice {
         camera.close();
     }
 
-    public void setTouch(KinectTouchInput kinectTouchInput) {
+    public void setTouch(DepthTouchInput kinectTouchInput) {
         camera.getDepthCamera().setTouchInput(kinectTouchInput);
     }
 
@@ -127,12 +136,27 @@ public abstract class DepthCameraDevice {
         return KinectRGBIRCalibrationInv;
     }
 
+    public int findMainImageOffset(Vec3D v) {
+        return findMainImageOffset(v.x, v.y, v.z);
+    }
+
+    public int findMainImageOffset(PVector v) {
+        return findMainImageOffset(v.x, v.y, v.z);
+    }
+    
     public int findColorOffset(Vec3D v) {
         return findColorOffset(v.x, v.y, v.z);
     }
 
     public int findColorOffset(PVector v) {
         return findColorOffset(v.x, v.y, v.z);
+    }
+    
+    public int findDepthOffset(PVector v) {
+        return findDepthOffset(v.x, v.y, v.z);
+    }
+    public int findDepthOffset(Vec3D v) {
+        return findDepthOffset(v.x, v.y, v.z);
     }
 
     private PVector vt = new PVector();
@@ -153,10 +177,31 @@ public abstract class DepthCameraDevice {
         //  Ideally use a calibration... 
 //        kinectCalibRGB.getExtrinsics().mult(vt, vt2);       
         getStereoCalibration().mult(vt, vt2);
+        return getColorCamera().getProjectiveDevice().worldToPixel(vt2.x, vt2.y, vt2.z);
+    }
+    
+    /**
+     * Warning not thread safe.
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @return
+     */
+    public int findMainImageOffset(float x, float y, float z) {
+        vt.set(x, y, z);
+        vt2.set(0, 0, 0);
+        //  Ideally use a calibration... 
+//        kinectCalibRGB.getExtrinsics().mult(vt, vt2);       
+        getStereoCalibration().mult(vt, vt2);
 
         // TODO: find a solution for this...
-        return getColorCamera().getProjectiveDevice().worldToPixel(vt2.x, vt2.y, vt2.z);
+        return getMainCamera().getProjectiveDevice().worldToPixel(vt2.x, vt2.y, vt2.z);
 //        return getColorCamera.getProjectiveDevice().worldToPixel(vt2.x, vt2.y, vt2.z);
+    }
+
+    private int findDepthOffset(float x, float y, float z) {
+        return getDepthCamera().getProjectiveDevice().worldToPixel(x,y,z);
     }
 
 }

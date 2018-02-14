@@ -19,10 +19,12 @@
  */
 package fr.inria.papart.multitouch;
 
+import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
+import fr.inria.papart.multitouch.tracking.TrackedElement;
 import processing.core.PVector;
 
 /**
- * Public (Processing) API for a touch point. Touches are for PaperScreens
+ * Public (Processing) API for a touch point. Touches are for PaperScreens.
  *
  * @author Jeremy Laviole
  */
@@ -39,8 +41,13 @@ public class Touch {
     
     // TODO: find a solution for this !
     // Always has a TouchPoint linked ? Not clean. 
-    public TouchPoint touchPoint;
-
+    public TrackedElement trackedSource;
+    
+    @Deprecated
+    public TrackedDepthPoint touchPoint;
+    // TODO: switch to TrackedElement
+//    public TrackedElement trackedSource;
+    
     public PVector size;
 
     // TODO: implementation of this. 
@@ -49,6 +56,30 @@ public class Touch {
 
     public void setPosition(PVector v) {
         setPosition(v.x, v.y, v.z);
+    }
+    
+    /**
+     * Legacy access to the touchPoint, use trackedSource now.
+     * @return 
+     */
+    @Deprecated
+    public TrackedElement touchPoint(){
+        return trackedSource;
+    }
+    
+    /**
+     * Get the element from the tracking system. This element may store 
+     * information across time. You can register events triggered when the 
+     * point disappears.
+     * To do so you can attach an object in the attachedObject field. If this 
+     * object implements the TouchPointEventHandler interface, delete() will be  the call to 
+     * called when the tracked element gets off the tracking system. 
+     * 
+     * -- Also:  new name of TouchPoint.
+     * @return 
+     */
+    public TrackedElement trackedSource(){
+        return trackedSource;
     }
 
     public void setPosition(float x, float y, float z) {
@@ -61,7 +92,7 @@ public class Touch {
 
     @Override
     public String toString() {
-        return "Position " + position + " Speed " + speed + " Touch info " + touchPoint;
+        return "Position " + position + " Speed " + speed + " Touch info " + trackedSource;
     }
 
     public void setPrevPos(PVector prevPosition) {
@@ -74,6 +105,12 @@ public class Touch {
         speed = new PVector();
     }
 
+    public void addOffset(PVector offset) {
+        position.x += offset.x;
+        position.y += offset.y;
+        position.z += offset.z;
+    }
+    
     public void scaleBy(PVector scales) {
         position.x *= scales.x;
         position.y *= scales.y;

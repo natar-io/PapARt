@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 jiii.
+ * Copyright (C) 2016  RealityTech. 
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,17 +18,17 @@
  */
 package fr.inria.papart.procam.camera;
 
-import fr.inria.papart.multitouch.KinectTouchInput;
+import fr.inria.papart.multitouch.DepthTouchInput;
 import fr.inria.papart.multitouch.TouchInput;
 import org.bytedeco.javacpp.opencv_core;
 
 /**
  *
- * @author jiii
+ * @author Jeremy Laviole
  */
 public class SubDepthCamera extends SubCamera implements WithTouchInput{
     
-    private KinectTouchInput touchInput;
+    private DepthTouchInput touchInput;
 
     public SubDepthCamera(CameraRGBIRDepth mainCamera) {
         super(mainCamera);
@@ -39,12 +39,12 @@ public class SubDepthCamera extends SubCamera implements WithTouchInput{
     }
     
     @Override
-    public KinectTouchInput getTouchInput() {
+    public DepthTouchInput getTouchInput() {
         return touchInput;
     }
 
     @Override
-    public void setTouchInput(KinectTouchInput touchInput) {
+    public void setTouchInput(DepthTouchInput touchInput) {
         this.touchInput = touchInput;
     }
 

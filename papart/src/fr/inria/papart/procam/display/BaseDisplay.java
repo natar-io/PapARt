@@ -20,10 +20,9 @@
 package fr.inria.papart.procam.display;
 
 import fr.inria.papart.procam.HasCamera;
-import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.PaperScreen;
-import fr.inria.papart.procam.Screen;
+
 import fr.inria.papart.procam.camera.Camera;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
@@ -43,9 +42,9 @@ public class BaseDisplay implements HasCamera {
 
     Semaphore sem = new Semaphore(1);
     public PGraphicsOpenGL graphics;
-    public ArrayList<Screen> screens = new ArrayList<Screen>();
+    public ArrayList<PaperScreen> paperScreens = new ArrayList<PaperScreen>();
 //    public ArrayList<PaperScreen> paperScreens = new ArrayList<>();
-    
+
     protected PApplet parent;
     //    public PGraphicsOpenGL graphicsUndist;
     protected static int DEFAULT_SIZE = 200;
@@ -135,17 +134,21 @@ public class BaseDisplay implements HasCamera {
         }
     }
 
-    public PGraphicsOpenGL beginDrawOnScreen(Screen screen) {
+    public PGraphicsOpenGL beginDrawOnScreen(PaperScreen paperScreen) {
         PMatrix3D screenPos;
 
         if (this.hasCamera()) {
-            screenPos = screen.getLocation(this.getCamera());
+            screenPos = paperScreen.getLocation(this.getCamera());
         } else {
             // Get the markerboard viewed by the camera
-            screenPos = screen.getExtrinsics();
+            screenPos = paperScreen.getExtrinsics();
         }
         this.beginDraw();
         this.graphics.applyMatrix(screenPos);
+
+        // Same origin as in DrawOnPaper
+        this.graphics.translate(0, paperScreen.getSize().y);
+        this.graphics.scale(1, -1, 1);
         return this.graphics;
     }
 
@@ -187,14 +190,14 @@ public class BaseDisplay implements HasCamera {
     }
 
     public void renderScreens() {
-        for (Screen screen : screens) {
-            if (!screen.isDrawing()) {
+        for (PaperScreen paperScreen : paperScreens) {
+            if (!paperScreen.isDrawing()) {
                 continue;
             }
             this.graphics.noStroke();
             this.graphics.pushMatrix();
-            this.graphics.applyMatrix(screen.getLocation(new PMatrix3D()));
-            this.graphics.image(screen.getTexture(), 0, 0, screen.getSize().x, screen.getSize().y);
+            this.graphics.applyMatrix(paperScreen.getLocation(new PMatrix3D()));
+            this.graphics.image(paperScreen.getGraphics(), 0, 0, paperScreen.getSize().x, paperScreen.getSize().y);
             this.graphics.popMatrix();
         }
     }
@@ -255,14 +258,17 @@ public class BaseDisplay implements HasCamera {
         this.drawingSizeY = h;
     }
 
-    public void addScreen(Screen s) {
-        screens.add(s);
+    public void addPaperScreen(PaperScreen s) {
+        paperScreens.add(s);
     }
-    
+
+    public void removePaperScreen(PaperScreen s) {
+        paperScreens.remove(s);
+    }
+
 //    public void addPaperScreen(PaperScreen s) {
 //        paperScreens.add(s);
 //    }
-
     @Override
     public boolean hasCamera() {
         return hasCamera;
@@ -273,28 +279,24 @@ public class BaseDisplay implements HasCamera {
         return Camera.INVALID_CAMERA;
     }
 
-    public PVector projectPointer(Screen screen, float x, float y) {
-        PMatrix3D screenMat = screen.getLocation(new PMatrix3D());
+    public PVector projectPointer(PaperScreen paperScreen, float x, float y) {
+        PMatrix3D screenMat = paperScreen.getLocation(new PMatrix3D());
         screenMat.invert();
         PVector transformed = new PVector();
         screenMat.mult(new PVector(x * drawingSizeX, y * drawingSizeY), transformed);
+        transformed = new PVector(transformed.x / paperScreen.getDrawingSize().x,
+                transformed.y / paperScreen.getDrawingSize().y);
         return transformed;
     }
-    
 
-    public PVector project(Screen screen, float x, float y) {
-        boolean isProjector = this instanceof ProjectorDisplay;
+    public PVector project(PaperScreen screen, float x, float y) {
         boolean isARDisplay = this instanceof ARDisplay;
         // check that the correct method is called !
         PVector paperScreenCoord;
-        if (isProjector) {
-            paperScreenCoord = ((ProjectorDisplay) this).projectPointer(screen, x, y);
+        if (isARDisplay) {
+            paperScreenCoord = ((ARDisplay) this).projectPointer(screen, x, y);
         } else {
-            if (isARDisplay) {
-                paperScreenCoord = ((ARDisplay) this).projectPointer(screen, x, y);
-            } else {
-                paperScreenCoord = this.projectPointer(screen, x, y);
-            }
+            paperScreenCoord = this.projectPointer(screen, x, y);
         }
         return paperScreenCoord;
     }

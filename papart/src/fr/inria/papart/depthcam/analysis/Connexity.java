@@ -24,7 +24,7 @@ import java.util.Arrays;
 import toxi.geom.Vec3D;
 
 /**
- *
+ * Connexity information, to find neighbours of a point.
  * @author Jeremy Laviole
  */
 public class Connexity {
@@ -49,11 +49,11 @@ public class Connexity {
 //    public static final int BOTRIGHT = 1 << 7;
     private final int width, height;
     private float connexityDist = 10;
-    public float DEFAULT_CONNEXITY_DIST = 10;
-    public byte[] connexity;  // TODO: check for Byte instead of int
-    public byte[] connexitySum;  // TODO: check for Byte instead of int
+    public static final float DEFAULT_CONNEXITY_DIST = 10;
+    public byte[] connexity;
+    public byte[] connexitySum;
     private Vec3D[] points;
-    private int precision;
+    private int precision = 1;
 
     public Connexity(Vec3D[] points, int w, int h) {
         this.width = w;
@@ -80,6 +80,12 @@ public class Connexity {
         return this.connexitySum;
     }
 
+    /**
+     * Get a list of neighbours from a given point.
+     * @param x
+     * @param y
+     * @return 
+     */
     public Vec3D[] getNeighbourList(int x, int y) {
         int offset = y * width + x;
         int nbNeighbours = connexitySum[offset];
@@ -95,7 +101,7 @@ public class Connexity {
         byte connNo = 0;
 //        for (int y1 = y - 1; y1 <= y + 1; y1 = y1 + 1) {
 //            for (int x1 = x - 1; x1 <= x + 1; x1 = x1 + 1) {
-         for (int y1 = y - precision; y1 <= y + precision; y1 = y1 + precision) {
+        for (int y1 = y - precision; y1 <= y + precision; y1 = y1 + precision) {
             for (int x1 = x - precision; x1 <= x + precision; x1 = x1 + precision) {
                 if (x1 == x && y1 == y) {
                     continue;
@@ -112,7 +118,44 @@ public class Connexity {
                 connNo++;
             }
         }
+        // TEST
+//        for (int i = 0; i < nbNeighbours; i++) {
+//            assert (output[i] != null);
+//        }
+        return output;
+    }
+    
+    public int[] getNeighbourColorList(int x, int y, int[] colors) {
+        int offset = y * width + x;
+        int nbNeighbours = connexitySum[offset];
+        if (nbNeighbours == 0) {
+            return new int[0];
+        }
 
+        byte c = connexity[offset];
+        int[] output = new int[8];
+
+        int k = 0;
+        byte connNo = 0;
+//        for (int y1 = y - 1; y1 <= y + 1; y1 = y1 + 1) {
+//            for (int x1 = x - 1; x1 <= x + 1; x1 = x1 + 1) {
+        for (int y1 = y - precision; y1 <= y + precision; y1 = y1 + precision) {
+            for (int x1 = x - precision; x1 <= x + precision; x1 = x1 + precision) {
+                if (x1 == x && y1 == y) {
+                    continue;
+                }
+
+                int direction = 1 << connNo;
+                boolean valid = (c & direction) > 0;
+
+                if (valid) {
+                    int neighbourOffset = y1 * width + x1;
+                    output[connNo] = colors[neighbourOffset];
+
+                }
+                connNo++;
+            }
+        }
         // TEST
 //        for (int i = 0; i < nbNeighbours; i++) {
 //            assert (output[i] != null);
@@ -120,6 +163,9 @@ public class Connexity {
         return output;
     }
 
+    /**
+     * Compute the connexity map of all the points.
+     */
     void computeAll() {
         for (int y = 0; y < this.height; y++) {
             for (int x = 0; x < this.width; x++) {
@@ -128,6 +174,11 @@ public class Connexity {
         }
     }
 
+    /**
+     * Compute the connexity map of a point.
+     * @param x
+     * @param y 
+     */
     void compute(int x, int y) {
         // Connexity map 
         //  0 1 2 
@@ -136,8 +187,9 @@ public class Connexity {
         // Todo: Unroll these for loops for optimisation...
         int currentOffset = y * width + x;
 
-        if (points[currentOffset] == null
-                ||  !DepthAnalysis.isValidPoint(points[currentOffset])) {
+        if (points[currentOffset] == null){
+            // We do not care about validity for Normal computing ?!
+//                ||  !DepthAnalysis.isValidPoint(points[currentOffset])) {
             connexity[currentOffset] = 0;
             connexitySum[currentOffset] = 0;
             return;
@@ -189,6 +241,10 @@ public class Connexity {
         this.connexityDist = DEFAULT_CONNEXITY_DIST * precision;
     }
 
+    /**
+     * Distance from which points are no longer neighbors (euclidean).
+     * @param dist 
+     */
     public void setConnexityDist(float dist) {
         this.connexityDist = dist;
     }

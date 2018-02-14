@@ -21,6 +21,7 @@ package fr.inria.papart.tracking;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import org.bytedeco.javacv.Marker;
 import static processing.core.PApplet.println;
 import static processing.core.PConstants.RECT;
 import processing.core.PMatrix;
@@ -43,6 +44,16 @@ public class MarkerSvg implements Cloneable {
         this.id = id;
         this.size = size.get();
         this.matrix = matrix.get();
+    }
+
+    public Marker copyAsMarker() {
+        double[] corners = new double[this.corners.length * 4];
+        int k = 0;
+        for (int i = 0; i < this.corners.length; i++) {
+            corners[k++] = this.corners[i].x;
+            corners[k++] = this.corners[i].y;
+        }
+        return new org.bytedeco.javacv.Marker(id, corners, 1.0);
     }
 
     public int getId() {
@@ -90,7 +101,25 @@ public class MarkerSvg implements Cloneable {
         return corners;
     }
 
+    public PVector getCenter() {
+        double x = 0, y = 0;
+        computeCorners();
+        for (int i = 0; i < 4; i++) {
+            x += corners[i].x;
+            y += corners[i].y;
+        }
+        x /= 4;
+        y /= 4;
+        return new PVector((float) x, (float)y);
+    }
+
+    /**
+     * Check pixel resolution - TODO
+     *
+     * @return
+     */
     public static float pixelToMm() {
+//        return 25.4f / 96.0f;
         return 25.4f / 90.0f;
     }
 
@@ -134,11 +163,11 @@ public class MarkerSvg implements Cloneable {
 
 //        ArrayList<MarkerSvg> markers = new ArrayList<>();
         MarkerList markers = new MarkerList();
-        
-        float sheetWidth =  computeSize(xml.getString("width"))  * pixelToMm();
-        float sheetHeight =  computeSize(xml.getString("height")) * pixelToMm();
+
+        float sheetWidth = computeSize(xml.getString("width")) * pixelToMm();
+        float sheetHeight = computeSize(xml.getString("height")) * pixelToMm();
         markers.setSheetSize(sheetWidth, sheetHeight);
-        
+
         for (PShape markerSvg : markersSVG) {
 
             int id = Integer.parseInt(markerSvg.getName().substring(6));
@@ -177,7 +206,7 @@ public class MarkerSvg implements Cloneable {
 
     private static PMatrix getMatrix(PShape shape) {
 
-        PMatrix matrix = ((PShapeSVGExtended)shape).getMatrix();
+        PMatrix matrix = ((PShapeSVGExtended) shape).getMatrix();
 
         boolean useParams = true;
         float[] params = null;

@@ -25,11 +25,11 @@ package fr.inria.papart.procam.camera;
  */
 public class CameraFactory {
 
-    public static Camera createCamera(Camera.Type type) {
+    public static Camera createCamera(Camera.Type type) throws CannotCreateCameraException {
         return createCamera(type, "0", "");
     }
 
-    public static Camera createCamera(Camera.Type type, String description) {
+    public static Camera createCamera(Camera.Type type, String description) throws CannotCreateCameraException {
         return createCamera(type, description, "");
     }
 
@@ -42,7 +42,7 @@ public class CameraFactory {
      * specify the default camera type.
      * @return
      */
-    public static Camera createCamera(Camera.Type type, String description, String format) {
+    public static Camera createCamera(Camera.Type type, String description, String format) throws CannotCreateCameraException {
         Camera camera = null;
         CameraRGBIRDepth cameraMulti = null;
         int cameraNo = 0;
@@ -59,8 +59,7 @@ public class CameraFactory {
         boolean isIR = format.equalsIgnoreCase("ir");
         boolean isDepth = format.equalsIgnoreCase("depth");
 
-        // classes to remove:
-        //                camera = new CameraOpenCVDepth(cameraNo);
+        try{
         switch (type) {
             case FFMPEG:
                 camera = new CameraFFMPEG(description, format);
@@ -77,6 +76,9 @@ public class CameraFactory {
                 break;
             case FLY_CAPTURE:
                 camera = new CameraFlyCapture(cameraNo);
+                break;
+            case OPENNI2:
+                cameraMulti = new CameraOpenNI2(cameraNo);
                 break;
             default:
                 throw new RuntimeException("ProCam, Camera: Unspported camera Type");
@@ -99,6 +101,9 @@ public class CameraFactory {
         }
         if (camera != null) {
             return camera;
+        }
+        } catch(NullPointerException e){
+            throw new CannotCreateCameraException("Cannot create the camera type " + type.toString() + " " + description);
         }
         throw new RuntimeException("ProCam, Camera: Unspported camera Type");
     }

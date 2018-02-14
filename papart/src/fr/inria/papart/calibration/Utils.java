@@ -21,6 +21,7 @@ package fr.inria.papart.calibration;
 
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
+import processing.core.PVector;
 import toxi.geom.Plane;
 
 /**
@@ -30,7 +31,7 @@ import toxi.geom.Plane;
 public class Utils {
 
     public static String matToString(PMatrix3D matrix) {
-    // return (matrix.m00 + " " + matrix.m01 + " " + matrix.m02 + " " + matrix.m03 + "\n" +
+        // return (matrix.m00 + " " + matrix.m01 + " " + matrix.m02 + " " + matrix.m03 + "\n" +
         //         matrix.m10 + " " + matrix.m11 + " " + matrix.m12 + " " + matrix.m13 + "\n" +
         //         matrix.m20 + " " + matrix.m21 + " " + matrix.m22 + " " + matrix.m23 + "\n" +
         //         matrix.m30 + " " + matrix.matrix.m31 + " " + matrix.matrix.m32 + " " + matrix.matrix.m33 + "\n");
@@ -40,7 +41,7 @@ public class Utils {
                 PApplet.max(PApplet.max(PApplet.abs(matrix.m10), PApplet.abs(matrix.m11)),
                         PApplet.max(PApplet.abs(matrix.m12), PApplet.abs(matrix.m13)))),
                 PApplet.max(PApplet.max(PApplet.max(PApplet.abs(matrix.m20), PApplet.abs(matrix.m21)),
-                                PApplet.max(PApplet.abs(matrix.m22), PApplet.abs(matrix.m23))),
+                        PApplet.max(PApplet.abs(matrix.m22), PApplet.abs(matrix.m23))),
                         PApplet.max(PApplet.max(PApplet.abs(matrix.m30), PApplet.abs(matrix.m31)),
                                 PApplet.max(PApplet.abs(matrix.m32), PApplet.abs(matrix.m33))))));
 
@@ -75,6 +76,10 @@ public class Utils {
                 + PApplet.nfs(matrix.m33, digits, 4) + "\n");
 
         return output.toString();
+    }
+
+    public static PVector posFromMatrix(PMatrix3D mat) {
+        return new PVector(mat.m03, mat.m13, mat.m23);
     }
 
     public static void addMatrices(PMatrix3D sum, PMatrix3D addedElement) {

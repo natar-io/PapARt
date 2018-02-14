@@ -54,12 +54,20 @@ public class ObjectFinder {
     public static int briskParam2 = 4;
     public static float briskParam3 = 1;
 
+    /**
+     * Find an object looking like the objectImage.
+     * @param objectImage image to find
+     */
     public ObjectFinder(IplImage objectImage) {
         settings = new Settings();
-        settings.objectImage = objectImage;
+        settings.setObjectImage(objectImage);
         setSettings(settings);
     }
 
+    /**
+     * Test purposes
+     * @param settings 
+     */
     public ObjectFinder(Settings settings) {
         setSettings(settings);
     }
@@ -70,10 +78,10 @@ public class ObjectFinder {
 //        ORB detector = ORB.create();
 
         // Marche très bien
-//        ORB detector = ORB.create(1200/*=500*/, 1.6f /*=1.2f*/, 8 /*=8*/, 31/*=31*/,
-//            0/*=0*/, 2/*=2*/, ORB.HARRIS_SCORE/*=cv::ORB::HARRIS_SCORE*/, 31 /*=31*/, 20/*=20*/);
+        ORB detector = ORB.create(1200/*=500*/, 1.6f /*=1.2f*/, 8 /*=8*/, 31/*=31*/,
+            0/*=0*/, 2/*=2*/, ORB.HARRIS_SCORE/*=cv::ORB::HARRIS_SCORE*/, 31 /*=31*/, 20/*=20*/);
         // default--> quite awesome 
-        BRISK detector = BRISK.create(50, 2, 1);
+//        BRISK detector = BRISK.create(50, 2, 1);
 
         // Tests 
 //        BRISK detector = BRISK.create(briskParam1, briskParam2, briskParam3);
@@ -152,6 +160,7 @@ public class ObjectFinder {
         settings.detector.detectAndCompute(cvarrToMat(settings.objectImage),
                 new Mat(), objectKeypoints, objectDescriptors, false);
 
+       
         int total = (int) objectKeypoints.size();
         if (settings.useFLANN) {
             indicesMat = new Mat(total, 2, CV_32SC1);
@@ -165,6 +174,7 @@ public class ObjectFinder {
         mask = new Mat(total, 1, CV_8UC1);
         H = new Mat(3, 3, CV_64FC1);
         ptpairs = new ArrayList<Integer>(2 * objectDescriptors.rows());
+         System.out.println("KeyPoints found: " + total + " " + objectDescriptors.rows());
         logger.info(total + " object descriptors");
     }
 
@@ -184,6 +194,7 @@ public class ObjectFinder {
 
     public double[] find(IplImage image) {
         if (objectDescriptors.rows() < settings.getMatchesMin()) {
+            System.out.println("Object descriptor problem " + objectDescriptors.rows());
             return null;
         }
         imageKeypoints = new KeyPointVector();
@@ -197,7 +208,7 @@ public class ObjectFinder {
 
         cvSetImageROI(image, roi);
 
-//        System.out.println("retreived roi: " + roi.x() + " " + roi.y() + " " + roi.width() + " " + roi.height());
+        System.out.println("retreived roi: " + roi.x() + " " + roi.y() + " " + roi.width() + " " + roi.height());
         long startTime = System.currentTimeMillis();
         settings.detector.detectAndCompute(cvarrToMat(image),
                 new Mat(), imageKeypoints, imageDescriptors, false);
@@ -218,6 +229,7 @@ public class ObjectFinder {
 //        System.out.println("Detection time: " + totalTime + " ms.");
         int total = (int) imageKeypoints.size();
         logger.info(total + " image descriptors");
+        System.out.println(total + " image descriptors");
 
         int w = settings.objectImage.width();
         int h = settings.objectImage.height();
@@ -238,7 +250,7 @@ public class ObjectFinder {
         // update mask from dstCorners... 
 
         cvSetImageROI(image, defaultRoi);
-//        System.out.println("Updated roi: " + roi.x() + " " + roi.y());
+        System.out.println("Updated roi: " + roi.x() + " " + roi.y());
         return dstCorners;
     }
 

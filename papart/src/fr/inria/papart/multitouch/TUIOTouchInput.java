@@ -19,9 +19,11 @@
  */
 package fr.inria.papart.multitouch;
 
+import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
 import fr.inria.papart.procam.display.BaseDisplay;
-import fr.inria.papart.procam.Screen;
+
 import TUIO.*;
+import fr.inria.papart.procam.PaperScreen;
 import processing.core.PApplet;
 import java.util.*;
 import processing.core.PVector;
@@ -34,8 +36,8 @@ public class TUIOTouchInput extends TouchInput {
 
     private final TuioProcessing tuioClient;
     private final PApplet parent;
-    private final HashMap<Integer, TouchPoint> tuioObjects = new HashMap<>();
-    private final HashMap<Integer, TouchPoint> tuioCursors = new HashMap<>();
+    private final HashMap<Integer, TrackedDepthPoint> tuioObjects = new HashMap<>();
+    private final HashMap<Integer, TrackedDepthPoint> tuioCursors = new HashMap<>();
 
     public TUIOTouchInput(PApplet parent, int port) {
         tuioClient = new TuioProcessing(parent, this, port);
@@ -47,7 +49,7 @@ public class TUIOTouchInput extends TouchInput {
     }
 
     @Override
-    public TouchList projectTouchToScreen(Screen screen, BaseDisplay display) {
+    public TouchList projectTouchToScreen(PaperScreen screen, BaseDisplay display) {
         TouchList touchList = new TouchList();
 
         Vector<TuioCursor> tuioCursorList = tuioClient.getTuioCursors();
@@ -73,8 +75,8 @@ public class TUIOTouchInput extends TouchInput {
         return touchList;
     }
 
-    private Touch getCursor(Screen screen, BaseDisplay display, TuioCursor tcur) throws Exception {
-        TouchPoint touchPoint = createTouchPointFrom(tcur);
+    private Touch getCursor(PaperScreen screen, BaseDisplay display, TuioCursor tcur) throws Exception {
+        TrackedDepthPoint touchPoint = createTouchPointFrom(tcur);
 
         Touch touch = touchPoint.getTouch();
         TuioPoint tuioPoint = tcur.getPosition();
@@ -83,9 +85,9 @@ public class TUIOTouchInput extends TouchInput {
         return touch;
     }
 
-    private Touch getObject(Screen screen, BaseDisplay display, TuioObject tobj) throws Exception {
+    private Touch getObject(PaperScreen screen, BaseDisplay display, TuioObject tobj) throws Exception {
 
-        TouchPoint tp = tuioObjects.get(tobj.getSymbolID());
+        TrackedDepthPoint tp = tuioObjects.get(tobj.getSymbolID());
         Touch touch = tp.getTouch();
 
         TuioPoint tuioPoint = tobj.getPosition();
@@ -102,41 +104,36 @@ public class TUIOTouchInput extends TouchInput {
     public void addTuioObject(TuioObject tobj) {
         tuioObjects.put(tobj.getSymbolID(), createTouchPointFrom(tobj));
     }
-    
+
     // called when a cursor is added to the scene
     public void addTuioCursor(TuioCursor tcur) {
         tuioCursors.put(tcur.getCursorID(), createTouchPointFrom(tcur));
     }
 
-
-
-
-    private TouchPoint createTouchPointFrom(TuioObject tObj) {
-        TouchPoint tp = new TouchPoint();
+    private TrackedDepthPoint createTouchPointFrom(TuioObject tObj) {
+        TrackedDepthPoint tp = new TrackedDepthPoint();
         tp.setCreationTime(parent.millis());
-        tp.id = tObj.getSymbolID();
+        tp.forceID(tObj.getSymbolID());
         return tp;
     }
 
-    private TouchPoint createTouchPointFrom(TuioCursor tcur) {
-        TouchPoint tp = new TouchPoint();
+    private TrackedDepthPoint createTouchPointFrom(TuioCursor tcur) {
+        TrackedDepthPoint tp = new TrackedDepthPoint();
         tp.setCreationTime(parent.millis());
-        tp.id = tcur.getCursorID();
+        tp.forceID(tcur.getCursorID());
         return tp;
     }
-    
 
     public void updateTuioObject(TuioObject tobj) {
         //  System.out.println("update object " + tobj.getSymbolID() + " (" + tobj.getSessionID() + ") " + tobj.getX() + " " + tobj.getY() + " " + tobj.getAngle()
         //          + " " + tobj.getMotionSpeed() + " " + tobj.getRotationSpeed() + " " + tobj.getMotionAccel() + " " + tobj.getRotationAccel());
     }
 
-
     public void updateTuioCursor(TuioCursor tcur) {
         //   System.out.println("update cursor " + tcur.getCursorID() + " (" + tcur.getSessionID() + ") " + tcur.getX() + " " + tcur.getY()
         //        + " " + tcur.getMotionSpeed() + " " + tcur.getMotionAccel());
     }
-    
+
     public void removeTuioObject(TuioObject tobj) {
         int id = tobj.getSymbolID();
         tuioObjects.remove(id);

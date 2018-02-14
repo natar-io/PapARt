@@ -1,6 +1,7 @@
 /*
  * Part of the PapARt project - https://project.inria.fr/papart/
  *
+ * Copyright (C) 2017 RealityTech
  * Copyright (C) 2014-2016 Inria
  * Copyright (C) 2011-2013 Bordeaux University
  *
@@ -20,41 +21,50 @@
 package fr.inria.papart.procam;
 
 import fr.inria.papart.utils.MathUtils;
-import fr.inria.papart.utils.ARToolkitPlusUtils;
-import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.TrackedView;
+import java.util.Arrays;
 import processing.core.PApplet;
+import static processing.core.PApplet.sqrt;
 import processing.core.PImage;
 import processing.core.PVector;
 
 /**
- * Experimental class, do not use
- *
- * @author Jeremy Laviole jeremy.laviole@inria.fr
+ * @author Jeremy Laviole laviole@rea.lity.tech
  */
 public class ColorDetection {
 
     private final PaperScreen paperScreen;
     protected TrackedView boardView;
 
-    private PVector captureSize = new PVector(10, 10);
+    private final PVector captureSize = new PVector(10, 10);
     private final PVector pos = new PVector();
 
     private int picWidth = 8; // Works better with power  of 2
     private int picHeight = 8; // Works better with power  of 2
     private PVector captureOffset;
 
-    private boolean invY;
-
     // output 
     protected int col;
 
+    /**
+     * Create a color detection on a given PaperScreen. It will use this
+     * paperScreen's coordinates.
+     *
+     * @param paperScreen
+     */
     public ColorDetection(PaperScreen paperScreen) {
-        this.invY = paperScreen.isIsDrawingOnScreen();
         this.paperScreen = paperScreen;
         setCaptureOffset(new PVector());
     }
 
+    /**
+     * Allocates the memory.
+     */
+    public void init() {
+        initialize();
+    }
+
+    @Deprecated
     public void initialize() {
         boardView = new TrackedView(paperScreen);
         setPosition(pos);
@@ -67,32 +77,28 @@ public class ColorDetection {
     public void setPosition(PVector pos) {
         this.pos.set(pos);
         if (boardView != null) {
-            if (invY) {
-                boardView.setBottomLeftCorner(new PVector(pos.x, paperScreen.drawingSize.y - pos.y));
-            } else {
-                boardView.setBottomLeftCorner(new PVector(pos.x, pos.y));
-            }
+            boardView.setTopLeftCorner(pos);
         }
     }
 
+    /**
+     * Compute the color.
+     */
     public void update() {
         computeColor();
     }
 
+    /**
+     * Compute the color, and draw the detection zone and the detected color.
+     * For debug purposes.
+     */
     public void drawSelf() {
         computeColor();
-
         drawCaptureZone();
 
         paperScreen.pushMatrix();
         paperScreen.translate(pos.x,
-                pos.y, 1);
-
-          if (!invY) {
-//             paperScreen.translate(0, captureSize.y, 0);
-        }
-
-//        drawCaptureZonePriv();
+                pos.y, 0.2f);
         paperScreen.translate(captureSize.x + 20, 0);
         drawCapturedImage();
 
@@ -106,6 +112,9 @@ public class ColorDetection {
         return this.pos;
     }
 
+    /**
+     * Draw the image from 'getImage', at the current location.
+     */
     public void drawCapturedImage() {
         PImage out = getImage();
         if (out != null) {
@@ -113,38 +122,38 @@ public class ColorDetection {
         }
     }
 
+    /**
+     * Draw an ellipse with a fill of the captured color.
+     */
     public void drawCapturedColor() {
         paperScreen.fill(this.col);
         paperScreen.noStroke();
-        paperScreen.ellipse(0, 0, 10, 10);
+        paperScreen.ellipse(0, 5, 10, 10);
     }
 
-    public void drawCaptureZonePriv() {
-        paperScreen.strokeWeight(3);
-        paperScreen.noFill();
-        paperScreen.stroke(80);
-        paperScreen.rectMode(PApplet.CORNER);
-        paperScreen.rect(0, 0, captureSize.x, captureSize.y);
-    }
-
+    /**
+     * Draw the zone captured to compute the color.
+     */
     public void drawCaptureZone() {
         paperScreen.pushMatrix();
         paperScreen.translate(pos.x,
                 pos.y,
                 0.2f);
 
-        if (!invY) {
-             paperScreen.translate(0, captureSize.y, 0);
-        }
-
         paperScreen.strokeWeight(2);
         paperScreen.noFill();
         paperScreen.stroke(80);
         paperScreen.rectMode(PApplet.CORNER);
-        paperScreen.rect(0, -captureSize.y, captureSize.x, captureSize.y);
+        paperScreen.rect(0, 0, captureSize.x, captureSize.y);
         paperScreen.popMatrix();
     }
 
+    /**
+     * Return the image used for color computation. Warning, can return null
+     * images.
+     *
+     * @return the PImage or null in debug mode.
+     */
     public PImage getImage() {
         // TODO: NoCamera HACK
         if (paperScreen.cameraTracking == null) {
@@ -155,6 +164,13 @@ public class ColorDetection {
         return out;
     }
 
+    protected int avgRed = 0;
+    protected int avgGreen = 0;
+    protected int avgBlue = 0;
+
+    /**
+     * Compute the average color of the patch analyzed.
+     */
     public void computeColor() {
 
         // HACK -> TODO error management. 
@@ -167,9 +183,9 @@ public class ColorDetection {
             return;
         }
         out.loadPixels();
-        int avgRed = 0;
-        int avgGreen = 0;
-        int avgBlue = 0;
+        avgRed = 0;
+        avgGreen = 0;
+        avgBlue = 0;
         int pxNb = picWidth * picHeight;
         for (int k = 0; k < pxNb; k++) {
             int c = out.pixels[k];
@@ -178,12 +194,22 @@ public class ColorDetection {
             avgBlue += c >> 0 & 0xFF;
         }
 
-        avgRed = (avgRed / pxNb) << 16;
-        avgGreen = (avgGreen / pxNb) << 8;
-        avgBlue /= pxNb;
-        this.col = 255 << 24 | avgRed | avgGreen | avgBlue;
+        avgRed = (avgRed / pxNb);
+        avgGreen = (avgGreen / pxNb);
+        avgBlue = avgBlue / pxNb;
+        int r = avgRed << 16;
+        int g = avgGreen << 8;
+        int b = avgBlue;
+        this.col = 255 << 24 | r | g | b;
     }
 
+    /**
+     * Get the occurences of a given color, given a error.
+     *
+     * @param c color to find.
+     * @param threshold error margin
+     * @return number of occurences.
+     */
     public int computeOccurencesOfColor(int c, int threshold) {
 
         // TODO: Hack for noCamera, better to be done. 
@@ -210,6 +236,12 @@ public class ColorDetection {
         return nbSameColor;
     }
 
+    /**
+     * Color found. Call update() or computeColor() before to get the latest
+     * color.
+     *
+     * @return the color as int.
+     */
     public int getColor() {
         return this.col;
     }
@@ -218,10 +250,21 @@ public class ColorDetection {
         return captureOffset;
     }
 
+    /**
+     * Set the position of the capture in millimeter.
+     *
+     * @param captureOffset
+     */
     public void setCaptureOffset(PVector captureOffset) {
         this.captureOffset = captureOffset;
     }
 
+    /**
+     * Set the position of the capture in millimeter.
+     *
+     * @param x
+     * @param y
+     */
     public void setCaptureOffset(float x, float y) {
         this.captureOffset.set(x, y);
     }
@@ -266,14 +309,6 @@ public class ColorDetection {
 
     public int getPicHeight() {
         return picHeight;
-    }
-
-    public boolean isInvY() {
-        return invY;
-    }
-
-    public void setInvY(boolean invY) {
-        this.invY = invY;
     }
 
 }
