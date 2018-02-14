@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Calibration>
-  <Camera CameraFormat="" CameraName="/dev/video1" CameraType="FFMPEG"/>
+  <Camera CameraFormat="" CameraName="0" CameraType="OPENCV"/>
 </Calibration>
