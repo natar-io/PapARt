@@ -19,10 +19,17 @@
     
     <repositories>
 
-<!--        <repository>
-            <id>realitytech</id>
-            <url>http://repository.rea.lity.tech/</url>
-        </repository>-->
+        <repository>
+      <id>public</id>
+      <name>RealityTech public repository</name>
+      <url>http://forum.rea.lity.tech:8081/repository/public/</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
         
         <repository>
             <id>clojars.org</id>
@@ -85,6 +92,12 @@
             <groupId>org.openni</groupId>
             <artifactId>OpenNI</artifactId>
             <version>2.3</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>tech.lity.rea</groupId>
+            <artifactId>SimplePointCloud</artifactId>
+            <version>0.1</version>
         </dependency>
 <!--    <dependency>
             <groupId>org.openni</groupId>
