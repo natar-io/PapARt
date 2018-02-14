@@ -8,11 +8,10 @@ The first big release is ready. If you want to try it out download our precompil
 
 ## Version 1.1 and 1.2 (January 2018)
 
-The first 2018 release will be directly to 1.2. This label is explained by two major updates: 
+The first 2018 releases are 1.1 and 1.2.There are two major updates: 
 
-* ColorTracking: The library enables color tracking. The system learns to recognize and track five colors which can be used to activate buttons, or identify objects. 
-* Hand recognition and tracking is improved to segment the arm - hands and fingers. The API is in progress and will evolve 
-with the 1.2.x versions. 
+* (1.1) ColorTracking: The library enables color tracking. The system learns to recognize and track five colors which can be used to activate buttons, or identify objects. 
+* (1.2) Hand recognition and tracking is improved to segment the arm - hands and fingers. The API is in progress and will evolve. This version is distributed with RealityTech's hardware.
 
 Other features: 
 
@@ -20,14 +19,13 @@ Other features: 
 * Support of intel Realsense cameras (SR300 and F200). 
 * Support of Orbbec cameras (Astra S).
 * JRubyArt support is getting extended.
-* Community support is moved from the wiki to the [forum](http://forum.rea.lity.tech). 
+* Community and commercial support is moved from the wiki to the [forum](http://forum.rea.lity.tech). 
 
-## Version 1.3 (April - June 2018)
+## Version 1.4 (April - June 2018)
 
 * Unity3D client: You will be able to create applications with Unity3D with a dedicated plugin.
 * Touch Tracking will get new features: object detection (not a hand), and mid-air touch will be back. 
 * Offline mode API. The library will be easier to use without the dedicated hardware.
-
 
 ## Examples
 
