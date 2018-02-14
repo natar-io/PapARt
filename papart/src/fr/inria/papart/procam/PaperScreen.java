@@ -261,6 +261,11 @@ public class PaperScreen extends DelegatedGraphics {
     }
 
     public PGraphicsOpenGL getGraphics() {
+        
+        if(this.isDrawingOnDisplay){
+            return (PGraphicsOpenGL) parent.getGraphics();
+        }
+        
         if (thisGraphics == null) {
             thisGraphics = (PGraphicsOpenGL) parent.createGraphics(
                     this.getRenderingSizeX(),
@@ -1492,7 +1497,7 @@ public class PaperScreen extends DelegatedGraphics {
 
             initPosM.translate(this.getRenderingSizeX() / 2, this.getRenderingSizeY() / 2);
             // All is relative to the paper's center. not the corner. 
-            initPosM.scale(-1, 1, -1);
+            initPosM.scale(-1, 1, 1);
 
         }
 
@@ -1500,7 +1505,7 @@ public class PaperScreen extends DelegatedGraphics {
         PMatrix3D newPos = this.getLocation(cam);
 
         newPos.translate(this.getRenderingSizeX() / 2, this.getRenderingSizeY() / 2);
-        newPos.scale(-1, 1, -1);
+        newPos.scale(-1, 1, 1);
 
         newPos.invert();
         newPos.apply(initPosM);
