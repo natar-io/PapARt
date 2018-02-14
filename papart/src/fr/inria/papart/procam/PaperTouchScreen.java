@@ -84,7 +84,7 @@ public class PaperTouchScreen extends PaperScreen {
     public void pre() {
         super.pre();
 
-        if (this.touchInput == null) {
+        if (this.touchInput == null && Papart.getPapart().isTouchInitialized()) {
             this.touchInput = Papart.getPapart().getTouchInput();
         }
         if (this.touchInput != null) {

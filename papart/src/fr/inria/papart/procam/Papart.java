@@ -1124,6 +1124,10 @@ public class Papart {
         return this.cameraTracking;
     }
 
+    public boolean isTouchInitialized(){
+        return this.touchInitialized;
+    }
+    
     public TouchInput getTouchInput() {
         assert (touchInitialized);
         return this.touchInput;
