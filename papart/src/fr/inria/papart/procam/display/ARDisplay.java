@@ -20,7 +20,7 @@
  */
 package fr.inria.papart.procam.display;
 
-import fr.inria.papart.calibration.MultiCalibrator;
+import fr.inria.papart.calibration.MultiSimpleCalibrator;
 import fr.inria.papart.calibration.files.PlaneCalibration;
 import processing.opengl.PGraphicsOpenGL;
 import org.bytedeco.javacv.ProjectiveDevice;
@@ -195,7 +195,7 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
     public void draw() {
         
         if(this.isCalibrationMode){
-            MultiCalibrator.drawCalibration(getGraphics());
+            MultiSimpleCalibrator.drawCalibration(getGraphics());
             return;
         }
         drawScreensOver();

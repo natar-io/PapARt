@@ -24,10 +24,8 @@ import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.PaperTouchScreen;
 import fr.inria.papart.procam.camera.Camera;
-import fr.inria.papart.procam.camera.ProjectorAsCamera;
 import fr.inria.papart.procam.camera.TrackedView;
 import fr.inria.papart.procam.display.ARDisplay;
-import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.tracking.DetectedMarker;
 import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.utils.DrawUtils;
@@ -98,30 +96,8 @@ class TableTest extends PaperTouchScreen {
 
 }
 
-public class MultiCalibrator extends PaperTouchScreen {
+public class MultiSimpleCalibrator extends PaperTouchScreen {
 
-    // TODO: Add depth calibration in the scenario. 
-    // TODO: add current calibration estimation. 
-    // Take color Image screenshots and store them (as JPG / PNG or in memory ?)
-    // 1. Project a light point +  2~4 blinking points top & bot 
-    //  -> When paperScreen stops moving (< 1cm?), capture all images for blinking analysis.
-    // Visual indication that the movement stopped (OK stay still for x seconds...) 
-    // Compute center position from Markers +  center from blinking points if all found.
-    // If not too different, store it, and a screenshot for later estimation. 
-    // Capture color spots from blinking analysis and store them. 
-    // Repeat 4 - 6 times. 
-    // Once done we have: 
-    // 4 - 6 screenshots from Camera. 
-    // Pairs of projected / captured points.  
-    // Loads of color data for color points. 
-    // 1. Homography computation:  Camera - projector.
-    // 2. Extract 4-6 projector images. 
-    // 3. Find markers if these projector images +  find markers in Cam images. 
-    // 4. Match 3D positions for extrinsic calibration and save it. 
-    // 5. Check - Extrinsic calibration ? (How to do it easily?)  
-    // 6. Compute color histograms, take the most commons, compute H,S,B + R,G,B  means + stdev. 
-    // 7. Check the colors for color tracking across 4-6 screenshots. save the colors.
-    // IDEA for touch / test: add 2-3 cubes or cylinder for touch testing ?
     protected boolean active = false;
 
     private Papart papart;
@@ -150,11 +126,6 @@ public class MultiCalibrator extends PaperTouchScreen {
     IplImage savedImages[];
     PMatrix3D savedLocations[];
     int savedColors[][];
-    private TrackedView projectorView;
-    private ProjectorAsCamera projectorAsCamera;
-
-    // projector rendering.
-    protected ProjectorDisplay projector;
 
     @Override
     public void settings() {
@@ -196,10 +167,9 @@ public class MultiCalibrator extends PaperTouchScreen {
             savedLocations = new PMatrix3D[nbScreenPoints];
             savedColors = new int[nbScreenPoints * 2][nbColors];
 
-            this.seeThrough = !(getDisplay() instanceof ProjectorDisplay);
+            this.seeThrough = true;
 //            initButtons();
             initScreenPoints();
-            initProjectorAsCamera();
 
             initColorTrackers();
             // GREEN circle 
@@ -322,55 +292,6 @@ public class MultiCalibrator extends PaperTouchScreen {
 
     boolean seeThrough = false;
 
-    private void initProjectorAsCamera() {
-
-        if (seeThrough) {
-            System.out.println("No Projector to calibrate...");
-            return;
-        }
-        projector = (ProjectorDisplay) getDisplay();
-
-        projectorView = new TrackedView();
-        projectorView.setImageWidthPx(projector.getWidth());
-        projectorView.setImageHeightPx(projector.getHeight());
-
-        if (cameraTracking.isPixelFormatGray()) {
-            projectorView.init(PApplet.GRAY);
-        }
-        if (cameraTracking.isPixelFormatColor()) {
-            projectorView.init(PApplet.RGB);
-        }
-
-        projectorView.useListOfPairs(true);
-        projectorView.clearObjectImagePairs();
-
-        projectorAsCamera = new ProjectorAsCamera(projector, cameraTracking, projectorView);
-        projectorAsCamera.setCalibration(Papart.projectorCalib);
-        projectorAsCamera.setParent(parent);
-
-        MarkerBoard board = this.getMarkerBoard();
-        // if it uses gray images.
-        // All of this needs to be more explicit. 
-        if (board.useGrayImages()) {
-            projectorAsCamera.setPixelFormat(Camera.PixelFormat.GRAY);
-        }
-
-        // Warning -> Only works with SVG tracking. 
-//        if (board.getMarkerType() == MarkerBoard.MarkerType.SVG) {
-//            projectorTracker = DetectedMarker.createDetector(projector.getWidth(), projector.getHeight());
-//        }
-        projectorAsCamera.trackSheets(true);
-        projectorAsCamera.trackMarkerBoard(board);
-
-// No filtering        
-        board.forceUpdate(projectorAsCamera, Integer.MAX_VALUE);
-        board.setDrawingMode(projectorAsCamera, false, 0);
-        board.removeFiltering(projectorAsCamera);
-
-        // warrning experimental
-//        projectorAsCamera.setThread();
-    }
-
     float maxMovement = 8f;
 
     @Override
@@ -482,15 +403,6 @@ public class MultiCalibrator extends PaperTouchScreen {
         this.savedImages[currentScreenPoint] = cameraTracking.getIplImage().clone();
         this.savedLocations[currentScreenPoint] = currentCamBoard();
 
-        // Save the touch plane  TODO: not used remove this
-//        red1.computeColor();
-//        red2.computeColor();
-//        blue1.computeColor();
-//        blue2.computeColor();
-//        this.savedColors[currentScreenPoint * 2][0] = red1.getColor();
-//        this.savedColors[currentScreenPoint * 2 + 1][0] = red2.getColor();
-//        this.savedColors[currentScreenPoint * 2][1] = blue1.getColor();
-//        this.savedColors[currentScreenPoint * 2 + 1][1] = blue1.getColor();
         for (int i = 0; i < this.nbColors; i++) {
             this.detections[i * 2].computeColor();
             this.detections[i * 2 + 1].computeColor();
@@ -507,9 +419,6 @@ public class MultiCalibrator extends PaperTouchScreen {
         PVector pxCam = cameraTracking.getProjectiveDevice().worldToPixelCoord(pos3D, false);
         PVector pt = new PVector(this.screenPoints[currentScreenPoint].x, this.screenPoints[currentScreenPoint].y);
 
-        if (!seeThrough) {
-            projectorView.addObjectImagePair(pxCam, pt);
-        }
     }
 
     private PMatrix3D currentCamBoard() {
@@ -521,93 +430,20 @@ public class MultiCalibrator extends PaperTouchScreen {
 
         if (currentScreenPoint == this.nbScreenPoints - 1) {
             currentScreenPoint = 0;
-            System.out.println("Ended !");
 
-            if (!seeThrough) {
-                calibrate();
-                isCalibratingToggle.show();
-                showProjectionToggle.show();
-                showTouchToggle.show();
-                showProjectionToggle.setState(true);
-                showTouchToggle.setState(true);
-                isCalibratingToggle.setState(false);
-                projectorView.clearObjectImagePairs();
-            }
             calibrateColors();
+            System.out.println("Ended !");
 
         } else {
             currentScreenPoint++;
         }
     }
 
-    // Loads of color data for color points. 
-    // 1. Homography computation:  Camera - projector.
-    // 2. Extract 4-6 projector images. 
-    // 3. Find markers if these projector images +  find markers in Cam images. 
-    // 4. Match 3D positions for extrinsic calibration and save it. 
-    // 5. Check - Extrinsic calibration ? (How to do it easily?)  
-    // 6. Compute color histograms, take the most commons, compute H,S,B + R,G,B  means + stdev. 
-    // 7. Check the colors for color tracking across 4-6 screenshots. save the colors.
-    void calibrate() {
-
-        // Do homography here. 
-        // Save homography
-        Papart.getPapart().saveCalibration(Papart.cameraProjHomography,
-                projectorView.getHomographyOf(cameraTracking).getHomography());
-
-        ArrayList<ExtrinsicSnapshot> snapshots = new ArrayList<ExtrinsicSnapshot>();
-
-        CameraThread projectorFakeThread = new CameraThread(projectorAsCamera);
-
-        PMatrix3D tableCenter = savedLocations[0].get();
-        tableCenter.translate(148.6f, 103.1f);
-
-        Papart.getPapart().setTableLocation(tableCenter);
-
-        // Homography is ready
-        // we can get images from it. 
-        for (int i = 0; i < nbScreenPoints; i++) {
-
-            IplImage img = savedImages[i];
-            // Set the image in the projector
-            projectorAsCamera.grab(img);
-
-            // Send to the thread, for pose estimation. 
-            projectorFakeThread.setImage(projectorAsCamera.getIplImage());
-            projectorFakeThread.setImage(projectorAsCamera.getIplImage());
-            projectorFakeThread.setImage(projectorAsCamera.getIplImage());
-
-            PMatrix3D projPos = getMarkerBoard().getTransfoMat(projectorAsCamera);
-
-            // TODO: WARNING - IT requires 3 or 4 compute for it to work. 
-            // NO IDEA WHY. 
-            projectorFakeThread.compute();
-            projectorFakeThread.compute();
-            projectorFakeThread.compute();
-            projectorFakeThread.compute();
-            projectorFakeThread.compute();
-            projectorFakeThread.compute();
-
-            // 5 Max and he found 8 !
-//            DetectedMarker[] detectedMarkers = projectorAsCamera.getDetectedMarkers();
-//            System.out.println("Number of markers found: " + detectedMarkers.length);
-//            System.out.println("in (fake) Camera: " + projectorAsCamera);
-            projPos = getMarkerBoard().getTransfoMat(projectorAsCamera);
-
-//            opencv_imgcodecs.cvSaveImage("/home/jiii/tmp/cam-" + i + ".bmp", img);
-//            opencv_imgcodecs.cvSaveImage("/home/jiii/tmp/proj-" + i + ".bmp", projectorAsCamera.getIplImage());
-//            System.out.println("Saved " + "/home/jiii/tmp/cam-" + i + ".bmp");
-//            System.out.println("Saved " + "/home/jiii/tmp/proj-" + i + ".bmp");
-//            projPos.print();
-            snapshots.add(new ExtrinsicSnapshot(savedLocations[i],
-                    projPos, null));
-        }
-
-        ExtrinsicCalibrator calibrationExtrinsic = new ExtrinsicCalibrator(parent);
-        calibrationExtrinsic.setProjector(projector);
-
-        // Compute, save and set !...
-        calibrationExtrinsic.computeProjectorCameraExtrinsics(snapshots);
+    /**
+     * *
+     * Get the 3D plane for touch.
+     */
+    void calibrateTouch() {
 
         // Save average plane, and table touch !
         Plane sumPlanes = new Plane(new Vec3D(0, 0, 0),
@@ -615,7 +451,6 @@ public class MultiCalibrator extends PaperTouchScreen {
         PMatrix3D extr = depthCameraDevice.getStereoCalibrationInv().get();
 
         for (int i = 0; i < nbScreenPoints; i++) {
-
             // Re-compute the plane...
             PMatrix3D paperViewedByCam = savedLocations[i].get();
             paperViewedByCam.apply(extr);
@@ -636,18 +471,8 @@ public class MultiCalibrator extends PaperTouchScreen {
         planeCalib.flipNormal();
         planeCalib.moveAlongNormal(zShift);
 
-//        this.planeProjCalib.setPlane(planeCalib);
-        // Now the projection for screen-space.
-        // planes from the camera perspective. 
-        PlaneCalibration planeCalibCam = calibrationExtrinsic.computeAveragePlaneCam(snapshots);
-        planeCalibCam.flipNormal();
-
-        // identity - no external camera for ProCam calibration
-        PMatrix3D depthCamExtrinsics = new PMatrix3D();
-        // Depth -> Color calibration.
-        depthCamExtrinsics.set(extr);
-
-        HomographyCalibration homography = ExtrinsicCalibrator.computeScreenPaperIntersection(projector, planeCalibCam, depthCamExtrinsics);
+        /// hummm which homography here ?
+        HomographyCalibration homography = new HomographyCalibration();
 
 //        this.planeProjCalib.setHomography(homography);
         this.saveTouch(planeCalib, homography);
@@ -740,46 +565,45 @@ public class MultiCalibrator extends PaperTouchScreen {
             stdevB /= nbScreenPoints * 2;
 
             // Check the stdev... when too high the value is not stored.
-            if(stdevHue > 40 || stdevSat > 40 || stdevIntens > 50){
+            if (stdevHue > 40 || stdevSat > 40 || stdevIntens > 50) {
                 System.out.println("Could not determine color: " + colorId);
                 continue;
             }
-            
+
             // Good dev, make it larger
-            if(stdevHue < 3){
+            if (stdevHue < 3) {
                 stdevHue = 4;
             }
             // Good dev, make it larger
-            if(stdevSat < 5){
+            if (stdevSat < 5) {
                 stdevSat = 10;
             }
             // Good dev, make it larger
-            if(stdevIntens < 5){
+            if (stdevIntens < 5) {
                 stdevIntens = 10;
             }
-            
-            
+
             String words = "hue:" + Float.toString(stdevHue * 3) + " "
-                    + "sat:" + Float.toString(stdevSat*3) + " "
-                    + "intens:" + Float.toString(stdevIntens*3) + " "
-                    + "erosion:" + Integer.toString(1) + " "+
-            	"red:"+  Float.toString(stdevR * 3) + " "+
-            	"blue:"+  Float.toString(stdevB * 3) + " "+
-            	"green:"+  Float.toString(stdevB * 3) + "\n";
+                    + "sat:" + Float.toString(stdevSat * 3) + " "
+                    + "intens:" + Float.toString(stdevIntens * 3) + " "
+                    + "erosion:" + Integer.toString(1) + " "
+                    + "red:" + Float.toString(stdevR * 3) + " "
+                    + "blue:" + Float.toString(stdevB * 3) + " "
+                    + "green:" + Float.toString(stdevB * 3) + "\n";
 
             words = words + "id:" + Integer.toString(colorId) + "\n";
             words = words + "col:" + Integer.toString(averageCol);
 
             String[] list = split(words, ' ');
-            
+
             String saveFile = Papart.colorThresholds + colorId + ".txt";
             parent.saveStrings(saveFile, list);
-            
-            if(colorId == 0){
-            parent.saveStrings(Papart.redThresholds, list);
+
+            if (colorId == 0) {
+                parent.saveStrings(Papart.redThresholds, list);
             }
-            if(colorId == 1){
-            parent.saveStrings(Papart.blueThresholds, list);
+            if (colorId == 1) {
+                parent.saveStrings(Papart.blueThresholds, list);
             }
         }
 
@@ -820,7 +644,7 @@ public class MultiCalibrator extends PaperTouchScreen {
 
     public static void drawCalibration(PGraphicsOpenGL screenGraphics) {
         Papart papart = Papart.getPapart();
-        MultiCalibrator multiCalibrator = papart.multiCalibrator;
+        MultiSimpleCalibrator multiCalibrator = papart.multiCalibrator;
         PApplet parent = multiCalibrator.parent;
         PGraphicsOpenGL g = (PGraphicsOpenGL) parent.g;
 
@@ -861,7 +685,7 @@ public class MultiCalibrator extends PaperTouchScreen {
         skatolo.draw(g);
     }
 
-    public static void initGUI(PApplet parent, PGraphicsOpenGL g, MultiCalibrator multiCalibrator) {
+    public static void initGUI(PApplet parent, PGraphicsOpenGL g, MultiSimpleCalibrator multiCalibrator) {
         skatolo = new Skatolo(parent, multiCalibrator);
 //            button = skatolo.addButton("button")
 //                    .setPosition(200, 100)
@@ -893,7 +717,7 @@ public class MultiCalibrator extends PaperTouchScreen {
 
     }
 
-    public static void drawTarget(PGraphicsOpenGL g, MultiCalibrator multiCalibrator) {
+    public static void drawTarget(PGraphicsOpenGL g, MultiSimpleCalibrator multiCalibrator) {
         g.noFill();
         g.stroke(255);
         g.ellipseMode(CENTER);
@@ -915,7 +739,7 @@ public class MultiCalibrator extends PaperTouchScreen {
     }
 
     public static void drawFrame(PApplet parent, PGraphicsOpenGL g,
-            MultiCalibrator multiCalibrator) {
+            MultiSimpleCalibrator multiCalibrator) {
 
         g.rectMode(CORNER);
         // GlobalFrame
@@ -926,39 +750,29 @@ public class MultiCalibrator extends PaperTouchScreen {
     }
 
     public static void drawAR(PApplet parent, PGraphicsOpenGL g,
-            MultiCalibrator multiCalibrator, PVector pt) {
+            MultiSimpleCalibrator multiCalibrator, PVector pt) {
 
-        if (multiCalibrator.getDisplay() instanceof ProjectorDisplay) {
-            ProjectorDisplay projector = (ProjectorDisplay) multiCalibrator.getDisplay();
-//            display = projector;
-            projector.drawScreensOver();
+        // AR rendering, for touch and color tracking (and debug). 
+        if (multiCalibrator.getDisplay() instanceof ARDisplay) {
+            ARDisplay display = (ARDisplay) multiCalibrator.getDisplay();
+            display.drawScreensOver();
             parent.noStroke();
-            DrawUtils.drawImage((PGraphicsOpenGL) parent.g,
-                    projector.render(),
-                    0, 0, projector.getWidth(), projector.getHeight());
-        } else {
-            // AR rendering, for touch and color tracking (and debug). 
-            if (multiCalibrator.getDisplay() instanceof ARDisplay) {
-                ARDisplay display = (ARDisplay) multiCalibrator.getDisplay();
-                display.drawScreensOver();
-                parent.noStroke();
-                PImage img = multiCalibrator.getCameraTracking().getPImage();
-                if (multiCalibrator.getCameraTracking() != null && img != null) {
-                    parent.image(img, 0, 0, parent.width, parent.height);
+            PImage img = multiCalibrator.getCameraTracking().getPImage();
+            if (multiCalibrator.getCameraTracking() != null && img != null) {
+                parent.image(img, 0, 0, parent.width, parent.height);
 //            ((PGraphicsOpenGL) (parent.g)).image(camera.getPImage(), 0, 0, frameWidth, frameHeight);
-                }
-
-                // TODO: Distorsion problems with higher image space distorisions (useless ?)
-                DrawUtils.drawImage((PGraphicsOpenGL) parent.g,
-                        display.render(),
-                        0, 0, parent.width, parent.height);
             }
+
+            // TODO: Distorsion problems with higher image space distorisions (useless ?)
+            DrawUtils.drawImage((PGraphicsOpenGL) parent.g,
+                    display.render(),
+                    0, 0, parent.width, parent.height);
         }
 
     }
 
     public static void drawProgress(PGraphicsOpenGL g,
-            MultiCalibrator multiCalibrator, PVector pt) {
+            MultiSimpleCalibrator multiCalibrator, PVector pt) {
         g.pushMatrix();
         g.translate(120, 150);
         g.fill(255);  // necessary for text
@@ -999,7 +813,7 @@ public class MultiCalibrator extends PaperTouchScreen {
     }
 
     public static void drawHints(PGraphicsOpenGL g,
-            MultiCalibrator multiCalibrator, PVector pt) {
+            MultiSimpleCalibrator multiCalibrator, PVector pt) {
 
         Papart papart = Papart.getPapart();
         PApplet parent = multiCalibrator.parent;
@@ -1061,7 +875,7 @@ public class MultiCalibrator extends PaperTouchScreen {
     }
 
     public static void drawTouchCalibrated(PGraphicsOpenGL g,
-            MultiCalibrator multiCalibrator) {
+            MultiSimpleCalibrator multiCalibrator) {
         Papart papart = Papart.getPapart();
         PApplet parent = multiCalibrator.parent;
         DepthTouchInput touchInput = (DepthTouchInput) papart.getTouchInput();

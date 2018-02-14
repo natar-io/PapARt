@@ -30,7 +30,6 @@ import fr.inria.papart.multitouch.TouchList;
 import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.utils.MathUtils;
-import fr.inria.papart.procam.display.ProjectorDisplay;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import processing.core.PApplet;

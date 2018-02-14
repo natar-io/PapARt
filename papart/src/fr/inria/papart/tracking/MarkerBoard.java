@@ -20,7 +20,6 @@
 package fr.inria.papart.tracking;
 
 import fr.inria.papart.procam.camera.Camera;
-import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.multitouch.OneEuroFilter;
 import fr.inria.papart.procam.camera.CameraRGBIRDepth;
@@ -243,13 +242,6 @@ public abstract class MarkerBoard {
         return px;
     }
 
-    public boolean isSeenBy(Camera camera, ProjectorDisplay projector, float error) {
-        PVector px = this.getBoardLocation(camera, projector);
-        return !(px.x < (0 - error)
-                || px.x > projector.getWidth()
-                || px.y < (0 - error)
-                || px.y > (projector.getHeight() + error));
-    }
 
     public synchronized void updateLocation(Camera camera, IplImage img, Object globalTracking) {
 

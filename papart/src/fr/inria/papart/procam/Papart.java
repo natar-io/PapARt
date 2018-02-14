@@ -20,14 +20,12 @@
 package fr.inria.papart.procam;
 
 import com.jogamp.newt.opengl.GLWindow;
-import fr.inria.papart.calibration.CalibrationUI;
-import fr.inria.papart.calibration.MultiCalibrator;
+import fr.inria.papart.calibration.MultiSimpleCalibrator;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.calibration.files.CameraConfiguration;
 import fr.inria.papart.calibration.files.HomographyCalibration;
 import fr.inria.papart.calibration.files.PlanarTouchCalibration;
 import fr.inria.papart.procam.display.BaseDisplay;
-import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
 import org.bytedeco.javacpp.freenect;
 import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
@@ -39,7 +37,6 @@ import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.depthcam.devices.KinectOne;
 import fr.inria.papart.depthcam.devices.OpenNI2;
 import fr.inria.papart.depthcam.devices.RealSense;
-import fr.inria.papart.multitouch.ColorTouchInput;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.multitouch.TUIOTouchInput;
 import fr.inria.papart.multitouch.DepthTouchInput;
@@ -141,7 +138,7 @@ public class Papart {
 
     private BaseDisplay display;
     private ARDisplay arDisplay;
-    private ProjectorDisplay projector;
+
 
     private Camera cameraTracking;
     private DepthAnalysisImpl depthAnalysis;
@@ -215,26 +212,14 @@ public class Papart {
         return config;
     }
 
-    private CalibrationUI calibrationPopup = null;
-
-    public void calibration(PaperScreen screen, PaperScreen pointer) {
-        if (calibrationPopup == null) {
-            calibrationPopup = new CalibrationUI(screen, pointer);
-        } else if (calibrationPopup.isHidden()) {
-            calibrationPopup.show();
-        } else {
-            calibrationPopup.hide();
-        }
-    }
-
-    public MultiCalibrator multiCalibrator;
+    public MultiSimpleCalibrator multiCalibrator;
 
     public void multiCalibration() {
 
         try {
 
             if (multiCalibrator == null) {
-                multiCalibrator = new MultiCalibrator();
+                multiCalibrator = new MultiSimpleCalibrator();
             } else {
                 if (multiCalibrator.isActive()) {
                     multiCalibrator.stopCalib();
@@ -248,100 +233,7 @@ public class Papart {
         }
     }
 
-    /**
-     * Start the default camera and projector. This initialize a camera and a
-     * ProjectorDisplay. You still need to enable the tracking and start the
-     * camera. The projectorDisplay will run fullscreen on the main screen.
-     *
-     * @param applet
-     * @return
-     */
-    public static Papart projection(PApplet applet) {
-        return projection(applet, 1f);
-    }
-
-    /**
-     * Start the default camera and projector. This initialize a camera and a
-     * ProjectorDisplay. You still need to enable the tracking and start the
-     * camera. The projectorDisplay will run fullscreen on the main screen.
-     *
-     * @param applet
-     * @param quality the quality can upscale or downscale the ProjectorDisplay.
-     * Increase (2.0) for better quality. If you have a 1280 width display, and
-     * 2 quality the rendered image width will be 2560 pixels.
-     * @return
-     */
-    public static Papart projection(PApplet applet, float quality) {
-
-        ScreenConfiguration screenConfiguration = getDefaultScreenConfiguration(applet);
-
-        removeFrameBorder(applet);
-
-        Papart papart = new Papart(applet);
-
-        papart.frameSize.set(screenConfiguration.getProjectionScreenWidth(),
-                screenConfiguration.getProjectionScreenHeight());
-        papart.shouldSetWindowLocation = false;
-        papart.shouldSetWindowSize = true;
-        papart.registerPost();
-
-        papart.initProjectorDisplay(quality);
-        try {
-            papart.initCamera();
-        } catch (CannotCreateCameraException ex) {
-            throw new RuntimeException("Cannot start the default camera: " + ex);
-        }
-
-        papart.tryLoadExtrinsics();
-        papart.projector.setCamera(papart.getPublicCameraTracking());
-
-        papart.checkInitialization();
-        papart.registerKey();
-
-        return papart;
-    }
-
-    /**
-     * Start the default projector. This initialize a ProjectorDisplay. The
-     * projectorDisplay will run fullscreen on the main screen.
-     *
-     * @param applet
-     * @return
-     */
-    public static Papart projectionOnly(PApplet applet) {
-        return projectionOnly(applet, 1);
-    }
-
-    /**
-     * Start the default projector. This initialize a ProjectorDisplay. The
-     * projectorDisplay will run fullscreen on the main screen.
-     *
-     * @param applet
-     * @param quality the quality can upscale or downscale the ProjectorDisplay.
-     * Increase (2.0) for better quality. If you have a 1280 width display, and
-     * 2 quality the rendered image width will be 2560 pixels.
-     * @return
-     */
-    public static Papart projectionOnly(PApplet applet, float quality) {
-
-        ScreenConfiguration screenConfiguration = getDefaultScreenConfiguration(applet);
-
-        removeFrameBorder(applet);
-
-        Papart papart = new Papart(applet);
-
-        papart.frameSize.set(screenConfiguration.getProjectionScreenWidth(),
-                screenConfiguration.getProjectionScreenHeight());
-        papart.shouldSetWindowLocation = true;
-        papart.shouldSetWindowSize = true;
-        papart.registerPost();
-        papart.initProjectorDisplay(quality);
-        papart.isWithoutCamera = true;
-
-        return papart;
-    }
-
-    /**
+       /**
      * Start the default camera and a CameraDisplay. You still need to enable
      * the tracking and start the camera. The window will resize itself to the
      * camera size.
@@ -479,21 +371,6 @@ public class Papart {
 //        GLWindow window = (GLWindow) applet.getSurface().getNative();
 //        window.setUndecorated(false);
 //        window.setSize(w, h);
-    }
-
-    /**
-     * Force the window size to the default projector size.
-     */
-    public void forceProjectorSize() {
-        frameSize.set(projector.getWidth(),
-                projector.getHeight());
-//        this.shouldSetWindowSize = true;
-//        registerPost();
-
-        GLWindow window = (GLWindow) applet.getSurface().getNative();
-        window.setUndecorated(true);
-        window.setSize(projector.getWidth(),
-                projector.getHeight());
     }
 
     /**
@@ -644,18 +521,6 @@ public class Papart {
         HomographyCalibration.saveMatTo(applet, mat, tablePosition);
     }
 
-    /**
-     * Use if the table location is relative to the projector.
-     *
-     * @return
-     */
-    public PMatrix3D getTableLocationFromProjector() {
-        PMatrix3D extr = getProjectorDisplay().getExtrinsics();
-        extr.invert();
-        PMatrix3D table = getTableLocation();
-        table.preApply(extr);
-        return table;
-    }
 
     /**
      * The location of the table, warning it must be set once by
@@ -750,28 +615,6 @@ public class Papart {
         cameraTracking.setCalibration(cameraCalib);
     }
 
-    public void loadDefaultProjector() {
-        initProjectorDisplay(1);
-        projector.manualMode();
-    }
-
-    /**
-     * Initialize the default ProjectorDisplay from the projectorCalib file.
-     *
-     * @param quality
-     */
-    private void initProjectorDisplay(float quality) {
-        // TODO: check if file exists !
-        projector = new ProjectorDisplay(this.applet, projectorCalib);
-        projector.setZNearFar(zNear, zFar);
-        projector.setQuality(quality);
-        arDisplay = projector;
-        display = projector;
-        projector.init();
-        displayInitialized = true;
-        frameSize.set(projector.getWidth(), projector.getHeight());
-    }
-
     /**
      * Initialize the default ARDisplay from the cameraTracking.
      *
@@ -830,25 +673,12 @@ public class Papart {
         updateDepthCameraDeviceExtrinsics();
     }
 
-    public void loadIRTouchInput() {
-        try {
-            initCamera();
-            ((CameraRGBIRDepth) cameraTracking).setUseIR(true);
-            loadIRTouch();
-
-        } catch (CannotCreateCameraException cce) {
-            throw new RuntimeException("Cannot start the depth camera");
-        }
-//        updateDepthCameraDeviceExtrinsics();
-    }
-
     /**
      * Get the extrinsics from a depth camera.
      */
     private void updateDepthCameraDeviceExtrinsics() {
         // Check if depthCamera is the same as the camera !
-        if (projector == null
-                && cameraTracking instanceof CameraRGBIRDepth
+        if (cameraTracking instanceof CameraRGBIRDepth
                 && cameraTracking == depthCameraDevice.getMainCamera()) {
 
             // No extrinsic used, it is already in the camera... 
@@ -869,13 +699,6 @@ public class Papart {
         }
     }
 
-    @Deprecated
-    private boolean useKinectOne = true;
-
-    @Deprecated
-    public void useKinectOne(boolean kinectOne) {
-        this.useKinectOne = kinectOne;
-    }
 
     /**
      * Initialize the default depth camera. You still need to start the camera.
@@ -937,17 +760,6 @@ public class Papart {
         depthTouchInput.setSimpleTouchDetectionCalibration(getPapart().getDefaultTouchCalibration());
 
         this.touchInput = depthTouchInput;
-        touchInitialized = true;
-    }
-
-    private void loadIRTouch() {
-
-//        PlaneAndProjectionCalibration calibration = new PlaneAndProjectionCalibration();
-//        calibration.loadFrom(this.applet, planeAndProjectionCalib);
-        ColorTouchInput colorTouchInput
-                = new ColorTouchInput(this.applet, ((CameraRGBIRDepth) cameraTracking).getIRCamera());
-        this.touchInput = colorTouchInput;
-        cameraTracking.setTouchInput(colorTouchInput);
         touchInitialized = true;
     }
 
@@ -1070,7 +882,7 @@ public class Papart {
         }
 
         // Calibration might be loaded from the device and require an update. 
-        if (arDisplay != null && !(arDisplay instanceof ProjectorDisplay)) {
+        if (arDisplay != null) {
             arDisplay.reloadCalibration();
         }
 
@@ -1291,12 +1103,6 @@ public class Papart {
 
     public void setNoTrackingCamera() {
         this.isWithoutCamera = true;
-    }
-
-    // TODO: remove these asserts...
-    public ProjectorDisplay getProjectorDisplay() {
-//        assert (displayInitialized);
-        return this.projector;
     }
 
     public ARDisplay getARDisplay() {

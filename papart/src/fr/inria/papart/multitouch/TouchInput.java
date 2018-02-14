@@ -23,7 +23,6 @@ import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.display.ARDisplay;
 
 import fr.inria.papart.procam.display.BaseDisplay;
-import fr.inria.papart.procam.display.ProjectorDisplay;
 import java.util.ArrayList;
 import processing.core.PVector;
 import toxi.geom.Vec3D;

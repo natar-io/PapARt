@@ -290,18 +290,13 @@ public class BaseDisplay implements HasCamera {
     }
 
     public PVector project(PaperScreen screen, float x, float y) {
-        boolean isProjector = this instanceof ProjectorDisplay;
         boolean isARDisplay = this instanceof ARDisplay;
         // check that the correct method is called !
         PVector paperScreenCoord;
-        if (isProjector) {
-            paperScreenCoord = ((ProjectorDisplay) this).projectPointer(screen, x, y);
+        if (isARDisplay) {
+            paperScreenCoord = ((ARDisplay) this).projectPointer(screen, x, y);
         } else {
-            if (isARDisplay) {
-                paperScreenCoord = ((ARDisplay) this).projectPointer(screen, x, y);
-            } else {
-                paperScreenCoord = this.projectPointer(screen, x, y);
-            }
+            paperScreenCoord = this.projectPointer(screen, x, y);
         }
         return paperScreenCoord;
     }

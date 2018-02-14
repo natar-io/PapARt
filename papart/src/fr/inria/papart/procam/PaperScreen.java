@@ -30,7 +30,6 @@ import fr.inria.papart.multitouch.Touch;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
-import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.tracking.DetectedMarker;
 import fr.inria.papart.tracking.ObjectFinder;
 import fr.inria.papart.utils.MathUtils;
@@ -1102,19 +1101,7 @@ public class PaperScreen extends DelegatedGraphics {
      * @return the coordinates for cameraTracking.
      */
     public PVector getCameraViewOf(Touch t) {
-
-        if (getDisplay() instanceof ProjectorDisplay) {
-            ProjectorDisplay projector = (ProjectorDisplay) getDisplay();
-            TrackedElement tp = t.trackedSource;
-            PVector screenPos = tp.getPosition();
-            PVector tablePos = projector.projectPointer3D(this, screenPos.x, screenPos.y);
-            ProjectiveDeviceP pdp = cameraTracking.getProjectiveDevice();
-            PVector coord = pdp.worldToPixelCoord(tablePos);
-            return coord;
-        } else {
-// Opposite of project... ?
             return getDisplay().project(this, t.position.x, t.position.y);
-        }
     }
 
     /**

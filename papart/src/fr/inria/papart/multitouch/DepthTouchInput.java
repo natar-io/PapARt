@@ -36,7 +36,6 @@ import fr.inria.papart.multitouch.detection.Simple2D;
 import fr.inria.papart.multitouch.detection.TouchDetectionDepth;
 import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.display.BaseDisplay;
-import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.utils.MathUtils;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
