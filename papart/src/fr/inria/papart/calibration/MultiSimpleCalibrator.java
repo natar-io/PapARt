@@ -472,7 +472,10 @@ public class MultiSimpleCalibrator extends PaperTouchScreen {
         planeCalib.moveAlongNormal(zShift);
 
         /// hummm which homography here ?
-        HomographyCalibration homography = new HomographyCalibration();
+//        HomographyCalibration homography = new HomographyCalibration();
+
+        TrackedView trackedView = new TrackedView(this.getMarkerBoard());
+         HomographyCalibration homography = trackedView.getHomographyOf(this.getCameraTracking());
 
 //        this.planeProjCalib.setHomography(homography);
         this.saveTouch(planeCalib, homography);
