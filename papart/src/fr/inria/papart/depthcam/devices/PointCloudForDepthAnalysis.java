@@ -20,10 +20,10 @@
 package fr.inria.papart.depthcam.devices;
 
 import fr.inria.papart.depthcam.DepthDataElementProjected;
-import tech.lity.rea.pointcloud.PointCloud;
+import fr.inria.papart.depthcam.PointCloud;
 import fr.inria.papart.depthcam.analysis.DepthAnalysisPImageView;
 import fr.inria.papart.depthcam.analysis.DepthAnalysisImpl;
-import static tech.lity.rea.pointcloud.PointCloud.javaToNativeARGB;
+import static fr.inria.papart.depthcam.PointCloud.javaToNativeARGB;
 import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
 import java.util.ArrayList;
 import processing.core.PApplet;
