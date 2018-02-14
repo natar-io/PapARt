@@ -267,12 +267,6 @@ public class Papart {
 
         Papart papart = new Papart(applet);
 
-        if (pdp != null) {
-            papart.frameSize.set(pdp.getWidth(), pdp.getHeight());
-            papart.shouldSetWindowSize = true;
-            papart.registerPost();
-        }
-
         try {
             papart.initCamera();
         } catch (CannotCreateCameraException ex) {
