@@ -19,6 +19,7 @@ mv volumeutils libraries/
 
 echo "Get SVGExtended"
 wget https://github.com/Rea-lity-Tech/SVGExtended/releases/download/3.3.5/SVGExtended.tgz
+
 tar xvzf SVGExtended.tgz 
 mv SVGExtended libraries/
 
@@ -72,9 +73,6 @@ cp reflections.tgz ..
 cd ..
 tar xvzf reflections.tgz
 mv reflections libraries/
-
-
-
 
 echo "Compile JavaCV"
 cd javacv-build

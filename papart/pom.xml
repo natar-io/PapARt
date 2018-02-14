@@ -31,9 +31,16 @@
     <repositories>
 
         <repository>
-            <id>realitytech</id>
-            <url>http://repository.rea.lity.tech/</url>
-        </repository>
+      <id>public</id>
+      <name>RealityTech public repository</name>
+      <url>http://forum.rea.lity.tech:8081/repository/public/</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
         
         <repository>
             <id>clojars.org</id>
@@ -171,7 +178,7 @@
         <dependency>
             <groupId>tech.lity.rea</groupId>
             <artifactId>SVGExtended</artifactId>
-            <version>3.3.4</version>
+            <version>3.3.6</version>
         </dependency>
         
         <!--We package and distribute--> 
