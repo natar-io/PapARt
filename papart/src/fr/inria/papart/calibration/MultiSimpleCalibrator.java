@@ -126,6 +126,7 @@ public class MultiSimpleCalibrator extends PaperTouchScreen {
     IplImage savedImages[];
     PMatrix3D savedLocations[];
     int savedColors[][];
+    private boolean useTouch = false;
 
     @Override
     public void settings() {
@@ -175,10 +176,13 @@ public class MultiSimpleCalibrator extends PaperTouchScreen {
             // GREEN circle 
 //                 fill(0, 255, 0);
 //        rect(79.8f, 123.8f, 15f, 15f);
-            depthTouchInput = (DepthTouchInput) papart.getTouchInput();
-            depthTouchInput.useRawDepth();
-            depthCameraDevice = papart.getDepthCameraDevice();
-
+            if (papart.isTouchInitialized()) {
+                depthTouchInput = (DepthTouchInput) papart.getTouchInput();
+                depthTouchInput.useRawDepth();
+                depthCameraDevice = papart.getDepthCameraDevice();
+                useTouch = true;
+            }
+            
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -430,8 +434,12 @@ public class MultiSimpleCalibrator extends PaperTouchScreen {
 
         if (currentScreenPoint == this.nbScreenPoints - 1) {
             currentScreenPoint = 0;
-
+            
+            if(useTouch){
+                calibrateTouch();
+            }
             calibrateColors();
+            
             System.out.println("Ended !");
 
         } else {
@@ -473,9 +481,8 @@ public class MultiSimpleCalibrator extends PaperTouchScreen {
 
         /// hummm which homography here ?
 //        HomographyCalibration homography = new HomographyCalibration();
-
         TrackedView trackedView = new TrackedView(this.getMarkerBoard());
-         HomographyCalibration homography = trackedView.getHomographyOf(this.getCameraTracking());
+        HomographyCalibration homography = trackedView.getHomographyOf(this.getCameraTracking());
 
 //        this.planeProjCalib.setHomography(homography);
         this.saveTouch(planeCalib, homography);
