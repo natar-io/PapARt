@@ -75,7 +75,7 @@ import processing.event.KeyEvent;
  */
 public class Papart {
 
-    public final static String folder = LibraryUtils.getPapartFolder() + "/data/";
+    public final static String folder = LibraryUtils.getPapartDataFolder() + "/";
     public final static String calibrationFolder = folder + "calibration/";
     public final static String markerFolder = folder + "markers/";
 
