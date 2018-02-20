@@ -37,8 +37,8 @@ public class MarkerSvg implements Cloneable {
     private final int id;
     private final PMatrix2D matrix;
     private final PVector size;
-    private PVector[] corners = new PVector[4];
-    private boolean cornersSet = false;
+    protected PVector[] corners = new PVector[4];
+    protected boolean cornersSet = false;
 
     public MarkerSvg(int id, PMatrix2D matrix, PVector size) {
         this.id = id;
@@ -110,129 +110,7 @@ public class MarkerSvg implements Cloneable {
         }
         x /= 4;
         y /= 4;
-        return new PVector((float) x, (float)y);
+        return new PVector((float) x, (float) y);
     }
 
-    /**
-     * Check pixel resolution - TODO
-     *
-     * @return
-     */
-    public static float pixelToMm() {
-//        return 25.4f / 96.0f;
-        return 25.4f / 90.0f;
-    }
-
-    public static float mmToPixel() {
-        return 1.0f / pixelToMm();
-    }
-
-    static private void findMarkers(PShapeSVGExtended shape, ArrayList<PShape> markers) {
-        try {
-            for (PShape child : shape.getChildren()) {
-                findMarkers((PShapeSVGExtended) child, markers);
-            }
-        } catch (NullPointerException npe) {
-            // Sometimes no child causes a null pointer exception.
-        }
-
-        if (shape.getKind() == RECT && shape.getName().startsWith("marker")) {
-            markers.add(shape);
-        }
-    }
-
-    static private float computeSize(String heightText) {
-
-        if (heightText.endsWith("mm")) {
-            String value = heightText.substring(0, heightText.indexOf("mm"));
-            return Float.parseFloat(value) * mmToPixel();
-        } else {
-            return Float.parseFloat(heightText);
-        }
-
-    }
-
-    static public MarkerList getMarkersFromSVG(XML xml) {
-
-        float pageHeight = computeSize(xml.getString("height"));
-//        System.out.println("Height : " + pageHeight);
-
-        PShape svg = new PShapeSVGExtended(xml);
-        ArrayList<PShape> markersSVG = new ArrayList<>();
-        findMarkers((PShapeSVGExtended) svg, markersSVG);
-
-//        ArrayList<MarkerSvg> markers = new ArrayList<>();
-        MarkerList markers = new MarkerList();
-
-        float sheetWidth = computeSize(xml.getString("width")) * pixelToMm();
-        float sheetHeight = computeSize(xml.getString("height")) * pixelToMm();
-        markers.setSheetSize(sheetWidth, sheetHeight);
-
-        for (PShape markerSvg : markersSVG) {
-
-            int id = Integer.parseInt(markerSvg.getName().substring(6));
-
-            float[] params = markerSvg.getParams();
-
-            PVector size = new PVector(params[2], params[3]);
-
-            // SVG standard has a going down Y axis. 
-            PMatrix2D matrix = (PMatrix2D) getMatrix(markerSvg);
-            matrix.scale(1, -1);
-//            matrix.translate(0, -size.y);
-
-            matrix.m02 = matrix.m02 * pixelToMm();
-            matrix.m12 = matrix.m12 * pixelToMm();
-//            matrix.m12 = (pageHeight - matrix.m12) * pixelToMm();
-
-            size.x = size.x * pixelToMm();
-            size.y = size.y * pixelToMm();
-            MarkerSvg marker = new MarkerSvg(id, matrix.get(), size);
-
-            marker.corners[0] = new PVector(matrix.m02, matrix.m12);
-            matrix.translate(size.x, 0);
-            marker.corners[1] = new PVector(matrix.m02, matrix.m12);
-            matrix.translate(0, -size.y);
-            marker.corners[2] = new PVector(matrix.m02, matrix.m12);
-            matrix.translate(-size.x, 0);
-            marker.corners[3] = new PVector(matrix.m02, matrix.m12);
-            marker.cornersSet = true;
-
-            markers.put(id, marker);
-
-        }
-        return markers;
-    }
-
-    private static PMatrix getMatrix(PShape shape) {
-
-        PMatrix matrix = ((PShapeSVGExtended) shape).getMatrix();
-
-        boolean useParams = true;
-        float[] params = null;
-
-        try {
-            params = shape.getParams();
-        } catch (NullPointerException npe) {
-            useParams = false;
-        }
-
-        if (matrix == null) {
-            matrix = new PMatrix2D();
-
-        }
-        if (useParams) {
-            matrix.translate(params[0], params[1]);
-        }
-
-        // is root.
-        if (shape.getParent() == null) {
-            return matrix;
-        }
-
-        PMatrix2D parentMat = (PMatrix2D) getMatrix(shape.getParent());
-        matrix.preApply(parentMat);
-
-        return matrix;
-    }
 }
