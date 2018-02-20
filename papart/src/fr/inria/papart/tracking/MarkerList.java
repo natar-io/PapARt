@@ -28,16 +28,31 @@ import processing.core.PVector;
  */
 public class MarkerList extends HashMap<Integer, MarkerSvg> {
 
+    /**
+     * Size in mm.
+     */
     private final PVector sheetSize = new PVector();
 
     public float getSheetHeight() {
         return sheetSize.y;
     }
 
+    /**
+     * Set sheet size in mm.
+     *
+     * @param x
+     * @param y
+     */
     public void setSheetSize(PVector size) {
         setSheetSize(size.x, size.y);
     }
 
+    /**
+     * Set sheet size in mm.
+     *
+     * @param x
+     * @param y
+     */
     public void setSheetSize(float x, float y) {
         this.sheetSize.x = x;
         this.sheetSize.y = y;
