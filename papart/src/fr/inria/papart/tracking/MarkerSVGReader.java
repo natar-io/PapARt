@@ -1,7 +1,22 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Part of the PapARt project - https://project.inria.fr/papart/
+ *
+ * Copyright (C) 2017-2018 RealityTech
+ * Copyright (C) 2014-2016 Inria
+ * Copyright (C) 2011-2013 Bordeaux University
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation, version 2.1.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package fr.inria.papart.tracking;
 
@@ -16,7 +31,7 @@ import tech.lity.rea.svgextended.PShapeSVGExtended;
 
 /**
  *
- * @author realitytech
+ * @author Jeremy Laviole laviole@rea.lity.tech
  */
 public class MarkerSVGReader {
 
@@ -57,7 +72,7 @@ public class MarkerSVGReader {
         sheetWidthMm = computeSizeMM(xml.getString("width"));
         sheetHeightMm = computeSizeMM(xml.getString("height"));
         
-        System.out.println("Size of the markerboard: " + sheetWidthMm  + " " + sheetHeightMm);
+//        System.out.println("Size of the markerboard: " + sheetWidthMm  + " " + sheetHeightMm);
 
         // Find if it uses any weird scales
         XML view = xml.getChild("sodipodi:namedview");
@@ -111,7 +126,7 @@ public class MarkerSVGReader {
             if (second >= 92 || main > 0) {
                 // 90 DPI
                 dpi = 90;
-                System.out.println("Markerboard: 90 DPI inkscape file in pixels.");
+//                System.out.println("Markerboard: 90 DPI inkscape file in pixels.");
             }
         } catch (Exception e) {
             System.err.println("Cannot guess version of SVG file." + e);
@@ -153,9 +168,9 @@ public class MarkerSVGReader {
         size.x = size.x * unitsToMM;
         size.y = size.y * unitsToMM;
 //        }
-        System.out.println("marker found:  id: " + id + " , size: " + size);
+//        System.out.println("marker found:  id: " + id + " , size: " + size);
+//        matrix.print();
 
-        matrix.print();
         MarkerSvg marker = new MarkerSvg(id, matrix.get(), size);
 
         marker.corners[0] = new PVector(matrix.m02, matrix.m12);
@@ -184,27 +199,20 @@ public class MarkerSVGReader {
         if (matrix == null) {
             matrix = new PMatrix2D();
         } else {
-            System.out.println("Matrix found, for  " + shape);
             // use a copy
             matrix = matrix.get();
         }
         
         if (useParams) {
-            System.out.println("Translate " + params[0] + " " + params[1]);
             matrix.translate(params[0], params[1]);
         }
 
         // is root.
         if (shape.getParent() == null) {
-            System.out.println("Current matrix: " + shape);
-            ((PMatrix2D) matrix).print();
             return matrix;
         }
 
         PMatrix2D parentMat = (PMatrix2D) getMatrix(shape.getParent());
-
-        System.out.println("parent matrix: ");
-        parentMat.print();
         matrix.preApply(parentMat);
 
         return matrix;
