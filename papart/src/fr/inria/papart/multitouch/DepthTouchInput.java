@@ -173,7 +173,7 @@ public class DepthTouchInput extends TouchInput {
 
             depthAnalysis.computeDepthAndNormals(depthImage, colImage, initPrecision);
 
-            simpleDetection.findTouch(planeAndProjCalibration);
+//            simpleDetection.findTouch(planeAndProjCalibration);
 
 //            Instant depth = Instant.now();
             armDetection.findTouch(planeAndProjCalibration);
@@ -474,14 +474,14 @@ public class DepthTouchInput extends TouchInput {
 
     @Deprecated
     public ArrayList<TrackedDepthPoint> getTouchPoints2D() {
-        return simpleDetection.getTouchPoints();
-//        return fingerDetection.getTouchPoints();
+//        return simpleDetection.getTouchPoints();
+        return fingerDetection.getTouchPoints();
     }
 
     @Deprecated
     public ArrayList<TrackedDepthPoint> getTouchPoints3D() {
-        return simpleDetection.getTouchPoints();
-//        return armDetection.getTouchPoints();
+//        return simpleDetection.getTouchPoints();
+        return armDetection.getTouchPoints();
     }
 
     public ArrayList<TrackedDepthPoint> getTrackedDepthPoints2D() {
@@ -489,8 +489,8 @@ public class DepthTouchInput extends TouchInput {
 //            System.err.println("No 2D touch tracking.");
             return new ArrayList<>();
         }
-        return simpleDetection.getTouchPoints();
-//        return fingerDetection.getTouchPoints();
+//        return simpleDetection.getTouchPoints();
+        return fingerDetection.getTouchPoints();
     }
 
     public ArrayList<TrackedDepthPoint> getTrackedDepthPoints3D() {
