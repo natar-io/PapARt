@@ -128,7 +128,7 @@ public class MultiCalibrator extends PaperTouchScreen {
     DepthTouchInput depthTouchInput;
     private DepthCameraDevice depthCameraDevice;
 
-    public float zShift = -10f;
+    public float zShift = 0f;
 
 //    private Skatolo skatolo;
 //    private HoverButton hoverButton, resetButton;
