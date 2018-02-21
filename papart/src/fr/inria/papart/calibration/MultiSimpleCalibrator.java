@@ -51,12 +51,15 @@ import tech.lity.rea.skatolo.gui.controllers.HoverButton;
  */
 import fr.inria.papart.procam.camera.CameraThread;
 import fr.inria.papart.procam.display.BaseDisplay;
+import static fr.inria.papart.utils.MathUtils.absd;
+import static fr.inria.papart.utils.MathUtils.constrain;
 import org.bytedeco.javacpp.opencv_imgcodecs;
 import static processing.core.PApplet.abs;
 import static processing.core.PApplet.split;
 import static processing.core.PConstants.CORNER;
 import static processing.core.PConstants.LEFT;
 import static processing.core.PConstants.RIGHT;
+import tech.lity.rea.colorconverter.ColorConverter;
 import tech.lity.rea.skatolo.gui.controllers.Button;
 import tech.lity.rea.skatolo.gui.controllers.Toggle;
 import toxi.geom.Plane;
@@ -128,6 +131,8 @@ public class MultiSimpleCalibrator extends PaperTouchScreen {
     PMatrix3D savedLocations[];
     int savedColors[][];
     private boolean useTouch = false;
+    private ColorConverter converter = new ColorConverter();
+
 
     @Override
     public void settings() {
@@ -215,13 +220,14 @@ public class MultiSimpleCalibrator extends PaperTouchScreen {
         detections[4] = createColorDetection(new PVector(79.8f, 123.8f));
         detections[5] = createColorDetection(new PVector(208.2f, 123.8f));
 
+        // yellow
+        detections[6] = createColorDetection(new PVector(108.1f, 67.1f));
+        detections[7] = createColorDetection(new PVector(179.4f, 67.1f));
+        
         // purple
-        detections[6] = createColorDetection(new PVector(108.1f, 123.8f));
-        detections[7] = createColorDetection(new PVector(179.4f, 123.8f));
+        detections[8] = createColorDetection(new PVector(108.1f, 123.8f));
+        detections[9] = createColorDetection(new PVector(179.4f, 123.8f));
 
-        // orange
-        detections[8] = createColorDetection(new PVector(108.1f, 67.1f));
-        detections[9] = createColorDetection(new PVector(179.4f, 67.1f));
     }
 
     ColorDetection red1, red2;
@@ -978,5 +984,7 @@ public class MultiSimpleCalibrator extends PaperTouchScreen {
         rect(108.1f, 67.1f, 15f, 15f);
         rect(179.4f, 67.1f, 15f, 15f);
     }
+
+
 
 }
