@@ -131,7 +131,9 @@ public class MultiCalibrator extends PaperTouchScreen {
     DepthTouchInput depthTouchInput;
     private DepthCameraDevice depthCameraDevice;
 
-    public float zShift = 0f;
+//    public float zShift = 0f;
+    public static float ZSHIFT = 0;
+    public static float SCALE_FACTOR = 1f;
 
 //    private Skatolo skatolo;
 //    private HoverButton hoverButton, resetButton;
@@ -286,7 +288,7 @@ public class MultiCalibrator extends PaperTouchScreen {
 //                .setPosition(208.2f - sizeAdd, 123.8f - sizeAdd)
 //                .setSize(15 + 2 * sizeAdd, 15 + 2 * sizeAdd);
 //    }
-    private int deadZone = 150;
+    private int deadZone = 50;
     int pw, ph;
 
     void initScreenPoints() {
@@ -451,7 +453,7 @@ public class MultiCalibrator extends PaperTouchScreen {
             if (this.currentScreenPoint == 1) {
                 System.out.println("Save the table location.");
                 PMatrix3D tableCenter = savedLocations[0].get();
-                tableCenter.translate(148.6f, 103.1f);
+                tableCenter.translate(CENTER_X * SCALE_FACTOR, CENTER_Y * SCALE_FACTOR);
                 Papart.getPapart().setTableLocation(tableCenter);
             }
 
@@ -545,7 +547,8 @@ public class MultiCalibrator extends PaperTouchScreen {
             currentScreenPoint++;
         }
     }
-
+    public static float CENTER_X = 146.6f;   // 148.6
+    public static float CENTER_Y = 103.1f; 
     // Loads of color data for color points. 
     // 1. Homography computation:  Camera - projector.
     // 2. Extract 4-6 projector images. 
@@ -566,7 +569,7 @@ public class MultiCalibrator extends PaperTouchScreen {
         CameraThread projectorFakeThread = new CameraThread(projectorAsCamera);
 
         PMatrix3D tableCenter = savedLocations[0].get();
-        tableCenter.translate(148.6f, 103.1f);
+        tableCenter.translate(CENTER_X * SCALE_FACTOR, CENTER_Y * SCALE_FACTOR);
 
         Papart.getPapart().setTableLocation(tableCenter);
 
@@ -640,7 +643,7 @@ public class MultiCalibrator extends PaperTouchScreen {
         planeCalib.setPlane(sumPlanes);
         planeCalib.setHeight(10f); // NOT used anymore -> to remove.
         planeCalib.flipNormal();
-        planeCalib.moveAlongNormal(zShift);
+        planeCalib.moveAlongNormal(ZSHIFT);
 
 //        this.planeProjCalib.setPlane(planeCalib);
         // Now the projection for screen-space.
@@ -1267,6 +1270,8 @@ public class MultiCalibrator extends PaperTouchScreen {
 
     private void drawDebugZones() {
         noStroke();
+        
+        scale(SCALE_FACTOR, SCALE_FACTOR);
         // draw a green rectangle
         // top projection
         rect(75f, 11f, 146f, 50f);
@@ -1294,11 +1299,13 @@ public class MultiCalibrator extends PaperTouchScreen {
         fill(0, 0, 255);
         rect(79.8f, 67.1f, 15f, 15f);
         rect(208.2f, 67.1f, 15f, 15f);
-
-        // orange circles
+//
+//        // orange circles
         fill(255, 200, 30);
         rect(108.1f, 67.1f, 15f, 15f);
         rect(179.4f, 67.1f, 15f, 15f);
+        
+        
     }
 
 
