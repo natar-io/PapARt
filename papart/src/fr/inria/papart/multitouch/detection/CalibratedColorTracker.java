@@ -20,7 +20,7 @@ import processing.core.PConstants;
  */
 public class CalibratedColorTracker extends ColorTracker {
 
-    int numberOfRefs = 5;
+    int numberOfRefs = 4;
     private final ColorReferenceThresholds references[];
 
     public CalibratedColorTracker(PaperScreen paperScreen, float scale) {
@@ -38,6 +38,9 @@ public class CalibratedColorTracker extends ColorTracker {
             for (String data : list) {
                 references[fileId].loadParameter(data);
             }
+            System.out.println("Ref: " + fileId + " " + 
+                    " A " + references[fileId].averageA + 
+                    " B " + references[fileId].averageB);
         }
     }
 
@@ -73,19 +76,22 @@ public class CalibratedColorTracker extends ColorTracker {
                 int offset = x + y * capturedImage.width;
                 int c = capturedImage.pixels[offset];
 
-                // for each 
+                // for each except the last DEBUG
+//               byte id = 0;
                 for (byte id = 0; id < numberOfRefs; id++) {
 
                     reference = references[id];
                     boolean good = false;
 
-                    if (id == 0) {
-                        good = MathUtils.colorFinderHSBRedish(paperScreen.getGraphics(),
-                                reference.referenceColor, c, reference.hue, reference.saturation, reference.brightness);
-                    } else {
-                        good = MathUtils.colorFinderHSB(paperScreen.getGraphics(),
-                                c, reference.referenceColor, reference.hue, reference.saturation, reference.brightness);
-                    }
+//                    if (id == 0) {
+//                        good = MathUtils.colorFinderHSBRedish(paperScreen.getGraphics(),
+//                                reference.referenceColor, c, reference.hue, reference.saturation, reference.brightness);
+//                    } else {
+                        good = MathUtils.colorFinderLAB(paperScreen.getGraphics(),
+                                c, reference);
+//                        good = MathUtils.colorFinderHSB(paperScreen.getGraphics(),
+//                                c, reference.referenceColor, reference.hue, reference.saturation, reference.brightness);
+//                    }
                     // HSB only for now.
                     if (good) {
 //                    if (references[id].colorFinderHSB(paperScreen.getGraphics(), c)) {
@@ -96,7 +102,7 @@ public class CalibratedColorTracker extends ColorTracker {
             }
         }
 
-        int erosion = 1;
+        int erosion = 0;
         // EROSION by color ?!
         ArrayList<TrackedElement> newElements
                 = touchDetectionColor.compute(time, erosion, this.scale);

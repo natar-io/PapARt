@@ -52,12 +52,15 @@ import tech.lity.rea.skatolo.gui.controllers.HoverButton;
  */
 import fr.inria.papart.procam.camera.CameraThread;
 import fr.inria.papart.procam.display.BaseDisplay;
+import static fr.inria.papart.utils.MathUtils.absd;
+import static fr.inria.papart.utils.MathUtils.constrain;
 import org.bytedeco.javacpp.opencv_imgcodecs;
 import static processing.core.PApplet.abs;
 import static processing.core.PApplet.split;
 import static processing.core.PConstants.CORNER;
 import static processing.core.PConstants.LEFT;
 import static processing.core.PConstants.RIGHT;
+import tech.lity.rea.colorconverter.ColorConverter;
 import tech.lity.rea.skatolo.gui.controllers.Button;
 import tech.lity.rea.skatolo.gui.controllers.Toggle;
 import toxi.geom.Plane;
@@ -153,6 +156,8 @@ public class MultiCalibrator extends PaperTouchScreen {
     private TrackedView projectorView;
     private ProjectorAsCamera projectorAsCamera;
 
+    private ColorConverter converter = new ColorConverter();
+
     // projector rendering.
     protected ProjectorDisplay projector;
 
@@ -240,13 +245,14 @@ public class MultiCalibrator extends PaperTouchScreen {
         detections[4] = createColorDetection(new PVector(79.8f, 123.8f));
         detections[5] = createColorDetection(new PVector(208.2f, 123.8f));
 
+        // yellow
+        detections[6] = createColorDetection(new PVector(108.1f, 67.1f));
+        detections[7] = createColorDetection(new PVector(179.4f, 67.1f));
+        
         // purple
-        detections[6] = createColorDetection(new PVector(108.1f, 123.8f));
-        detections[7] = createColorDetection(new PVector(179.4f, 123.8f));
+        detections[8] = createColorDetection(new PVector(108.1f, 123.8f));
+        detections[9] = createColorDetection(new PVector(179.4f, 123.8f));
 
-        // orange
-        detections[8] = createColorDetection(new PVector(108.1f, 67.1f));
-        detections[9] = createColorDetection(new PVector(179.4f, 67.1f));
     }
 
     ColorDetection red1, red2;
@@ -660,13 +666,21 @@ public class MultiCalibrator extends PaperTouchScreen {
         colorMode(RGB, 255);
 
         for (int colorId = 0; colorId < nbColors; colorId++) {
+            double averageL = 0;
+            double averageA = 0;
+            double averageB = 0;
+
             float averageHue = 0;
             float averageSat = 0;
             float averageIntens = 0;
 
             float averageR = 0;
             float averageG = 0;
-            float averageB = 0;
+            float averageBlue = 0;
+
+            double stdevL = 0;
+            double stdevA = 0;
+            double stdevB = 0;
 
             float stdevHue = 0;
             float stdevSat = 0;
@@ -674,7 +688,7 @@ public class MultiCalibrator extends PaperTouchScreen {
 
             float stdevR = 0;
             float stdevG = 0;
-            float stdevB = 0;
+            float stdevBlue = 0;
 
             // todo: IF Red > 180, hue gets shifted ?
             for (int i = 0; i < nbScreenPoints * 2; i++) {
@@ -686,7 +700,12 @@ public class MultiCalibrator extends PaperTouchScreen {
                 averageIntens += this.brightness(c);
                 averageR += this.red(c);
                 averageG += this.green(c);
-                averageB += this.blue(c);
+                averageBlue += this.blue(c);
+
+                double[] lab = converter.RGBtoLAB((int) this.red(c), (int) this.green(c), (int) this.blue(c));
+                averageL += constrain(lab[0], 0.0, 100.0);
+                averageA += constrain(lab[1], -128, 128);
+                averageB += constrain(lab[2], -128, 128);
             }
 
             averageHue /= nbScreenPoints * 2;
@@ -694,6 +713,10 @@ public class MultiCalibrator extends PaperTouchScreen {
             averageIntens /= nbScreenPoints * 2;
             averageR /= nbScreenPoints * 2;
             averageG /= nbScreenPoints * 2;
+            averageBlue /= nbScreenPoints * 2;
+
+            averageL /= nbScreenPoints * 2;
+            averageA /= nbScreenPoints * 2;
             averageB /= nbScreenPoints * 2;
 
             // potentially problematic hue for red
@@ -714,8 +737,16 @@ public class MultiCalibrator extends PaperTouchScreen {
 //                }
             }
 
-            int averageCol = color(averageR, averageG, averageB);
+//            int averageCol = color(averageR, averageG, averageBlue);
 
+            int[] averageColTmp = converter.LABtoRGB(averageL, averageA, averageB);
+
+            int averageCol = color(
+                    (int) constrain(averageColTmp[0], 0, 255),
+                    (int) constrain(averageColTmp[1], 0, 255),
+                    (int) constrain(averageColTmp[2], 0, 255));
+
+//            color(averageR, averageG, averageBlue);
             for (int i = 0; i < nbScreenPoints * 2; i++) {
                 int c = this.savedColors[i][colorId];
 
@@ -729,7 +760,12 @@ public class MultiCalibrator extends PaperTouchScreen {
                 stdevIntens += abs(this.brightness(c) - averageIntens);
                 stdevR += abs(this.red(c) - averageR);
                 stdevG += abs(this.green(c) - averageG);
-                stdevB += abs(this.blue(c) - averageB);
+                stdevBlue += abs(this.blue(c) - averageBlue);
+
+                double[] lab = converter.RGBtoLAB((int) this.red(c), (int) this.green(c), (int) this.blue(c));
+                stdevL += absd(constrain(lab[0], 0.0, 100.0) - averageL);
+                stdevA += absd(constrain(lab[1], -128, 128) - averageA);
+                stdevB += absd(constrain(lab[2], -128, 128) - averageB);
             }
 
             stdevHue /= nbScreenPoints * 2;
@@ -737,49 +773,57 @@ public class MultiCalibrator extends PaperTouchScreen {
             stdevIntens /= nbScreenPoints * 2;
             stdevR /= nbScreenPoints * 2;
             stdevG /= nbScreenPoints * 2;
+            stdevBlue /= nbScreenPoints * 2;
+            stdevL /= nbScreenPoints * 2;
+            stdevA /= nbScreenPoints * 2;
             stdevB /= nbScreenPoints * 2;
 
             // Check the stdev... when too high the value is not stored.
-            if(stdevHue > 40 || stdevSat > 40 || stdevIntens > 50){
+            if (stdevHue > 40 || stdevSat > 40 || stdevIntens > 50) {
                 System.out.println("Could not determine color: " + colorId);
                 continue;
             }
-            
+
             // Good dev, make it larger
-            if(stdevHue < 3){
+            if (stdevHue < 3) {
                 stdevHue = 4;
             }
             // Good dev, make it larger
-            if(stdevSat < 5){
+            if (stdevSat < 5) {
                 stdevSat = 10;
             }
             // Good dev, make it larger
-            if(stdevIntens < 5){
+            if (stdevIntens < 5) {
                 stdevIntens = 10;
             }
-            
-            
+
             String words = "hue:" + Float.toString(stdevHue * 3) + " "
-                    + "sat:" + Float.toString(stdevSat*3) + " "
-                    + "intens:" + Float.toString(stdevIntens*3) + " "
-                    + "erosion:" + Integer.toString(1) + " "+
-            	"red:"+  Float.toString(stdevR * 3) + " "+
-            	"blue:"+  Float.toString(stdevB * 3) + " "+
-            	"green:"+  Float.toString(stdevB * 3) + "\n";
+                    + "sat:" + Float.toString(stdevSat * 3) + " "
+                    + "intens:" + Float.toString(stdevIntens * 3) + " "
+                    + "erosion:" + Integer.toString(1) + " "
+                    + "red:" + Float.toString(stdevR * 3) + " "
+                    + "blue:" + Float.toString(stdevBlue * 3) + " "
+                    + "green:" + Float.toString(stdevBlue * 3) + " "
+                    + "l:" + Double.toString(stdevL) + " "
+                    + "A:" + Double.toString(stdevA) + " "
+                    + "B:" + Double.toString(stdevB) + " "
+                    + "valL:" + Double.toString(averageL) + " "
+                    + "valA:" + Double.toString(averageA) + " "
+                    + "valB:" + Double.toString(averageB) + "\n";
 
             words = words + "id:" + Integer.toString(colorId) + "\n";
             words = words + "col:" + Integer.toString(averageCol);
 
             String[] list = split(words, ' ');
-            
+
             String saveFile = Papart.colorThresholds + colorId + ".txt";
             parent.saveStrings(saveFile, list);
-            
-            if(colorId == 0){
-            parent.saveStrings(Papart.redThresholds, list);
+
+            if (colorId == 0) {
+                parent.saveStrings(Papart.redThresholds, list);
             }
-            if(colorId == 1){
-            parent.saveStrings(Papart.blueThresholds, list);
+            if (colorId == 1) {
+                parent.saveStrings(Papart.blueThresholds, list);
             }
         }
 
@@ -1256,5 +1300,7 @@ public class MultiCalibrator extends PaperTouchScreen {
         rect(108.1f, 67.1f, 15f, 15f);
         rect(179.4f, 67.1f, 15f, 15f);
     }
+
+
 
 }

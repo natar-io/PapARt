@@ -7,6 +7,7 @@ package fr.inria.papart.utils;
 
 import fr.inria.papart.depthcam.PixelOffset;
 import fr.inria.papart.depthcam.analysis.DepthAnalysisPImageView;
+import fr.inria.papart.multitouch.detection.ColorReferenceThresholds;
 import fr.inria.papart.procam.PaperTouchScreen;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.procam.camera.Camera;
@@ -25,6 +26,7 @@ import processing.core.PGraphics;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
+import tech.lity.rea.colorconverter.ColorConverter;
 import toxi.geom.Vec3D;
 
 /**
@@ -214,7 +216,7 @@ public class MathUtils {
         return pdp.estimateOrientation(object, image);
 //        return pdp.estimateOrientationRansac(objectArray, imageArray);
     }
-    
+
     // ---- Color Utility ----
     /**
      * Get a pixel from a PImage.
@@ -260,6 +262,7 @@ public class MathUtils {
         int db = PApplet.abs(b1 - b2);
         return dr < threshold && dg < threshold && db < threshold;
     }
+
     /**
      * RGB distance of two colors. Return true if all channels differences are
      * below the difference threshold.
@@ -271,7 +274,7 @@ public class MathUtils {
      * @param tb
      * @return
      */
-    public static boolean colorDistRGB(int c1, int c2, int tr, int tg,int tb) {
+    public static boolean colorDistRGB(int c1, int c2, int tr, int tg, int tb) {
         int r1 = c1 >> 16 & 255;
         int g1 = c1 >> 8 & 255;
         int b1 = c1 >> 0 & 255;
@@ -357,14 +360,78 @@ public class MathUtils {
                 && // avoid pixels not bright enough
                 abs(g.brightness(incomingPix) - g.brightness(baseline)) < brightnessTresh;
     }
-    
+
+    /**
+     * Color distance on the LAB scale. The incomingPix is compared with the
+     * baseline. The method returns true if each channel validates the condition
+     * for the given threshold.
+     *
+     * @param g
+     * @param baseline
+     * @param incomingPix
+     * @param LTresh
+     * @param ATresh
+     * @param BTresh
+     * @return
+     */
+    public static boolean colorFinderLAB(PGraphics g, int baseline, int incomingPix,
+            float LTresh, float ATresh, float BTresh) {
+
+        double[] labBase = converter.RGBtoLAB((int) g.red(baseline), (int) g.green(baseline), (int) g.blue(baseline));
+        double[] labIncoming = converter.RGBtoLAB((int) g.red(incomingPix), (int) g.green(incomingPix), (int) g.blue(incomingPix));
+        return labIncoming[0] > 50.0 // Very large light base
+                //                absd(labBase[0] - labIncoming[0]) < LTresh * 20  // Very large light base
+                && absd(labBase[1] - labIncoming[1]) < ATresh
+                && absd(labBase[2] - labIncoming[2]) < BTresh;
+    }
+
+    /**
+     * Color distance on the LAB scale. The incomingPix is compared with the
+     * baseline. The method returns true if each channel validates the condition
+     * for the given threshold.
+     *
+     * @param g
+     * @param ref
+     * @return
+     */
+    public static boolean colorFinderLAB(PGraphics g, int incomingPix,
+            ColorReferenceThresholds ref) {
+
+        double[] lab = converter.RGBtoLAB((int) g.red(incomingPix), (int) g.green(incomingPix), (int) g.blue(incomingPix));
+
+        double l = constrain(lab[0], 0, 100);
+        double A = constrain(lab[1], -128, 128);
+        double B = constrain(lab[2], -128, 128);
+        
+        double d
+                = Math.sqrt(Math.pow(l - ref.averageL, 2)
+                        + Math.pow(A - ref.averageA, 2)
+                        + Math.pow(B - ref.averageB, 2));
+
+//        System.out.println("d: "  + d);
+        return d < (ref.AThreshold + ref.BThreshold + ref.LThreshold) * 2f;
+    }
+
+    static public final double constrain(double amt, double low, double high) {
+        return (amt < low) ? low : ((amt > high) ? high : amt);
+    }
+
+    public static double absd(double d) {
+        if (d < 0) {
+            return -d;
+        }
+        return d;
+    }
+
+    public static ColorConverter converter = new ColorConverter();
+
     public static boolean colorFinderHSBRedish(PGraphics g, int baseline, int incomingPix,
             float hueTresh, float saturationTresh, float brightnessTresh) {
         float h1 = g.hue(baseline);
         float h2 = g.hue(incomingPix);
-        
+
         // If the hue is low but still red, shit it.
-        if(h2 < 30){
+        if (h2 < 30) {
             h2 = h2 + 255f;
         }
 
@@ -379,6 +446,7 @@ public class MathUtils {
         int r1 = incomingPix >> 16 & 255;
         return r1 > threshold;
     }
+
     public static boolean isRed(PGraphics g, int incomingPix, int baseline, float threshold) {
         int r1 = incomingPix >> 16 & 255;
         int r2 = baseline >> 16 & 255;

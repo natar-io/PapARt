@@ -211,8 +211,8 @@ public class ColorTracker {
         for (TrackedElement te : trackedElements) {
             Touch t = te.getTouch();
             t.is3D = false;
-            System.out.println("pid: " + t.id);
-            System.out.println("p: " + te.getPosition());
+//            System.out.println("pid: " + t.id);
+//            System.out.println("p: " + te.getPosition());
             t.setPosition(te.getPosition());
             output.add(t);
         }

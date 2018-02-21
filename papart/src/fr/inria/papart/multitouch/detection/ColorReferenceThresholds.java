@@ -17,13 +17,15 @@ public class ColorReferenceThresholds {
     public float brightness, saturation;
     public float hue;
     public float redThreshold, blueThreshold, greenThreshold;
+    public float LThreshold, AThreshold, BThreshold;
+    public float averageL, averageA, averageB;
     public int referenceColor, erosion;
 
-    
     /**
      * Color distance on the HSB scale. The incomingPix is compared with the
      * baseline. The method returns true if each channel validates the condition
      * for the given threshold.
+     *
      * @param g
      * @return
      */
@@ -37,9 +39,7 @@ public class ColorReferenceThresholds {
                 && // avoid pixels not bright enough
                 abs(g.brightness(incomingPix) - g.brightness(referenceColor)) < brightness;
     }
-    
-    
-    
+
     public void loadParameter(String data) {
         try {
             String[] pair = data.split(":");
@@ -68,6 +68,24 @@ public class ColorReferenceThresholds {
             }
             if (pair[0].startsWith("green")) {
                 this.greenThreshold = Float.parseFloat(pair[1]);
+            }
+            if (pair[0].startsWith("l")) {
+                this.LThreshold = Float.parseFloat(pair[1]);
+            }
+            if (pair[0].startsWith("A")) {
+                this.AThreshold = Float.parseFloat(pair[1]);
+            }
+            if (pair[0].startsWith("B")) {
+                this.BThreshold = Float.parseFloat(pair[1]);
+            }
+            if (pair[0].startsWith("valL")) {
+                this.averageL = Float.parseFloat(pair[1]);
+            }
+            if (pair[0].startsWith("valA")) {
+                this.averageA = Float.parseFloat(pair[1]);
+            }
+            if (pair[0].startsWith("valB")) {
+                this.averageB = Float.parseFloat(pair[1]);
             }
         } catch (NumberFormatException nfe) {
             nfe.printStackTrace();
@@ -130,6 +148,30 @@ public class ColorReferenceThresholds {
 
     public void setReferenceColor(int referenceColor) {
         this.referenceColor = referenceColor;
+    }
+
+    public float getLThreshold() {
+        return LThreshold;
+    }
+
+    public void setLThreshold(float LThreshold) {
+        this.LThreshold = LThreshold;
+    }
+
+    public float getAThreshold() {
+        return AThreshold;
+    }
+
+    public void setAThreshold(float AThreshold) {
+        this.AThreshold = AThreshold;
+    }
+
+    public float getBThreshold() {
+        return BThreshold;
+    }
+
+    public void setBThreshold(float BThreshold) {
+        this.BThreshold = BThreshold;
     }
 
 }
