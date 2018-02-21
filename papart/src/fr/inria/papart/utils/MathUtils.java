@@ -404,7 +404,7 @@ public class MathUtils {
         double B = constrain(lab[2], -128, 128);
         
         double d
-                = Math.sqrt(Math.pow(l - ref.averageL, 2) / 2
+                = Math.sqrt(Math.pow(l - ref.averageL, 2)
                         + Math.pow(A - ref.averageA, 2)
                         + Math.pow(B - ref.averageB, 2));
 
