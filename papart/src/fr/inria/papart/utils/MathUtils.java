@@ -404,12 +404,12 @@ public class MathUtils {
         double B = constrain(lab[2], -128, 128);
         
         double d
-                = Math.sqrt(Math.pow(l - ref.averageL, 2)
+                = Math.sqrt(Math.pow(l - ref.averageL, 2) / 2
                         + Math.pow(A - ref.averageA, 2)
                         + Math.pow(B - ref.averageB, 2));
 
 //        System.out.println("d: "  + d);
-        return d < (ref.AThreshold + ref.BThreshold + ref.LThreshold) * 2f;
+        return d < (ref.AThreshold + ref.BThreshold + ref.LThreshold) * 3f;
     }
 
     static public final double constrain(double amt, double low, double high) {
