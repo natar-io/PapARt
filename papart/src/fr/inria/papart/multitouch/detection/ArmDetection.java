@@ -174,7 +174,9 @@ public class ArmDetection extends TouchDetectionDepth {
         int imageTime = this.depthAnalysis.getDepthData().timeStamp;
 
         TouchPointTracker.trackPoints(touchPoints, newList, imageTime);
-        TouchPointTracker.trackPoints(tipPoints, newTipPoints, imageTime);
+        
+        // TODO: activate tracking ?! Super slow for some reason...
+//        TouchPointTracker.trackPoints(tipPoints, newTipPoints, imageTime);
     }
     
     protected ArrayList<TrackedDepthPoint> newTipPoints;

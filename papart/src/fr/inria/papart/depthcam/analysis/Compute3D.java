@@ -14,12 +14,13 @@ import toxi.geom.Vec3D;
 
 /**
  * Find a 3D point cloud over a plane. Used for arm tracking.
+ *
  * @author Jeremy Laviole
  */
 public class Compute3D extends DepthRecognition {
 
     private DepthSelection selection;
-
+    protected ProjectedDepthData depthData;
 
     public Compute3D(DepthAnalysisImpl depthAnalysis) {
         super(depthAnalysis);
@@ -40,6 +41,9 @@ public class Compute3D extends DepthRecognition {
     public void find3DTouch(PlaneAndProjectionCalibration calib, int skip3D) {
         // TODO: ensure that this has been computed.
 //        depthData.clearValidPoints();
+
+        depthData = depthAnalysis.depthData;
+
         selection = depthData.createSelection();
         depthData.planeAndProjectionCalibration = calib;
         depthAnalysis.doForEachPoint(skip3D, new Select3DPlaneProjection());
@@ -79,8 +83,7 @@ public class Compute3D extends DepthRecognition {
             }
         }
     }
-    
-    
+
     public DepthSelection getSelection() {
         return selection;
     }
