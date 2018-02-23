@@ -230,7 +230,7 @@ public class TrackedElement {
             return false;
         }
 
-        assert (this.createTime < tp.createTime);
+        assert (this.createTime <= tp.createTime);
 
         // these points are used for update. They will not be used again.
         this.setUpdated(true);

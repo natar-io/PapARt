@@ -40,10 +40,10 @@ public class TouchDetectionColor extends TouchDetection {
     }
 
     public static final byte INVALID_COLOR = -1;
-    private byte[] localSegmentedImage = null;
-    private byte[] segmentedImage;
-    private byte[] segmentedImageCopy;
-    private int erosionLevel;
+    protected byte[] localSegmentedImage = null;
+    protected byte[] segmentedImage;
+    protected byte[] segmentedImageCopy;
+    protected int erosionLevel;
 
     private void setErosionLevel(int erosionLevel) {
         this.erosionLevel = erosionLevel;
@@ -141,10 +141,9 @@ public class TouchDetectionColor extends TouchDetection {
         ArrayList<TrackedElement> touchPoints = new ArrayList<TrackedElement>();
         for (ConnectedComponent connectedComponent : connectedComponents) {
 
-            if (connectedComponent.size() < calib.getMinimumComponentSize()) {
+           if (connectedComponent.size() < calib.getMinimumComponentSize()) {
                 continue;
             }
-
             TrackedElement tp = createTouchPoint(connectedComponent,
                    scale);
             touchPoints.add(tp);

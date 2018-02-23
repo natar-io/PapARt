@@ -72,6 +72,7 @@ public class DepthTouchInput extends TouchInput {
     private Simple2D simpleDetection;
     private ArmDetection armDetection;
     private HandDetection handDetection;
+
     private TouchDetectionDepth touchDetections[] = new TouchDetectionDepth[3];
 
     private PlanarTouchCalibration touchCalibrations[] = new PlanarTouchCalibration[3];
@@ -106,7 +107,7 @@ public class DepthTouchInput extends TouchInput {
         return touchDetections;
     }
 
-    public Simple2D getTouchDetectionSimple2D() {
+    public Simple2D getSimpleDetection() {
         return simpleDetection;
     }
 
@@ -185,6 +186,7 @@ public class DepthTouchInput extends TouchInput {
 //            Instant end = Instant.now();
 //            
 //            
+            armDetection.findTouch(planeAndProjCalibration);
 //            System.out.println("Depth: " +  Duration.between(start, depth).toMillis() + " milliseconds");
 //            System.out.println("Arm: " +  Duration.between(depth, touch1).toMillis() + " milliseconds");
 //            System.out.println("hand: " +  Duration.between(touch1, touch2).toMillis() + " milliseconds");
@@ -445,6 +447,19 @@ public class DepthTouchInput extends TouchInput {
         }
     }
 
+    
+    public FingerDetection getFingerDetection() {
+        return fingerDetection;
+    }
+
+    public ArmDetection getArmDetection() {
+        return armDetection;
+    }
+
+    public HandDetection getHandDetection() {
+        return handDetection;
+    }
+    
     // Raw versions of the algorithm are providing each points at each time. 
     // no updates, no tracking. 
     public ArrayList<TrackedDepthPoint> find2DTouchRaw() {
@@ -454,6 +469,7 @@ public class DepthTouchInput extends TouchInput {
     public ArrayList<TrackedDepthPoint> find3DTouchRaw(int skip) {
         return armDetection.compute(depthAnalysis.getDepthData());
     }
+    
 
     protected void findAndTrack2D() {
         assert (touch2DPrecision != 0);
