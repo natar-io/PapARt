@@ -20,6 +20,7 @@ public class XDisplay extends AppRunner {
     private final int id;
     private final int width, height;
     private final int depth = 16;
+    private final String xephyrName = "/usr/bin/Xephyr";
     private final String xvfbName = "/usr/bin/Xvfb";
 
     // For the NO_DISPLAY  constant.
@@ -37,12 +38,17 @@ public class XDisplay extends AppRunner {
         System.out.println("Preparing XDisplay: " + id + " .");
     }
 
+    // Xpra test further... set the resolution / screen ?
     @Override
     protected void buildProcess() {
         String[] cmd = new String[]{
             xvfbName, ":" + id,
             "-ac", "-screen", "0 ", width + "x" + height + "x" + depth
         };
+//        String[] cmd = new String[]{
+//           xephyrName, ":" + id,
+//            "-ac", "-screen", width + "x" + height
+//        };
 
         builder = new ProcessBuilder(cmd);
 

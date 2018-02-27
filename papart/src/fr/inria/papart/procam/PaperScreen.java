@@ -1587,6 +1587,18 @@ public class PaperScreen extends DelegatedGraphics {
     private Jedis redis;
 
     ///// App extension ///
+    public void runProgram(String[] name) {
+        if (Xdisplay == null) {
+            // check if display exists ?
+            initXDisplay();
+            Xcamera = Xdisplay.getCamera(parent);
+        }
+        XAppRunner firefox = new XAppRunner(name, Xdisplay);
+        firefox.autoExit(parent);
+        firefox.start();
+    }
+    
+    ///// App extension ///
     public void runProgram(String name) {
         if (Xdisplay == null) {
 
@@ -1657,7 +1669,7 @@ public class PaperScreen extends DelegatedGraphics {
             redis.set(prefix + "mouse:x", Integer.toString((int) (t.position.x * this.quality)));
             redis.set(prefix + "mouse:y", Integer.toString((int) (t.position.y * this.quality)));
 
-            System.out.println("Send: " + prefix + "mouse:x" +  " ++ " + Integer.toString((int) (quality * t.position.x)));
+//            System.out.println("Send: " + prefix + "mouse:x" +  " ++ " + Integer.toString((int) (quality * t.position.x)));
             if (t.pressed) {
                 redis.set(prefix + "mouse:pressed", Boolean.toString(true));
                 redis.set(prefix + "mouse:pressedButton", Integer.toString(parent.mouseButton));
