@@ -36,13 +36,17 @@ public class AppRunnerTest {
         // Event manager
         String[] cmd = new String[]{
             "/usr/bin/processing-java",
-            "--sketch=/home/jiii/ownCloud/sketches/redisKeyReader/",
-            "--output=/home/jiii/ownCloud/sketches/redisKeyReader/build",
+            "--sketch=/home/realitytech/gordon/repos/papart-calibration/exec/redisKeyReader/",
+            "--output=/home/realitytech/gordon/repos/papart-calibration/exec/redisKeyReader/build",
             "--force",
             "--run"
         };
         XAppRunner event = new XAppRunner(cmd, display);
         event.start();
+        
+        
+        XAppRunner firefox = new XAppRunner("firefox", display);
+        firefox.start();
 
         
         // --pid 1234

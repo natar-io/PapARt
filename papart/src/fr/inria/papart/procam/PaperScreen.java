@@ -26,6 +26,9 @@ import fr.inria.papart.tracking.MarkerBoardInvalid;
 import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.calibration.files.HomographyCalibration;
+import fr.inria.papart.compositor.AppRunnerTest;
+import fr.inria.papart.compositor.XAppRunner;
+import fr.inria.papart.compositor.XDisplayWithCam;
 import fr.inria.papart.multitouch.Touch;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.procam.display.BaseDisplay;
@@ -39,6 +42,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import processing.opengl.PGraphicsOpenGL;
 import processing.core.PApplet;
 import processing.core.PConstants;
@@ -1558,6 +1563,62 @@ public class PaperScreen extends DelegatedGraphics {
 
     public void setHalfEyeDist(float halfEyeDist) {
         this.halfEyeDist = halfEyeDist;
+    }
+    
+    
+    
+    
+    private XDisplayWithCam Xdisplay = null;
+    private Camera Xcamera = null;
+    
+    ///// App extension ///
+    public void runProgram(String name){
+        if(Xdisplay == null){
+            initXDisplay();
+            Xcamera = Xdisplay.getCamera(parent);
+        }
+        XAppRunner firefox = new XAppRunner(name, Xdisplay);
+        firefox.start();
+    }
+    
+    private void initXDisplay(){
+          // XServer 
+        Xdisplay = new XDisplayWithCam(getRenderingSizeX(), getRenderingSizeY());
+        Xdisplay.start();
+
+        // sleep 1sec
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(AppRunnerTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        // Default - start with a WM and  the event passer.
+        // Window manager 
+        XAppRunner wm = new XAppRunner("openbox", Xdisplay);
+        wm.start();
+
+        // Event manager
+        String[] eventSender = new String[]{
+            "/usr/bin/processing-java",
+            "--sketch=/home/realitytech/gordon/repos/papart-calibration/exec/redisKeyReader/",
+            "--output=/home/realitytech/gordon/repos/papart-calibration/exec/redisKeyReader/build",
+            "--force",
+            "--run"
+        };
+        XAppRunner event = new XAppRunner(eventSender, Xdisplay);
+        event.start();
+    }
+    
+    
+    public void drawApp(){
+        if(Xcamera != null){
+            Xcamera.grab();
+            PImage img = Xcamera.getPImage();
+            if(img != null){
+                image(img, 0, 0, getRenderingSizeX(), getRenderingSizeY());
+            }
+        }
     }
 
 }

@@ -5,11 +5,8 @@
  */
 package fr.inria.papart.compositor;
 
-import java.io.IOException;
 import java.lang.ProcessBuilder.Redirect;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -56,7 +53,7 @@ public class XDisplay extends AppRunner {
         Map<String, String> env = builder.environment();
         env.put("PATH", "/bin:/usr/bin");
     }
-
+    
     @Override
     public String toString() {
         return ":" + id;

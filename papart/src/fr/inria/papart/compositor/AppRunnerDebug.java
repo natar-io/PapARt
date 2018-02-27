@@ -118,12 +118,12 @@ public class AppRunnerDebug extends Thread {
     void event() throws IOException {
         println("Start eventManager.");
 
-        String eventManager = "/usr/bin/processing-java --sketch=/home/jiii/ownCloud/sketches/redisKeyReader/ --output=/home/jiii/ownCloud/sketches/redisKeyReader/build --force --run";
+        String eventManager = "/usr/bin/processing-java --sketch=/home/realitytech/gordon/repos/papart-calibration/exec/redisKeyReader/ --output=/home/realitytech/gordon/repos/papart-calibration/exec/redisKeyReader/build --force --run";
 
         String[] cmd = new String[]{
             "/usr/bin/processing-java",
-            "--sketch=/home/jiii/ownCloud/sketches/redisKeyReader/",
-            "--output=/home/jiii/ownCloud/sketches/redisKeyReader/build",
+            "--sketch=/home/realitytech/gordon/repos/papart-calibration/exec/redisKeyReader/",
+            "--output=/home/realitytech/gordon/repos/papart-calibration/exec/redisKeyReader/build",
             "--force",
             "--run"
         };
