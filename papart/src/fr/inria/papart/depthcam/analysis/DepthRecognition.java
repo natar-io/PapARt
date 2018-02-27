@@ -15,11 +15,10 @@ import fr.inria.papart.depthcam.ProjectedDepthData;
 public abstract class DepthRecognition {
 
     protected final DepthAnalysisImpl depthAnalysis;
-    protected final ProjectedDepthData depthData;
+//    protected ProjectedDepthData depthData;
 
     public DepthRecognition(DepthAnalysisImpl depthAnalysis) {
         this.depthAnalysis = depthAnalysis;
-        this.depthData = depthAnalysis.depthData;
     }
     
 }

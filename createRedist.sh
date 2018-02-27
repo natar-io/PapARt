@@ -15,6 +15,8 @@ mkdir $TMP/$NAME/examples
 echo "Copy Library"
 # Library
 cp papart/target/$NAME.jar $TMP/$NAME/library/$NAME.jar
+cp deps/jama.jar $TMP/$NAME/library/
+cp deps/pca_transform.jar $TMP/$NAME/library/
 
 echo "Copy the sources"
 # copy the source also

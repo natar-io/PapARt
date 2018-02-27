@@ -508,7 +508,7 @@ public class FingerDetection extends TouchDetectionDepth {
         return newPoints;
     }
 
-    public static float fingerSize = 8f;
+    public static float fingerSize = 4f;
     
     protected TrackedDepthPoint createTouchPoint(ConnectedComponent connectedComponent,
             Vec3D shift) {

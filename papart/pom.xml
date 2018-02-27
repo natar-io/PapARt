@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fr.inria</groupId>
     <artifactId>papart</artifactId>
-    <version>1.2</version>
+    <version>1.2.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>PapARt</name>
@@ -99,6 +99,13 @@
             <artifactId>OpenNI</artifactId>
             <version>2.3</version>
         </dependency>
+        
+        
+        <dependency>
+            <groupId>tech.lity.rea</groupId>
+            <artifactId>ColorConverter</artifactId>
+            <version>0.1</version>
+        </dependency>
 <!--    <dependency>
             <groupId>org.openni</groupId>
             <artifactId>OpenNI-bin</artifactId>
@@ -172,7 +179,7 @@
         <dependency>
             <groupId>tech.lity.rea</groupId>
             <artifactId>SVGExtended</artifactId>
-            <version>3.3.6</version>
+            <version>3.3.6.1</version>
         </dependency>
         
         <!--We package and distribute--> 
@@ -353,7 +360,7 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
-            <!--            <plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>
                 <version>1.5</version>
@@ -366,7 +373,7 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>-->
+            </plugin>
         </plugins>
         
         <resources>

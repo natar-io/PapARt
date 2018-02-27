@@ -5,6 +5,7 @@
  */
 package fr.inria.papart.multitouch.detection;
 
+import fr.inria.papart.calibration.files.PlanarTouchCalibration;
 import fr.inria.papart.multitouch.tracking.TouchPointTracker;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.procam.Papart;
@@ -20,8 +21,9 @@ import processing.core.PConstants;
  */
 public class CalibratedColorTracker extends ColorTracker {
 
-    int numberOfRefs = 5;
+    int numberOfRefs = 3;
     private final ColorReferenceThresholds references[];
+    TouchDetectionLargeColor largeDetectionColor;
 
     public CalibratedColorTracker(PaperScreen paperScreen, float scale) {
         super(paperScreen, scale);
@@ -38,8 +40,34 @@ public class CalibratedColorTracker extends ColorTracker {
             for (String data : list) {
                 references[fileId].loadParameter(data);
             }
+            System.out.println("Ref: " + fileId + " "
+                    + " A " + references[fileId].averageA
+                    + " B " + references[fileId].averageB);
         }
     }
+    PlanarTouchCalibration largerTouchCalibration;
+
+    @Override
+    public void initTouchDetection() {
+        super.initTouchDetection();
+
+        largeDetectionColor = new TouchDetectionLargeColor(trackedView);
+        largerTouchCalibration = Papart.getPapart().getDefaultColorZoneCalibration();
+        
+        largerTouchCalibration.setMaximumDistance(largerTouchCalibration.getMaximumDistance() * scale);
+        largerTouchCalibration.setMinimumComponentSize((int) (largerTouchCalibration.getMinimumComponentSize() * scale * scale)); // Quadratic (area)
+        largerTouchCalibration.setSearchDepth((int) (largerTouchCalibration.getSearchDepth() * scale));
+        largerTouchCalibration.setTrackingMaxDistance(largerTouchCalibration.getTrackingMaxDistance() * scale);
+        largerTouchCalibration.setMaximumRecursion((int) (largerTouchCalibration.getMaximumRecursion() * scale));
+
+        largeDetectionColor.setCalibration(largerTouchCalibration);
+
+        System.out.println("Second Calibration loaded");
+        // share the colorFoundArray ?
+        largeColorFoundArray = largeDetectionColor.createInputArray();
+
+    }    
+    protected byte[] largeColorFoundArray;
 
     public int getReferenceColor(int id) {
         return references[id].getReferenceColor();
@@ -73,19 +101,22 @@ public class CalibratedColorTracker extends ColorTracker {
                 int offset = x + y * capturedImage.width;
                 int c = capturedImage.pixels[offset];
 
-                // for each 
+                // for each except the last DEBUG
+//               byte id = 0;
                 for (byte id = 0; id < numberOfRefs; id++) {
 
                     reference = references[id];
                     boolean good = false;
 
-                    if (id == 0) {
-                        good = MathUtils.colorFinderHSBRedish(paperScreen.getGraphics(),
-                                reference.referenceColor, c, reference.hue, reference.saturation, reference.brightness);
-                    } else {
-                        good = MathUtils.colorFinderHSB(paperScreen.getGraphics(),
-                                c, reference.referenceColor, reference.hue, reference.saturation, reference.brightness);
-                    }
+//                    if (id == 0) {
+//                        good = MathUtils.colorFinderHSBRedish(paperScreen.getGraphics(),
+//                                reference.referenceColor, c, reference.hue, reference.saturation, reference.brightness);
+//                    } else {
+                    good = MathUtils.colorFinderLAB(paperScreen.getGraphics(),
+                            c, reference);
+//                        good = MathUtils.colorFinderHSB(paperScreen.getGraphics(),
+//                                c, reference.referenceColor, reference.hue, reference.saturation, reference.brightness);
+//                    }
                     // HSB only for now.
                     if (good) {
 //                    if (references[id].colorFinderHSB(paperScreen.getGraphics(), c)) {
@@ -96,16 +127,38 @@ public class CalibratedColorTracker extends ColorTracker {
             }
         }
 
-        int erosion = 1;
-        // EROSION by color ?!
-        ArrayList<TrackedElement> newElements
-                = touchDetectionColor.compute(time, erosion, this.scale);
+        int erosion = 0;
 
-        TouchPointTracker.trackPoints(trackedElements, newElements, time);
+        // Step1 -> small-scale colors (gomettes)
+// EROSION by color ?!
+//        ArrayList<TrackedElement> newElements
+//                = touchDetectionColor.compute(time, erosion, this.scale);
+      smallElements = touchDetectionColor.compute(time, erosion, this.scale);
+        
+        ///
+        System.arraycopy(colorFoundArray, 0, largeColorFoundArray, 0, colorFoundArray.length);
+        
+        ArrayList<TrackedElement> newElements2
+                = largeDetectionColor.compute(time, erosion, this.scale);
+//
+        // Step 2 -> Large -scale colors (ensemble de gomettes) 
+//        TouchPointTracker.trackPoints(trackedElements, smallElements, time);
+        trackedElements.clear();
+        trackedElements.addAll(smallElements);
+        TouchPointTracker.trackPoints(trackedLargeElements, newElements2, time);
+        
 //        for(TrackedElement te : trackedElements){
 //            te.filter(time);
 //        }
 
+//        return trackedElements;
+        return trackedLargeElements;
+    }
+    
+     ArrayList<TrackedElement> smallElements;
+       protected final ArrayList<TrackedElement> trackedLargeElements = new ArrayList<>();
+    public  ArrayList<TrackedElement> smallElements(){
         return trackedElements;
     }
+    
 }

@@ -118,9 +118,11 @@ public class Papart {
     public static String homographyCalib = calibrationFolder + "HomographyCalibration.xml";
     public static String planeAndProjectionCalib = calibrationFolder + "PlaneProjectionCalibration.xml";
     public static String touchColorCalib = calibrationFolder + "TouchColorCalibration.xml";
+            public static String colorZoneCalib = calibrationFolder + "ColorZoneCalibration.xml";
     public static String touchBlinkCalib = calibrationFolder + "TouchBlinkCalibration.xml";
 
     public static String touchCalib = calibrationFolder + "Touch2DCalibration.xml";
+    public static String objectTouchCalib = calibrationFolder + "ObjectTouchCalibration.xml";
     public static String touchCalib3D = calibrationFolder + "Touch3DCalibration.xml";
 
     public static String touchCalibrations[];
@@ -375,11 +377,11 @@ public class Papart {
 
         Papart papart = new Papart(applet);
 
-        if (pdp != null) {
-            papart.frameSize.set(pdp.getWidth(), pdp.getHeight());
-            papart.shouldSetWindowSize = true;
-            papart.registerPost();
-        }
+//        if (pdp != null) {
+//            papart.frameSize.set(pdp.getWidth(), pdp.getHeight());
+//            papart.shouldSetWindowSize = true;
+//            papart.registerPost();
+//        }
 
         try {
             papart.initCamera();
@@ -400,17 +402,17 @@ public class Papart {
      */
     public static Papart projection2D(PApplet applet) {
 
-        ScreenConfiguration screenConfiguration = getDefaultScreenConfiguration(applet);
+//        ScreenConfiguration screenConfiguration = getDefaultScreenConfiguration(applet);
 
-        removeFrameBorder(applet);
+//        removeFrameBorder(applet);
 
         Papart papart = new Papart(applet);
 
-        papart.frameSize.set(screenConfiguration.getProjectionScreenWidth(),
-                screenConfiguration.getProjectionScreenHeight());
-        papart.shouldSetWindowLocation = true;
-        papart.shouldSetWindowSize = true;
-        papart.registerPost();
+//        papart.frameSize.set(screenConfiguration.getProjectionScreenWidth(),
+//                screenConfiguration.getProjectionScreenHeight());
+//        papart.shouldSetWindowLocation = true;
+//        papart.shouldSetWindowSize = true;
+//        papart.registerPost();
 
         return papart;
     }
@@ -811,6 +813,8 @@ public class Papart {
 //        this.applet.registerMethod("stop", this);
     }
 
+    // TODO: variants: hand, finger, object, small object etc... 
+    // Default is hand, no simple, no object.
     /**
      * Create the default touchInput, using a depthCamera. This call loads the
      * depthCamera and the TouchInput.
@@ -829,7 +833,7 @@ public class Papart {
         }
         updateDepthCameraDeviceExtrinsics();
     }
-
+    
     public void loadIRTouchInput() {
         try {
             initCamera();
@@ -931,10 +935,8 @@ public class Papart {
 
         depthCameraDevice.setTouch(depthTouchInput);
 
-        for (int i = 0; i < 3; i++) {
-            depthTouchInput.setTouchDetectionCalibration(i, getTouchCalibration(i));
-        }
-        depthTouchInput.setSimpleTouchDetectionCalibration(getPapart().getDefaultTouchCalibration());
+        // UPDATE: default is hand.
+        depthTouchInput.initHandDetection();
 
         this.touchInput = depthTouchInput;
         touchInitialized = true;
@@ -957,6 +959,12 @@ public class Papart {
         return calib;
     }
 
+    public PlanarTouchCalibration getDefaultColorZoneCalibration() {
+        PlanarTouchCalibration calib = new PlanarTouchCalibration();
+        calib.loadFrom(applet, Papart.colorZoneCalib);
+        return calib;
+    }
+
     public PlanarTouchCalibration getDefaultBlinkTouchCalibration() {
         PlanarTouchCalibration calib = new PlanarTouchCalibration();
         calib.loadFrom(applet, Papart.touchBlinkCalib);
@@ -966,6 +974,11 @@ public class Papart {
     public PlanarTouchCalibration getDefaultTouchCalibration() {
         PlanarTouchCalibration calib = new PlanarTouchCalibration();
         calib.loadFrom(applet, Papart.touchCalib);
+        return calib;
+    }
+    public PlanarTouchCalibration getDefaultObjectTouchCalibration() {
+        PlanarTouchCalibration calib = new PlanarTouchCalibration();
+        calib.loadFrom(applet, Papart.objectTouchCalib);
         return calib;
     }
 

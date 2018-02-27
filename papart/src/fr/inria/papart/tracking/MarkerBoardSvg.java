@@ -37,7 +37,7 @@ import processing.data.XML;
  */
 public class MarkerBoardSvg extends MarkerBoard {
 
-    private final MarkerList markersFromSVG;
+    private  MarkerList markersFromSVG;
 
     public MarkerBoardSvg(String fileName, float width, float height) {
         super(fileName, width, height);
@@ -45,9 +45,15 @@ public class MarkerBoardSvg extends MarkerBoard {
 //        trackers = new ArrayList<>();
         this.type = MarkerType.SVG;
 
-        // TODO: better than getting the Papart object...
-        XML xml = Papart.getPapart().getApplet().loadXML(getFileName());
-        markersFromSVG = MarkerSvg.getMarkersFromSVG(xml);
+        try {
+            // TODO: better than getting the Papart object...
+            XML xml = Papart.getPapart().getApplet().loadXML(getFileName());
+
+            markersFromSVG = (new MarkerSVGReader(xml)).getList();
+//        markersFromSVG = MarkerSvg.getMarkersFromSVG(xml);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -110,7 +116,7 @@ public class MarkerBoardSvg extends MarkerBoard {
         } else {
             update(newPos, id);
             lastPos.set(id, currentPos);
-            
+
         }
 
     }
@@ -143,6 +149,7 @@ public class MarkerBoardSvg extends MarkerBoard {
             }
         }
 
+//        float pageHeight = this.height;
         float pageHeight = markersFromSVG.getSheetHeight();
 
         // Invert the scales so that it fits Inkscape's view. 

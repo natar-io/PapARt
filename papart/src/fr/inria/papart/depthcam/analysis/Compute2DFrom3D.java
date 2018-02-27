@@ -8,18 +8,21 @@ package fr.inria.papart.depthcam.analysis;
 import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.depthcam.DepthData.DepthSelection;
 import fr.inria.papart.depthcam.PixelOffset;
+import fr.inria.papart.depthcam.ProjectedDepthData;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.isInside;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import toxi.geom.Vec3D;
 
 /**
  * This is used for finger detection, as a last step to find better information
- * about potential fingers. 
+ * about potential fingers.
+ *
  * @author Jeremy Laviole
  */
 public class Compute2DFrom3D extends DepthRecognition {
 
     private DepthSelection selection;
+    protected ProjectedDepthData depthData;
 
     public DepthSelection getSelection() {
         return selection;
@@ -34,6 +37,8 @@ public class Compute2DFrom3D extends DepthRecognition {
             IplImage colorImage,
             int offset,
             int area) {
+
+        depthData = depthAnalysis.depthData;
 
         // Warning RESET ROI ?!
 //        depthAnalysis.updateRawColor(colorImage);
@@ -110,7 +115,7 @@ public class Compute2DFrom3D extends DepthRecognition {
 
         @Override
         public void execute(Vec3D p, PixelOffset px) {
-            
+
             // warning ? Project again if precision is higher
             depthData.planeAndProjectionCalibration.project(p, depthData.projectedPoints[px.offset]);
 
