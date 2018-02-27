@@ -181,7 +181,7 @@ public class PaperTouchScreen extends PaperScreen {
         touchList.sortAlongYAxis();
 
         touchList.addOffset(touchOffset);
-
+        
         if (touchInput instanceof DepthTouchInput) {
             if (((DepthTouchInput) (touchInput)).isUseRawDepth()) {
                 touchList.invertY(drawingSize);
@@ -224,41 +224,6 @@ public class PaperTouchScreen extends PaperScreen {
     }
 
     /**
-     * Draw the touch, all the touch founds.
-     *
-     * @param ellipseSize
-     */
-    protected void drawFullTouch(int ellipseSize) {
-        for (Touch t : touchList) {
-            if (t.is3D) {
-                fill(185, 142, 62);
-            } else {
-                fill(58, 71, 198);
-            }
-            ellipse(t.pposition.x, t.pposition.y, ellipseSize / 2, ellipseSize / 2);
-            pushMatrix();
-            translate(t.position.x, t.position.y);
-            ellipse(0, 0, ellipseSize, ellipseSize);
-            line(0, 0, t.speed.x * 4, t.speed.y * 4);
-            popMatrix();
-        }
-    }
-
-    /**
-     * Draw the touch, with previous locations.
-     */
-    protected void drawTouchSpeed() {
-        for (Touch t : touchList) {
-            if (t.is3D) {
-                fill(185, 142, 62);
-            } else {
-                fill(58, 71, 198);
-            }
-            ellipse(t.position.x, t.position.y, t.speed.x * 3, t.speed.y * 3);
-        }
-    }
-
-    /**
      * List of the touch Points. See the TouchList class, it is a wrapper class
      * for ArrayList (Touch).
      *
@@ -278,7 +243,5 @@ public class PaperTouchScreen extends PaperScreen {
     public TouchInput getTouchInput() {
         return touchInput;
     }
-
-    
     
 }

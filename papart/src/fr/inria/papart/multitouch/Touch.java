@@ -39,6 +39,8 @@ public class Touch {
     public PVector pposition = new PVector();
     public PVector speed = new PVector();
     
+    public boolean pressed = false;
+    
     // TODO: find a solution for this !
     // Always has a TouchPoint linked ? Not clean. 
     public TrackedElement trackedSource;
