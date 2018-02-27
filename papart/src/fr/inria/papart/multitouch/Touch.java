@@ -24,7 +24,7 @@ import fr.inria.papart.multitouch.tracking.TrackedElement;
 import processing.core.PVector;
 
 /**
- * Public (Processing) API for a touch point. Touches are for PaperScreens
+ * Public (Processing) API for a touch point. Touches are for PaperScreens.
  *
  * @author Jeremy Laviole
  */
@@ -75,7 +75,7 @@ public class Touch {
      * object implements the TouchPointEventHandler interface, delete() will be  the call to 
      * called when the tracked element gets off the tracking system. 
      * 
-     * -- Also -> new name of TouchPoint.
+     * -- Also:  new name of TouchPoint.
      * @return 
      */
     public TrackedElement trackedSource(){

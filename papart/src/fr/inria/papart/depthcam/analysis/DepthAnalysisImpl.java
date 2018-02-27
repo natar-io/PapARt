@@ -1,7 +1,7 @@
 /*
  * Part of the PapARt project - https://project.inria.fr/papart/
  *
- * Copyright (C) 2016 Jérémy Laviole
+ * Copyright (C) 2016-2017 RealityTech
  * Copyright (C) 2014-2016 Inria
  * Copyright (C) 2011-2013 Bordeaux University
  *
@@ -21,15 +21,19 @@
 package fr.inria.papart.depthcam.analysis;
 
 import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
+import fr.inria.papart.depthcam.DepthData;
 import fr.inria.papart.depthcam.PixelOffset;
 import fr.inria.papart.depthcam.TouchAttributes;
 import fr.inria.papart.depthcam.devices.Kinect360;
-import fr.inria.papart.depthcam.devices.ProjectedDepthData;
+import fr.inria.papart.depthcam.ProjectedDepthData;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.depthcam.devices.KinectOne;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.INVALID_POINT;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.papplet;
+import fr.inria.papart.depthcam.devices.Kinect360Depth;
+import fr.inria.papart.depthcam.devices.KinectOneDepth;
 import fr.inria.papart.depthcam.devices.RealSense;
+import fr.inria.papart.depthcam.devices.RealSenseDepth;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.utils.MathUtils;
 import fr.inria.papart.utils.ARToolkitPlusUtils;
@@ -40,6 +44,7 @@ import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -59,18 +64,17 @@ public class DepthAnalysisImpl extends DepthAnalysis {
 
     // Configuration 
     private float closeThreshold = 300f, farThreshold = 12000f;
-    protected ProjectiveDeviceP calibDepth, calibRGB;
+    protected ProjectiveDeviceP calibDepth, calibColor;
 
     // private variables 
     // Raw data from the Kinect Sensor
     protected ShortBuffer depthRawShortBuffer;
     protected ByteBuffer depthRawBuffer;
-    protected byte[] depthRaw;
     protected byte[] colorRaw;
     protected float[] depth;
 
     // static values
-    protected static final float INVALID_DEPTH = -1;
+    public static final float INVALID_DEPTH = -1;
 
     protected DepthCameraDevice depthCameraDevice;
     protected Camera colorCamera;
@@ -116,13 +120,14 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         // why not ?   (calib?)
         //-----
 //        initMemory();
-        updateCalibrations(depthCamera);
+        initWithCalibrations(depthCamera);
         // initThreadPool();
     }
 
-    public void updateCalibrations(DepthCameraDevice depthCamera) {
+    public void initWithCalibrations(DepthCameraDevice depthCamera) {
         depthCameraDevice = depthCamera;
-        setDepthMethod();
+        depthComputationMethod = depthCameraDevice.createDepthComputation();
+
         if (depthCamera.getMainCamera().isUseIR()) {
             colorCamera = depthCamera.getIRCamera();
         }
@@ -130,7 +135,7 @@ public class DepthAnalysisImpl extends DepthAnalysis {
             colorCamera = depthCamera.getColorCamera();
         }
 
-        calibRGB = colorCamera.getProjectiveDevice();
+        calibColor = colorCamera.getProjectiveDevice();
         calibDepth = depthCamera.getDepthCamera().getProjectiveDevice();
 
         initMemory();
@@ -147,8 +152,11 @@ public class DepthAnalysisImpl extends DepthAnalysis {
     private void initMemory() {
 //        System.out.println("Allocations: " + getColorSize() + " " + depthCameraDevice.rawDepthSize());
 
-        colorRaw = new byte[getColorSize() * 3];
-        depthRaw = new byte[depthCameraDevice.rawDepthSize()];
+        if (depthCameraDevice.getMainCamera().isPixelFormatGray()) {
+            colorRaw = new byte[getColorSize()];
+        } else {
+            colorRaw = new byte[getColorSize() * 3];
+        }
         depth = new float[depthCameraDevice.getDepthCamera().width() * depthCameraDevice.getDepthCamera().height()];
 
         depthData = new ProjectedDepthData(this);
@@ -158,86 +166,56 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         PixelOffset.initStaticMode(getWidth(), getHeight());
     }
 
+    @Deprecated
     private void setDepthMethod() {
-        if (depthCameraDevice instanceof Kinect360) {
-            depthComputationMethod = new Kinect360Depth();
-        }
-        if (depthCameraDevice instanceof KinectOne) {
-            depthComputationMethod = new KinectOneDepth();
-        }
-        if (depthCameraDevice instanceof RealSense) {
-            if (((CameraRealSense) ((RealSense) depthCameraDevice).getMainCamera()).isStarted()) {
-                float depthScale = ((CameraRealSense) ((RealSense) depthCameraDevice).getMainCamera()).getDepthScale();
-                depthComputationMethod = new RealSenseDepth(depthScale);
-            }
-        }
+
+        // Replaced by this line:
+        depthComputationMethod = depthCameraDevice.createDepthComputation();
+
+        // Old code -- to test before deletion
+//        if (depthCameraDevice instanceof Kinect360) {
+//            depthComputationMethod = ((Kinect360) depthCameraDevice).new Kinect360Depth();
+//        }
+//        if (depthCameraDevice instanceof KinectOne) {
+//            depthComputationMethod = ((KinectOne) depthCameraDevice).new KinectOneDepth();
+//        }
+//        if (depthCameraDevice instanceof RealSense) {
+//            RealSense rs = ((RealSense) depthCameraDevice);
+//            if (((CameraRealSense) ((RealSense) depthCameraDevice).getMainCamera()).isStarted()) {
+//                depthComputationMethod = rs.new RealSenseDepth();
+//            }
+//        }
+//        if (depthCameraDevice instanceof RealSense) {
+//            if (((CameraRealSense) ((RealSense) depthCameraDevice).getMainCamera()).isStarted()) {
+//                float depthScale = ((CameraRealSense) ((RealSense) depthCameraDevice).getMainCamera()).getDepthScale();
+//                depthComputationMethod = new RealSenseDepth(depthScale);
+//            }
+//        }
     }
 
-    @Deprecated
-    public void update(IplImage depth) {
-        update(depth, 1);
-    }
-
-    @Deprecated
-    public void update(opencv_core.IplImage depth, int skip) {
-        depthData.clearDepth();
-        updateRawDepth(depth);
-        computeDepthAndDo(skip, new DoNothing());
-    }
-
-    public void updateMT(opencv_core.IplImage depth, opencv_core.IplImage color, PlaneAndProjectionCalibration calib, int skip2D, int skip3D) {
+    public void computeDepthAndNormals(opencv_core.IplImage depth, opencv_core.IplImage color, int skip2D) {
         updateRawDepth(depth);
         // optimisation no Color. 
-        //        updateRawColor(color);
+        if (color != null) {
+            updateRawColor(color);
+        }
         depthData.clear();
         depthData.timeStamp = papplet.millis();
-        depthData.planeAndProjectionCalibration = calib;
-        
-//        computeDepthAndDo(skip2D, new DoNothing());
-        computeDepthAndDo(skip2D, new Select2DPointPlaneProjection());
-//        doForEachPoint(skip2D, new Select2DPointPlaneProjection());
-        doForEachPoint(skip3D, new Select3DPointPlaneProjection());
 
-        // Optimisations -- for demos
-        //        depthData.connexity.setPrecision(skip3D);
-        //        doForEachValid3DPoint(skip3D, new ComputeNormal());
-//        depthData.connexity.computeAll();
-//        doForEachPoint(1, new ComputeNormal());
-//        doForEachPoint(skip2D, new SetImageData());
-        // Optimisation no Color
-        // doForEachValidPoint(skip2D, new SetImageData());
-        // doForEachValid3DPoint(skip3D, new SetImageData());
-    }
+        depthData.connexity.setPrecision(skip2D);
 
-    public void updateMT2D(opencv_core.IplImage depth, opencv_core.IplImage color, PlaneAndProjectionCalibration calib, int skip) {
-        updateRawDepth(depth);
+        computeDepthAndDo(skip2D, new ComputeNormal());
 
-        // TechFest Hacks
-//        updateRawColor(color);
-        depthData.clear();
-//        depthData.clearDepth();
-//        depthData.clear2D();
-//        depthData.clearColor();
-        depthData.timeStamp = papplet.millis();
-        depthData.planeAndProjectionCalibration = calib;
-        computeDepthAndDo(skip, new Select2DPointPlaneProjection());
-
-        // TechFest Hacks
-//        doForEachValidPoint(skip, new SetImageData());
-    }
-
-    public void updateMT3D(opencv_core.IplImage depth, opencv_core.IplImage color, PlaneAndProjectionCalibration calib, int skip) {
-        updateRawDepth(depth);
-        // TechFest Hack
-//        updateRawColor(color);
-        depthData.clear();
-//        depthData.clearDepth();
-//        depthData.clear3D();
-//        depthData.clearColor();
-        depthData.timeStamp = papplet.millis();
-        depthData.planeAndProjectionCalibration = calib;
-        computeDepthAndDo(skip, new Select3DPointPlaneProjection());
-//        doForEachValidPoint(skip, new SetImageData());
+        if (this.colorCamera.getPixelFormat() == Camera.PixelFormat.GRAY) {
+            doForEachPoint(skip2D, new SetImageDataGRAY());
+        }
+        if (this.colorCamera.getPixelFormat() == Camera.PixelFormat.RGB) {
+            doForEachPoint(skip2D, new SetImageDataRGB());
+        }
+        if (this.colorCamera.getPixelFormat() == Camera.PixelFormat.BGR) {
+            doForEachPoint(skip2D, new SetImageData());
+        }
+//        doForEachPoint(skip2D, new ComputeNormal());
     }
 
     public void computeDepthAndDo(int precision, DepthPointManiplation manip) {
@@ -291,7 +269,38 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         }
     }
 
-    protected void doForEachValidPoint(int precision, DepthPointManiplation manip) {
+    public void computeDepthAndDoAround(int precision, int offset, int dist, DepthPointManiplation manip) {
+        PixelListAroundPoint pixels = new PixelListAroundPoint(precision, offset, dist);
+        for (PixelOffset px : pixels) {
+            float d = getDepth(px.offset);
+            // Experimental
+            depth[px.offset] = d;
+
+            if (d != INVALID_DEPTH) {
+                // Compute the depth point.
+                calibDepth.pixelToWorld(px.x, px.y, d, depthData.depthPoints[px.offset]);
+                manip.execute(depthData.depthPoints[px.offset], px);
+            }
+        }
+    }
+
+    protected void doForEachPointAround(int precision, int offset, int dist, DepthPointManiplation manip) {
+        if (precision <= 0) {
+            return;
+        }
+        PixelListAroundPoint pixels = new PixelListAroundPoint(precision, offset, dist);
+
+        for (PixelOffset px : pixels) {
+            Vec3D pKinect = depthData.depthPoints[px.offset];
+            if (pKinect != INVALID_POINT) {
+                manip.execute(pKinect, px);
+            }
+
+        }
+    }
+
+    protected void doForEachValidPoint(int precision, DepthPointManiplation manip,
+            DepthData.DepthSelection selection) {
         if (precision <= 0) {
             return;
         }
@@ -300,24 +309,104 @@ public class DepthAnalysisImpl extends DepthAnalysis {
 
         for (PixelOffset px : pixels) {
             Vec3D pKinect = depthData.depthPoints[px.offset];
-            if (pKinect != INVALID_POINT && depthData.validPointsMask[px.offset] == true) {
+            if (pKinect != INVALID_POINT && selection.validPointsMask[px.offset] == true) {
                 manip.execute(pKinect, px);
             }
         }
     }
 
-    protected void doForEachValid3DPoint(int precision, DepthPointManiplation manip) {
-        if (precision <= 0) {
-            return;
-        }
-        PixelList pixels = new PixelList(precision);
+    class SetImageData implements DepthPointManiplation {
 
-        for (PixelOffset px : pixels) {
-            Vec3D pKinect = depthData.depthPoints[px.offset];
-            if (pKinect != INVALID_POINT && depthData.validPointsMask3D[px.offset] == true) {
-                manip.execute(pKinect, px);
-            }
+        public SetImageData() {
+            super();
         }
+
+        @Override
+        public void execute(Vec3D p, PixelOffset px) {
+//            depthData.validPointsMask[px.offset] = true;
+            setPixelColor(px.offset);
+        }
+    }
+
+    class SetImageDataRGB implements DepthPointManiplation {
+
+        public SetImageDataRGB() {
+            super();
+        }
+
+        @Override
+        public void execute(Vec3D p, PixelOffset px) {
+//            depthData.validPointsMask[px.offset] = true;
+            setPixelColorRGB(px.offset);
+        }
+    }
+
+    protected class SetImageDataGRAY implements DepthPointManiplation {
+
+        public SetImageDataGRAY() {
+            super();
+        }
+
+        @Override
+        public void execute(Vec3D p, PixelOffset px) {
+//            depthData.validPointsMask[px.offset] = true;
+            setPixelColorGRAY(px.offset);
+        }
+    }
+
+    // TODO: Generalization here, same functions as those to convert the pixels for OpenGL. 
+    protected int setPixelColor(int offset) {
+
+        // TODO: Get a cleaner way go obtain the color... 
+        int colorOffset = depthCameraDevice.findColorOffset(depthData.depthPoints[offset]) * 3;
+
+        int c;
+        // Do not set invalid pixels
+        if (colorOffset < 0 || colorOffset > colorRaw.length) {
+            c = 255;
+        } else {
+            c = (colorRaw[colorOffset + 2] & 0xFF) << 16
+                    | (colorRaw[colorOffset + 1] & 0xFF) << 8
+                    | (colorRaw[colorOffset + 0] & 0xFF);
+        }
+        depthData.pointColors[offset] = c;
+        return c;
+    }
+
+    protected int setPixelColorRGB(int offset) {
+
+        // TODO: Get a cleaner way go obtain the color... 
+        int colorOffset = depthCameraDevice.findColorOffset(depthData.depthPoints[offset]) * 3;
+
+        int c;
+        // Do not set invalid pixels
+        if (colorOffset < 0 || colorOffset > colorRaw.length) {
+            c = 255;
+        } else {
+
+            c = (colorRaw[colorOffset + 0] & 0xFF) << 16
+                    | (colorRaw[colorOffset + 1] & 0xFF) << 8
+                    | (colorRaw[colorOffset + 2] & 0xFF);
+        }
+        depthData.pointColors[offset] = c;
+        return c;
+    }
+
+    protected int setPixelColorGRAY(int offset) {
+        int colorOffset = depthCameraDevice.findMainImageOffset(depthData.depthPoints[offset]);
+
+        int c;
+        // Do not set invalid pixels
+        if (colorOffset < 0 || colorOffset > colorRaw.length) {
+            c = 255;
+        } else {
+
+            c = (colorRaw[colorOffset + 0] & 0xFF) << 16
+                    | (colorRaw[colorOffset + 0] & 0xFF) << 8
+                    | (colorRaw[colorOffset + 0] & 0xFF);
+        }
+        depthData.pointColors[offset] = c;
+        return c;
     }
 
     public PVector findDepthAtRGB(PVector v) {
@@ -347,12 +436,7 @@ public class DepthAnalysisImpl extends DepthAnalysis {
     }
 
     protected void updateRawDepth(opencv_core.IplImage depthImage) {
-        if (getDepthCameraDevice().type() == Camera.Type.REALSENSE) {
-            depthRawBuffer = depthImage.getByteBuffer();
-            depthRawShortBuffer = depthRawBuffer.asShortBuffer();
-        } else {
-            depthImage.getByteBuffer().get(depthRaw);
-        }
+        depthComputationMethod.updateDepth(depthImage);
     }
 
     protected void updateRawColor(opencv_core.IplImage colorImage) {
@@ -365,43 +449,10 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         this.farThreshold = far;
     }
 
-    class Select2DPointPlaneProjection implements DepthPointManiplation {
-
-        @Override
-        public void execute(Vec3D p, PixelOffset px) {
-            if (depthData.planeAndProjectionCalibration.hasGoodOrientationAndDistance(p)) {
-
-//                Vec3D projected = depthData.planeAndProjectionCalibration.project(p);
-//                depthData.projectedPoints[px.offset] = projected;
-                depthData.planeAndProjectionCalibration.project(p, depthData.projectedPoints[px.offset]);
-
-                if (isInside(depthData.projectedPoints[px.offset], 0.f, 1.f, 0.0f)) {
-                    depthData.validPointsMask[px.offset] = true;
-                    depthData.validPointsList.add(px.offset);
-                }
-            }
-        }
-    }
-
-    class Select2DPointPlaneProjectionSR300Error implements DepthPointManiplation {
-
-        @Override
-        public void execute(Vec3D p, PixelOffset px) {
-            float error = Math.abs(p.x / 50f) + p.z / 400f;
-
-            if (depthData.planeAndProjectionCalibration.hasGoodOrientationAndDistance(p, error)) {
-//                Vec3D projected = depthData.planeAndProjectionCalibration.project(p);
-//                depthData.projectedPoints[px.offset] = projected;
-                depthData.planeAndProjectionCalibration.project(p, depthData.projectedPoints[px.offset]);
-
-                if (isInside(depthData.projectedPoints[px.offset], 0.f, 1.f, 0.0f)) {
-                    depthData.validPointsMask[px.offset] = true;
-                    depthData.validPointsList.add(px.offset);
-                }
-            }
-        }
-    }
-
+    /**
+     * Experimental Class to filter depth points.
+     *
+     */
     class TimeFilterDepth implements DepthPointManiplation {
 
         private final int frameNumber;
@@ -421,9 +472,9 @@ public class DepthAnalysisImpl extends DepthAnalysis {
             int offset = px.offset;
             float average = 0;
             int sumAmount = 0;
-            
+
             float current = p.z;
-            
+
             float variance = 0;
 //            Vec3D average = p.copy();
 //            int sumAmount = 1;
@@ -432,7 +483,7 @@ public class DepthAnalysisImpl extends DepthAnalysis {
                 if (oldValue != INVALID_DEPTH) {
                     sumAmount++;
                     average += oldValue;
-                    
+
                     variance += Math.abs(oldValue - current);
                 }
             }
@@ -461,6 +512,10 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         }
     }
 
+    /**
+     * Experimental Class to filter handle SR300 distorsions.
+     *
+     */
     class UndistortSR300Depth implements DepthPointManiplation {
 
         @Override
@@ -470,9 +525,9 @@ public class DepthAnalysisImpl extends DepthAnalysis {
 //                float depthCoeff = ((p.z) / 200000f) +  1f;
                 float xCoeff;
                 if (p.x < 0) {
-                    xCoeff = (1f - (p.x / 10000f)) ;
+                    xCoeff = (1f - (p.x / 10000f));
                 } else {
-                    xCoeff = (1f + (p.x / 10000f)) ;
+                    xCoeff = (1f + (p.x / 10000f));
                 }
 //                if (px.x == px.y) {
 //                    System.out.println("coeff: " +xCoeff);
@@ -480,97 +535,6 @@ public class DepthAnalysisImpl extends DepthAnalysis {
                 depthData.depthPoints[px.offset].z = p.z * xCoeff;
 
             }
-        }
-    }
-
-    class SelectPlaneTouchHand implements DepthPointManiplation {
-
-        @Override
-        public void execute(Vec3D p, PixelOffset px) {
-
-            boolean overTouch = depthData.planeAndProjectionCalibration.hasGoodOrientation(p);
-            boolean underTouch = depthData.planeAndProjectionCalibration.isUnderPlane(p);
-            boolean touchSurface = depthData.planeAndProjectionCalibration.hasGoodOrientationAndDistance(p);
-
-            Vec3D projected = depthData.planeAndProjectionCalibration.project(p);
-
-            if (isInside(projected, 0.f, 1.f, 0.0f)) {
-
-                depthData.projectedPoints[px.offset] = projected;
-                depthData.touchAttributes[px.offset] = new TouchAttributes(touchSurface, underTouch, overTouch);
-                depthData.validPointsMask[px.offset] = touchSurface;
-
-                if (touchSurface) {
-                    depthData.validPointsList.add(px.offset);
-                }
-            }
-        }
-    }
-
-    class Select2DPointOverPlane implements DepthPointManiplation {
-
-        @Override
-        public void execute(Vec3D p, PixelOffset px) {
-            if (depthData.planeCalibration.hasGoodOrientation(p)) {
-                depthData.validPointsMask[px.offset] = true;
-                depthData.validPointsList.add(px.offset);
-            }
-        }
-    }
-
-    class Select2DPointOverPlaneDist implements DepthPointManiplation {
-
-        @Override
-        public void execute(Vec3D p, PixelOffset px) {
-            if (depthData.planeCalibration.hasGoodOrientationAndDistance(p)) {
-                depthData.validPointsMask[px.offset] = true;
-                depthData.validPointsList.add(px.offset);
-            }
-        }
-    }
-
-    class Select2DPointCalibratedHomography implements DepthPointManiplation {
-
-        @Override
-        public void execute(Vec3D p, PixelOffset px) {
-
-            PVector projected = new PVector();
-            PVector init = new PVector(p.x, p.y, p.z);
-
-            depthData.homographyCalibration.getHomographyInv().mult(init, projected);
-
-            // TODO: Find how to select the points... 
-            if (projected.z > 10 && projected.x > 0 && projected.y > 0) {
-                depthData.validPointsMask[px.offset] = true;
-                depthData.validPointsList.add(px.offset);
-            }
-        }
-    }
-
-    class Select3DPointPlaneProjection implements DepthPointManiplation {
-
-        @Override
-        public void execute(Vec3D p, PixelOffset px) {
-            if (depthData.planeAndProjectionCalibration.hasGoodOrientation(p)) {
-//                Vec3D projected = depthData.planeAndProjectionCalibration.project(p);
-//                depthData.projectedPoints[px.offset] = projected;
-
-                depthData.planeAndProjectionCalibration.project(p, depthData.projectedPoints[px.offset]);
-
-                if (isInside(depthData.projectedPoints[px.offset], 0.f, 1.f, 0.1f)) {
-                    depthData.validPointsMask3D[px.offset] = true;
-                    depthData.validPointsList3D.add(px.offset);
-                }
-            }
-        }
-    }
-
-    class SetImageData implements DepthPointManiplation {
-
-        @Override
-        public void execute(Vec3D p, PixelOffset px) {
-            depthData.pointColors[px.offset] = getPixelColor(px.offset);
-
         }
     }
 
@@ -582,17 +546,20 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         return c;
     }
 
-    // TODO: array ? or what instead ?
+    /**
+     * List of pixels, used to iterate in images.
+     *
+     */
     public class PixelList implements Iterable<PixelOffset> {
 
         int precision = 1;
-        int begin = 0;
-        int end;
+        int beginY = 0;
+        int endY;
 
         public PixelList(int precision) {
             this.precision = precision;
-            this.begin = 0;
-            this.end = calibDepth.getHeight();
+            this.beginY = 0;
+            this.endY = calibDepth.getHeight();
         }
 
         /**
@@ -604,8 +571,8 @@ public class DepthAnalysisImpl extends DepthAnalysis {
          */
         public PixelList(int precision, int begin, int end) {
             this.precision = precision;
-            this.begin = begin;
-            this.end = end;
+            this.beginY = begin;
+            this.endY = end;
         }
 
         @Override
@@ -613,13 +580,13 @@ public class DepthAnalysisImpl extends DepthAnalysis {
             Iterator<PixelOffset> it = new Iterator<PixelOffset>() {
 
                 private int x = 0;
-                private int y = begin;
+                private int y = beginY;
                 private int offset = 0;
                 private final int width = calibDepth.getWidth();
 
                 @Override
                 public boolean hasNext() {
-                    return offset < width * end;
+                    return offset < width * endY;
                 }
 
                 @Override
@@ -650,7 +617,83 @@ public class DepthAnalysisImpl extends DepthAnalysis {
     }
 
     /**
-     * Slower than sequential for now.
+     * Pixel list that creates a square around a given pixel.
+     */
+    public class PixelListAroundPoint implements Iterable<PixelOffset> {
+
+        private final int width = calibDepth.getWidth();
+        int precision = 1;
+        private int beginX;
+        private int endX;
+        int beginY = 0;
+        int endY;
+
+        public PixelListAroundPoint(int precision, int pointOffset, int amount) {
+            this.precision = precision;
+
+            this.beginX = (pointOffset % width) - amount * precision;
+            if (beginX < 0) {
+                beginX = 0;
+            }
+            this.beginY = (pointOffset / width) - (amount * precision);
+            if (beginY < 0) {
+                beginY = 0;
+            }
+
+            this.endX = (pointOffset % width) + amount * precision;
+            if (endX > calibDepth.getWidth() - precision) {
+                endX = calibDepth.getWidth() - precision;
+            }
+            this.endY = (pointOffset / width) + (amount * precision);
+            if (endY > calibDepth.getHeight() - precision) {
+                endY = calibDepth.getHeight() - precision;
+            }
+
+        }
+
+        @Override
+        public Iterator<PixelOffset> iterator() {
+            Iterator<PixelOffset> it = new Iterator<PixelOffset>() {
+
+                private int x = beginX;
+                private int y = beginY;
+
+                private int offset = x + y * width;
+
+                @Override
+                public boolean hasNext() {
+                    return offset < endX + (width * endY);
+                }
+
+                @Override
+                public PixelOffset next() {
+                    // no allocation mode -- static
+//                    PixelOffset out = new PixelOffset(x, y, offset);
+
+                    PixelOffset out = PixelOffset.get(offset);
+                    x += precision;
+                    offset += precision;
+
+                    if (x >= endX) {
+                        x = beginX;
+                        y += precision;
+                        offset = x + y * width;
+                    }
+
+                    return out;
+                }
+
+                @Override
+                public void remove() {
+                    throw new UnsupportedOperationException();
+                }
+            };
+            return it;
+        }
+    }
+
+    /**
+     * Do the computing in a parallel manner. - Slower than sequential for now.
      *
      * @param precision
      * @param manip
@@ -672,6 +715,9 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         }
     }
 
+    /**
+     * Task that does pixel manipulation.
+     */
     class DepthPixelTask implements Callable {
 
         private int part;
@@ -717,62 +763,18 @@ public class DepthAnalysisImpl extends DepthAnalysis {
 
     }
 
-    class Kinect360Depth implements DepthComputation {
-
-        @Override
-        public float findDepth(int offset) {
-            float d = (depthRaw[offset * 2] & 0xFF) << 8
-                    | (depthRaw[offset * 2 + 1] & 0xFF);
-
-            return d;
-        }
-    }
-
-    public static final float KINECT_ONE_DEPTH_RATIO = 10f;
-
-    class KinectOneDepth implements DepthComputation {
-
-        @Override
-        public float findDepth(int offset) {
-            float d = (depthRaw[offset * 3 + 1] & 0xFF) * 256
-                    + (depthRaw[offset * 3] & 0xFF);
-
-            return d / KINECT_ONE_DEPTH_RATIO; // / 65535f * 10000f;
-        }
-    }
-
-    class RealSenseDepth implements DepthComputation {
-
-        private float depthRatio;
-
-        public RealSenseDepth(float depthRatio) {
-            this.depthRatio = depthRatio;
-        }
-
-        @Override
-        public float findDepth(int offset) {
-            float d = depthRawShortBuffer.get(offset) * depthRatio * 1000f;
-            return d;
-        }
-    }
-
+    @Deprecated
     public void undistortRGB(opencv_core.IplImage rgb, opencv_core.IplImage out) {
-        calibRGB.getDevice().undistort(rgb, out);
+        calibColor.getDevice().undistort(rgb, out);
     }
 
-    // Not Working ! 
-    /**
-     * DO NOT USE - not working (distorsion estimation fail ?).
-     *
-     * @param ir
-     * @param out
-     */
+    @Deprecated
     public void undistortIR(opencv_core.IplImage ir, opencv_core.IplImage out) {
         calibDepth.getDevice().undistort(ir, out);
     }
 
     public ProjectiveDeviceP getColorProjectiveDevice() {
-        return calibRGB;
+        return calibColor;
     }
 
     public ProjectiveDeviceP getDepthProjectiveDevice() {

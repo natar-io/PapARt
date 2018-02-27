@@ -9,6 +9,7 @@ import fr.inria.papart.procam.PaperTouchScreen;
 import fr.inria.papart.procam.camera.Camera;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.util.List;
 import static org.bytedeco.javacpp.opencv_calib3d.cvFindHomography;
 import org.bytedeco.javacpp.opencv_core;
 import static org.bytedeco.javacpp.opencv_core.cvCreateImage;
@@ -41,6 +42,25 @@ public class ImageUtils {
         argb.rewind();
     }
 
+    public static opencv_core.CvMat createHomography(List<PVector> in, List<PVector> out) {
+        opencv_core.CvMat srcPoints;
+        opencv_core.CvMat dstPoints;
+        int nbPoints = in.size();
+        opencv_core.CvMat homography;
+        // TODO: no create map
+        srcPoints = cvCreateMat(2, in.size(), opencv_core.CV_32FC1);
+        dstPoints = cvCreateMat(2, in.size(), opencv_core.CV_32FC1);
+        homography = cvCreateMat(3, 3, opencv_core.CV_32FC1);
+        for (int i = 0; i < in.size(); i++) {
+            srcPoints.put(i, in.get(i).x);
+            srcPoints.put(i + nbPoints, in.get(i).y);
+            dstPoints.put(i, out.get(i).x);
+            dstPoints.put(i + nbPoints, out.get(i).y);
+        }
+        cvFindHomography(srcPoints, dstPoints, homography);
+        //       It is better to use : GetPerspectiveTransform
+        return homography;
+    }
     public static opencv_core.CvMat createHomography(PVector[] in, PVector[] out) {
         opencv_core.CvMat srcPoints;
         opencv_core.CvMat dstPoints;
@@ -75,11 +95,9 @@ public class ImageUtils {
         imgOut.updatePixels();
         //        imgL.updatePixels();
     }
-    
-    
+
     // TODO wtf
     private static byte[] kinectByteArray = null;
-
 
     public static void IplImageToPImageKinect(opencv_core.IplImage img, boolean RGB, PImage ret) {
         //        conversionCount++;
@@ -143,6 +161,22 @@ public class ImageUtils {
         argb.rewind();
     }
 
+    // For OpenNI -- test
+    public static void byteBufferShorttoARGB(ByteBuffer gray, ByteBuffer argb) {
+        byte[] depthRaw = new byte[2];
+        for (int i = 0; i < argb.capacity(); i += 4) {
+            gray.get(depthRaw);
+            int d = (depthRaw[0] & 255) << 8 | (depthRaw[1] & 255);
+            // min depth: 400
+            byte dValue = (byte) ((d - 300.0F) / 3000.0F * 255.0F);
+            argb.put(dValue);
+            argb.put(dValue);
+            argb.put(dValue);
+            argb.put((byte) 255);
+        }
+        argb.rewind();
+    }
+
     public static void byteBufferGRAYtoARGB(ByteBuffer gray, ByteBuffer argb) {
         byte[] tmpArr = new byte[1];
         for (int i = 0; i < gray.capacity(); i++) {
@@ -167,8 +201,8 @@ public class ImageUtils {
         outSize.width(Pout.width);
         outSize.height(Pout.height);
         opencv_core.IplImage imgOut = cvCreateImage(outSize, // size
-        imgIn.depth(), // depth
-        imgIn.nChannels());
+                imgIn.depth(), // depth
+                imgIn.nChannels());
         //        imgIn.w
         return imgOut;
     }
@@ -179,8 +213,8 @@ public class ImageUtils {
         outSize.width(imgIn.width());
         outSize.height(imgIn.height());
         opencv_core.IplImage imgOut = cvCreateImage(outSize, // size
-        imgIn.depth(), // depth
-        imgIn.nChannels());
+                imgIn.depth(), // depth
+                imgIn.nChannels());
         //        imgIn.w
         return imgOut;
     }
@@ -194,15 +228,15 @@ public class ImageUtils {
         opencv_core.IplImage imgOut = null;
         if (in.format == PConstants.RGB) {
             imgOut = cvCreateImage(outSize, opencv_core.IPL_DEPTH_8U, // depth
-            3);
+                    3);
         }
         if (in.format == PConstants.ALPHA || in.format == PConstants.GRAY) {
             imgOut = cvCreateImage(outSize, opencv_core.IPL_DEPTH_8U, // depth
-            1);
+                    1);
         }
         if (in.format == PConstants.ARGB) {
             imgOut = cvCreateImage(outSize, opencv_core.IPL_DEPTH_8U, // depth
-            4);
+                    4);
         }
         //        imgIn.w
         return imgOut;
@@ -250,8 +284,8 @@ public class ImageUtils {
         outSize.width(width);
         outSize.height(height);
         opencv_core.IplImage imgOut = cvCreateImage(outSize, // size
-        imgIn.depth(), // depth
-        imgIn.nChannels());
+                imgIn.depth(), // depth
+                imgIn.nChannels());
         //        imgIn.w
         return imgOut;
     }
@@ -354,6 +388,9 @@ public class ImageUtils {
         if (format == Camera.PixelFormat.BGR) {
             IplImageToPImage(img, false, ret);
         }
+        if (format == Camera.PixelFormat.GRAY) {
+            IplImageToPImage(img, false, ret);
+        }
     }
 
     public static void IplImageToPImage(opencv_core.IplImage img, PImage ret) {
@@ -392,14 +429,20 @@ public class ImageUtils {
                 ret.pixels[i] = (255) << 24 | (buff.get(offset) & 255) << 16 | (buff.get(offset + 1) & 255) << 8 | (buff.get(offset + 2) & 255);
             }
         }
+        // Depth is 8_U 
         if (img.nChannels() == 1) {
             // TODO: no more allocations.
+           
             ByteBuffer buff = img.getByteBuffer();
+//            ByteBuffer buff =  img.imageData().
             byte[] tmpArr = new byte[1];
+//            byte[] tmpArr = new byte[img.width() * img.height()];
+//            buff.get(tmpArr);
+            
             //            byte[] arr = new byte[img.width() * img.height()];
             //            buff.get(arr);
             for (int i = 0; i < img.width() * img.height(); i++) {
-                buff.get(tmpArr);
+                            buff.get(tmpArr);
                 byte d = tmpArr[0];
                 //                int d = (arr[i] & 0xFF);
                 ret.pixels[i] = (255) << 24 | (d & 255) << 16 | (d & 255) << 8 | (d & 255);

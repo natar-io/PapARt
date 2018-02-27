@@ -19,7 +19,7 @@
  */
 package fr.inria.papart.depthcam.analysis;
 
-import fr.inria.papart.depthcam.devices.ProjectedDepthData;
+import fr.inria.papart.depthcam.ProjectedDepthData;
 import fr.inria.papart.depthcam.PixelOffset;
 import fr.inria.papart.utils.WithSize;
 import org.bytedeco.javacpp.opencv_core.IplImage;
@@ -28,10 +28,11 @@ import processing.core.PVector;
 import toxi.geom.Vec3D;
 
 /**
- * TODO: Kinect - Kinect 4 Processing - Kinect OpenCV - Kinect Multi-Touch With
- * inheritance !
+ * This class compute 3D data from depth images. It handles low level information 
+ * from depth cameras such as native buffers. 
+ * It also provides methods to extract information about depth such as normals.
  *
- * @author jeremy
+ * @author Jeremy Laviole - laviole@rea.lity.tech
  */
 public abstract class DepthAnalysis implements WithSize {
 
@@ -39,17 +40,32 @@ public abstract class DepthAnalysis implements WithSize {
     protected ProjectedDepthData depthData;
 
     public static PApplet papplet;
+    
+    /**
+     * Method that transforms depth buffer data to 3D points.
+     */
     protected DepthComputation depthComputationMethod;
+    /**
+     * Link to the depth data
+     */
+    protected Object depthBuffer;
 
-    public static final Vec3D INVALID_POINT = new Vec3D(0,0,0);
+    /**
+     * Invalid point, to compare with.
+     */
+    public static final Vec3D INVALID_POINT = new Vec3D(0, 0, 0);
+    
+    /**
+     * Invalid color.
+     */
     public static final int INVALID_COLOR = -1;
 
-    
-    public static final boolean isValidPoint(Vec3D point){
+    public static final boolean isValidPoint(Vec3D point) {
         return point.x != 0 && point.y != 0 && point.z != 0;
     }
-    
-    public abstract void update(IplImage depth);
+
+    // TODO: Find the use of this!
+//    public abstract void update(IplImage depth);
 
     /**
      * @param offset
@@ -58,17 +74,25 @@ public abstract class DepthAnalysis implements WithSize {
     protected float getDepth(int offset) {
         return depthComputationMethod.findDepth(offset);
     }
-
+    
+    /**
+     * Method that transforms depth buffer data to 3D points.
+     */
     public interface DepthComputation {
+
+        public void updateDepth(IplImage depthImg);
 
         public float findDepth(int offset);
     }
-    
+
     public interface InvalidPointManiplation {
 
         public void execute(PixelOffset px);
     }
 
+    /**
+     * Run a method on a depth point.
+     */
     public interface DepthPointManiplation {
 
         public void execute(Vec3D p, PixelOffset px);
@@ -85,7 +109,39 @@ public abstract class DepthAnalysis implements WithSize {
         }
     }
 
-    private Vec3D computeNormalImpl(Vec3D point, PixelOffset px) {
+
+    public class DoNothing implements DepthPointManiplation {
+
+        @Override
+        public void execute(Vec3D p, PixelOffset px) {
+
+        }
+    }
+
+    public int[] getConnexity() {
+        return this.connexity;
+    }
+
+    /**
+     * Return the 3D points of the depth. 3D values in millimeters
+     *
+     * @return the array of 3D points.
+     */
+    public Vec3D[] getDepthPoints() {
+        return depthData.depthPoints;
+    }
+
+    public ProjectedDepthData getDepthData() {
+        return this.depthData;
+    }
+    
+    /**
+     * Normal computing method.
+     * @param point
+     * @param px
+     * @return 
+     */
+    protected Vec3D computeNormalImpl(Vec3D point, PixelOffset px) {
 
         Vec3D[] neighbours = depthData.connexity.getNeighbourList(px.x, px.y);
         if (depthData.connexity.connexitySum[px.offset] < 2) {
@@ -93,7 +149,6 @@ public abstract class DepthAnalysis implements WithSize {
         }
 
         // TODO: no more allocations here ! 
-        
 //        Vec3D normal = computeNormal(point, neighbours[0], neighbours[1]);
         Vec3D normal = new Vec3D();
         // BIG  square around the point. 
@@ -108,13 +163,20 @@ public abstract class DepthAnalysis implements WithSize {
                 }
             }
         }
-
+//        System.out.println("Normal computed.");
 //        tryComputeMediumSquare(neighbours, normal);
         // tryComputeOneTriangle(neighbours, point, normal);
         normal.normalize();
         return normal;
     }
 
+    // Null of INVALID ?
+    /**
+     * Compute the normal of a point.
+     * @param neighbours
+     * @param normal
+     * @return 
+     */
     private boolean tryComputeLarge(Vec3D[] neighbours, Vec3D normal) {
         if (neighbours[Connexity.TOPLEFT] != null
                 && neighbours[Connexity.TOPRIGHT] != null
@@ -136,6 +198,12 @@ public abstract class DepthAnalysis implements WithSize {
         return false;
     }
 
+    /**
+     * 
+     * @param neighbours
+     * @param normal
+     * @return 
+     */
     private boolean tryComputeMediumSquare(Vec3D[] neighbours, Vec3D normal) {
         // small square around the point
         if (neighbours[Connexity.LEFT] != null
@@ -158,6 +226,13 @@ public abstract class DepthAnalysis implements WithSize {
         return false;
     }
 
+    /**
+     * Smallest unit of normal computation.
+     * @param neighbours
+     * @param point
+     * @param normal
+     * @return 
+     */
     private boolean tryComputeOneTriangle(Vec3D[] neighbours, Vec3D point, Vec3D normal) {
         // One triangle only. 
         // Left. 
@@ -200,7 +275,15 @@ public abstract class DepthAnalysis implements WithSize {
         return false;
     }
 
-    // https://www.opengl.org/wiki/Calculating_a_Surface_Normal
+  
+    /**
+     * Compute the normal from 3 points. 
+     *  https://www.opengl.org/wiki/Calculating_a_Surface_Normal
+     * @param a
+     * @param b
+     * @param c
+     * @return 
+     */
     public Vec3D computeNormal(Vec3D a, Vec3D b, Vec3D c) {
 
         Vec3D U = b.sub(a);
@@ -211,41 +294,18 @@ public abstract class DepthAnalysis implements WithSize {
         return new Vec3D(x, y, z);
     }
 
-// Toxiclibs
+    /** Compute a normal, using toxiclib's method.
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @return 
+     */
     public Vec3D computeNormal2(Vec3D a, Vec3D b, Vec3D c) {
         Vec3D normal = a.sub(c).crossSelf(a.sub(b)); // .normalize();
         return normal;
     }
 
-    public class DoNothing implements DepthPointManiplation {
-
-        @Override
-        public void execute(Vec3D p, PixelOffset px) {
-
-        }
-    }
-
-    public boolean[] getValidPoints() {
-        return depthData.validPointsMask;
-    }
-
-    public int[] getConnexity() {
-        return this.connexity;
-    }
-
-    /**
-     * Return the 3D points of the depth. 3D values in millimeters
-     *
-     * @return the array of 3D points.
-     */
-    public Vec3D[] getDepthPoints() {
-        return depthData.depthPoints;
-    }
-
-    public ProjectedDepthData getDepthData() {
-        return this.depthData;
-    }
-    
 
     public static boolean isInside(Vec3D v, float min, float max, float sideError) {
         return v.x > min - sideError && v.x < max + sideError && v.y < max + sideError && v.y > min - sideError;

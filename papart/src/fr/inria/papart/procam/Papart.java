@@ -21,6 +21,7 @@ package fr.inria.papart.procam;
 
 import com.jogamp.newt.opengl.GLWindow;
 import fr.inria.papart.calibration.CalibrationUI;
+import fr.inria.papart.calibration.MultiCalibrator;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.calibration.files.CameraConfiguration;
 import fr.inria.papart.calibration.files.HomographyCalibration;
@@ -36,10 +37,15 @@ import fr.inria.papart.depthcam.devices.Kinect360;
 import fr.inria.papart.depthcam.analysis.DepthAnalysisImpl;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.depthcam.devices.KinectOne;
+import fr.inria.papart.depthcam.devices.OpenNI2;
 import fr.inria.papart.depthcam.devices.RealSense;
+import fr.inria.papart.multitouch.ColorTouchInput;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.multitouch.TUIOTouchInput;
 import fr.inria.papart.multitouch.DepthTouchInput;
+import fr.inria.papart.multitouch.detection.BlinkTracker;
+import fr.inria.papart.multitouch.detection.CalibratedColorTracker;
+import fr.inria.papart.multitouch.detection.ColorTracker;
 import fr.inria.papart.utils.LibraryUtils;
 import fr.inria.papart.procam.camera.CameraFactory;
 import fr.inria.papart.procam.camera.CameraOpenKinect;
@@ -69,7 +75,7 @@ import processing.event.KeyEvent;
  */
 public class Papart {
 
-    public final static String folder = LibraryUtils.getPapartFolder() + "/data/";
+    public final static String folder = LibraryUtils.getPapartDataFolder() + "/";
     public final static String calibrationFolder = folder + "calibration/";
     public final static String markerFolder = folder + "markers/";
 
@@ -89,23 +95,36 @@ public class Papart {
     public static String kinectRGBCalib = calibrationFolder + "calibration-kinect-RGB.yaml";
     public static String kinectStereoCalib = calibrationFolder + "calibration-kinect-Stereo.xml";
 
+    public static String AstraSDepthCalib = calibrationFolder + "calibration-AstraS-depth.yaml";
+    public static String AstraSRGBCalib = calibrationFolder + "calibration-AstraS-rgb.yaml";
+    public static String AstraSIRCalib = calibrationFolder + "calibration-AstraS-ir.yaml";
+    public static String AstraSStereoCalib = calibrationFolder + "calibration-AstraS-stereo.xml";
+
     public static String kinectTrackingCalib = "kinectTracking.xml";
     public static String cameraProjExtrinsics = "camProjExtrinsics.xml";
+    public static String cameraProjHomography = "camProjHomography.xml";
 
     public static String screenConfig = calibrationFolder + "screenConfiguration.xml";
     public static String cameraConfig = calibrationFolder + "cameraConfiguration.xml";
     public static String depthCameraConfig = calibrationFolder + "depthCameraConfiguration.xml";
 
+    public static String colorThresholds = calibrationFolder + "colorThreshold";
     public static String redThresholds = calibrationFolder + "redThresholds.txt";
     public static String blueThresholds = calibrationFolder + "blueThresholds.txt";
+    public static String blinkThresholds = calibrationFolder + "blinkThresholds.txt";
 
     public static String tablePosition = calibrationFolder + "tablePosition.xml";
     public static String planeCalib = calibrationFolder + "PlaneCalibration.xml";
     public static String homographyCalib = calibrationFolder + "HomographyCalibration.xml";
     public static String planeAndProjectionCalib = calibrationFolder + "PlaneProjectionCalibration.xml";
     public static String touchColorCalib = calibrationFolder + "TouchColorCalibration.xml";
+    public static String touchBlinkCalib = calibrationFolder + "TouchBlinkCalibration.xml";
+
     public static String touchCalib = calibrationFolder + "Touch2DCalibration.xml";
     public static String touchCalib3D = calibrationFolder + "Touch3DCalibration.xml";
+
+    public static String touchCalibrations[];
+
     public int defaultFontSize = 12;
 
     protected static Papart singleton = null;
@@ -125,7 +144,7 @@ public class Papart {
     private ProjectorDisplay projector;
 
     private Camera cameraTracking;
-    private DepthAnalysisImpl kinectDepthAnalysis;
+    private DepthAnalysisImpl depthAnalysis;
 
     private TouchInput touchInput;
     private PVector frameSize = new PVector();
@@ -148,6 +167,12 @@ public class Papart {
         // TODO: singleton -> Better implementation.
         if (Papart.singleton == null) {
             Papart.singleton = this;
+
+            Papart.touchCalibrations = new String[3];
+            for (int i = 0; i < touchCalibrations.length; i++) {
+                touchCalibrations[i] = calibrationFolder + "TouchCalibration" + i + ".xml";
+            }
+
             fr.inria.papart.utils.DrawUtils.applet = (PApplet) applet;
         }
     }
@@ -192,18 +217,34 @@ public class Papart {
 
     private CalibrationUI calibrationPopup = null;
 
-    /**
-     * Start the extrinsic calibration.
-     *
-     * @param screen paperscreen (location) used for the location tracking.
-     */
-    public void calibration(PaperScreen screen) {
+    public void calibration(PaperScreen screen, PaperScreen pointer) {
         if (calibrationPopup == null) {
-            calibrationPopup = new CalibrationUI(screen);
+            calibrationPopup = new CalibrationUI(screen, pointer);
         } else if (calibrationPopup.isHidden()) {
             calibrationPopup.show();
         } else {
             calibrationPopup.hide();
+        }
+    }
+
+    public MultiCalibrator multiCalibrator;
+
+    public void multiCalibration() {
+
+        try {
+
+            if (multiCalibrator == null) {
+                multiCalibrator = new MultiCalibrator();
+            } else {
+                if (multiCalibrator.isActive()) {
+                    multiCalibrator.stopCalib();
+                } else {
+                    multiCalibrator.startCalib();
+                }
+//            calibrationPopup.hide();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -240,7 +281,7 @@ public class Papart {
 
         papart.frameSize.set(screenConfiguration.getProjectionScreenWidth(),
                 screenConfiguration.getProjectionScreenHeight());
-        papart.shouldSetWindowLocation = true;
+        papart.shouldSetWindowLocation = false;
         papart.shouldSetWindowSize = true;
         papart.registerPost();
 
@@ -709,6 +750,11 @@ public class Papart {
         cameraTracking.setCalibration(cameraCalib);
     }
 
+    public void loadDefaultProjector() {
+        initProjectorDisplay(1);
+        projector.manualMode();
+    }
+
     /**
      * Initialize the default ProjectorDisplay from the projectorCalib file.
      *
@@ -771,12 +817,29 @@ public class Papart {
      */
     public void loadTouchInput() {
         try {
+            // HACK load also the main camera... :[
+            if (this.cameraTracking == null) {
+                initCamera();
+            }
+
             loadDefaultDepthCamera();
             loadDefaultDepthTouchInput();
         } catch (CannotCreateCameraException cce) {
             throw new RuntimeException("Cannot start the depth camera");
         }
         updateDepthCameraDeviceExtrinsics();
+    }
+
+    public void loadIRTouchInput() {
+        try {
+            initCamera();
+            ((CameraRGBIRDepth) cameraTracking).setUseIR(true);
+            loadIRTouch();
+
+        } catch (CannotCreateCameraException cce) {
+            throw new RuntimeException("Cannot start the depth camera");
+        }
+//        updateDepthCameraDeviceExtrinsics();
     }
 
     /**
@@ -822,26 +885,29 @@ public class Papart {
     public DepthCameraDevice loadDefaultDepthCamera() throws CannotCreateCameraException {
 
         // Two cases, either the other camera running of the same type
-        CameraConfiguration kinectConfiguration = Papart.getDefaultDepthCameraConfiguration(applet);
+        CameraConfiguration depthCamConfiguration = Papart.getDefaultDepthCameraConfiguration(applet);
 
         // If the camera is not instanciated, we use depth + color from the camera.
 //        if (cameraTracking == null) {
 //            System.err.println("You must choose a camera to create a DepthCamera.");
 //        }
-        if (kinectConfiguration.getCameraType() == Camera.Type.REALSENSE) {
+        if (depthCamConfiguration.getCameraType() == Camera.Type.REALSENSE) {
             depthCameraDevice = new RealSense(applet, cameraTracking);
         }
 
-        if (kinectConfiguration.getCameraType() == Camera.Type.OPEN_KINECT) {
+        if (depthCamConfiguration.getCameraType() == Camera.Type.OPEN_KINECT) {
             depthCameraDevice = new Kinect360(applet, cameraTracking);
         }
 
-        if (kinectConfiguration.getCameraType() == Camera.Type.OPEN_KINECT_2) {
+        if (depthCamConfiguration.getCameraType() == Camera.Type.OPEN_KINECT_2) {
             depthCameraDevice = new KinectOne(applet, cameraTracking);
+        }
+        if (depthCamConfiguration.getCameraType() == Camera.Type.OPENNI2) {
+            depthCameraDevice = new OpenNI2(applet, cameraTracking);
         }
 
         if (depthCameraDevice == null) {
-            System.err.println("Could not load the depth camera !" + "Camera Type " + kinectConfiguration.getCameraType());
+            System.err.println("Could not load the depth camera !" + "Camera Type " + depthCamConfiguration.getCameraType());
         }
 
         // At this point, cameraTracking & depth Camera are ready. 
@@ -853,27 +919,47 @@ public class Papart {
      * first.
      */
     private void loadDefaultDepthTouchInput() {
-        kinectDepthAnalysis = new DepthAnalysisImpl(this.applet, depthCameraDevice);
+        depthAnalysis = new DepthAnalysisImpl(this.applet, depthCameraDevice);
 
         PlaneAndProjectionCalibration calibration = new PlaneAndProjectionCalibration();
         calibration.loadFrom(this.applet, planeAndProjectionCalib);
 
-        DepthTouchInput kinectTouchInput
+        DepthTouchInput depthTouchInput
                 = new DepthTouchInput(this.applet,
                         depthCameraDevice,
-                        kinectDepthAnalysis, calibration);
+                        depthAnalysis, calibration);
 
-        depthCameraDevice.setTouch(kinectTouchInput);
+        depthCameraDevice.setTouch(depthTouchInput);
 
-        kinectTouchInput.setTouchDetectionCalibration(getDefaultTouchCalibration());
-        kinectTouchInput.setTouchDetectionCalibration3D(getDefaultTouchCalibration3D());
-        this.touchInput = kinectTouchInput;
+        for (int i = 0; i < 3; i++) {
+            depthTouchInput.setTouchDetectionCalibration(i, getTouchCalibration(i));
+        }
+        depthTouchInput.setSimpleTouchDetectionCalibration(getPapart().getDefaultTouchCalibration());
+
+        this.touchInput = depthTouchInput;
+        touchInitialized = true;
+    }
+
+    private void loadIRTouch() {
+
+//        PlaneAndProjectionCalibration calibration = new PlaneAndProjectionCalibration();
+//        calibration.loadFrom(this.applet, planeAndProjectionCalib);
+        ColorTouchInput colorTouchInput
+                = new ColorTouchInput(this.applet, ((CameraRGBIRDepth) cameraTracking).getIRCamera());
+        this.touchInput = colorTouchInput;
+        cameraTracking.setTouchInput(colorTouchInput);
         touchInitialized = true;
     }
 
     public PlanarTouchCalibration getDefaultColorTouchCalibration() {
         PlanarTouchCalibration calib = new PlanarTouchCalibration();
         calib.loadFrom(applet, Papart.touchColorCalib);
+        return calib;
+    }
+
+    public PlanarTouchCalibration getDefaultBlinkTouchCalibration() {
+        PlanarTouchCalibration calib = new PlanarTouchCalibration();
+        calib.loadFrom(applet, Papart.touchBlinkCalib);
         return calib;
     }
 
@@ -886,6 +972,12 @@ public class Papart {
     public PlanarTouchCalibration getDefaultTouchCalibration3D() {
         PlanarTouchCalibration calib = new PlanarTouchCalibration();
         calib.loadFrom(applet, Papart.touchCalib3D);
+        return calib;
+    }
+
+    public PlanarTouchCalibration getTouchCalibration(int id) {
+        PlanarTouchCalibration calib = new PlanarTouchCalibration();
+        calib.loadFrom(applet, Papart.touchCalibrations[id]);
         return calib;
     }
 
@@ -967,7 +1059,8 @@ public class Papart {
     }
 
     /**
-     * Start the camera(s) in a thread. This call also starts the depth camera when needed.
+     * Start the camera(s) in a thread. This call also starts the depth camera
+     * when needed.
      */
     public void startCameraThread() {
         cameraTracking.start();
@@ -1021,8 +1114,6 @@ public class Papart {
      * Get the Position of a marker. MarkerTracking must be enabled with at
      * least one SVG marker to find.
      *
-     * @param markerID id of the marker to find.
-     * @param markerWidth size of square marker in mm.
      * @return null is the marker is not found.
      */
     public DetectedMarker[] getMarkerList() {
@@ -1120,6 +1211,19 @@ public class Papart {
      * performance.
      * @return
      */
+    public CalibratedColorTracker initAllTracking(PaperScreen screen, float quality) {
+        CalibratedColorTracker colorTracker = new CalibratedColorTracker(screen, quality);
+        return colorTracker;
+    }
+
+    /**
+     * Create a red ColorTracker for a PaperScreen.
+     *
+     * @param screen PaperScreen to set the location of the tracking.
+     * @param quality capture quality in px/mm. lower (0.5f) for higher
+     * performance.
+     * @return
+     */
     public ColorTracker initRedTracking(PaperScreen screen, float quality) {
         return initColorTracking("red", redThresholds, screen, quality);
     }
@@ -1136,8 +1240,28 @@ public class Papart {
         return initColorTracking("blue", blueThresholds, screen, quality);
     }
 
+    /**
+     * Create a blue ColorTracker for a PaperScreen.
+     *
+     * @param screen PaperScreen to set the location of the tracking.
+     * @param quality capture quality in px/mm. lower (0.5f) for higher
+     * performance.
+     * @param freq
+     * @return
+     */
+    public BlinkTracker initXTracking(PaperScreen screen, float quality, float freq) {
+        BlinkTracker blinkTracker = new BlinkTracker(screen, getDefaultBlinkTouchCalibration(), quality);
+        String[] list = applet.loadStrings(blinkThresholds);
+        for (String data : list) {
+            blinkTracker.loadParameter(data);
+        }
+        blinkTracker.setName("x");
+        blinkTracker.setFreq(freq);
+        return blinkTracker;
+    }
+
     private ColorTracker initColorTracking(String name, String calibFile, PaperScreen screen, float quality) {
-        ColorTracker colorTracker = new ColorTracker(screen, quality);
+        ColorTracker colorTracker = new ColorTracker(screen, getDefaultColorTouchCalibration(), quality);
         String[] list = applet.loadStrings(calibFile);
         for (int i = 0; i < list.length; i++) {
             String data = list[i];
@@ -1217,7 +1341,7 @@ public class Papart {
     }
 
     public DepthAnalysisImpl getKinectAnalysis() {
-        return this.kinectDepthAnalysis;
+        return this.depthAnalysis;
     }
 
     public Camera.Type getDepthCameraType() {

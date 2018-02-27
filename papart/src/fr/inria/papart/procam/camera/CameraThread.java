@@ -32,14 +32,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bytedeco.javacpp.ARToolKitPlus;
 import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;
+import org.bytedeco.javacpp.opencv_imgcodecs;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
 import static org.bytedeco.javacpp.opencv_imgproc.cvCvtColor;
+import processing.core.PVector;
 
 /**
  *
  * @author jeremylaviole
  */
-class CameraThread extends Thread {
+public class CameraThread extends Thread {
 
     private final Camera camera;
     Camera cameraForMarkerboard;
@@ -52,6 +54,8 @@ class CameraThread extends Thread {
     public CameraThread(Camera camera) {
         this.camera = camera;
         stop = false;
+
+        cameraForMarkerboard = camera;
 
         // Thread version... No bonus whatsoever for now.
         initThreadPool();
@@ -73,7 +77,6 @@ class CameraThread extends Thread {
 
     @Override
     public void run() {
-        cameraForMarkerboard = camera;
 
         while (!stop) {
             checkSubCamera();
@@ -89,6 +92,14 @@ class CameraThread extends Thread {
         }
     }
 
+    /**
+     * Set an image, used without starting the thread...
+     * @param image 
+     */
+    public void setImage(IplImage image) {
+        this.image = image;
+    }
+
     private void checkSubCamera() {
         if (!(camera instanceof CameraRGBIRDepth)) {
             return;
@@ -99,14 +110,18 @@ class CameraThread extends Thread {
         }
     }
 
+    /**
+     * Find the Markers, or features. 
+     * Can be used without a running thread with setImage. 
+     */
     public void compute() {
         try {
             camera.getSheetSemaphore().acquire();
             tryComputeGrayScale();
             tryToFindMarkers();
 
-//             updateSequential();
-            updateParallel();
+             updateSequential();
+//            updateParallel();
 
             camera.getSheetSemaphore().release();
         } catch (InterruptedException ex) {
@@ -141,7 +156,17 @@ class CameraThread extends Thread {
                 }
                 this.detectedMarkers = computeMarkerLocations();
                 camera.setMarkers(this.detectedMarkers);
+//                for(DetectedMarker m : detectedMarkers){
+//                    
+//                    PVector corners[] = m.getCorners();
+//                    System.out.println("marker: " + m.id + " :" );
+//                    for(PVector c : corners){
+//                        System.out.print("c: " + c);
+//                    }
+//                     System.out.println("");
+//                }
 //                System.out.println("Detected markers: " + detectedMarkers.length);
+//                System.out.println("In camera: " + camera);
                 break;
             }
         }
@@ -162,11 +187,19 @@ class CameraThread extends Thread {
     }
 
     private void computeGrayScaleImage() {
-        // TODO BRG2Gray or RGB 2 gray ?
         cvCvtColor(image, grayImage, CV_BGR2GRAY);
     }
 
+    static int k  = 0;
     private DetectedMarker[] computeMarkerLocations() {
+        
+        // DEBUG
+        
+        if(camera instanceof ProjectorAsCamera){
+             opencv_imgcodecs.cvSaveImage("/home/jiii/tmp/art-" + k++ + ".bmp", grayImage);
+        }   
+        
+        
         return DetectedMarker.detect(tracker, grayImage);
     }
 

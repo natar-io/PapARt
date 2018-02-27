@@ -51,6 +51,12 @@ public class TouchDetectionColor extends TouchDetection {
 
     public class CheckColorPoint implements PointValidityCondition {
 
+          private int inititalPoint;
+
+        public void setInitalPoint(int offset) {
+            this.inititalPoint = offset;
+        }
+        
         @Override
         public boolean checkPoint(int offset, int currentPoint) {
 
@@ -64,7 +70,7 @@ public class TouchDetectionColor extends TouchDetection {
             float dist = PVector.dist(new PVector(x1, y1), new PVector(x2, y2));
 
             return !assignedPoints[offset] // not assigned  
-                    && segmentedImage[offset] == segmentedImage[currentPoint] // is the same color
+                    && segmentedImage[offset] == segmentedImage[currentPoint] // is the same color/compo.
                     && dist < calib.getMaximumDistance();
         }
     }
@@ -161,10 +167,12 @@ public class TouchDetectionColor extends TouchDetection {
         tp.setCreationTime(this.currentTime);
         tp.setConfidence(connectedComponent.size());
 
+        // We attach the colorID here.
+        tp.attachedValue = segmentedImage[connectedComponent.get(0)];
         // TODO: re-enable this one day ?
 //        tp.setConnectedComponent(connectedComponent);
 // EXPERIMENTAL, check if a copy is necessary
-        tp.setSource(connectedComponent);
+//        tp.setSource(connectedComponent);
         return tp;
     }
 

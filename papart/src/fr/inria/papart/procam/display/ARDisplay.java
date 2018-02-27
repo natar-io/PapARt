@@ -20,6 +20,7 @@
  */
 package fr.inria.papart.procam.display;
 
+import fr.inria.papart.calibration.MultiCalibrator;
 import fr.inria.papart.calibration.files.PlaneCalibration;
 import processing.opengl.PGraphicsOpenGL;
 import org.bytedeco.javacv.ProjectiveDevice;
@@ -35,6 +36,7 @@ import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.opengl.PShader;
+import toxi.geom.Plane;
 import toxi.geom.Ray3D;
 import toxi.geom.ReadonlyVec3D;
 import toxi.geom.Vec3D;
@@ -104,6 +106,12 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         } catch (Exception e) {
             System.out.println("ARDisplay, Error at loading internals !!" + e);
         }
+    }
+
+    protected boolean isCalibrationMode = false;
+
+    public void setCalibrationMode(boolean isCalibration) {
+        this.isCalibrationMode = isCalibration;
     }
 
     /**
@@ -185,11 +193,14 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
      */
     @Override
     public void draw() {
+        
+        if(this.isCalibrationMode){
+            MultiCalibrator.drawCalibration(getGraphics());
+            return;
+        }
         drawScreensOver();
         parent.noStroke();
-
         PImage img = camera.getPImage();
-
         if (camera != null && img != null) {
             parent.image(img, 0, 0, parent.width, parent.height);
 //            ((PGraphicsOpenGL) (parent.g)).image(camera.getPImage(), 0, 0, frameWidth, frameHeight);
@@ -252,7 +263,6 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
             this.graphics.popMatrix();
         }
     }
-
 
     /**
      * This function initializes the distorsion map used by the distorsion
@@ -486,6 +496,10 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         return out;
     }
 
+//    public PVector getProjectedPointOnPlane(Plane plane, float px, float py) {
+//        PlaneCalibration planeCalibCam = new PlaneCalibration(plane, 10);
+//        return getProjectedPointOnPlane(planeCalibCam, px, py);
+//    }
     /**
      * Computes the 3D coordinates of a projected pixel in the tracking camera
      * coordinate system.
@@ -565,8 +579,6 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         this.zFar = far;
     }
 
-    
-    
     /**
      * graphics.modelview.apply(projExtrinsicsP3D);
      *
@@ -584,7 +596,7 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
     }
 
     /**
-     * Set the extrinsics of the display. They are relative to the main camera. 
+     * Set the extrinsics of the display. They are relative to the main camera.
      *
      * @param extr
      */
@@ -605,7 +617,7 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         assert (hasExtrinsics());
         return extrinsicsInv.get();
     }
-    
+
     @Override
     public boolean hasExtrinsics() {
         return this.hasExtrinsics;

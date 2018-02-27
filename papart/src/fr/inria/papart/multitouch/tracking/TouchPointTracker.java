@@ -26,7 +26,7 @@ import java.util.Collections;
 import java.util.Iterator;
 
 /**
- *
+ * Tracking methods, quite abstract for many uses.
  * @author Jeremy Laviole jeremy.laviole@inria.fr
  */
 public class TouchPointTracker {
@@ -48,6 +48,18 @@ public class TouchPointTracker {
         updatePoints(currentList, newPoints);
         addNewPoints(currentList, newPoints);
         setNonUpdatedPointsSpeed(currentList);
+    }
+    public static <T extends TrackedElement> void filterPositions(ArrayList<T> currentList){
+               // Add the new ones ?
+        for (TrackedElement tp : currentList) {
+                tp.filter();
+        }
+    }
+    public static <T extends TrackedElement> void filterPositions(ArrayList<T> currentList, int time){
+               // Add the new ones ?
+        for (TrackedElement tp : currentList) {
+                tp.filter(time);
+        }
     }
 
     public static <T extends TrackedElement> void updatePoints(ArrayList<T> currentList, ArrayList<T> newPoints) {

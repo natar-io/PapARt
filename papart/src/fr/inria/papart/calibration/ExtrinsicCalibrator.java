@@ -23,10 +23,7 @@ import fr.inria.papart.calibration.ExtrinsicSnapshot;
 import fr.inria.papart.calibration.HomographyCreator;
 import fr.inria.papart.calibration.Utils;
 import fr.inria.papart.calibration.files.HomographyCalibration;
-import fr.inria.papart.calibration.files.HomographyCalibration;
 import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
-import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
-import fr.inria.papart.calibration.files.PlaneCalibration;
 import fr.inria.papart.calibration.files.PlaneCalibration;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.multitouch.DepthTouchInput;
@@ -48,10 +45,9 @@ public class ExtrinsicCalibrator {
 
     private final PApplet parent;
 
-    
     // TODO: find a way to tweak this. 
     private static final float OPEN_KINECT_Z_OFFSET = -25f;
-    private static final float REALSENSE_Z_OFFSET = -25f;
+    private static final float REALSENSE_Z_OFFSET = -15f;
     // Cameras
     private ProjectorDisplay projector;
     private final PMatrix3D kinectCameraExtrinsics = new PMatrix3D();
@@ -81,8 +77,12 @@ public class ExtrinsicCalibrator {
         return this.kinectCameraExtrinsics;
     }
 
-    public void computeProjectorCameraExtrinsics(ArrayList<ExtrinsicSnapshot> snapshots) {
+    public PMatrix3D computeProjectorCameraExtrinsics(ArrayList<ExtrinsicSnapshot> snapshots) {
         PMatrix3D sum = new PMatrix3D(0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0);
+        PMatrix3D sum2 = new PMatrix3D(0, 0, 0, 0,
                 0, 0, 0, 0,
                 0, 0, 0, 0,
                 0, 0, 0, 0);
@@ -90,11 +90,40 @@ public class ExtrinsicCalibrator {
         for (ExtrinsicSnapshot snapshot : snapshots) {
             PMatrix3D extr = computeExtrinsics(snapshot.mainCameraPaper,
                     snapshot.projectorPaper);
+
+//            System.out.println("Extrinsics: ");
+//            extr.print();
             Utils.addMatrices(sum, extr);
         }
         Utils.multMatrix(sum, 1f / (float) snapshots.size());
 
-        saveProCamExtrinsics(sum);
+//        System.out.println("Extrinsics average: ");
+        sum.print();
+        PVector sumPos = Utils.posFromMatrix(sum);
+
+        // Second pass - remove the outliers  (distant from X mm)
+        int k = 0;
+        for (ExtrinsicSnapshot snapshot : snapshots) {
+            PMatrix3D extr = computeExtrinsics(snapshot.mainCameraPaper,
+                    snapshot.projectorPaper);
+
+            float dist = Utils.posFromMatrix(extr).dist(sumPos);
+            if (dist < 40f) { // 2 cm !
+                Utils.addMatrices(sum2, extr);
+                k++;
+            }
+        }
+        Utils.multMatrix(sum2, 1f / (float) k);
+
+        sum.print();
+        sum2.print();
+
+        if (k == 0) {
+            saveProCamExtrinsics(sum);
+        } else {
+            saveProCamExtrinsics(sum2);
+        }
+        return sum2;
     }
 
     public void saveProCamExtrinsics(PMatrix3D extr) {
@@ -296,7 +325,7 @@ public class ExtrinsicCalibrator {
         return calibration;
     }
 
-    private PlaneCalibration computeAveragePlaneCam(ArrayList<ExtrinsicSnapshot> snapshots) {
+    public PlaneCalibration computeAveragePlaneCam(ArrayList<ExtrinsicSnapshot> snapshots) {
         PVector paperSize = new PVector(297, 210);
 
         Plane sumCam = new Plane(new Vec3D(0, 0, 0),

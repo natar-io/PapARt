@@ -19,6 +19,7 @@
  */
 package fr.inria.papart.procam.display;
 
+import fr.inria.papart.calibration.MultiCalibrator;
 import fr.inria.papart.calibration.files.PlaneCalibration;
 import fr.inria.papart.utils.DrawUtils;
 import fr.inria.papart.multitouch.TouchInput;
@@ -60,18 +61,14 @@ public class ProjectorDisplay extends ARDisplay {
         this.graphics.background(0);
     }
 
+    public PVector mouseClick = new PVector();
+
     @Override
     public void draw() {
-
-        if (isCalibrationMode) {
-            if (this.isSmallCalibration) {
-                projectSmallCornersImage();
-            } else {
-                projectCornersImage();
-            }
+        if (this.isCalibrationMode) {
+            MultiCalibrator.drawCalibration(getGraphics());
             return;
         }
-
         drawScreensOver();
         parent.noStroke();
         DrawUtils.drawImage((PGraphicsOpenGL) parent.g,
@@ -79,12 +76,27 @@ public class ProjectorDisplay extends ARDisplay {
                 0, 0, this.frameWidth, this.frameHeight);
     }
 
-    private boolean isCalibrationMode = false;
-    private boolean isSmallCalibration = false;
+    /**
+     * Previous internal corner calibration.
+     */
+    private void drawCalibration() {
+        parent.g.background(0);
+        if (parent.mousePressed) {
+            mouseClick.set(parent.mouseX, parent.mouseY);
+        }
+        parent.g.ellipse(mouseClick.x, mouseClick.y, 50, 50);
+        parent.g.rect(mouseClick.x - 5, mouseClick.y, 10, 1);
+        parent.g.rect(mouseClick.x, mouseClick.y - 5, 1, 10);
+        parent.g.ellipse(mouseClick.x, mouseClick.y, 50, 50);
 
-    public void setCalibrationMode(boolean isCalibration) {
-        this.isCalibrationMode = isCalibration;
+        if (this.isSmallCalibration) {
+            projectSmallCornersImage();
+        } else {
+            projectCornersImage();
+        }
     }
+
+    private boolean isSmallCalibration = false;
 
     public void setSmallCornerCalibration(boolean smallC) {
         this.isSmallCalibration = smallC;
@@ -109,7 +121,7 @@ public class ProjectorDisplay extends ARDisplay {
     }
 
     @Override
-    public void drawScreens() {
+        public void drawScreens() {
         this.beginDraw();
         this.graphics.clear();
         drawScreensProjection();
@@ -117,7 +129,7 @@ public class ProjectorDisplay extends ARDisplay {
     }
 
     @Override
-    public void drawScreensOver() {
+        public void drawScreensOver() {
         this.beginDraw();
         drawScreensProjection();
         this.endDraw();
@@ -185,7 +197,7 @@ public class ProjectorDisplay extends ARDisplay {
     // *** Projects the pixels viewed by the projector to the screen.
     // px and py are normalized -- [0, 1] in screen space
     @Override
-    public PVector projectPointer(PaperScreen paperScreen, float px, float py) {
+        public PVector projectPointer(PaperScreen paperScreen, float px, float py) {
 
         ReadonlyVec3D inter = projectPointer3DVec3D(paperScreen, px, py);
         // It may not intersect.
@@ -279,7 +291,6 @@ public class ProjectorDisplay extends ARDisplay {
         PGraphicsOpenGL g = (PGraphicsOpenGL) parent.g;
 
         g.pushMatrix();
-        g.background(0);
         g.ellipseMode(PApplet.CENTER);
 
         g.noStroke();
@@ -323,7 +334,6 @@ public class ProjectorDisplay extends ARDisplay {
         PGraphicsOpenGL g = (PGraphicsOpenGL) parent.g;
 
         g.pushMatrix();
-        g.background(0);
         g.ellipseMode(PApplet.CENTER);
 
         // half from each size ?
@@ -334,7 +344,6 @@ public class ProjectorDisplay extends ARDisplay {
         float xWidth = nbDivision * (g.width / (nbDivision * 2));
         float yHeight = nbDivision * (g.height / (nbDivision * 2));
 
-        
         g.noStroke();
         // corner 4  Yellow 0, 0
         g.fill(255, 255, 50);
@@ -366,7 +375,6 @@ public class ProjectorDisplay extends ARDisplay {
         g.noFill();
         g.strokeWeight(3);
         g.rect(xOrig, yOrig, xWidth, yHeight);
-
     }
 
     void drawEllipses(PGraphicsOpenGL g) {

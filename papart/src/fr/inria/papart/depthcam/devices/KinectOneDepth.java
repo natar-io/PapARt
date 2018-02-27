@@ -1,8 +1,7 @@
 /*
  * Part of the PapARt project - https://project.inria.fr/papart/
  *
- * Copyright (C) 2014-2016 Inria
- * Copyright (C) 2011-2013 Bordeaux University
+ * Copyright (C) 2017 RealityTech 
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,20 +16,17 @@
  * Public License along with this library; If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package fr.inria.papart.procam;
+package fr.inria.papart.depthcam.devices;
 
-import processing.opengl.PGraphicsOpenGL;
+public class KinectOneDepth implements DepthComputation {
 
-/**
- *
- * @author Jeremy Laviole
- */
-public class ARGraphics extends PGraphicsOpenGL{
-    
-    static public final String GRAPHICS    = "fr.inria.papart.procam.ARGraphics";
-    
-    public ARGraphics() {
-        super();
+    public static final float KINECT_ONE_DEPTH_RATIO = 10f;
+
+    @Override
+    public float findDepth(int offset, Object buffer) {
+        float d = (((byte[]) buffer)[offset * 3 + 1] & 0xFF) * 256
+                + (((byte[]) buffer)[offset * 3] & 0xFF);
+
+        return d / KINECT_ONE_DEPTH_RATIO; // / 65535f * 10000f;
     }
-    
 }

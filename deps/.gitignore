@@ -1,2 +1,4 @@
 /libraries/
 *.tgz
+/OpenNI/
+*.tar.gz

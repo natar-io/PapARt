@@ -1,7 +1,7 @@
 /*
  * Part of the PapARt project - https://project.inria.fr/papart/
  *
- * Copyright (C) 2016 Jérémy Laviole
+ * Copyright (C) 2016-2017 RealityTech
  * Copyright (C) 2014-2016 Inria
  * Copyright (C) 2011-2013 Bordeaux University
  *
@@ -20,9 +20,13 @@
  */
 package fr.inria.papart.depthcam.devices;
 
+import fr.inria.papart.depthcam.analysis.DepthAnalysis;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.CameraRealSense;
 import fr.inria.papart.procam.camera.CannotCreateCameraException;
+import java.nio.ByteBuffer;
+import java.nio.ShortBuffer;
+import org.bytedeco.javacpp.opencv_core;
 import processing.core.PApplet;
 
 /**
@@ -73,6 +77,33 @@ public final class RealSense extends DepthCameraDevice {
     @Override
     public void loadDataFromDevice() {
         setStereoCalibration(cameraRS.getHardwareExtrinsics());
+    }
+
+    @Override
+    public DepthAnalysis.DepthComputation createDepthComputation() {
+        return new RealSenseDepth();
+    }
+
+    protected class RealSenseDepth implements DepthAnalysis.DepthComputation {
+
+        private final float depthRatio;
+        private ShortBuffer depthRawShortBuffer;
+
+        public RealSenseDepth() {
+            this.depthRatio = cameraRS.getDepthScale();
+        }
+
+        @Override
+        public float findDepth(int offset) {
+            float d = depthRawShortBuffer.get(offset) * depthRatio * 1000f;
+            return d;
+        }
+
+        @Override
+        public void updateDepth(opencv_core.IplImage depthImage) {
+            ByteBuffer depthRawBuffer = depthImage.getByteBuffer();
+            depthRawShortBuffer = depthRawBuffer.asShortBuffer();
+        }
     }
 
 }

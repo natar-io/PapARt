@@ -36,7 +36,7 @@ import processing.opengl.PShader;
 import processing.opengl.Texture;
 
 /**
- *
+ *  PGraphicsOpenGL for a delegated use.
  * @author JeremyLaviole
  */
 public class DelegatedGraphics {

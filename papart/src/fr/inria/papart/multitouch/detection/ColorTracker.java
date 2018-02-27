@@ -16,7 +16,7 @@
  * Public License along with this library; If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package fr.inria.papart.procam;
+package fr.inria.papart.multitouch.detection;
 
 import fr.inria.papart.calibration.files.PlanarTouchCalibration;
 import fr.inria.papart.multitouch.Touch;
@@ -24,15 +24,13 @@ import fr.inria.papart.multitouch.TouchList;
 import fr.inria.papart.multitouch.tracking.TouchPointTracker;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.multitouch.detection.TouchDetectionColor;
+import fr.inria.papart.procam.Papart;
+import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.camera.TrackedView;
 import fr.inria.papart.utils.MathUtils;
-import fr.inria.papart.utils.SimpleSize;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import processing.core.PConstants;
 import processing.core.PImage;
-import processing.core.PVector;
 
 /**
  *
@@ -40,21 +38,20 @@ import processing.core.PVector;
  */
 public class ColorTracker {
 
-    private final PaperScreen paperScreen;
-    private final TrackedView trackedView;
-    private PImage capturedImage;
+    protected final PaperScreen paperScreen;
+    protected final TrackedView trackedView;
 
-//    private final HashMap<String, Integer> trackedColors;
-    private final TouchDetectionColor touchDetectionColor;
-    private final byte[] colorFoundArray;
-    private final ArrayList<TrackedElement> trackedElements;
-    private float scale = 1f;
+    protected PImage capturedImage;
 
-    private float brightness, saturation;
-    private float hue;
-    private float redThreshold, blueThreshold;
-    private int referenceColor, erosion;
-    private String name;
+//    protected final HashMap<String, Integer> trackedColors;
+    protected TouchDetectionColor touchDetectionColor;
+    protected byte[] colorFoundArray;
+    protected final ArrayList<TrackedElement> trackedElements;
+    protected float scale = 1f;
+
+    protected ColorReferenceThresholds reference = new ColorReferenceThresholds();
+    protected String name;
+    private final PlanarTouchCalibration calibration;
 
     public ColorTracker(PaperScreen paperScreen) {
         this(paperScreen, 1);
@@ -70,48 +67,73 @@ public class ColorTracker {
 
     public ColorTracker(PaperScreen paperScreen, PlanarTouchCalibration calibration, float scale) {
         this.paperScreen = paperScreen;
+
+        this.calibration = calibration;
         this.trackedView = new TrackedView(paperScreen);
         this.trackedView.setScale(scale);
         trackedView.init();
         this.scale = scale;
 
+        initTouchDetection();
+
 //        this.trackedColors = new HashMap<>();
-        SimpleSize size = new SimpleSize(paperScreen.drawingSize.get().mult(scale));
-        touchDetectionColor = new TouchDetectionColor(size);
-
-        PlanarTouchCalibration calib = Papart.getPapart().getDefaultColorTouchCalibration();
-        calib.setMaximumDistance(calib.getMaximumDistance() * scale);
-        calib.setMinimumComponentSize((int) (calib.getMinimumComponentSize() * scale * scale)); // Quadratic (area)
-        calib.setSearchDepth((int) (calib.getSearchDepth() * scale));
-        calib.setTrackingMaxDistance(calib.getTrackingMaxDistance() * scale);
-        calib.setMaximumRecursion((int) (calib.getMaximumRecursion() * scale));
-
-        touchDetectionColor.setCalibration(calib);
         trackedElements = new ArrayList<TrackedElement>();
 
+        reference.hue = 40;
+        reference.saturation = 70;
+        reference.brightness = 80;
+        reference.redThreshold = 15;
+    }
+
+    /**
+     * Call this if you modify the trackedView
+     */
+    public void initTouchDetection() {
+//        SimpleSize size = new SimpleSize(paperScreen.getDrawingSize().copy().mult(scale));
+        touchDetectionColor = new TouchDetectionColor(trackedView);
+
+        calibration.setMaximumDistance(calibration.getMaximumDistance() * scale);
+        calibration.setMinimumComponentSize((int) (calibration.getMinimumComponentSize() * scale * scale)); // Quadratic (area)
+        calibration.setSearchDepth((int) (calibration.getSearchDepth() * scale));
+        calibration.setTrackingMaxDistance(calibration.getTrackingMaxDistance() * scale);
+        calibration.setMaximumRecursion((int) (calibration.getMaximumRecursion() * scale));
+
+        touchDetectionColor.setCalibration(calibration);
+
         colorFoundArray = touchDetectionColor.createInputArray();
-        hue = 40;
-        saturation = 70;
-        brightness = 80;
-        redThreshold = 15;
+    }
+
+    public TrackedView getTrackedView() {
+        return trackedView;
     }
 
     public ArrayList<TrackedElement> findColor(int time) {
-        return findColor(name, referenceColor, time, erosion);
+        return findColor(name, time, reference.erosion);
     }
+
+    protected int lastImageTime = 0;
 
     /**
      * For now it only finds one color.
      *
      * @param name can be "red", "blue" or something else to disable this
      * matching.
-     * @param reference Reference color found by the camera somewhere. -1 to
-     * disable it.
      * @param time currernt time in Processing.
      * @param erosion Erosion to apply before the tracking.
+     * @return List of colored elements found
      */
-    public ArrayList<TrackedElement> findColor(String name, int reference, int time, int erosion) {
+    public ArrayList<TrackedElement> findColor(String name, int time, int erosion) {
 
+        int currentImageTime = paperScreen.getCameraTracking().getTimeStamp();
+
+        // once per image
+        if (lastImageTime == currentImageTime) {
+            // return the last known points. 
+            return trackedElements;
+        }
+        lastImageTime = currentImageTime;
+
+        // Get the image
         capturedImage = trackedView.getViewOf(paperScreen.getCameraTracking());
         capturedImage.loadPixels();
 
@@ -124,23 +146,36 @@ public class ColorTracker {
         // each pixels.
         byte id = 0;
 
+        // Tag each pixels
         for (int x = 0; x < capturedImage.width; x++) {
             for (int y = 0; y < capturedImage.height; y++) {
                 int offset = x + y * capturedImage.width;
                 int c = capturedImage.pixels[offset];
-                boolean good = MathUtils.colorFinderHSB(paperScreen.getGraphics(),
-                        reference, c, hue, saturation, brightness);
+
+                boolean good = false;
 
                 if ("red".equals(name)) {
-                    boolean red = MathUtils.isRed(paperScreen.getGraphics(),
-                            c, reference, redThreshold);
+                    good = MathUtils.colorFinderHSBRedish(paperScreen.getGraphics(),
+                            reference.referenceColor, c, reference.hue, reference.saturation, reference.brightness);
+
+                    boolean red = true;
+//                    boolean red = MathUtils.isRed(paperScreen.getGraphics(),
+//                            c, ref2, reference.redThreshold);
                     good = good && red;
+                } else {
+                    if ("blue".equals(name)) {
+                        good = MathUtils.colorFinderHSB(paperScreen.getGraphics(),
+                                reference.referenceColor, c, reference.hue, reference.saturation, reference.brightness);
+
+                        boolean blue = MathUtils.isBlue(paperScreen.getGraphics(),
+                                c, reference.referenceColor, reference.blueThreshold);
+                        good = good && blue;
+                    } else {
+                        good = MathUtils.colorFinderHSB(paperScreen.getGraphics(),
+                               reference.referenceColor, c, reference.hue, reference.saturation, reference.brightness);
+                    }
                 }
-                if ("blue".equals(name)) {
-                    boolean blue = MathUtils.isBlue(paperScreen.getGraphics(),
-                            c, reference, blueThreshold);
-                    good = good && blue;
-                }
+
                 if (good) {
                     colorFoundArray[offset] = id;
                 }
@@ -150,12 +185,17 @@ public class ColorTracker {
 
         ArrayList<TrackedElement> newElements
                 = touchDetectionColor.compute(time, erosion, this.scale);
+
         TouchPointTracker.trackPoints(trackedElements, newElements, time);
-//        for(TrackedElement te : trackedElements){
-//            te.filter(time);
-//        }
+        for(TrackedElement te : trackedElements){
+            te.filter(time);
+        }
 
         return trackedElements;
+    }
+
+    public byte[] getColorFoundArray() {
+        return colorFoundArray;
     }
 
     public PImage getTrackedImage() {
@@ -170,6 +210,9 @@ public class ColorTracker {
         TouchList output = new TouchList();
         for (TrackedElement te : trackedElements) {
             Touch t = te.getTouch();
+            t.is3D = false;
+            System.out.println("pid: " + t.id);
+            System.out.println("p: " + te.getPosition());
             t.setPosition(te.getPosition());
             output.add(t);
         }
@@ -217,77 +260,8 @@ public class ColorTracker {
 //        this.trackedColors.remove(name);
 //    }
 
-    void loadParameter(String data) {
-        try {
-            String[] pair = data.split(":");
-            if (pair[0].startsWith("hue")) {
-                hue = Float.parseFloat(pair[1]);
-            }
-            if (pair[0].startsWith("sat")) {
-                saturation = Float.parseFloat(pair[1]);
-            }
-            if (pair[0].startsWith("intens")) {
-                this.brightness = Float.parseFloat(pair[1]);
-            }
-
-            if (pair[0].startsWith("erosion")) {
-                this.erosion = Integer.parseInt(pair[1]);
-            }
-            if (pair[0].startsWith("col")) {
-                this.referenceColor = Integer.parseInt(pair[1]);
-            }
-
-            if (pair[0].startsWith("red")) {
-                this.redThreshold = Float.parseFloat(pair[1]);
-            }
-            if (pair[0].startsWith("blue")) {
-                this.blueThreshold = Float.parseFloat(pair[1]);
-            }
-        } catch (NumberFormatException nfe) {
-            nfe.printStackTrace();
-        }
-    }
-
-    public void setThresholds(float hue, float saturation, float brightness) {
-        this.hue = hue;
-        this.saturation = saturation;
-        this.brightness = brightness;
-    }
-
-    public void setRedThreshold(float red) {
-        this.redThreshold = red;
-    }
-
-    public void setBlueThreshold(float blue) {
-        this.blueThreshold = blue;
-    }
-
-    public void setBrightness(float brightness) {
-        this.brightness = brightness;
-    }
-
-    public void setSaturation(float saturation) {
-        this.saturation = saturation;
-    }
-
-    public void setHue(float hue) {
-        this.hue = hue;
-    }
-
-    public float getBrightness() {
-        return brightness;
-    }
-
-    public float getSaturation() {
-        return saturation;
-    }
-
-    public float getHue() {
-        return hue;
-    }
-
-    public float getRedThreshold() {
-        return redThreshold;
+    public void loadParameter(String data) {
+        reference.loadParameter(data);
     }
 
     public String getName() {
@@ -296,22 +270,6 @@ public class ColorTracker {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public int getErosion() {
-        return erosion;
-    }
-
-    public void setErosion(int erosion) {
-        this.erosion = erosion;
-    }
-
-    public int getReferenceColor() {
-        return referenceColor;
-    }
-
-    public void setReferenceColor(int referenceColor) {
-        this.referenceColor = referenceColor;
     }
 
 }

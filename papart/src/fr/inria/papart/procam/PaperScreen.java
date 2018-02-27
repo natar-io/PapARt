@@ -31,10 +31,14 @@ import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.procam.display.ProjectorDisplay;
+import fr.inria.papart.tracking.DetectedMarker;
 import fr.inria.papart.tracking.ObjectFinder;
 import fr.inria.papart.utils.MathUtils;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import processing.opengl.PGraphicsOpenGL;
 import processing.core.PApplet;
 import processing.core.PConstants;
@@ -61,8 +65,7 @@ public class PaperScreen extends DelegatedGraphics {
     protected BaseDisplay mainDisplay;
 
     // only one.
-    protected MarkerBoard markerBoard = MarkerBoardInvalid.board;
-
+    private MarkerBoard markerBoard;
     protected PVector drawingSize
             = new PVector(DEFAULT_DRAWING_SIZE, DEFAULT_DRAWING_SIZE, 1);
     protected float quality = DEFAULT_RESOLUTION;
@@ -96,6 +99,7 @@ public class PaperScreen extends DelegatedGraphics {
     private final int id;
 
     public static int count = 0;
+    private final PMatrix3D table, tableInv;
 
     /**
      * Create a new PaperScreen, a Papart object has to be created first. A
@@ -120,8 +124,12 @@ public class PaperScreen extends DelegatedGraphics {
         mainDisplay = papart.getDisplay();
         displays.add(papart.getDisplay());
         this.id = count++;
+        this.markerBoard = MarkerBoardInvalid.board;
         // Default to projector graphics.
         // currentGraphics = this.display.getGraphics();
+        table = Papart.getPapart().getTableLocation();
+        tableInv = Papart.getPapart().getTableLocation();
+        tableInv.invert();
         register();
     }
 
@@ -139,6 +147,10 @@ public class PaperScreen extends DelegatedGraphics {
         mainDisplay = proj;
         displays.add(proj);
         this.id = count++;
+        this.markerBoard = MarkerBoardInvalid.board;
+        table = Papart.getPapart().getTableLocation().get();
+        tableInv = Papart.getPapart().getTableLocation();
+        tableInv.invert();
         register();
     }
 
@@ -153,6 +165,10 @@ public class PaperScreen extends DelegatedGraphics {
         mainDisplay = display;
         displays.add(display);
         this.id = count++;
+        this.markerBoard = MarkerBoardInvalid.board;
+        table = Papart.getPapart().getTableLocation().get();
+        tableInv = Papart.getPapart().getTableLocation();
+        tableInv.invert();
         register();
     }
 
@@ -236,13 +252,20 @@ public class PaperScreen extends DelegatedGraphics {
     }
 
     public MarkerBoard getMarkerBoard() {
-        if (!this.hasMarkerBoard()) {
-            System.err.println("The screen " + this + " does not a markerboard...");
-        }
+
+        // TODO: WTF  invalid
+//        if (!this.hasMarkerBoard()) {
+//            System.err.println("The PaperScreen " + this + " does not have a markerboard...");
+//        }
         return this.markerBoard;
     }
 
     public PGraphicsOpenGL getGraphics() {
+        
+        if(this.isDrawingOnDisplay){
+            return (PGraphicsOpenGL) parent.getGraphics();
+        }
+        
         if (thisGraphics == null) {
             thisGraphics = (PGraphicsOpenGL) parent.createGraphics(
                     this.getRenderingSizeX(),
@@ -359,6 +382,26 @@ public class PaperScreen extends DelegatedGraphics {
         return paperPosCorners3D;
     }
 
+    /**
+     * @param position in mm in the paper screen
+     * @return position in px in the cameratracking.
+     */
+    public PVector computePxPosition(PVector position) {
+
+        PVector p = position.copy();
+
+        // Invert Y
+        p.y = p.y - drawingSize.y;
+        p.y = -p.y;
+        // get a copy of the position
+        PMatrix3D mat = this.getLocation(getCameraTracking()).get();
+        mat.translate(p.x, p.y, 0);
+
+        PVector pos3D = new PVector(mat.m03, mat.m13, mat.m23);
+        PVector camCoord = cameraTracking.getProjectiveDevice().worldToPixelCoord(pos3D);
+        return camCoord;
+    }
+
     protected Plane plane = new Plane();
 
     /**
@@ -441,6 +484,7 @@ public class PaperScreen extends DelegatedGraphics {
      */
     private void trackCurrentMarkerBoard() {
         if (isWithoutCamera || this.markerBoard == MarkerBoardInvalid.board) {
+            System.out.println("Cannot start the tracking with cam: " + isWithoutCamera + ", board: " + this.markerBoard);
             return;
         }
 
@@ -606,6 +650,42 @@ public class PaperScreen extends DelegatedGraphics {
 //        System.out.println("drawAroundPaper default, you should not see this.");
     }
 
+    public void drawOnTable() {
+        if (!isDrawingOnDisplay) {
+            return;
+        }
+
+//        PMatrix3D location = this.getLocation().get();
+//        PMatrix3D t = tableInv.get();
+//        t.apply(location);
+//        PVector tableRelativePos = new PVector(t.m03, t.m13, t.m23);
+        PVector p2 = getRelativePos(new PVector(20, 20, 0));
+        PVector tableRelativePos = getRelativePos(new PVector(0, 0, 0));
+
+        float r = PApplet.atan2(p2.y - tableRelativePos.y, p2.x - tableRelativePos.x);
+
+        PMatrix3D locationInv = this.getLocation().get();
+        locationInv.invert();
+        currentGraphics.scale(1, -1, 1);
+        currentGraphics.translate(0, -getSize().y, 0);
+        currentGraphics.applyMatrix(locationInv);
+        currentGraphics.applyMatrix(table);
+        currentGraphics.translate(tableRelativePos.x, tableRelativePos.y);
+        currentGraphics.rotate(r);
+        currentGraphics.scale(1, -1, 1);
+    }
+
+    private PVector getRelativePos(PVector v) {
+
+        PMatrix3D location = this.getLocation().get();
+        location.translate(v.x, v.y, v.z);
+        PMatrix3D t = tableInv.get();
+        t.apply(location);
+        PVector tableRelativePos = new PVector(t.m03, t.m13, t.m23);
+
+        return tableRelativePos;
+    }
+
     /**
      * Activate/Desactivate the tracking. This is called when loadLocationFrom()
      * is called.
@@ -632,6 +712,107 @@ public class PaperScreen extends DelegatedGraphics {
 //        } else {
 //            markerBoard.blockUpdate(cameraTracking, 0); // ms
 //        }
+    }
+
+    HashMap<Integer, Integer> positionsHistory = new HashMap<Integer, Integer>();
+
+    ////////////////////////
+    //// Tracking individual markers
+    ////////////////////////
+    /**
+     * Get individual markers, their ID should be between 800 and 1000.
+     *
+     * @param markerWidth
+     * @return
+     */
+    public Map<Integer, PVector> getSingleMarkers(float markerWidth) {
+        Papart papart = Papart.getPapart();
+//        ArrayList<PVector> positions = new ArrayList<>();
+        HashMap<Integer, PVector> positions = new HashMap<Integer, PVector>();
+
+        DetectedMarker[] markers = papart.getMarkerList();
+
+        for (DetectedMarker marker : markers) {
+
+            if (marker.id < 800 || marker.id > 1000) {
+                continue;
+            }
+
+            //       next if marker.confidence < 1.0
+            PMatrix3D mat = papart.getMarkerMatrix(marker.id, markerWidth);
+
+            // look at others if the position is not valid
+            if (mat == null) {
+                continue;
+            }
+            PVector pos = papart.projectPositionTo(mat, this);
+
+            if (pos.y < 0 || pos.y > drawingSize.y
+                    || pos.x < 0
+                    || pos.x > drawingSize.x) {
+
+                // Not in this paperscreen - reset history
+                positionsHistory.put(marker.id, 0);
+            } else {
+                // update history
+                Integer markerID = positionsHistory.get(marker.id);
+                int history = markerID == null ? 0 : markerID;
+                positionsHistory.put(marker.id, ++history);
+
+                // If it is old enough ? ~ 10 frames 
+                if (history > 10) {
+                    positions.put(marker.id, pos);
+                }
+            }
+        }
+        return positions;
+    }
+
+    // TODO: use Z as the angle of the marker --- source in ruby
+//    
+//       # pos.x = pos.x / filter_scale
+//      # pos.y = pos.y / filter_scale
+//      if @marker_valid_pos[marker.id] == nil
+//        filter_intens = 20.0 # freq
+//##        filter_intens = 1.0 ## alpha
+//        @marker_valid_pos[marker.id] =
+//          {
+//            :x_filter => Papartlib::OneEuroFilter.new(filter_intens),
+//            :y_filter => Papartlib::OneEuroFilter.new(filter_intens),
+//            :angle_filter => Papartlib::OneEuroFilter.new(filter_intens)
+//
+//           #  :x_filter => Papartlib::LowPassFilter.new(filter_intens, pos.x),
+//           # :y_filter => Papartlib::LowPassFilter.new(filter_intens, pos.y),
+//           # :angle_filter => Papartlib::LowPassFilter.new(filter_intens, pos.z)
+//          }
+//      else
+//        pos.x = @marker_valid_pos[marker.id][:x_filter].filter(pos.x)
+//        pos.y = @marker_valid_pos[marker.id][:y_filter].filter(pos.y)
+//
+//        pos.z = pos.z + 2 * Math::PI if pos.z < 0  if in_blue_zone(pos.x)
+//#        pos.z = pos.z + 2 * Math::PI  if in_blue_zone(pos.x)
+//        pos.z = @marker_valid_pos[marker.id][:angle_filter].filter(pos.z)
+//        pos.z = pos.z - 2* Math::PI  if in_blue_zone(pos.x)
+    /**
+     * Get the main marker found, ID between 800 and 1000.
+     *
+     * @param markerWidth
+     * @return id of the marker found, or -1 in none.
+     */
+    public int getMainMarker(float markerWidth) {
+
+        int minimumAge = 10;
+        int selected = -1;
+
+        Map<Integer, PVector> singleMarkers = getSingleMarkers(markerWidth);
+        for (Integer key : singleMarkers.keySet()) {
+            Integer age = positionsHistory.get(key);
+            if (age != null && age > minimumAge) {
+                selected = key;
+                minimumAge = age;
+            }
+        }
+        return selected;
     }
 
     ////////////////////////
@@ -687,10 +868,9 @@ public class PaperScreen extends DelegatedGraphics {
      * @return
      */
     public PMatrix3D getLocation(Camera camera) {
-        if (!markerBoard.isTrackedBy(camera) && !this.useManualLocation) {
+        if ((!markerBoard.isTrackedBy(camera) && !this.useManualLocation)) {
             return extrinsics.get();
         }
-
         PMatrix3D combinedTransfos = getMainLocation(camera);
         combinedTransfos.apply(extrinsics);
         return combinedTransfos;
@@ -922,14 +1102,19 @@ public class PaperScreen extends DelegatedGraphics {
      * @return the coordinates for cameraTracking.
      */
     public PVector getCameraViewOf(Touch t) {
-        ProjectorDisplay projector = (ProjectorDisplay) getDisplay();
 
-        TrackedElement tp = t.trackedSource;
-        PVector screenPos = tp.getPosition();
-        PVector tablePos = projector.projectPointer3D(this, screenPos.x, screenPos.y);
-        ProjectiveDeviceP pdp = cameraTracking.getProjectiveDevice();
-        PVector coord = pdp.worldToPixelCoord(tablePos);
-        return coord;
+        if (getDisplay() instanceof ProjectorDisplay) {
+            ProjectorDisplay projector = (ProjectorDisplay) getDisplay();
+            TrackedElement tp = t.trackedSource;
+            PVector screenPos = tp.getPosition();
+            PVector tablePos = projector.projectPointer3D(this, screenPos.x, screenPos.y);
+            ProjectiveDeviceP pdp = cameraTracking.getProjectiveDevice();
+            PVector coord = pdp.worldToPixelCoord(tablePos);
+            return coord;
+        } else {
+// Opposite of project... ?
+            return getDisplay().project(this, t.position.x, t.position.y);
+        }
     }
 
     /**
@@ -1151,6 +1336,10 @@ public class PaperScreen extends DelegatedGraphics {
      */
     public void loadMarkerBoard(String configFile, float width, float height) {
         this.markerBoard = MarkerBoardFactory.create(configFile, width, height);
+
+        if (this.markerBoard == MarkerBoardInvalid.board) {
+            System.out.println("Cannot create the markerboard, setting it to invalid: " + configFile);
+        }
         trackCurrentMarkerBoard();
     }
 
@@ -1225,7 +1414,12 @@ public class PaperScreen extends DelegatedGraphics {
         } else {
             markerBoard.setDrawingMode(cameraTracking, false, 0);
         }
-        markerBoard.setFiltering(cameraTracking, filteringFreq, filteringCutoff);
+        if (filteringFreq == 0) {
+            markerBoard.removeFiltering(cameraTracking);
+        } else {
+            markerBoard.setFiltering(cameraTracking, filteringFreq, filteringCutoff);
+        }
+
     }
 
     /**
@@ -1303,7 +1497,7 @@ public class PaperScreen extends DelegatedGraphics {
 
             initPosM.translate(this.getRenderingSizeX() / 2, this.getRenderingSizeY() / 2);
             // All is relative to the paper's center. not the corner. 
-            initPosM.scale(-1, 1, -1);
+            initPosM.scale(-1, 1, 1);
 
         }
 
@@ -1311,7 +1505,7 @@ public class PaperScreen extends DelegatedGraphics {
         PMatrix3D newPos = this.getLocation(cam);
 
         newPos.translate(this.getRenderingSizeX() / 2, this.getRenderingSizeY() / 2);
-        newPos.scale(-1, 1, -1);
+        newPos.scale(-1, 1, 1);
 
         newPos.invert();
         newPos.apply(initPosM);

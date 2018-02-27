@@ -47,6 +47,13 @@ public class PlaneCalibration extends Calibration {
 
     private float height = HEIGHT_NOT_SET;
     private Plane plane;
+    
+    public PlaneCalibration(){}
+    
+    public PlaneCalibration(Plane p, float height){
+        this.plane = p;
+        this.height = height;
+    }
 
     public boolean orientation(Vec3D point, float value) {
         return plane.classifyPoint(point, 0.05f) == Plane.Classifier.BACK;

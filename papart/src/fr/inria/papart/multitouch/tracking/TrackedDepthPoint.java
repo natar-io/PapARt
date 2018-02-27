@@ -1,5 +1,5 @@
 /*
- * Part of the PapARt project - https://project.inria.fr/papart/
+ * Part of the PapARt project - htpts://project.inria.fr/papart/
  *
  * Copyright (C) 2014-2016 Inria
  * Copyright (C) 2011-2013 Bordeaux University
@@ -15,13 +15,15 @@
  *
  * You should have received a copy of the GNU Lesser General
  * Public License along with this library; If not, see
- * <http://www.gnu.org/licenses/>.
+ * <htpt://www.gnu.org/licenses/>.
  */
 package fr.inria.papart.multitouch.tracking;
 
-import fr.inria.papart.depthcam.devices.ProjectedDepthData;
+import fr.inria.papart.depthcam.ProjectedDepthData;
 import fr.inria.papart.depthcam.DepthDataElementProjected;
 import fr.inria.papart.multitouch.ConnectedComponent;
+import fr.inria.papart.multitouch.detection.DepthElementList;
+import fr.inria.papart.multitouch.detection.TouchDetectionDepth;
 import java.util.ArrayList;
 import toxi.geom.Vec3D;
 
@@ -35,13 +37,27 @@ public class TrackedDepthPoint extends TrackedElement {
     private Vec3D positionDepthCam;
     private Vec3D previousPositionDepthCam;
 
-    private ArrayList<DepthDataElementProjected> depthDataElements = new ArrayList<DepthDataElementProjected>();
+    private DepthElementList depthDataElements = new DepthElementList();
+    private DepthElementList selectDataElements = new DepthElementList();
     int pointColor;
 
-    
     private boolean is3D;
     private boolean isCloseToPlane;
 
+    private static final int NO_HAND = -1;
+    private int attachedHandID = NO_HAND;
+    private boolean isHand = false;
+
+    
+    private TrackedDepthPoint parent;
+
+    public void setParent(TrackedDepthPoint p){
+        parent = p;
+    }
+    public TrackedDepthPoint getParent(){
+        return parent;
+    }
+    
     public TrackedDepthPoint(int id) {
         super(id);
     }
@@ -50,8 +66,8 @@ public class TrackedDepthPoint extends TrackedElement {
         super();
     }
 
-    public float distanceTo(TrackedDepthPoint tp) {
-        return this.positionDepthCam.distanceTo(tp.positionDepthCam);
+    public float distanceTo(TrackedDepthPoint pt) {
+        return this.positionDepthCam.distanceTo(pt.positionDepthCam);
     }
 
     public void setPositionKinect(Vec3D pos) {
@@ -67,26 +83,67 @@ public class TrackedDepthPoint extends TrackedElement {
         return this.previousPositionDepthCam;
     }
 
-    protected void updateAdditionalElements(TrackedDepthPoint tp) {
-        assert (tp.is3D == this.is3D);
+    public void setPositionDepthCam(Vec3D pos) {
+        this.positionDepthCam = new Vec3D(pos);
+        this.previousPositionDepthCam = new Vec3D(pos);
+    }
+
+    public Vec3D getPositionDepthCam() {
+        return this.positionDepthCam;
+    }
+
+    public Vec3D getPreviousPositionDepthCam() {
+        return this.previousPositionDepthCam;
+    }
+
+    protected void updateAdditionalElements(TrackedDepthPoint pt) {
+        assert (pt.is3D == this.is3D);
         previousPositionDepthCam = positionDepthCam.copy();
 
-        this.positionDepthCam.set(tp.positionDepthCam);
-        this.confidence = tp.confidence;
-        this.isCloseToPlane = tp.isCloseToPlane;
+        this.positionDepthCam.set(pt.positionDepthCam);
+        this.confidence = pt.confidence;
+        this.isCloseToPlane = pt.isCloseToPlane;
 
-        this.depthDataElements = tp.getDepthDataElements();
+        this.depthDataElements = pt.getDepthDataElements();
+    }
+
+    public static int numberOfCommonElements(TrackedDepthPoint first,
+            TrackedDepthPoint second) {
+
+        ArrayList<Integer> firstOffsets = new ArrayList<>();
+        for (DepthDataElementProjected depthPoint : first.depthDataElements) {
+            int offset = depthPoint.offset;
+            firstOffsets.add(offset);
+        }
+
+        ArrayList<Integer> secondOffsets = new ArrayList<>();
+        for (DepthDataElementProjected depthPoint : second.depthDataElements) {
+            int offset = depthPoint.offset;
+            secondOffsets.add(offset);
+        }
+
+        secondOffsets.retainAll(firstOffsets);
+        return secondOffsets.size();
     }
 
     public void setDepthDataElements(ProjectedDepthData depthData, ConnectedComponent connectedComponent) {
         depthDataElements.clear();
         for (Integer i : connectedComponent) {
-            depthDataElements.add(depthData.getElementKinect(i));
+            depthDataElements.add(depthData.getDepthElement(i));
         }
     }
 
-    public ArrayList<DepthDataElementProjected> getDepthDataElements() {
+    public void setDepthDataElements(ProjectedDepthData depthData, DepthElementList list) {
+        depthDataElements.clear();
+        depthDataElements.addAll(list);
+    }
+
+    public DepthElementList getDepthDataElements() {
         return this.depthDataElements;
+    }
+
+    public ConnectedComponent getDepthDataAsConnectedComponent() {
+        return this.depthDataElements.toConnectedComponent();
     }
 
     public boolean is3D() {
@@ -113,10 +170,39 @@ public class TrackedDepthPoint extends TrackedElement {
         this.pointColor = pointColor;
     }
 
+    public int getAttachedHandID() {
+        return attachedHandID;
+    }
+
+    public void setAttachedHandID(int attachedHandID) {
+        this.attachedHandID = attachedHandID;
+    }
+
+    public boolean isHand() {
+        return isHand;
+    }
+
+    public void setHand(boolean isHand) {
+        this.isHand = isHand;
+    }
+
+    private ArrayList<Integer> fingerIDs = new ArrayList<>();
+
+    public void addFinger(int id) {
+        fingerIDs.add(id);
+    }
+
+    public void clearFingers() {
+        fingerIDs.clear();
+    }
+
+    public ArrayList<Integer> getFingers() {
+        return fingerIDs;
+    }
+
     @Override
     public String toString() {
         return "Touch Point, depth: " + positionDepthCam + " , proj: " + position + "confidence " + confidence + " ,close to Plane : " + isCloseToPlane;
     }
-
 
 }

@@ -23,20 +23,20 @@ package fr.inria.papart.multitouch;
 import fr.inria.papart.multitouch.tracking.TouchPointTracker;
 import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
 import fr.inria.papart.calibration.files.PlanarTouchCalibration;
-import fr.inria.papart.depthcam.devices.ProjectedDepthData;
 import fr.inria.papart.depthcam.DepthDataElementProjected;
-import fr.inria.papart.depthcam.DepthPoint;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 
-import fr.inria.papart.procam.display.ARDisplay;
-import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.depthcam.analysis.DepthAnalysisImpl;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
+import fr.inria.papart.multitouch.detection.ArmDetection;
+import fr.inria.papart.multitouch.detection.FingerDetection;
+import fr.inria.papart.multitouch.detection.HandDetection;
 import fr.inria.papart.multitouch.detection.Simple2D;
-import fr.inria.papart.multitouch.detection.Simple3D;
+import fr.inria.papart.multitouch.detection.TouchDetectionDepth;
 import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.display.BaseDisplay;
+import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.utils.MathUtils;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -51,7 +51,7 @@ import toxi.geom.Vec3D;
 /**
  * Touch input, using a depth camera device.
  *
- * @author jeremylaviole -  laviole@rea.lity.tech
+ * @author jeremylaviole - laviole@rea.lity.tech
  */
 public class DepthTouchInput extends TouchInput {
 
@@ -64,18 +64,18 @@ public class DepthTouchInput extends TouchInput {
     private final Semaphore depthDataSem = new Semaphore(1);
 
     // List of TouchPoints, given to the user
-    private final DepthCameraDevice kinectDevice;
+    private final DepthCameraDevice depthCameraDevice;
 
     private PlaneAndProjectionCalibration planeAndProjCalibration;
 
-    // List of TouchPoints, given to the user
-    private final ArrayList<TrackedDepthPoint> touchPoints2D = new ArrayList<>();
-    private final ArrayList<TrackedDepthPoint> touchPoints3D = new ArrayList<>();
-    private Simple2D touchDetection2D;
-    private Simple3D touchDetection3D;
+    private FingerDetection fingerDetection;
+    private Simple2D simpleDetection;
+    private ArmDetection armDetection;
+    private HandDetection handDetection;
+    private TouchDetectionDepth touchDetections[] = new TouchDetectionDepth[3];
 
-    private PlanarTouchCalibration touchCalib2D;
-    private PlanarTouchCalibration touchCalib3D;
+    private PlanarTouchCalibration touchCalibrations[] = new PlanarTouchCalibration[3];
+    private PlanarTouchCalibration simpleTouchCalibration;
 
     public DepthTouchInput(PApplet applet,
             DepthCameraDevice kinectDevice,
@@ -83,7 +83,7 @@ public class DepthTouchInput extends TouchInput {
             PlaneAndProjectionCalibration calibration) {
         this.parent = applet;
         this.depthAnalysis = depthAnalysis;
-        this.kinectDevice = kinectDevice;
+        this.depthCameraDevice = kinectDevice;
         this.planeAndProjCalibration = calibration;
     }
 
@@ -91,13 +91,56 @@ public class DepthTouchInput extends TouchInput {
         this.planeAndProjCalibration = papc;
     }
 
-    public void setTouchDetectionCalibration(PlanarTouchCalibration touchCalib) {
-        touchCalib2D = touchCalib;
+    public void setTouchDetectionCalibration(int i, PlanarTouchCalibration touchCalib) {
+        touchCalibrations[i] = touchCalib;
+    }
+    public void setSimpleTouchDetectionCalibration(PlanarTouchCalibration touchCalib) {
+        simpleTouchCalibration = touchCalib;
     }
 
-    public void setTouchDetectionCalibration3D(PlanarTouchCalibration touchCalib) {
-//        this.touchDetection3D.setCalibration(touchCalib);
-        touchCalib3D = touchCalib;
+    public TouchDetectionDepth getTouchDetection(int i) {
+        return touchDetections[i];
+    }
+
+    public TouchDetectionDepth[] getTouchDetections() {
+        return touchDetections;
+    }
+
+    public Simple2D getTouchDetectionSimple2D() {
+        return simpleDetection;
+    }
+
+    public FingerDetection getTouchDetection2D() {
+        return fingerDetection;
+    }
+
+    public ArmDetection getTouchDetection3D() {
+        return armDetection;
+    }
+
+    private boolean touchDetectionsReady = false;
+
+    @Override
+    public boolean isReady() {
+        return touchDetectionsReady;
+    }
+
+    public void initTouchDetections() {
+        // First run, get calibrations from device after start.
+        depthAnalysis.initWithCalibrations(depthCameraDevice);
+
+        simpleDetection = new Simple2D(depthAnalysis, simpleTouchCalibration);
+
+        touchDetections[0] = new ArmDetection(depthAnalysis, touchCalibrations[0]);
+        armDetection = (ArmDetection) touchDetections[0];
+
+        touchDetections[1] = new HandDetection(depthAnalysis, touchCalibrations[1]);
+        handDetection = (HandDetection) touchDetections[1];
+
+        touchDetections[2] = new FingerDetection(depthAnalysis, touchCalibrations[2]);
+        fingerDetection = (FingerDetection) touchDetections[2];
+
+        touchDetectionsReady = true;
     }
 
     @Override
@@ -106,57 +149,52 @@ public class DepthTouchInput extends TouchInput {
             IplImage depthImage;
             IplImage colImage = null;
 
-            // TODO: get the main device ?
-            if (kinectDevice.getMainCamera().isUseColor()) {
-                colImage = kinectDevice.getColorCamera().getIplImage();
+            if (depthCameraDevice.getMainCamera().isUseColor()) {
+                colImage = depthCameraDevice.getColorCamera().getIplImage();
             }
-            if (kinectDevice.getMainCamera().isUseIR()) {
-                colImage = kinectDevice.getIRCamera().getIplImage();
+            if (depthCameraDevice.getMainCamera().isUseIR()) {
+                colImage = depthCameraDevice.getIRCamera().getIplImage();
             }
-//            if (kinectDevice.getMainCamera() != null) {
-//                colImage = kinectDevice.getMainCamera().getIplImage();
-//            } else {
-//                colImage = kinectDevice.getColorCamera().getIplImage();
-//            }
 
-            depthImage = kinectDevice.getDepthCamera().getIplImage();
+            depthImage = depthCameraDevice.getDepthCamera().getIplImage();
 
             if (depthImage == null) {
-//                 System.out.println("No Image. " + colImage + " " + depthImage);
                 return;
             }
 
             depthDataSem.acquire();
 
-            // Allocate the data when everything else is ready. 
-            // TODO: all the time ?...
-            if (touchDetection2D == null) {
-                touchDetection2D = new Simple2D(depthAnalysis);
-                touchDetection3D = new Simple3D(depthAnalysis);
-
-                touchDetection2D.setCalibration(touchCalib2D);
-                touchDetection3D.setCalibration(touchCalib3D);
-                depthAnalysis.updateCalibrations(kinectDevice);
+            if (!touchDetectionsReady) {
+                initTouchDetections();
             }
 
-            touch2DPrecision = touchDetection2D.getPrecision();
-            touch3DPrecision = touchDetection3D.getPrecision();
-            if (touch2DPrecision > 0 && touch3DPrecision > 0) {
-                depthAnalysis.updateMT(depthImage, colImage, planeAndProjCalibration, touch2DPrecision, touch3DPrecision);
-                findAndTrack2D();
-                findAndTrack3D();
-            } else {
-                if (touch2DPrecision > 0) {
-                    depthAnalysis.updateMT2D(depthImage, colImage, planeAndProjCalibration, touch2DPrecision);
-                    findAndTrack2D();
-                }
-                if (touch3DPrecision > 0) {
-                    depthAnalysis.updateMT3D(depthImage, colImage, planeAndProjCalibration, touch3DPrecision);
-                    findAndTrack3D();
-                }
-            }
+            int initPrecision = 3;
+//            Instant start = Instant.now();
+
+            depthAnalysis.computeDepthAndNormals(depthImage, colImage, initPrecision);
+
+            simpleDetection.findTouch(planeAndProjCalibration);
+
+//            Instant depth = Instant.now();
+            armDetection.findTouch(planeAndProjCalibration);
+//            Instant touch1 =  Instant.now();
+            handDetection.findTouch(armDetection, planeAndProjCalibration);
+//            Instant touch2 =  Instant.now();
+            fingerDetection.findTouch(handDetection, armDetection, colImage, planeAndProjCalibration);
+//            Instant touch3 =  Instant.now();
+//            Instant end = Instant.now();
+//            
+//            
+//            System.out.println("Depth: " +  Duration.between(start, depth).toMillis() + " milliseconds");
+//            System.out.println("Arm: " +  Duration.between(depth, touch1).toMillis() + " milliseconds");
+//            System.out.println("hand: " +  Duration.between(touch1, touch2).toMillis() + " milliseconds");
+//            System.out.println("finger: " +  Duration.between(touch2, touch3).toMillis() + " milliseconds");
+//            System.out.println("Total: " +  Duration.between(start, end).toMillis() + " milliseconds");
         } catch (InterruptedException ex) {
             Logger.getLogger(DepthTouchInput.class.getName()).log(Level.SEVERE, null, ex);
+            ex.printStackTrace();
+        } catch (Exception ex) {
+            ex.printStackTrace();
         } finally {
             depthDataSem.release();
         }
@@ -169,20 +207,24 @@ public class DepthTouchInput extends TouchInput {
 
         TouchList touchList = new TouchList();
 
+        // Not initialized
+        if (fingerDetection == null || armDetection == null) {
+            return touchList;
+        }
+
         try {
             touchPointSemaphore.acquire();
         } catch (InterruptedException ie) {
             System.err.println("Semaphore Exception: " + ie);
         }
-
-        for (TrackedDepthPoint tp : touchPoints2D) {
+        for (TrackedDepthPoint tp : fingerDetection.getTouchPoints()) {
             Touch touch = createTouch(screen, display, tp);
             if (touch != INVALID_TOUCH) {
                 touchList.add(touch);
             }
         }
 
-        for (TrackedDepthPoint tp : touchPoints3D) {
+        for (TrackedDepthPoint tp : armDetection.getTouchPoints()) {
             try {
                 Touch touch = createTouch(screen, display, tp);
                 if (touch != INVALID_TOUCH) {
@@ -211,6 +253,7 @@ public class DepthTouchInput extends TouchInput {
 
     // TODO: Raw Depth is for Kinect Only, find a cleaner solution.
 //    private ProjectiveDeviceP pdp;
+//    private boolean useRawDepth = false;
     private boolean useRawDepth = false;
 
     public void useRawDepth() {
@@ -236,11 +279,12 @@ public class DepthTouchInput extends TouchInput {
         PVector paperScreenCoord = projectPointToScreen(screen,
                 display,
                 tp.getPositionKinect(),
-                MathUtils.toVec(tp.getPreviousPosition()));
+                MathUtils.toVec(tp.getPosition()));
 
-        touch.setPosition(paperScreenCoord);
-
-        return paperScreenCoord != NO_INTERSECTION;
+        if (paperScreenCoord != null) {
+            touch.setPosition(paperScreenCoord);
+        }
+        return paperScreenCoord != null && paperScreenCoord != NO_INTERSECTION;
     }
 
     private boolean projectSpeed(PaperScreen screen,
@@ -258,80 +302,6 @@ public class DepthTouchInput extends TouchInput {
             touch.setPrevPos(paperScreenCoord);
         }
         return paperScreenCoord != NO_INTERSECTION;
-    }
-
-    public ArrayList<DepthDataElementProjected> getDepthData() {
-        try {
-            depthDataSem.acquire();
-            ProjectedDepthData depthData = depthAnalysis.getDepthData();
-            ArrayList<DepthDataElementProjected> output = new ArrayList<>();
-            ArrayList<Integer> list = depthData.validPointsList3D;
-            for (Integer i : list) {
-                output.add(depthData.getElementKinect(i));
-            }
-            depthDataSem.release();
-            return output;
-
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DepthTouchInput.class
-                    .getName()).log(Level.SEVERE, null, ex);
-
-            return null;
-        }
-    }
-
-    // TODO: Do the same without the Display, use the extrinsics instead! 
-    // TODO: Do the same with DepthDataElement  instead of  DepthPoint ?
-    public ArrayList<DepthPoint> projectDepthData(ARDisplay display, PaperScreen screen) {
-        ArrayList<DepthPoint> list = projectDepthData2D(display, screen);
-        list.addAll(projectDepthData3D(display, screen));
-        return list;
-    }
-
-    public ArrayList<DepthPoint> projectDepthData2D(ARDisplay display, PaperScreen screen) {
-        return projectDepthDataXD(display, screen, true);
-    }
-
-    public ArrayList<DepthPoint> projectDepthData3D(ARDisplay display, PaperScreen screen) {
-        return projectDepthDataXD(display, screen, false);
-    }
-
-    private ArrayList<DepthPoint> projectDepthDataXD(ARDisplay display, PaperScreen screen, boolean is2D) {
-        try {
-            depthDataSem.acquire();
-            ProjectedDepthData depthData = depthAnalysis.getDepthData();
-            ArrayList<DepthPoint> projected = new ArrayList<DepthPoint>();
-            ArrayList<Integer> list = is2D ? depthData.validPointsList : depthData.validPointsList3D;
-            for (Integer i : list) {
-                DepthPoint depthPoint = tryCreateDepthPoint(display, screen, i);
-                if (depthPoint != null) {
-                    projected.add(depthPoint);
-                }
-            }
-            depthDataSem.release();
-            return projected;
-
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DepthTouchInput.class
-                    .getName()).log(Level.SEVERE, null, ex);
-
-            return null;
-        }
-    }
-
-    private DepthPoint tryCreateDepthPoint(ARDisplay display, PaperScreen screen, int offset) {
-        Vec3D projectedPt = depthAnalysis.getDepthData().projectedPoints[offset];
-
-        PVector screenPosition = projectPointToScreen(screen, display,
-                depthAnalysis.getDepthData().depthPoints[offset],
-                projectedPt);
-
-        if (screenPosition == NO_INTERSECTION) {
-            return null;
-        }
-
-        int c = depthAnalysis.getDepthData().pointColors[offset];
-        return new DepthPoint(screenPosition.x, screenPosition.y, screenPosition.z, c);
     }
 
     /**
@@ -374,14 +344,21 @@ public class DepthTouchInput extends TouchInput {
             // TODO: maybe a better way to this, or to tweak the magic numbers. 
 //            // yOffset difference ? 1cm  -> surface view. 
 //            // zOffset difference ? 1cm  -> surface view. 
-            pKinectP.y -= 10;
-            pKinectP.z += 10;
-
+//            pKinectP.y -= 10;
+//            pKinectP.z += 10;
             // TODO: Here change the display.getCamera() to 
             // another way to get the screen location... 
             PMatrix3D transfo = screen.getLocation(display.getCamera());
+//            if (display instanceof ProjectorDisplay) {
+//                ProjectorDisplay proj = (ProjectorDisplay) display;
+//                transfo.apply(proj.getExtrinsicsInv());
+//            }
+            PVector depthColorCam = new PVector();
+            depthCameraDevice.getStereoCalibration().mult(pKinectP, depthColorCam);
+
+            // TODO: ADD the depth camera extrinsics
             transfo.invert();
-            transfo.mult(pKinectP, paperScreenCoord);
+            transfo.mult(depthColorCam, paperScreenCoord);
 
             // TODO: check bounds too ?!
         } else {
@@ -431,7 +408,11 @@ public class DepthTouchInput extends TouchInput {
     }
 
     public void getTouch2DColors(IplImage colorImage) {
-        getTouchColors(colorImage, this.touchPoints2D);
+
+        // FingerDetection can be not initialized
+        if (fingerDetection != null) {
+            getTouchColors(colorImage, fingerDetection.getTouchPoints());
+        }
     }
 
     public void getTouchColors(IplImage colorImage,
@@ -444,7 +425,7 @@ public class DepthTouchInput extends TouchInput {
 
         if (colorImage.nChannels() == 1) {
             for (TrackedDepthPoint tp : touchPointList) {
-                int offset = depthAnalysis.getDepthCameraDevice().findColorOffset(tp.getPositionKinect());
+                int offset = depthAnalysis.getDepthCameraDevice().findMainImageOffset(tp.getPositionKinect());
                 int c = cBuff.get(offset);
                 tp.setColor((255 & 0xFF) << 24
                         | (c & 0xFF) << 16
@@ -454,7 +435,7 @@ public class DepthTouchInput extends TouchInput {
         }
         if (colorImage.nChannels() == 3) {
             for (TrackedDepthPoint tp : touchPointList) {
-                int offset = 3 * depthAnalysis.getDepthCameraDevice().findColorOffset(tp.getPositionKinect());
+                int offset = 3 * depthAnalysis.getDepthCameraDevice().findMainImageOffset(tp.getPositionKinect());
 
                 tp.setColor((255 & 0xFF) << 24
                         | (cBuff.get(offset + 2) & 0xFF) << 16
@@ -467,46 +448,58 @@ public class DepthTouchInput extends TouchInput {
     // Raw versions of the algorithm are providing each points at each time. 
     // no updates, no tracking. 
     public ArrayList<TrackedDepthPoint> find2DTouchRaw() {
-        return touchDetection2D.compute(depthAnalysis.getDepthData());
+        return fingerDetection.compute(depthAnalysis.getDepthData());
     }
 
     public ArrayList<TrackedDepthPoint> find3DTouchRaw(int skip) {
-        return touchDetection3D.compute(depthAnalysis.getDepthData());
+        return armDetection.compute(depthAnalysis.getDepthData());
     }
 
     protected void findAndTrack2D() {
         assert (touch2DPrecision != 0);
-        ArrayList<TrackedDepthPoint> newList = touchDetection2D.compute(
+        ArrayList<TrackedDepthPoint> newList = fingerDetection.compute(
                 depthAnalysis.getDepthData());
-        TouchPointTracker.trackPoints(touchPoints2D, newList,
+        TouchPointTracker.trackPoints(fingerDetection.getTouchPoints(), newList,
                 parent.millis());
     }
 
     protected void findAndTrack3D() {
         assert (touch3DPrecision != 0);
-        ArrayList<TrackedDepthPoint> newList = touchDetection3D.compute(
+        ArrayList<TrackedDepthPoint> newList = armDetection.compute(
                 depthAnalysis.getDepthData());
-        TouchPointTracker.trackPoints(touchPoints3D,
+        TouchPointTracker.trackPoints(armDetection.getTouchPoints(),
                 newList,
                 parent.millis());
     }
 
     @Deprecated
     public ArrayList<TrackedDepthPoint> getTouchPoints2D() {
-        return this.touchPoints2D;
+        return simpleDetection.getTouchPoints();
+//        return fingerDetection.getTouchPoints();
     }
 
     @Deprecated
     public ArrayList<TrackedDepthPoint> getTouchPoints3D() {
-        return this.touchPoints3D;
+        return simpleDetection.getTouchPoints();
+//        return armDetection.getTouchPoints();
     }
 
     public ArrayList<TrackedDepthPoint> getTrackedDepthPoints2D() {
-        return this.touchPoints2D;
+        if (fingerDetection == null) {
+//            System.err.println("No 2D touch tracking.");
+            return new ArrayList<>();
+        }
+        return simpleDetection.getTouchPoints();
+//        return fingerDetection.getTouchPoints();
     }
 
     public ArrayList<TrackedDepthPoint> getTrackedDepthPoints3D() {
-        return this.touchPoints3D;
+        if (armDetection == null) {
+//            System.err.println("No 3D touch tracking.");
+            return new ArrayList<>();
+        }
+//        return simpleDetection.getTouchPoints();
+        return armDetection.getTouchPoints();
     }
 
     public PlaneAndProjectionCalibration getCalibration() {
@@ -528,4 +521,15 @@ public class DepthTouchInput extends TouchInput {
         touchPointSemaphore.release();
     }
 
+    public void lockDepthData() {
+        try {
+            depthDataSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DepthTouchInput.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void releaseDepthData() {
+        depthDataSem.release();
+    }
 }

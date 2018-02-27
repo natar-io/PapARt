@@ -6,7 +6,10 @@
 package fr.inria.papart.multitouch.detection;
 
 import fr.inria.papart.calibration.files.PlanarTouchCalibration;
+import fr.inria.papart.depthcam.ProjectedDepthData;
 import fr.inria.papart.multitouch.ConnectedComponent;
+import static fr.inria.papart.multitouch.ConnectedComponent.INVALID_COMPONENT;
+import fr.inria.papart.multitouch.detection.Simple2D.CheckTouchPoint;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.utils.WithSize;
 import java.util.ArrayList;
@@ -27,6 +30,13 @@ public abstract class TouchDetection {
 
     protected boolean[] assignedPoints = null;
     protected byte[] connectedComponentImage = null;
+    protected int initialPoint;
+
+    protected boolean[] boundaries = null;
+
+    public boolean[] getBoundaries() {
+        return boundaries;
+    }
 
     protected final byte NO_CONNECTED_COMPONENT = 0;
     protected final byte STARTING_CONNECTED_COMPONENT = 1;
@@ -36,11 +46,12 @@ public abstract class TouchDetection {
 // set by calling function
     protected WithSize imgSize;
 
+    // WARNING HERE toVisit  DIFFERENT FROM THE ONE IN DEPTH SELECTION
     protected final HashSet<Integer> toVisit = new HashSet<>();
     protected PointValidityCondition currentPointValidityCondition;
     protected int currentTime;
 
-    protected void setCurrentTime(int timestamp) {
+    public void setCurrentTime(int timestamp) {
         this.currentTime = timestamp;
     }
 
@@ -59,6 +70,11 @@ public abstract class TouchDetection {
         public boolean checkPoint(int offset, int currentPoint);
     }
 
+    public TouchDetection(WithSize imgSize, PlanarTouchCalibration calibration) {
+        allocateMemory(imgSize);
+        setCalibration(calibration);
+    }
+
     public TouchDetection(WithSize imgSize) {
         allocateMemory(imgSize);
     }
@@ -66,12 +82,14 @@ public abstract class TouchDetection {
     protected void allocateMemory(WithSize imgSize) {
         this.imgSize = imgSize;
         assignedPoints = new boolean[imgSize.getSize()];
+        boundaries = new boolean[imgSize.getSize()];
         connectedComponentImage = new byte[imgSize.getSize()];
         this.calib = new PlanarTouchCalibration();
     }
 
     protected void clearMemory() {
         Arrays.fill(assignedPoints, false);
+        Arrays.fill(boundaries, false);
         Arrays.fill(connectedComponentImage, NO_CONNECTED_COMPONENT);
         currentCompo = STARTING_CONNECTED_COMPONENT;
     }
@@ -95,7 +113,9 @@ public abstract class TouchDetection {
         while (toVisit.size() > 0) {
             int startingPoint = toVisit.iterator().next();
             ConnectedComponent cc = findConnectedComponent(startingPoint);
-            connectedComponents.add(cc);
+            if (cc != INVALID_COMPONENT) {
+                connectedComponents.add(cc);
+            }
         }
         return connectedComponents;
     }
@@ -114,13 +134,38 @@ public abstract class TouchDetection {
 
         w = imgSize.getWidth();
         h = imgSize.getHeight();
-        ConnectedComponent cc = findNeighboursRec(startingPoint, 0, getX(startingPoint), getY(startingPoint));
+        
+//        ConnectedComponent cc = findNeighboursRec(startingPoint, 0, getX(startingPoint), getY(startingPoint));
+        ConnectedComponent cc = findNeighboursFloodFill(startingPoint);
+
+        // Do not accept 1 point compo ?!
+        if (cc.size() == 1) {
+            connectedComponentImage[startingPoint] = NO_CONNECTED_COMPONENT;
+            boundaries[startingPoint] = false;
+            return INVALID_COMPONENT;
+        }
         cc.setId(currentCompo);
         currentCompo++;
+
+        // TODO: Filtering for all ?!!
+        // DEBUG
+//        if (currentPointValidityCondition instanceof CheckTouchPoint) {
+//            // Filter the points with wrong normals
+//            ProjectedDepthData data = ((CheckTouchPoint) currentPointValidityCondition).getData();
+//            Vec3D depthPoint = data.depthPoints[startingPoint];
+////            System.out.println("SIZE: " + cc.size() + " Starting Point: " + depthPoint);
+//
+//            // Debug: Print out the connected component
+//            for (int i = 0; i < cc.size(); i++) {
+//                int offset = cc.get(i);
+//                depthPoint = data.depthPoints[offset];
+////                System.out.println("CC(" + currentCompo + ")/Depth Point (" + i + "): " + depthPoint);
+//            }
+//        }
         return cc;
     }
 
-    private void addPointInConnectedComponent(ConnectedComponent cc, int point) {
+    private void addPointTo(ConnectedComponent cc, int point) {
         assignedPoints[point] = true;
         connectedComponentImage[point] = currentCompo;
         toVisit.remove(point);
@@ -135,17 +180,127 @@ public abstract class TouchDetection {
         return currentPoint / w;
     }
 
+    /**
+     * Get an offset valid with the current precision parameter.
+     *
+     * @param offset
+     * @return
+     */
+    protected int getValidOffset(int offset) {
+        int w = imgSize.getWidth();
+        int x = offset % w;
+        int y = offset / w;
+        while (x % getPrecision() != 0) {
+            x++;
+        }
+        while (y % getPrecision() != 0) {
+            y++;
+        }
+        return x + y * w;
+    }
+
+    public ConnectedComponent findNeighboursFloodFill(int currentPoint) {
+        int recLevel = 0;
+        ConnectedComponent finalCC = new ConnectedComponent();
+        ConnectedComponent currentFill = new ConnectedComponent();
+        ConnectedComponent nextFill = new ConnectedComponent();
+
+        // Add the first point
+        assignedPoints[currentPoint] = true;
+        connectedComponentImage[currentPoint] = currentCompo;
+        // Remove from the global list. 
+        toVisit.remove(currentPoint);
+        // Add to the valid list.
+        finalCC.add(currentPoint);
+        // Add to the next step list.
+        currentFill.add(currentPoint);
+
+        // We start a point - currentPoint 
+        // Then we create a list of points to visit in the next iteration
+        // searchDepth is going to be 1 for now. 
+//        searchDepth = calib.getPrecision();
+        initialPoint = currentPoint;
+
+        // Lets do it with a while 
+        while (recLevel <= calib.getMaximumRecursion()) {
+            // For all points of the current layer
+            for (Integer currentOffset : currentFill) {
+                int x = getX(currentOffset);
+                int y = getY(currentOffset);
+
+                // do nothing on borders -> dead zone optimization ?!
+                if (x - searchDepth < 0 || x + searchDepth > w - 1
+                        || y - searchDepth < 0 || y + searchDepth > h - 1) {
+                    continue;
+                }
+                int minX = x - searchDepth;
+                int maxX = x + searchDepth;
+                int minY = y - searchDepth;
+                int maxY = y + searchDepth;
+                int added = 0;
+
+                for (int j = minY; j <= maxY; j += precision) {
+                    boolean isBorderY = (j == y - searchDepth) || (j == y + searchDepth);
+                    for (int i = minX; i <= maxX; i += precision) {
+                        boolean isBorderX = (i == x - searchDepth) || (i == x + searchDepth);
+
+                        int offset = j * w + i;
+
+                        // Avoid getting ouside the limits
+                        if (currentPointValidityCondition.checkPoint(offset, currentOffset)) {
+
+                            // We found a point ! 
+                            int point = offset;
+
+                            assignedPoints[point] = true;
+                            connectedComponentImage[point] = currentCompo;
+
+                            // Remove from the global list. 
+                            toVisit.remove(point);
+
+                            // Add to the valid list.
+                            finalCC.add(point);
+
+                            // Add to the next step list.
+                            nextFill.add(point);
+                            added++;
+
+                        } // if is ValidPoint
+                    } // for j
+                } // for i
+
+                if (added == 0) {
+                    this.boundaries[currentOffset] = true;
+                }
+            } // for the current layer
+
+            // No more to find in the next either
+            if (nextFill.isEmpty()) {
+                break;
+            }
+
+            // The next becoes the current
+            currentFill = nextFill;
+            nextFill = new ConnectedComponent();
+            recLevel = recLevel + 1;
+        }
+
+        return finalCC;
+    }
+
     public ConnectedComponent findNeighboursRec(int currentPoint, int recLevel, int x, int y) {
 
         ConnectedComponent neighbourList = new ConnectedComponent();
 
         // At least one point in connected compo !
         if (recLevel == 0) {
-            addPointInConnectedComponent(neighbourList, currentPoint);
+            this.initialPoint = currentPoint;
+            addPointTo(neighbourList, currentPoint);
         }
 
         if (recLevel == calib.getMaximumRecursion()) {
-            addPointInConnectedComponent(neighbourList, currentPoint);
+            // TEST: Do not add latest level
+//            addPointInConnectedComponent(neighbourList, currentPoint);
             return neighbourList;
         }
 
@@ -157,11 +312,6 @@ public abstract class TouchDetection {
 
         assert (assignedPoints[currentPoint] == true);
 
-        // Usual...
-//        int minX = PApplet.constrain(x - searchDepth, 0, w - 1);
-//        int maxX = PApplet.constrain(x + searchDepth, 0, w - 1);
-//        int minY = PApplet.constrain(y - searchDepth, 0, h - 1);
-//        int maxY = PApplet.constrain(y + searchDepth, 0, h - 1);
         int minX = x - searchDepth;
         int maxX = x + searchDepth;
         int minY = y - searchDepth;
@@ -171,26 +321,15 @@ public abstract class TouchDetection {
 
             for (int i = minX; i <= maxX; i += precision) {
                 boolean isBorderX = (i == x - searchDepth) || (i == x + searchDepth);
-
                 int offset = j * w + i;
 
                 // Avoid getting ouside the limits
                 if (currentPointValidityCondition.checkPoint(offset, currentPoint)) {
-
-//                    assignedPoints[offset] = true;
-//                    connectedComponentImage[offset] = currentCompo;
-                    // Remove If present -> it might not be the case often. 
-//                    toVisit.remove(offset);
-                    addPointInConnectedComponent(neighbourList, offset);
-                    neighbourList.add((Integer) offset);
-
+                    addPointTo(neighbourList, offset);
                     if (isBorderY || isBorderX) {
                         ConnectedComponent subNeighbours = findNeighboursRec(offset, recLevel + 1, i, j);
                         neighbourList.addAll(subNeighbours);
                     }
-//                    ConnectedComponent subNeighbours = findNeighboursRec(offset, recLevel + 1, i, j);
-//                    neighbourList.addAll(subNeighbours);
-
                 } // if is ValidPoint
             } // for j
         } // for i
@@ -243,5 +382,4 @@ public abstract class TouchDetection {
         return calib.getTrackingMaxDistance();
     }
 
-    
 }

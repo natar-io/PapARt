@@ -260,6 +260,29 @@ public class MathUtils {
         int db = PApplet.abs(b1 - b2);
         return dr < threshold && dg < threshold && db < threshold;
     }
+    /**
+     * RGB distance of two colors. Return true if all channels differences are
+     * below the difference threshold.
+     *
+     * @param c1
+     * @param c2
+     * @param tr
+     * @param tg
+     * @param tb
+     * @return
+     */
+    public static boolean colorDistRGB(int c1, int c2, int tr, int tg,int tb) {
+        int r1 = c1 >> 16 & 255;
+        int g1 = c1 >> 8 & 255;
+        int b1 = c1 >> 0 & 255;
+        int r2 = c2 >> 16 & 255;
+        int g2 = c2 >> 8 & 255;
+        int b2 = c2 >> 0 & 255;
+        int dr = PApplet.abs(r1 - r2);
+        int dg = PApplet.abs(g1 - g2);
+        int db = PApplet.abs(b1 - b2);
+        return dr < tr && dg < tg && db < tb;
+    }
 
     /**
      * RGB distance of two colors. Return true if all channels differences are
@@ -328,11 +351,34 @@ public class MathUtils {
 
         return abs(h1 - h2) < hueTresh
                 && // Avoid desaturated pixels
+                g.saturation(incomingPix) > 180
+                && // Good saturation
+                abs(g.saturation(incomingPix) - g.saturation(baseline)) < saturationTresh
+                && // avoid pixels not bright enough
+                abs(g.brightness(incomingPix) - g.brightness(baseline)) < brightnessTresh;
+    }
+    
+    public static boolean colorFinderHSBRedish(PGraphics g, int baseline, int incomingPix,
+            float hueTresh, float saturationTresh, float brightnessTresh) {
+        float h1 = g.hue(baseline);
+        float h2 = g.hue(incomingPix);
+        
+        // If the hue is low but still red, shit it.
+        if(h2 < 30){
+            h2 = h2 + 255f;
+        }
+
+        return abs(h1 - h2) < hueTresh
+                && // Avoid desaturated pixels
                 abs(g.saturation(incomingPix) - g.saturation(baseline)) < saturationTresh
                 && // avoid pixels not bright enough
                 abs(g.brightness(incomingPix) - g.brightness(baseline)) < brightnessTresh;
     }
 
+    public static boolean threshold(PGraphics g, int incomingPix, float threshold) {
+        int r1 = incomingPix >> 16 & 255;
+        return r1 > threshold;
+    }
     public static boolean isRed(PGraphics g, int incomingPix, int baseline, float threshold) {
         int r1 = incomingPix >> 16 & 255;
         int r2 = baseline >> 16 & 255;

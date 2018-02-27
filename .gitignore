@@ -4,6 +4,7 @@
 \#*\#
 .\#*
 build
+lib
 /papart/target/
 /guiModes/target/
 /libraries/
@@ -14,3 +15,4 @@ build
 /Papart-examples-master/
 /Papart-examples/
 *.tgz
+/papart/lib/target/

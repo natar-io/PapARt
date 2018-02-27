@@ -17,10 +17,8 @@
  * Public License along with this library; If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package fr.inria.papart.depthcam.devices;
+package fr.inria.papart.depthcam;
 
-import static fr.inria.papart.depthcam.analysis.DepthAnalysis.INVALID_COLOR;
-import static fr.inria.papart.depthcam.analysis.DepthAnalysis.INVALID_POINT;
 import fr.inria.papart.calibration.files.HomographyCalibration;
 import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.calibration.files.PlaneCalibration;
@@ -29,15 +27,11 @@ import fr.inria.papart.depthcam.analysis.DepthAnalysis;
 import fr.inria.papart.depthcam.DepthData;
 import fr.inria.papart.depthcam.DepthDataElementProjected;
 import fr.inria.papart.depthcam.TouchAttributes;
-import fr.inria.papart.procam.camera.Camera;
-import fr.inria.papart.procam.ProjectiveDeviceP;
-import java.util.ArrayList;
 import java.util.Arrays;
-import org.bytedeco.javacv.ProjectiveDevice;
 import toxi.geom.Vec3D;
 
 /**
- *
+ * DepthData with additional information such as plane calibration and its results.
  * @author Jeremy Laviole
  */
 public class ProjectedDepthData extends DepthData {
@@ -48,19 +42,9 @@ public class ProjectedDepthData extends DepthData {
     public Vec3D[] projectedPoints;
 
     /**
-     * Attributes of the 3D points
+     * EXPERIMENTAL: Attributes of the 3D points
      */
     public TouchAttributes[] touchAttributes;
-
-    /**
-     * Mask of valid Points
-     */
-    public boolean[] validPointsMask3D;
-
-    /**
-     * List of valid points
-     */
-    public ArrayList<Integer> validPointsList3D;
 
     public PlaneAndProjectionCalibration planeAndProjectionCalibration;
     public HomographyCalibration homographyCalibration;
@@ -80,16 +64,16 @@ public class ProjectedDepthData extends DepthData {
         }
         
         touchAttributes = new TouchAttributes[size];
-        validPointsList = new ArrayList();
-        if (is3D) {
-            validPointsMask3D = new boolean[size];
-            validPointsList3D = new ArrayList();
-        }
         connexity = new Connexity(depthPoints, source.getWidth(), source.getHeight());
 //        connexity = new Connexity(projectedPoints, width, height);
     }
 
+    @Deprecated
     public DepthDataElementProjected getElementKinect(int i) {
+        return getDepthElement(i);
+    }
+    
+    public DepthDataElementProjected getDepthElement(int i) {
         DepthDataElementProjected dde = new DepthDataElementProjected();
         fillDepthDataElement(dde, i);
         return dde;
@@ -97,16 +81,13 @@ public class ProjectedDepthData extends DepthData {
 
     protected void fillDepthDataElement(DepthDataElementProjected ddek, int i) {
         super.fillDepthDataElement(ddek, i);
-        ddek.projectedPoint = projectedPoints[i];
+        ddek.projectedPoint = projectedPoints[i].copy();
         ddek.touchAttribute = touchAttributes[i];
-        ddek.validPoint3D = validPointsMask3D[i];
     }
 
     @Override
     public void clear() {
         clearDepth();
-        clear2D();
-        clear3D();
         clearColor();
         connexity.reset();
         Arrays.fill(touchAttributes, TouchAttributes.NO_ATTRIBUTES);
@@ -120,17 +101,6 @@ public class ProjectedDepthData extends DepthData {
             pt.clear();
         }
 //        Arrays.fill(this.projectedPoints, INVALID_POINT);
-    }
-
-    @Override
-    public void clear2D() {
-        super.clear2D();
-        this.validPointsList.clear();
-    }
-
-    void clear3D() {
-        Arrays.fill(this.validPointsMask3D, false);
-        this.validPointsList3D.clear();
     }
 
 }

@@ -32,7 +32,7 @@ import java.util.Arrays;
 import toxi.geom.Vec3D;
 
 /**
- *
+ * DepthData: 3D point, normal, color, connexity map and origin device.
  * @author Jeremy Laviole
  */
 public class DepthData {
@@ -42,28 +42,31 @@ public class DepthData {
      */
     public Vec3D[] depthPoints;
     public Vec3D[] normals;
-
-    /**
-     * Mask of valid Points
-     */
-    public boolean[] validPointsMask;
-
-    /**
-     * Color...
-     */
     public int[] pointColors;
 
     public Connexity connexity;
-
-    /**
-     * List of valid points
-     */
-    public ArrayList<Integer> validPointsList;
 
     public ProjectiveDeviceP projectiveDevice;
 
     public int timeStamp;
     public DepthAnalysis source;
+
+//    public boolean[] validPointsMask;
+//    public ArrayList<Integer> validPointsList;
+
+    public class DepthSelection {
+
+        /**
+         * Mask of valid Points
+         */
+        public boolean[] validPointsMask;
+
+        /**
+         * List of valid points
+         */
+        public ArrayList<Integer> validPointsList;
+
+    }
 
     public DepthData(DepthAnalysis source) {
         int width = source.getWidth();
@@ -71,15 +74,27 @@ public class DepthData {
         this.source = source;
         int size = width * height;
         depthPoints = new Vec3D[size];
+        normals = new Vec3D[size];
         for (int i = 0; i < size; i++) {
             depthPoints[i] = new Vec3D();
+            normals[i] = new Vec3D();
         }
 
-        validPointsMask = new boolean[size];
+        createSelection();
         pointColors = new int[size];
-        validPointsList = new ArrayList();
         connexity = new Connexity(depthPoints, width, height);
 //        connexity = new Connexity(projectedPoints, width, height);
+    }
+
+    public DepthSelection createSelection() {
+        DepthSelection selection = new DepthSelection();
+        selection.validPointsMask = new boolean[depthPoints.length];
+        selection.validPointsList = new ArrayList();
+//        validPointsMask = new boolean[depthPoints.length];
+//        validPointsList = new ArrayList();
+//        selection.validPointsMask = validPointsMask;
+//        selection.validPointsList = validPointsList;
+        return selection;
     }
 
     public DepthDataElement getElement(int i) {
@@ -90,8 +105,12 @@ public class DepthData {
 
     protected void fillDepthDataElement(DepthDataElement dde, int i) {
         dde.pointColor = pointColors[i];
-        dde.depthPoint = depthPoints[i];
-        dde.validPoint = validPointsMask[i];
+        dde.depthPoint = depthPoints[i].copy();
+        if (normals[i] != null) {
+            dde.normal = normals[i].copy();
+        }
+        // Is the selection relevant afterwards ?
+//        dde.validPoint = validPointsMask[i];
         dde.neighbourSum = connexity.connexitySum[i];
         dde.neighbours = connexity.connexity[i];
         dde.offset = i;
@@ -99,7 +118,7 @@ public class DepthData {
 
     public void clear() {
         clearDepth();
-        clear2D();
+//        clearValidPoints();
         clearColor();
         connexity.reset();
     }
@@ -115,9 +134,8 @@ public class DepthData {
 //        Arrays.fill(this.depthPoints, INVALID_POINT);
     }
 
-    public void clear2D() {
-        Arrays.fill(this.validPointsMask, false);
-        this.validPointsList.clear();
-    }
-
+//    public void clearValidPoints() {
+//        Arrays.fill(this.validPointsMask, false);
+//        this.validPointsList.clear();
+//    }
 }

@@ -26,7 +26,7 @@ import java.util.Iterator;
 import processing.core.PVector;
 
 /**
- *
+ * List of touchs: helper methods to filter touch events. 
  * @author Jeremy Laviole
  */
 public class TouchList extends ArrayList<Touch> {

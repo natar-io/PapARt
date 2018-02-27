@@ -20,9 +20,13 @@
  */
 package fr.inria.papart.multitouch.detection;
 
+import fr.inria.papart.calibration.files.PlanarTouchCalibration;
+import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.calibration.files.PlaneCalibration;
-import fr.inria.papart.depthcam.devices.ProjectedDepthData;
+import fr.inria.papart.depthcam.ProjectedDepthData;
 import fr.inria.papart.depthcam.analysis.DepthAnalysis;
+import static fr.inria.papart.depthcam.analysis.DepthAnalysis.INVALID_POINT;
+import fr.inria.papart.depthcam.analysis.DepthAnalysisImpl;
 import fr.inria.papart.multitouch.ConnectedComponent;
 import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
 import fr.inria.papart.utils.WithSize;
@@ -40,28 +44,21 @@ public abstract class TouchDetectionDepth extends TouchDetection {
 
 // set by calling function
     protected ProjectedDepthData depthData;
+    protected final ArrayList<TrackedDepthPoint> touchPoints = new ArrayList<>();
+    protected DepthAnalysisImpl depthAnalysis;
 
-    public ProjectedDepthData getDepthData() {
-        return depthData;
-    }
-
-    public void setDepthData(ProjectedDepthData depthData) {
-        this.depthData = depthData;
-    }
-
-    public TouchDetectionDepth(WithSize imgSize) {
-        super(imgSize);
+    public TouchDetectionDepth(DepthAnalysisImpl depthAnalysis, PlanarTouchCalibration calib) {
+        super(depthAnalysis, calib);
+        this.depthAnalysis = depthAnalysis;
     }
 
     public abstract ArrayList<TrackedDepthPoint> compute(ProjectedDepthData dData);
-
-    protected boolean hasCCToFind() {
-        return !depthData.validPointsList.isEmpty();
-    }
+    
+    protected abstract boolean hasCCToFind(); 
 
 //    protected abstract void setSearchParameters();
     protected ArrayList<TrackedDepthPoint> createTouchPointsFrom(ArrayList<ConnectedComponent> connectedComponents) {
-        ArrayList<TrackedDepthPoint> touchPoints = new ArrayList<TrackedDepthPoint>();
+        ArrayList<TrackedDepthPoint> newPoints = new ArrayList<TrackedDepthPoint>();
         for (ConnectedComponent connectedComponent : connectedComponents) {
 
             float height = connectedComponent.getHeight(depthData.projectedPoints);
@@ -72,14 +69,21 @@ public abstract class TouchDetectionDepth extends TouchDetection {
             }
 
             TrackedDepthPoint tp = createTouchPoint(connectedComponent);
-            touchPoints.add(tp);
+            newPoints.add(tp);
         }
-        return touchPoints;
+        return newPoints;
     }
+
 
     @Override
     protected TrackedDepthPoint createTouchPoint(ConnectedComponent connectedComponent) {
         Vec3D meanProj = connectedComponent.getMean(depthData.projectedPoints);
+        // DEBUG: Print out the points
+//        System.out.println("Points size: " + connectedComponent.size());
+//        for(int offset : connectedComponent){
+//            System.out.print(depthData.projectedPoints[offset] + " ");
+//        }
+//        System.out.println("\nMeanProj: " + meanProj);
         Vec3D meanKinect = connectedComponent.getMean(depthData.depthPoints);
         TrackedDepthPoint tp = new TrackedDepthPoint();
         tp.setDetection(this);
@@ -88,7 +92,6 @@ public abstract class TouchDetectionDepth extends TouchDetection {
         tp.setCreationTime(depthData.timeStamp);
         tp.set3D(false);
         tp.setConfidence(connectedComponent.size() / calib.getMinimumComponentSize());
-
         // TODO: re-enable this one day ?
 //        tp.setConnectedComponent(connectedComponent);
         tp.setDepthDataElements(depthData, connectedComponent);
@@ -126,19 +129,8 @@ public abstract class TouchDetectionDepth extends TouchDetection {
         calib.setMaximumDistance((distance + NOISE_ESTIMATION) * ERROR_DISTANCE_MULTIPLIER);
     }
 
-    public class CheckTouchPoint implements PointValidityCondition {
-
-        @Override
-        public boolean checkPoint(int offset, int currentPoint) {
-//            float distanceToCurrent = depthData.depthPoints[offset].distanceTo(depthData.depthPoints[currentPoint]);
-
-            return !assignedPoints[offset] // not assigned  
-                    && depthData.validPointsMask[offset] // is valid
-                    && DepthAnalysis.isValidPoint(depthData.depthPoints[offset])
-                    && depthData.depthPoints[offset].distanceTo(depthData.depthPoints[currentPoint]) < calib.getMaximumDistance();
-        }
-    }
     
+
     class ClosestComparator implements Comparator {
 
         public Vec3D[] projPoints;
@@ -207,6 +199,18 @@ public abstract class TouchDetectionDepth extends TouchDetection {
 
             return -1;
         }
+    }
+
+    public ArrayList<TrackedDepthPoint> getTouchPoints() {
+        return touchPoints;
+    }
+
+    public ProjectedDepthData getDepthData() {
+        return depthData;
+    }
+
+    public void setDepthData(ProjectedDepthData depthData) {
+        this.depthData = depthData;
     }
 
 }

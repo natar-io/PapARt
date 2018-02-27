@@ -22,6 +22,7 @@ package fr.inria.papart.procam.camera;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.utils.ARToolkitPlusUtils;
 import fr.inria.papart.procam.display.ProjectorDisplay;
+import fr.inria.papart.utils.ImageUtils;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bytedeco.javacpp.opencv_core;
@@ -42,7 +43,8 @@ public class ProjectorAsCamera extends Camera {
     private final Camera cameraTracking;
     private IplImage grayImage;
     private final ProjectorDisplay projector;
-
+    private PImage pimage;
+    
     public ProjectorAsCamera(ProjectorDisplay projector, Camera cameraTracking, TrackedView view) {
         this.projectorView = view;
         this.cameraTracking = cameraTracking;
@@ -96,15 +98,38 @@ public class ProjectorAsCamera extends Camera {
      */
     @Override
     public PImage getPImage() {
+        
+        if(currentImage != null){
+            if(pimage == null){
+                pimage = parent.createImage(currentImage.width(), currentImage.height(), RGB);
+            }
+            ImageUtils.IplImageToPImage(currentImage, true, pimage);
+            return pimage;
+        }
         return null;
     }
 
     /**
+     * Grab an image from the camera associated. 
      * Not used.
      */
     @Override
     public void grab() {
         IplImage img = projectorView.getIplViewOf(cameraTracking);
+        if (img != null) {
+            currentImage = img;
+            if (this.format == PixelFormat.GRAY) {
+                currentImage = greyProjectorImage(img);
+            }
+        }
+    }
+
+    /**
+     * Grab a fake (given image). 
+     * @param source given image.
+     */
+    public void grab(IplImage source) {
+        IplImage img = projectorView.getIplViewOf(cameraTracking, source);
         if (img != null) {
             currentImage = img;
             if (this.format == PixelFormat.GRAY) {

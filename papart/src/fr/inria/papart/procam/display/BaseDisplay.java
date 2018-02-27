@@ -20,7 +20,6 @@
 package fr.inria.papart.procam.display;
 
 import fr.inria.papart.procam.HasCamera;
-import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.PaperScreen;
 
@@ -45,7 +44,7 @@ public class BaseDisplay implements HasCamera {
     public PGraphicsOpenGL graphics;
     public ArrayList<PaperScreen> paperScreens = new ArrayList<PaperScreen>();
 //    public ArrayList<PaperScreen> paperScreens = new ArrayList<>();
-    
+
     protected PApplet parent;
     //    public PGraphicsOpenGL graphicsUndist;
     protected static int DEFAULT_SIZE = 200;
@@ -89,7 +88,7 @@ public class BaseDisplay implements HasCamera {
         // At the end of drawing.
         parent.registerMethod("draw", this);
     }
-    
+
     public void manualMode() {
         registered = false;
         parent.unregisterMethod("draw", this);
@@ -146,7 +145,7 @@ public class BaseDisplay implements HasCamera {
         }
         this.beginDraw();
         this.graphics.applyMatrix(screenPos);
-        
+
         // Same origin as in DrawOnPaper
         this.graphics.translate(0, paperScreen.getSize().y);
         this.graphics.scale(1, -1, 1);
@@ -262,11 +261,14 @@ public class BaseDisplay implements HasCamera {
     public void addPaperScreen(PaperScreen s) {
         paperScreens.add(s);
     }
-    
+
+    public void removePaperScreen(PaperScreen s) {
+        paperScreens.remove(s);
+    }
+
 //    public void addPaperScreen(PaperScreen s) {
 //        paperScreens.add(s);
 //    }
-
     @Override
     public boolean hasCamera() {
         return hasCamera;
@@ -282,9 +284,10 @@ public class BaseDisplay implements HasCamera {
         screenMat.invert();
         PVector transformed = new PVector();
         screenMat.mult(new PVector(x * drawingSizeX, y * drawingSizeY), transformed);
+        transformed = new PVector(transformed.x / paperScreen.getDrawingSize().x,
+                transformed.y / paperScreen.getDrawingSize().y);
         return transformed;
     }
-    
 
     public PVector project(PaperScreen screen, float x, float y) {
         boolean isProjector = this instanceof ProjectorDisplay;

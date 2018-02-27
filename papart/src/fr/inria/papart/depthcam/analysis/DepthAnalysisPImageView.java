@@ -39,7 +39,7 @@ import processing.core.PImage;
 import toxi.geom.Vec3D;
 
 /**
- *
+ * DepthAnalysis that produces PImages.
  * @author Jeremy Laviole
  */
 public class DepthAnalysisPImageView extends DepthAnalysisImpl {
@@ -47,7 +47,7 @@ public class DepthAnalysisPImageView extends DepthAnalysisImpl {
     public PImage validPointsPImage;
     IplImage nativeArrayToErode;
     UByteIndexer erosionIndexer;
-    boolean[] validCopy;
+//    boolean[] validCopy;
     private TimeFilterDepth timeFilterDepth;
 
     public DepthAnalysisPImageView(PApplet parent, DepthCameraDevice kinect) {
@@ -65,80 +65,16 @@ public class DepthAnalysisPImageView extends DepthAnalysisImpl {
         validPointsPImage = papplet.createImage(getWidth(), getHeight(), PConstants.RGB);
         nativeArrayToErode = IplImage.create(getWidth(), getHeight(), IPL_DEPTH_8U, 1);
         erosionIndexer = (UByteIndexer) nativeArrayToErode.createIndexer();
-        validCopy = Arrays.copyOf(depthData.validPointsMask, depthData.validPointsMask.length);
+//        validCopy = Arrays.copyOf(depthData.validPointsMask, depthData.validPointsMask.length);
     }
 
-//    // TODO: Deprecated To Check
-//    @Deprecated
-//    @Override
-//    public void updateMT(opencv_core.IplImage depth, opencv_core.IplImage color, PlaneAndProjectionCalibration calib, int skip2D, int skip3D) {
-//        updateRawDepth(depth);
-//        // optimisation no Color. 
-//        updateRawColor(color);
-//        depthData.clear();
-//        depthData.timeStamp = papplet.millis();
-//        depthData.planeAndProjectionCalibration = calib;
-//
-//        computeDepthAndDo(1, new DoNothing());
-//
-//        validPointsPImage.loadPixels();
-////        Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 255));
-//        doForEachPoint(1, new SetImageData());
-//        validPointsPImage.updatePixels();
-//
-//        doForEachPoint(skip2D, new Select2DPointPlaneProjection());
-//
+    /// Erosion tests on binary images.
 ////        erodePoints(depthData.validPointsMask);
 ////        erodePoints2(depthData.validPointsList, depthData.validPointsMask, skip2D);
-//        doForEachPoint(skip3D, new Select3DPointPlaneProjection());
 ////        erodePoints(depthData.validPointsMask3D);
-//
-//    }
-
-    public void updateMT(opencv_core.IplImage depth, opencv_core.IplImage color, PlaneAndProjectionCalibration calib, int skip2D) {
-
-        try {
-
-            updateRawDepth(depth);
-
-// optimisation no Color. 
-            updateRawColor(color);
-            depthData.clear();
-            depthData.timeStamp = papplet.millis();
-            depthData.planeAndProjectionCalibration = calib;
-            computeDepthAndDo(skip2D, new DoNothing());
-
-            // depth is computed at the step before.
-//            timeFilterDepth.addCurrentDepthPoints(this.depth);
-//            doForEachPoint(skip2D, timeFilterDepth);
-//            System.out.println("Time filtering....");
-
-//            doForEachPoint(skip2D,
-//                    new UndistortSR300Depth());
-//            doForEachPoint(skip2D,
-//                    new Select2DPointPlaneProjectionSR300Error());
-
-            doForEachPoint(skip2D,
-                    new Select2DPointPlaneProjection());
-//        erodePoints(depthData.validPointsMask);
-//        erodePoints2(depthData.validPointsList, depthData.validPointsMask, skip2D);
-            doForEachPoint(skip2D,
-                    new Select3DPointPlaneProjection());
-//        erodePoints(depthData.validPointsMask3D);
-
-
-            validPointsPImage.loadPixels();
-            Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 255));
-            doForEachValidPoint(skip2D,
-                    new SetImageData());
-            validPointsPImage.updatePixels();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-
+////        erodePoints(depthData.validPointsMask);
+////        erodePoints2(depthData.validPointsList, depthData.validPointsMask, skip2D);
+////        erodePoints(depthData.validPointsMask3D);
     private void erodePoints(boolean[] arrayToErode) {
 
         for (int i = 0; i < getWidth() * getHeight(); i++) {
@@ -147,49 +83,26 @@ public class DepthAnalysisPImageView extends DepthAnalysisImpl {
         cvErode(nativeArrayToErode, nativeArrayToErode);
         for (int i = 0; i < getWidth() * getHeight(); i++) {
             arrayToErode[i] = erosionIndexer.get(i) == 1;
-
-        }
-
-    }
-
-    class ErodeValidPoints implements DepthPointManiplation {
-
-        @Override
-        public void execute(Vec3D p, PixelOffset px) {
-            if (depthData.planeAndProjectionCalibration.hasGoodOrientationAndDistance(p)) {
-
-//                Vec3D projected = depthData.planeAndProjectionCalibration.project(p);
-//                depthData.projectedPoints[px.offset] = projected;
-                depthData.planeAndProjectionCalibration.project(p, depthData.projectedPoints[px.offset]);
-
-                if (isInside(depthData.projectedPoints[px.offset], 0.f, 1.f, 0.0f)) {
-                    depthData.validPointsMask[px.offset] = true;
-                    depthData.validPointsList.add(px.offset);
-                }
-            }
         }
     }
 
-    public PImage update(IplImage depth, IplImage color,
-            PlaneAndProjectionCalibration planeProjCalibration, int skip) {
-
-        updateRawDepth(depth);
-        updateRawColor(color);
-        depthData.clear();
-        depthData.timeStamp = papplet.millis();
-        validPointsPImage.loadPixels();
-        // set a default color. 
-        Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 255));
-
-        depthData.planeAndProjectionCalibration = planeProjCalibration;
-        computeDepthAndDo(skip, new Select2DPointPlaneProjection());
-//        computeDepthAndDo(skip, new Select2DPointOverPlane());
-
-        doForEachValidPoint(skip, new SetImageData());
-        validPointsPImage.updatePixels();
-        return validPointsPImage;
-    }
-
+//    class ErodeValidPoints implements DepthPointManiplation {
+//
+//        @Override
+//        public void execute(Vec3D p, PixelOffset px) {
+//            if (depthData.planeAndProjectionCalibration.hasGoodOrientationAndDistance(p)) {
+//
+////                Vec3D projected = depthData.planeAndProjectionCalibration.project(p);
+////                depthData.projectedPoints[px.offset] = projected;
+//                depthData.planeAndProjectionCalibration.project(p, depthData.projectedPoints[px.offset]);
+//
+//                if (isInside(depthData.projectedPoints[px.offset], 0.f, 1.f, 0.0f)) {
+//                    depthData.validPointsMask[px.offset] = true;
+//                    depthData.validPointsList.add(px.offset);
+//                }
+//            }
+//        }
+//    }
     /**
      * Simple visualization
      *
@@ -200,28 +113,16 @@ public class DepthAnalysisPImageView extends DepthAnalysisImpl {
      */
     public PImage update(IplImage depth, IplImage color, int skip) {
         updateRawDepth(depth);
-        updateRawColor(color);
+        if (color != null) {
+            updateRawColor(color);
+        }
         depthData.clear();
         depthData.timeStamp = papplet.millis();
         validPointsPImage.loadPixels();
         // set a default color. 
 
-//                int offset =  kinectDevice.depthWidth() * 100 + 100;
-//                    int r = (depthRaw[offset * 3 + 0] & 0xFF);
-//            int g = (depthRaw[offset * 3 + 1] & 0xFF);
-//            int b = (depthRaw[offset * 3 + 2] & 0xFF);
-//            System.out.println(" r " + r + " g " + g + " b " + b);
-//            float d =  (r - 127) + g * (1 << 8) + b * (1 << 16); 
-//            System.out.println("value2 " + d);
-//             d = d / (1 << 24) * 10000 + 400;
-//            System.out.println("value1 " + d);
-//        int high = depthRaw[offset * 3 + 1] & 0xFF;
-//        int low= depthRaw[offset * 3] & 0xFF;
-//        System.out.println("high " + high + " low " + low );
-//        System.out.println("depth " + this.getDepth(offset) );
         Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 0));
 
-//        computeDepthAndDo(skip, new DoNothing());
         // TODO: get the color with Kinect2... 
         if (this.colorCamera.getPixelFormat() == Camera.PixelFormat.RGB) {
             computeDepthAndDo(skip, new SetImageDataRGB());
@@ -229,14 +130,6 @@ public class DepthAnalysisPImageView extends DepthAnalysisImpl {
         if (this.colorCamera.getPixelFormat() == Camera.PixelFormat.BGR) {
             computeDepthAndDo(skip, new SetImageData());
         }
-
-// depth is computed at the step before.
-//        timeFilterDepth.addCurrentDepthPoints(this.depth);
-//        doForEachPoint(skip, timeFilterDepth);
-//        doForEachPoint(skip, new UndistortSR300Depth());
-
-
-//        computeDepthAndDo(skip, new Select2DPointOverPlane());
         validPointsPImage.updatePixels();
         return validPointsPImage;
 
@@ -254,32 +147,6 @@ public class DepthAnalysisPImageView extends DepthAnalysisImpl {
         }
     }
 
-    class SetImageData implements DepthPointManiplation {
-
-        public SetImageData() {
-            super();
-        }
-
-        @Override
-        public void execute(Vec3D p, PixelOffset px) {
-            depthData.validPointsMask[px.offset] = true;
-            setPixelColor(px.offset);
-        }
-    }
-
-    class SetImageDataRGB implements DepthPointManiplation {
-
-        public SetImageDataRGB() {
-            super();
-        }
-
-        @Override
-        public void execute(Vec3D p, PixelOffset px) {
-            depthData.validPointsMask[px.offset] = true;
-            setPixelColorRGB(px.offset);
-        }
-    }
-
     private void setFakeColor(int offset, int r, int g, int b) {
         int c = (r & 0xFF) << 16
                 | (g & 0xFF) << 8
@@ -288,40 +155,18 @@ public class DepthAnalysisPImageView extends DepthAnalysisImpl {
     }
 
     // TODO: Generalization here, same functions as those to convert the pixels for OpenGL. 
-    private void setPixelColor(int offset) {
-
-        // TODO: Get a cleaner way go obtain the color... 
-        int colorOffset = depthCameraDevice.findColorOffset(depthData.depthPoints[offset]) * 3;
-
-        int c;
-        // Do not set invalid pixels
-        if (colorOffset < 0 || colorOffset > colorRaw.length) {
-            c = 255;
-        } else {
-            c = (colorRaw[colorOffset + 2] & 0xFF) << 16
-                    | (colorRaw[colorOffset + 1] & 0xFF) << 8
-                    | (colorRaw[colorOffset + 0] & 0xFF);
-        }
+    @Override
+    protected int setPixelColor(int offset) {
+        int c = super.setPixelColor(offset);
         validPointsPImage.pixels[offset] = c;
+        return c;
     }
 
-    private void setPixelColorRGB(int offset) {
-
-        // TODO: Get a cleaner way go obtain the color... 
-        int colorOffset = depthCameraDevice.findColorOffset(depthData.depthPoints[offset]) * 3;
-
-        int c;
-        // Do not set invalid pixels
-        if (colorOffset < 0 || colorOffset > colorRaw.length) {
-            c = 255;
-        } else {
-
-            c = (colorRaw[colorOffset + 0] & 0xFF) << 16
-                    | (colorRaw[colorOffset + 1] & 0xFF) << 8
-                    | (colorRaw[colorOffset + 2] & 0xFF);
-        }
-
+    @Override
+    protected int setPixelColorRGB(int offset) {
+        int c = super.setPixelColorRGB(offset);
         validPointsPImage.pixels[offset] = c;
+        return c;
     }
 
     public PImage getColouredDepthImage() {

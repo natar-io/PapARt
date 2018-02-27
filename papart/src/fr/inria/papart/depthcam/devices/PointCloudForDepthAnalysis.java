@@ -50,38 +50,43 @@ public class PointCloudForDepthAnalysis extends PointCloud implements PConstants
         this.depthAnalysis = depthAnalysis;
     }
 
-    public void updateWith(DepthAnalysisPImageView kinect) {
-        boolean[] valid = kinect.getValidPoints();
-        Vec3D[] points = kinect.getDepthPoints();
-        PImage colorsImg = kinect.getColouredDepthImage();
+    /**
+     * Warning: invalid points are also displayed.
+     *
+     * @param depthAnalysis
+     */
+    public void updateWith(DepthAnalysisPImageView depthAnalysis) {
+//        boolean[] valid = depthAnalysis.getValidPoints();
+
+        Vec3D[] points = depthAnalysis.getDepthPoints();
+        PImage colorsImg = depthAnalysis.getColouredDepthImage();
 
         nbVertices = 0;
         nbColors = 0;
 
 //        for (int i = 0; i < kinect.getDepthSize(); i++) {
-        
         int k = 0; // k is the 3D point cloud memory.
         for (int y = 0; y < depthAnalysis.getHeight(); y += precision) {
             for (int x = 0; x < depthAnalysis.getWidth(); x += precision) {
 
                 int i = x + y * depthAnalysis.getWidth();
-                
-                if (valid[i]) {
-                    Vec3D p = points[i];
-                    int c = colorsImg.pixels[i];
 
-                    verticesJava[k++] = p.x;
-                    verticesJava[k++] = p.y;
-                    verticesJava[k++] = -p.z;
-                    verticesJava[k++] = 1;
+//                if (valid[i]) {
+                Vec3D p = points[i];
+                int c = colorsImg.pixels[i];
 
-                    int c2 = javaToNativeARGB(c);
+                verticesJava[k++] = p.x;
+                verticesJava[k++] = p.y;
+                verticesJava[k++] = -p.z;
+                verticesJava[k++] = 1;
 
-                    nbVertices++;
+                int c2 = javaToNativeARGB(c);
 
-                    colorsJava[nbColors++] = c2;
-                    // Think about dividing the color intensity by 255 in the shader...
-                }
+                nbVertices++;
+
+                colorsJava[nbColors++] = c2;
+                // Think about dividing the color intensity by 255 in the shader...
+//                }
 
             }
         }
@@ -93,24 +98,22 @@ public class PointCloudForDepthAnalysis extends PointCloud implements PConstants
         colorsNative.put(colorsJava, 0, nbColors);
     }
 
-    public void updateWithFakeColors(DepthAnalysisPImageView kinect, ArrayList<TrackedDepthPoint> touchs) {
-
-        boolean[] valid = kinect.getValidPoints();
-        Vec3D[] points = kinect.getDepthPoints();
-        PImage colorsImg = kinect.getColouredDepthImage();
+    public void updateWithNormalColors(DepthAnalysisImpl depthAnalysis, ArrayList<TrackedDepthPoint> touchs) {
+        Vec3D[] points = depthAnalysis.getDepthPoints();
 
         nbVertices = 0;
         nbColors = 0;
         int k = 0;
 
         parentApplet.pushStyle();
-        parentApplet.colorMode(HSB, 8, 100, 100);
-        int id = 0;
-        for (TrackedDepthPoint touch : touchs) {
+        //            ID Color
+//        parentApplet.colorMode(HSB, 8, 100, 100);
 
-            int c = this.parentApplet.color(id % 8, 100, 100);
-            id++;
-            int c2 = javaToNativeARGB(c);
+        // Normal Color 
+        parentApplet.colorMode(RGB, 1, 1, 1);
+        int defaultColor = this.parentApplet.color(1, 1, 1);
+        int defaultColor2 = javaToNativeARGB(defaultColor);
+        for (TrackedDepthPoint touch : touchs) {
 
             for (DepthDataElementProjected dde : touch.getDepthDataElements()) {
                 Vec3D p = dde.depthPoint;
@@ -121,8 +124,85 @@ public class PointCloudForDepthAnalysis extends PointCloud implements PConstants
 
                 nbVertices++;
 
-                colorsJava[nbColors++] = c2;
+                if (dde.normal != null) {
+                    int c = this.parentApplet.color(dde.normal.x, dde.normal.y, dde.normal.z);
+                    int c2 = javaToNativeARGB(c);
+                    colorsJava[nbColors++] = c2;
+                } else {
+                    colorsJava[nbColors++] = defaultColor2;
+                }
+            }
+        }
 
+        parentApplet.popStyle();
+        verticesNative.rewind();
+        verticesNative.put(verticesJava, 0, nbVertices * 4);
+
+        colorsNative.rewind();
+        colorsNative.put(colorsJava, 0, nbColors);
+    }
+
+    public void updateWithIDColors(DepthAnalysisImpl kinect, ArrayList<TrackedDepthPoint> touchs) {
+        Vec3D[] points = kinect.getDepthPoints();
+
+        nbVertices = 0;
+        nbColors = 0;
+        int k = 0;
+
+        parentApplet.pushStyle();
+        parentApplet.colorMode(HSB, 8, 100, 100);
+
+        int id = 0;
+        for (TrackedDepthPoint touch : touchs) {
+            int c = this.parentApplet.color(id % 8, 100, 100);
+            int c2 = javaToNativeARGB(c);
+            id++;
+
+            for (DepthDataElementProjected dde : touch.getDepthDataElements()) {
+                Vec3D p = dde.depthPoint;
+                verticesJava[k++] = p.x;
+                verticesJava[k++] = p.y;
+                verticesJava[k++] = -p.z;
+                verticesJava[k++] = 1;
+
+                nbVertices++;
+                colorsJava[nbColors++] = c2;
+            }
+        }
+
+        parentApplet.popStyle();
+        verticesNative.rewind();
+        verticesNative.put(verticesJava, 0, nbVertices * 4);
+
+        colorsNative.rewind();
+        colorsNative.put(colorsJava, 0, nbColors);
+    }
+
+    public void updateWithCamColors(DepthAnalysisImpl analysis, ArrayList<TrackedDepthPoint> touchs) {
+        Vec3D[] points = analysis.getDepthPoints();
+        int[] pointColors = analysis.getDepthData().pointColors;
+        nbVertices = 0;
+        nbColors = 0;
+        int k = 0;
+
+        parentApplet.pushStyle();
+        parentApplet.colorMode(HSB, 8, 100, 100);
+
+        int id = 0;
+        for (TrackedDepthPoint touch : touchs) {
+
+            for (DepthDataElementProjected dde : touch.getDepthDataElements()) {
+                int c = pointColors[dde.offset];
+                int c2 = javaToNativeARGB(c);
+
+                Vec3D p = dde.depthPoint;
+                verticesJava[k++] = p.x;
+                verticesJava[k++] = p.y;
+                verticesJava[k++] = -p.z;
+                verticesJava[k++] = 1;
+
+                nbVertices++;
+                colorsJava[nbColors++] = c2;
             }
         }
 

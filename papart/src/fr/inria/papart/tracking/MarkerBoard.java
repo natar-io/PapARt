@@ -150,7 +150,7 @@ public abstract class MarkerBoard {
      */
     public void subscribe() {
         subscribersAmount++;
-        System.out.println("DEBUG: subscription: " + subscribersAmount);
+//        System.out.println("DEBUG: subscription: " + subscribersAmount);
     }
 
     /**
@@ -159,8 +159,10 @@ public abstract class MarkerBoard {
      */
     public void unsubscribe() {
         subscribersAmount--;
-        System.out.println("DEBUG: UNsubscription: " + subscribersAmount);
+//        System.out.println("DEBUG: UNsubscription: " + subscribersAmount);
     }
+
+    public OneEuroFilter[] NO_FILTERS = new OneEuroFilter[0];
 
     private OneEuroFilter[] createFilter(double freq, double minCutOff) {
         OneEuroFilter[] f = new OneEuroFilter[12];
@@ -213,6 +215,9 @@ public abstract class MarkerBoard {
     }
 
     public boolean isTrackedBy(Camera camera) {
+        if(this == MarkerBoardInvalid.board){
+//            System.out.println("ERROR: cannot get the position of an invalid board.");
+        }
         return cameras.contains(camera);
     }
 

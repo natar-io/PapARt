@@ -53,7 +53,7 @@
       <!-- For Android: -Dplatform=android-arm -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.build.timestamp.format>yyyyMMddhhmm</maven.build.timestamp.format>
-        <javacpp.version>1.3.2-SNAPSHOT</javacpp.version>
+        <javacpp.version>1.4</javacpp.version>
 	<javacpp.platform>linux-x86_64</javacpp.platform>
 	
     </properties>
@@ -79,17 +79,17 @@
 	<dependency>
             <groupId>org.bytedeco.javacpp-presets</groupId>
             <artifactId>opencv-platform</artifactId>
-            <version>3.2.0-${javacpp.version}</version>
+            <version>3.4.0-${javacpp.version}</version>
         </dependency>
         <dependency>
             <groupId>org.bytedeco.javacpp-presets</groupId>
             <artifactId>ffmpeg-platform</artifactId>
-            <version>3.2.1-${javacpp.version}</version>
+            <version>3.4.1-${javacpp.version}</version>
         </dependency>
         <dependency>
             <groupId>org.bytedeco.javacpp-presets</groupId>
             <artifactId>flycapture-platform</artifactId>
-            <version>2.9.3.43-${javacpp.version}</version>
+            <version>2.11.3.121-${javacpp.version}</version>
         </dependency>
         <!-- <dependency> -->
         <!--     <groupId>org.bytedeco.javacpp-presets</groupId> -->
@@ -109,7 +109,7 @@
         <dependency>
             <groupId>org.bytedeco.javacpp-presets</groupId>
             <artifactId>librealsense-platform</artifactId>
-            <version>1.9.6-${javacpp.version}</version>
+            <version>1.12.1-${javacpp.version}</version>
         </dependency>
         <dependency>
             <groupId>org.bytedeco.javacpp-presets</groupId>

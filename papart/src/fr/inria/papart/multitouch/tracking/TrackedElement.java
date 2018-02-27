@@ -27,10 +27,15 @@ import processing.core.PVector;
 import toxi.geom.Vec3D;
 
 /**
+ * Tracked element with a position and speed. The position can be filtered, the 
+ * filtering must be called directly, it is not automatic.
  * @author Jeremy Laviole
  */
 public class TrackedElement {
 
+    /**
+     * Global counter of tracked elements.
+     */
     public static int count = 0;
 
     // protected PVector position... in DepthPoint
@@ -39,10 +44,15 @@ public class TrackedElement {
     protected PVector speed = new PVector();
 
     // TODO: become this:
-    protected Object source;
+//    protected Object source;
 
-//    private ArrayList<DepthDataElementKinect> depthDataElements = new ArrayList<DepthDataElementKinect>();
+    /**
+     * You can attach a value to a Tracked Element, it will be passed along tracking.
+     */
     public int attachedValue = -1;
+        /**
+     * You can attach an object to a Tracked Element, it will be passed along tracking.
+     */
     public Object attachedObject;
 
     protected float confidence;
@@ -65,30 +75,45 @@ public class TrackedElement {
     protected TouchDetection detection;
 
     // Element it goes to 
-    protected Touch touch;
+    protected final Touch touch;
 
 // filtering 
     private OneEuroFilter[] filters;
     public static float filterFreq = 30f;
-    public static float filterCut = 0.2f;
-    public static float filterBeta = 8.000f;
+    public static float filterCut = 0.02f;
+    public static float filterBeta = 0.2000f;
     public static final int NO_TIME = -1;
     private int NUMBER_OF_FILTERS = 3;
 
+    /**
+     * Create a trackedElement and force an ID to it.
+     * @param id 
+     */
     public TrackedElement(int id) {
         this();
         this.id = id;
+        initTouch();
     }
 
+    /**
+     * Create a TrackedElement, a new ID will be assigned to it.
+     */
     public TrackedElement() {
         try {
             filters = new OneEuroFilter[NUMBER_OF_FILTERS];
             for (int i = 0; i < NUMBER_OF_FILTERS; i++) {
-                filters[i] = new OneEuroFilter(filterFreq, filterCut, filterBeta);
+                filters[i] = new OneEuroFilter(filterFreq, filterCut, filterBeta, 0.5f);
             }
         } catch (Exception e) {
             System.out.println("OneEuro Exception. Pay now." + e);
         }
+        touch = new Touch();
+        initTouch();
+    }
+
+    private void initTouch() {
+        touch.id = this.id;
+        touch.trackedSource = this;
     }
 
     /**
@@ -172,12 +197,15 @@ public class TrackedElement {
             position.y = (float) filters[1].filter(position.y);
             position.z = (float) filters[2].filter(position.z);
         } catch (Exception e) {
+            e.printStackTrace();
             System.out.println("OneEuro init Exception. Pay now." + e);
         }
     }
 
     /**
      * Use the OneEuroFilter to filter the position.
+     *
+     * @param updateTime Time from Processing.
      */
     public void filter(int updateTime) {
         try {
@@ -218,13 +246,14 @@ public class TrackedElement {
 
         checkAndSetID();
 //        filter(tp.createTime);
-        
-        if(tp instanceof TrackedDepthPoint){
-           ((TrackedDepthPoint) this).updateAdditionalElements((TrackedDepthPoint) tp);
+
+        if (tp instanceof TrackedDepthPoint) {
+            ((TrackedDepthPoint) this).updateAdditionalElements((TrackedDepthPoint) tp);
         }
         updatePosition(tp);
-        filter();
 
+        // WARNING FILTERING IS NOW DONE OUTSIDE
+//        filter();
         return true;
     }
 
@@ -233,11 +262,12 @@ public class TrackedElement {
      * candidate is found. The filtering may set a new position and speed.
      */
     public void updateAlone() {
-        this.setUpdated(true);
+//        this.setUpdated(true);
         updatePosition(this);
         checkAndSetID();
         // TODO: check performance ?!
-        filter();
+
+//        filter();
     }
 
     /**
@@ -266,14 +296,13 @@ public class TrackedElement {
         this.position.set(tp.position);
         this.confidence = tp.confidence;
 
-        this.setSource(tp.source);
+//        this.setSource(tp.source);
 
         speed.set(this.position);
         speed.sub(this.previousPosition);
     }
 
     protected void updateAdditionalElements(TrackedElement tp) {
-
     }
 
     /**
@@ -308,7 +337,7 @@ public class TrackedElement {
     public int getID() {
         return this.id;
     }
-    
+
     /**
      * Force a given ID, to use when it comes from an external tracking.
      *
@@ -407,44 +436,41 @@ public class TrackedElement {
         return touch != null;
     }
 
-    public void createTouch() {
-        touch = new Touch();
-        touch.id = this.id;
-        // 
-        touch.trackedSource = this;
-    }
-
     public Touch getTouch() {
-        if (touch == null) {
-            createTouch();
-        }
         touch.id = this.id;
         return touch;
     }
+//
+//    public Object getSource() {
+//        return source;
+//    }
+//
+//    public void setSource(Object source) {
+//        this.source = source;
+//    }
 
-    public void deleteTouch() {
-        touch = null;
-    }
-
+    /**
+     * Get the detection object that created this tracked element.
+     *
+     * @return
+     */
     public TouchDetection getDetection() {
         return detection;
     }
 
-    public Object getSource() {
-        return source;
-    }
-
-    public void setSource(Object source) {
-        this.source = source;
-    }
-
     /**
-     * TODO: Find the use of this? -> Used by the Tracking system.
+     * Set the detection object that created this tracked element.
      *
      * @param detection
      */
     public void setDetection(TouchDetection detection) {
         this.detection = detection;
+    }
+
+    public boolean mainFinger = false;
+
+    public void setMainFinger() {
+        this.mainFinger = true;
     }
 
 }
