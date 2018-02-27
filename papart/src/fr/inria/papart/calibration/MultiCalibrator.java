@@ -547,8 +547,8 @@ public class MultiCalibrator extends PaperTouchScreen {
             currentScreenPoint++;
         }
     }
-    public static float CENTER_X = 146.6f;   // 148.6
-    public static float CENTER_Y = 103.1f; 
+    public static float CENTER_X = 148.6f;   // 148.6
+    public static float CENTER_Y = 103.6f; 
     // Loads of color data for color points. 
     // 1. Homography computation:  Camera - projector.
     // 2. Extract 4-6 projector images. 
@@ -1271,7 +1271,9 @@ public class MultiCalibrator extends PaperTouchScreen {
     private void drawDebugZones() {
         noStroke();
         
-        scale(SCALE_FACTOR, SCALE_FACTOR);
+        // scale(SCALE_FACTOR, SCALE_FACTOR);
+        
+        
         // draw a green rectangle
         // top projection
         rect(75f, 11f, 146f, 50f);
@@ -1305,6 +1307,8 @@ public class MultiCalibrator extends PaperTouchScreen {
         rect(108.1f, 67.1f, 15f, 15f);
         rect(179.4f, 67.1f, 15f, 15f);
         
+        fill(255, 200, 30, 180);
+        ellipse(CENTER_X, CENTER_Y, 15f, 15f);
         
     }
 
