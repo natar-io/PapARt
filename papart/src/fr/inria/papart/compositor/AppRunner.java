@@ -11,6 +11,7 @@ import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import processing.core.PApplet;
 
 /**
  *
@@ -44,6 +45,19 @@ public class AppRunner extends Thread {
         useCommandArguments = true;
     }
 
+    public void autoExit(PApplet applet) {
+        applet.registerMethod("dispose", this);
+    }
+
+    public void dispose() {
+        alive = false;
+        System.out.println("Closing: " + this.program + ".");
+        process.destroy();
+        System.out.println(this.program + " closed.");
+
+        // TODO: timeouts etc... ?
+    }
+
     @Override
     public void run() {
         buildProcess();
@@ -68,12 +82,12 @@ public class AppRunner extends Thread {
     }
 
     protected void buildProcess() {
-        if(useCommandArguments){
-              builder = new ProcessBuilder(programCmd);
-        }else {
-              builder = new ProcessBuilder(program);
+        if (useCommandArguments) {
+            builder = new ProcessBuilder(programCmd);
+        } else {
+            builder = new ProcessBuilder(program);
         }
-      
+
         // DEBUG
         builder.redirectOutput(Redirect.INHERIT);
         builder.redirectError(Redirect.INHERIT);

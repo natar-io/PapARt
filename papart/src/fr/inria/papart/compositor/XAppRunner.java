@@ -19,7 +19,7 @@ import java.util.logging.Logger;
  */
 public class XAppRunner extends AppRunner {
 
-    private XDisplay targetDisplay;
+    private final XDisplay targetDisplay;
 
     public XAppRunner(String program, XDisplay target) {
         super(program);
@@ -28,8 +28,9 @@ public class XAppRunner extends AppRunner {
     public XAppRunner(String[] program, XDisplay target) {
         super(program);
         this.targetDisplay = target;
+           
     }
-
+    
     @Override
     protected void buildProcess() {
         super.buildProcess();

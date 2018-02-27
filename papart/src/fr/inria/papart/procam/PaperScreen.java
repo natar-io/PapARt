@@ -1574,10 +1574,13 @@ public class PaperScreen extends DelegatedGraphics {
     ///// App extension ///
     public void runProgram(String name){
         if(Xdisplay == null){
+            
+            // check if display exists ?
             initXDisplay();
             Xcamera = Xdisplay.getCamera(parent);
         }
         XAppRunner firefox = new XAppRunner(name, Xdisplay);
+        firefox.autoExit(parent);
         firefox.start();
     }
     
@@ -1585,7 +1588,7 @@ public class PaperScreen extends DelegatedGraphics {
           // XServer 
         Xdisplay = new XDisplayWithCam(getRenderingSizeX(), getRenderingSizeY());
         Xdisplay.start();
-
+        Xdisplay.autoExit(parent);
         // sleep 1sec
         try {
             Thread.sleep(1000);
@@ -1596,8 +1599,10 @@ public class PaperScreen extends DelegatedGraphics {
         // Default - start with a WM and  the event passer.
         // Window manager 
         XAppRunner wm = new XAppRunner("openbox", Xdisplay);
+        wm.autoExit(parent);
         wm.start();
 
+        
         // Event manager
         String[] eventSender = new String[]{
             "/usr/bin/processing-java",
@@ -1608,6 +1613,7 @@ public class PaperScreen extends DelegatedGraphics {
         };
         XAppRunner event = new XAppRunner(eventSender, Xdisplay);
         event.start();
+        event.autoExit(parent);
     }
     
     
@@ -1616,7 +1622,7 @@ public class PaperScreen extends DelegatedGraphics {
             Xcamera.grab();
             PImage img = Xcamera.getPImage();
             if(img != null){
-                image(img, 0, 0, getRenderingSizeX(), getRenderingSizeY());
+                image(img, 0, 0, drawingSize.x, drawingSize.y);
             }
         }
     }
