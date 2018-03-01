@@ -485,7 +485,7 @@ public class PaperScreen extends DelegatedGraphics {
 
         this.useTracking();
         if (!cameraTracking.tracks(markerBoard)) {
-            cameraTracking.trackMarkerBoard(markerBoard);
+            cameraTracking.track(markerBoard);
         }
     }
 

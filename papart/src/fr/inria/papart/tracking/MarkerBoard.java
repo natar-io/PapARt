@@ -274,6 +274,11 @@ public abstract class MarkerBoard {
 
     protected abstract void updatePositionImpl(int id, int currentTime, int endTime, int mode, Camera camera, IplImage img, Object globalTracking);
 
+    
+    public PMatrix3D getPosition(Camera camera) {
+         return transfos.get(getId(camera));
+    }
+    @Deprecated
     public PMatrix3D getTransfoMat(Camera camera) {
         return transfos.get(getId(camera));
     }

@@ -30,21 +30,25 @@ import java.util.HashMap;
 public class MarkerBoardFactory {
 
     private static final HashMap<String, MarkerBoard> allBoards = new HashMap<>();
+public static final int DEFAULT_WIDTH = 100, DEFAULT_HEIGHT = 100;
     
+    public static MarkerBoard create(String fileName) {
+            return MarkerBoardFactory.create(fileName, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    }
+
     // Todo: error Handling...
     public static MarkerBoard create(String fileName, float width, float height) {
 
-        
-        if(allBoards.containsKey(fileName)){
+        if (allBoards.containsKey(fileName)) {
             return allBoards.get(fileName);
         }
-        
+
         MarkerBoard output = MarkerBoardInvalid.board;
-        
+
         MarkerType type = getType(fileName);
         try {
             if (type == MarkerType.ARTOOLKITPLUS) {
-                output =  new MarkerBoardARToolKitPlus(fileName, width, height);
+                output = new MarkerBoardARToolKitPlus(fileName, width, height);
             }
             if (type == MarkerType.JAVACV_FINDER) {
                 output = new MarkerBoardJavaCV(fileName, width, height);
@@ -53,12 +57,12 @@ public class MarkerBoardFactory {
             if (type == MarkerType.SVG) {
                 output = new MarkerBoardSvg(fileName, width, height);
             }
-            
+
             allBoards.put(fileName, output);
         } catch (Exception e) {
             System.err.println("Error loading the markerboard: " + e);
         }
-        
+
         return output;
     }
 

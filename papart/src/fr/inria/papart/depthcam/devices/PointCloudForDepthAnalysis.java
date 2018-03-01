@@ -50,6 +50,10 @@ public class PointCloudForDepthAnalysis extends PointCloud implements PConstants
         this.depthAnalysis = depthAnalysis;
     }
 
+    
+    public void update(){
+        updateWith((DepthAnalysisPImageView)depthAnalysis);
+    }
     /**
      * Warning: invalid points are also displayed.
      *

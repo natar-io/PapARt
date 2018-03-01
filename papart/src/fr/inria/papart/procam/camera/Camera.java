@@ -64,7 +64,7 @@ public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
     private boolean hasExtrinsics = false;
 
     public enum Type {
-        OPENCV, FFMPEG, PROCESSING, REALSENSE, OPEN_KINECT, OPEN_KINECT_2, 
+        OPENCV, FFMPEG, PROCESSING, REALSENSE, OPEN_KINECT, OPEN_KINECT_2,
         FLY_CAPTURE, OPENNI2,
         FAKE
     }
@@ -92,7 +92,6 @@ public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
                 || pixelFormat == PixelFormat.RGBA;
     }
 
-    
     protected PixelFormat format;
 
     // Parameters
@@ -134,6 +133,7 @@ public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
 
     /// TESTING 
     public TouchInput touchInput;
+
     public void setTouchInput(TouchInput touchInput) {
         this.touchInput = touchInput;
     }
@@ -206,9 +206,8 @@ public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
         pdp = ProjectiveDeviceP.createSimpleDevice(fx, fy, cx, cy, w, h);
         updateCalibration();
     }
-    
-       
-    public void setCalibration(float fx, float fy, float cx, float cy, 
+
+    public void setCalibration(float fx, float fy, float cx, float cy,
             float d1, float d2, float d3, float d4, float d5) {
         this.calibrationFile = "manual calibration";
         pdp = ProjectiveDeviceP.createDevice(fx, fy, cx, cy, width(), height(), d1, d2, d3, d4, d5);
@@ -280,10 +279,10 @@ public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
         applet.registerMethod("dispose", this);
     }
 
-    public void dispose(){
+    public void dispose() {
         close();
     }
-    
+
     public void setSystemNumber(int systemNumber) {
         this.systemNumber = systemNumber;
     }
@@ -343,8 +342,8 @@ public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
      *
      * @param sheet
      */
-    public void trackMarkerBoard(MarkerBoard sheet) {
-        sheet.addTracker(parent, this);
+    public void track(MarkerBoard sheet) {
+        sheet.addTracker(parent, checkActingCamera(this));
         try {
             getSheetSemaphore().acquire();
             this.sheets.add(sheet);
@@ -355,7 +354,16 @@ public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
         } catch (NullPointerException e) {
             throw new RuntimeException("Marker detection not initialized. " + e);
         }
+    }
 
+    /**
+     * Add a markerboard to track with this camera.
+     *
+     * @param sheet
+     */
+    @Deprecated
+    public void trackMarkerBoard(MarkerBoard sheet) {
+        track(sheet);
     }
 
     /**
@@ -415,6 +423,7 @@ public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
     public int getTimeStamp() {
         return timeStamp;
     }
+
     /**
      * Update the current Image, from the specific grabber, lens distorsions are
      * handled here.
@@ -422,9 +431,9 @@ public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
      * @param img
      */
     protected void updateCurrentImage(IplImage img) {
-        
+
         this.timeStamp = parent.millis();
-        
+
         if (undistort) {
             if (pdp == null || !pdp.handleDistorsions()) {
                 System.err.println("I cannot distort the image for processing. The "

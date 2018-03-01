@@ -416,23 +416,23 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
     private void initNativeIntrinsic() {
         if (intrinsicsMat == null) {
             intrinsicsMat = new Mat(3, 3, CV_32FC1);
-            FloatIndexer intrinsicIdx = intrinsicsMat.createIndexer(true);
-
-            // init to 0
-            int k = 0;
-            for (int i = 0; i < 3; i++) {
-                for (int j = 0; j < 3; j++) {
-                    intrinsicIdx.put(k++, 0);
-                }
-            }
-
-            // set the values
-            intrinsicIdx.put(0, 0, intrinsics.m00);
-            intrinsicIdx.put(1, 1, intrinsics.m11);
-            intrinsicIdx.put(0, 2, intrinsics.m02);
-            intrinsicIdx.put(1, 2, intrinsics.m12);
-            intrinsicIdx.put(2, 2, 1);
         }
+        FloatIndexer intrinsicIdx = intrinsicsMat.createIndexer(true);
+
+        // init to 0
+        int k = 0;
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                intrinsicIdx.put(k++, 0);
+            }
+        }
+
+        // set the values
+        intrinsicIdx.put(0, 0, intrinsics.m00);
+        intrinsicIdx.put(1, 1, intrinsics.m11);
+        intrinsicIdx.put(0, 2, intrinsics.m02);
+        intrinsicIdx.put(1, 2, intrinsics.m12);
+        intrinsicIdx.put(2, 2, 1);
     }
 
     private void fillNative(PVector[] objectPoints,
@@ -454,23 +454,25 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
     }
 
     /**
-     * Save an intrinsic calibration. 
-     * Store a calibration, either in XML (Papart) or YAML (opencv) format. 
-     * It also stores the extrinsic calibration. 
+     * Save an intrinsic calibration. Store a calibration, either in XML
+     * (Papart) or YAML (opencv) format. It also stores the extrinsic
+     * calibration.
+     *
      * @param applet
-     * @param filename  path, can end with ".xml" or ".yaml"
+     * @param filename path, can end with ".xml" or ".yaml"
      */
     public void saveTo(PApplet applet, String filename) {
         saveTo(applet, filename, true);
     }
 
-        /**
-     * Save an intrinsic calibration. 
-     * Store a calibration, either in XML (Papart) or YAML (opencv) format. 
-     *  It also stores the extrinsic calibration. 
+    /**
+     * Save an intrinsic calibration. Store a calibration, either in XML
+     * (Papart) or YAML (opencv) format. It also stores the extrinsic
+     * calibration.
+     *
      * @param applet
-     * @param filename  path, can end with ".xml" or ".yaml"
-     * @param isCamera  true if it is a camera, false is it is a projector. 
+     * @param filename path, can end with ".xml" or ".yaml"
+     * @param isCamera true if it is a camera, false is it is a projector.
      */
     public void saveTo(PApplet applet, String filename, boolean isCamera) {
         ProjectiveDeviceCalibration calib = new ProjectiveDeviceCalibration();
@@ -672,6 +674,7 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
         ify = 1f / intrinsics.m11;
         cx = intrinsics.m02;
         cy = intrinsics.m12;
+        initNativeIntrinsic();
     }
 
     public String toString() {
