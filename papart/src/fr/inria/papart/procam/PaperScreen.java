@@ -26,6 +26,9 @@ import fr.inria.papart.tracking.MarkerBoardInvalid;
 import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.calibration.files.HomographyCalibration;
+import fr.inria.papart.compositor.AppRunnerTest;
+import fr.inria.papart.compositor.XAppRunner;
+import fr.inria.papart.compositor.XDisplayWithCam;
 import fr.inria.papart.multitouch.Touch;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.procam.display.BaseDisplay;
@@ -39,6 +42,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import processing.opengl.PGraphicsOpenGL;
 import processing.core.PApplet;
 import processing.core.PConstants;
@@ -46,6 +51,9 @@ import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.event.KeyEvent;
+import static processing.event.KeyEvent.PRESS;
+import static processing.event.KeyEvent.RELEASE;
+import redis.clients.jedis.Jedis;
 import toxi.geom.Plane;
 import toxi.geom.Triangle3D;
 
@@ -261,6 +269,11 @@ public class PaperScreen extends DelegatedGraphics {
     }
 
     public PGraphicsOpenGL getGraphics() {
+
+        if (this.isDrawingOnDisplay) {
+            return (PGraphicsOpenGL) parent.getGraphics();
+        }
+
         if (thisGraphics == null) {
             thisGraphics = (PGraphicsOpenGL) parent.createGraphics(
                     this.getRenderingSizeX(),
@@ -560,6 +573,16 @@ public class PaperScreen extends DelegatedGraphics {
      * @param e
      */
     public void keyEvent(KeyEvent e) {
+
+        // Redis tests
+        if (redis != null) {
+            if (e.getAction() == PRESS) {
+                redis.sadd(prefix + "key:pressed", Integer.toString(e.getKeyCode()));
+            }
+            if (e.getAction() == RELEASE) {
+                redis.sadd(prefix + "key:released", Integer.toString(e.getKeyCode()));
+            }
+        }
 
         String filename = "paper-" + Integer.toString(id) + ".xml";
 
@@ -979,9 +1002,11 @@ public class PaperScreen extends DelegatedGraphics {
      */
     public Touch createTouchFromMouse() {
 
+        // no right click ?
         if (parent.mousePressed && (parent.mouseButton == PConstants.RIGHT)) {
             return Touch.INVALID;
         }
+
         Touch t = new Touch();
         // Add the mouse a pointer. 
         PVector p = getDisplay().project(this,
@@ -990,6 +1015,7 @@ public class PaperScreen extends DelegatedGraphics {
         p.x = p.x * drawingSize.x;
         p.y = p.y * drawingSize.y;
         t.setPosition(p);
+        t.pressed = parent.mousePressed;
         return t;
     }
 
@@ -1492,7 +1518,7 @@ public class PaperScreen extends DelegatedGraphics {
 
             initPosM.translate(this.getRenderingSizeX() / 2, this.getRenderingSizeY() / 2);
             // All is relative to the paper's center. not the corner. 
-            initPosM.scale(-1, 1, -1);
+            initPosM.scale(-1, 1, 1);
 
         }
 
@@ -1500,7 +1526,7 @@ public class PaperScreen extends DelegatedGraphics {
         PMatrix3D newPos = this.getLocation(cam);
 
         newPos.translate(this.getRenderingSizeX() / 2, this.getRenderingSizeY() / 2);
-        newPos.scale(-1, 1, -1);
+        newPos.scale(-1, 1, 1);
 
         newPos.invert();
         newPos.apply(initPosM);
@@ -1553,6 +1579,148 @@ public class PaperScreen extends DelegatedGraphics {
 
     public void setHalfEyeDist(float halfEyeDist) {
         this.halfEyeDist = halfEyeDist;
+    }
+
+    private XDisplayWithCam Xdisplay = null;
+    private Camera Xcamera = null;
+    private String prefix;
+    private Jedis redis;
+
+    ///// App extension ///
+    public void runProgram(String[] name) {
+        if (Xdisplay == null) {
+            // check if display exists ?
+            initXDisplay();
+            Xcamera = Xdisplay.getCamera(parent);
+        }
+        XAppRunner firefox = new XAppRunner(name, Xdisplay);
+        firefox.autoExit(parent);
+        firefox.start();
+    }
+    
+    ///// App extension ///
+    public void runProgram(String name) {
+        if (Xdisplay == null) {
+
+            // check if display exists ?
+            initXDisplay();
+            Xcamera = Xdisplay.getCamera(parent);
+        }
+        XAppRunner firefox = new XAppRunner(name, Xdisplay);
+        firefox.autoExit(parent);
+        firefox.start();
+    }
+
+    private void initXDisplay() {
+        // XServer 
+        Xdisplay = new XDisplayWithCam(getRenderingSizeX(), getRenderingSizeY());
+        Xdisplay.start();
+        Xdisplay.autoExit(parent);
+
+        connectRedis();
+        prefix = "evt:" + Integer.toString(Xdisplay.getDisplayId()) + ":";
+        // sleep 1sec
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(AppRunnerTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        // Default - start with a WM and  the event passer.
+        // Window manager 
+        XAppRunner wm = new XAppRunner("openbox", Xdisplay);
+        wm.autoExit(parent);
+        wm.start();
+
+        // Event manager
+        String[] eventSender = new String[]{
+            "/usr/bin/java",
+            "-jar",
+            "/home/realitytech/gordon/repos/papart-calibration/KeyReader/target/KeyReader-0.1.jar",
+            Integer.toString(Xdisplay.getDisplayId())
+        };
+
+//        String[] eventSender = new String[]{
+//            "/usr/bin/processing-java",
+//            "--sketch=/home/realitytech/gordon/repos/papart-calibration/exec/redisKeyReader/",
+//            "--output=/home/realitytech/gordon/repos/papart-calibration/exec/redisKeyReader/build",
+//            "--force",
+//            "--run"
+//        };
+        XAppRunner event = new XAppRunner(eventSender, Xdisplay);
+        event.start();
+        event.autoExit(parent);
+    }
+
+    private void connectRedis() {
+        redis = new Jedis("127.0.0.1", 6379);
+        // redis.auth("156;2Asatu:AUI?S2T51235AUEAIU");
+    }
+
+    public void appInteractWithMouse() {
+        Touch t = createTouchFromMouse();
+        interactApp(t);
+    }
+    
+    public void interactApp(Touch t) {
+
+        if (redis != null) {
+            /// Test with mouse forworading
+            redis.set(prefix + "mouse:x", Integer.toString((int) (t.position.x * this.quality)));
+            redis.set(prefix + "mouse:y", Integer.toString((int) (t.position.y * this.quality)));
+
+//            System.out.println("Send: " + prefix + "mouse:x" +  " ++ " + Integer.toString((int) (quality * t.position.x)));
+            if (t.pressed) {
+                redis.set(prefix + "mouse:pressed", Boolean.toString(true));
+                redis.set(prefix + "mouse:pressedButton", Integer.toString(parent.mouseButton));
+            } else {
+                redis.set(prefix + "mouse:pressed", Boolean.toString(false));
+                redis.set(prefix + "mouse:pressedButton", Integer.toString(parent.mouseButton));
+            }
+        }
+    }
+
+//void mouseDragged(){
+//    mouseMoved();
+//}
+//
+//void mouseMoved(){
+//    redis.set(prefix + "mouse:x", Integer.toString(mouseX));
+//    redis.set(prefix +"mouse:y", Integer.toString(mouseY));
+//}
+//void mouseWheel(MouseEvent event) {
+//  float e = event.getCount();
+//  redis.set(prefix +"mouse:wheel", Float.toString(e));
+//}
+//
+//void mousePressed(){
+//    // Boolean.toString(mousePressed));
+//    println("pressed");
+//    redis.set("mouse:pressed", Boolean.toString(true));
+//    redis.set("mouse:pressedButton", Integer.toString(mouseButton));
+//}
+//
+//
+//void mouseReleased(){
+//    redis.set(prefix +"mouse:pressed", Boolean.toString(false));
+//    redis.set(prefix +"mouse:pressedButton", Integer.toString(mouseButton));
+//}
+//
+//public void keyPressed(KeyEvent e) {
+//    redis.sadd(prefix +"key:pressed",  Integer.toString(e.getKeyCode()));
+//}
+//
+//public void keyReleased(KeyEvent e) {
+//    redis.sadd(prefix +"key:released",  Integer.toString(e.getKeyCode()));
+//}
+    public void drawApp() {
+        if (Xcamera != null) {
+            Xcamera.grab();
+            PImage img = Xcamera.getPImage();
+            if (img != null) {
+                image(img, 0, 0, drawingSize.x, drawingSize.y);
+            }
+        }
     }
 
 }

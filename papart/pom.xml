@@ -107,12 +107,6 @@
             <version>2.3</version>
         </dependency>
         
-        <dependency>
-            <groupId>tech.lity.rea</groupId>
-            <artifactId>SimplePointCloud</artifactId>
-            <version>0.1</version>
-        </dependency>
-        
         
         <dependency>
             <groupId>tech.lity.rea</groupId>

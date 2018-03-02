@@ -1333,7 +1333,7 @@ public class Papart {
     }
 
     public TouchInput getTouchInput() {
-        assert (touchInitialized);
+//        assert (touchInitialized);
         return this.touchInput;
     }
 
