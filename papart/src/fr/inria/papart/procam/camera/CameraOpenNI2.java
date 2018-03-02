@@ -410,17 +410,21 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
         }
     }
 
+    @Override
     public void setAutoWhiteBalance(boolean v){
         this.colorStream.getCameraSettings().setAutoWhiteBalanceEnabled(v);
     }
 
+    @Override
     public void setAutoExposure(boolean v){
         this.colorStream.getCameraSettings().setAutoExposureEnabled(v);
     }
     
+    @Override
     public boolean isAutoExposure(){
       return this.colorStream.getCameraSettings().getAutoExposureEnabled();
     }
+    @Override
     public boolean isAutoWhiteBalance(){
       return this.colorStream.getCameraSettings().getAutoWhiteBalanceEnabled();
     }
