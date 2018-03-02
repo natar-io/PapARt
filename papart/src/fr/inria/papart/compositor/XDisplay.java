@@ -49,6 +49,23 @@ public class XDisplay extends AppRunner {
 //           xephyrName, ":" + id,
 //            "-ac", "-screen", width + "x" + height
 //        };
+//    String[] cmd = new String[]{
+//            "xpra", "start", 
+//              "--xvfb=Xvfb", 
+//              ":" + id +  "-screen", "0 ", width + "x" + height + "x" + depth
+//        };
+    
+// + VGLRUN C?ESTBON
+//    XPRA_RANDR=0 xpra start-desktop \
+//    --xvfb="Xvfb :99 -screen 0 800x600x16 +extension GLX +extension RANDR +extension RENDER" \
+//    --start=xfce4-session
+
+    
+//    XPRA_RANDR=0 xpra start \
+//    --xvfb="Xvfb :99 -screen 0 800x600x24+32 -fbdir /var/tmp" \
+//    --sync-xvfb=50 --bind-tcp=127.0.0.1:10000 \
+//    --start=libreoffice
+    
 
         builder = new ProcessBuilder(cmd);
 
