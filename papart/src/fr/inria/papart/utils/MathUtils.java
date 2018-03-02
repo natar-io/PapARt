@@ -26,7 +26,6 @@ import processing.core.PGraphics;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
-import tech.lity.rea.colorconverter.ColorConverter;
 import toxi.geom.Vec3D;
 
 /**
@@ -361,56 +360,8 @@ public class MathUtils {
                 abs(g.brightness(incomingPix) - g.brightness(baseline)) < brightnessTresh;
     }
 
-    /**
-     * Color distance on the LAB scale. The incomingPix is compared with the
-     * baseline. The method returns true if each channel validates the condition
-     * for the given threshold.
-     *
-     * @param g
-     * @param baseline
-     * @param incomingPix
-     * @param LTresh
-     * @param ATresh
-     * @param BTresh
-     * @return
-     */
-    public static boolean colorFinderLAB(PGraphics g, int baseline, int incomingPix,
-            float LTresh, float ATresh, float BTresh) {
-
-        double[] labBase = converter.RGBtoLAB((int) g.red(baseline), (int) g.green(baseline), (int) g.blue(baseline));
-        double[] labIncoming = converter.RGBtoLAB((int) g.red(incomingPix), (int) g.green(incomingPix), (int) g.blue(incomingPix));
-        return labIncoming[0] > 50.0 // Very large light base
-                //                absd(labBase[0] - labIncoming[0]) < LTresh * 20  // Very large light base
-                && absd(labBase[1] - labIncoming[1]) < ATresh
-                && absd(labBase[2] - labIncoming[2]) < BTresh;
-    }
-
-    /**
-     * Color distance on the LAB scale. The incomingPix is compared with the
-     * baseline. The method returns true if each channel validates the condition
-     * for the given threshold.
-     *
-     * @param g
-     * @param ref
-     * @return
-     */
-    public static boolean colorFinderLAB(PGraphics g, int incomingPix,
-            ColorReferenceThresholds ref) {
-
-        double[] lab = converter.RGBtoLAB((int) g.red(incomingPix), (int) g.green(incomingPix), (int) g.blue(incomingPix));
-
-        double l = constrain(lab[0], 0, 100);
-        double A = constrain(lab[1], -128, 128);
-        double B = constrain(lab[2], -128, 128);
-        
-        double d
-                = Math.sqrt(Math.pow(l - ref.averageL, 2)
-                        + Math.pow(A - ref.averageA, 2)
-                        + Math.pow(B - ref.averageB, 2));
-
-//        System.out.println("d: "  + d);
-        return d < (ref.AThreshold + ref.BThreshold + ref.LThreshold) * 3f;
-    }
+    
+    
 
     static public final double constrain(double amt, double low, double high) {
         return (amt < low) ? low : ((amt > high) ? high : amt);
@@ -422,8 +373,6 @@ public class MathUtils {
         }
         return d;
     }
-
-    public static ColorConverter converter = new ColorConverter();
 
     public static boolean colorFinderHSBRedish(PGraphics g, int baseline, int incomingPix,
             float hueTresh, float saturationTresh, float brightnessTresh) {
