@@ -68,6 +68,9 @@ public class ArmDetection extends TouchDetectionDepth {
                     && touchRecognition.getSelection().validPointsMask[candidate] // is valid, necessary ?
                     && (depthData.depthPoints[candidate].distanceTo(DepthAnalysis.INVALID_POINT) > 1) // NON zero points
                     && (depthData.depthPoints[candidate] != DepthAnalysis.INVALID_POINT) // not invalid point (invalid depth)
+                    
+                    && depthData.planeAndProjectionCalibration.getPlane().getDistanceToPoint(depthData.depthPoints[candidate]) >  calib.getTest2()
+
                     && depthData.depthPoints[initialPoint].distanceTo(depthData.depthPoints[candidate]) < calib.getMaximumDistanceInit()
                     && depthData.depthPoints[candidate].distanceTo(depthData.depthPoints[currentPoint]) < calib.getMaximumDistance();
 

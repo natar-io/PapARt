@@ -88,6 +88,8 @@ public class FingerDetection extends TouchDetectionDepth {
 
                     && localDepthSelection.validPointsMask[candidate] // is valid
 
+                    /// Distance to plane
+                    && depthData.planeAndProjectionCalibration.getPlane().getDistanceToPoint(depthData.depthPoints[candidate]) < calib.getTest1()
                     // Lower than the hand.
                     && depthData.planeAndProjectionCalibration.distanceTo(depthData.depthPoints[candidate]) < (handCalib.getTest2() - 0.5f)
                     //                    && depthData.planeAndProjectionCalibration.distanceTo(depthData.depthPoints[candidate]) < 20f
@@ -98,7 +100,7 @@ public class FingerDetection extends TouchDetectionDepth {
 
             if (depthData.normals[candidate] != null) {
                 float dN = (depthData.planeAndProjectionCalibration.getPlane().normal).distanceToSquared(depthData.normals[candidate]);
-                float d1 = (depthData.planeAndProjectionCalibration.getPlane().getDistanceToPoint(depthData.depthPoints[candidate]));
+             
                 // WARNING MAGIC NUMBER HERE
 //                boolean higher = depthData.projectedPoints[candidate].z < depthData.projectedPoints[currentPoint].z;
                 goodNormal = (depthData.normals[candidate] != null && dN > calib.getNormalFilter());  // Higher  than Xmm

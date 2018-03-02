@@ -110,6 +110,7 @@ public class DepthAnalysisImpl extends DepthAnalysis {
 //        initWithCalibrations(depthCamera);
         // initThreadPool();
     }
+    protected boolean initDone = false;
 
     public void initWithCalibrations(DepthCameraDevice depthCamera) {
         depthCameraDevice = depthCamera;
@@ -126,6 +127,7 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         calibDepth = depthCamera.getDepthCamera().getProjectiveDevice();
 
         initMemory();
+        initDone = true;
     }
     
     public boolean isReady(){

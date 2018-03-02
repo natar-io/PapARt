@@ -40,7 +40,7 @@ import static org.bytedeco.javacpp.opencv_imgproc.COLOR_RGB2BGR;
 
 import org.openni.*;
 import static org.openni.PixelFormat.RGB888;
-
+import org.openni.VideoStream.CameraSettings;
 /**
  *
  * @author Jeremy Laviole
@@ -71,7 +71,6 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
 
             colorStream.setMirroringEnabled(false);
             colorCamera.setUndistort(false);
-
             colorStream.start();
         }
 
@@ -411,4 +410,27 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
         }
     }
 
+    public void setAutoWhiteBalance(boolean v){
+        this.colorStream.getCameraSettings().setAutoWhiteBalanceEnabled(v);
+    }
+
+    public void setAutoExposure(boolean v){
+        this.colorStream.getCameraSettings().setAutoExposureEnabled(v);
+    }
+    
+    public boolean isAutoExposure(){
+      return this.colorStream.getCameraSettings().getAutoExposureEnabled();
+    }
+    public boolean isAutoWhiteBalance(){
+      return this.colorStream.getCameraSettings().getAutoWhiteBalanceEnabled();
+    }
+      
+    public void test(){
+        this.colorStream.getCameraSettings().setAutoExposureEnabled(useIR);
+        this.colorStream.getCameraSettings().setAutoWhiteBalanceEnabled(useIR);
+    }
+    
+//    public CameraSettings getCameraSettings(){
+//        
+//    }
 }

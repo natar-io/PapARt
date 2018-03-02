@@ -40,6 +40,7 @@ import toxi.geom.Vec3D;
 
 /**
  * DepthAnalysis that produces PImages.
+ *
  * @author Jeremy Laviole
  */
 public class DepthAnalysisPImageView extends DepthAnalysisImpl {
@@ -103,6 +104,15 @@ public class DepthAnalysisPImageView extends DepthAnalysisImpl {
 //            }
 //        }
 //    }
+    public PImage update(int skip) {
+        return this.update(depthCameraDevice.getDepthCamera().getIplImage(),
+                depthCameraDevice.getColorCamera().getIplImage(), skip);
+    }
+    public PImage update(DepthCameraDevice depthCamera, int skip) {
+        return this.update(depthCamera.getDepthCamera().getIplImage(),
+                depthCamera.getColorCamera().getIplImage(), skip);
+    }
+
     /**
      * Simple visualization
      *
@@ -112,8 +122,17 @@ public class DepthAnalysisPImageView extends DepthAnalysisImpl {
      * @return
      */
     public PImage update(IplImage depth, IplImage color, int skip) {
+        if(!initDone){
+            initWithCalibrations(depthCameraDevice);
+        }
+        if (depth == null || color == null) {
+            return validPointsPImage;
+        }
+
         updateRawDepth(depth);
         if (color != null) {
+//            System.out.println("color: " + color.height()+  " " + color.width() + color.depth());
+//            System.out.println("colorraw: " + colorRaw.length);
             updateRawColor(color);
         }
         depthData.clear();

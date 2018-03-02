@@ -119,7 +119,7 @@ public class Compute2DFrom3D extends DepthRecognition {
             // warning ? Project again if precision is higher
             depthData.planeAndProjectionCalibration.project(p, depthData.projectedPoints[px.offset]);
 
-            if (depthData.planeAndProjectionCalibration.hasGoodOrientationAndDistance(p)
+            if (depthData.planeAndProjectionCalibration.hasGoodOrientation(p)
                     && depthData.projectedPoints[px.offset].x() != 0
                     && depthData.projectedPoints[px.offset].y() != 0
                     && depthData.projectedPoints[px.offset].z() != 0) {

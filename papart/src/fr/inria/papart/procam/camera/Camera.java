@@ -476,6 +476,36 @@ public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
         return this.pdp;
     }
 
+    /**
+     * Enable or disable auto white balance, depends on camera driver for availability.
+     * @param v 
+     */
+    public void setAutoWhiteBalance(boolean v) {
+    }
+
+    /**
+     * Enable or disable auto exposure, depends on camera driver for availability.
+     * @param v 
+     */
+    public void setAutoExposure(boolean v) {
+    }
+
+    /**
+     * Get info about auto exposure, depends on camera driver for availability.
+     * @param v 
+     */
+    public boolean isAutoExposure() {
+        return true;
+    }
+
+    /**
+     * Get info about white balance, depends on camera driver for availability.
+     * @param v 
+     */
+    public boolean isAutoWhiteBalance() {
+        return true;
+    }
+
     public abstract void close();
 
     protected void setClosing() {

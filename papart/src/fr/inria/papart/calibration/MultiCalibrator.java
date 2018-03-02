@@ -156,6 +156,7 @@ public class MultiCalibrator extends PaperTouchScreen {
     PMatrix3D savedLocations[];
     int savedColors[][];
     private TrackedView projectorView;
+    private TrackedView calibView;
     private ProjectorAsCamera projectorAsCamera;
 
     private ColorConverter converter = new ColorConverter();
@@ -197,7 +198,7 @@ public class MultiCalibrator extends PaperTouchScreen {
 //                tableTest.setDrawing(false);
             }
             setDrawingFilter(0);
-            setTrackingFilter(0, 0);
+//            setTrackingFilter(0, 0);
 //            planeProjCalib = new PlaneAndProjectionCalibration();
             savedImages = new IplImage[nbScreenPoints];
             savedLocations = new PMatrix3D[nbScreenPoints];
@@ -209,6 +210,14 @@ public class MultiCalibrator extends PaperTouchScreen {
             initProjectorAsCamera();
 
             initColorTrackers();
+            
+            calibView = new TrackedView(this);
+            float viewSize = 20; // mm
+            calibView.setTopLeftCorner(new PVector(CENTER_X - viewSize, CENTER_Y - viewSize));
+            calibView.setCaptureSizeMM(new PVector(viewSize * 2, viewSize * 2));
+            calibView.setImageWidthPx(100);
+            calibView.setImageHeightPx(100);
+            calibView.init();
             // GREEN circle 
 //                 fill(0, 255, 0);
 //        rect(79.8f, 123.8f, 15f, 15f);
@@ -886,6 +895,14 @@ public class MultiCalibrator extends PaperTouchScreen {
 
         drawFrame(parent, g, multiCalibrator);
 
+        PImage trackedImg = multiCalibrator.calibView.getViewOf(papart.getCameraTracking());
+//        g.tint(200, 100, 0);
+        g.image(trackedImg, 0, 400, 200, 200);
+        g.ellipseMode(CENTER);
+        g.noFill();
+        g.stroke(0, 255, 0);
+        g.ellipse(100, 500, 80, 80);
+        
         // number of valid 
         PVector point = multiCalibrator.screenPoints[multiCalibrator.currentScreenPoint];
 
@@ -947,9 +964,13 @@ public class MultiCalibrator extends PaperTouchScreen {
 
         // PIXEL sizes. (projector resolution dependent)
         g.ellipse(0, 0, 50, 50);
+        
+        g.stroke(0, 180, 255);
+//        g.rotate(PApplet.HALF_PI / 8);
         g.line(-5, 0, 5, 0);
         g.line(0, -5, 0, 5);
 
+        g.stroke(255);
 //        g.stroke(200, 0, 200);
 //        g.rect(-5, 0, 10, 1);
 //        g.rect(0, - 5, 1, 10);

@@ -110,7 +110,9 @@ public class DepthTouchInput extends TouchInput {
         setSimpleTouchDetectionCalibration(papart.getDefaultTouchCalibration());
         setObjectTouchDetectionCalibration(papart.getDefaultObjectTouchCalibration());
     }
-
+   /**
+     * Load a set of (default) touch detections, only hands for now. 
+     */
     public void initTouchDetections() {
         // First run, get calibrations from device after start.
 //        initSimpleTouchDetection();
@@ -119,17 +121,26 @@ public class DepthTouchInput extends TouchInput {
         touchDetectionsReady = true;
     }
 
+    /**
+     * Create Simple touch detection: detects everything that is on the table.
+     */
     public void initSimpleTouchDetection() {
         checkCalibrations();
         simpleDetection = new Simple2D(depthAnalysis, simpleTouchCalibration);
     }
 
+     /**
+      * TouchInput with object detection. Implementation in progress.
+      * This may lead to many classes of object detections.
+      */
     public ObjectDetection initObjectDetection() {
         checkCalibrations();
         objectDetection = new ObjectDetection(depthAnalysis, objectTouchCalibration);
         return objectDetection;
     }
-
+     /**
+      * TouchInput with hand detection: provides Arm, hand and finger detections. 
+      */
     public void initHandDetection() {
         checkCalibrations();
         touchDetections[0] = new ArmDetection(depthAnalysis, touchCalibrations[0]);

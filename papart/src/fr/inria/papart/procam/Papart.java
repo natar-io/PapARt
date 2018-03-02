@@ -819,7 +819,7 @@ public class Papart {
      * Create the default touchInput, using a depthCamera. This call loads the
      * depthCamera and the TouchInput.
      */
-    public void loadTouchInput() {
+    public DepthTouchInput loadTouchInput() {
         try {
             // HACK load also the main camera... :[
             if (this.cameraTracking == null) {
@@ -832,6 +832,7 @@ public class Papart {
             throw new RuntimeException("Cannot start the depth camera");
         }
         updateDepthCameraDeviceExtrinsics();
+        return (DepthTouchInput) this.getTouchInput();
     }
     
     public void loadIRTouchInput() {
@@ -936,7 +937,7 @@ public class Papart {
         depthCameraDevice.setTouch(depthTouchInput);
 
         // UPDATE: default is hand.
-        depthTouchInput.initHandDetection();
+        // depthTouchInput.initHandDetection();
 
         this.touchInput = depthTouchInput;
         touchInitialized = true;
