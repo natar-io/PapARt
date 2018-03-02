@@ -134,7 +134,9 @@ public class MultiCalibrator extends PaperTouchScreen {
 //    public float zShift = 0f;
     public static float ZSHIFT = 0;
     public static float SCALE_FACTOR = 1f;
-
+    public static float CENTER_X = 149.2f;   // 148.6
+    public static float CENTER_Y = 103.6f; 
+    
 //    private Skatolo skatolo;
 //    private HoverButton hoverButton, resetButton;
     int pressedAmt = 0;
@@ -556,8 +558,7 @@ public class MultiCalibrator extends PaperTouchScreen {
             currentScreenPoint++;
         }
     }
-    public static float CENTER_X = 148.6f;   // 148.6
-    public static float CENTER_Y = 103.6f; 
+
     // Loads of color data for color points. 
     // 1. Homography computation:  Camera - projector.
     // 2. Extract 4-6 projector images. 
@@ -578,6 +579,9 @@ public class MultiCalibrator extends PaperTouchScreen {
         CameraThread projectorFakeThread = new CameraThread(projectorAsCamera);
 
         PMatrix3D tableCenter = savedLocations[0].get();
+        
+        // Scale factor is there, as the center position is placed in mm relative to 
+        // the paper. So the scale impacts its location.
         tableCenter.translate(CENTER_X * SCALE_FACTOR, CENTER_Y * SCALE_FACTOR);
 
         Papart.getPapart().setTableLocation(tableCenter);
