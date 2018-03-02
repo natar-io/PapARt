@@ -108,9 +108,11 @@ public class ExtrinsicCalibrator {
                     snapshot.projectorPaper);
 
             float dist = Utils.posFromMatrix(extr).dist(sumPos);
-            if (dist < 40f) { // 2 cm !
+            if (dist < 10f) { // 2 cm !
                 Utils.addMatrices(sum2, extr);
                 k++;
+//                System.out.println("Extrinsics TAKEN: ");
+//                extr.print();
             }
         }
         Utils.multMatrix(sum2, 1f / (float) k);
