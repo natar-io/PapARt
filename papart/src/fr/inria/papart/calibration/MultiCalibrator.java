@@ -132,11 +132,12 @@ public class MultiCalibrator extends PaperTouchScreen {
     private DepthCameraDevice depthCameraDevice;
 
 //    public float zShift = 0f;
+    public static String PAPER = "calib1.svg";
     public static float ZSHIFT = 0;
     public static float SCALE_FACTOR = 1f;
     public static float CENTER_X = 149.2f;   // 148.6
-    public static float CENTER_Y = 103.6f; 
-    
+    public static float CENTER_Y = 103.6f;
+
 //    private Skatolo skatolo;
 //    private HoverButton hoverButton, resetButton;
     int pressedAmt = 0;
@@ -171,7 +172,7 @@ public class MultiCalibrator extends PaperTouchScreen {
         papart = Papart.getPapart();
         try {
             setDrawingSize(297, 210);
-            loadMarkerBoard(Papart.markerFolder + "calib1.svg", 297, 210);
+            loadMarkerBoard(Papart.markerFolder + PAPER, 297, 210);
             setDrawOnPaper();
         } catch (Exception e) {
             e.printStackTrace();
@@ -212,7 +213,7 @@ public class MultiCalibrator extends PaperTouchScreen {
             initProjectorAsCamera();
 
             initColorTrackers();
-            
+
             calibView = new TrackedView(this);
             float viewSize = 20; // mm
             calibView.setTopLeftCorner(new PVector(CENTER_X - viewSize, CENTER_Y - viewSize));
@@ -261,7 +262,7 @@ public class MultiCalibrator extends PaperTouchScreen {
         // yellow
         detections[6] = createColorDetection(new PVector(108.1f, 67.1f));
         detections[7] = createColorDetection(new PVector(179.4f, 67.1f));
-        
+
         // purple
         detections[8] = createColorDetection(new PVector(108.1f, 123.8f));
         detections[9] = createColorDetection(new PVector(179.4f, 123.8f));
@@ -466,6 +467,9 @@ public class MultiCalibrator extends PaperTouchScreen {
                 PMatrix3D tableCenter = savedLocations[0].get();
                 tableCenter.translate(CENTER_X * SCALE_FACTOR, CENTER_Y * SCALE_FACTOR);
                 Papart.getPapart().setTableLocation(tableCenter);
+
+                System.out.println("Save a simple touch plane.");
+                computeAndSaveTouch();
             }
 
 //            System.out.println("Saving location: ");
@@ -579,7 +583,7 @@ public class MultiCalibrator extends PaperTouchScreen {
         CameraThread projectorFakeThread = new CameraThread(projectorAsCamera);
 
         PMatrix3D tableCenter = savedLocations[0].get();
-        
+
         // Scale factor is there, as the center position is placed in mm relative to 
         // the paper. So the scale impacts its location.
         tableCenter.translate(CENTER_X * SCALE_FACTOR, CENTER_Y * SCALE_FACTOR);
@@ -656,7 +660,6 @@ public class MultiCalibrator extends PaperTouchScreen {
         planeCalib.setPlane(sumPlanes);
         planeCalib.setHeight(10f); // NOT used anymore -> to remove.
         planeCalib.flipNormal();
-        planeCalib.moveAlongNormal(ZSHIFT);
 
 //        this.planeProjCalib.setPlane(planeCalib);
         // Now the projection for screen-space.
@@ -670,6 +673,8 @@ public class MultiCalibrator extends PaperTouchScreen {
         depthCamExtrinsics.set(extr);
 
         HomographyCalibration homography = ExtrinsicCalibrator.computeScreenPaperIntersection(projector, planeCalibCam, depthCamExtrinsics);
+
+        planeCalib.moveAlongNormal(ZSHIFT);
 
 //        this.planeProjCalib.setHomography(homography);
         this.saveTouch(planeCalib, homography);
@@ -754,7 +759,6 @@ public class MultiCalibrator extends PaperTouchScreen {
             }
 
 //            int averageCol = color(averageR, averageG, averageBlue);
-
             int[] averageColTmp = converter.LABtoRGB(averageL, averageA, averageB);
 
             int averageCol = color(
@@ -906,7 +910,7 @@ public class MultiCalibrator extends PaperTouchScreen {
         g.noFill();
         g.stroke(0, 255, 0);
         g.ellipse(100, 500, 80, 80);
-        
+
         // number of valid 
         PVector point = multiCalibrator.screenPoints[multiCalibrator.currentScreenPoint];
 
@@ -968,7 +972,7 @@ public class MultiCalibrator extends PaperTouchScreen {
 
         // PIXEL sizes. (projector resolution dependent)
         g.ellipse(0, 0, 50, 50);
-        
+
         g.stroke(0, 180, 255);
 //        g.rotate(PApplet.HALF_PI / 8);
         g.line(-5, 0, 5, 0);
@@ -1204,9 +1208,41 @@ public class MultiCalibrator extends PaperTouchScreen {
     /////////////////
     ////////// Touch calibration
     /////////////////
-    void computeTouch() {
-        planeProjCalib = getPlaneFromPaperViewedByDepth();
-//        depthTouchInput.setPlaneAndProjCalibration(planeProjCalib);
+    void computeAndSaveTouch() {
+        // Save average plane, and table touch !
+        PMatrix3D extr = depthCameraDevice.getStereoCalibrationInv().get();
+
+        // Re-compute the plane...
+        PMatrix3D paperViewedByCam = savedLocations[0].get();
+        paperViewedByCam.apply(extr);
+        PMatrix3D paperViewedByDepth = paperViewedByCam;
+
+        PlaneCalibration planeCalib
+                = PlaneCalibration.CreatePlaneCalibrationFrom(paperViewedByDepth,
+                        //app.getLocation(),
+                        new PVector(100, 100));
+        planeCalib.setHeight(10f); // NOT used anymore -> to remove.
+        planeCalib.flipNormal();
+
+//        this.planeProjCalib.setPlane(planeCalib);
+        // Now the projection for screen-space.
+        // planes from the camera perspective. 
+        PlaneCalibration planeCalibCam = PlaneCalibration.CreatePlaneCalibrationFrom(savedLocations[0].get(),
+                new PVector(100, 100));
+        planeCalibCam.flipNormal();
+
+        // identity - no external camera for ProCam calibration
+        PMatrix3D depthCamExtrinsics = new PMatrix3D();
+        // Depth -> Color calibration.
+        depthCamExtrinsics.set(extr);
+
+        HomographyCalibration homography = ExtrinsicCalibrator.computeScreenPaperIntersection(projector, planeCalibCam, depthCamExtrinsics);
+
+        planeCalib.moveAlongNormal(ZSHIFT);
+
+//        this.planeProjCalib.setHomography(homography);
+        this.saveTouch(planeCalib, homography);
+
     }
 
     void saveTouch(PlaneCalibration pc, HomographyCalibration hc) {
@@ -1295,10 +1331,8 @@ public class MultiCalibrator extends PaperTouchScreen {
 
     private void drawDebugZones() {
         noStroke();
-        
+
         // scale(SCALE_FACTOR, SCALE_FACTOR);
-        
-        
         // draw a green rectangle
         // top projection
         rect(75f, 11f, 146f, 50f);
@@ -1331,12 +1365,10 @@ public class MultiCalibrator extends PaperTouchScreen {
         fill(255, 200, 30);
         rect(108.1f, 67.1f, 15f, 15f);
         rect(179.4f, 67.1f, 15f, 15f);
-        
+
         fill(255, 200, 30, 180);
         ellipse(CENTER_X, CENTER_Y, 15f, 15f);
-        
+
     }
-
-
 
 }
