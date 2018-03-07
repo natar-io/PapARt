@@ -145,7 +145,7 @@ public class CalibratedStickerTracker extends ColorTracker {
         
         // Take all the points, 
         // Sort them by distance, and try to make cluster of d < 5cm ?
-       clusters = StickerCluster.createCluster(smallElements);
+       clusters = StickerCluster.createCluster(smallElements, 55); // 40mm
 
         return trackedElements;
     }
