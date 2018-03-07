@@ -5,6 +5,7 @@
  */
 package fr.inria.papart.multitouch.detection;
 
+import fr.inria.papart.procam.Papart;
 import static processing.core.PApplet.abs;
 import processing.core.PGraphics;
 
@@ -90,6 +91,23 @@ public class ColorReferenceThresholds {
         } catch (NumberFormatException nfe) {
             nfe.printStackTrace();
         }
+    }
+
+    public static ColorReferenceThresholds[] loadDefaultThresholds(int numberOfRefs) {
+        ColorReferenceThresholds[] references = new ColorReferenceThresholds[numberOfRefs];
+
+        // Load all the colors. 
+        for (int fileId = 0; fileId < numberOfRefs; fileId++) {
+            String fileName = Papart.colorThresholds + fileId + ".txt";
+            String[] list = Papart.getPapart().getApplet().loadStrings(fileName);
+
+            references[fileId] = new ColorReferenceThresholds();
+
+            for (String data : list) {
+                references[fileId].loadParameter(data);
+            }
+        }
+        return references;
     }
 
     public void setThresholds(float hue, float saturation, float brightness) {

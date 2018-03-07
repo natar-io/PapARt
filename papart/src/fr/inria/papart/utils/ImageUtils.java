@@ -12,9 +12,13 @@ import java.nio.FloatBuffer;
 import java.util.List;
 import static org.bytedeco.javacpp.opencv_calib3d.cvFindHomography;
 import org.bytedeco.javacpp.opencv_core;
+import static org.bytedeco.javacpp.opencv_core.CV_LU;
+import org.bytedeco.javacpp.opencv_core.CvMat;
 import static org.bytedeco.javacpp.opencv_core.cvCreateImage;
 import static org.bytedeco.javacpp.opencv_core.cvCreateMat;
+import static org.bytedeco.javacpp.opencv_core.cvSolve;
 import org.bytedeco.javacpp.opencv_imgproc;
+import org.bytedeco.javacv.JavaCV;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PImage;
@@ -47,10 +51,28 @@ public class ImageUtils {
         opencv_core.CvMat dstPoints;
         int nbPoints = in.size();
         opencv_core.CvMat homography;
+
         // TODO: no create map
         srcPoints = cvCreateMat(2, in.size(), opencv_core.CV_32FC1);
         dstPoints = cvCreateMat(2, in.size(), opencv_core.CV_32FC1);
         homography = cvCreateMat(3, 3, opencv_core.CV_32FC1);
+
+        if (in.size() == 4 && out.size() == 4) {
+
+            double[] src = new double[8];
+            double[] dst = new double[8];
+//            CvMat map = CvMat.create(3, 3);
+            for (int i = 0; i < 4; i++) {
+                src[i * 2] = in.get(i).x;
+                src[i * 2 + 1] = in.get(i).y;
+                dst[i * 2] = out.get(i).x;
+                dst[i * 2 + 1] = out.get(i).y;
+            }
+//            System.out.println("JavaCV perspective...");
+            JavaCV.getPerspectiveTransform(src, dst, homography);
+            return homography;
+        }
+
         for (int i = 0; i < in.size(); i++) {
             srcPoints.put(i, in.get(i).x);
             srcPoints.put(i + nbPoints, in.get(i).y);
@@ -58,9 +80,11 @@ public class ImageUtils {
             dstPoints.put(i + nbPoints, out.get(i).y);
         }
         cvFindHomography(srcPoints, dstPoints, homography);
-        //       It is better to use : GetPerspectiveTransform
+
+//        opencv_imgproc.cvGetPerspectiveTransform(cpd, cpd1, srcPoints) //       It is better to use : GetPerspectiveTransform
         return homography;
     }
+
     public static opencv_core.CvMat createHomography(PVector[] in, PVector[] out) {
         opencv_core.CvMat srcPoints;
         opencv_core.CvMat dstPoints;
@@ -190,6 +214,8 @@ public class ImageUtils {
     }
 
     public static void remapImageIpl(opencv_core.CvMat homography, opencv_core.IplImage imgIn, opencv_core.IplImage imgOut) {
+        System.out.println("cam: " + imgIn.width() + " " + imgIn.height() + " " + imgIn.depth());
+        System.out.println("extr: " + imgOut.width() + " " + imgOut.height() + " " + imgOut.depth());
         opencv_imgproc.cvWarpPerspective(imgIn, imgOut, homography);
         // opencv_imgproc.CV_INTER_LINEAR ); //                opencv_imgproc.CV_WARP_FILL_OUTLIERS);
         //                getFillColor());
@@ -397,6 +423,13 @@ public class ImageUtils {
         IplImageToPImage(img, true, ret);
     }
 
+    /**
+     * Buggy with 3 channels and some sizes... very strange.
+     *
+     * @param img
+     * @param RGB
+     * @param ret
+     */
     public static void IplImageToPImage(opencv_core.IplImage img, boolean RGB, PImage ret) {
         //        conversionCount++;
         //        if (conversionCount % 600 == 0) {
@@ -405,47 +438,40 @@ public class ImageUtils {
         assert (img.width() == ret.width);
         assert (img.height() == ret.height);
         ret.loadPixels();
-        if (img.nChannels() == 3) {
-            ByteBuffer buff = img.getByteBuffer();
-            //  PImage ret = new PImage(img.width(), img.height(), PApplet.RGB);
-            if (RGB) {
-                for (int i = 0; i < img.width() * img.height(); i++) {
-                    int offset = i * 3;
-                    ret.pixels[i] = (buff.get(offset) & 255) << 16 | (buff.get(offset + 1) & 255) << 8 | (buff.get(offset + 2) & 255);
+        ByteBuffer buff = img.getByteBuffer();
+
+        int w = img.widthStep();
+        int nChannels = img.nChannels();
+        byte[] tmpArr = new byte[w];
+        int k = 0;
+        for (int j = 0; j < img.height(); j++) {
+            buff.get(tmpArr);
+            if (img.nChannels() == 1) {
+                for (int i = 0; i < img.width(); i++) {
+                    byte r = tmpArr[i];
+                    byte g = r;
+                    byte b = r;
+                    ret.pixels[k++] = (r & 255) << 16 | (g & 255) << 8 | (b & 255);
                 }
             } else {
-                for (int i = 0; i < img.width() * img.height(); i++) {
-                    int offset = i * 3;
-                    ret.pixels[i] = (buff.get(offset + 2) & 255) << 16 | (buff.get(offset + 1) & 255) << 8 | (buff.get(offset) & 255);
+
+                if (RGB) {
+                    for (int i = 0; i < img.width(); i++) {
+                        byte r = tmpArr[i * nChannels + 0];
+                        byte g = tmpArr[i * nChannels + 1];
+                        byte b = tmpArr[i * nChannels + 2];
+
+                        ret.pixels[k++] = (r & 255) << 16 | (g & 255) << 8 | (b & 255);
+                    }
+                } else {
+                    for (int i = 0; i < img.width(); i++) {
+                        byte r = tmpArr[i * nChannels + 0];
+                        byte g = tmpArr[i * nChannels + 1];
+                        byte b = tmpArr[i * nChannels + 2];
+
+                        ret.pixels[k++] = (b & 255) << 16 | (g & 255) << 8 | (r & 255);
+                    }
                 }
-            }
-        }
-        if (img.nChannels() == 4) {
-            ByteBuffer buff = img.getByteBuffer();
-            //  PImage ret = new PImage(img.width(), img.height(), PApplet.RGB);
-            for (int i = 0; i < img.width() * img.height(); i++) {
-                int offset = i * 4;
-                //            ret.pixels[i] = applet.color(buff.get(offset + 0) & 0xff, buff.get(offset + 1) & 0xFF, buff.get(offset + 2) & 0xff);
-                ret.pixels[i] = (255) << 24 | (buff.get(offset) & 255) << 16 | (buff.get(offset + 1) & 255) << 8 | (buff.get(offset + 2) & 255);
-            }
-        }
-        // Depth is 8_U 
-        if (img.nChannels() == 1) {
-            // TODO: no more allocations.
-           
-            ByteBuffer buff = img.getByteBuffer();
-//            ByteBuffer buff =  img.imageData().
-            byte[] tmpArr = new byte[1];
-//            byte[] tmpArr = new byte[img.width() * img.height()];
-//            buff.get(tmpArr);
-            
-            //            byte[] arr = new byte[img.width() * img.height()];
-            //            buff.get(arr);
-            for (int i = 0; i < img.width() * img.height(); i++) {
-                            buff.get(tmpArr);
-                byte d = tmpArr[0];
-                //                int d = (arr[i] & 0xFF);
-                ret.pixels[i] = (255) << 24 | (d & 255) << 16 | (d & 255) << 8 | (d & 255);
             }
         }
         ret.updatePixels();

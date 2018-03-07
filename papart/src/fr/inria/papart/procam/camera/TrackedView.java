@@ -339,9 +339,7 @@ public class TrackedView implements WithSize {
             corner3DPos[3].x = tmp.m03;
             corner3DPos[3].y = tmp.m13;
             corner3DPos[3].z = tmp.m23;
-
         } else {
-
             // TODO: use BottowLeftCorner here ?!! 
             // top left
             tmp.translate(topLeftCorner.x, paperScreen.getDrawingSize().y - topLeftCorner.y);
@@ -370,7 +368,8 @@ public class TrackedView implements WithSize {
 
         screenPixelCoordinates.clear();
         for (int i = 0; i < 4; i++) {
-            screenPixelCoordinates.add(camera.pdp.worldToPixel(corner3DPos[i], true));
+            screenPixelCoordinates.add(camera.pdp.worldToPixelUnconstrained(corner3DPos[i])); 
+//            screenPixelCoordinates.add(camera.pdp.worldToPixel(corner3DPos[i], true));
         }
         cornersSet = true;
     }

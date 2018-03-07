@@ -38,7 +38,8 @@ public class TableScreen extends PaperTouchScreen {
         // View on all of the image
         location = table.get();
         location.translate(translation.x, translation.y);
-        this.setLocation(location);
+//        this.setLocation(location);
+        this.useManualLocation(location);
     }
     
     public void translatePos(PVector t){

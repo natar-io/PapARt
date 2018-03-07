@@ -25,29 +25,13 @@ import tech.lity.rea.colorconverter.ColorConverter;
  */
 public class CalibratedColorTracker extends ColorTracker {
 
-    int numberOfRefs = 3;
+    int numberOfRefs = 4;
     private final ColorReferenceThresholds references[];
     TouchDetectionLargeColor largeDetectionColor;
 
     public CalibratedColorTracker(PaperScreen paperScreen, float scale) {
         super(paperScreen, scale);
-
-        references = new ColorReferenceThresholds[numberOfRefs];
-
-        // Load all the colors. 
-        for (int fileId = 0; fileId < numberOfRefs; fileId++) {
-            String fileName = Papart.colorThresholds + fileId + ".txt";
-            String[] list = Papart.getPapart().getApplet().loadStrings(fileName);
-
-            references[fileId] = new ColorReferenceThresholds();
-
-            for (String data : list) {
-                references[fileId].loadParameter(data);
-            }
-            System.out.println("Ref: " + fileId + " "
-                    + " A " + references[fileId].averageA
-                    + " B " + references[fileId].averageB);
-        }
+        references =  ColorReferenceThresholds.loadDefaultThresholds(numberOfRefs);
     }
     PlanarTouchCalibration largerTouchCalibration;
 
@@ -217,7 +201,91 @@ public class CalibratedColorTracker extends ColorTracker {
                         + Math.pow(B - ref.averageB, 2));
 
 //        System.out.println("d: "  + d);
-        return d < (ref.AThreshold + ref.BThreshold + ref.LThreshold) * 3f;
+        return d < (ref.AThreshold + ref.BThreshold + ref.LThreshold) * 2;
+    }
+
+    /**
+     * Color distance on the LAB scale. The incomingPix is compared with the
+     * baseline. The method returns true if each channel validates the condition
+     * for the given threshold. Use the sum of error thresholds.
+     *
+     * @param incomingPix
+     * @param ref
+     * @return
+     */
+    public static boolean colorFinderLAB(int incomingPix,
+            ColorReferenceThresholds ref) {
+
+        double[] lab = converter.RGBtoLAB((int) ((incomingPix >> 16) & 0xFF) ,
+                (int) ((incomingPix >> 8) & 0xFF), (int) (incomingPix & 0xFF) );
+
+        double l = constrain(lab[0], 0, 100);
+        double A = constrain(lab[1], -128, 128);
+        double B = constrain(lab[2], -128, 128);
+        
+        double d
+                = Math.sqrt(Math.pow(l - ref.averageL, 2)
+                        + Math.pow(A - ref.averageA, 2)
+                        + Math.pow(B - ref.averageB, 2));
+
+//        System.out.println("d: "  + d);
+        return d < (ref.AThreshold + ref.BThreshold + ref.LThreshold) * 2f;
+    }
+    /**
+     * Color distance on the LAB scale. The incomingPix is compared with the
+     * baseline. The method returns true if each channel validates the condition
+     * for the given threshold. Use the error d to match the points.
+     *
+     * @param incomingPix
+     * @param ref
+     * @param error
+     * @return
+     */
+    public static boolean colorFinderLAB(int incomingPix,
+            ColorReferenceThresholds ref, float error) {
+
+        double[] lab = converter.RGBtoLAB((int) ((incomingPix >> 16) & 0xFF) ,
+                (int) ((incomingPix >> 8) & 0xFF), (int) (incomingPix & 0xFF) );
+
+        double l = constrain(lab[0], 0, 100);
+        double A = constrain(lab[1], -128, 128);
+        double B = constrain(lab[2], -128, 128);
+        
+        double d
+                = Math.sqrt(Math.pow(l - ref.averageL, 2)
+                        + Math.pow(A - ref.averageA, 2)
+                        + Math.pow(B - ref.averageB, 2));
+
+//        System.out.println("d: "  + d);
+        return d < error;
+    }
+    /**
+     * Color distance on the LAB scale. The incomingPix is compared with the
+     * baseline. The method returns true if each channel validates the condition
+     * for the given threshold. Use the error d to match the points.
+     *
+     * @param incomingPix
+     * @param ref
+     * @param error
+     * @return
+     */
+    public static float colorFinderLABError(int incomingPix,
+            ColorReferenceThresholds ref) {
+
+        double[] lab = converter.RGBtoLAB((int) ((incomingPix >> 16) & 0xFF) ,
+                (int) ((incomingPix >> 8) & 0xFF), (int) (incomingPix & 0xFF) );
+
+        double l = constrain(lab[0], 0, 100);
+        double A = constrain(lab[1], -128, 128);
+        double B = constrain(lab[2], -128, 128);
+        
+        double d
+                = Math.sqrt(Math.pow(l - ref.averageL, 2)
+                        + Math.pow(A - ref.averageA, 2)
+                        + Math.pow(B - ref.averageB, 2));
+
+//        System.out.println("d: "  + d);
+        return (float) d;
     }
     
 }

@@ -468,8 +468,11 @@ public class MultiCalibrator extends PaperTouchScreen {
                 tableCenter.translate(CENTER_X * SCALE_FACTOR, CENTER_Y * SCALE_FACTOR);
                 Papart.getPapart().setTableLocation(tableCenter);
 
-                System.out.println("Save a simple touch plane.");
-                computeAndSaveTouch();
+                /// if useTouch ?
+                if (!seeThrough) {
+                    System.out.println("Save a simple touch plane.");
+                    computeAndSaveTouch();
+                }
             }
 
 //            System.out.println("Saving location: ");

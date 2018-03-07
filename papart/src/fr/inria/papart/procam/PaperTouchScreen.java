@@ -19,11 +19,6 @@
  */
 package fr.inria.papart.procam;
 
-import fr.inria.papart.compositor.AppRunnerTest;
-import fr.inria.papart.compositor.XAppRunner;
-import fr.inria.papart.compositor.XDisplay;
-import fr.inria.papart.compositor.XDisplayWithCam;
-import fr.inria.papart.utils.ARToolkitPlusUtils;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.multitouch.TouchInput;
@@ -31,18 +26,7 @@ import fr.inria.papart.multitouch.Touch;
 import fr.inria.papart.multitouch.DepthTouchInput;
 import fr.inria.papart.multitouch.TUIOTouchInput;
 import fr.inria.papart.multitouch.TouchList;
-import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
-import fr.inria.papart.multitouch.tracking.TrackedElement;
-import fr.inria.papart.procam.camera.CameraFactory;
-import fr.inria.papart.procam.camera.CannotCreateCameraException;
-import fr.inria.papart.utils.MathUtils;
-import fr.inria.papart.procam.display.ProjectorDisplay;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import processing.core.PApplet;
-import processing.core.PImage;
 import processing.core.PVector;
 
 public class PaperTouchScreen extends PaperScreen {

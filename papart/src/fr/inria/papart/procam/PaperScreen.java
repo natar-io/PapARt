@@ -107,7 +107,7 @@ public class PaperScreen extends DelegatedGraphics {
     private final int id;
 
     public static int count = 0;
-    private final PMatrix3D table, tableInv;
+    protected final PMatrix3D table, tableInv;
 
     /**
      * Create a new PaperScreen, a Papart object has to be created first. A
@@ -870,7 +870,7 @@ public class PaperScreen extends DelegatedGraphics {
      * @param matrix
      */
     public void setLocation(PMatrix3D matrix) {
-        assert (isInitialized);
+//        assert (isInitialized);
         if (extrinsics == null) {
             this.extrinsics = new PMatrix3D(matrix);
         } else {
