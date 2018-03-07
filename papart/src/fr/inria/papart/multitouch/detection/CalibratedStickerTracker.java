@@ -31,7 +31,6 @@ public class CalibratedStickerTracker extends ColorTracker {
 
     int numberOfRefs = 4;
     private final ColorReferenceThresholds references[];
-    TouchDetectionLargeColor2 largeDetectionColor;
     TouchDetectionInnerCircles innerCirclesDetection;
     private TrackedView circleView;
     protected float circleSize = 8f;
@@ -89,23 +88,8 @@ public class CalibratedStickerTracker extends ColorTracker {
 
         innerCircles = innerCirclesDetection.createInputArray();
 
-        System.out.println("Circleview size!!!: " + circleView.getWidth() + " " + circleView.getHeight());
-        largeDetectionColor = new TouchDetectionLargeColor2(circleView);
-        largerTouchCalibration = Papart.getPapart().getDefaultColorZoneCalibration();
-
-        largerTouchCalibration.setMaximumDistance(largerTouchCalibration.getMaximumDistance() * scale);
-        largerTouchCalibration.setMinimumComponentSize((int) (largerTouchCalibration.getMinimumComponentSize())); // Quadratic (area)
-        largerTouchCalibration.setSearchDepth((int) (largerTouchCalibration.getSearchDepth()));
-        largerTouchCalibration.setTrackingMaxDistance(largerTouchCalibration.getTrackingMaxDistance() * scale);
-        largerTouchCalibration.setMaximumRecursion((int) (largerTouchCalibration.getMaximumRecursion()));
-
-        largeDetectionColor.setCalibration(largerTouchCalibration);
-
-        // share the colorFoundArray ?
-        largeColorFoundArray = largeDetectionColor.createInputArray();
 
     }
-    protected byte[] largeColorFoundArray;
 
     public int getReferenceColor(int id) {
         return references[id].getReferenceColor();
@@ -154,28 +138,21 @@ public class CalibratedStickerTracker extends ColorTracker {
         // Start from the eroded points, find out the color and positions of possible circles.
         smallElements = innerCirclesDetection.compute(time, references,
                 circleImage, this.scale);
-//        return smallElements;
 
-        // Increase the quality by looking again in a higher resolution ???
+             // Increase the quality by looking again in a higher resolution ???
         trackedElements.clear();
-        trackedElements.addAll(smallElements);
+        trackedElements.addAll(smallElements);   
+        
+        // Take all the points, 
+        // Sort them by distance, and try to make cluster of d < 5cm ?
+       clusters = StickerCluster.createCluster(smallElements);
 
-        // Group the colors...
-        System.arraycopy(innerCircles, 0, largeColorFoundArray, 0, innerCircles.length);
-
-        ArrayList<TrackedElement> newElements2
-                = largeDetectionColor.compute(time, 0, this.scale);
-//
-//    System.out.println("new: " + newElements2.size());
-        // Step 2 -> Large -scale colors (ensemble de gomettes) 
-//        TouchPointTracker.trackPoints(trackedElements, smallElements, time);
-//        TouchPointTracker.trackPoints(trackedLargeElements, newElements2, time);
-
-//        for(TrackedElement te : trackedElements){
-//            te.filter(time);
-//        }
-//        return trackedElements;
-        return newElements2;
+        return trackedElements;
+    }
+    ArrayList<StickerCluster> clusters;
+        
+    public ArrayList<StickerCluster> clusters(){
+        return clusters;
     }
 
     ArrayList<TrackedElement> smallElements;
