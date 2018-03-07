@@ -31,48 +31,51 @@ public class CalibratedStickerTracker extends ColorTracker {
 
     int numberOfRefs = 4;
     private final ColorReferenceThresholds references[];
-    TouchDetectionLargeColor largeDetectionColor;
+    TouchDetectionLargeColor2 largeDetectionColor;
     TouchDetectionInnerCircles innerCirclesDetection;
     private TrackedView circleView;
     protected float circleSize = 8f;
 //       protected TouchDetectionColor touchDetectionCircles;
 
+    public float bias = 1.05f;
+    private int circleViewWidth, circleViewHeight;
+    private int[] conv;
+    private byte[] innerCircles;
+
     public CalibratedStickerTracker(PaperScreen paperScreen, float size) {
-        super(paperScreen);  // 1 px / mm ?
+        super();  // 1 px / mm ?
         this.circleSize = size;
         references = ColorReferenceThresholds.loadDefaultThresholds(numberOfRefs);
+        
+        this.paperScreen = paperScreen;
+        initTouchDetection();
+
     }
 
-    public float bias = 1.1f;
     protected TrackedView createViewForCircle(float circleDiameter) {
         TrackedView view = new TrackedView(paperScreen);
 
-        int w = (int) (paperScreen.getDrawingSize().x / circleDiameter * 5 * bias);
-        int h = (int) (paperScreen.getDrawingSize().y / circleDiameter * 5 * bias);
+        // it is scae to mm... 
+        scale = 1f / circleDiameter * 5 * bias;
+        circleViewWidth = (int) (paperScreen.getDrawingSize().x * scale);
+        circleViewHeight = (int) (paperScreen.getDrawingSize().y * scale);
 
         // We need to scale the circles to 5 pixels 
-        view.setImageWidthPx(w);
-        view.setImageHeightPx(h);
+        view.setImageWidthPx(circleViewWidth);
+        view.setImageHeightPx(circleViewHeight);
         view.init();
 
-//        conv = parent.createImage(w, h, PApplet.RGB);
-//        eroded = parent.createImage(w, h, PApplet.RGB);
-        conv = new int[w * h];
-        innerCircles = new byte[w * h];
+        conv = new int[circleViewWidth * circleViewHeight];
+        innerCircles = new byte[circleViewWidth * circleViewHeight];
         return view;
     }
-
-    private int[] conv;
-    private byte[] innerCircles;
 
     PlanarTouchCalibration largerTouchCalibration;
 
     @Override
     public void initTouchDetection() {
-        super.initTouchDetection();
 
         circleView = createViewForCircle(this.circleSize);
-
         innerCirclesDetection = new TouchDetectionInnerCircles(circleView);
 
         PlanarTouchCalibration innerCirclesCalibration = Papart.getPapart().getDefaultColorZoneCalibration();
@@ -84,24 +87,20 @@ public class CalibratedStickerTracker extends ColorTracker {
         innerCirclesCalibration.setMaximumRecursion(1);
         innerCirclesDetection.setCalibration(innerCirclesCalibration);
 
-        // Work on the same
         innerCircles = innerCirclesDetection.createInputArray();
-        innerCirclesDetection.setSegmentedImage(innerCircles);
-        
-        
-        ////////// FOR later
-        largeDetectionColor = new TouchDetectionLargeColor(trackedView);
+
+        System.out.println("Circleview size!!!: " + circleView.getWidth() + " " + circleView.getHeight());
+        largeDetectionColor = new TouchDetectionLargeColor2(circleView);
         largerTouchCalibration = Papart.getPapart().getDefaultColorZoneCalibration();
 
         largerTouchCalibration.setMaximumDistance(largerTouchCalibration.getMaximumDistance() * scale);
-        largerTouchCalibration.setMinimumComponentSize((int) (largerTouchCalibration.getMinimumComponentSize() * scale * scale)); // Quadratic (area)
-        largerTouchCalibration.setSearchDepth((int) (largerTouchCalibration.getSearchDepth() * scale));
+        largerTouchCalibration.setMinimumComponentSize((int) (largerTouchCalibration.getMinimumComponentSize())); // Quadratic (area)
+        largerTouchCalibration.setSearchDepth((int) (largerTouchCalibration.getSearchDepth()));
         largerTouchCalibration.setTrackingMaxDistance(largerTouchCalibration.getTrackingMaxDistance() * scale);
-        largerTouchCalibration.setMaximumRecursion((int) (largerTouchCalibration.getMaximumRecursion() * scale));
+        largerTouchCalibration.setMaximumRecursion((int) (largerTouchCalibration.getMaximumRecursion()));
 
         largeDetectionColor.setCalibration(largerTouchCalibration);
 
-        System.out.println("Second Calibration loaded");
         // share the colorFoundArray ?
         largeColorFoundArray = largeDetectionColor.createInputArray();
 
@@ -144,7 +143,7 @@ public class CalibratedStickerTracker extends ColorTracker {
             for (int y = ystart; y < yend; y++) {
                 int loc = x + y * circleImage.width;
                 boolean v = erosion(x, y, circleImage.width, matrix3erode, 3, conv);
-                if(v){
+                if (v) {
 //                    System.out.println("eroded ok: " + x + " " + y );
                 }
                 innerCircles[loc] = (byte) (v ? TouchDetectionInnerCircles.UNKNOWN_COLOR : TouchDetectionInnerCircles.INVALID_COLOR);
@@ -153,80 +152,30 @@ public class CalibratedStickerTracker extends ColorTracker {
         // At this step, the circles are max  2x2 pixels wide booleans.
 
         // Start from the eroded points, find out the color and positions of possible circles.
-        smallElements = innerCirclesDetection.compute(time, references, circleImage);
-//        System.out.println("elements: " + smallElements.size());
-//        for(TrackedElement te: smallElements){
-//            System.out.println("t: " + te);
-//        }
-        return smallElements;
-        
-        // Get the image
-//        capturedImage = trackedView.getViewOf(paperScreen.getCameraTracking());
-//        capturedImage.loadPixels();
+        smallElements = innerCirclesDetection.compute(time, references,
+                circleImage, this.scale);
+//        return smallElements;
+
+        // Increase the quality by looking again in a higher resolution ???
+        trackedElements.clear();
+        trackedElements.addAll(smallElements);
+
+        // Group the colors...
+        System.arraycopy(innerCircles, 0, largeColorFoundArray, 0, innerCircles.length);
+
+        ArrayList<TrackedElement> newElements2
+                = largeDetectionColor.compute(time, 0, this.scale);
 //
-//        // Reset the colorFoundArray
-//        touchDetectionColor.resetInputArray();
-//
-//        // Default to RGB 255 for now, for color distances. 
-//        paperScreen.getGraphics().colorMode(PConstants.RGB, 255);
-//
-//        // Tag each pixels
-//        for (int x = 0; x < capturedImage.width; x++) {
-//            for (int y = 0; y < capturedImage.height; y++) {
-//                int offset = x + y * capturedImage.width;
-//                int c = capturedImage.pixels[offset];
-//
-//                // for each except the last DEBUG
-////               byte id = 0;
-//                for (byte id = 0; id < numberOfRefs; id++) {
-//
-//                    reference = references[id];
-//                    boolean good = false;
-//
-////                    if (id == 0) {
-////                        good = MathUtils.colorFinderHSBRedish(paperScreen.getGraphics(),
-////                                reference.referenceColor, c, reference.hue, reference.saturation, reference.brightness);
-////                    } else {
-//                    good = colorFinderLAB(paperScreen.getGraphics(),
-//                            c, reference);
-////                        good = MathUtils.colorFinderHSB(paperScreen.getGraphics(),
-////                                c, reference.referenceColor, reference.hue, reference.saturation, reference.brightness);
-////                    }
-//                    // HSB only for now.
-//                    if (good) {
-////                    if (references[id].colorFinderHSB(paperScreen.getGraphics(), c)) {
-//                        colorFoundArray[offset] = id;
-//                    }
-//
-//                }
-//            }
-//        }
-//
-//        int erosion = 0;
-//
-//        // Step1 -> small-scale colors (gomettes)
-//// EROSION by color ?!
-////        ArrayList<TrackedElement> newElements
-////                = touchDetectionColor.compute(time, erosion, this.scale);
-//        smallElements = touchDetectionColor.compute(time, erosion, this.scale);
-//
-//        ///
-//        System.arraycopy(colorFoundArray, 0, largeColorFoundArray, 0, colorFoundArray.length);
-//
-//        ArrayList<TrackedElement> newElements2
-//                = largeDetectionColor.compute(time, erosion, this.scale);
-////
-//        // Step 2 -> Large -scale colors (ensemble de gomettes) 
-////        TouchPointTracker.trackPoints(trackedElements, smallElements, time);
-//        trackedElements.clear();
-//        trackedElements.addAll(smallElements);
+//    System.out.println("new: " + newElements2.size());
+        // Step 2 -> Large -scale colors (ensemble de gomettes) 
+//        TouchPointTracker.trackPoints(trackedElements, smallElements, time);
 //        TouchPointTracker.trackPoints(trackedLargeElements, newElements2, time);
-//
-////        for(TrackedElement te : trackedElements){
-////            te.filter(time);
-////        }
-////        return trackedElements;
-//        return trackedLargeElements;
+
+//        for(TrackedElement te : trackedElements){
+//            te.filter(time);
+//        }
+//        return trackedElements;
+        return newElements2;
     }
 
     ArrayList<TrackedElement> smallElements;

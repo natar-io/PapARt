@@ -114,24 +114,12 @@ public class TouchDetectionColor extends TouchDetection {
     @Override
     protected void setSearchParameters() {
         this.toVisit.clear();
-
         for (int i = 0; i < segmentedImage.length; i++) {
             if (segmentedImage[i] != INVALID_COLOR) {
                 toVisit.add(i);
             }
         }
-
-        if (erosionLevel > 0 && segmentedImageCopy == null) {
-            segmentedImageCopy = new byte[segmentedImage.length];
-        }
-        // Do an erosion to remove the useless elements
-
-        for (int i = 0; i < erosionLevel; i++) {
-            MathUtils.erodePoints2(toVisit,
-                    segmentedImage, segmentedImageCopy,
-                    calib.getPrecision(), INVALID_COLOR, imgSize);
-        }
-
+       
     }
 
 //    protected abstract void setSearchParameters();

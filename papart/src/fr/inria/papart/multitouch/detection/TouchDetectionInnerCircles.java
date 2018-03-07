@@ -97,11 +97,15 @@ public class TouchDetectionInnerCircles extends TouchDetection {
      * @param references
      * @return
      */
-    public ArrayList<TrackedElement> compute(int timestamp, ColorReferenceThresholds references[], PImage mainImg) {
+    public ArrayList<TrackedElement> compute(int timestamp, 
+            ColorReferenceThresholds references[],
+            PImage mainImg,
+            float scale) {
+        this.segmentedImage = localSegmentedImage;
         this.references = references;
         this.mainImg = mainImg;
         ArrayList<ConnectedComponent> connectedComponents = findConnectedComponents();
-        ArrayList<TrackedElement> colorPoints = this.createTouchPointsFrom(connectedComponents, 1);
+        ArrayList<TrackedElement> colorPoints = this.createTouchPointsFrom(connectedComponents, scale);
         return colorPoints;
     }
 
@@ -116,7 +120,6 @@ public class TouchDetectionInnerCircles extends TouchDetection {
                 // The index can set the color... 
 
                 int c = mainImg.pixels[i];
-                float maxError = 30;
                 float minError = 30;
                 int currentID = -1;
 
@@ -166,7 +169,7 @@ public class TouchDetectionInnerCircles extends TouchDetection {
 //            }
 
             TrackedElement tp = createTouchPoint(connectedComponent);
-
+            tp.getPosition().set(tp.getPosition().x / scale, tp.getPosition().y / scale);
             // We attach the colorID here.
             tp.attachedValue = selectedColor;
             touchPoints.add(tp);

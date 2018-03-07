@@ -38,7 +38,7 @@ import processing.core.PImage;
  */
 public class ColorTracker {
 
-    protected final PaperScreen paperScreen;
+    protected PaperScreen paperScreen;
     protected final TrackedView trackedView;
 
     protected PImage capturedImage;
@@ -52,6 +52,12 @@ public class ColorTracker {
     protected ColorReferenceThresholds reference = new ColorReferenceThresholds();
     protected String name;
     private final PlanarTouchCalibration calibration;
+
+    protected ColorTracker() {
+        trackedElements = new ArrayList<TrackedElement>();
+        trackedView = null;
+        calibration = null;
+    }
 
     public ColorTracker(PaperScreen paperScreen) {
         this(paperScreen, 1);
@@ -172,7 +178,7 @@ public class ColorTracker {
                         good = good && blue;
                     } else {
                         good = MathUtils.colorFinderHSB(paperScreen.getGraphics(),
-                               reference.referenceColor, c, reference.hue, reference.saturation, reference.brightness);
+                                reference.referenceColor, c, reference.hue, reference.saturation, reference.brightness);
                     }
                 }
 
@@ -187,7 +193,7 @@ public class ColorTracker {
                 = touchDetectionColor.compute(time, erosion, this.scale);
 
         TouchPointTracker.trackPoints(trackedElements, newElements, time);
-        for(TrackedElement te : trackedElements){
+        for (TrackedElement te : trackedElements) {
             te.filter(time);
         }
 

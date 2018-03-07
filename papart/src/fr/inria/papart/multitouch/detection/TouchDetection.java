@@ -139,29 +139,14 @@ public abstract class TouchDetection {
         ConnectedComponent cc = findNeighboursFloodFill(startingPoint);
 
         // Do not accept 1 point compo ?!
-        if (cc.size() == 1) {
-            connectedComponentImage[startingPoint] = NO_CONNECTED_COMPONENT;
-            boundaries[startingPoint] = false;
-            return INVALID_COMPONENT;
-        }
+//        if (cc.size() == 1) {
+//            connectedComponentImage[startingPoint] = NO_CONNECTED_COMPONENT;
+//            boundaries[startingPoint] = false;
+//            return INVALID_COMPONENT;
+//        }
+
         cc.setId(currentCompo);
         currentCompo++;
-
-        // TODO: Filtering for all ?!!
-        // DEBUG
-//        if (currentPointValidityCondition instanceof CheckTouchPoint) {
-//            // Filter the points with wrong normals
-//            ProjectedDepthData data = ((CheckTouchPoint) currentPointValidityCondition).getData();
-//            Vec3D depthPoint = data.depthPoints[startingPoint];
-////            System.out.println("SIZE: " + cc.size() + " Starting Point: " + depthPoint);
-//
-//            // Debug: Print out the connected component
-//            for (int i = 0; i < cc.size(); i++) {
-//                int offset = cc.get(i);
-//                depthPoint = data.depthPoints[offset];
-////                System.out.println("CC(" + currentCompo + ")/Depth Point (" + i + "): " + depthPoint);
-//            }
-//        }
         return cc;
     }
 
