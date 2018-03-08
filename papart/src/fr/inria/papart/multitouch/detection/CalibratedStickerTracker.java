@@ -37,7 +37,7 @@ public class CalibratedStickerTracker extends ColorTracker {
     protected float circleSize;
 
 //       protected TouchDetectionColor touchDetectionCircles;
-    public float bias = 1.05f;
+    public float bias = 1.00f;
     private int circleViewWidth, circleViewHeight;
     private int[] conv;
     private byte[] innerCircles;
@@ -159,7 +159,7 @@ public class CalibratedStickerTracker extends ColorTracker {
 
         // Take all the points, 
         // Sort them by distance, and try to make cluster of d < 5cm ?
-        lineClusters = LineCluster.createLineCluster(smallElements, 50); // 40mm
+        lineClusters = LineCluster.createLineCluster(smallElements, 22); // 40mm
 //        clusters = StickerCluster.createZoneCluster(smallElements, 55); // 40mm
 
         return trackedElements;

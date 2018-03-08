@@ -9,6 +9,8 @@ import Jama.Matrix;
 import com.mkobos.pca_transform.PCA;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -66,9 +68,27 @@ public class LineCluster extends ArrayList<TrackedElement> {
         return mean;
     }
 
+    public TrackedElement[] getBorders() {
+        TrackedElement[] borders = new TrackedElement[2];
+        ArrayList<TrackedElement> copy = new ArrayList<>(this);
+        PVector center = this.position();
+
+        Collections.sort(copy, new Comparator<TrackedElement>() {
+            @Override
+            public int compare(TrackedElement t1, TrackedElement t2) {
+                return Float.compare(t1.getPosition().dist(center), t2.getPosition().dist(center));
+            }
+        });
+        
+        borders[0] = copy.get(0);
+        borders[1] = copy.get(1);
+
+        return borders;
+    }
+
     public boolean tryAddColinear(TrackedElement third) {
 
-        if(this.contains(third)){
+        if (this.contains(third)) {
             return false;
         }
         boolean aligned = true;
@@ -148,13 +168,13 @@ public class LineCluster extends ArrayList<TrackedElement> {
             angle = Math.atan2(vectors.get(0, 1), vectors.get(0, 0));
         }
     }
-    
-    void computeAngleVectors(){
-        
+
+    void computeAngleVectors() {
+
         PVector directions = new PVector();
         PVector p0 = this.get(0).getPosition().get();
-        
-         for (int i = 1; i < this.size(); i++) {
+
+        for (int i = 1; i < this.size(); i++) {
             PVector p1 = this.get(i).getPosition();
 
             PVector d = p0.get().sub(p1);
@@ -179,17 +199,20 @@ public class LineCluster extends ArrayList<TrackedElement> {
 
 //    @Override
     public boolean equals(Object other) {
-        boolean c1 = ((LineCluster) other).containsAll(this);
-        
-//        LineCluster secondInit = (LineCluster) other;
+//        boolean c1 = ((LineCluster) other).containsAll(this);
+
+        LineCluster secondInit = (LineCluster) other;
 //        LineCluster second = new LineCluster((LineCluster) other);
-//        
-//
-//        second.removeAll(this);
-//        
+
+        int common = 0;
+        for (TrackedElement t : secondInit) {
+            if (this.contains(t)) {
+                common++;
+            }
+        }
 //        return secondInit.size() == second.size() ;
-        boolean c2 = this.containsAll((LineCluster) other);
-        return c1 || c2;
+//        boolean c2 = this.containsAll((LineCluster) other);
+        return common > 1;
     }
 //    @Override
 //    public int hashCode() {
@@ -229,15 +252,17 @@ public class LineCluster extends ArrayList<TrackedElement> {
             TrackedElement first = it.next();
 
             // Remove it since the beginning. We do not want to find it anymore.
-            it.remove();
+//            it.remove();
 
 //        for (TrackedElement first : elements) {
 //        TrackedElement first = elements.get(0);
             // Get the closets elements
             ArrayList<TrackedElement> allElements = new ArrayList<TrackedElement>(elements);
 
+            allElements.remove(first);
+            
 //            tryAttach(currentCluster, first, elements, size, 1);
-            ArrayList<TrackedElement> closeElements = elementsCloseTo(elements, first);
+            ArrayList<TrackedElement> closeElements = elementsCloseTo(elements, first, size);
 
             // one element at least. 
             if (closeElements.isEmpty()) {
@@ -265,6 +290,9 @@ public class LineCluster extends ArrayList<TrackedElement> {
 
                     if (!lines.contains(currentCluster)) {
                         lines.add(currentCluster);
+//                        TrackedElement[] borders = currentCluster.getBorders();
+//                        allElements
+                        // TODO: Add back the borders
                     }
                 }
 //                System.out.println("Cluster size: " + currentCluster.size());
@@ -280,15 +308,15 @@ public class LineCluster extends ArrayList<TrackedElement> {
      * @param currentCluster
      * @param currentPoint
      * @param elements
-     * @param size distance to next element
+     * @param dist distance to next element
      * @param level current level (size of currentCluster)
      */
     public static void tryAttach(LineCluster currentCluster,
             TrackedElement currentPoint,
             ArrayList<TrackedElement> elements,
-            float size) {
+            float dist) {
 
-        ArrayList<TrackedElement> closeElements = elementsCloseTo(elements, currentPoint);
+        ArrayList<TrackedElement> closeElements = elementsCloseTo(elements, currentPoint, dist);
 
         // one element at least. 
         if (closeElements.isEmpty()) {
@@ -302,24 +330,26 @@ public class LineCluster extends ArrayList<TrackedElement> {
                 currentCluster.add(third);
                 elements.remove(third);
 
-                tryAttach(currentCluster, third, elements, size);
+                tryAttach(currentCluster, third, elements, dist);
             }
         }
 
     }
 
-    public static ArrayList<TrackedElement> elementsCloseTo(ArrayList<TrackedElement> elements, TrackedElement first) {
+    public static ArrayList<TrackedElement> elementsCloseTo(ArrayList<TrackedElement> elements,
+            TrackedElement first,
+            float dist) {
         ArrayList<TrackedElement> closeElements = new ArrayList<TrackedElement>(elements);
         closeElements.remove(first);
 
         // Deep search from this.
         // search the really close ones (only one necessary).  1 cm max
-        Predicate<TrackedElement> closeFilter = te -> te.distanceTo(first) > 25;
+        Predicate<TrackedElement> closeFilter = te -> te.distanceTo(first) > dist;
         closeElements.removeIf(closeFilter);
         return closeElements;
     }
 
-    public static float epsilon = 15f;
+    public static float epsilon = 20f;
 
     /**
      * Check if 3 points are aligned.
