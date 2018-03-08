@@ -16,6 +16,7 @@ import fr.inria.papart.multitouch.Touch;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.multitouch.TouchList;
 import fr.inria.papart.multitouch.detection.BlinkTracker;
+import fr.inria.papart.multitouch.detection.ColorReferenceThresholds;
 import fr.inria.papart.multitouch.detection.ColorTracker;
 import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
@@ -495,117 +496,14 @@ public class MultiSimpleCalibrator extends PaperTouchScreen {
         colorMode(RGB, 255);
 
         for (int colorId = 0; colorId < nbColors; colorId++) {
-            float averageHue = 0;
-            float averageSat = 0;
-            float averageIntens = 0;
-
-            float averageR = 0;
-            float averageG = 0;
-            float averageB = 0;
-
-            float stdevHue = 0;
-            float stdevSat = 0;
-            float stdevIntens = 0;
-
-            float stdevR = 0;
-            float stdevG = 0;
-            float stdevB = 0;
-
-            // todo: IF Red > 180, hue gets shifted ?
+            ColorReferenceThresholds c = new ColorReferenceThresholds(colorId);
+            
+            int[] colorData = new int[nbScreenPoints * 2];
             for (int i = 0; i < nbScreenPoints * 2; i++) {
-                int c = this.savedColors[i][colorId];
-
-                float r = this.red(c);
-                averageHue += this.hue(c);
-                averageSat += this.saturation(c);
-                averageIntens += this.brightness(c);
-                averageR += this.red(c);
-                averageG += this.green(c);
-                averageB += this.blue(c);
+                colorData[i] = this.savedColors[i][colorId];
             }
-
-            averageHue /= nbScreenPoints * 2;
-            averageSat /= nbScreenPoints * 2;
-            averageIntens /= nbScreenPoints * 2;
-            averageR /= nbScreenPoints * 2;
-            averageG /= nbScreenPoints * 2;
-            averageB /= nbScreenPoints * 2;
-
-            // potentially problematic hue for red
-            // Solution, we shift it by 255 for low values.
-            if (averageR > 180) {
-                averageHue = 0;
-                for (int i = 0; i < nbScreenPoints * 2; i++) {
-                    int c = this.savedColors[i][colorId];
-                    float h = this.hue(c);
-                    if (h < 30) {
-                        h = h + 255;
-                    }
-                    averageHue += h;
-                }
-                averageHue /= nbScreenPoints * 2;
-//                if (averageHue > 255) {
-//                    averageHue = averageHue - 255;
-//                }
-            }
-
-            int averageCol = color(averageR, averageG, averageB);
-
-            for (int i = 0; i < nbScreenPoints * 2; i++) {
-                int c = this.savedColors[i][colorId];
-
-                // high red intensity with a redish rue.
-                if (averageR > 180 && this.hue(c) < 30) {
-                    stdevHue += abs(this.hue(c) + 255 - averageHue);
-                } else {
-                    stdevHue += abs(this.hue(c) - averageHue);
-                }
-                stdevSat += abs(this.saturation(c) - averageSat);
-                stdevIntens += abs(this.brightness(c) - averageIntens);
-                stdevR += abs(this.red(c) - averageR);
-                stdevG += abs(this.green(c) - averageG);
-                stdevB += abs(this.blue(c) - averageB);
-            }
-
-            stdevHue /= nbScreenPoints * 2;
-            stdevSat /= nbScreenPoints * 2;
-            stdevIntens /= nbScreenPoints * 2;
-            stdevR /= nbScreenPoints * 2;
-            stdevG /= nbScreenPoints * 2;
-            stdevB /= nbScreenPoints * 2;
-
-            // Check the stdev... when too high the value is not stored.
-            if (stdevHue > 40 || stdevSat > 40 || stdevIntens > 50) {
-                System.out.println("Could not determine color: " + colorId);
-                continue;
-            }
-
-            // Good dev, make it larger
-            if (stdevHue < 3) {
-                stdevHue = 4;
-            }
-            // Good dev, make it larger
-            if (stdevSat < 5) {
-                stdevSat = 10;
-            }
-            // Good dev, make it larger
-            if (stdevIntens < 5) {
-                stdevIntens = 10;
-            }
-
-            String words = "hue:" + Float.toString(stdevHue * 3) + " "
-                    + "sat:" + Float.toString(stdevSat * 3) + " "
-                    + "intens:" + Float.toString(stdevIntens * 3) + " "
-                    + "erosion:" + Integer.toString(1) + " "
-                    + "red:" + Float.toString(stdevR * 3) + " "
-                    + "blue:" + Float.toString(stdevB * 3) + " "
-                    + "green:" + Float.toString(stdevB * 3) + "\n";
-
-            words = words + "id:" + Integer.toString(colorId) + "\n";
-            words = words + "col:" + Integer.toString(averageCol);
-
-            String[] list = split(words, ' ');
-
+            
+            String[] list = c.createReference(colorData);
             String saveFile = Papart.colorThresholds + colorId + ".txt";
             parent.saveStrings(saveFile, list);
 
