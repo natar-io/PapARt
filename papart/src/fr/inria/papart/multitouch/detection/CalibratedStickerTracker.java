@@ -20,6 +20,7 @@ import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics;
 import processing.core.PImage;
+import processing.core.PVector;
 import tech.lity.rea.colorconverter.ColorConverter;
 
 /**
@@ -33,48 +34,62 @@ public class CalibratedStickerTracker extends ColorTracker {
     private final ColorReferenceThresholds references[];
     TouchDetectionInnerCircles innerCirclesDetection;
     private TrackedView circleView;
-    protected float circleSize = 8f;
-//       protected TouchDetectionColor touchDetectionCircles;
+    protected float circleSize;
 
+//       protected TouchDetectionColor touchDetectionCircles;
     public float bias = 1.05f;
     private int circleViewWidth, circleViewHeight;
     private int[] conv;
     private byte[] innerCircles;
 
     public CalibratedStickerTracker(PaperScreen paperScreen, float size) {
+        this(paperScreen, new PVector(), new PVector(), size);
+    }
+
+    /**
+     * TO test !
+     * @param paperScreen
+     * @param offset
+     * @param capSize
+     * @param size 
+     */
+    public CalibratedStickerTracker(PaperScreen paperScreen, PVector offset,
+            PVector capSize, float size) {
         super();  // 1 px / mm ?
         this.circleSize = size;
         references = ColorReferenceThresholds.loadDefaultThresholds(numberOfRefs);
-        
+
         this.paperScreen = paperScreen;
-        initTouchDetection();
-
-    }
-
-    protected TrackedView createViewForCircle(float circleDiameter) {
-        TrackedView view = new TrackedView(paperScreen);
-
-        // it is scae to mm... 
-        scale = 1f / circleDiameter * 5 * bias;
-        circleViewWidth = (int) (paperScreen.getDrawingSize().x * scale);
-        circleViewHeight = (int) (paperScreen.getDrawingSize().y * scale);
-
-        // We need to scale the circles to 5 pixels 
-        view.setImageWidthPx(circleViewWidth);
-        view.setImageHeightPx(circleViewHeight);
-        view.init();
-
-        conv = new int[circleViewWidth * circleViewHeight];
-        innerCircles = new byte[circleViewWidth * circleViewHeight];
-        return view;
+        initTouchDetection(offset, capSize);
     }
 
     PlanarTouchCalibration largerTouchCalibration;
 
-    @Override
-    public void initTouchDetection() {
+    public void initTouchDetection(PVector offset, PVector capSize) {
+        circleView = new TrackedView(paperScreen);
 
-        circleView = createViewForCircle(this.circleSize);
+        // No cap size, we capture the whole paperscreen.
+        if(capSize.x == 0 || capSize.y == 0){
+            capSize.set(paperScreen.getDrawingSize());
+        }
+        // it is scae to mm... 
+        scale = 1f / circleSize * 5 * bias;
+
+        circleViewWidth = (int) (capSize.x * scale);
+        circleViewHeight = (int) (capSize.y * scale);
+
+        circleView.setTopLeftCorner(offset);
+        circleView.setCaptureSizeMM(capSize);
+        
+        // We need to scale the circles to 5 pixels 
+        circleView.setImageWidthPx(circleViewWidth);
+        circleView.setImageHeightPx(circleViewHeight);
+        circleView.init();
+
+        conv = new int[circleViewWidth * circleViewHeight];
+        innerCircles = new byte[circleViewWidth * circleViewHeight];
+        
+        
         innerCirclesDetection = new TouchDetectionInnerCircles(circleView);
 
         PlanarTouchCalibration innerCirclesCalibration = Papart.getPapart().getDefaultColorZoneCalibration();
@@ -87,9 +102,8 @@ public class CalibratedStickerTracker extends ColorTracker {
         innerCirclesDetection.setCalibration(innerCirclesCalibration);
 
         innerCircles = innerCirclesDetection.createInputArray();
-
-
     }
+
 
     public int getReferenceColor(int id) {
         return references[id].getReferenceColor();
@@ -139,19 +153,24 @@ public class CalibratedStickerTracker extends ColorTracker {
         smallElements = innerCirclesDetection.compute(time, references,
                 circleImage, this.scale);
 
-             // Increase the quality by looking again in a higher resolution ???
+        // Increase the quality by looking again in a higher resolution ???
         trackedElements.clear();
-        trackedElements.addAll(smallElements);   
-        
+        trackedElements.addAll(smallElements);
+
         // Take all the points, 
         // Sort them by distance, and try to make cluster of d < 5cm ?
-       clusters = StickerCluster.createCluster(smallElements, 55); // 40mm
+        lineClusters = LineCluster.createLineCluster(smallElements, 50); // 40mm
+//        clusters = StickerCluster.createZoneCluster(smallElements, 55); // 40mm
 
         return trackedElements;
     }
+    ArrayList<LineCluster> lineClusters;
     ArrayList<StickerCluster> clusters;
-        
-    public ArrayList<StickerCluster> clusters(){
+
+    public ArrayList<LineCluster> lineClusters() {
+        return lineClusters;
+    }
+    public ArrayList<StickerCluster> clusters() {
         return clusters;
     }
 

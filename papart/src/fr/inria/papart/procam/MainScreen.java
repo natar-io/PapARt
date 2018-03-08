@@ -33,6 +33,7 @@ public class MainScreen extends PaperTouchScreen {
     @Override
     public void setup() {
         // View on all of the image
+//        stickerTracker = new CalibratedStickerTracker(this, 5);
         stickerTracker = new CalibratedStickerTracker(this, 8);
 //        stickerTracker.initTouchDetection();
         
