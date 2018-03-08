@@ -12,57 +12,87 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.function.Predicate;
+import static processing.core.PApplet.abs;
+import static processing.core.PApplet.atan2;
 import processing.core.PVector;
 
 /**
  *
  * @author realitytech
  */
-class LinePair{
+class LinePair {
+
     public TrackedElement t1, t2;
-    
-    public boolean equals(Object o){
-        LinePair p = (LinePair ) o;
-        
-        return (t1 == p.t1 && t2 == p.t2) || 
-                (t1 == p.t2 && t2 == p.t1);
+
+    public boolean equals(Object o) {
+        LinePair p = (LinePair) o;
+
+        return (t1 == p.t1 && t2 == p.t2)
+                || (t1 == p.t2 && t2 == p.t1);
     }
 }
 
-public class LineCluster extends StickerCluster {
+public class LineCluster extends ArrayList<TrackedElement> {
 
-    public ArrayList<TrackedElement> line = new ArrayList<>();
+    public LineCluster() {
+        super();
+    }
 
     public LineCluster(
             TrackedElement t1,
             TrackedElement t2,
             TrackedElement t3) {
-        assert(t1 != t2);
-        assert(t1 != t3);
-        assert(t2 != t3);
-        line.add(t1);
-        line.add(t2);
-        line.add(t3);
+        assert (t1 != t2);
+        assert (t1 != t3);
+        assert (t2 != t3);
+        this.add(t1);
+        this.add(t2);
+        this.add(t3);
     }
 
-    private double angle = Float.MIN_VALUE;
+    public double angle = Float.MIN_VALUE;
+    public boolean highAngle = false;
+
+    private LineCluster(LineCluster lineCluster) {
+        super(lineCluster);
+    }
 
     public PVector position() {
         PVector mean = new PVector();
-        for (TrackedElement t : line) {
+        for (TrackedElement t : this) {
             mean.add(t.getPosition());
         }
-        mean.mult(1f / line.size());
+        mean.mult(1f / this.size());
         return mean;
     }
 
-    public boolean highAngle = false;
-    
-    private void computeAngle() {
-        double[][] dataPoints = new double[line.size()][2];
-        for (int i = 0; i < line.size(); i++) {
-            dataPoints[i][0] = line.get(i).getPosition().x;
-            dataPoints[i][1] = line.get(i).getPosition().y;
+    public boolean tryAddColinear(TrackedElement third) {
+
+        if(this.contains(third)){
+            return false;
+        }
+        boolean aligned = true;
+
+        for (int i = 0; i < this.size() - 1; i++) {
+            TrackedElement te = this.get(i);
+
+            for (int j = i + 1; j < this.size(); j++) {
+                TrackedElement te2 = this.get(j);
+
+                aligned = aligned && pointsColinear(te.getPosition(),
+                        te2.getPosition(),
+                        third.getPosition());
+            }
+        }
+
+        return aligned;
+    }
+
+    private void computeAnglePCA() {
+        double[][] dataPoints = new double[this.size()][2];
+        for (int i = 0; i < this.size(); i++) {
+            dataPoints[i][0] = this.get(i).getPosition().x;
+            dataPoints[i][1] = this.get(i).getPosition().y;
         }
         //  column corresponding to dimension: x, y, z */
         Matrix trainingData = new Matrix(dataPoints);
@@ -73,18 +103,18 @@ public class LineCluster extends StickerCluster {
                 || pca.getEigenvectorsMatrix().getRowDimension() != 2) {
 
 //                System.out.println("EigenMatrix too short. ?");
-//                for (int i = 0; i < line.size(); i++) {
-//                    System.out.println("id: " + i + " " + line.get(i).getPosition());
+//                for (int i = 0; i < this.size(); i++) {
+//                    System.out.println("id: " + i + " " + this.get(i).getPosition());
 //                }
             // Short eigen matrix -> Points aligned according to an existing axis. 
-            float x = line.get(0).getPosition().x;
-            float y = line.get(0).getPosition().y;
+            float x = this.get(0).getPosition().x;
+            float y = this.get(0).getPosition().y;
             int xCount = 1;
             int yCount = 1;
 
-            for (int i = 1; i < line.size(); i++) {
-                float x1 = line.get(i).getPosition().x;
-                float y1 = line.get(i).getPosition().y;
+            for (int i = 1; i < this.size(); i++) {
+                float x1 = this.get(i).getPosition().x;
+                float y1 = this.get(i).getPosition().y;
 
                 if (x == x1) {
                     xCount++;
@@ -94,12 +124,12 @@ public class LineCluster extends StickerCluster {
                 }
             }
             // same X
-            if (xCount == line.size()) {
-                angle = 0;
+            if (xCount == this.size()) {
+//                angle = 0;
             }
             // same Y
-            if (yCount == line.size()) {
-                angle = Math.PI;
+            if (yCount == this.size()) {
+//                angle = Math.PI;
             }
 
         } else {
@@ -118,29 +148,56 @@ public class LineCluster extends StickerCluster {
             angle = Math.atan2(vectors.get(0, 1), vectors.get(0, 0));
         }
     }
+    
+    void computeAngleVectors(){
+        
+        PVector directions = new PVector();
+        PVector p0 = this.get(0).getPosition().get();
+        
+         for (int i = 1; i < this.size(); i++) {
+            PVector p1 = this.get(i).getPosition();
+
+            PVector d = p0.get().sub(p1);
+//            directions.add(abs(d.x), abs(d.y));
+            directions.add(d.x, d.y);
+        }
+//         System.out.println("d: " + directions);
+        angle = atan2(directions.y, directions.x);
+    }
 
     public double e0, e1;
 
     public double angle() {
         if (angle != Float.MIN_VALUE) {
             return angle;
-        }else{
-            computeAngle();
+        } else {
+//            computeAnglePCA();
+            computeAngleVectors();
         }
         return angle;
     }
 
-    @Override
+//    @Override
     public boolean equals(Object other) {
-        return ((LineCluster) other).line.containsAll(line);
+        boolean c1 = ((LineCluster) other).containsAll(this);
+        
+//        LineCluster secondInit = (LineCluster) other;
+//        LineCluster second = new LineCluster((LineCluster) other);
+//        
+//
+//        second.removeAll(this);
+//        
+//        return secondInit.size() == second.size() ;
+        boolean c2 = this.containsAll((LineCluster) other);
+        return c1 || c2;
     }
-
 //    @Override
 //    public int hashCode() {
 //        int hash = 7;
-//        hash = 83 * hash + Objects.hashCode(this.line);
+//        hash = 83 * hash + Objects.hashCode(this.this);
 //        return hash;
 //    }
+
     /**
      * TODO:
      *
@@ -169,52 +226,97 @@ public class LineCluster extends StickerCluster {
 
         // With iterators, we can delete elements on the fly. 
         while (it.hasNext()) {
-            TrackedElement first = it.next();;
+            TrackedElement first = it.next();
+
+            // Remove it since the beginning. We do not want to find it anymore.
+            it.remove();
 
 //        for (TrackedElement first : elements) {
 //        TrackedElement first = elements.get(0);
             // Get the closets elements
-            ArrayList<TrackedElement> elementsCopy = new ArrayList<TrackedElement>(elements);
-            elementsCopy.remove(first);
-            
-            // Deep search from this.
+            ArrayList<TrackedElement> allElements = new ArrayList<TrackedElement>(elements);
 
-            Predicate<TrackedElement> closeFilter = te -> te.distanceTo(first) > size;
-            elementsCopy.removeIf(closeFilter);
+//            tryAttach(currentCluster, first, elements, size, 1);
+            ArrayList<TrackedElement> closeElements = elementsCloseTo(elements, first);
 
-            // find triplets only. 
-            if (elementsCopy.size() < 2) {
+            // one element at least. 
+            if (closeElements.isEmpty()) {
                 continue;
-//                return new ArrayList<>();
             }
 
-            float epsilon = 1f;
+            // we have a pair, or a list of pairs.
+            // Get the first
+            for (TrackedElement second : closeElements) {
 
-            // find the triplets. (naive version, too many calls).
-            for (TrackedElement t1 : elementsCopy) {
-                for (TrackedElement t2 : elementsCopy) {
-                    if (t1 == t2) {
-                        continue;
-                    }
-                    PVector a = first.getPosition();
-                    PVector b = t1.getPosition();
-                    PVector c = t2.getPosition();
+                // Deep search from the pair. 
+                LineCluster currentCluster = new LineCluster();
+                currentCluster.add(first);
+                currentCluster.add(second);
 
-                    if (pointsColinear(a, b, c)) {
-                        LineCluster lineCluster = new LineCluster(first, t1, t2);
+                // Remove the elements, we might add them back if they are part of a "border"
+                allElements.remove(first);
+                allElements.remove(second);
 
-                        if (!lines.contains(lineCluster)) {
-                            lines.add(lineCluster);
-                            lineCluster.computeAngle();
-                        }
+                // Search in both directions
+                tryAttach(currentCluster, second, allElements, size);
+                tryAttach(currentCluster, first, allElements, size);
+
+                if (currentCluster.size() > 2) {
+
+                    if (!lines.contains(currentCluster)) {
+                        lines.add(currentCluster);
                     }
                 }
-
+//                System.out.println("Cluster size: " + currentCluster.size());
             }
-            it.remove();
+
         }
 
         return lines;
+    }
+
+    /**
+     *
+     * @param currentCluster
+     * @param currentPoint
+     * @param elements
+     * @param size distance to next element
+     * @param level current level (size of currentCluster)
+     */
+    public static void tryAttach(LineCluster currentCluster,
+            TrackedElement currentPoint,
+            ArrayList<TrackedElement> elements,
+            float size) {
+
+        ArrayList<TrackedElement> closeElements = elementsCloseTo(elements, currentPoint);
+
+        // one element at least. 
+        if (closeElements.isEmpty()) {
+            return;
+        }
+
+        for (TrackedElement third : closeElements) {
+
+            boolean colinear = currentCluster.tryAddColinear(third);
+            if (colinear) {
+                currentCluster.add(third);
+                elements.remove(third);
+
+                tryAttach(currentCluster, third, elements, size);
+            }
+        }
+
+    }
+
+    public static ArrayList<TrackedElement> elementsCloseTo(ArrayList<TrackedElement> elements, TrackedElement first) {
+        ArrayList<TrackedElement> closeElements = new ArrayList<TrackedElement>(elements);
+        closeElements.remove(first);
+
+        // Deep search from this.
+        // search the really close ones (only one necessary).  1 cm max
+        Predicate<TrackedElement> closeFilter = te -> te.distanceTo(first) > 25;
+        closeElements.removeIf(closeFilter);
+        return closeElements;
     }
 
     public static float epsilon = 15f;
