@@ -68,9 +68,8 @@ public class ArmDetection extends TouchDetectionDepth {
                     && touchRecognition.getSelection().validPointsMask[candidate] // is valid, necessary ?
                     && (depthData.depthPoints[candidate].distanceTo(DepthAnalysis.INVALID_POINT) > 1) // NON zero points
                     && (depthData.depthPoints[candidate] != DepthAnalysis.INVALID_POINT) // not invalid point (invalid depth)
-                    
-                    && depthData.planeAndProjectionCalibration.getPlane().getDistanceToPoint(depthData.depthPoints[candidate]) >  calib.getTest2()
 
+                    && depthData.planeAndProjectionCalibration.getPlane().getDistanceToPoint(depthData.depthPoints[candidate]) > calib.getTest2()
                     && depthData.depthPoints[initialPoint].distanceTo(depthData.depthPoints[candidate]) < calib.getMaximumDistanceInit()
                     && depthData.depthPoints[candidate].distanceTo(depthData.depthPoints[currentPoint]) < calib.getMaximumDistance();
 
@@ -107,7 +106,7 @@ public class ArmDetection extends TouchDetectionDepth {
 //        searchDepth = precision * 7;// TODO: FIX this value !
 //        maximumRecursion = 1000; // TODO: fix this value.
     }
-    
+
     //    protected abstract void setSearchParameters();
     protected ArrayList<TrackedDepthPoint> createTipPointsFrom(ArrayList<ConnectedComponent> connectedComponents) {
         ArrayList<TrackedDepthPoint> newPoints = new ArrayList<TrackedDepthPoint>();
@@ -134,8 +133,8 @@ public class ArmDetection extends TouchDetectionDepth {
         // First remove the X closest points (fingers) 
 //        int max = (int) calib.getTest5() > connectedComponent.size() ? connectedComponent.size() : (int) calib.getTest5();
 //        //  Get a sublist
-        int size = 3; 
-        if(connectedComponent.size() < size){
+        int size = 3;
+        if (connectedComponent.size() < size) {
             size = connectedComponent.size();
         }
         List<Integer> subList = connectedComponent.subList(0, size);
@@ -153,14 +152,14 @@ public class ArmDetection extends TouchDetectionDepth {
         tp.set3D(true);
         return tp;
     }
-    
+
     @Override
     protected TrackedDepthPoint createTouchPoint(ConnectedComponent connectedComponent) {
         TrackedDepthPoint tp = super.createTouchPoint(connectedComponent);
         tp.set3D(true);
         return tp;
     }
-    
+
     public void findTouch(PlaneAndProjectionCalibration planeAndProjCalibration) {
         touchRecognition.find3DTouch(planeAndProjCalibration, getPrecision());
         ArrayList<TrackedDepthPoint> newList = this.compute(depthAnalysis.getDepthData());
@@ -177,16 +176,18 @@ public class ArmDetection extends TouchDetectionDepth {
         int imageTime = this.depthAnalysis.getDepthData().timeStamp;
 
         TouchPointTracker.trackPoints(touchPoints, newList, imageTime);
-        
+
         // TODO: activate tracking ?! Super slow for some reason...
 //        TouchPointTracker.trackPoints(tipPoints, newTipPoints, imageTime);
+        tipPoints.clear();
+        tipPoints.addAll(newTipPoints);
     }
-    
+
     protected ArrayList<TrackedDepthPoint> newTipPoints;
     protected final ArrayList<TrackedDepthPoint> tipPoints = new ArrayList<>();
 
     public ArrayList<TrackedDepthPoint> getTipPoints() {
         return tipPoints;
     }
-  
+
 }
