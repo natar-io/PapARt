@@ -135,8 +135,8 @@ public class PaperScreen extends DelegatedGraphics {
         this.markerBoard = MarkerBoardInvalid.board;
         // Default to projector graphics.
         // currentGraphics = this.display.getGraphics();
-        table = Papart.getPapart().getTableLocation();
-        tableInv = Papart.getPapart().getTableLocation();
+        table = Papart.getPapart().getTableLocation().get();
+        tableInv = Papart.getPapart().getTableLocation().get();
         tableInv.invert();
         register();
     }
@@ -157,7 +157,7 @@ public class PaperScreen extends DelegatedGraphics {
         this.id = count++;
         this.markerBoard = MarkerBoardInvalid.board;
         table = Papart.getPapart().getTableLocation().get();
-        tableInv = Papart.getPapart().getTableLocation();
+        tableInv = Papart.getPapart().getTableLocation().get();
         tableInv.invert();
         register();
     }
@@ -886,7 +886,12 @@ public class PaperScreen extends DelegatedGraphics {
      * @return
      */
     public PMatrix3D getLocation(Camera camera) {
-        if ((!markerBoard.isTrackedBy(camera) && !this.useManualLocation)) {
+        if (this.useManualLocation) {
+            PMatrix3D combinedTransfos = manualLocation.get();
+            combinedTransfos.apply(extrinsics);
+            return combinedTransfos;
+        }
+        if (!markerBoard.isTrackedBy(camera)) {
             return extrinsics.get();
         }
         PMatrix3D combinedTransfos = getMainLocation(camera);
@@ -1060,9 +1065,7 @@ public class PaperScreen extends DelegatedGraphics {
      * @return
      */
     public PMatrix3D getLocation() {
-        if (this.useManualLocation) {
-            return this.manualLocation;
-        }
+
         return this.getLocation(cameraTracking);
     }
 
@@ -1597,7 +1600,7 @@ public class PaperScreen extends DelegatedGraphics {
         firefox.autoExit(parent);
         firefox.start();
     }
-    
+
     ///// App extension ///
     public void runProgram(String name) {
         if (Xdisplay == null) {
@@ -1661,7 +1664,7 @@ public class PaperScreen extends DelegatedGraphics {
         Touch t = createTouchFromMouse();
         interactApp(t);
     }
-    
+
     public void interactApp(Touch t) {
 
         if (redis != null) {

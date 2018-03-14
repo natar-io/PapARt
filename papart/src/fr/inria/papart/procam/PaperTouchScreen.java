@@ -81,7 +81,7 @@ public class PaperTouchScreen extends PaperScreen {
             this.touchInput = Papart.getPapart().getTouchInput();
         }
         if (this.touchInput != null) {
-            updateTouch();
+//            updateTouch();
         }
     }
 
@@ -106,7 +106,7 @@ public class PaperTouchScreen extends PaperScreen {
     public void setLocation(float x, float y, float z) {
         super.setLocation(x, y, z);
         this.computeWorldToScreenMat(cameraTracking);
-        updateTouch();
+//        updateTouch();
     }
 
     private PVector touchOffset = new PVector();
@@ -181,7 +181,7 @@ public class PaperTouchScreen extends PaperScreen {
     /**
      * Draw the touch points, good for debug.
      */
-    protected void drawTouch() {
+    public void drawTouch() {
         drawTouch(DEFAULT_TOUCH_SIZE);
     }
 
@@ -190,7 +190,7 @@ public class PaperTouchScreen extends PaperScreen {
      *
      * @param ellipseSize size of the points.
      */
-    protected void drawTouch(int ellipseSize) {
+    public void drawTouch(int ellipseSize) {
         for (Touch t : touchList) {
             if (t.is3D) {
                 // fill(185, 142, 62);

@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package fr.inria.papart.procam;
 
 import fr.inria.papart.procam.camera.TrackedView;
@@ -30,7 +25,7 @@ public class TableScreen extends PaperTouchScreen {
         // Test with this...
         setDrawOnPaper();
         setDrawingSize(width, height);
-        setQuality(2f);
+//        setQuality(2f);
     }
 
     @Override
@@ -41,12 +36,12 @@ public class TableScreen extends PaperTouchScreen {
 //        this.setLocation(location);
         this.useManualLocation(location);
     }
-    
-    public void translatePos(PVector t){
-        getExtrinsics().translate(t.x, t.y);
-    }
-    public void rotatePos(float v){
-        getExtrinsics().rotate(v);
-    }
+//    
+//    public void translatePos(PVector t){
+//        getExtrinsics().translate(t.x, t.y);
+//    }
+//    public void rotatePos(float v){
+//        getExtrinsics().rotate(v);
+//    }
 
 }
