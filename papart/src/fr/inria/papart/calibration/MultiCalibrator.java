@@ -9,6 +9,7 @@ import fr.inria.papart.calibration.files.HomographyCalibration;
 import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.calibration.files.PlaneCalibration;
 import fr.inria.papart.depthcam.DepthDataElementProjected;
+import static fr.inria.papart.depthcam.analysis.DepthAnalysis.INVALID_POINT;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.multitouch.DepthTouchInput;
 import fr.inria.papart.multitouch.SkatoloLink;
@@ -509,15 +510,6 @@ public class MultiCalibrator extends PaperTouchScreen {
         this.savedImages[currentScreenPoint] = cameraTracking.getIplImage().clone();
         this.savedLocations[currentScreenPoint] = currentCamBoard();
 
-        // Save the touch plane  TODO: not used remove this
-//        red1.computeColor();
-//        red2.computeColor();
-//        blue1.computeColor();
-//        blue2.computeColor();
-//        this.savedColors[currentScreenPoint * 2][0] = red1.getColor();
-//        this.savedColors[currentScreenPoint * 2 + 1][0] = red2.getColor();
-//        this.savedColors[currentScreenPoint * 2][1] = blue1.getColor();
-//        this.savedColors[currentScreenPoint * 2 + 1][1] = blue1.getColor();
         for (int i = 0; i < this.nbColors; i++) {
             this.detections[i * 2].computeColor();
             this.detections[i * 2 + 1].computeColor();
@@ -528,16 +520,46 @@ public class MultiCalibrator extends PaperTouchScreen {
         PMatrix3D loc = currentCamBoard();
 
         // MIDDLE translate !
-        loc.translate(148.6f, 103.1f);
+        loc.translate(CENTER_X, CENTER_Y);
         PMatrix3D camPos = loc;
         PVector pos3D = new PVector(camPos.m03, camPos.m13, camPos.m23);
+
         PVector pxCam = cameraTracking.getProjectiveDevice().worldToPixelCoord(pos3D, false);
         PVector pt = new PVector(this.screenPoints[currentScreenPoint].x, this.screenPoints[currentScreenPoint].y);
 
         if (!seeThrough) {
             projectorView.addObjectImagePair(pxCam, pt);
+
+            // Save also the 3D point from depth cam hopefully there are no fingers or objects.
+            PMatrix3D extr = depthCameraDevice.getStereoCalibration().get();
+            PVector depthPos = extr.mult(pos3D, new PVector());
+            int depthPx = depthCameraDevice.getDepthCamera().getProjectiveDevice().worldToPixel(depthPos);
+            Vec3D[] depthPoints = ((DepthTouchInput) touchInput).getDepthPoints();
+
+            int w = depthCameraDevice.getDepthCamera().width();
+
+            Vec3D point = INVALID_POINT;
+            Vec3D origin = new Vec3D(0, 0, 0);
+            int searchWindow = 4;
+            for (int i = -searchWindow; i <= searchWindow; i++) {
+                for (int j = -searchWindow; j <= searchWindow; j++) {
+                    int y = depthPx / w + i;
+                    int x = depthPx % w + j;
+
+                    int offset = y * w + x;
+                    Vec3D candidate = depthPoints[offset];
+                    if (candidate != INVALID_POINT && candidate.distanceTo(origin) > 1) {
+                        point = new Vec3D(candidate); // a copy of it.
+                    }
+                }
+            }
+            savedPoints[currentScreenPoint] = point;
+//            System.out.println("Saved point " + currentScreenPoint + " " + point);
         }
+
     }
+
+    Vec3D[] savedPoints = new Vec3D[nbScreenPoints];
 
     private PMatrix3D currentCamBoard() {
         return getMarkerBoard().getTransfoMat(cameraTracking).get();
@@ -665,6 +687,18 @@ public class MultiCalibrator extends PaperTouchScreen {
         planeCalib.setHeight(10f); // NOT used anymore -> to remove.
         planeCalib.flipNormal();
 
+        // TODO: Not better yet, be we can mix this data with the other 
+        // to get a better result.
+//        // Other Planecalib method !!
+//        PlaneCreator creator = new PlaneCreator();
+//        creator.addPoint(savedPoints[0]);
+//        creator.addPoint(savedPoints[1]);
+//        creator.addPoint(savedPoints[2]);
+//
+//        creator.setHeight(15); // in mm
+//        planeCalib = creator.getPlaneCalibration();
+//        planeCalib.flipNormal();
+
 //        this.planeProjCalib.setPlane(planeCalib);
         // Now the projection for screen-space.
         // planes from the camera perspective. 
@@ -692,12 +726,12 @@ public class MultiCalibrator extends PaperTouchScreen {
 
         for (int colorId = 0; colorId < nbColors; colorId++) {
             ColorReferenceThresholds c = new ColorReferenceThresholds(colorId);
-            
+
             int[] colorData = new int[nbScreenPoints * 2];
             for (int i = 0; i < nbScreenPoints * 2; i++) {
                 colorData[i] = this.savedColors[i][colorId];
             }
-            
+
             String[] list = c.createReference(colorData);
             String saveFile = Papart.colorThresholds + colorId + ".txt";
             parent.saveStrings(saveFile, list);
