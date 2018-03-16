@@ -187,6 +187,11 @@ public class ColorTouchInput extends TouchInput {
         touchPointSemaphore.release();
         return touchList;
     }
+    
+   @Override
+    public Touch projectTouch(PaperScreen paperScreen, BaseDisplay display, TrackedElement e) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 
     public ArrayList<TrackedElement> findColor(PImage capturedImage, int time) {
 
@@ -390,4 +395,5 @@ public class ColorTouchInput extends TouchInput {
         return redThreshold;
     }
 
+ 
 }

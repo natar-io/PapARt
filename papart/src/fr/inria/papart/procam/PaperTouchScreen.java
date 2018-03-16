@@ -26,6 +26,8 @@ import fr.inria.papart.multitouch.Touch;
 import fr.inria.papart.multitouch.DepthTouchInput;
 import fr.inria.papart.multitouch.TUIOTouchInput;
 import fr.inria.papart.multitouch.TouchList;
+import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
+import fr.inria.papart.multitouch.tracking.TrackedElement;
 import processing.core.PApplet;
 import processing.core.PVector;
 
@@ -155,10 +157,10 @@ public class PaperTouchScreen extends PaperScreen {
         // Warning TODO: Hack.. V_V 
         // Touch in 2D  mode has boundaries. 
         // Touch in 3D mode has no boundaries. 
-        touchInput.computeOutsiders(!this.isDraw2D());
+        touchInput.projectOutsiders(!this.isDraw2D());
 
         if (touchInput instanceof TUIOTouchInput) {
-            touchInput.computeOutsiders(true);
+            touchInput.projectOutsiders(true);
         }
 
         touchList = touchInput.projectTouchToScreen(this, getDisplay());
@@ -175,7 +177,14 @@ public class PaperTouchScreen extends PaperScreen {
         }
 
     }
-
+    
+    public Touch projectTouch(TrackedDepthPoint te){
+        return touchInput.projectTouch(this, getDisplay(), te);
+    }
+    public Touch projectTouch(TrackedElement te){
+        return touchInput.projectTouch(this, getDisplay(), te);
+    }
+    
     static private final int DEFAULT_TOUCH_SIZE = 15;
 
     /**

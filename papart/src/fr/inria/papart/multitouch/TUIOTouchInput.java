@@ -23,6 +23,7 @@ import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
 import fr.inria.papart.procam.display.BaseDisplay;
 
 import TUIO.*;
+import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.procam.PaperScreen;
 import processing.core.PApplet;
 import java.util.*;
@@ -149,5 +150,10 @@ public class TUIOTouchInput extends TouchInput {
 // called after each message bundle
 // representing the end of an image frame
     public void refresh(TuioTime bundleTime) {
+    }
+
+    @Override
+    public Touch projectTouch(PaperScreen paperScreen, BaseDisplay display, TrackedElement e) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

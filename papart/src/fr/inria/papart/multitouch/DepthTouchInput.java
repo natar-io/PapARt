@@ -35,6 +35,7 @@ import fr.inria.papart.multitouch.detection.HandDetection;
 import fr.inria.papart.multitouch.detection.ObjectDetection;
 import fr.inria.papart.multitouch.detection.Simple2D;
 import fr.inria.papart.multitouch.detection.TouchDetectionDepth;
+import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.display.BaseDisplay;
@@ -60,6 +61,7 @@ public class DepthTouchInput extends TouchInput {
     public static final int NO_TOUCH = -1;
     private int touch2DPrecision, touch3DPrecision;
     private DepthAnalysisImpl depthAnalysis;
+
     private PApplet parent;
 
     private final Semaphore touchPointSemaphore = new Semaphore(1, true);
@@ -193,6 +195,12 @@ public class DepthTouchInput extends TouchInput {
             }
 
             int initPrecision = 3;
+            
+            // Use simple detection's precision
+            if(simpleDetection != null && handDetection == null){
+                initPrecision = simpleDetection.getPrecision();
+            }
+            
 //            Instant start = Instant.now();
 
             depthAnalysis.computeDepthAndNormals(depthImage, colImage, initPrecision);
@@ -273,6 +281,11 @@ public class DepthTouchInput extends TouchInput {
 
         touchPointSemaphore.release();
         return touchList;
+    }
+    
+    @Override
+    public Touch projectTouch(PaperScreen paperScreen, BaseDisplay display, TrackedElement e) {
+        return createTouch(paperScreen, display, (TrackedDepthPoint) e);
     }
 
     private Touch createTouch(PaperScreen screen, BaseDisplay display, TrackedDepthPoint tp) {
@@ -623,5 +636,12 @@ public class DepthTouchInput extends TouchInput {
 
     public void releaseDepthData() {
         depthDataSem.release();
+    }
+    
+    public DepthAnalysisImpl getDepthAnalysis() {
+        return depthAnalysis;
+    }
+    public Vec3D[] getDepthPoints() {
+        return depthAnalysis.getDepthPoints();
     }
 }
