@@ -6,6 +6,8 @@
 package fr.inria.papart.multitouch.detection;
 
 import fr.inria.papart.calibration.files.PlanarTouchCalibration;
+import fr.inria.papart.multitouch.Touch;
+import fr.inria.papart.multitouch.TouchList;
 import static fr.inria.papart.multitouch.detection.CalibratedColorTracker.colorFinderLAB;
 import fr.inria.papart.multitouch.tracking.TouchPointTracker;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
@@ -48,10 +50,11 @@ public class CalibratedStickerTracker extends ColorTracker {
 
     /**
      * TO test !
+     *
      * @param paperScreen
      * @param offset
      * @param capSize
-     * @param size 
+     * @param size
      */
     public CalibratedStickerTracker(PaperScreen paperScreen, PVector offset,
             PVector capSize, float size) {
@@ -69,7 +72,7 @@ public class CalibratedStickerTracker extends ColorTracker {
         circleView = new TrackedView(paperScreen);
 
         // No cap size, we capture the whole paperscreen.
-        if(capSize.x == 0 || capSize.y == 0){
+        if (capSize.x == 0 || capSize.y == 0) {
             capSize.set(paperScreen.getDrawingSize());
         }
         // it is scae to mm... 
@@ -80,7 +83,7 @@ public class CalibratedStickerTracker extends ColorTracker {
 
         circleView.setTopLeftCorner(offset);
         circleView.setCaptureSizeMM(capSize);
-        
+
         // We need to scale the circles to 5 pixels 
         circleView.setImageWidthPx(circleViewWidth);
         circleView.setImageHeightPx(circleViewHeight);
@@ -88,8 +91,7 @@ public class CalibratedStickerTracker extends ColorTracker {
 
         conv = new int[circleViewWidth * circleViewHeight];
         innerCircles = new byte[circleViewWidth * circleViewHeight];
-        
-        
+
         innerCirclesDetection = new TouchDetectionInnerCircles(circleView);
 
         PlanarTouchCalibration innerCirclesCalibration = Papart.getPapart().getDefaultColorZoneCalibration();
@@ -103,7 +105,6 @@ public class CalibratedStickerTracker extends ColorTracker {
 
         innerCircles = innerCirclesDetection.createInputArray();
     }
-
 
     public int getReferenceColor(int id) {
         return references[id].getReferenceColor();
@@ -170,8 +171,21 @@ public class CalibratedStickerTracker extends ColorTracker {
     public ArrayList<LineCluster> lineClusters() {
         return lineClusters;
     }
+
     public ArrayList<StickerCluster> clusters() {
         return clusters;
+    }
+
+    public TouchList getTouchList(int id) {
+        TouchList output = new TouchList();
+        for (TrackedElement te : trackedElements) {
+            if (te.attachedValue == id) {
+                Touch t = te.getTouch();
+                t.setPosition(te.getPosition());
+                output.add(t);
+            }
+        }
+        return output;
     }
 
     ArrayList<TrackedElement> smallElements;

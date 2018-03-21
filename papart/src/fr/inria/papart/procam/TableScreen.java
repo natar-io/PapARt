@@ -14,28 +14,31 @@ public class TableScreen extends PaperTouchScreen {
     protected PVector translation;
     protected PMatrix3D location;
 
-    public TableScreen(PVector location, float width, float height) {
+    public TableScreen(PVector loc, float width, float height) {
         this.width = width;
         this.height = height;
-        this.translation = new PVector(location.x, location.y, location.z);
-    }
+        this.translation = new PVector(loc.x, loc.y, loc.z);
 
-    @Override
-    public void settings() {
-        // Test with this...
         setDrawOnPaper();
         setDrawingSize(width, height);
-//        setQuality(2f);
+        this.location = table.get();
+        this.location.translate(translation.x, translation.y);
+//        this.setLocation(location);
+        this.useManualLocation(this.location);
     }
 
-    @Override
-    public void setup() {
-        // View on all of the image
-        location = table.get();
-        location.translate(translation.x, translation.y);
-//        this.setLocation(location);
-        this.useManualLocation(location);
-    }
+//    @Override
+//    public void settings() {
+//        // Test with this...
+//
+////        setQuality(2f);
+//    }
+//
+//    @Override
+//    public void setup() {
+//        // View on all of the image
+//
+//    }
 //    
 //    public void translatePos(PVector t){
 //        getExtrinsics().translate(t.x, t.y);
