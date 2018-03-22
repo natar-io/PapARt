@@ -1146,6 +1146,10 @@ public class MultiCalibrator extends PaperTouchScreen {
         PlaneAndProjectionCalibration phc = new PlaneAndProjectionCalibration();
         phc.setHomography(hc);
         phc.setPlane(pc);
+        
+        pc.saveTo(parent, Papart.planeCalib);
+        hc.saveTo(parent, Papart.homographyCalib);
+        
         phc.saveTo(parent, Papart.planeAndProjectionCalib);
 //        touchInput.setPlaneAndProjCalibration(planeProjCalib);
         depthTouchInput.setPlaneAndProjCalibration(phc);

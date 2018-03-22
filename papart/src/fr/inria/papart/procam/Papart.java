@@ -927,8 +927,16 @@ public class Papart {
         depthAnalysis = new DepthAnalysisImpl(this.applet, depthCameraDevice);
 
         PlaneAndProjectionCalibration calibration = new PlaneAndProjectionCalibration();
-        calibration.loadFrom(this.applet, planeAndProjectionCalib);
+//        calibration.loadFrom(this.applet, planeAndProjectionCalib);
 
+        HomographyCalibration hc = new HomographyCalibration();
+        hc.loadFrom(applet, Papart.homographyCalib);
+        
+        PlaneCalibration pc = new PlaneCalibration();
+        pc.loadFrom(applet, Papart.planeCalib);
+        calibration.setPlane(pc);
+        calibration.setHomography(hc);
+        
         DepthTouchInput depthTouchInput
                 = new DepthTouchInput(this.applet,
                         depthCameraDevice,

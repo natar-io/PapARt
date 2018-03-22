@@ -112,8 +112,9 @@ public class DepthTouchInput extends TouchInput {
         setSimpleTouchDetectionCalibration(papart.getDefaultTouchCalibration());
         setObjectTouchDetectionCalibration(papart.getDefaultObjectTouchCalibration());
     }
-   /**
-     * Load a set of (default) touch detections, only hands for now. 
+
+    /**
+     * Load a set of (default) touch detections, only hands for now.
      */
     public void initTouchDetections() {
         // First run, get calibrations from device after start.
@@ -131,18 +132,19 @@ public class DepthTouchInput extends TouchInput {
         simpleDetection = new Simple2D(depthAnalysis, simpleTouchCalibration);
     }
 
-     /**
-      * TouchInput with object detection. Implementation in progress.
-      * This may lead to many classes of object detections.
-      */
+    /**
+     * TouchInput with object detection. Implementation in progress. This may
+     * lead to many classes of object detections.
+     */
     public ObjectDetection initObjectDetection() {
         checkCalibrations();
         objectDetection = new ObjectDetection(depthAnalysis, objectTouchCalibration);
         return objectDetection;
     }
-     /**
-      * TouchInput with hand detection: provides Arm, hand and finger detections. 
-      */
+
+    /**
+     * TouchInput with hand detection: provides Arm, hand and finger detections.
+     */
     public void initHandDetection() {
         checkCalibrations();
         touchDetections[0] = new ArmDetection(depthAnalysis, touchCalibrations[0]);
@@ -195,14 +197,13 @@ public class DepthTouchInput extends TouchInput {
             }
 
             int initPrecision = 3;
-            
+
             // Use simple detection's precision
-            if(simpleDetection != null && handDetection == null){
+            if (simpleDetection != null && handDetection == null) {
                 initPrecision = simpleDetection.getPrecision();
             }
-            
-//            Instant start = Instant.now();
 
+//            Instant start = Instant.now();
             depthAnalysis.computeDepthAndNormals(depthImage, colImage, initPrecision);
 
             if (simpleDetection != null) {
@@ -252,7 +253,7 @@ public class DepthTouchInput extends TouchInput {
         TouchList touchList = new TouchList();
 
         // Not initialized
-        if (fingerDetection == null || armDetection == null) {
+        if (fingerDetection == null && armDetection == null && simpleDetection == null) {
             return touchList;
         }
 
@@ -261,28 +262,30 @@ public class DepthTouchInput extends TouchInput {
         } catch (InterruptedException ie) {
             System.err.println("Semaphore Exception: " + ie);
         }
-        for (TrackedDepthPoint tp : fingerDetection.getTouchPoints()) {
-            Touch touch = createTouch(screen, display, tp);
-            if (touch != INVALID_TOUCH) {
-                touchList.add(touch);
-            }
-        }
 
-        for (TrackedDepthPoint tp : armDetection.getTouchPoints()) {
-            try {
-                Touch touch = createTouch(screen, display, tp);
-                if (touch != INVALID_TOUCH) {
-                    touchList.add(touch);
-                }
-            } catch (Exception e) {
-//                System.err.println("Intersection fail. " + e);
-            }
-        }
+        tryToAddTouchs(fingerDetection, touchList, screen, display);
+        tryToAddTouchs(armDetection, touchList, screen, display);
+        tryToAddTouchs(simpleDetection, touchList, screen, display);
 
         touchPointSemaphore.release();
         return touchList;
     }
-    
+
+    private void tryToAddTouchs(TouchDetectionDepth detection,
+            TouchList touchList,
+            PaperScreen screen,
+            BaseDisplay display) {
+        
+        if (detection != null) {
+            for (TrackedDepthPoint tp : detection.getTouchPoints()) {
+                Touch touch = createTouch(screen, display, tp);
+                if (touch != INVALID_TOUCH) {
+                    touchList.add(touch);
+                }
+            }
+        }
+    }
+
     @Override
     public Touch projectTouch(PaperScreen paperScreen, BaseDisplay display, TrackedElement e) {
         return createTouch(paperScreen, display, (TrackedDepthPoint) e);
@@ -637,10 +640,11 @@ public class DepthTouchInput extends TouchInput {
     public void releaseDepthData() {
         depthDataSem.release();
     }
-    
+
     public DepthAnalysisImpl getDepthAnalysis() {
         return depthAnalysis;
     }
+
     public Vec3D[] getDepthPoints() {
         return depthAnalysis.getDepthPoints();
     }
