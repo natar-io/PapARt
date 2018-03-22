@@ -39,6 +39,10 @@ public class LowPassFilter {
         s = result;
         return result;
     }
+    
+    public double filter(){
+        return filter(lastRawValue());
+    }
 
     public double filterWithAlpha(double value, double alpha) throws Exception {
         setAlpha(alpha);
@@ -51,5 +55,9 @@ public class LowPassFilter {
 
     public double lastRawValue() {
         return y;
+    }
+    
+    public double lastValue() {
+        return s;
     }
 };
