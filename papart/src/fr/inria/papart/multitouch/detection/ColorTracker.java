@@ -21,6 +21,7 @@ package fr.inria.papart.multitouch.detection;
 import fr.inria.papart.calibration.files.PlanarTouchCalibration;
 import fr.inria.papart.multitouch.Touch;
 import fr.inria.papart.multitouch.TouchList;
+import static fr.inria.papart.multitouch.detection.CalibratedColorTracker.colorFinderLAB;
 import fr.inria.papart.multitouch.tracking.TouchPointTracker;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.multitouch.detection.TouchDetectionColor;
@@ -161,9 +162,10 @@ public class ColorTracker {
                 boolean good = false;
 
                 if ("red".equals(name)) {
-                    good = MathUtils.colorFinderHSBRedish(paperScreen.getGraphics(),
-                            reference.referenceColor, c, reference.hue, reference.saturation, reference.brightness);
-
+//                    good = MathUtils.colorFinderHSBRedish(paperScreen.getGraphics(),
+//                            reference.referenceColor, c, reference.hue, reference.saturation, reference.brightness);
+                    good = colorFinderLAB(paperScreen.getGraphics(),
+                            c, reference);
                     boolean red = true;
 //                    boolean red = MathUtils.isRed(paperScreen.getGraphics(),
 //                            c, ref2, reference.redThreshold);
