@@ -6,6 +6,8 @@
 package fr.inria.papart.multitouch.detection;
 
 import fr.inria.papart.calibration.files.PlanarTouchCalibration;
+import fr.inria.papart.multitouch.Touch;
+import fr.inria.papart.multitouch.TouchList;
 import fr.inria.papart.multitouch.tracking.TouchPointTracker;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.procam.Papart;
@@ -116,7 +118,9 @@ public class CalibratedColorTracker extends ColorTracker {
         }
 
         int erosion = 0;
-
+// WARNING
+// NO TRACKING MEANS NO IDs 
+  lastFound = colorFoundArray.clone();
         // Step1 -> small-scale colors (gomettes)
 // EROSION by color ?!
 //        ArrayList<TrackedElement> newElements
@@ -124,24 +128,29 @@ public class CalibratedColorTracker extends ColorTracker {
       smallElements = touchDetectionColor.compute(time, erosion, this.scale);
         
         ///
-        System.arraycopy(colorFoundArray, 0, largeColorFoundArray, 0, colorFoundArray.length);
+//        System.arraycopy(colorFoundArray, 0, largeColorFoundArray, 0, colorFoundArray.length);
         
-        ArrayList<TrackedElement> newElements2
-                = largeDetectionColor.compute(time, erosion, this.scale);
+//        ArrayList<TrackedElement> newElements2
+//                = largeDetectionColor.compute(time, erosion, this.scale);
 //
+//   TODO: Track by COLOR!!!!!
+
         // Step 2 -> Large -scale colors (ensemble de gomettes) 
-//        TouchPointTracker.trackPoints(trackedElements, smallElements, time);
-        trackedElements.clear();
-        trackedElements.addAll(smallElements);
-        TouchPointTracker.trackPoints(trackedLargeElements, newElements2, time);
+        TouchPointTracker.trackPoints(trackedElements, smallElements, time);
+//        trackedElements.clear();
+//        trackedElements.addAll(smallElements);
+//        TouchPointTracker.trackPoints(trackedLargeElements, newElements2, time);
         
 //        for(TrackedElement te : trackedElements){
 //            te.filter(time);
 //        }
 
-//        return trackedElements;
-        return trackedLargeElements;
+
+        return trackedElements;
+//        return trackedLargeElements;
     }
+
+    public byte[] lastFound;
     
      ArrayList<TrackedElement> smallElements;
        protected final ArrayList<TrackedElement> trackedLargeElements = new ArrayList<>();
@@ -149,7 +158,20 @@ public class CalibratedColorTracker extends ColorTracker {
         return trackedElements;
     }
     
-    
+       public TouchList getTouchList(int id) {
+        TouchList output = new TouchList();
+        for (TrackedElement te : trackedElements) {
+            Touch t = te.getTouch();
+            if(t.trackedSource().attachedValue == id){
+                      t.is3D = false;
+//            System.out.println("pid: " + t.id);
+//            System.out.println("p: " + te.getPosition());
+            t.setPosition(te.getPosition());
+            output.add(t);
+            }
+        }
+        return output;
+    }
     
     public static ColorConverter converter = new ColorConverter();
 
@@ -266,7 +288,6 @@ public class CalibratedColorTracker extends ColorTracker {
      *
      * @param incomingPix
      * @param ref
-     * @param error
      * @return
      */
     public static float colorFinderLABError(int incomingPix,
