@@ -698,7 +698,6 @@ public class MultiCalibrator extends PaperTouchScreen {
 //        creator.setHeight(15); // in mm
 //        planeCalib = creator.getPlaneCalibration();
 //        planeCalib.flipNormal();
-
 //        this.planeProjCalib.setPlane(planeCalib);
         // Now the projection for screen-space.
         // planes from the camera perspective. 
@@ -733,14 +732,19 @@ public class MultiCalibrator extends PaperTouchScreen {
             }
 
             String[] list = c.createReference(colorData);
-            String saveFile = Papart.colorThresholds + colorId + ".txt";
-            parent.saveStrings(saveFile, list);
 
-            if (colorId == 0) {
-                parent.saveStrings(Papart.redThresholds, list);
-            }
-            if (colorId == 1) {
-                parent.saveStrings(Papart.blueThresholds, list);
+            if (list != ColorReferenceThresholds.INVALID_COLOR) {
+                String saveFile = Papart.colorThresholds + colorId + ".txt";
+                parent.saveStrings(saveFile, list);
+
+                if (colorId == 0) {
+                    parent.saveStrings(Papart.redThresholds, list);
+                }
+                if (colorId == 1) {
+                    parent.saveStrings(Papart.blueThresholds, list);
+                }
+            } else{
+                System.out.println("could not determine color: " + colorId);
             }
         }
 
@@ -1146,10 +1150,10 @@ public class MultiCalibrator extends PaperTouchScreen {
         PlaneAndProjectionCalibration phc = new PlaneAndProjectionCalibration();
         phc.setHomography(hc);
         phc.setPlane(pc);
-        
+
         pc.saveTo(parent, Papart.planeCalib);
         hc.saveTo(parent, Papart.homographyCalib);
-        
+
         phc.saveTo(parent, Papart.planeAndProjectionCalib);
 //        touchInput.setPlaneAndProjCalibration(planeProjCalib);
         depthTouchInput.setPlaneAndProjCalibration(phc);
