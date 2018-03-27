@@ -40,8 +40,7 @@ public class MarkerList extends HashMap<Integer, MarkerSvg> {
     /**
      * Set sheet size in mm.
      *
-     * @param x
-     * @param y
+     * @param size
      */
     public void setSheetSize(PVector size) {
         setSheetSize(size.x, size.y);

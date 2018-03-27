@@ -501,7 +501,6 @@ public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
 
     /**
      * Get info about auto exposure, depends on camera driver for availability.
-     * @param v 
      */
     public boolean isAutoExposure() {
         return true;
@@ -509,7 +508,6 @@ public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
 
     /**
      * Get info about white balance, depends on camera driver for availability.
-     * @param v 
      */
     public boolean isAutoWhiteBalance() {
         return true;
