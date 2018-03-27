@@ -328,6 +328,7 @@ public class ImageUtils {
         argb.rewind();
     }
 
+    @Deprecated
     public static void remapImage(PVector[] in, PVector[] out, opencv_core.IplImage imgIn, opencv_core.IplImage imgTmp, PImage Pout) {
         opencv_core.CvMat srcPoints;
         opencv_core.CvMat dstPoints;
@@ -442,13 +443,13 @@ public class ImageUtils {
 
         int w = img.widthStep();
         int nChannels = img.nChannels();
-        byte[] tmpArr = new byte[w];
+        byte[] lineArray = new byte[w];
         int k = 0;
         for (int j = 0; j < img.height(); j++) {
-            buff.get(tmpArr);
+            buff.get(lineArray);
             if (img.nChannels() == 1) {
                 for (int i = 0; i < img.width(); i++) {
-                    byte r = tmpArr[i];
+                    byte r = lineArray[i];
                     byte g = r;
                     byte b = r;
                     ret.pixels[k++] = (r & 255) << 16 | (g & 255) << 8 | (b & 255);
@@ -457,17 +458,17 @@ public class ImageUtils {
 
                 if (RGB) {
                     for (int i = 0; i < img.width(); i++) {
-                        byte r = tmpArr[i * nChannels + 0];
-                        byte g = tmpArr[i * nChannels + 1];
-                        byte b = tmpArr[i * nChannels + 2];
+                        byte r = lineArray[i * nChannels + 0];
+                        byte g = lineArray[i * nChannels + 1];
+                        byte b = lineArray[i * nChannels + 2];
 
                         ret.pixels[k++] = (r & 255) << 16 | (g & 255) << 8 | (b & 255);
                     }
                 } else {
                     for (int i = 0; i < img.width(); i++) {
-                        byte r = tmpArr[i * nChannels + 0];
-                        byte g = tmpArr[i * nChannels + 1];
-                        byte b = tmpArr[i * nChannels + 2];
+                        byte r = lineArray[i * nChannels + 0];
+                        byte g = lineArray[i * nChannels + 1];
+                        byte b = lineArray[i * nChannels + 2];
 
                         ret.pixels[k++] = (b & 255) << 16 | (g & 255) << 8 | (r & 255);
                     }
