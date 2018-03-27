@@ -309,7 +309,6 @@ public class LineCluster extends ArrayList<TrackedElement> {
      * @param currentPoint
      * @param elements
      * @param dist distance to next element
-     * @param level current level (size of currentCluster)
      */
     public static void tryAttach(LineCluster currentCluster,
             TrackedElement currentPoint,
