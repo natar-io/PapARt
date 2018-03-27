@@ -100,7 +100,7 @@ public class ColorReferenceThresholds {
         return (r << 16) | (g << 8) | b;
     }
 
-    public String[] INVALID_COLOR = new String[]{""};
+    public static String[] INVALID_COLOR = new String[]{""};
 
     public String[] createReference(int[] colorData) {
 
@@ -217,7 +217,7 @@ public class ColorReferenceThresholds {
 
         // Check the stdev... when too high the value is not stored.
         if (stdevHue > 40 || stdevSat > 40 || stdevIntens > 50) {
-            System.out.println("Could not determine color");
+//            System.out.println("Could not determine color");
             return INVALID_COLOR;
         }
 
