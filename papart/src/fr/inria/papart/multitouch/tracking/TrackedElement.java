@@ -61,6 +61,7 @@ public class TrackedElement {
     // Tracking related variables
     public static final int NO_ID = -10;
     private static int globalID = 1;
+//    private static int globalIDTemp = Integer.MIN_VALUE;
     protected int id = NO_ID;
 
     // time management
@@ -107,6 +108,14 @@ public class TrackedElement {
         } catch (Exception e) {
             System.out.println("OneEuro Exception. Pay now." + e);
         }
+        
+//        // In test: global ID also for temporary values
+//        this.id = globalIDTemp++; 
+//        if(globalIDTemp == NO_ID){
+//            globalIDTemp = Integer.MIN_VALUE;
+//        }
+        
+        
         touch = new Touch();
         initTouch();
     }
