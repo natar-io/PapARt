@@ -170,6 +170,8 @@ public class ColorTracker {
 //                    boolean red = MathUtils.isRed(paperScreen.getGraphics(),
 //                            c, ref2, reference.redThreshold);
                     good = good && red;
+                    
+                    // TODO: LAB only ?!!
                 } else {
                     if ("blue".equals(name)) {
                         good = MathUtils.colorFinderHSB(paperScreen.getGraphics(),

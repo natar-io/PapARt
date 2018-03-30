@@ -153,7 +153,7 @@ public class CalibratedStickerTracker extends ColorTracker {
         // Start from the eroded points, find out the color and positions of possible circles.
         smallElements = innerCirclesDetection.compute(time, references,
                 circleImage, this.scale);
-
+        
         // Increase the quality by looking again in a higher resolution ???
         trackedElements.clear();
         trackedElements.addAll(smallElements);

@@ -97,7 +97,7 @@ public class TouchDetectionInnerCircles extends TouchDetection {
      * @param references
      * @return
      */
-    public ArrayList<TrackedElement> compute(int timestamp, 
+    public ArrayList<TrackedElement> compute(int timestamp,
             ColorReferenceThresholds references[],
             PImage mainImg,
             float scale) {
@@ -131,8 +131,8 @@ public class TouchDetectionInnerCircles extends TouchDetection {
                         currentID = id;
                     }
                 }
-                
-                if(currentID != -1){
+
+                if (currentID != -1) {
                     segmentedImage[i] = (byte) (currentID + 1);
                     toVisit.add(i);
                 }
@@ -153,25 +153,40 @@ public class TouchDetectionInnerCircles extends TouchDetection {
             }
 
             // Check if it matches a color.
-            byte selectedColor = UNKNOWN_COLOR;
+            byte selectedID = UNKNOWN_COLOR;
+            boolean ambiguous = false;
+
             for (int idx : connectedComponent) {
                 byte candidate = segmentedImage[idx];
+
                 if (candidate != UNKNOWN_COLOR) {
-                    if (selectedColor != UNKNOWN_COLOR && candidate != selectedColor) {
-                        System.out.println("Color attribution conflict: " + candidate + " " + selectedColor);
+                    if (selectedID != UNKNOWN_COLOR && candidate != selectedID) {
+                        System.out.println("Color attribution conflict: " + candidate + " " + selectedID);
+                        ambiguous = true;
                     }
-                    selectedColor = segmentedImage[idx];
+                    selectedID = segmentedImage[idx];
                 }
             }
+
+            if (!ambiguous && selectedID != UNKNOWN_COLOR) {
+
+                for (int idx : connectedComponent) {
+
+                    ColorReferenceThresholds ref = references[selectedID - 1];
+                    int selectedColor = mainImg.pixels[idx];
+
+                    ref.updateReference(selectedColor);
+                }
+            }
+
 //            if (selectedColor == UNKNOWN_COLOR) {
 //                System.out.println("Unknown color...");
 //                continue;
 //            }
-
             TrackedElement tp = createTouchPoint(connectedComponent);
             tp.getPosition().set(tp.getPosition().x / scale, tp.getPosition().y / scale);
             // We attach the colorID here.
-            tp.attachedValue = selectedColor;
+            tp.attachedValue = selectedID;
             touchPoints.add(tp);
         }
         return touchPoints;
@@ -181,7 +196,8 @@ public class TouchDetectionInnerCircles extends TouchDetection {
      * @param connectedComponent
      */
     @Override
-    protected TrackedElement createTouchPoint(ConnectedComponent connectedComponent) {
+    protected TrackedElement createTouchPoint(ConnectedComponent connectedComponent
+    ) {
         Vec3D meanProj = connectedComponent.getMean(imgSize);
         TrackedElement tp = new TrackedElement();
         tp.setDetection(this);

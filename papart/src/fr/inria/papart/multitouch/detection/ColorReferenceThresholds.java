@@ -5,6 +5,8 @@
  */
 package fr.inria.papart.multitouch.detection;
 
+import static fr.inria.papart.multitouch.detection.CalibratedColorTracker.colorFinderLABError;
+import static fr.inria.papart.multitouch.detection.CalibratedColorTracker.converter;
 import fr.inria.papart.procam.Papart;
 import static fr.inria.papart.utils.MathUtils.absd;
 import static fr.inria.papart.utils.MathUtils.constrain;
@@ -27,15 +29,18 @@ public class ColorReferenceThresholds {
     public float redThreshold, blueThreshold, greenThreshold;
     public float LThreshold, AThreshold, BThreshold;
     public float averageL, averageA, averageB;
+    public float initL, initA, initB;
     public int referenceColor, erosion;
     public int id;
 
-    public ColorReferenceThresholds(){
-        
+    public ColorReferenceThresholds() {
+
     }
-    public ColorReferenceThresholds(int id){
+
+    public ColorReferenceThresholds(int id) {
         this.id = id;
     }
+
     /**
      * Color distance on the HSB scale. The incomingPix is compared with the
      * baseline. The method returns true if each channel validates the condition
@@ -66,6 +71,86 @@ public class ColorReferenceThresholds {
     private int blue(int v) {
         return v & 0xFF;
     }
+
+    public void updateReference(int c) {
+        updateReference(c, 30);
+    }
+
+    public void updateReference(int c, float error) {
+
+        float currentError = colorFinderInitLABError(c);
+        // Too much distance
+        if (currentError > error) {
+            return;
+        }
+
+        double[] lab = converter.RGBtoLAB((int) this.red(c), (int) this.green(c), (int) this.blue(c));
+
+        this.averageL = (averageL + (float) lab[0]) / 2.0f;
+        this.averageA = (averageA + (float) lab[1]) / 2.0f;
+        this.averageB = (averageB + (float) lab[2]) / 2.0f;
+
+        // Narrow the thresholds
+        if (this.AThreshold > 3) {
+            this.AThreshold = this.AThreshold * 0.9f;
+        }
+        if (this.LThreshold > 3) {
+            this.LThreshold = this.LThreshold * 0.9f;
+        }
+        if (this.BThreshold > 3) {
+            this.BThreshold = this.BThreshold * 0.9f;
+        }
+//        System.out.println("Updated color: " + this.id);
+    }
+
+    /**
+     * Color distance on the LAB scale. The incomingPix is compared with the
+     * baseline. The method returns true if each channel validates the condition
+     * for the given threshold. Use the error d to match the points.
+     *
+     * @param incomingPix
+     * @return
+     */
+    public float colorFinderLABError(int incomingPix) {
+
+        double[] lab = converter.RGBtoLAB((int) ((incomingPix >> 16) & 0xFF),
+                (int) ((incomingPix >> 8) & 0xFF), (int) (incomingPix & 0xFF));
+
+        double l = constrain(lab[0], 0, 100);
+        double A = constrain(lab[1], -128, 128);
+        double B = constrain(lab[2], -128, 128);
+
+        double d
+                = Math.sqrt(Math.pow(l - averageL, 2)
+                        + Math.pow(A - averageA, 2)
+                        + Math.pow(B - averageB, 2));
+        return (float) d;
+    }
+
+    /**
+     * Color distance on the LAB scale. The incomingPix is compared with the
+     * baseline. The method returns true if each channel validates the condition
+     * for the given threshold. Use the error d to match the points.
+     *
+     * @param incomingPix
+     * @return
+     */
+    public float colorFinderInitLABError(int incomingPix) {
+
+        double[] lab = converter.RGBtoLAB((int) ((incomingPix >> 16) & 0xFF),
+                (int) ((incomingPix >> 8) & 0xFF), (int) (incomingPix & 0xFF));
+
+        double l = constrain(lab[0], 0, 100);
+        double A = constrain(lab[1], -128, 128);
+        double B = constrain(lab[2], -128, 128);
+
+        double d
+                = Math.sqrt(Math.pow(l - initL, 2)
+                        + Math.pow(A - initA, 2)
+                        + Math.pow(B - initB, 2));
+        return (float) d;
+    }
+
     int cacheHsbKey = 0;
     float cacheHsbValue[] = new float[3];
 
@@ -295,12 +380,18 @@ public class ColorReferenceThresholds {
             }
             if (pair[0].startsWith("valL")) {
                 this.averageL = Float.parseFloat(pair[1]);
+                this.initL = Float.parseFloat(pair[1]);
             }
             if (pair[0].startsWith("valA")) {
                 this.averageA = Float.parseFloat(pair[1]);
+                this.initA = Float.parseFloat(pair[1]);
             }
             if (pair[0].startsWith("valB")) {
                 this.averageB = Float.parseFloat(pair[1]);
+                this.initB = Float.parseFloat(pair[1]);
+            }
+            if (pair[0].startsWith("id")) {
+                this.id = Integer.parseInt(pair[1]);
             }
         } catch (NumberFormatException nfe) {
             nfe.printStackTrace();
