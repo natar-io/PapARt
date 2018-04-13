@@ -140,10 +140,16 @@ public class PaperTouchScreen extends PaperScreen {
         this.touchOffset.set(touchOffset);
     }
 
-    /**
-     * Update the touch locations. Call this after setTouchOffset.
-     */
     public void updateTouch() {
+        updateTouch(false);
+    }
+
+    /**
+     * Update touch location, filtering the tracked touchpoints.
+     *
+     * @param filter
+     */
+    public void updateTouch(boolean filter) {
         if (!(touchInput instanceof TUIOTouchInput)) {
             if (!this.isDrawing()) {
                 return;
@@ -164,10 +170,18 @@ public class PaperTouchScreen extends PaperScreen {
         }
 
         touchList = touchInput.projectTouchToScreen(this, getDisplay());
+
+        if (filter) {
+            for (Touch t : touchList) {
+                if (t.touchPoint != null) {
+                    t.touchPoint.filter(parent.millis());
+                }
+            }
+        }
         touchList.sortAlongYAxis();
 
         touchList.addOffset(touchOffset);
-        
+
         if (touchInput instanceof DepthTouchInput) {
             if (((DepthTouchInput) (touchInput)).isUseRawDepth()) {
                 touchList.invertY(drawingSize);
@@ -177,14 +191,15 @@ public class PaperTouchScreen extends PaperScreen {
         }
 
     }
-    
-    public Touch projectTouch(TrackedDepthPoint te){
+
+    public Touch projectTouch(TrackedDepthPoint te) {
         return touchInput.projectTouch(this, getDisplay(), te);
     }
-    public Touch projectTouch(TrackedElement te){
+
+    public Touch projectTouch(TrackedElement te) {
         return touchInput.projectTouch(this, getDisplay(), te);
     }
-    
+
     static private final int DEFAULT_TOUCH_SIZE = 15;
 
     /**
@@ -204,12 +219,12 @@ public class PaperTouchScreen extends PaperScreen {
             if (t.is3D) {
                 // fill(185, 142, 62);
             } else {
-            
+
                 if (t.trackedSource != null && t.trackedSource.mainFinger) {
-                       fill(58, 190, 52);
-                    ellipse(t.position.x, t.position.y, ellipseSize*1.5f, ellipseSize*1.5f);
+                    fill(58, 190, 52);
+                    ellipse(t.position.x, t.position.y, ellipseSize * 1.5f, ellipseSize * 1.5f);
                 } else {
-                        fill(58, 71, 198);
+                    fill(58, 71, 198);
                     ellipse(t.position.x, t.position.y, ellipseSize, ellipseSize);
                 }
             }
@@ -236,5 +251,5 @@ public class PaperTouchScreen extends PaperScreen {
     public TouchInput getTouchInput() {
         return touchInput;
     }
-    
+
 }

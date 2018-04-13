@@ -413,6 +413,7 @@ public class MultiCalibrator extends PaperTouchScreen {
 //                saveTouch();
 //            }
             if (showTouch) {
+                updateTouch(true);
                 drawTouch(10);
             }
 
@@ -732,7 +733,6 @@ public class MultiCalibrator extends PaperTouchScreen {
             }
 
             String[] list = c.createReference(colorData);
-
             if (list != ColorReferenceThresholds.INVALID_COLOR) {
                 String saveFile = Papart.colorThresholds + colorId + ".txt";
                 parent.saveStrings(saveFile, list);

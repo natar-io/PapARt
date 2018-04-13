@@ -32,11 +32,14 @@ import fr.inria.papart.multitouch.ConnectedComponent;
 import fr.inria.papart.multitouch.tracking.TouchPointTracker;
 import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
 import fr.inria.papart.utils.WithSize;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import toxi.geom.Plane;
 import toxi.geom.Vec3D;
 
 /**
@@ -61,6 +64,12 @@ public class ArmDetection extends TouchDetectionDepth {
 
     public class CheckTouchPoint3D implements PointValidityCondition {
 
+        Plane plane;
+
+        public void updatePlane(Plane p) {
+            plane = p;
+        }
+
         @Override
         public boolean checkPoint(int candidate, int currentPoint) {
 
@@ -69,9 +78,10 @@ public class ArmDetection extends TouchDetectionDepth {
                     && (depthData.depthPoints[candidate].distanceTo(DepthAnalysis.INVALID_POINT) > 1) // NON zero points
                     && (depthData.depthPoints[candidate] != DepthAnalysis.INVALID_POINT) // not invalid point (invalid depth)
 
-                    && depthData.planeAndProjectionCalibration.getPlane().getDistanceToPoint(depthData.depthPoints[candidate]) > calib.getTest2()
                     && depthData.depthPoints[initialPoint].distanceTo(depthData.depthPoints[candidate]) < calib.getMaximumDistanceInit()
-                    && depthData.depthPoints[candidate].distanceTo(depthData.depthPoints[currentPoint]) < calib.getMaximumDistance();
+                    && depthData.depthPoints[candidate].distanceTo(depthData.depthPoints[currentPoint]) < calib.getMaximumDistance()
+                    && depthData.projectedPoints[candidate].z() > calib.getTest2();
+//                    && plane.getDistanceToPoint(depthData.depthPoints[candidate]) > calib.getTest2();
 
         }
     }
@@ -161,10 +171,22 @@ public class ArmDetection extends TouchDetectionDepth {
     }
 
     public void findTouch(PlaneAndProjectionCalibration planeAndProjCalibration) {
+
+//        System.out.println("ARM precision: " + getPrecision());
+
+//        Instant start = Instant.now();
+        ((CheckTouchPoint3D)currentPointValidityCondition).updatePlane(planeAndProjCalibration.getPlane());
         touchRecognition.find3DTouch(planeAndProjCalibration, getPrecision());
+
+//        Instant find3D = Instant.now();
         ArrayList<TrackedDepthPoint> newList = this.compute(depthAnalysis.getDepthData());
 
-        // Filter low points ?
+//        Instant findList = Instant.now();
+
+//        System.out.println("3D:  " + Duration.between(start, find3D).toMillis() + " milliseconds");
+//        System.out.println("list: " + Duration.between(find3D, findList).toMillis() + " milliseconds");
+
+//        // Filter low points ?
         Iterator<TrackedDepthPoint> iterator = newList.iterator();
         while (iterator.hasNext()) {
             TrackedDepthPoint next = iterator.next();
@@ -172,22 +194,32 @@ public class ArmDetection extends TouchDetectionDepth {
                 iterator.remove();
             }
         }
-
+        
         int imageTime = this.depthAnalysis.getDepthData().timeStamp;
-
+//        System.out.println("Tracking: " + imageTime);
+//        for(TrackedDepthPoint pt: newList){
+//            System.out.println("pt: " + pt.getPosition());
+//        }
         TouchPointTracker.trackPoints(touchPoints, newList, imageTime);
+
+//        touchPoints.clear();
+//        touchPoints.addAll(newList);
 
         // TODO: activate tracking ?! Super slow for some reason...
 //        TouchPointTracker.trackPoints(tipPoints, newTipPoints, imageTime);
         tipPoints.clear();
         tipPoints.addAll(newTipPoints);
+
+        lastTipPoints.clear();
+        lastTipPoints.addAll(tipPoints);
     }
 
-    protected ArrayList<TrackedDepthPoint> newTipPoints;
+    protected ArrayList<TrackedDepthPoint> newTipPoints = new ArrayList<>();
     protected final ArrayList<TrackedDepthPoint> tipPoints = new ArrayList<>();
+    ArrayList<TrackedDepthPoint> lastTipPoints = new ArrayList<>();
 
     public ArrayList<TrackedDepthPoint> getTipPoints() {
-        return tipPoints;
+        return lastTipPoints;
     }
 
 }
