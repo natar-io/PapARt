@@ -42,6 +42,8 @@ import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.utils.MathUtils;
 import java.nio.ByteBuffer;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
@@ -173,6 +175,7 @@ public class DepthTouchInput extends TouchInput {
 
     @Override
     public void update() {
+        Instant initUpdate = Instant.now();
         try {
             IplImage depthImage;
             IplImage colImage = null;
@@ -190,8 +193,7 @@ public class DepthTouchInput extends TouchInput {
                 return;
             }
 
-            depthDataSem.acquire();
-
+//           lockDepthData();
             if (!depthAnalysisReady) {
                 initDepthAnalysis();
             }
@@ -203,8 +205,14 @@ public class DepthTouchInput extends TouchInput {
                 initPrecision = simpleDetection.getPrecision();
             }
 
+            if (armDetection != null) {
+                initPrecision = armDetection.getPrecision();
+            }
+            //System.out.println("ComputeDepthNormals: " + initPrecision);
 //            Instant start = Instant.now();
+
             depthAnalysis.computeDepthAndNormals(depthImage, colImage, initPrecision);
+//            Instant depth = Instant.now();
 
             if (simpleDetection != null) {
                 simpleDetection.findTouch(planeAndProjCalibration);
@@ -212,37 +220,41 @@ public class DepthTouchInput extends TouchInput {
             if (objectDetection != null) {
                 objectDetection.findTouch(planeAndProjCalibration);
             }
-//            Instant depth = Instant.now();
 
             if (armDetection != null) {
                 armDetection.findTouch(planeAndProjCalibration);
             }
-//            Instant touch1 =  Instant.now();
+            Instant touch1 = Instant.now();
 
             if (handDetection != null) {
                 handDetection.findTouch(armDetection, planeAndProjCalibration);
             }
-//            Instant touch2 =  Instant.now();
+            Instant touch2 = Instant.now();
 
             if (fingerDetection != null) {
                 fingerDetection.findTouch(handDetection, armDetection, colImage, planeAndProjCalibration);
             }
-//            Instant touch3 =  Instant.now();
+//            Instant touch3 = Instant.now();
 //            Instant end = Instant.now();
-//            
-//            System.out.println("Depth: " +  Duration.between(start, depth).toMillis() + " milliseconds");
-//            System.out.println("Arm: " +  Duration.between(depth, touch1).toMillis() + " milliseconds");
-//            System.out.println("hand: " +  Duration.between(touch1, touch2).toMillis() + " milliseconds");
-//            System.out.println("finger: " +  Duration.between(touch2, touch3).toMillis() + " milliseconds");
-//            System.out.println("Total: " +  Duration.between(start, end).toMillis() + " milliseconds");
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DepthTouchInput.class.getName()).log(Level.SEVERE, null, ex);
-            ex.printStackTrace();
+
+//            System.out.println("Depth: " + Duration.between(start, depth).toMillis() + " milliseconds");
+//            System.out.println("Arm: " + Duration.between(depth, touch1).toMillis() + " milliseconds");
+//            System.out.println("hand: " + Duration.between(touch1, touch2).toMillis() + " milliseconds");
+//            System.out.println("finger: " + Duration.between(touch2, touch3).toMillis() + " milliseconds");
+//            System.out.println("Total: " + Duration.between(start, end).toMillis() + " milliseconds");
+//            System.out.println("Arm touch: " + armDetection.getTouchPoints().size());
+//        } catch (InterruptedException ex) {
+//            Logger.getLogger(DepthTouchInput.class.getName()).log(Level.SEVERE, null, ex);
+//            ex.printStackTrace();
         } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
-            depthDataSem.release();
+
+//            releaseDepthData();
         }
+//        Instant endUpdate = Instant.now();
+//       System.out.println("Total update: " + Duration.between(initUpdate, endUpdate).toMillis() + " milliseconds");
+
     }
 
     private static final Touch INVALID_TOUCH = new Touch();
@@ -251,23 +263,16 @@ public class DepthTouchInput extends TouchInput {
     public TouchList projectTouchToScreen(PaperScreen screen, BaseDisplay display) {
 
         TouchList touchList = new TouchList();
-
         // Not initialized
         if (fingerDetection == null && armDetection == null && simpleDetection == null) {
             return touchList;
         }
 
-        try {
-            touchPointSemaphore.acquire();
-        } catch (InterruptedException ie) {
-            System.err.println("Semaphore Exception: " + ie);
-        }
-
+//        lock();
         tryToAddTouchs(fingerDetection, touchList, screen, display);
         tryToAddTouchs(armDetection, touchList, screen, display);
         tryToAddTouchs(simpleDetection, touchList, screen, display);
 
-        touchPointSemaphore.release();
         return touchList;
     }
 
@@ -275,9 +280,10 @@ public class DepthTouchInput extends TouchInput {
             TouchList touchList,
             PaperScreen screen,
             BaseDisplay display) {
-        
+
         if (detection != null) {
-            for (TrackedDepthPoint tp : detection.getTouchPoints()) {
+            ArrayList<TrackedDepthPoint> list = new ArrayList<>(detection.getTouchPoints());
+            for (TrackedDepthPoint tp : list) {
                 Touch touch = createTouch(screen, display, tp);
                 if (touch != INVALID_TOUCH) {
                     touchList.add(touch);
@@ -335,6 +341,9 @@ public class DepthTouchInput extends TouchInput {
 
         if (paperScreenCoord != null) {
             touch.setPosition(paperScreenCoord);
+//                System.out.println("Touch update: " + paperScreenCoord +  " " + tp.getPositionKinect());
+//        } else {
+//            System.out.println("Touch: No update possible");
         }
         return paperScreenCoord != null && paperScreenCoord != NO_INTERSECTION;
     }
@@ -470,7 +479,7 @@ public class DepthTouchInput extends TouchInput {
     public void getTouchColors(IplImage colorImage,
             ArrayList<TrackedDepthPoint> touchPointList) {
 
-        if (touchPointList.isEmpty()) {
+        if (touchPointList.isEmpty() || colorImage == null) {
             return;
         }
         ByteBuffer cBuff = colorImage.getByteBuffer();
@@ -507,6 +516,7 @@ public class DepthTouchInput extends TouchInput {
         return armDetection.compute(depthAnalysis.getDepthData());
     }
 
+    @Deprecated
     protected void findAndTrack2D() {
         assert (touch2DPrecision != 0);
         ArrayList<TrackedDepthPoint> newList = fingerDetection.compute(
@@ -515,6 +525,7 @@ public class DepthTouchInput extends TouchInput {
                 parent.millis());
     }
 
+    @Deprecated
     protected void findAndTrack3D() {
         assert (touch3DPrecision != 0);
         ArrayList<TrackedDepthPoint> newList = armDetection.compute(
