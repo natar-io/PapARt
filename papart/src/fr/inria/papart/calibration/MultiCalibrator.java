@@ -226,10 +226,13 @@ public class MultiCalibrator extends PaperTouchScreen {
             // GREEN circle 
 //                 fill(0, 255, 0);
 //        rect(79.8f, 123.8f, 15f, 15f);
-            depthTouchInput = (DepthTouchInput) papart.getTouchInput();
-            depthTouchInput.useRawDepth();
-            depthCameraDevice = papart.getDepthCameraDevice();
 
+            if (!seeThrough) {
+                depthTouchInput = (DepthTouchInput) papart.getTouchInput();
+
+                depthTouchInput.useRawDepth();
+                depthCameraDevice = papart.getDepthCameraDevice();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -743,7 +746,7 @@ public class MultiCalibrator extends PaperTouchScreen {
                 if (colorId == 1) {
                     parent.saveStrings(Papart.blueThresholds, list);
                 }
-            } else{
+            } else {
                 System.out.println("could not determine color: " + colorId);
             }
         }

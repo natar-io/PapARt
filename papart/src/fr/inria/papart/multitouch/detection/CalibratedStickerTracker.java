@@ -112,6 +112,10 @@ public class CalibratedStickerTracker extends ColorTracker {
 
     @Override
     public ArrayList<TrackedElement> findColor(int time) {
+        
+        if(paperScreen.getCameraTracking() == null){
+            return new ArrayList<>();
+        }
         int currentImageTime = paperScreen.getCameraTracking().getTimeStamp();
 
         // once per image
