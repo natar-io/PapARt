@@ -35,7 +35,7 @@ public class CalibratedStickerTracker extends ColorTracker {
     int numberOfRefs = 4;
     private final ColorReferenceThresholds references[];
     TouchDetectionInnerCircles innerCirclesDetection;
-    private TrackedView circleView;
+    public TrackedView circleView;
     protected float circleSize;
 
 //       protected TouchDetectionColor touchDetectionCircles;
@@ -112,8 +112,8 @@ public class CalibratedStickerTracker extends ColorTracker {
 
     @Override
     public ArrayList<TrackedElement> findColor(int time) {
-        
-        if(paperScreen.getCameraTracking() == null){
+
+        if (paperScreen.getCameraTracking() == null) {
             return new ArrayList<>();
         }
         int currentImageTime = paperScreen.getCameraTracking().getTimeStamp();
@@ -157,10 +157,13 @@ public class CalibratedStickerTracker extends ColorTracker {
         // Start from the eroded points, find out the color and positions of possible circles.
         smallElements = innerCirclesDetection.compute(time, references,
                 circleImage, this.scale);
-        
+
         // Increase the quality by looking again in a higher resolution ???
-        trackedElements.clear();
-        trackedElements.addAll(smallElements);
+//        trackedElements.clear();
+//        trackedElements.addAll(smallElements);
+
+// Tracking must be enabled for touch with skatolo. 
+        TouchPointTracker.trackPoints(trackedElements, smallElements, time);
 
         // Take all the points, 
         // Sort them by distance, and try to make cluster of d < 5cm ?

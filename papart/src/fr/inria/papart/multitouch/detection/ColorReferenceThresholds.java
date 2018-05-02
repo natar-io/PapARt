@@ -301,23 +301,23 @@ public class ColorReferenceThresholds {
         stdevB /= colorData.length;
 
         // Check the stdev... when too high the value is not stored.
-        if (stdevHue > 40 || stdevSat > 40 || stdevIntens > 50) {
+        if (stdevL > 40 || stdevA > 40 || stdevB > 40) {
 //            System.out.println("Could not determine color");
             return INVALID_COLOR;
         }
-
-        // Good dev, make it larger
-        if (stdevHue < 3) {
-            stdevHue = 4;
-        }
-        // Good dev, make it larger
-        if (stdevSat < 5) {
-            stdevSat = 10;
-        }
-        // Good dev, make it larger
-        if (stdevIntens < 5) {
-            stdevIntens = 10;
-        }
+//
+//        // Good dev, make it larger
+//        if (stdevHue < 3) {
+//            stdevHue = 4;
+//        }
+//        // Good dev, make it larger
+//        if (stdevSat < 5) {
+//            stdevSat = 10;
+//        }
+//        // Good dev, make it larger
+//        if (stdevIntens < 5) {
+//            stdevIntens = 10;
+//        }
 
         String words = "hue:" + Float.toString(stdevHue * 3) + " "
                 + "sat:" + Float.toString(stdevSat * 3) + " "
