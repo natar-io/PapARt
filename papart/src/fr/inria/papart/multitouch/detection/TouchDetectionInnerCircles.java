@@ -42,8 +42,8 @@ public class TouchDetectionInnerCircles extends TouchDetection {
         currentPointValidityCondition = new CheckColorPoint();
     }
 
-    public static final byte INVALID_COLOR = -1;
-    public static final byte UNKNOWN_COLOR = 0;
+    public static final byte INVALID_COLOR = -2;
+    public static final byte UNKNOWN_COLOR = -1;
     protected byte[] localSegmentedImage = null;
     protected byte[] segmentedImage;
     protected byte[] segmentedImageCopy;
@@ -120,13 +120,16 @@ public class TouchDetectionInnerCircles extends TouchDetection {
                 // The index can set the color... 
 
                 int c = mainImg.pixels[i];
-                float minError = 30;
+                float minError = 20; // Use std error !
                 int currentID = -1;
 
                 for (byte id = 0; id < references.length; id++) {
                     float currentError = colorFinderLABError(c, references[id]);
 
-                    if (currentError < minError) {
+                    float err =  references[id].AThreshold + references[id].BThreshold + references[id].LThreshold;
+                    boolean smallError = colorFinderLAB(c, references[id], err);
+                    
+                    if (smallError && currentError < minError) {
                         minError = currentError;
                         currentID = id;
                     }
@@ -156,22 +159,46 @@ public class TouchDetectionInnerCircles extends TouchDetection {
             byte selectedID = UNKNOWN_COLOR;
             boolean ambiguous = false;
 
+            // TODO: number of colors 
+            // WARNING: magic number
+            int[] colors = new int[6];
             for (int idx : connectedComponent) {
                 byte candidate = segmentedImage[idx];
-
-                if (candidate != UNKNOWN_COLOR) {
-                    if (selectedID != UNKNOWN_COLOR && candidate != selectedID) {
-                        System.out.println("Color attribution conflict: " + candidate + " " + selectedID);
+                if (candidate > 0) {
+                    colors[candidate]++;
+                }
+            }
+            int max = 0;
+            int id = 0;
+            for (int i = 0; i < colors.length; i++) {
+                if (colors[i] > max && colors[i] > UNKNOWN_COLOR) {
+                    max = colors[i];
+                    id = i;
+                }
+            }
+            selectedID = (byte) id;
+            
+            if (id > 0) {
+                for (int i = 1; i < colors.length; i++) {
+                    if (i != id && colors[i] != 0) {
                         ambiguous = true;
                     }
-                    selectedID = segmentedImage[idx];
                 }
             }
 
+//            for (int idx : connectedComponent) {
+//                byte candidate = segmentedImage[idx];
+//                if (candidate != UNKNOWN_COLOR) {
+//                    if (selectedID != UNKNOWN_COLOR && candidate != selectedID) {
+////                        System.out.println("Color attribution conflict: " + candidate + " " + selectedID);
+//                        ambiguous = true;
+//                    }
+//                    selectedID = segmentedImage[idx];
+//                }
+//            }
+
             if (!ambiguous && selectedID != UNKNOWN_COLOR) {
-
                 for (int idx : connectedComponent) {
-
                     ColorReferenceThresholds ref = references[selectedID - 1];
                     int selectedColor = mainImg.pixels[idx];
 
