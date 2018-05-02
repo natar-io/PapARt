@@ -332,7 +332,6 @@ public class PaperScreen extends DelegatedGraphics {
     protected void useManualLocation(PMatrix3D mat) {
         this.manualLocation.set(mat);
 
-        System.out.println("Set manual loc");
         if (!useManualLocation) {
             this.useManualLocation = true;
             this.markerBoard.unsubscribe();
