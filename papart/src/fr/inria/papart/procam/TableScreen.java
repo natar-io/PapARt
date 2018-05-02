@@ -17,15 +17,36 @@ public class TableScreen extends PaperTouchScreen {
     public TableScreen(PVector loc, float width, float height) {
         this.width = width;
         this.height = height;
-        this.translation = new PVector(loc.x, loc.y, loc.z);
-
         setDrawOnPaper();
         setDrawingSize(width, height);
-        this.location = table.get();
-        this.location.translate(translation.x, translation.y);
-//        this.setLocation(location);
-        this.useManualLocation(this.location);
+        setLocation(loc);
     }
+     /**
+     * Change the location relative to the table.
+     *
+     * @param v in millimeters
+     */
+    @Override
+    public void setLocation(PVector v) {
+        setLocation(v.x, v.y, v.z);
+    }
+
+    /**
+     * Change the location relative to the table.
+     *
+     * @param x in millimeters
+     * @param y in millimeters
+     * @param z in millimeters
+     */
+    @Override
+    public void setLocation(float x, float y, float z) {
+        this.translation = new PVector(x, y, z);
+        this.location = table.get();
+        this.location.translate(translation.x, translation.y, translation.z);
+        this.useManualLocation(this.location);
+        this.computeWorldToScreenMat(cameraTracking);
+    }
+
 
 //    @Override
 //    public void settings() {
