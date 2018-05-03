@@ -99,7 +99,8 @@ public class CalibratedStickerTracker extends ColorTracker {
         innerCirclesCalibration.setMinimumComponentSize(1);
         innerCirclesCalibration.setSearchDepth(1);
         innerCirclesCalibration.setPrecision(1);
-        innerCirclesCalibration.setTrackingMaxDistance(1);
+        innerCirclesCalibration.setTrackingMaxDistance(15);
+//        innerCirclesCalibration.setTrackingForgetTime(300);
         innerCirclesCalibration.setMaximumRecursion(1);
         innerCirclesDetection.setCalibration(innerCirclesCalibration);
 
@@ -153,7 +154,7 @@ public class CalibratedStickerTracker extends ColorTracker {
             }
         }
         // At this step, the circles are max  2x2 pixels wide booleans.
-
+ 
         // Start from the eroded points, find out the color and positions of possible circles.
         smallElements = innerCirclesDetection.compute(time, references,
                 circleImage, this.scale);
@@ -164,11 +165,13 @@ public class CalibratedStickerTracker extends ColorTracker {
 
 // Tracking must be enabled for touch with skatolo. 
         TouchPointTracker.trackPoints(trackedElements, smallElements, time);
-
+        TouchPointTracker.filterPositions(trackedElements, time);
+        
         // Take all the points, 
         // Sort them by distance, and try to make cluster of d < 5cm ?
-        lineClusters = LineCluster.createLineCluster(smallElements, 22); // 40mm
-//        clusters = StickerCluster.createZoneCluster(smallElements, 55); // 40mm
+//        lineClusters = LineCluster.createLineCluster(smallElements, 22); // 40mm
+        lineClusters = LineCluster.createLineCluster(trackedElements, 22); // 40mm
+//        clusters = StickerCluster.createZoneCluster(trackedElements, 55); // 40mm
 
         return trackedElements;
     }
