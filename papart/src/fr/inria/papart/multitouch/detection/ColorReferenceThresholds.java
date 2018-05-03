@@ -85,21 +85,36 @@ public class ColorReferenceThresholds {
         }
 
         double[] lab = converter.RGBtoLAB((int) this.red(c), (int) this.green(c), (int) this.blue(c));
+boolean updated = false;
+//        System.out.println("Updated color: " + this.id + " before: " + this.averageL + " " + this.averageA + " " + this.averageB);
 
-        this.averageL = (averageL + (float) lab[0]) / 2.0f;
-        this.averageA = (averageA + (float) lab[1]) / 2.0f;
-        this.averageB = (averageB + (float) lab[2]) / 2.0f;
+        if (this.averageL - (float) lab[0] > 2f) {
+            this.averageL = (averageL + (float) lab[0]) / 2.0f;
+            updated = true;
+        }
+        if (this.averageA - (float) lab[1] > 2f) {
+            this.averageA = (averageA + (float) lab[1]) / 2.0f;
+             updated = true;
+        }
 
-        // Narrow the thresholds
-        if (this.AThreshold > 3) {
-            this.AThreshold = this.AThreshold * 0.9f;
+        if (this.averageB - (float) lab[1] > 2f) {
+            this.averageB = (averageB + (float) lab[2]) / 2.0f;
+             updated = true;
         }
-        if (this.LThreshold > 3) {
-            this.LThreshold = this.LThreshold * 0.9f;
-        }
-        if (this.BThreshold > 3) {
-            this.BThreshold = this.BThreshold * 0.9f;
-        }
+//        // Narrow the thresholds
+//        if (this.AThreshold > 3) {
+//            this.AThreshold = this.AThreshold * 0.9f;
+//        }
+//        if (this.LThreshold > 3) {
+//            this.LThreshold = this.LThreshold * 0.9f;
+//        }
+//        if (this.BThreshold > 3) {
+//            this.BThreshold = this.BThreshold * 0.9f;
+//        }
+
+if(updated){
+        System.out.println("Updated color: " + this.id + " after: " + this.averageL + " " + this.averageA + " " + this.averageB);
+}
 //        System.out.println("Updated color: " + this.id);
     }
 
