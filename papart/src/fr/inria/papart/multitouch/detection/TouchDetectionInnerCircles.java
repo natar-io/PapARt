@@ -104,6 +104,8 @@ public class TouchDetectionInnerCircles extends TouchDetection {
         this.segmentedImage = localSegmentedImage;
         this.references = references;
         this.mainImg = mainImg;
+        
+        setCurrentTime(timestamp);
         ArrayList<ConnectedComponent> connectedComponents = findConnectedComponents();
         ArrayList<TrackedElement> colorPoints = this.createTouchPointsFrom(connectedComponents, scale);
         return colorPoints;
@@ -120,23 +122,24 @@ public class TouchDetectionInnerCircles extends TouchDetection {
                 // The index can set the color... 
 
                 int c = mainImg.pixels[i];
-                float minError = 20; // Use std error !
+                float minError = 30; // Use std error !
                 int currentID = -1;
 
                 for (byte id = 0; id < references.length; id++) {
                     float currentError = colorFinderLABError(c, references[id]);
 
                     float err =  references[id].AThreshold + references[id].BThreshold + references[id].LThreshold;
-                    boolean smallError = colorFinderLAB(c, references[id], err);
+//                    boolean smallError = colorFinderLAB(c, references[id], err);
                     
-                    if (smallError && currentError < minError) {
+                    if ( currentError < minError) {
+//                    if (smallError && currentError < minError) {
                         minError = currentError;
                         currentID = id;
                     }
                 }
 
                 if (currentID != -1) {
-                    segmentedImage[i] = (byte) (currentID + 1);
+                    segmentedImage[i] = (byte) (currentID);
                     toVisit.add(i);
                 }
 
@@ -199,10 +202,12 @@ public class TouchDetectionInnerCircles extends TouchDetection {
 
             if (!ambiguous && selectedID != UNKNOWN_COLOR) {
                 for (int idx : connectedComponent) {
-                    ColorReferenceThresholds ref = references[selectedID - 1];
+//                    ColorReferenceThresholds ref = references[selectedID - 1];
+                    ColorReferenceThresholds ref = references[selectedID];
                     int selectedColor = mainImg.pixels[idx];
 
-                    ref.updateReference(selectedColor);
+                   
+//                    ref.updateReference(selectedColor);
                 }
             }
 
