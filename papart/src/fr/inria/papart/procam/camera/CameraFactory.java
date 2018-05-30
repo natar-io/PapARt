@@ -59,56 +59,59 @@ public class CameraFactory {
         boolean isIR = format.equalsIgnoreCase("ir");
         boolean isDepth = format.equalsIgnoreCase("depth");
 
-        try{
-        switch (type) {
-            case FFMPEG:
-                camera = new CameraFFMPEG(description, format);
-                break;
-            case PROCESSING:
-                camera = new CameraProcessing(description);
-                break;
-            // Depth Cameras
-            case OPEN_KINECT_2:
-                cameraMulti = new CameraOpenKinect2(cameraNo);
-                break;
-            case REALSENSE:
-                cameraMulti = new CameraRealSense(cameraNo);
-                break;
-            case OPEN_KINECT:
-                cameraMulti = new CameraOpenKinect(cameraNo);
-                break;
-            case OPENCV:
-                camera = new CameraOpenCV(cameraNo);
-                break;
-            case FLY_CAPTURE:
-                camera = new CameraFlyCapture(cameraNo);
-                break;
-            case OPENNI2:
-                cameraMulti = new CameraOpenNI2(cameraNo);
-                break;
-            default:
-                throw new RuntimeException("ProCam, Camera: Unspported camera Type");
-        }
+        try {
+            switch (type) {
+                case FFMPEG:
+                    camera = new CameraFFMPEG(description, format);
+                    break;
+                case PROCESSING:
+                    camera = new CameraProcessing(description);
+                    break;
+                case NECTAR_RGB:
+                    camera = new CameraNectar(description);
+                    break;
+                // Depth Cameras
+                case OPEN_KINECT_2:
+                    cameraMulti = new CameraOpenKinect2(cameraNo);
+                    break;
+                case REALSENSE:
+                    cameraMulti = new CameraRealSense(cameraNo);
+                    break;
+                case OPEN_KINECT:
+                    cameraMulti = new CameraOpenKinect(cameraNo);
+                    break;
+                case OPENCV:
+                    camera = new CameraOpenCV(cameraNo);
+                    break;
+                case FLY_CAPTURE:
+                    camera = new CameraFlyCapture(cameraNo);
+                    break;
+                case OPENNI2:
+                    cameraMulti = new CameraOpenNI2(cameraNo);
+                    break;
+                default:
+                    throw new RuntimeException("ProCam, Camera: Unspported camera Type");
+            }
 
-        if (cameraMulti != null) {
-            if (isRGB) {  
-                cameraMulti.setUseColor(true);
-                cameraMulti.actAsColorCamera();
+            if (cameraMulti != null) {
+                if (isRGB) {
+                    cameraMulti.setUseColor(true);
+                    cameraMulti.actAsColorCamera();
+                }
+                if (isIR) {
+                    cameraMulti.setUseIR(true);
+                    cameraMulti.actAsIRCamera();
+                }
+                if (isDepth) {
+                    cameraMulti.setUseDepth(true);
+                    cameraMulti.actAsDepthCamera();
+                }
+                return cameraMulti;
             }
-            if (isIR) {
-                cameraMulti.setUseIR(true);
-                cameraMulti.actAsIRCamera();
+            if (camera != null) {
+                return camera;
             }
-            if (isDepth) {
-                cameraMulti.setUseDepth(true);
-                cameraMulti.actAsDepthCamera();
-            }
-            return cameraMulti;
-        }
-        if (camera != null) {
-            return camera;
-        }
-        } catch(NullPointerException e){
+        } catch (NullPointerException e) {
             throw new CannotCreateCameraException("Cannot create the camera type " + type.toString() + " " + description);
         }
         throw new RuntimeException("ProCam, Camera: Unspported camera Type");
