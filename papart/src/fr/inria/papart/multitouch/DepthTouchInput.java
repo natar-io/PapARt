@@ -193,7 +193,7 @@ public class DepthTouchInput extends TouchInput {
                 return;
             }
 
-//           lockDepthData();
+           lockDepthData();
             if (!depthAnalysisReady) {
                 initDepthAnalysis();
             }
@@ -250,7 +250,7 @@ public class DepthTouchInput extends TouchInput {
             ex.printStackTrace();
         } finally {
 
-//            releaseDepthData();
+            releaseDepthData();
         }
 //        Instant endUpdate = Instant.now();
 //       System.out.println("Total update: " + Duration.between(initUpdate, endUpdate).toMillis() + " milliseconds");
