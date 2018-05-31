@@ -194,10 +194,10 @@ public class CameraThread extends Thread {
     private DetectedMarker[] computeMarkerLocations() {
         
         // DEBUG
-        
-        if(camera instanceof ProjectorAsCamera){
-             opencv_imgcodecs.cvSaveImage("/home/jiii/tmp/art-" + k++ + ".bmp", grayImage);
-        }   
+//        
+//        if(camera instanceof ProjectorAsCamera){
+//             opencv_imgcodecs.cvSaveImage("/home/jiii/tmp/art-" + k++ + ".bmp", grayImage);
+//        }   
         
         
         return DetectedMarker.detect(tracker, grayImage);
