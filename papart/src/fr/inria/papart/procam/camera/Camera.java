@@ -64,8 +64,8 @@ public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
     private boolean hasExtrinsics = false;
 
     public enum Type {
-        OPENCV, FFMPEG, PROCESSING, REALSENSE, OPEN_KINECT, OPEN_KINECT_2,
-        FLY_CAPTURE, OPENNI2,
+        OPENCV, FFMPEG, PROCESSING, REALSENSE, OPEN_KINECT, OPEN_KINECT_2, 
+        FLY_CAPTURE, OPENNI2, NECTAR,
         FAKE
     }
 
