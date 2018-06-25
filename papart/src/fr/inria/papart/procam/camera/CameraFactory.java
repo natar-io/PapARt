@@ -61,6 +61,9 @@ public class CameraFactory {
 
         try {
             switch (type) {
+                case NECTAR:
+                    camera = new CameraNectar(description);
+                    break;
                 case FFMPEG:
                     camera = new CameraFFMPEG(description, format);
                     break;

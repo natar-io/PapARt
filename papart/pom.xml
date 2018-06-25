@@ -96,6 +96,14 @@
             <version>0.1</version>
         </dependency>
         
+              <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>2.9.0</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
+        
         
         <dependency>
             <groupId>tech.lity.rea</groupId>
@@ -348,7 +356,7 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
-<!--            <plugin>
+            <!--            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>
                 <version>1.5</version>
