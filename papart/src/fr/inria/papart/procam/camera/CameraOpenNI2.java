@@ -19,9 +19,6 @@
  */
 package fr.inria.papart.procam.camera;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.bytedeco.javacpp.freenect;
 import org.bytedeco.javacv.FrameGrabber;
 
 import java.awt.*;
@@ -31,6 +28,8 @@ import java.nio.ByteOrder;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.Pointer;
@@ -41,8 +40,6 @@ import static org.bytedeco.javacpp.opencv_imgproc.COLOR_BGR2GRAY;
 import static org.bytedeco.javacpp.opencv_imgproc.COLOR_RGB2BGR;
 
 import org.openni.*;
-import static org.openni.PixelFormat.RGB888;
-import org.openni.VideoStream.CameraSettings;
 
 /**
  *
@@ -51,7 +48,6 @@ import org.openni.VideoStream.CameraSettings;
 public class CameraOpenNI2 extends CameraRGBIRDepth {
 
     private VideoStream colorStream, IRStream, depthStream;
-    private FrameListener colorListener, irListener, depthListener;
     // From the OpenNI example.
     Device device;
 
