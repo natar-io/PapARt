@@ -67,9 +67,6 @@ public class CameraFactory {
                 case PROCESSING:
                     camera = new CameraProcessing(description);
                     break;
-                case NECTAR_RGB:
-                    camera = new CameraNectar(description);
-                    break;
                 // Depth Cameras
                 case OPEN_KINECT_2:
                     cameraMulti = new CameraOpenKinect2(cameraNo);
