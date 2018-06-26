@@ -62,7 +62,7 @@ public class CameraFactory {
         try {
             switch (type) {
                 case NECTAR:
-                    camera = new CameraNectar(description);
+                    cameraMulti = new CameraNectar(description);
                     break;
                 case FFMPEG:
                     camera = new CameraFFMPEG(description, format);
@@ -112,6 +112,7 @@ public class CameraFactory {
                 return camera;
             }
         } catch (NullPointerException e) {
+            e.printStackTrace();
             throw new CannotCreateCameraException("Cannot create the camera type " + type.toString() + " " + description);
         }
         throw new RuntimeException("ProCam, Camera: Unspported camera Type");

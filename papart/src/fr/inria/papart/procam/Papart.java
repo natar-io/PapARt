@@ -35,6 +35,7 @@ import fr.inria.papart.depthcam.devices.Kinect360;
 import fr.inria.papart.depthcam.analysis.DepthAnalysisImpl;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.depthcam.devices.KinectOne;
+import fr.inria.papart.depthcam.devices.NectarOpenNI;
 import fr.inria.papart.depthcam.devices.OpenNI2;
 import fr.inria.papart.depthcam.devices.RealSense;
 import fr.inria.papart.multitouch.TouchInput;
@@ -45,6 +46,7 @@ import fr.inria.papart.multitouch.detection.CalibratedColorTracker;
 import fr.inria.papart.multitouch.detection.ColorTracker;
 import fr.inria.papart.utils.LibraryUtils;
 import fr.inria.papart.procam.camera.CameraFactory;
+import fr.inria.papart.procam.camera.CameraNectar;
 import fr.inria.papart.procam.camera.CameraOpenKinect;
 import fr.inria.papart.procam.camera.CameraRGBIRDepth;
 import fr.inria.papart.procam.camera.CameraRealSense;
@@ -721,6 +723,9 @@ public class Papart {
         }
         if (depthCamConfiguration.getCameraType() == Camera.Type.OPENNI2) {
             depthCameraDevice = new OpenNI2(applet, cameraTracking);
+        }
+        if (depthCamConfiguration.getCameraType() == Camera.Type.NECTAR) {
+            depthCameraDevice = new NectarOpenNI(applet, cameraTracking);
         }
 
         if (depthCameraDevice == null) {

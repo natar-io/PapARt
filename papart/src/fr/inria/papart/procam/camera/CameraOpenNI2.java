@@ -19,27 +19,16 @@
  */
 package fr.inria.papart.procam.camera;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.bytedeco.javacpp.freenect;
 import org.bytedeco.javacv.FrameGrabber;
 
-import java.awt.*;
-import java.awt.image.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
 import javax.swing.JOptionPane;
-import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.opencv_core;
 import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;
-import org.bytedeco.javacpp.opencv_imgproc;
-import static org.bytedeco.javacpp.opencv_imgproc.COLOR_BGR2GRAY;
-import static org.bytedeco.javacpp.opencv_imgproc.COLOR_RGB2BGR;
 
 import org.openni.*;
-import static org.openni.PixelFormat.RGB888;
 
 /**
  *
@@ -48,7 +37,6 @@ import static org.openni.PixelFormat.RGB888;
 public class CameraOpenNI2 extends CameraRGBIRDepth {
 
     private VideoStream colorStream, IRStream, depthStream;
-    private FrameListener colorListener, irListener, depthListener;
     // From the OpenNI example.
     Device device;
 
@@ -187,17 +175,16 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
     // WARNING, in thread  it does not wait for a new image ?
     @Override
     public void grabColor() {
-//        try {
-////            System.out.println("Sleeping color cam");
-////            Thread.sleep((long) ((1.0f / (float) colorCamera.frameRate) * 1000f));
-////            Thread.sleep((long) ((1.0f / (float) colorCamera.frameRate) * 5000f));
-////            System.out.println("awake color cam");
-//        } catch (InterruptedException ex) {
-//            Logger.getLogger(CameraOpenNI2.class.getName()).log(Level.SEVERE, null, ex);
-//        }
+        try {
+//            System.out.println("Sleeping color cam");
+            Thread.sleep((long) ((1.0f / (float) colorCamera.frameRate) * 1000f));
+//            Thread.sleep((long) ((1.0f / (float) colorCamera.frameRate) * 5000f));
+//            System.out.println("awake color cam");
+        } catch (InterruptedException ex) {
+        }
 
 // Try to wait for a new timestamp ?
-//        this.getTimeStamp();
+        this.getTimeStamp();
     }
 
     @Override

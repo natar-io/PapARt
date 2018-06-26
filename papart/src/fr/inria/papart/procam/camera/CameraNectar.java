@@ -21,10 +21,6 @@ package fr.inria.papart.procam.camera;
 
 import org.bytedeco.javacpp.opencv_core;
 import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;
-import org.bytedeco.javacpp.opencv_core.IplImage;
-import org.bytedeco.javacv.FrameGrabber;
-import org.bytedeco.javacv.OpenCVFrameConverter;
-import org.bytedeco.javacv.OpenCVFrameGrabber;
 import processing.core.PImage;
 import redis.clients.jedis.BinaryJedisPubSub;
 import redis.clients.jedis.Jedis;
@@ -33,43 +29,95 @@ import redis.clients.jedis.Jedis;
  *
  * @author Jeremy Laviole
  */
-public class CameraNectar extends Camera {
+public class CameraNectar extends CameraRGBIRDepth {
 
-    private Jedis redis;
     private boolean getMode = false;
+
+    String DEFAULT_HOST = "localhost";
+    int DEFAULT_PORT = 6379;
+
+    Jedis redisGet;
 
     protected CameraNectar(String cameraName) {
         this.cameraDescription = cameraName;
-        this.setPixelFormat(PixelFormat.BGR);
-        redis = new Jedis("localhost", 6379);
+//        redis = new Jedis("localhost", 6379);
     }
 
+//    public CameraNectar(String cameraName, String host, int port) {
+//        this.cameraDescription = cameraName;
+//        this.actAsColorCamera();
+////        redis = new Jedis(host, port);
+//    }
     @Override
     public void start() {
-
         try {
-            redis = new Jedis("localhost", 6379);
 
-            System.out.println("Starting thread Nectar camera.");
-            if (!getMode) {
-                new RedisThread().start();
+            if (useColor) {
+                startRGB();
+            }
+            if (useDepth) {
+                startDepth();
+            }
+            if (getMode) {
+                redisGet = new Jedis(DEFAULT_HOST, DEFAULT_PORT);
             }
             this.isConnected = true;
         } catch (Exception e) {
-            System.err.println("Could not start Necatar camera... " + e);
+            System.err.println("Could not start Nectar camera: " + cameraDescription + ". " + e);
             System.err.println("Check cable connection, ID and resolution asked.");
-            redis = null;
+            e.printStackTrace();
+        }
+    }
+
+    private void startRGB() {
+        Jedis redis = new Jedis(DEFAULT_HOST, DEFAULT_PORT);
+
+        int w = Integer.parseInt(redis.get(cameraDescription + ":width"));
+        int h = Integer.parseInt(redis.get(cameraDescription + ":height"));
+        colorCamera.setSize(w, h);
+        colorCamera.setPixelFormat(PixelFormat.RGB);
+        colorCamera.setFrameRate(30);
+
+        System.out.println("Starting thread Nectar camera.");
+        if (!getMode) {
+            new RedisThread(redis, new ImageListener(colorCamera.getPixelFormat()), cameraDescription).start();
+        }
+    }
+
+    private void startDepth() {
+
+        System.out.println("Start depth thread ?");
+        Jedis redis2 = new Jedis(DEFAULT_HOST, DEFAULT_PORT);
+
+        String v = redis2.get(cameraDescription + ":depth:width");
+        if (v != null) {
+
+//        if (redis.exists(cameraDescription + ":depth:width")) {
+            int w = Integer.parseInt(redis2.get(cameraDescription + ":depth:width"));
+            int h = Integer.parseInt(redis2.get(cameraDescription + ":depth:height"));
+            depthCamera.setSize(w, h);
+            depthCamera.setFrameRate(30);
+
+            // TODO: Standard Depth format
+            depthCamera.setPixelFormat(PixelFormat.OPENNI_2_DEPTH);
+            if (!getMode) {
+
+                System.out.println("Start depth thread !");
+                new RedisThread(redis2, new ImageListener(depthCamera.getPixelFormat()), cameraDescription + ":depth:raw").start();
+            }
         }
     }
 
     /**
-     * Switch to get Mode. It will read the key using the redis get command, 
+     * Switch to get Mode. It will read the key using the redis get command,
      * instead of pub/sub.
-     * @param get 
+     *
+     * @param get
      */
-    public void setGetMode(boolean get){
+    public void setGetMode(boolean get) {
         this.getMode = get;
     }
+
     @Override
     public void grab() {
 
@@ -78,9 +126,10 @@ public class CameraNectar extends Camera {
         }
         try {
             if (getMode) {
-                setImage(redis.get(cameraDescription.getBytes()));
+                setColorImage(redisGet.get(cameraDescription.getBytes()));
+                setDepthImage(redisGet.get((cameraDescription + ":depth:raw").getBytes()));
                 // sleep only
-                Thread.sleep(20);
+                Thread.sleep(120);
             } else {
                 //..nothing the princess is in another thread.
                 Thread.sleep(3000);
@@ -90,28 +139,43 @@ public class CameraNectar extends Camera {
         }
     }
 
-    @Override
-    public PImage getPImage() {
+//    @Override
+//    public PImage getPImage() {
+//        return colorCamera.getPImage();
+//        if (currentImage != null) {
+//            this.checkCamImage();
+//            camImage.update(currentImage);
+//            return camImage;
+//        }
+//        return null;
+//    }
+    private opencv_core.IplImage rawVideoImage = null;
+    private opencv_core.IplImage rawDepthImage = null;
 
-        if (currentImage != null) {
-            this.checkCamImage();
-            camImage.update(currentImage);
-            return camImage;
+    protected void setColorImage(byte[] message) {
+        int channels = 3;
+        if (rawVideoImage == null || rawVideoImage.width() != colorCamera.width || rawVideoImage.height() != colorCamera.height) {
+            rawVideoImage = opencv_core.IplImage.create(colorCamera.width, colorCamera.height, IPL_DEPTH_8U, 3);
         }
-        // TODO: exceptions !!!
-        return null;
+        int frameSize = colorCamera.width * colorCamera.height * channels;
+        rawVideoImage.getByteBuffer().put(message, 0, frameSize);
+        colorCamera.updateCurrentImage(rawVideoImage);
+//        colorCamera.updateCurrentImage(rawVideoImage);
     }
 
-    private opencv_core.IplImage rawVideoImage = null;
+    protected void setDepthImage(byte[] message) {
+        int iplDepth = IPL_DEPTH_8U;
+        int channels = 2;
 
-    protected void setImage(byte[] message) {
-        int channels = 3;
-        if (rawVideoImage == null || rawVideoImage.width() != this.width || rawVideoImage.height() != this.height) {
-            rawVideoImage = opencv_core.IplImage.create(width, height, IPL_DEPTH_8U, 3);
+        System.out.println("Set depth image");
+
+        int frameSize = depthCamera.width * depthCamera.height * channels;
+        // TODO: Handle as a sort buffer instead of byte.
+        if (rawDepthImage == null || rawDepthImage.width() != depthCamera.width || rawDepthImage.height() != depthCamera.height) {
+            rawDepthImage = opencv_core.IplImage.create(depthCamera.width, depthCamera.height, iplDepth, channels);
         }
-        int frameSize = width * height * channels;
-        rawVideoImage.getByteBuffer().put(message, 0, frameSize);
-        this.updateCurrentImage(rawVideoImage);
+        rawDepthImage.getByteBuffer().put(message, 0, frameSize);
+        depthCamera.updateCurrentImage(rawDepthImage);
     }
 
     @Override
@@ -119,20 +183,62 @@ public class CameraNectar extends Camera {
         this.setClosing();
     }
 
+    @Override
+    protected void grabIR() {
+    }
+
+    @Override
+    protected void grabDepth() {
+    }
+
+    @Override
+    protected void grabColor() {
+    }
+
+    @Override
+    protected void internalStart() throws Exception {
+    }
+
+    @Override
+    protected void internalGrab() throws Exception {
+    }
+
     class RedisThread extends Thread {
 
+        BinaryJedisPubSub listener;
+        private final String key;
+        Jedis client;
+
+        public RedisThread(Jedis client, BinaryJedisPubSub listener, String key) {
+            this.listener = listener;
+            this.key = key;
+            this.client = client;
+        }
+
         public void run() {
-            byte[] id = cameraDescription.getBytes();
-            MyListener l = new MyListener();
-            redis.subscribe(l, id);
+            byte[] id = key.getBytes();
+            client.subscribe(listener, id);
         }
     }
 
-    class MyListener extends BinaryJedisPubSub {
+    class ImageListener extends BinaryJedisPubSub {
+
+        PixelFormat format;
+
+        public ImageListener(PixelFormat format) {
+            this.format = format;
+        }
 
         @Override
         public void onMessage(byte[] channel, byte[] message) {
-            setImage(message);
+            if (this.format == PixelFormat.BGR || this.format == PixelFormat.RGB) {
+                setColorImage(message);
+            }
+            if (this.format == PixelFormat.OPENNI_2_DEPTH) {
+                setDepthImage(message);
+                System.out.println("received depth message image");
+
+            }
         }
 
         @Override
