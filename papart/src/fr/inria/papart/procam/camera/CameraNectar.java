@@ -19,9 +19,12 @@
  */
 package fr.inria.papart.procam.camera;
 
+import fr.inria.papart.tracking.DetectedMarker;
 import org.bytedeco.javacpp.opencv_core;
 import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;
 import processing.core.PImage;
+import processing.data.JSONArray;
+import processing.data.JSONObject;
 import redis.clients.jedis.BinaryJedisPubSub;
 import redis.clients.jedis.Jedis;
 
@@ -33,33 +36,28 @@ public class CameraNectar extends CameraRGBIRDepth {
 
     private boolean getMode = false;
 
-    String DEFAULT_HOST = "localhost";
-    int DEFAULT_PORT = 6379;
-
+    public String DEFAULT_REDIS_HOST = "localhost";
+    public int DEFAULT_REDIS_PORT = 6379;
+    private DetectedMarker[] currentMarkers;
     Jedis redisGet;
 
     protected CameraNectar(String cameraName) {
         this.cameraDescription = cameraName;
-//        redis = new Jedis("localhost", 6379);
     }
 
-//    public CameraNectar(String cameraName, String host, int port) {
-//        this.cameraDescription = cameraName;
-//        this.actAsColorCamera();
-////        redis = new Jedis(host, port);
-//    }
     @Override
     public void start() {
         try {
 
             if (useColor) {
                 startRGB();
+                setMarkerTracking();
             }
             if (useDepth) {
                 startDepth();
             }
             if (getMode) {
-                redisGet = new Jedis(DEFAULT_HOST, DEFAULT_PORT);
+                redisGet = new Jedis(DEFAULT_REDIS_HOST, DEFAULT_REDIS_PORT);
             }
             this.isConnected = true;
         } catch (Exception e) {
@@ -70,24 +68,20 @@ public class CameraNectar extends CameraRGBIRDepth {
     }
 
     private void startRGB() {
-        Jedis redis = new Jedis(DEFAULT_HOST, DEFAULT_PORT);
+        Jedis redis = new Jedis(DEFAULT_REDIS_HOST, DEFAULT_REDIS_PORT);
 
         int w = Integer.parseInt(redis.get(cameraDescription + ":width"));
         int h = Integer.parseInt(redis.get(cameraDescription + ":height"));
         colorCamera.setSize(w, h);
         colorCamera.setPixelFormat(PixelFormat.RGB);
         colorCamera.setFrameRate(30);
-
-        System.out.println("Starting thread Nectar camera.");
         if (!getMode) {
             new RedisThread(redis, new ImageListener(colorCamera.getPixelFormat()), cameraDescription).start();
         }
     }
 
     private void startDepth() {
-
-        System.out.println("Start depth thread ?");
-        Jedis redis2 = new Jedis(DEFAULT_HOST, DEFAULT_PORT);
+        Jedis redis2 = new Jedis(DEFAULT_REDIS_HOST, DEFAULT_REDIS_PORT);
 
         String v = redis2.get(cameraDescription + ":depth:width");
         if (v != null) {
@@ -101,11 +95,28 @@ public class CameraNectar extends CameraRGBIRDepth {
             // TODO: Standard Depth format
             depthCamera.setPixelFormat(PixelFormat.OPENNI_2_DEPTH);
             if (!getMode) {
-
-                System.out.println("Start depth thread !");
                 new RedisThread(redis2, new ImageListener(depthCamera.getPixelFormat()), cameraDescription + ":depth:raw").start();
             }
         }
+    }
+
+    private void setMarkerTracking() {
+        Jedis redis = new Jedis(DEFAULT_REDIS_HOST, DEFAULT_REDIS_PORT);
+        if (!getMode) {
+            new RedisThread(redis, new MarkerListener(), cameraDescription+":markers").start();
+        }
+    }
+
+    private void setMarkers(byte[] message) {
+        currentMarkers = parseMarkerList(new String(message));
+        System.out.println("Markers found: " + currentMarkers.length);
+    }
+
+    public DetectedMarker[] getMarkers() {
+        if (currentMarkers == null) {
+            return new DetectedMarker[0];
+        }
+        return currentMarkers;
     }
 
     /**
@@ -128,6 +139,7 @@ public class CameraNectar extends CameraRGBIRDepth {
             if (getMode) {
                 setColorImage(redisGet.get(cameraDescription.getBytes()));
                 setDepthImage(redisGet.get((cameraDescription + ":depth:raw").getBytes()));
+                setMarkers(redisGet.get((cameraDescription+":markers").getBytes()));
                 // sleep only
                 Thread.sleep(120);
             } else {
@@ -139,16 +151,6 @@ public class CameraNectar extends CameraRGBIRDepth {
         }
     }
 
-//    @Override
-//    public PImage getPImage() {
-//        return colorCamera.getPImage();
-//        if (currentImage != null) {
-//            this.checkCamImage();
-//            camImage.update(currentImage);
-//            return camImage;
-//        }
-//        return null;
-//    }
     private opencv_core.IplImage rawVideoImage = null;
     private opencv_core.IplImage rawDepthImage = null;
 
@@ -166,8 +168,6 @@ public class CameraNectar extends CameraRGBIRDepth {
     protected void setDepthImage(byte[] message) {
         int iplDepth = IPL_DEPTH_8U;
         int channels = 2;
-
-        System.out.println("Set depth image");
 
         int frameSize = depthCamera.width * depthCamera.height * channels;
         // TODO: Handle as a sort buffer instead of byte.
@@ -260,6 +260,80 @@ public class CameraNectar extends CameraRGBIRDepth {
         @Override
         public void onPMessage(byte[] pattern, byte[] channel, byte[] message) {
         }
+    }
+
+    class MarkerListener extends BinaryJedisPubSub {
+
+        public MarkerListener() {
+        }
+
+        @Override
+        public void onMessage(byte[] channel, byte[] message) {
+            setMarkers(message);
+        }
+
+        @Override
+        public void onSubscribe(byte[] channel, int subscribedChannels) {
+        }
+
+        @Override
+        public void onUnsubscribe(byte[] channel, int subscribedChannels) {
+        }
+
+        @Override
+        public void onPSubscribe(byte[] pattern, int subscribedChannels) {
+        }
+
+        @Override
+        public void onPUnsubscribe(byte[] pattern, int subscribedChannels) {
+        }
+
+        @Override
+        public void onPMessage(byte[] pattern, byte[] channel, byte[] message) {
+        }
+    }
+    
+    static DetectedMarker[] parseMarkerList(String jsonMessage) {
+
+        DetectedMarker detectedMarkers[] = new DetectedMarker[0];
+//        Marker m = new Marker(0, corners);
+        JSONObject msg = null;
+        try {
+            msg = JSONObject.parse(jsonMessage);
+        } catch (Exception e) {
+            System.err.println("Exception while parsing json." + e.toString() + " \nMessage: " + jsonMessage);
+        }
+        if (msg == null) {
+            return detectedMarkers;
+        }
+//        System.out.println("json: " + msg.getJSONArray("markers").size());
+
+        JSONArray markers = msg.getJSONArray("markers");
+
+        if (markers != null && markers.size() > 0) {
+            detectedMarkers = new DetectedMarker[markers.size()];
+            for (int i = 0; i < markers.size(); i++) {
+                JSONObject m = markers.getJSONObject(i);
+
+                int id = m.getInt("id");
+                JSONArray corners = m.getJSONArray("corners");
+
+                assert (corners.size() == 8);
+//                System.out.println("Corners size: " + corners.size());
+                DetectedMarker dm = new DetectedMarker(id,
+                        corners.getFloat(0),
+                        corners.getFloat(1),
+                        corners.getFloat(2),
+                        corners.getFloat(3),
+                        corners.getFloat(4),
+                        corners.getFloat(5),
+                        corners.getFloat(6),
+                        corners.getFloat(7));
+
+                detectedMarkers[i] = dm;
+            }
+        }
+        return detectedMarkers;
     }
 
 }

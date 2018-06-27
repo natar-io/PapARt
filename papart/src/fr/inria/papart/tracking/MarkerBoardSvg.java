@@ -25,6 +25,8 @@ import static fr.inria.papart.tracking.MarkerBoard.BLOCK_UPDATE;
 import static fr.inria.papart.tracking.MarkerBoard.FORCE_UPDATE;
 import static fr.inria.papart.tracking.MarkerBoard.NORMAL;
 import fr.inria.papart.procam.camera.Camera;
+import fr.inria.papart.procam.camera.CameraNectar;
+import fr.inria.papart.procam.camera.SubCamera;
 import java.util.ArrayList;
 import org.bytedeco.javacpp.opencv_core;
 import processing.core.PMatrix3D;
@@ -37,7 +39,7 @@ import processing.data.XML;
  */
 public class MarkerBoardSvg extends MarkerBoard {
 
-    private  MarkerList markersFromSVG;
+    private MarkerList markersFromSVG;
 
     public MarkerBoardSvg(String fileName, float width, float height) {
         super(fileName, width, height);
@@ -76,7 +78,19 @@ public class MarkerBoardSvg extends MarkerBoard {
             opencv_core.IplImage img,
             Object globalTracking) {
 
-        DetectedMarker[] markers = (DetectedMarker[]) globalTracking;
+        // Get markers here
+        DetectedMarker[] markers;
+
+        markers = (DetectedMarker[]) globalTracking;
+
+        if (camera instanceof SubCamera) {
+            SubCamera sub = (SubCamera) camera;
+            Camera main = sub.getMainCamera();
+            if (main instanceof CameraNectar) {
+                markers = ((CameraNectar) main).getMarkers();
+            }
+        }
+
         PMatrix3D newPos = DetectedMarker.compute3DPos(markers, markersFromSVG, camera);
 
         if (newPos == INVALID_LOCATION) {

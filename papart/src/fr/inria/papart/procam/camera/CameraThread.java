@@ -94,7 +94,8 @@ public class CameraThread extends Thread {
 
     /**
      * Set an image, used without starting the thread...
-     * @param image 
+     *
+     * @param image
      */
     public void setImage(IplImage image) {
         this.image = image;
@@ -111,8 +112,8 @@ public class CameraThread extends Thread {
     }
 
     /**
-     * Find the Markers, or features. 
-     * Can be used without a running thread with setImage. 
+     * Find the Markers, or features. Can be used without a running thread with
+     * setImage.
      */
     public void compute() {
         try {
@@ -120,7 +121,7 @@ public class CameraThread extends Thread {
             tryComputeGrayScale();
             tryToFindMarkers();
 
-             updateSequential();
+            updateSequential();
 //            updateParallel();
 
             camera.getSheetSemaphore().release();
@@ -190,16 +191,23 @@ public class CameraThread extends Thread {
         cvCvtColor(image, grayImage, CV_BGR2GRAY);
     }
 
-    static int k  = 0;
+    static int k = 0;
+
     private DetectedMarker[] computeMarkerLocations() {
-        
+
         // DEBUG
-//        
 //        if(camera instanceof ProjectorAsCamera){
 //             opencv_imgcodecs.cvSaveImage("/home/jiii/tmp/art-" + k++ + ".bmp", grayImage);
 //        }   
-        
-        
+        if (camera instanceof SubCamera) {
+            SubCamera sub = (SubCamera) camera;
+            Camera main = sub.getMainCamera();
+            if (main instanceof CameraNectar) {
+                // do nothing
+                return new DetectedMarker[0];
+//                markers = ((CameraNectar) main).getMarkers();
+            }
+        }
         return DetectedMarker.detect(tracker, grayImage);
     }
 

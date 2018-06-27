@@ -301,12 +301,12 @@ public class DetectedMarker implements Cloneable {
 
         ProjectiveDeviceP pdp = camera.getProjectiveDevice();
         
-        System.out.println("Pose estimation: " + pdp.toString());
-        System.out.println("Object/image: ");
-        for(int i = 0; i < k; i++)
-        {
-            System.out.println(objectArray[i] + " " + imageArray[i]);
-        }
+//        System.out.println("Pose estimation: " + pdp.toString());
+//        System.out.println("Object/image: ");
+//        for(int i = 0; i < k; i++)
+//        {
+//            System.out.println(objectArray[i] + " " + imageArray[i]);
+//        }
             return pdp.estimateOrientation(objectArray, imageArray);
 //        return pdp.estimateOrientationRansac(objectArray, imageArray);
     }
