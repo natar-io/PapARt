@@ -143,9 +143,14 @@ public class CameraNectar extends CameraRGBIRDepth {
         }
         try {
             if (getMode) {
-                setColorImage(redisGet.get(cameraDescription.getBytes()));
-                setDepthImage(redisGet.get((cameraDescription + ":depth:raw").getBytes()));
-                setMarkers(redisGet.get((cameraDescription + ":markers").getBytes()));
+
+                if (useColor) {
+                    setMarkers(redisGet.get((cameraDescription + ":markers").getBytes()));
+                    setColorImage(redisGet.get(cameraDescription.getBytes()));
+                }
+                if (useDepth) {
+                    setDepthImage(redisGet.get((cameraDescription + ":depth:raw").getBytes()));
+                }
                 // sleep only
                 Thread.sleep(120);
             } else {
@@ -153,7 +158,10 @@ public class CameraNectar extends CameraRGBIRDepth {
                 Thread.sleep(3000);
             }
         } catch (InterruptedException e) {
-            System.err.println("Camera: OpenCV Grab() Error ! " + e);
+            System.err.println("CameraNectar grab Error ! " + e);
+        } catch (Exception e) {
+            System.err.println("Camera Nectar error:  " + e);
+            e.printStackTrace();
         }
     }
 
