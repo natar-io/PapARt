@@ -81,6 +81,7 @@ public class CameraNectar extends CameraRGBIRDepth {
         colorCamera.setSize(w, h);
         colorCamera.setPixelFormat(PixelFormat.RGB);
         colorCamera.setFrameRate(30);
+        colorCamera.isConnected = true;
         if (!getMode) {
             new RedisThread(redis, new ImageListener(colorCamera.getPixelFormat()), cameraDescription).start();
         }
@@ -97,7 +98,7 @@ public class CameraNectar extends CameraRGBIRDepth {
             int h = Integer.parseInt(redis2.get(cameraDescription + ":depth:height"));
             depthCamera.setSize(w, h);
             depthCamera.setFrameRate(30);
-
+            depthCamera.isConnected = true;
             // TODO: Standard Depth format
             depthCamera.setPixelFormat(PixelFormat.OPENNI_2_DEPTH);
             if (!getMode) {
@@ -137,7 +138,6 @@ public class CameraNectar extends CameraRGBIRDepth {
 
     @Override
     public void grab() {
-
         if (this.isClosing()) {
             return;
         }
