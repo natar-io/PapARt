@@ -107,7 +107,6 @@ public abstract class MarkerBoard {
         this.updateStatus.add(NORMAL);
         OneEuroFilter[] filter = null;
         this.filters.add(filter);
-
         addTrackerImpl(camera);
     }
 
@@ -215,7 +214,7 @@ public abstract class MarkerBoard {
     }
 
     public boolean isTrackedBy(Camera camera) {
-        if(this == MarkerBoardInvalid.board){
+        if (this == MarkerBoardInvalid.board) {
 //            System.out.println("ERROR: cannot get the position of an invalid board.");
         }
         return cameras.contains(camera);
@@ -259,7 +258,12 @@ public abstract class MarkerBoard {
                     + " not registered with the camera you asked");
         }
 
-        int currentTime = applet.millis();
+        int currentTime = 0;
+        if (applet == null) {
+            currentTime = (int) System.currentTimeMillis();
+        } else {
+            currentTime = applet.millis();
+        }
         int endTime = nextTimeEvent.get(id);
         int mode = updateStatus.get(id);
 
@@ -274,10 +278,10 @@ public abstract class MarkerBoard {
 
     protected abstract void updatePositionImpl(int id, int currentTime, int endTime, int mode, Camera camera, IplImage img, Object globalTracking);
 
-    
     public PMatrix3D getPosition(Camera camera) {
-         return transfos.get(getId(camera));
+        return transfos.get(getId(camera));
     }
+
     @Deprecated
     public PMatrix3D getTransfoMat(Camera camera) {
         return transfos.get(getId(camera));

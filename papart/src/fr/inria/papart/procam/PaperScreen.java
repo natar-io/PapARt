@@ -107,7 +107,7 @@ public class PaperScreen extends DelegatedGraphics {
     private final int id;
 
     public static int count = 0;
-    protected final PMatrix3D table, tableInv;
+    protected PMatrix3D table, tableInv;
 
     /**
      * Create a new PaperScreen, a Papart object has to be created first. A
@@ -140,7 +140,6 @@ public class PaperScreen extends DelegatedGraphics {
         tableInv.invert();
         register();
     }
-
     /**
      * Create a PaperScreen with a given camera and display. Instanciation
      * without the use of a Papart object.
@@ -161,6 +160,23 @@ public class PaperScreen extends DelegatedGraphics {
         tableInv.invert();
         register();
     }
+    /**
+     * Create a PaperScreen with a given camera NO DISPLAY, headless constructor.
+     *
+     * @param cam
+     */
+    public PaperScreen(Camera cam) {
+        this.cameraTracking = cam;
+//        mainDisplay = proj;
+//        displays.add(proj);
+        this.id = count++;
+        this.markerBoard = MarkerBoardInvalid.board;
+//        table = Papart.getPapart().getTableLocation().get();
+//        tableInv = Papart.getPapart().getTableLocation().get();
+//        tableInv.invert();
+        register();
+    }
+    
 
     /**
      * Start without a camera. The paperScreen location has to be manually set.

@@ -599,6 +599,63 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
         }
         return p;
     }
+    
+    // Without PApplet
+    public static ProjectiveDeviceP loadCameraDevice(String filename) throws Exception {
+        return loadCameraDevice(filename, 0);
+    }
+
+    public static ProjectiveDeviceP loadCameraDevice(String filename, int id) throws Exception {
+        ProjectiveDeviceP p = new ProjectiveDeviceP();
+
+        if (filename.endsWith(".yaml")) {
+            CameraDevice[] camDev = CameraDevice.read(filename);
+            if (camDev.length <= id) {
+                throw new Exception("No camera device with the id " + id + " in the calibration file: " + filename);
+            }
+            CameraDevice cameraDevice = camDev[id];
+            loadParameters(cameraDevice, p);
+        }
+
+        if (filename.endsWith((".xml"))) {
+            ProjectiveDeviceCalibration calib = new ProjectiveDeviceCalibration();
+            calib.loadFrom(filename);
+            loadParameters(calib, p);
+        }
+
+        return p;
+    }
+    
+      public static ProjectiveDeviceP loadProjectorDevice(String filename) throws Exception {
+        return loadProjectorDevice(filename, 0);
+    }
+
+    public static ProjectiveDeviceP loadProjectorDevice(String filename, int id) throws Exception {
+
+        ProjectiveDeviceP p = new ProjectiveDeviceP();
+        if (filename.endsWith((".yaml"))) {
+            try {
+                ProjectorDevice[] camDev = ProjectorDevice.read(filename);
+
+                if (camDev.length <= id) {
+                    throw new Exception("No projector device with the id " + id + " in the calibration file: " + filename);
+                }
+                ProjectorDevice projectorDevice = camDev[id];
+                p.device = projectorDevice;
+                loadParameters(projectorDevice, p);
+
+            } catch (Exception e) {
+                throw new Exception("Error reading the calibration file : " + filename + " \n" + e);
+            }
+        }
+
+        if (filename.endsWith((".xml"))) {
+            ProjectiveDeviceCalibration calib = new ProjectiveDeviceCalibration();
+            calib.loadFrom(filename);
+            loadParameters(calib, p);
+        }
+        return p;
+    }
 
     @Deprecated
     public static ProjectiveDeviceP loadProjectiveDevice(String filename, int id) throws Exception {

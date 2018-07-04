@@ -26,6 +26,7 @@ import processing.core.PGraphics;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
+import processing.data.JSONArray;
 import toxi.geom.Vec3D;
 
 /**
@@ -97,6 +98,30 @@ public class MathUtils {
         src.m31 += toAdd.m31;
         src.m32 += toAdd.m32;
         src.m33 += toAdd.m33;
+    }
+
+    public static JSONArray PMatrixToJSON(PMatrix3D mat) {
+        JSONArray output = new JSONArray();
+        output.append(mat.m00);
+        output.append(mat.m01);
+        output.append(mat.m02);
+        output.append(mat.m03);
+
+        output.append(mat.m10);
+        output.append(mat.m11);
+        output.append(mat.m12);
+        output.append(mat.m13);
+
+        output.append(mat.m20);
+        output.append(mat.m21);
+        output.append(mat.m22);
+        output.append(mat.m23);
+
+        output.append(mat.m30);
+        output.append(mat.m31);
+        output.append(mat.m32);
+        output.append(mat.m33);
+        return output;
     }
 
     /**
@@ -359,9 +384,6 @@ public class MathUtils {
                 && // avoid pixels not bright enough
                 abs(g.brightness(incomingPix) - g.brightness(baseline)) < brightnessTresh;
     }
-
-    
-    
 
     static public final double constrain(double amt, double low, double high) {
         return (amt < low) ? low : ((amt > high) ? high : amt);

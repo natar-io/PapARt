@@ -57,7 +57,9 @@ public static final int DEFAULT_WIDTH = 100, DEFAULT_HEIGHT = 100;
             if (type == MarkerType.SVG) {
                 output = new MarkerBoardSvg(fileName, width, height);
             }
-
+            if(output == MarkerBoardInvalid.board){
+                throw new Exception("Impossible to load the markerboard :" + fileName);
+            }
             allBoards.put(fileName, output);
         } catch (Exception e) {
             System.err.println("Error loading the markerboard: " + e);

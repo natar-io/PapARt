@@ -37,6 +37,7 @@ import org.bytedeco.javacpp.opencv_core.IplImage;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Observable;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -48,7 +49,7 @@ import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 
-public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
+public abstract class Camera extends Observable implements PConstants, HasExtrinsics, WithSize {
 
     public static Camera INVALID_CAMERA = new CameraOpenCV(-1);
 
@@ -64,7 +65,7 @@ public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
     private boolean hasExtrinsics = false;
 
     public enum Type {
-        OPENCV, FFMPEG, PROCESSING, REALSENSE, OPEN_KINECT, OPEN_KINECT_2, 
+        OPENCV, FFMPEG, PROCESSING, REALSENSE, OPEN_KINECT, OPEN_KINECT_2,
         FLY_CAPTURE, OPENNI2, NECTAR,
         FAKE
     }
@@ -217,7 +218,12 @@ public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
     public void setCalibration(String fileName) {
         try {
             this.calibrationFile = fileName;
-            pdp = ProjectiveDeviceP.loadCameraDevice(parent, fileName);
+            if (parent == null) {
+                pdp = ProjectiveDeviceP.loadCameraDevice(fileName);
+            } else {
+                pdp = ProjectiveDeviceP.loadCameraDevice(parent, fileName);
+            }
+
             updateCalibration();
         } catch (Exception e) {
             e.printStackTrace();
@@ -432,7 +438,9 @@ public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
      */
     protected void updateCurrentImage(IplImage img) {
 
-        this.timeStamp = parent.millis();
+        if (parent != null) {
+            this.timeStamp = parent.millis();
+        }
 
         if (undistort) {
             if (pdp == null || !pdp.handleDistorsions()) {
@@ -486,15 +494,19 @@ public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
     }
 
     /**
-     * Enable or disable auto white balance, depends on camera driver for availability.
-     * @param v 
+     * Enable or disable auto white balance, depends on camera driver for
+     * availability.
+     *
+     * @param v
      */
     public void setAutoWhiteBalance(boolean v) {
     }
 
     /**
-     * Enable or disable auto exposure, depends on camera driver for availability.
-     * @param v 
+     * Enable or disable auto exposure, depends on camera driver for
+     * availability.
+     *
+     * @param v
      */
     public void setAutoExposure(boolean v) {
     }

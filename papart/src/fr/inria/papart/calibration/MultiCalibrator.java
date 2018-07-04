@@ -537,6 +537,8 @@ public class MultiCalibrator extends PaperTouchScreen {
             // Save also the 3D point from depth cam hopefully there are no fingers or objects.
             PMatrix3D extr = depthCameraDevice.getStereoCalibration().get();
             PVector depthPos = extr.mult(pos3D, new PVector());
+            
+            updateTouch();
             int depthPx = depthCameraDevice.getDepthCamera().getProjectiveDevice().worldToPixel(depthPos);
             Vec3D[] depthPoints = ((DepthTouchInput) touchInput).getDepthPoints();
 
