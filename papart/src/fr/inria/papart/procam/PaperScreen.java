@@ -50,6 +50,7 @@ import processing.core.PConstants;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
+import processing.data.JSONObject;
 import processing.event.KeyEvent;
 import static processing.event.KeyEvent.PRESS;
 import static processing.event.KeyEvent.RELEASE;
@@ -140,6 +141,7 @@ public class PaperScreen extends DelegatedGraphics {
         tableInv.invert();
         register();
     }
+
     /**
      * Create a PaperScreen with a given camera and display. Instanciation
      * without the use of a Papart object.
@@ -160,8 +162,10 @@ public class PaperScreen extends DelegatedGraphics {
         tableInv.invert();
         register();
     }
+
     /**
-     * Create a PaperScreen with a given camera NO DISPLAY, headless constructor.
+     * Create a PaperScreen with a given camera NO DISPLAY, headless
+     * constructor.
      *
      * @param cam
      */
@@ -176,7 +180,6 @@ public class PaperScreen extends DelegatedGraphics {
 //        tableInv.invert();
         register();
     }
-    
 
     /**
      * Start without a camera. The paperScreen location has to be manually set.
@@ -1602,6 +1605,7 @@ public class PaperScreen extends DelegatedGraphics {
     private XDisplayWithCam Xdisplay = null;
     private Camera Xcamera = null;
     private String prefix;
+    private String prefixPub;
     private Jedis redis;
 
     ///// App extension ///
@@ -1637,6 +1641,7 @@ public class PaperScreen extends DelegatedGraphics {
 
         connectRedis();
         prefix = "evt:" + Integer.toString(Xdisplay.getDisplayId()) + ":";
+        prefixPub = "evt:" + Integer.toString(Xdisplay.getDisplayId());
         // sleep 1sec
         try {
             Thread.sleep(1000);
@@ -1654,7 +1659,7 @@ public class PaperScreen extends DelegatedGraphics {
         String[] eventSender = new String[]{
             "/usr/bin/java",
             "-jar",
-            "/home/realitytech/gordon/repos/papart-calibration/KeyReader/target/KeyReader-0.1.jar",
+            "/home/ditrop/gordon/repos/papart-calibration/KeyReader/target/KeyReader-0.1.jar",
             Integer.toString(Xdisplay.getDisplayId())
         };
 
@@ -1665,9 +1670,11 @@ public class PaperScreen extends DelegatedGraphics {
 //            "--force",
 //            "--run"
 //        };
+
         XAppRunner event = new XAppRunner(eventSender, Xdisplay);
-        event.start();
-        event.autoExit(parent);
+        
+//        event.start();
+//        event.autoExit(parent);
     }
 
     private void connectRedis() {
@@ -1677,60 +1684,162 @@ public class PaperScreen extends DelegatedGraphics {
 
     public void appInteractWithMouse() {
         Touch t = createTouchFromMouse();
-        interactApp(t);
+        interactAppMouse(t);
     }
 
-    public void interactApp(Touch t) {
+    public void captureMouse() {
+        JSONObject ob = new JSONObject();
+        ob.setString("name", "captureMouse");
+        ob.setBoolean("pressed", true);
+        redis.publish(prefixPub, ob.toString());
+    }
+    public void releaseMouse() {
+        JSONObject ob = new JSONObject();
+        ob.setString("name", "captureMouse");
+        ob.setBoolean("pressed", false);
+        redis.publish(prefixPub, ob.toString());
+    }
+    public void captureKeyboard() {
+        JSONObject ob = new JSONObject();
+        ob.setString("name", "captureKeyboard");
+        ob.setBoolean("pressed", true);
+        redis.publish(prefixPub, ob.toString());
+    }
+    public void releaseKeyboard() {
+        JSONObject ob = new JSONObject();
+        ob.setString("name", "captureKeyboard");
+        ob.setBoolean("pressed", false);
+        redis.publish(prefixPub, ob.toString());
+    }
 
+    boolean setMode = false;
+    boolean mouseCaptured = false;
+
+    /**
+     * WORK IN PROGRESS
+     *
+     * @param t
+     */
+    public void interactAppMouse(Touch t) {
+
+        // mouse is not in, nor out, nothing to do
+        boolean isOut = (t.position.x < 0 || t.position.y < 0
+                || t.position.x > drawingSize.x
+                || t.position.y > drawingSize.y);
+
+        if (mouseCaptured) {
+            if (isOut) {
+                // Release !
+            }
+
+        }
+
+        // TODO: catch mouse event going out of the screen?
         if (redis != null) {
             /// Test with mouse forworading
             redis.set(prefix + "mouse:x", Integer.toString((int) (t.position.x * this.quality)));
             redis.set(prefix + "mouse:y", Integer.toString((int) (t.position.y * this.quality)));
 
+            JSONObject ob = new JSONObject();
+            ob.setString("name", "mouseEvent");
+            ob.setInt("x", (int) (t.position.x * this.quality));
+            ob.setInt("y", (int) (t.position.y * this.quality));
+            ob.setBoolean("pressed", t.pressed);
+
+            redis.publish(prefixPub, ob.toString());
+
 //            System.out.println("Send: " + prefix + "mouse:x" +  " ++ " + Integer.toString((int) (quality * t.position.x)));
             if (t.pressed) {
                 redis.set(prefix + "mouse:pressed", Boolean.toString(true));
                 redis.set(prefix + "mouse:pressedButton", Integer.toString(parent.mouseButton));
+
+//                redis.publish(prefixPub, "mouse:pressed:" + Boolean.toString(true));
+//                redis.publish(prefixPub, "mouse:pressedButton:" + Integer.toString(parent.mouseButton));
             } else {
                 redis.set(prefix + "mouse:pressed", Boolean.toString(false));
                 redis.set(prefix + "mouse:pressedButton", Integer.toString(parent.mouseButton));
+
+//                redis.publish(prefixPub, "mouse:pressed:" + Boolean.toString(false));
+//                redis.publish(prefixPub, "mouse:pressedButton:" + Integer.toString(parent.mouseButton));
             }
+        } else {
+            System.err.println("No redis connection.");
         }
     }
 
-//void mouseDragged(){
-//    mouseMoved();
-//}
-//
-//void mouseMoved(){
-//    redis.set(prefix + "mouse:x", Integer.toString(mouseX));
-//    redis.set(prefix +"mouse:y", Integer.toString(mouseY));
-//}
-//void mouseWheel(MouseEvent event) {
-//  float e = event.getCount();
-//  redis.set(prefix +"mouse:wheel", Float.toString(e));
-//}
-//
-//void mousePressed(){
-//    // Boolean.toString(mousePressed));
-//    println("pressed");
-//    redis.set("mouse:pressed", Boolean.toString(true));
-//    redis.set("mouse:pressedButton", Integer.toString(mouseButton));
-//}
-//
-//
-//void mouseReleased(){
-//    redis.set(prefix +"mouse:pressed", Boolean.toString(false));
-//    redis.set(prefix +"mouse:pressedButton", Integer.toString(mouseButton));
-//}
-//
-//public void keyPressed(KeyEvent e) {
-//    redis.sadd(prefix +"key:pressed",  Integer.toString(e.getKeyCode()));
-//}
-//
-//public void keyReleased(KeyEvent e) {
-//    redis.sadd(prefix +"key:released",  Integer.toString(e.getKeyCode()));
-//}
+    /**
+     * WORK IN PROGRESS
+     *
+     * @param t
+     */
+    public void interactApp(Touch t) {
+
+        // mouse gets in 
+        // TODO: catch mouse event going out of the screen?
+        if (redis != null) {
+            /// Test with mouse forworading
+            redis.set(prefix + "mouse:x", Integer.toString((int) (t.position.x * this.quality)));
+            redis.set(prefix + "mouse:y", Integer.toString((int) (t.position.y * this.quality)));
+
+            JSONObject ob = new JSONObject();
+            ob.setString("name", "mouseEvent");
+            ob.setInt("x", (int) (t.position.x * this.quality));
+            ob.setInt("y", (int) (t.position.y * this.quality));
+            ob.setBoolean("pressed", t.pressed);
+
+            redis.publish(prefixPub, ob.toString());
+
+//            System.out.println("Send: " + prefix + "mouse:x" +  " ++ " + Integer.toString((int) (quality * t.position.x)));
+            if (t.pressed) {
+                redis.set(prefix + "mouse:pressed", Boolean.toString(true));
+                redis.set(prefix + "mouse:pressedButton", Integer.toString(parent.mouseButton));
+
+//                redis.publish(prefixPub, "mouse:pressed:" + Boolean.toString(true));
+//                redis.publish(prefixPub, "mouse:pressedButton:" + Integer.toString(parent.mouseButton));
+            } else {
+                redis.set(prefix + "mouse:pressed", Boolean.toString(false));
+                redis.set(prefix + "mouse:pressedButton", Integer.toString(parent.mouseButton));
+
+//                redis.publish(prefixPub, "mouse:pressed:" + Boolean.toString(false));
+//                redis.publish(prefixPub, "mouse:pressedButton:" + Integer.toString(parent.mouseButton));
+            }
+        } else {
+            System.err.println("No redis connection.");
+        }
+    }
+
+    //void mouseDragged(){
+    //    mouseMoved();
+    //}
+    //
+    //void mouseMoved(){
+    //    redis.set(prefix + "mouse:x", Integer.toString(mouseX));
+    //    redis.set(prefix +"mouse:y", Integer.toString(mouseY));
+    //}
+    //void mouseWheel(MouseEvent event) {
+    //  float e = event.getCount();
+    //  redis.set(prefix +"mouse:wheel", Float.toString(e));
+    //}
+    //
+    void mousePressed() {
+        // Boolean.toString(mousePressed));
+        redis.publish("mouse1", "true");
+    }
+    //
+    //
+    //void mouseReleased(){
+    //    redis.set(prefix +"mouse:pressed", Boolean.toString(false));
+    //    redis.set(prefix +"mouse:pressedButton", Integer.toString(mouseButton));
+    //}
+    //
+    //public void keyPressed(KeyEvent e) {
+    //    redis.sadd(prefix +"key:pressed",  Integer.toString(e.getKeyCode()));
+    //}
+    //
+    //public void keyReleased(KeyEvent e) {
+    //    redis.sadd(prefix +"key:released",  Integer.toString(e.getKeyCode()));
+    //}
+
     public void drawApp() {
         if (Xcamera != null) {
             Xcamera.grab();
