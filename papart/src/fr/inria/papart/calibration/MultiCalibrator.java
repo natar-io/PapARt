@@ -12,15 +12,8 @@ import fr.inria.papart.depthcam.DepthDataElementProjected;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.INVALID_POINT;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.multitouch.DepthTouchInput;
-import fr.inria.papart.multitouch.SkatoloLink;
-import fr.inria.papart.multitouch.Touch;
-import fr.inria.papart.multitouch.TouchInput;
-import fr.inria.papart.multitouch.TouchList;
-import fr.inria.papart.multitouch.detection.BlinkTracker;
 import fr.inria.papart.multitouch.detection.ColorReferenceThresholds;
-import fr.inria.papart.multitouch.detection.ColorTracker;
 import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
-import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.procam.ColorDetection;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.PaperScreen;
@@ -30,7 +23,6 @@ import fr.inria.papart.procam.camera.ProjectorAsCamera;
 import fr.inria.papart.procam.camera.TrackedView;
 import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.procam.display.ProjectorDisplay;
-import fr.inria.papart.tracking.DetectedMarker;
 import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.utils.DrawUtils;
 import java.util.ArrayList;
@@ -46,7 +38,6 @@ import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.opengl.PGraphicsOpenGL;
 import tech.lity.rea.skatolo.Skatolo;
-import tech.lity.rea.skatolo.gui.controllers.HoverButton;
 
 /**
  *
@@ -54,11 +45,6 @@ import tech.lity.rea.skatolo.gui.controllers.HoverButton;
  */
 import fr.inria.papart.procam.camera.CameraThread;
 import fr.inria.papart.procam.display.BaseDisplay;
-import static fr.inria.papart.utils.MathUtils.absd;
-import static fr.inria.papart.utils.MathUtils.constrain;
-import org.bytedeco.javacpp.opencv_imgcodecs;
-import static processing.core.PApplet.abs;
-import static processing.core.PApplet.split;
 import static processing.core.PConstants.CORNER;
 import static processing.core.PConstants.LEFT;
 import static processing.core.PConstants.RIGHT;
@@ -67,41 +53,6 @@ import tech.lity.rea.skatolo.gui.controllers.Button;
 import tech.lity.rea.skatolo.gui.controllers.Toggle;
 import toxi.geom.Plane;
 import toxi.geom.Vec3D;
-
-class TableTest extends PaperTouchScreen {
-
-    public void settings() {
-        try {
-            setDrawingSize(200, 200);
-//            loadMarkerBoard(Papart.markerFolder + "calib1.svg", 297, 210);
-            setDrawOnPaper();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setup() {
-        useManualLocation(true, Papart.getPapart().getTableLocation());
-    }
-
-    public void drawOnPaper() {
-//        setLocation(Papart.getPapart().getTableLocation());
-//        setLocation(-100, -100, 0);
-//        background(180, 20, 20);
-
-        stroke(180);
-        noFill();
-        for (int i = 0; i < 200; i += 10) {
-            line(0, i, drawingSize.x, i);
-        }
-        for (int i = 0; i < 200; i += 10) {
-            line(i, 0, i, drawingSize.y);
-        }
-//        fill(200, 200, 20);
-//        rect(0, 0, 50, 50);
-    }
-
-}
 
 public class MultiCalibrator extends PaperTouchScreen {
 
@@ -192,16 +143,10 @@ public class MultiCalibrator extends PaperTouchScreen {
         }
     }
 
-    public static TableTest tableTest = null;
-
     @Override
     public void setup() {
         try {
 
-            if (tableTest == null) {
-//                tableTest = new TableTest();
-//                tableTest.setDrawing(false);
-            }
             setDrawingFilter(0);
 //            setTrackingFilter(0, 0);
 //            planeProjCalib = new PlaneAndProjectionCalibration();
@@ -537,7 +482,7 @@ public class MultiCalibrator extends PaperTouchScreen {
             // Save also the 3D point from depth cam hopefully there are no fingers or objects.
             PMatrix3D extr = depthCameraDevice.getStereoCalibration().get();
             PVector depthPos = extr.mult(pos3D, new PVector());
-            
+
             updateTouch();
             int depthPx = depthCameraDevice.getDepthCamera().getProjectiveDevice().worldToPixel(depthPos);
             Vec3D[] depthPoints = ((DepthTouchInput) touchInput).getDepthPoints();
@@ -693,6 +638,7 @@ public class MultiCalibrator extends PaperTouchScreen {
         planeCalib.setHeight(10f); // NOT used anymore -> to remove.
         planeCalib.flipNormal();
 
+        // This should be better for touch -> To test ASAP.
         // TODO: Not better yet, be we can mix this data with the other 
         // to get a better result.
 //        // Other Planecalib method !!
@@ -757,24 +703,18 @@ public class MultiCalibrator extends PaperTouchScreen {
 
     public void stopCalib() {
         if (active) {
-            // stop rendering.
-//            mainDisplay.removePaperScreen(this);
             active = false;
 
             ((ARDisplay) getDisplay()).setCalibrationMode(false);
-            System.out.println("Stopping multi-calib...");
+            System.out.println("Stopping multi-calib.");
         }
     }
 
     public void startCalib() {
-        // start rendering again.
-//        if (!mainDisplay.paperScreens.contains(this)) {
-//            mainDisplay.addPaperScreen(this);
-//        }
         active = true;
         ((ARDisplay) getDisplay()).setCalibrationMode(true);
 
-        System.out.println("Starting multi-calib...");
+        System.out.println("Starting multi-calib.");
     }
 
     public boolean isActive() {
@@ -782,12 +722,16 @@ public class MultiCalibrator extends PaperTouchScreen {
     }
 
     private static Skatolo skatolo;
-    private static Button button;
 
     // Button activated
     public boolean showProjection, showTouch, doCalibration;
     public Toggle showProjectionToggle, showTouchToggle, isCalibratingToggle;
 
+    /**
+     * Draw the calibration, used by the AR rendrer.
+     *
+     * @param screenGraphics
+     */
     public static void drawCalibration(PGraphicsOpenGL screenGraphics) {
         Papart papart = Papart.getPapart();
         MultiCalibrator multiCalibrator = papart.multiCalibrator;
@@ -871,6 +815,12 @@ public class MultiCalibrator extends PaperTouchScreen {
 
     }
 
+    /**
+     * Draw a target to select with a tracked paperscreen.
+     *
+     * @param g
+     * @param multiCalibrator
+     */
     public static void drawTarget(PGraphicsOpenGL g, MultiCalibrator multiCalibrator) {
         g.noFill();
         g.stroke(255);
@@ -896,6 +846,13 @@ public class MultiCalibrator extends PaperTouchScreen {
 
     }
 
+    /**
+     * Rectangular frame that shows the border of the projection.
+     *
+     * @param parent
+     * @param g
+     * @param multiCalibrator
+     */
     public static void drawFrame(PApplet parent, PGraphicsOpenGL g,
             MultiCalibrator multiCalibrator) {
 
@@ -939,7 +896,30 @@ public class MultiCalibrator extends PaperTouchScreen {
 
     }
 
+    /**
+     * Draw the progress bars, colored squared that shows the remaining
+     * elements.
+     *
+     * @param g
+     * @param multiCalibrator
+     * @param pt
+     */
     public static void drawProgress(PGraphicsOpenGL g,
+            MultiCalibrator multiCalibrator, PVector pt) {
+
+        drawPosesProgress(g, multiCalibrator, pt);
+        drawColorsProgress(g, multiCalibrator);
+    }
+
+    /**
+     * Draw the progress bars, colored squared that shows the remaining
+     * elements.
+     *
+     * @param g
+     * @param multiCalibrator
+     * @param pt
+     */
+    public static void drawPosesProgress(PGraphicsOpenGL g,
             MultiCalibrator multiCalibrator, PVector pt) {
         g.pushMatrix();
         g.translate(120, 150);
@@ -949,6 +929,7 @@ public class MultiCalibrator extends PaperTouchScreen {
         g.strokeWeight(1);
         g.stroke(255);
 
+        //
         for (int i = 0; i < multiCalibrator.nbScreenPoints; i++) {
             if (i < multiCalibrator.currentScreenPoint) {
                 g.fill(0, 255, 0); // green
@@ -963,7 +944,17 @@ public class MultiCalibrator extends PaperTouchScreen {
         }
         g.popMatrix();
 
-        // Color captures
+    }
+
+    /**
+     * Draw the color progress bars, it shows the colors taken.
+     *
+     * @param g
+     * @param multiCalibrator
+     */
+    public static void drawColorsProgress(PGraphicsOpenGL g,
+            MultiCalibrator multiCalibrator) {
+
         int[][] savedColors = multiCalibrator.savedColors;
         g.noStroke();
         int rectSize = 15;
@@ -984,14 +975,7 @@ public class MultiCalibrator extends PaperTouchScreen {
             MultiCalibrator multiCalibrator, PVector pt) {
 
         Papart papart = Papart.getPapart();
-        PApplet parent = multiCalibrator.parent;
-        BaseDisplay display = multiCalibrator.getDisplay();
 
-//        float freq = 0.2f + 2f * ((float) multiCalibrator.pressedAmt / (float) multiCalibrator.maxPressedAmt);
-//        float freq = 0.5f;
-//        if (multiCalibrator.pressedAmt > 3f) {
-//            freq = 2f;
-//        }
         if (multiCalibrator.waitForMovement) {
             g.fill(200, 0, 0);
         } else {
@@ -1005,17 +989,15 @@ public class MultiCalibrator extends PaperTouchScreen {
                 g.fill(60);
             }
         }
-//        float v = (PApplet.sin((parent.millis() / 1000f) * PConstants.TWO_PI * freq) + 1f) / 2f;
-//        g.fill(255 * v);
 
         int dx = 60;
         int dy = 70;
         int h = 50;
-//        g.rect(-w, -h, w * 2, h * 2);
 
         g.rect(-dx, -dy - h, dx * 2, h);
         g.rect(-dx, dy, dx * 2, h);
 
+        // Number of detected elements
         for (int i = 0; i < 8; i++) {
             if (i < papart.getMarkerList().length) {
                 g.fill(129, 247, 156); // green
@@ -1024,22 +1006,6 @@ public class MultiCalibrator extends PaperTouchScreen {
             }
             g.rect(-dx + i * 16, dy + 15, 15, 15);
         }
-
-//        g.rect(-50, 100, 150, 80);
-//        g.rect(-50, -100, 150, 80);
-//        float d = multiCalibrator.getMarkerBoard().lastMovementDistance(multiCalibrator.getCameraTracking());
-//        g.text(d, 100, 100);
-//        if (pt.y < display.getHeight() - 180) {
-//            g.translate(0, 150);
-//        } else {
-//            g.translate(0, -150);
-//        }
-        // Not moving, draw something.
-//        if (d < 2f) {
-//            g.fill(0, 255, 0);
-//            g.fill(255);
-//            g.text("Ne bougez plus la feuille.", 0, 0); //stillW + 10);
-//        }
     }
 
     public static void drawTouchCalibrated(PGraphicsOpenGL g,

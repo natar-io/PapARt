@@ -49,6 +49,12 @@ public class BlinkTracker extends ColorTracker {
         images.clear();
         framesTime.clear();
     }
+    
+    /**  Draw a freq
+      //        float v = (PApplet.sin((parent.millis() / 1000f) * PConstants.TWO_PI * freq) + 1f) / 2f;
+//        g.fill(255 * v);
+
+     */
 
     /**
      * For now it only finds one color.
