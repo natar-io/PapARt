@@ -26,9 +26,6 @@ import fr.inria.papart.tracking.MarkerBoardInvalid;
 import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.calibration.files.HomographyCalibration;
-import fr.inria.papart.compositor.AppRunnerTest;
-import fr.inria.papart.compositor.XAppRunner;
-import fr.inria.papart.compositor.XDisplayWithCam;
 import fr.inria.papart.multitouch.Touch;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.procam.display.BaseDisplay;
@@ -41,20 +38,13 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import processing.opengl.PGraphicsOpenGL;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
-import processing.data.JSONObject;
 import processing.event.KeyEvent;
-import static processing.event.KeyEvent.PRESS;
-import static processing.event.KeyEvent.RELEASE;
-import redis.clients.jedis.Jedis;
 import toxi.geom.Plane;
 import toxi.geom.Triangle3D;
 
@@ -590,16 +580,6 @@ public class PaperScreen extends DelegatedGraphics {
      * @param e
      */
     public void keyEvent(KeyEvent e) {
-
-        // Redis tests
-        if (redis != null) {
-            if (e.getAction() == PRESS) {
-                redis.sadd(prefix + "key:pressed", Integer.toString(e.getKeyCode()));
-            }
-            if (e.getAction() == RELEASE) {
-                redis.sadd(prefix + "key:released", Integer.toString(e.getKeyCode()));
-            }
-        }
 
         String filename = "paper-" + Integer.toString(id) + ".xml";
 
@@ -1599,256 +1579,6 @@ public class PaperScreen extends DelegatedGraphics {
 
     public void setHalfEyeDist(float halfEyeDist) {
         this.halfEyeDist = halfEyeDist;
-    }
-
-    private XDisplayWithCam Xdisplay = null;
-    private Camera Xcamera = null;
-    private String prefix;
-    private String prefixPub;
-    private Jedis redis;
-
-    ///// App extension ///
-    public void runProgram(String[] name) {
-        if (Xdisplay == null) {
-            // check if display exists ?
-            initXDisplay();
-            Xcamera = Xdisplay.getCamera(parent);
-        }
-        XAppRunner firefox = new XAppRunner(name, Xdisplay);
-        firefox.autoExit(parent);
-        firefox.start();
-    }
-
-    ///// App extension ///
-    public void runProgram(String name) {
-        if (Xdisplay == null) {
-
-            // check if display exists ?
-            initXDisplay();
-            Xcamera = Xdisplay.getCamera(parent);
-        }
-        XAppRunner firefox = new XAppRunner(name, Xdisplay);
-        firefox.autoExit(parent);
-        firefox.start();
-    }
-
-    private void initXDisplay() {
-        // XServer 
-        Xdisplay = new XDisplayWithCam(getRenderingSizeX(), getRenderingSizeY());
-        Xdisplay.start();
-        Xdisplay.autoExit(parent);
-
-        connectRedis();
-        prefix = "evt:" + Integer.toString(Xdisplay.getDisplayId()) + ":";
-        prefixPub = "evt:" + Integer.toString(Xdisplay.getDisplayId());
-        // sleep 1sec
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(AppRunnerTest.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        // Default - start with a WM and  the event passer.
-        // Window manager 
-        XAppRunner wm = new XAppRunner("openbox", Xdisplay);
-        wm.autoExit(parent);
-        wm.start();
-
-        // Event manager
-        String[] eventSender = new String[]{
-            "/usr/bin/java",
-            "-jar",
-            "/home/ditrop/gordon/repos/papart-calibration/KeyReader/target/KeyReader-0.1.jar",
-            Integer.toString(Xdisplay.getDisplayId())
-        };
-
-//        String[] eventSender = new String[]{
-//            "/usr/bin/processing-java",
-//            "--sketch=/home/realitytech/gordon/repos/papart-calibration/exec/redisKeyReader/",
-//            "--output=/home/realitytech/gordon/repos/papart-calibration/exec/redisKeyReader/build",
-//            "--force",
-//            "--run"
-//        };
-        XAppRunner event = new XAppRunner(eventSender, Xdisplay);
-
-//        event.start();
-//        event.autoExit(parent);
-    }
-
-    private void connectRedis() {
-        redis = new Jedis("127.0.0.1", 6379);
-        // redis.auth("156;2Asatu:AUI?S2T51235AUEAIU");
-    }
-
-    public void appInteractWithMouse() {
-        Touch t = createTouchFromMouse();
-        interactAppMouse(t);
-    }
-
-    public void captureMouse() {
-        JSONObject ob = new JSONObject();
-        ob.setString("name", "captureMouse");
-        ob.setBoolean("pressed", true);
-        redis.publish(prefixPub, ob.toString());
-    }
-
-    public void releaseMouse() {
-        JSONObject ob = new JSONObject();
-        ob.setString("name", "captureMouse");
-        ob.setBoolean("pressed", false);
-        redis.publish(prefixPub, ob.toString());
-    }
-
-    public void captureKeyboard() {
-        JSONObject ob = new JSONObject();
-        ob.setString("name", "captureKeyboard");
-        ob.setBoolean("pressed", true);
-        redis.publish(prefixPub, ob.toString());
-    }
-
-    public void releaseKeyboard() {
-        JSONObject ob = new JSONObject();
-        ob.setString("name", "captureKeyboard");
-        ob.setBoolean("pressed", false);
-        redis.publish(prefixPub, ob.toString());
-    }
-
-    boolean setMode = false;
-    boolean mouseCaptured = false;
-
-    /**
-     * WORK IN PROGRESS
-     *
-     * @param t
-     */
-    public void interactAppMouse(Touch t) {
-
-        // mouse is not in, nor out, nothing to do
-        boolean isOut = (t.position.x < 0 || t.position.y < 0
-                || t.position.x > drawingSize.x
-                || t.position.y > drawingSize.y);
-
-        if (mouseCaptured) {
-            if (isOut) {
-                // Release !
-            }
-
-        }
-
-        // TODO: catch mouse event going out of the screen?
-        if (redis != null) {
-            /// Test with mouse forworading
-            redis.set(prefix + "mouse:x", Integer.toString((int) (t.position.x * this.quality)));
-            redis.set(prefix + "mouse:y", Integer.toString((int) (t.position.y * this.quality)));
-
-            JSONObject ob = new JSONObject();
-            ob.setString("name", "mouseEvent");
-            ob.setInt("x", (int) (t.position.x * this.quality));
-            ob.setInt("y", (int) (t.position.y * this.quality));
-            ob.setBoolean("pressed", t.pressed);
-
-            redis.publish(prefixPub, ob.toString());
-
-//            System.out.println("Send: " + prefix + "mouse:x" +  " ++ " + Integer.toString((int) (quality * t.position.x)));
-            if (t.pressed) {
-                redis.set(prefix + "mouse:pressed", Boolean.toString(true));
-                redis.set(prefix + "mouse:pressedButton", Integer.toString(parent.mouseButton));
-
-//                redis.publish(prefixPub, "mouse:pressed:" + Boolean.toString(true));
-//                redis.publish(prefixPub, "mouse:pressedButton:" + Integer.toString(parent.mouseButton));
-            } else {
-                redis.set(prefix + "mouse:pressed", Boolean.toString(false));
-                redis.set(prefix + "mouse:pressedButton", Integer.toString(parent.mouseButton));
-
-//                redis.publish(prefixPub, "mouse:pressed:" + Boolean.toString(false));
-//                redis.publish(prefixPub, "mouse:pressedButton:" + Integer.toString(parent.mouseButton));
-            }
-        } else {
-            System.err.println("No redis connection.");
-        }
-    }
-
-    /**
-     * WORK IN PROGRESS
-     *
-     * @param t
-     */
-    public void interactApp(Touch t) {
-
-        // mouse gets in 
-        // TODO: catch mouse event going out of the screen?
-        if (redis != null) {
-            /// Test with mouse forworading
-            redis.set(prefix + "mouse:x", Integer.toString((int) (t.position.x * this.quality)));
-            redis.set(prefix + "mouse:y", Integer.toString((int) (t.position.y * this.quality)));
-
-            JSONObject ob = new JSONObject();
-            ob.setString("name", "mouseEvent");
-            ob.setInt("x", (int) (t.position.x * this.quality));
-            ob.setInt("y", (int) (t.position.y * this.quality));
-            ob.setBoolean("pressed", t.pressed);
-
-            redis.publish(prefixPub, ob.toString());
-
-//            System.out.println("Send: " + prefix + "mouse:x" +  " ++ " + Integer.toString((int) (quality * t.position.x)));
-            if (t.pressed) {
-                redis.set(prefix + "mouse:pressed", Boolean.toString(true));
-                redis.set(prefix + "mouse:pressedButton", Integer.toString(parent.mouseButton));
-
-//                redis.publish(prefixPub, "mouse:pressed:" + Boolean.toString(true));
-//                redis.publish(prefixPub, "mouse:pressedButton:" + Integer.toString(parent.mouseButton));
-            } else {
-                redis.set(prefix + "mouse:pressed", Boolean.toString(false));
-                redis.set(prefix + "mouse:pressedButton", Integer.toString(parent.mouseButton));
-
-//                redis.publish(prefixPub, "mouse:pressed:" + Boolean.toString(false));
-//                redis.publish(prefixPub, "mouse:pressedButton:" + Integer.toString(parent.mouseButton));
-            }
-        } else {
-            System.err.println("No redis connection.");
-        }
-    }
-
-    //void mouseDragged(){
-    //    mouseMoved();
-    //}
-    //
-    //void mouseMoved(){
-    //    redis.set(prefix + "mouse:x", Integer.toString(mouseX));
-    //    redis.set(prefix +"mouse:y", Integer.toString(mouseY));
-    //}
-    //void mouseWheel(MouseEvent event) {
-    //  float e = event.getCount();
-    //  redis.set(prefix +"mouse:wheel", Float.toString(e));
-    //}
-    //
-    void mousePressed() {
-        // Boolean.toString(mousePressed));
-        redis.publish("mouse1", "true");
-    }
-    //
-    //
-    //void mouseReleased(){
-    //    redis.set(prefix +"mouse:pressed", Boolean.toString(false));
-    //    redis.set(prefix +"mouse:pressedButton", Integer.toString(mouseButton));
-    //}
-    //
-    //public void keyPressed(KeyEvent e) {
-    //    redis.sadd(prefix +"key:pressed",  Integer.toString(e.getKeyCode()));
-    //}
-    //
-    //public void keyReleased(KeyEvent e) {
-    //    redis.sadd(prefix +"key:released",  Integer.toString(e.getKeyCode()));
-    //}
-
-    public void drawApp() {
-        if (Xcamera != null) {
-            Xcamera.grab();
-            PImage img = Xcamera.getPImage();
-            if (img != null) {
-                image(img, 0, 0, drawingSize.x, drawingSize.y);
-            }
-        }
     }
 
 }
