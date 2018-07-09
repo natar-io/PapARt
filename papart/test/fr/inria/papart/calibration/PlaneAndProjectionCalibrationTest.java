@@ -32,7 +32,7 @@ import processing.core.PMatrix3D;
 
 /**
  *
- * @author Jeremy Laviole jeremy.laviole@inria.fr
+ * @author Jeremy Laviole laviole@rea.lity.tech
  */
 public class PlaneAndProjectionCalibrationTest {
 

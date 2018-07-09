@@ -35,7 +35,7 @@ import processing.core.PImage;
 
 /**
  *
- * @author Jérémy Laviole - jeremy.laviole@inria.fr
+ * @author Jérémy Laviole - laviole@rea.lity.tech
  */
 public class ProjectorAsCamera extends Camera {
 

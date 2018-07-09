@@ -21,7 +21,7 @@ package fr.inria.papart.calibration;
 
 /**
  *
- * @author Jeremy Laviole jeremy.laviole@inria.fr
+ * @author Jeremy Laviole laviole@rea.lity.tech
  */
 public class Common {
     public static final String currentPath = "test/fr/inria/papart/calibration/";

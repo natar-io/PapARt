@@ -41,7 +41,7 @@ import toxi.geom.Vec3D;
 
 /**
  *
- * @author Jérémy Laviole - jeremy.laviole@inria.fr
+ * @author Jérémy Laviole - laviole@rea.lity.tech
  */
 public abstract class DepthCameraDevice {
 

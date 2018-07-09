@@ -19,9 +19,6 @@
  */
 package fr.inria.papart.calibration;
 
-import fr.inria.papart.calibration.ExtrinsicSnapshot;
-import fr.inria.papart.calibration.HomographyCreator;
-import fr.inria.papart.calibration.Utils;
 import fr.inria.papart.calibration.files.HomographyCalibration;
 import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.calibration.files.PlaneCalibration;
@@ -39,7 +36,7 @@ import toxi.geom.Vec3D;
 
 /**
  *
- * @author Jérémy Laviole - jeremy.laviole@inria.fr
+ * @author Jérémy Laviole - laviole@rea.lity.tech
  */
 public class ExtrinsicCalibrator {
 

@@ -27,7 +27,7 @@ import processing.data.XML;
 
 /**
  *
- * @author Jeremy Laviole jeremy.laviole@inria.fr
+ * @author Jeremy Laviole laviole@rea.lity.tech
  */
 public class ProjectiveDeviceCalibration extends Calibration {
 
