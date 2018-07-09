@@ -44,7 +44,6 @@ import fr.inria.papart.multitouch.ColorTouchInput;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.multitouch.TUIOTouchInput;
 import fr.inria.papart.multitouch.DepthTouchInput;
-import fr.inria.papart.multitouch.detection.BlinkTracker;
 import fr.inria.papart.multitouch.detection.CalibratedColorTracker;
 import fr.inria.papart.multitouch.detection.ColorTracker;
 import fr.inria.papart.utils.LibraryUtils;
@@ -1265,26 +1264,6 @@ public class Papart {
      */
     public ColorTracker initBlueTracking(PaperScreen screen, float quality) {
         return initColorTracking("blue", blueThresholds, screen, quality);
-    }
-
-    /**
-     * Create a blue ColorTracker for a PaperScreen.
-     *
-     * @param screen PaperScreen to set the location of the tracking.
-     * @param quality capture quality in px/mm. lower (0.5f) for higher
-     * performance.
-     * @param freq
-     * @return
-     */
-    public BlinkTracker initXTracking(PaperScreen screen, float quality, float freq) {
-        BlinkTracker blinkTracker = new BlinkTracker(screen, getDefaultBlinkTouchCalibration(), quality);
-        String[] list = applet.loadStrings(blinkThresholds);
-        for (String data : list) {
-            blinkTracker.loadParameter(data);
-        }
-        blinkTracker.setName("x");
-        blinkTracker.setFreq(freq);
-        return blinkTracker;
     }
 
     private ColorTracker initColorTracking(String name, String calibFile, PaperScreen screen, float quality) {
