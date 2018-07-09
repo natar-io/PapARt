@@ -21,22 +21,39 @@ import processing.core.PGraphics;
 import tech.lity.rea.colorconverter.ColorConverter;
 
 /**
- * [experimental] Similar to the ColorTracker but for all the calibrated colors.
+ * Color Tracker with the calibrated colors.
  *
  * @author Jérémy Laviole
  */
 public class CalibratedColorTracker extends ColorTracker {
 
-    int numberOfRefs = 4;
-    private final ColorReferenceThresholds references[];
-    TouchDetectionLargeColor largeDetectionColor;
+    private int numberOfRefs = 4;
+    private ColorReferenceThresholds references[];
+    private TouchDetectionLargeColor largeDetectionColor;
+    private PlanarTouchCalibration largerTouchCalibration;
 
     public CalibratedColorTracker(PaperScreen paperScreen, float scale) {
         super(paperScreen, scale);
-        references =  ColorReferenceThresholds.loadDefaultThresholds(numberOfRefs);
+        loadDefaultColorReferences();
     }
-    PlanarTouchCalibration largerTouchCalibration;
+    
+    /**
+     * Set the color references for identification.
+     *
+     * @param refs
+     */
+    public void setColorReferences(ColorReferenceThresholds[] refs) {
+        references = refs;
+    }
 
+    /**
+     * Load the default color references from PapARt.
+     */
+    public void loadDefaultColorReferences() {
+        setColorReferences(ColorReferenceThresholds.loadDefaultThresholds(numberOfRefs));
+    }
+
+    
     @Override
     public void initTouchDetection() {
         super.initTouchDetection();
@@ -118,36 +135,21 @@ public class CalibratedColorTracker extends ColorTracker {
         }
 
         int erosion = 0;
-// WARNING
-// NO TRACKING MEANS NO IDs 
-  lastFound = colorFoundArray.clone();
-        // Step1 -> small-scale colors (gomettes)
-// EROSION by color ?!
+
+        lastFound = colorFoundArray.clone();
 //        ArrayList<TrackedElement> newElements
 //                = touchDetectionColor.compute(time, erosion, this.scale);
       smallElements = touchDetectionColor.compute(time, erosion, this.scale);
         
-        ///
-//        System.arraycopy(colorFoundArray, 0, largeColorFoundArray, 0, colorFoundArray.length);
-        
-//        ArrayList<TrackedElement> newElements2
-//                = largeDetectionColor.compute(time, erosion, this.scale);
-//
-//   TODO: Track by COLOR!!!!!
 
         // Step 2 -> Large -scale colors (ensemble de gomettes) 
         TouchPointTracker.trackPoints(trackedElements, smallElements, time);
-//        trackedElements.clear();
-//        trackedElements.addAll(smallElements);
-//        TouchPointTracker.trackPoints(trackedLargeElements, newElements2, time);
         
 //        for(TrackedElement te : trackedElements){
 //            te.filter(time);
 //        }
 
-
         return trackedElements;
-//        return trackedLargeElements;
     }
 
     public byte[] lastFound;

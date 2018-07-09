@@ -5,8 +5,6 @@
  */
 package fr.inria.papart.multitouch.detection;
 
-import static fr.inria.papart.multitouch.detection.CalibratedColorTracker.colorFinderLABError;
-import static fr.inria.papart.multitouch.detection.CalibratedColorTracker.converter;
 import fr.inria.papart.procam.Papart;
 import static fr.inria.papart.utils.MathUtils.absd;
 import static fr.inria.papart.utils.MathUtils.constrain;

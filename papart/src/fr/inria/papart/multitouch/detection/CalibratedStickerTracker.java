@@ -25,9 +25,9 @@ import processing.core.PVector;
  */
 public class CalibratedStickerTracker extends ColorTracker {
 
-    int numberOfRefs = 4;
+    public int numberOfRefs = 4;
     private ColorReferenceThresholds references[];
-    TouchDetectionInnerCircles innerCirclesDetection;
+    private TouchDetectionInnerCircles innerCirclesDetection;
     public TrackedView circleView;
     protected float circleSize;
 
@@ -76,8 +76,6 @@ public class CalibratedStickerTracker extends ColorTracker {
     public void loadDefaultColorReferences() {
         setColorReferences(ColorReferenceThresholds.loadDefaultThresholds(numberOfRefs));
     }
-
-    PlanarTouchCalibration largerTouchCalibration;
 
     /**
      * Initialize the memory, automatically called on creation. This method
