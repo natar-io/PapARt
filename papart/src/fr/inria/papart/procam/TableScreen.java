@@ -10,18 +10,24 @@ import processing.core.PVector;
  */
 public class TableScreen extends PaperTouchScreen {
 
-    protected float width, height;
     protected PVector translation;
     protected PMatrix3D location;
 
+    public TableScreen(float width, float height) {
+        this(new PVector(), width, height);
+    }
+
     public TableScreen(PVector loc, float width, float height) {
-        this.width = width;
-        this.height = height;
+        this(loc, new PVector(width, height));
+    }
+
+    public TableScreen(PVector loc, PVector size) {
         setDrawOnPaper();
-        setDrawingSize(width, height);
+        setDrawingSize(size.x, size.y);
         setLocation(loc);
     }
-     /**
+
+    /**
      * Change the location relative to the table.
      *
      * @param v in millimeters
@@ -46,26 +52,5 @@ public class TableScreen extends PaperTouchScreen {
         this.useManualLocation(this.location);
         this.computeWorldToScreenMat(cameraTracking);
     }
-
-
-//    @Override
-//    public void settings() {
-//        // Test with this...
-//
-////        setQuality(2f);
-//    }
-//
-//    @Override
-//    public void setup() {
-//        // View on all of the image
-//
-//    }
-//    
-//    public void translatePos(PVector t){
-//        getExtrinsics().translate(t.x, t.y);
-//    }
-//    public void rotatePos(float v){
-//        getExtrinsics().rotate(v);
-//    }
 
 }

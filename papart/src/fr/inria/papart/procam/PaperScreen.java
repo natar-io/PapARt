@@ -136,10 +136,14 @@ public class PaperScreen extends DelegatedGraphics {
         this.markerBoard = MarkerBoardInvalid.board;
         // Default to projector graphics.
         // currentGraphics = this.display.getGraphics();
+        loadTableLocation();
+        register();
+    }
+
+    public void loadTableLocation() {
         table = Papart.getPapart().getTableLocation().get();
         tableInv = Papart.getPapart().getTableLocation().get();
         tableInv.invert();
-        register();
     }
 
     /**
@@ -157,14 +161,12 @@ public class PaperScreen extends DelegatedGraphics {
         displays.add(proj);
         this.id = count++;
         this.markerBoard = MarkerBoardInvalid.board;
-        table = Papart.getPapart().getTableLocation().get();
-        tableInv = Papart.getPapart().getTableLocation().get();
-        tableInv.invert();
+        loadTableLocation();
         register();
     }
 
     /**
-     * Create a PaperScreen with a given camera NO DISPLAY, headless
+     * Create a PaperScreen with a given camera NO DISPLAY, headless-papart-less
      * constructor.
      *
      * @param cam
@@ -175,9 +177,6 @@ public class PaperScreen extends DelegatedGraphics {
 //        displays.add(proj);
         this.id = count++;
         this.markerBoard = MarkerBoardInvalid.board;
-//        table = Papart.getPapart().getTableLocation().get();
-//        tableInv = Papart.getPapart().getTableLocation().get();
-//        tableInv.invert();
         register();
     }
 
@@ -1670,9 +1669,8 @@ public class PaperScreen extends DelegatedGraphics {
 //            "--force",
 //            "--run"
 //        };
-
         XAppRunner event = new XAppRunner(eventSender, Xdisplay);
-        
+
 //        event.start();
 //        event.autoExit(parent);
     }
@@ -1693,18 +1691,21 @@ public class PaperScreen extends DelegatedGraphics {
         ob.setBoolean("pressed", true);
         redis.publish(prefixPub, ob.toString());
     }
+
     public void releaseMouse() {
         JSONObject ob = new JSONObject();
         ob.setString("name", "captureMouse");
         ob.setBoolean("pressed", false);
         redis.publish(prefixPub, ob.toString());
     }
+
     public void captureKeyboard() {
         JSONObject ob = new JSONObject();
         ob.setString("name", "captureKeyboard");
         ob.setBoolean("pressed", true);
         redis.publish(prefixPub, ob.toString());
     }
+
     public void releaseKeyboard() {
         JSONObject ob = new JSONObject();
         ob.setString("name", "captureKeyboard");
