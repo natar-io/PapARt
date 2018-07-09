@@ -29,7 +29,6 @@ import fr.inria.papart.calibration.files.PlanarTouchCalibration;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
-import org.bytedeco.javacpp.freenect;
 import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.calibration.files.PlaneCalibration;
 import fr.inria.papart.calibration.files.ScreenConfiguration;
@@ -48,12 +47,8 @@ import fr.inria.papart.multitouch.detection.CalibratedColorTracker;
 import fr.inria.papart.multitouch.detection.ColorTracker;
 import fr.inria.papart.utils.LibraryUtils;
 import fr.inria.papart.procam.camera.CameraFactory;
-import fr.inria.papart.procam.camera.CameraNectar;
-import fr.inria.papart.procam.camera.CameraOpenKinect;
 import fr.inria.papart.procam.camera.CameraRGBIRDepth;
-import fr.inria.papart.procam.camera.CameraRealSense;
 import fr.inria.papart.procam.camera.CannotCreateCameraException;
-import fr.inria.papart.procam.camera.SubCamera;
 import fr.inria.papart.tracking.DetectedMarker;
 import fr.inria.papart.utils.MathUtils;
 import java.io.File;
@@ -62,10 +57,8 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.bytedeco.javacv.CameraDevice;
 import org.reflections.Reflections;
 import processing.core.PApplet;
-import processing.core.PFont;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.event.KeyEvent;
@@ -156,7 +149,8 @@ public class Papart {
     private DepthCameraDevice depthCameraDevice;
 
     /**
-     * Create the main PapARt object, look at the examples for how to use it.
+     * Create the main PapARt object, this object is used to hande calibration files 
+     * and automatic creation of cameras and projectors. 
      *
      * @param applet
      */
@@ -1013,54 +1007,6 @@ public class Papart {
     }
 
     /**
-     * Find all the PaperScreen and PaperTouchScreen classes and create an
-     * instance of it.
-     *
-     * @return a list of all the created instances.
-     */
-    public ArrayList<PaperScreen> loadSketches() {
-        // Sketches are not within a package.
-        Reflections reflections = new Reflections("");
-
-        ArrayList<PaperScreen> instances = new ArrayList<>();
-        Set<Class<? extends PaperTouchScreen>> paperTouchScreenClasses = reflections.getSubTypesOf(PaperTouchScreen.class
-        );
-        for (Class<? extends PaperTouchScreen> klass : paperTouchScreenClasses) {
-            try {
-                Class[] ctorArgs2 = new Class[1];
-                ctorArgs2[0] = this.appletClass;
-                Constructor<? extends PaperTouchScreen> constructor = klass.getDeclaredConstructor(ctorArgs2);
-                System.out.println("Starting a PaperTouchScreen. " + klass.getName());
-                PaperTouchScreen newInstance = constructor.newInstance(this.appletClass.cast(this.applet));
-                instances.add(newInstance);
-            } catch (Exception ex) {
-                System.out.println("Error loading PapartTouchApp : " + klass.getName() + ex);
-                ex.printStackTrace();
-            }
-        }
-
-        Set<Class<? extends PaperScreen>> paperScreenClasses = reflections.getSubTypesOf(PaperScreen.class);
-
-        // Add them once.
-        paperScreenClasses.removeAll(paperTouchScreenClasses);
-        for (Class<? extends PaperScreen> klass : paperScreenClasses) {
-            try {
-                Class[] ctorArgs2 = new Class[1];
-                ctorArgs2[0] = this.appletClass;
-                Constructor<? extends PaperScreen> constructor = klass.getDeclaredConstructor(ctorArgs2);
-                System.out.println("Starting a PaperScreen. " + klass.getName());
-                PaperScreen newInstance = constructor.newInstance(this.appletClass.cast(this.applet));
-                instances.add(newInstance);
-            } catch (Exception ex) {
-                System.out.println("Error loading PapartApp : " + klass.getName());
-                ex.printStackTrace();
-            }
-        }
-
-        return instances;
-    }
-
-    /**
      * Start the tracking without a thread.
      */
     public void startTrackingWithoutThread() {
@@ -1215,22 +1161,8 @@ public class Papart {
         return out;
     }
 
-    // NOTE: camera can dispose themselves now... 
-//    public void dispose() {
-//        if (touchInitialized && depthCameraDevice != null) {
-//            depthCameraDevice.close();
-//        }
-//        if (cameraInitialized && cameraTracking != null) {
-//            try {
-//                cameraTracking.close();
-//            } catch (Exception e) {
-//                System.err.println("Error closing the tracking camera" + e);
-//            }
-//        }
-//        System.out.println("Cameras closed.");
-//    }
     /**
-     * Create a red ColorTracker for a PaperScreen.
+     * Create a multi-color ColorTracker for a PaperScreen.
      *
      * @param screen PaperScreen to set the location of the tracking.
      * @param quality capture quality in px/mm. lower (0.5f) for higher
@@ -1278,12 +1210,10 @@ public class Papart {
     }
 
     public BaseDisplay getDisplay() {
-//        assert (displayInitialized);
         return this.display;
     }
 
     public void setDisplay(BaseDisplay display) {
-        // todo check this .
         displayInitialized = true;
         this.display = display;
     }
@@ -1299,14 +1229,11 @@ public class Papart {
         this.isWithoutCamera = true;
     }
 
-    // TODO: remove these asserts...
     public ProjectorDisplay getProjectorDisplay() {
-//        assert (displayInitialized);
         return this.projector;
     }
 
     public ARDisplay getARDisplay() {
-//        assert (displayInitialized);
         return this.arDisplay;
     }
 
