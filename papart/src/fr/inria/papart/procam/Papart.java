@@ -20,7 +20,6 @@
 package fr.inria.papart.procam;
 
 import com.jogamp.newt.opengl.GLWindow;
-import fr.inria.papart.calibration.CalibrationUI;
 import fr.inria.papart.calibration.MultiCalibrator;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.calibration.files.CameraConfiguration;
@@ -52,12 +51,8 @@ import fr.inria.papart.procam.camera.CannotCreateCameraException;
 import fr.inria.papart.tracking.DetectedMarker;
 import fr.inria.papart.utils.MathUtils;
 import java.io.File;
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.reflections.Reflections;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
@@ -212,20 +207,7 @@ public class Papart {
         return config;
     }
 
-    private CalibrationUI calibrationPopup = null;
-
-    public void calibration(PaperScreen screen, PaperScreen pointer) {
-        if (calibrationPopup == null) {
-            calibrationPopup = new CalibrationUI(screen, pointer);
-        } else if (calibrationPopup.isHidden()) {
-            calibrationPopup.show();
-        } else {
-            calibrationPopup.hide();
-        }
-    }
-
     public MultiCalibrator multiCalibrator;
-
     public void multiCalibration() {
 
         try {
