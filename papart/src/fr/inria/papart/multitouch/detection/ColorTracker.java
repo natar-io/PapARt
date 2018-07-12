@@ -126,6 +126,10 @@ public class ColorTracker {
         return trackedView;
     }
 
+    public ColorReferenceThresholds getColorReference() {
+        return this.reference;
+    }
+
     public ArrayList<TrackedElement> findColor(int time) {
         return findColor(name, time, reference.erosion);
     }
@@ -186,15 +190,22 @@ public class ColorTracker {
                     // TODO: LAB only ?!!
                 } else {
                     if ("blue".equals(name)) {
-                        good = MathUtils.colorFinderHSB(paperScreen.getGraphics(),
-                                reference.referenceColor, c, reference.hue, reference.saturation, reference.brightness);
 
+                        good = colorFinderLAB(paperScreen.getGraphics(),
+                                c, reference);
+
+//                        good = MathUtils.colorFinderHSB(paperScreen.getGraphics(),
+//                                reference.referenceColor, c, reference.hue, reference.saturation, reference.brightness);
                         boolean blue = MathUtils.isBlue(paperScreen.getGraphics(),
                                 c, reference.referenceColor, reference.blueThreshold);
                         good = good && blue;
                     } else {
-                        good = MathUtils.colorFinderHSB(paperScreen.getGraphics(),
-                                reference.referenceColor, c, reference.hue, reference.saturation, reference.brightness);
+                        
+                        good = colorFinderLAB(paperScreen.getGraphics(),
+                                c, reference);
+
+//                        good = MathUtils.colorFinderHSB(paperScreen.getGraphics(),
+//                                reference.referenceColor, c, reference.hue, reference.saturation, reference.brightness);
                     }
                 }
 
@@ -251,6 +262,13 @@ public class ColorTracker {
             }
         }
         return output;
+    }
+
+    public void loadParameters(String[] list) {
+        for (int i = 0; i < list.length; i++) {
+            String data = list[i];
+            loadParameter(data);
+        }
     }
 
     public void loadParameter(String data) {

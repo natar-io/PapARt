@@ -78,8 +78,15 @@ public class Simple2D extends TouchDetectionDepth {
                     && (depthData.depthPoints[candidate] != DepthAnalysis.INVALID_POINT) // not invalid point (invalid depth)
                     && depthData.depthPoints[initialPoint].distanceTo(depthData.depthPoints[candidate]) < calib.getMaximumDistanceInit()
                     && depthData.depthPoints[candidate].distanceTo(depthData.depthPoints[currentPoint]) < calib.getMaximumDistance();
-            
+
             return classicCheck;
+        }
+
+        private int initialPoint;
+
+        @Override
+        public void setInitialPoint(int offset) {
+            this.initialPoint = offset;
         }
     }
 
@@ -97,6 +104,7 @@ public class Simple2D extends TouchDetectionDepth {
 //        touchPoints.clear();
 //        touchPoints.addAll(newList);
     }
+
     @Override
     public ArrayList<TrackedDepthPoint> compute(ProjectedDepthData dData) {
         this.setDepthData(dData);

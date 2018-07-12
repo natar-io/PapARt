@@ -42,7 +42,7 @@ public class TouchDetectionLargeColor extends TouchDetectionColor {
 
         private int inititalPoint;
 
-        public void setInitalPoint(int offset) {
+        public void setInitialPoint(int offset) {
             this.inititalPoint = offset;
         }
 

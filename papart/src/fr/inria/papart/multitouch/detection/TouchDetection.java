@@ -30,7 +30,6 @@ public abstract class TouchDetection {
 
     protected boolean[] assignedPoints = null;
     protected byte[] connectedComponentImage = null;
-    protected int initialPoint;
 
     protected boolean[] boundaries = null;
 
@@ -68,6 +67,8 @@ public abstract class TouchDetection {
          * @return true if the offset point can join.
          */
         public boolean checkPoint(int offset, int currentPoint);
+
+        public void setInitialPoint(int offset);
     }
 
     public TouchDetection(WithSize imgSize, PlanarTouchCalibration calibration) {
@@ -134,7 +135,7 @@ public abstract class TouchDetection {
 
         w = imgSize.getWidth();
         h = imgSize.getHeight();
-        
+
 //        ConnectedComponent cc = findNeighboursRec(startingPoint, 0, getX(startingPoint), getY(startingPoint));
         ConnectedComponent cc = findNeighboursFloodFill(startingPoint);
 
@@ -144,7 +145,6 @@ public abstract class TouchDetection {
 //            boundaries[startingPoint] = false;
 //            return INVALID_COMPONENT;
 //        }
-
         cc.setId(currentCompo);
         currentCompo++;
         return cc;
@@ -204,7 +204,7 @@ public abstract class TouchDetection {
         // Then we create a list of points to visit in the next iteration
         // searchDepth is going to be 1 for now. 
 //        searchDepth = calib.getPrecision();
-        initialPoint = currentPoint;
+        currentPointValidityCondition.setInitialPoint(currentPoint);
 
         // Lets do it with a while 
         while (recLevel <= calib.getMaximumRecursion()) {
@@ -279,7 +279,7 @@ public abstract class TouchDetection {
 
         // At least one point in connected compo !
         if (recLevel == 0) {
-            this.initialPoint = currentPoint;
+            currentPointValidityCondition.setInitialPoint(currentPoint);
             addPointTo(neighbourList, currentPoint);
         }
 

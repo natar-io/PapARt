@@ -72,6 +72,7 @@ public class FingerDetection extends TouchDetectionDepth {
 
     public class CheckTouchPoint implements PointValidityCondition {
 
+     
         public ProjectedDepthData getData() {
             return depthData;
         }
@@ -123,6 +124,12 @@ public class FingerDetection extends TouchDetectionDepth {
 
 //            System.out.println("sum: " + colorSum);
             return classicCheck && goodNormal;
+        }
+   private int initialPoint;
+
+        @Override
+        public void setInitialPoint(int offset) {
+            this.initialPoint = offset;
         }
     }
 
@@ -362,7 +369,6 @@ public class FingerDetection extends TouchDetectionDepth {
 
         w = imgSize.getWidth();
         h = imgSize.getHeight();
-        initialPoint = startingPoint;
 //        ConnectedComponent cc = findNeighboursRec(startingPoint, 0, getX(startingPoint), getY(startingPoint));
         ConnectedComponent cc = findNeighboursFloodFill(startingPoint);
 

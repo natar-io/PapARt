@@ -1190,10 +1190,7 @@ public class Papart {
     private ColorTracker initColorTracking(String name, String calibFile, PaperScreen screen, float quality) {
         ColorTracker colorTracker = new ColorTracker(screen, getDefaultColorTouchCalibration(), quality);
         String[] list = applet.loadStrings(calibFile);
-        for (int i = 0; i < list.length; i++) {
-            String data = list[i];
-            colorTracker.loadParameter(data);
-        }
+        colorTracker.loadParameters(list);
         colorTracker.setName(name);
         return colorTracker;
     }

@@ -56,10 +56,11 @@ public class TouchDepthWithColor extends TouchDetectionDepth {
 
     public class CheckTouchPoint implements PointValidityCondition {
 
-        private int inititalPoint;
+        private int initialPoint;
 
-        public void setInitalPoint(int offset) {
-            this.inititalPoint = offset;
+        @Override
+        public void setInitialPoint(int offset) {
+            this.initialPoint = offset;
         }
 
         public ProjectedDepthData getData() {
@@ -77,10 +78,10 @@ public class TouchDepthWithColor extends TouchDetectionDepth {
                     //                    && depthData.validPointsMask[offset] // is valid
                     //                                        && depthData.depthPoints[offset] != INVALID_POINT // is valid
                     //                                        && depthData.depthPoints[offset].distanceTo(INVALID_POINT) >= 0.01f
-                    && depthData.normals[candidate] != null  //  good normal is good health
+                    && depthData.normals[candidate] != null //  good normal is good health
                     && isValidPoint(depthData.projectedPoints[candidate]) //  TODO WHY "0" and non invalidpoints here.
                     && isValidPoint(depthData.depthPoints[candidate]) //  TODO WHY "0" and non invalidpoints here.
-                    && depthData.depthPoints[inititalPoint].distanceTo(depthData.depthPoints[candidate]) < calib.getMaximumDistanceInit()
+                    && depthData.depthPoints[initialPoint].distanceTo(depthData.depthPoints[candidate]) < calib.getMaximumDistanceInit()
                     && depthData.depthPoints[candidate].distanceTo(depthData.depthPoints[currentPoint]) < calib.getMaximumDistance();
 
             // A close one does not have a correct normal.
@@ -95,16 +96,15 @@ public class TouchDepthWithColor extends TouchDetectionDepth {
 ////                System.out.println("Adding non normal point...");
 //            }/
             boolean goodNormal = true;
-            
+
             if (depthData.normals[candidate] != null) {
                 float dN = (depthData.planeAndProjectionCalibration.getPlane().normal).distanceToSquared(depthData.normals[candidate]);
                 float d1 = (depthData.planeAndProjectionCalibration.getPlane().getDistanceToPoint(depthData.depthPoints[candidate]));
-                
+
                 // WARNING MAGIC NUMBER HERE
 //                boolean higher = depthData.projectedPoints[candidate].z < depthData.projectedPoints[currentPoint].z;
-                
                 goodNormal = (depthData.normals[candidate] != null && dN > calib.getNormalFilter()) || d1 > 20f;  // Higher  than Xmm
-               
+
             }
             return classicCheck && goodNormal;
         }
@@ -137,7 +137,6 @@ public class TouchDepthWithColor extends TouchDetectionDepth {
 
         w = imgSize.getWidth();
         h = imgSize.getHeight();
-initialPoint = startingPoint;
         // DEBUG
         assert (isValidPoint(depthData.depthPoints[startingPoint]));
         assert (isValidPoint(depthData.projectedPoints[startingPoint]));
