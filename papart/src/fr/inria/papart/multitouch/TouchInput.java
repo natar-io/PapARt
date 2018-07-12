@@ -19,6 +19,7 @@
  */
 package fr.inria.papart.multitouch;
 
+import fr.inria.papart.multitouch.detection.TouchDetection;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.display.ARDisplay;
@@ -49,6 +50,7 @@ public abstract class TouchInput {
     abstract public void update();
 
     abstract public TouchList projectTouchToScreen(PaperScreen paperScreen, BaseDisplay display);
+    abstract public TouchList projectTouch(PaperScreen paperScreen, BaseDisplay display, TouchDetection td);
     abstract public Touch projectTouch(PaperScreen paperScreen, BaseDisplay display, TrackedElement e);
 
     protected boolean computeOutsiders = false;

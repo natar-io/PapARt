@@ -94,10 +94,19 @@ public class OneEuroFilter {
         lasttime = UndefinedTime;
     }
 
+    public double filter() throws Exception {
+        return filter(lastValue(), UndefinedTime);
+    }
+
     public double filter(double value) throws Exception {
         return filter(value, UndefinedTime);
     }
 
+    private double lastValue; 
+    public double lastValue(){
+        return lastValue;
+    }
+    
     public double filter(double value, double timestamp) throws Exception {
         // update the sampling frequency based on timestamps
         if (lasttime != UndefinedTime && timestamp != UndefinedTime) {
@@ -111,7 +120,8 @@ public class OneEuroFilter {
         // use it to update the cutoff frequency
         double cutoff = mincutoff + beta_ * Math.abs(edvalue);
         // filter the given value
-        return x.filterWithAlpha(value, alpha(cutoff));
+        lastValue = x.filterWithAlpha(value, alpha(cutoff));
+        return lastValue;
     }
 
 //    public static void main(String[] args) throws Exception {

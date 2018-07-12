@@ -37,6 +37,9 @@ public class TableScreen extends PaperTouchScreen {
         this(new PVector(), width, height);
     }
 
+    public TableScreen(float x, float y, float width, float height) {
+        this(new PVector(x,y), new PVector(width, height));
+    }
     public TableScreen(PVector loc, float width, float height) {
         this(loc, new PVector(width, height));
     }

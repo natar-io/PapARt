@@ -215,7 +215,6 @@ public class ColorTracker {
 
             }
         }
-
         ArrayList<TrackedElement> newElements
                 = touchDetectionColor.compute(time, erosion, this.scale);
 

@@ -26,6 +26,9 @@ import fr.inria.papart.multitouch.Touch;
 import fr.inria.papart.multitouch.DepthTouchInput;
 import fr.inria.papart.multitouch.TUIOTouchInput;
 import fr.inria.papart.multitouch.TouchList;
+import fr.inria.papart.multitouch.detection.ColorTracker;
+import fr.inria.papart.multitouch.detection.TouchDetection;
+import fr.inria.papart.multitouch.detection.TouchDetectionDepth;
 import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
 import processing.core.PApplet;
@@ -144,6 +147,12 @@ public class PaperTouchScreen extends PaperScreen {
         this.touchOffset.set(touchOffset);
     }
 
+    public TouchList getTouchListFrom(TouchDetection touchDetection) {
+//          touchList.invertY(drawingSize);
+        return touchInput.projectTouch(this, mainDisplay, touchDetection).invertY(drawingSize);
+    }
+
+    @Deprecated
     public void updateTouch() {
         updateTouch(false);
     }
@@ -209,6 +218,7 @@ public class PaperTouchScreen extends PaperScreen {
     /**
      * Draw the touch points, good for debug.
      */
+    @Deprecated
     public void drawTouch() {
         drawTouch(DEFAULT_TOUCH_SIZE);
     }
@@ -218,6 +228,7 @@ public class PaperTouchScreen extends PaperScreen {
      *
      * @param ellipseSize size of the points.
      */
+    @Deprecated
     public void drawTouch(int ellipseSize) {
         for (Touch t : touchList) {
             if (t.is3D) {
@@ -241,6 +252,7 @@ public class PaperTouchScreen extends PaperScreen {
      *
      * @return list of Touch objects.
      */
+    @Deprecated
     public TouchList getTouchList() {
         return touchList;
     }
@@ -252,6 +264,7 @@ public class PaperTouchScreen extends PaperScreen {
      *
      * @return
      */
+    @Deprecated
     public TouchInput getTouchInput() {
         return touchInput;
     }

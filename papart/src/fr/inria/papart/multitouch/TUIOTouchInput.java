@@ -23,6 +23,7 @@ import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
 import fr.inria.papart.procam.display.BaseDisplay;
 
 import TUIO.*;
+import fr.inria.papart.multitouch.detection.TouchDetection;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.procam.PaperScreen;
 import processing.core.PApplet;
@@ -154,6 +155,11 @@ public class TUIOTouchInput extends TouchInput {
 
     @Override
     public Touch projectTouch(PaperScreen paperScreen, BaseDisplay display, TrackedElement e) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public TouchList projectTouch(PaperScreen paperScreen, BaseDisplay display, TouchDetection td) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
