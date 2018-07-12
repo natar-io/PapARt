@@ -210,11 +210,16 @@ public class Papart {
 
     public MultiCalibrator multiCalibrator;
     public void multiCalibration() {
+        multiCalibration(false);
+    }
+    
+    public void multiCalibration(boolean colorOnly) {
 
         try {
 
             if (multiCalibrator == null) {
                 multiCalibrator = new MultiCalibrator();
+               
             } else {
                 if (multiCalibrator.isActive()) {
                     multiCalibrator.stopCalib();
@@ -223,6 +228,7 @@ public class Papart {
                 }
 //            calibrationPopup.hide();
             }
+            multiCalibrator.setColorOnly(colorOnly);
         } catch (Exception e) {
             e.printStackTrace();
         }

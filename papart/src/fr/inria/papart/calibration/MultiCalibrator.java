@@ -105,6 +105,8 @@ public class MultiCalibrator extends PaperTouchScreen {
     int nbScreenPoints = 8;
     int nbColors = 5;
 
+    private float maxMovement = 8f;
+
     PlaneAndProjectionCalibration planeProjCalib;
     public boolean toSave = false;
 
@@ -115,6 +117,7 @@ public class MultiCalibrator extends PaperTouchScreen {
     private TrackedView calibView;
     private ProjectorAsCamera projectorAsCamera;
 
+    private boolean colorOnly = false;
     private ColorConverter converter = new ColorConverter();
 
     // projector rendering.
@@ -341,21 +344,12 @@ public class MultiCalibrator extends PaperTouchScreen {
 //        projectorAsCamera.setThread();
     }
 
-    float maxMovement = 8f;
-
     @Override
     public void drawOnPaper() {
-        // setLocation(63, 45, 0);
-//      DetectedMarker[] list = papart.getMarkerList();
-//      println("markers :  " + list.length);
-
-        // background: blue
         background(0, 0, 200, 50);
 
         if (active) {
 
-//            red1.drawSelf();
-//            System.out.println("Framerate: " + parent.frameRate);
 //            computeTouch();
 //            if (toSave) {
 //                saveTouch();
@@ -772,7 +766,9 @@ public class MultiCalibrator extends PaperTouchScreen {
             g.translate(pt.x, pt.y);
             g.rotate(pt.z);
             drawTarget(g, multiCalibrator);
-            drawHints(g, multiCalibrator, pt);
+            if (!multiCalibrator.isColorOnly()) {
+                drawHints(g, multiCalibrator, pt);
+            }
             g.popMatrix();
         }
 
@@ -809,6 +805,12 @@ public class MultiCalibrator extends PaperTouchScreen {
 //            multiCalibrator.showProjectionToggle.hide();
 //            multiCalibrator.showTouchToggle.hide();
 
+        if (multiCalibrator.isColorOnly()) {
+            multiCalibrator.showTouchToggle.hide();
+            multiCalibrator.showProjectionToggle.setLabel("showTracking");
+            multiCalibrator.showProjectionToggle.setState(true);
+        }
+
         // calibration displayed
         multiCalibrator.isCalibratingToggle.setState(true);
         skatolo.setAutoDraw(false);
@@ -842,8 +844,10 @@ public class MultiCalibrator extends PaperTouchScreen {
 
         int w = 200;
         int h = 150;
-        g.rect(-w, -h, w * 2, h * 2);
 
+        if (!multiCalibrator.isColorOnly()) {
+            g.rect(-w, -h, w * 2, h * 2);
+        }
     }
 
     /**
@@ -1245,6 +1249,14 @@ public class MultiCalibrator extends PaperTouchScreen {
         fill(255, 200, 30, 180);
         ellipse(CENTER_X, CENTER_Y, 15f, 15f);
 
+    }
+
+    public void setColorOnly(boolean colorOnly) {
+        this.colorOnly = colorOnly;
+    }
+
+    public boolean isColorOnly() {
+        return this.colorOnly;
     }
 
 }
