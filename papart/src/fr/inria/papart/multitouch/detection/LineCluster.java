@@ -76,7 +76,7 @@ public class LineCluster extends ArrayList<TrackedElement> {
         Collections.sort(copy, new Comparator<TrackedElement>() {
             @Override
             public int compare(TrackedElement t1, TrackedElement t2) {
-                return Float.compare(t1.getPosition().dist(center), t2.getPosition().dist(center));
+                return Float.compare(t2.getPosition().dist(center), t1.getPosition().dist(center));
             }
         });
         
