@@ -159,7 +159,7 @@ public abstract class Camera extends Observable implements PConstants, HasExtrin
 
     @Override
     public String toString() {
-        return "Camera, res " + width() + "x" + height() + " calibration " + this.calibrationFile;
+        return "Camera " + cameraDescription + ","+ systemNumber + " + res " + width() + "x" + height() + " calibration " + this.calibrationFile;
     }
 
     public PImage getImage() {
