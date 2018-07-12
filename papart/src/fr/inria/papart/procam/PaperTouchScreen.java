@@ -31,6 +31,10 @@ import fr.inria.papart.multitouch.tracking.TrackedElement;
 import processing.core.PApplet;
 import processing.core.PVector;
 
+/**
+ *
+ * @author Jeremy Laviole
+ */
 public class PaperTouchScreen extends PaperScreen {
 
     protected TouchList touchList = new TouchList();
