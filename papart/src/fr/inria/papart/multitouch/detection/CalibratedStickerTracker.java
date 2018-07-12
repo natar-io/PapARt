@@ -38,7 +38,7 @@ import processing.core.PVector;
  */
 public class CalibratedStickerTracker extends ColorTracker {
 
-    public int numberOfRefs = 4;
+    public int numberOfRefs = 5;
     private ColorReferenceThresholds references[];
     private TouchDetectionInnerCircles innerCirclesDetection;
     public TrackedView circleView;
@@ -69,7 +69,7 @@ public class CalibratedStickerTracker extends ColorTracker {
         super();  // 1 px / mm ?
         this.circleSize = size;
         this.paperScreen = paperScreen;
-        
+
         loadDefaultColorReferences();
         initTouchDetection(offset, capSize);
     }
@@ -203,11 +203,36 @@ public class CalibratedStickerTracker extends ColorTracker {
 //        trackedElements.clear();
 //        trackedElements.addAll(newStickers);
         // Tracking must be enabled for touch with skatolo. 
-        TouchPointTracker.trackPoints(trackedElements, newStickers, time);
-        TouchPointTracker.filterPositions(trackedElements, time);
+        // TODO: track by color, then merge again.
+        
+        ArrayList<TrackedElement> all = new ArrayList<>();
+        for (int i = 0; i < numberOfRefs; i++) {
 
+            ArrayList<TrackedElement> current = getColor(trackedElements, i);
+            TouchPointTracker.trackPoints(current, getColor(newStickers, i), time);
+            TouchPointTracker.filterPositions(current, time);
+            
+            all.addAll(current);
+        }
+
+        trackedElements.clear();
+        trackedElements.addAll(all);
+    
+//        TouchPointTracker.trackPoints(trackedElements, newStickers, time);
+//        TouchPointTracker.filterPositions(trackedElements, time);
         return trackedElements;
     }
+
+    public ArrayList<TrackedElement> getColor(ArrayList<TrackedElement> source, int id) {
+        ArrayList<TrackedElement> output = new ArrayList<>();
+        for (TrackedElement t : source) {
+            if (t.attachedValue == id) {
+                output.add(t);
+            }
+        }
+        return output;
+    }
+
     ArrayList<LineCluster> lineClusters;
     ArrayList<StickerCluster> clusters;
 
@@ -269,7 +294,7 @@ public class CalibratedStickerTracker extends ColorTracker {
     {1, 1, 1},
     {1, 1, 1}};
 
-    int convolutionMin = 5;
+    public static int convolutionMin = 5;
 
     /**
      * Perform the erosion operation, given a structure in a matrix..
