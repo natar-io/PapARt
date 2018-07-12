@@ -951,7 +951,7 @@ public class PaperScreen extends DelegatedGraphics {
                             (float) filters[i * filterPerColor + 1].lastValue(),
                             (float) filters[i * filterPerColor + 2].lastValue());
                 }
-                t.id = i + minMarkerID;
+                t.id = i;
                 touchList.add(t);
             }
         }
