@@ -73,8 +73,8 @@ public class TUIOTouchInput extends TouchInput {
     @Override
     public void update() {
     }
-    
-    private int getCursorID(TuioCursor tcur){
+
+    private int getCursorID(TuioCursor tcur) {
         return tcur.getCursorID() + 1;
     }
 
@@ -156,6 +156,8 @@ public class TUIOTouchInput extends TouchInput {
         TrackedElement tp = new TrackedElement();
         tp.setCreationTime(parent.millis());
         tp.forceID(tObj.getSymbolID());
+        PVector v = getLocalPosition(tObj.getPosition());
+        tp.setPosition(v);
         return tp;
     }
 
@@ -163,30 +165,23 @@ public class TUIOTouchInput extends TouchInput {
         TrackedElement tp = new TrackedElement();
         tp.setCreationTime(parent.millis());
         tp.forceID(getCursorID(tcur));
+        PVector v = getLocalPosition(tcur.getPosition());
+        tp.setPosition(v);
         return tp;
     }
 
     public void updateTuioObject(TuioObject tobj) {
         TrackedElement tp = createTouchPointFrom(tobj);
         TrackedElement known = tuioObjects.get(tobj.getSymbolID());
-        TuioPoint tuioPoint = tobj.getPosition();
-        PVector v = getLocalPosition(tuioPoint);
-        tp.setPosition(v);
+             known.setUpdated(false);
         known.updateWith(tp);
     }
 
     public void updateTuioCursor(TuioCursor tcur) {
         TrackedElement touchPoint = createTouchPointFrom(tcur);
-
-        TuioPoint tuioPoint = tcur.getPosition();
-        PVector v = getLocalPosition(tuioPoint);
-        touchPoint.setPosition(v);
-        
         TrackedElement known = tuioCursors.get(getCursorID(tcur));
-        known.updateWith(touchPoint);
-
-//        System.out.println("update cursor " + getCursorID(tcur) + " (" + tcur.getSessionID() + ") " + tcur.getX() + " " + tcur.getY()
-//                + " " + tcur.getMotionSpeed() + " " + tcur.getMotionAccel());
+        known.setUpdated(false);
+        boolean up = known.updateWith(touchPoint);
     }
 
     private PVector getLocalPosition(TuioPoint tuioPoint) {
@@ -194,6 +189,7 @@ public class TUIOTouchInput extends TouchInput {
         if (useScreen) {
             v.x = v.x * paperScreen.getDrawingSize().x;
             v.y = v.y * paperScreen.getDrawingSize().y;
+            System.out.println("Local: " + v);
         }
         return v;
     }
