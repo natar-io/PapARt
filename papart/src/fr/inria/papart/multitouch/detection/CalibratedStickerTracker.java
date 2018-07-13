@@ -132,7 +132,7 @@ public class CalibratedStickerTracker extends ColorTracker {
         innerCirclesCalibration.setMinimumComponentSize(1);
         innerCirclesCalibration.setSearchDepth(1);
         innerCirclesCalibration.setPrecision(1);
-        innerCirclesCalibration.setTrackingMaxDistance(15);
+        innerCirclesCalibration.setTrackingMaxDistance(70);
 //        innerCirclesCalibration.setTrackingForgetTime(300);
         innerCirclesCalibration.setMaximumRecursion(1);
         innerCirclesDetection.setCalibration(innerCirclesCalibration);

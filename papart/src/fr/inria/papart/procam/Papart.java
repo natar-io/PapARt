@@ -990,9 +990,9 @@ public class Papart {
         return calib;
     }
 
-    public void loadTouchInputTUIO() {
-        touchInput = new TUIOTouchInput(this.applet, 3333);
-        this.touchInitialized = true;
+    public TUIOTouchInput loadTouchInputTUIO() {
+        TUIOTouchInput tuioTouch = new TUIOTouchInput(this.applet, getDisplay(), 3333);
+        return tuioTouch;
     }
 
     /**

@@ -28,6 +28,7 @@ import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.calibration.files.HomographyCalibration;
 import fr.inria.papart.multitouch.LowPassFilter;
 import fr.inria.papart.multitouch.OneEuroFilter;
+import fr.inria.papart.multitouch.TUIOTouchInput;
 import fr.inria.papart.multitouch.Touch;
 import fr.inria.papart.multitouch.TouchList;
 import fr.inria.papart.multitouch.detection.ColorTracker;
@@ -958,6 +959,34 @@ public class PaperScreen extends DelegatedGraphics {
 
         return touchList;
     }
+
+    // TUIO Touch experimental again.
+    private TUIOTouchInput localTUIO;
+    /**
+     * Connect to TUIO server. The input gets transformed to this PaperScreen.
+     * @param server
+     * @param port 
+     */
+    public void connectLocalTUIO(int port){
+       localTUIO = new TUIOTouchInput(parent, this, port);
+    }
+    
+    public TouchList getLocalTUIOTouchList() {
+        return localTUIO.getTouch();
+    }
+//    /**
+//     * Connect to TUIO server. The input is relative de the display. transformed to this PaperScreen.
+//     * @param server
+//     * @param port 
+//     */
+//    public void connectGloalTUIO(String server, int port){
+//        Papart.getPapart().loadTouchInputTUIO();
+//    }
+    
+    public TouchList getTouchList(TUIOTouchInput touchInput) {
+        return touchInput.projectTouchToScreen(this, getDisplay());
+    }
+    
 
     ////////////////////////
     // Location handling. //
