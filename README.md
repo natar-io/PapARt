@@ -2,9 +2,27 @@
 
 PapARt is a software development kit (SDK) that enables the creation of interactive projection mapping. Today, it is developed by the Inria Potioc team. It comes from the augmented physical drawing tools created by Jeremy Laviole, which are documented in his PhD thesis (free to read).
 
-## Version 1.0 (summer 2017)
+## PapARt 1.4 - Release Candidate. (July 2018)
 
-The first big release is ready. If you want to try it out download our precompiled version from the [example repository](https://github.com/poqudrof/Papart-examples). 
+This new release brings many new features. It is now easier to place PaperScreen on the table with 
+the new TableScreen class. 
+
+The color tracking and particularly the circular tracking is quite robust and enable the creation of 
+physical interfaces with a high detection rate. There will be a complete tutorial on how to create 
+a mixed reality interface with touch and circle tracking. 
+
+We work to improve the current API, as it will be part of the coming Nectar platform. The main 
+motivation for Nectar to push further the possibilites of SAR with PapARt. The rendering will not
+be limited to Processing for rendering with the Unity3D Nectar plugin. The plugin is in 
+internal test/development phase, and is already quite promising. 
+
+[More on the example repository, 1.4rc branch.](https://github.com/poqudrof/Papart-examples/tree/1.4rc).
+
+#### New hosting 
+
+The 1.4 version and development versions are hosted on [gitlab](https://forge.pole-aquinetic.net/RealityTech/PapARt). You can request access if you collaborate with RealityTech, or use RealityTech Hardware platforms. 
+
+The 1.3 version, sister of 1.4 will be free and publicly available on github. 
 
 ## Version 1.1 and 1.2 (January 2018)
 
@@ -21,11 +39,9 @@ Other features: 
 * JRubyArt support is getting extended.
 * Community and commercial support is moved from the wiki to the [forum](http://forum.rea.lity.tech). 
 
-## Version 1.4 (April - June 2018)
+## Version 1.0 (summer 2017)
 
-* Unity3D client: You will be able to create applications with Unity3D with a dedicated plugin.
-* Touch Tracking will get new features: object detection (not a hand), and mid-air touch will be back. 
-* Offline mode API. The library will be easier to use without the dedicated hardware.
+The first big release is ready. If you want to try it out download our precompiled version from the [example repository](https://github.com/poqudrof/Papart-examples). 
 
 ## Examples
 
