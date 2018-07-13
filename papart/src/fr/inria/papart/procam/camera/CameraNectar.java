@@ -78,8 +78,14 @@ public class CameraNectar extends CameraRGBIRDepth {
 
         int w = Integer.parseInt(redis.get(cameraDescription + ":width"));
         int h = Integer.parseInt(redis.get(cameraDescription + ":height"));
+        String format = redis.get(cameraDescription + ":pixelformat");
         colorCamera.setSize(w, h);
-        colorCamera.setPixelFormat(PixelFormat.RGB);
+
+        if (format != null) {
+            colorCamera.setPixelFormat(PixelFormat.valueOf(format));
+        } else {
+            colorCamera.setPixelFormat(PixelFormat.RGB);
+        }
         colorCamera.setFrameRate(30);
         colorCamera.isConnected = true;
         if (!getMode) {
@@ -152,10 +158,10 @@ public class CameraNectar extends CameraRGBIRDepth {
                     setDepthImage(redisGet.get((cameraDescription + ":depth:raw").getBytes()));
                 }
                 // sleep only
-                Thread.sleep(120);
+                Thread.sleep(15);
             } else {
                 //..nothing the princess is in another thread.
-                Thread.sleep(3000);
+                Thread.sleep(20);
             }
         } catch (InterruptedException e) {
             System.err.println("CameraNectar grab Error ! " + e);
