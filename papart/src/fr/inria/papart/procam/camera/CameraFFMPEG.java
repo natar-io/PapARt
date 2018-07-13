@@ -71,6 +71,12 @@ public class CameraFFMPEG extends Camera {
 
     @Override
     public void start() {
+        
+        if("video".equals(this.imageFormat)){
+            startVideo();
+            return;
+        }
+        
         FFmpegFrameGrabber grabberFF = new FFmpegFrameGrabber(this.cameraDescription);
 
         grabberFF.setImageMode(FrameGrabber.ImageMode.COLOR);
