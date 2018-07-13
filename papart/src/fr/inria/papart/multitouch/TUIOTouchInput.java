@@ -173,7 +173,7 @@ public class TUIOTouchInput extends TouchInput {
     public void updateTuioObject(TuioObject tobj) {
         TrackedElement tp = createTouchPointFrom(tobj);
         TrackedElement known = tuioObjects.get(tobj.getSymbolID());
-             known.setUpdated(false);
+        known.setUpdated(false);
         known.updateWith(tp);
     }
 
@@ -181,7 +181,7 @@ public class TUIOTouchInput extends TouchInput {
         TrackedElement touchPoint = createTouchPointFrom(tcur);
         TrackedElement known = tuioCursors.get(getCursorID(tcur));
         known.setUpdated(false);
-        boolean up = known.updateWith(touchPoint);
+        known.updateWith(touchPoint);
     }
 
     private PVector getLocalPosition(TuioPoint tuioPoint) {
@@ -189,7 +189,6 @@ public class TUIOTouchInput extends TouchInput {
         if (useScreen) {
             v.x = v.x * paperScreen.getDrawingSize().x;
             v.y = v.y * paperScreen.getDrawingSize().y;
-            System.out.println("Local: " + v);
         }
         return v;
     }
