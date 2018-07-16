@@ -61,11 +61,11 @@ public class TouchDetectionColor extends TouchDetection {
         }
 
         @Override
-        public boolean checkPoint(int offset, int currentPoint) {
+        public boolean checkPoint(int candidateOffset, int currentPoint) {
 
             // TODO: not sure if the distance is relevant in this context.
-            int x1 = offset % imgSize.getWidth();
-            int y1 = (int) (offset / imgSize.getWidth());
+            int x1 = candidateOffset % imgSize.getWidth();
+            int y1 = (int) (candidateOffset / imgSize.getWidth());
 
             int x2 = currentPoint % imgSize.getWidth();
             int y2 = (int) (currentPoint / imgSize.getWidth());
@@ -74,8 +74,8 @@ public class TouchDetectionColor extends TouchDetection {
             float dist = PVector.dist(new PVector(x1, y1), candidate);
             float dist2 = PVector.dist(initPointV, candidate);
 
-            return !assignedPoints[offset] // not assigned  
-                    && segmentedImage[offset] == segmentedImage[currentPoint] // is the same color/compo.
+            return !assignedPoints[candidateOffset] // not assigned  
+                    && segmentedImage[candidateOffset] == segmentedImage[currentPoint] // is the same color/compo.
                     && dist < calib.getMaximumDistance()
                     && dist2 < calib.getMaximumDistanceInit();
         }
