@@ -214,8 +214,8 @@ public class ImageUtils {
     }
 
     public static void remapImageIpl(opencv_core.CvMat homography, opencv_core.IplImage imgIn, opencv_core.IplImage imgOut) {
-        System.out.println("cam: " + imgIn.width() + " " + imgIn.height() + " " + imgIn.depth());
-        System.out.println("extr: " + imgOut.width() + " " + imgOut.height() + " " + imgOut.depth());
+//        System.out.println("cam: " + imgIn.width() + " " + imgIn.height() + " " + imgIn.depth());
+//        System.out.println("extr: " + imgOut.width() + " " + imgOut.height() + " " + imgOut.depth());
         opencv_imgproc.cvWarpPerspective(imgIn, imgOut, homography);
         // opencv_imgproc.CV_INTER_LINEAR ); //                opencv_imgproc.CV_WARP_FILL_OUTLIERS);
         //                getFillColor());

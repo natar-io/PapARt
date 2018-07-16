@@ -121,7 +121,7 @@ public class CalibratedStickerTracker extends ColorTracker {
         circleView.setImageWidthPx(circleViewWidth);
         circleView.setImageHeightPx(circleViewHeight);
         circleView.init();
-
+        this.trackedView = circleView;
         conv = new int[circleViewWidth * circleViewHeight];
         innerCircles = new byte[circleViewWidth * circleViewHeight];
 
