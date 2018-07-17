@@ -4,7 +4,6 @@ import fr.inria.papart.multitouch.tracking.TrackedElement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.function.Predicate;
 import processing.core.PVector;
 
 /**

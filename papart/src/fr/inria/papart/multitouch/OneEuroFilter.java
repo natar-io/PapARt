@@ -19,11 +19,6 @@
  */
 package fr.inria.papart.multitouch;
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 /**
  *
  * @author s. conversy from n. roussel c++ version

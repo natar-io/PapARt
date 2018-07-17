@@ -24,7 +24,6 @@ import fr.inria.papart.multitouch.TouchList;
 import static fr.inria.papart.multitouch.detection.CalibratedColorTracker.colorFinderLAB;
 import fr.inria.papart.multitouch.tracking.TouchPointTracker;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
-import fr.inria.papart.multitouch.detection.TouchDetectionColor;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.camera.TrackedView;
@@ -68,10 +67,23 @@ public class ColorTracker {
         this(paperScreen, calibration, 1);
     }
 
+    /**
+     * Color Tracker that find zones of a given color.
+     *
+     * @param paperScreen
+     * @param scale, number of pixels per millimiters.
+     */
     public ColorTracker(PaperScreen paperScreen, float scale) {
         this(paperScreen, Papart.getPapart().getDefaultColorTouchCalibration(), scale);
     }
 
+    /**
+     * Color Tracker that find zones of a given color.
+     *
+     * @param paperScreen
+     * @param calibration, zone parameters.
+     * @param scale, number of pixels per millimeters.
+     */
     public ColorTracker(PaperScreen paperScreen, PlanarTouchCalibration calibration, float scale) {
         this.paperScreen = paperScreen;
 
@@ -112,6 +124,10 @@ public class ColorTracker {
 
     public TrackedView getTrackedView() {
         return trackedView;
+    }
+
+    public ColorReferenceThresholds getColorReference() {
+        return this.reference;
     }
 
     public ArrayList<TrackedElement> findColor(int time) {
@@ -170,19 +186,26 @@ public class ColorTracker {
 //                    boolean red = MathUtils.isRed(paperScreen.getGraphics(),
 //                            c, ref2, reference.redThreshold);
                     good = good && red;
-                    
+
                     // TODO: LAB only ?!!
                 } else {
                     if ("blue".equals(name)) {
-                        good = MathUtils.colorFinderHSB(paperScreen.getGraphics(),
-                                reference.referenceColor, c, reference.hue, reference.saturation, reference.brightness);
 
+                        good = colorFinderLAB(paperScreen.getGraphics(),
+                                c, reference);
+
+//                        good = MathUtils.colorFinderHSB(paperScreen.getGraphics(),
+//                                reference.referenceColor, c, reference.hue, reference.saturation, reference.brightness);
                         boolean blue = MathUtils.isBlue(paperScreen.getGraphics(),
                                 c, reference.referenceColor, reference.blueThreshold);
                         good = good && blue;
                     } else {
-                        good = MathUtils.colorFinderHSB(paperScreen.getGraphics(),
-                                reference.referenceColor, c, reference.hue, reference.saturation, reference.brightness);
+                        
+                        good = colorFinderLAB(paperScreen.getGraphics(),
+                                c, reference);
+
+//                        good = MathUtils.colorFinderHSB(paperScreen.getGraphics(),
+//                                reference.referenceColor, c, reference.hue, reference.saturation, reference.brightness);
                     }
                 }
 
@@ -240,35 +263,13 @@ public class ColorTracker {
         }
         return output;
     }
-//
-//    /**
-//     * Add a color to track, returns the associated ID to modifiy it.
-//     *
-//     * @param name Tag of the color to store, like "red", or "blue"
-//     * @param initialValue initial value
-//     */
-//    public void addTrackedColor(String name, int initialValue) {
-//        this.trackedColors.put(name, initialValue);
-//    }
-//
-//    /**
-//     * Update the value of a given color.
-//     *
-//     * @param name
-//     * @param value
-//     */
-//    public void updateTrackedColor(String name, int value) {
-//        this.trackedColors.replace(name, value);
-//    }
-//
-//    /**
-//     * Remove the tracking of a color
-//     *
-//     * @param name
-//     */
-//    public void removeTrackedColor(String name) {
-//        this.trackedColors.remove(name);
-//    }
+
+    public void loadParameters(String[] list) {
+        for (int i = 0; i < list.length; i++) {
+            String data = list[i];
+            loadParameter(data);
+        }
+    }
 
     public void loadParameter(String data) {
         reference.loadParameter(data);

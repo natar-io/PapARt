@@ -51,12 +51,15 @@ public class TouchDetectionColor extends TouchDetection {
 
     public class CheckColorPoint implements PointValidityCondition {
 
-          private int inititalPoint;
+        private int inititalPoint;
+        private PVector initPointV;
 
-        public void setInitalPoint(int offset) {
+        @Override
+        public void setInitialPoint(int offset) {
             this.inititalPoint = offset;
+            initPointV = new PVector((int) (offset % imgSize.getWidth()), (int) (offset / imgSize.getWidth()));
         }
-        
+
         @Override
         public boolean checkPoint(int offset, int currentPoint) {
 
@@ -67,11 +70,14 @@ public class TouchDetectionColor extends TouchDetection {
             int x2 = currentPoint % imgSize.getWidth();
             int y2 = (int) (currentPoint / imgSize.getWidth());
 
-            float dist = PVector.dist(new PVector(x1, y1), new PVector(x2, y2));
+            PVector candidate = new PVector(x2, y2);
+            float dist = PVector.dist(new PVector(x1, y1), candidate);
+            float dist2 = PVector.dist(initPointV, candidate);
 
             return !assignedPoints[offset] // not assigned  
                     && segmentedImage[offset] == segmentedImage[currentPoint] // is the same color/compo.
-                    && dist < calib.getMaximumDistance();
+                    && dist < calib.getMaximumDistance()
+                    && dist2 < calib.getMaximumDistanceInit();
         }
     }
 
@@ -100,7 +106,7 @@ public class TouchDetectionColor extends TouchDetection {
         return compute(localSegmentedImage, timestamp, erosionLevel, scale);
     }
 
-    public ArrayList<TrackedElement> compute(byte[] segmentedImage, 
+    public ArrayList<TrackedElement> compute(byte[] segmentedImage,
             int timestamp, int erosionLevel, float scale) {
         this.setSegmentedImage(segmentedImage);
         this.setCurrentTime(timestamp);
@@ -119,7 +125,7 @@ public class TouchDetectionColor extends TouchDetection {
                 toVisit.add(i);
             }
         }
-       
+
     }
 
 //    protected abstract void setSearchParameters();
@@ -129,11 +135,11 @@ public class TouchDetectionColor extends TouchDetection {
         ArrayList<TrackedElement> touchPoints = new ArrayList<TrackedElement>();
         for (ConnectedComponent connectedComponent : connectedComponents) {
 
-           if (connectedComponent.size() < calib.getMinimumComponentSize()) {
+            if (connectedComponent.size() < calib.getMinimumComponentSize()) {
                 continue;
             }
             TrackedElement tp = createTouchPoint(connectedComponent,
-                   scale);
+                    scale);
             touchPoints.add(tp);
         }
         return touchPoints;
@@ -143,7 +149,8 @@ public class TouchDetectionColor extends TouchDetection {
     protected TrackedElement createTouchPoint(ConnectedComponent connectedComponent) {
         return createTouchPoint(connectedComponent, 1);
     }
-    protected TrackedElement createTouchPoint(ConnectedComponent connectedComponent, 
+
+    protected TrackedElement createTouchPoint(ConnectedComponent connectedComponent,
             float scale) {
         Vec3D meanProj = connectedComponent.getMean(imgSize);
         TrackedElement tp = new TrackedElement();

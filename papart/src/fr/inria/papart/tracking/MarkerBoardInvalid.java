@@ -24,7 +24,7 @@ import org.bytedeco.javacpp.opencv_core;
 
 /**
  *
- * @author Jérémy Laviole - jeremy.laviole@inria.fr
+ * @author Jérémy Laviole - laviole@rea.lity.tech
  */
 public class MarkerBoardInvalid extends MarkerBoard {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Jérémy Laviole - jeremy.laviole@inria.fr.
+ * Copyright (C) 2016 Jérémy Laviole - laviole@rea.lity.tech.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,7 +23,7 @@ import org.bytedeco.javacpp.opencv_core.IplImage;
 
 /**
  *
- * @author Jérémy Laviole - jeremy.laviole@inria.fr
+ * @author Jérémy Laviole - laviole@rea.lity.tech
  */
 public interface WithTouchInput {
     

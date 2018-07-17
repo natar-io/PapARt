@@ -61,12 +61,8 @@ public class ObjectDetection extends TouchDetectionDepth {
     }
 
     public class CheckTouchPoint implements PointValidityCondition {
-//
-//        private int inititalPoint;
-//
-//        public void setInitalPoint(int offset) {
-//            this.inititalPoint = offset;
-//        }
+
+        private int initialPoint;
 
         public ProjectedDepthData getData() {
             return depthData;
@@ -83,6 +79,12 @@ public class ObjectDetection extends TouchDetectionDepth {
                     && depthData.depthPoints[candidate].distanceTo(depthData.depthPoints[currentPoint]) < calib.getMaximumDistance();
             
             return classicCheck;
+        }
+
+        @Override
+        public void setInitialPoint(int offset) {
+             this.initialPoint = offset;
+                // todo:implement this better
         }
     }
 

@@ -38,23 +38,23 @@ import java.util.ArrayList;
  * @author Jeremy Laviole laviole@rea.lity.tech
  */
 public class HandDetection extends TouchDetectionDepth {
-    
+
     private DepthData.DepthSelection depthSelection;
-    
+
     public HandDetection(DepthAnalysisImpl depthAnalysisImpl, PlanarTouchCalibration calib) {
         super(depthAnalysisImpl, calib);
         currentPointValidityCondition = new CheckTouchPoint3D();
     }
-    
+
     void setDepthSelection(DepthData.DepthSelection depthSelection) {
         this.depthSelection = depthSelection;
     }
-    
+
     public class CheckTouchPoint3D implements PointValidityCondition {
-        
+
         @Override
         public boolean checkPoint(int candidate, int currentPoint) {
-            
+
             return !assignedPoints[candidate] // not assigned  
 
                     // Use the previous depthSelection.
@@ -65,17 +65,24 @@ public class HandDetection extends TouchDetectionDepth {
                     && depthData.planeAndProjectionCalibration.distanceTo(depthData.depthPoints[candidate]) > calib.getTest2()
                     && depthData.depthPoints[initialPoint].distanceTo(depthData.depthPoints[candidate]) < calib.getMaximumDistanceInit()
                     && depthData.depthPoints[candidate].distanceTo(depthData.depthPoints[currentPoint]) < calib.getMaximumDistance();
-            
+
+        }
+
+        private int initialPoint;
+
+        @Override
+        public void setInitialPoint(int offset) {
+            this.initialPoint = offset;
         }
     }
-    
+
     @Override
     protected ConnectedComponent findConnectedComponent(int startingPoint) {
 
         // searchDepth is by precision steps. 
         searchDepth = calib.getSearchDepth() * calib.getPrecision();
         precision = calib.getPrecision();
-        
+
         w = imgSize.getWidth();
         h = imgSize.getHeight();
         ConnectedComponent cc = findNeighboursFloodFill(startingPoint);
@@ -86,35 +93,35 @@ public class HandDetection extends TouchDetectionDepth {
             connectedComponentImage[startingPoint] = NO_CONNECTED_COMPONENT;
             return INVALID_COMPONENT;
         }
-        
+
         cc.setId(currentCompo);
         currentCompo++;
         return cc;
     }
-    
+
     @Override
     public ArrayList<TrackedDepthPoint> compute(ProjectedDepthData dData) {
         this.setDepthData(dData);
-        
+
         if (!hasCCToFind()) {
             return new ArrayList<TrackedDepthPoint>();
         }
-        
+
         ArrayList<ConnectedComponent> connectedComponents = findConnectedComponents();
         ArrayList<TrackedDepthPoint> touchPoints = this.createTouchPointsFrom(connectedComponents);
-        
+
         return touchPoints;
     }
-    
+
     @Override
     public boolean hasCCToFind() {
         return !depthSelection.validPointsList.isEmpty();
     }
-    
+
     @Override
     protected void setSearchParameters() {
     }
-    
+
     @Override
     protected ArrayList<TrackedDepthPoint> createTouchPointsFrom(ArrayList<ConnectedComponent> connectedComponents) {
         ArrayList<TrackedDepthPoint> newPoints = new ArrayList<TrackedDepthPoint>();
@@ -122,16 +129,16 @@ public class HandDetection extends TouchDetectionDepth {
             if (connectedComponent.size() < calib.getMinimumComponentSize()) {
                 continue;
             }
-            
+
             TrackedDepthPoint tp = createTouchPoint(connectedComponent);
             newPoints.add(tp);
         }
         return newPoints;
     }
-    
+
     @Override
     protected TrackedDepthPoint createTouchPoint(ConnectedComponent connectedComponent) {
-        
+
         TrackedDepthPoint tp = super.createTouchPoint(connectedComponent);
 
         // TODO: use this, add another with only the ones of the touch ?!
@@ -140,9 +147,9 @@ public class HandDetection extends TouchDetectionDepth {
         tp.setParent(currentArm);
         return tp;
     }
-    
+
     private TrackedDepthPoint currentArm;
-    
+
     public ArrayList<TrackedDepthPoint> findTouch(ArmDetection armDetection, PlaneAndProjectionCalibration planeAndProjCalibration) {
 
         // WARNING  No tracking 
@@ -152,7 +159,7 @@ public class HandDetection extends TouchDetectionDepth {
         // Start from the arm, find the lower part. 
         for (TrackedDepthPoint arm : armDetection.getTouchPoints()) {
             DepthElementList allElements = new DepthElementList();
-            
+
             currentArm = arm;
 
             // No boundaries.
@@ -165,7 +172,7 @@ public class HandDetection extends TouchDetectionDepth {
 //            // Boundaries. 
 //            // Fill the valid points with arm boundaries
             for (DepthDataElementProjected dde : arm.getDepthDataElements()) {
-                
+
                 if (armDetection.boundaries[dde.offset]) {
                     float d = planeAndProjCalibration.distanceTo(dde.depthPoint);
 //                    if (d < calib.getTest3()) {
@@ -176,14 +183,14 @@ public class HandDetection extends TouchDetectionDepth {
             // Select from the known points
             this.setDepthSelection(armDetection.getDepthSelection());
             depthSelection.validPointsList.clear();
-            
+
             ConnectedComponent selectedList = allElements.toConnectedComponent();
             depthSelection.validPointsList.addAll(selectedList);
             this.toVisit.addAll(depthSelection.validPointsList);
 
             // Find the connected components
             ArrayList<TrackedDepthPoint> newList = this.compute(depthAnalysis.getDepthData());
-            
+
             hands.addAll(newList);
             if (!newList.isEmpty()) {
 
@@ -202,7 +209,7 @@ public class HandDetection extends TouchDetectionDepth {
 //                this.touchPoints.add(newList.get(maxId));
             }
         }
-        
+
         int imageTime = this.depthAnalysis.getDepthData().timeStamp;
         touchPoints.clear();
 
@@ -213,5 +220,5 @@ public class HandDetection extends TouchDetectionDepth {
 //        this.touchPoints.addAll(newList);
         return this.touchPoints;
     }
-    
+
 }

@@ -400,7 +400,8 @@ public class TrackedElement {
         return this.speed;
     }
 
-    protected void setUpdated(boolean updated) {
+    
+    public void setUpdated(boolean updated) {
         this.isUpdated = updated;
     }
 

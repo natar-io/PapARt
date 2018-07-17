@@ -84,6 +84,12 @@ public class ArmDetection extends TouchDetectionDepth {
 //                    && plane.getDistanceToPoint(depthData.depthPoints[candidate]) > calib.getTest2();
 
         }
+        private int initialPoint;
+
+        @Override
+        public void setInitialPoint(int offset) {
+            this.initialPoint = offset;
+        }
     }
 
     @Override
@@ -173,19 +179,16 @@ public class ArmDetection extends TouchDetectionDepth {
     public void findTouch(PlaneAndProjectionCalibration planeAndProjCalibration) {
 
 //        System.out.println("ARM precision: " + getPrecision());
-
 //        Instant start = Instant.now();
-        ((CheckTouchPoint3D)currentPointValidityCondition).updatePlane(planeAndProjCalibration.getPlane());
+        ((CheckTouchPoint3D) currentPointValidityCondition).updatePlane(planeAndProjCalibration.getPlane());
         touchRecognition.find3DTouch(planeAndProjCalibration, getPrecision());
 
 //        Instant find3D = Instant.now();
         ArrayList<TrackedDepthPoint> newList = this.compute(depthAnalysis.getDepthData());
 
 //        Instant findList = Instant.now();
-
 //        System.out.println("3D:  " + Duration.between(start, find3D).toMillis() + " milliseconds");
 //        System.out.println("list: " + Duration.between(find3D, findList).toMillis() + " milliseconds");
-
 //        // Filter low points ?
         Iterator<TrackedDepthPoint> iterator = newList.iterator();
         while (iterator.hasNext()) {
@@ -194,7 +197,7 @@ public class ArmDetection extends TouchDetectionDepth {
                 iterator.remove();
             }
         }
-        
+
         int imageTime = this.depthAnalysis.getDepthData().timeStamp;
 //        System.out.println("Tracking: " + imageTime);
 //        for(TrackedDepthPoint pt: newList){
@@ -204,7 +207,6 @@ public class ArmDetection extends TouchDetectionDepth {
 
 //        touchPoints.clear();
 //        touchPoints.addAll(newList);
-
         // TODO: activate tracking ?! Super slow for some reason...
 //        TouchPointTracker.trackPoints(tipPoints, newTipPoints, imageTime);
         tipPoints.clear();

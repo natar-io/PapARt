@@ -1,4 +1,3 @@
-
 package fr.inria.papart.multitouch;
 
 public class LowPassFilter {

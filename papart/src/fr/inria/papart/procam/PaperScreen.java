@@ -1603,8 +1603,8 @@ public class PaperScreen extends DelegatedGraphics {
 
     private XDisplayWithCam Xdisplay = null;
     private Camera Xcamera = null;
-    private String prefix;
-    private String prefixPub;
+    private String prefix = "evt:99:";
+    private String prefixPub = "evt:99";
     private Jedis redis;
 
     ///// App extension ///

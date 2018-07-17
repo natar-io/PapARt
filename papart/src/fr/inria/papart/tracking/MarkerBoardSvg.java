@@ -36,7 +36,7 @@ import processing.data.XML;
 
 /**
  *
- * @author Jérémy Laviole - jeremy.laviole@inria.fr
+ * @author Jérémy Laviole - laviole@rea.lity.tech
  */
 public class MarkerBoardSvg extends MarkerBoard {
 
@@ -70,7 +70,6 @@ public class MarkerBoardSvg extends MarkerBoard {
         // for now... 
         PMatrix3D tr = new PMatrix3D();
         this.transfos.add(tr);
-        System.out.println("Adding transformation");
     }
 
     public int MIN_ARTOOLKIT_MARKER_DETECTED = 1;

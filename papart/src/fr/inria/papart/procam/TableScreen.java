@@ -1,3 +1,22 @@
+/*
+ * Part of the PapARt project - https://project.inria.fr/papart/
+ *
+ * Copyright (C) 2018 RealityTech
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation, version 2.1.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; If not, see
+ * <http://www.gnu.org/licenses/>.
+ */
+
 package fr.inria.papart.procam;
 
 import fr.inria.papart.procam.camera.TrackedView;
@@ -6,11 +25,12 @@ import processing.core.PVector;
 
 /**
  *
- * @author realitytech
+ * @author Jeremy Laviole
  */
 public class TableScreen extends PaperTouchScreen {
 
     protected PVector translation;
+    protected float rotation = 0f;
     protected PMatrix3D location;
 
     public TableScreen(float width, float height) {
@@ -27,6 +47,17 @@ public class TableScreen extends PaperTouchScreen {
         setLocation(loc);
     }
 
+    /**
+     * Change the rotation of the screen.
+     *
+     * @param r  in radians
+     */
+
+    public void setRotation(float r) {
+        this.rotation = r;
+        updateLocation();
+    }
+    
     /**
      * Change the location relative to the table.
      *
@@ -47,8 +78,13 @@ public class TableScreen extends PaperTouchScreen {
     @Override
     public void setLocation(float x, float y, float z) {
         this.translation = new PVector(x, y, z);
+        updateLocation(); 
+   }
+
+    private void updateLocation() {
         this.location = table.get();
         this.location.translate(translation.x, translation.y, translation.z);
+        this.location.rotate(rotation);
         this.useManualLocation(this.location);
         this.computeWorldToScreenMat(cameraTracking);
     }

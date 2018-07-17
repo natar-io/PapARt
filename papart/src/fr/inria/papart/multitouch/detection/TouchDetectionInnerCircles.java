@@ -53,7 +53,7 @@ public class TouchDetectionInnerCircles extends TouchDetection {
 
         private int inititalPoint;
 
-        public void setInitalPoint(int offset) {
+        public void setInitialPoint(int offset) {
             this.inititalPoint = offset;
         }
 
