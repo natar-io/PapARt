@@ -144,6 +144,8 @@ public class TrackedView implements WithSize {
         if (set) {
             redis.set(id, imageData);
             redis.set((name + ":timestamp"), time);
+            redis.set((name + ":widthMM"), Float.toString(this.getCaptureSizeMM().x));
+            redis.set((name + ":heightMM"), Float.toString(this.getCaptureSizeMM().y));
             redis.set((name + ":widthStep"), Integer.toString(img.widthStep()));
 //                log("Sending (SET) image to: " + output, "");
         }
