@@ -20,13 +20,13 @@
 package fr.inria.papart.multitouch.tracking;
 
 import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
-import fr.inria.papart.multitouch.tracking.TrackedElement;
+import fr.inria.papart.multitouch.tracking.Trackable;
 
 /**
  *
  * @author jeremy Laviole - laviole@rea.lity.tech
  */
-public class TouchPointComparison<T extends TrackedElement> implements Comparable<TouchPointComparison<T>> {
+public class TouchPointComparison<T extends Trackable> implements Comparable<TouchPointComparison<T>> {
 
     T oldTp;
     T newTp;

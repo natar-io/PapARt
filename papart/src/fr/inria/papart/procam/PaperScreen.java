@@ -29,7 +29,12 @@ import fr.inria.papart.calibration.files.HomographyCalibration;
 import fr.inria.papart.compositor.AppRunnerTest;
 import fr.inria.papart.compositor.XAppRunner;
 import fr.inria.papart.compositor.XDisplayWithCam;
+import fr.inria.papart.multitouch.LowPassFilter;
+import fr.inria.papart.multitouch.OneEuroFilter;
 import fr.inria.papart.multitouch.Touch;
+import fr.inria.papart.multitouch.TouchList;
+import fr.inria.papart.multitouch.detection.ColorTracker;
+import fr.inria.papart.multitouch.tracking.TouchPointEventHandler;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
@@ -39,6 +44,7 @@ import fr.inria.papart.tracking.ObjectFinder;
 import fr.inria.papart.utils.MathUtils;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -271,6 +277,10 @@ public class PaperScreen extends DelegatedGraphics {
 //            return;
 //        }
 //        checkCorners();
+    }
+
+    public TouchList getTouchListFrom(ColorTracker colorTracker) {
+        return colorTracker.getTouchList();
     }
 
     public boolean hasMarkerBoard() {
@@ -848,6 +858,124 @@ public class PaperScreen extends DelegatedGraphics {
             }
         }
         return selected;
+    }
+
+    // TODO: this will move somewhere
+    int filterPerColor = 3;
+    OneEuroFilter[] filters;
+    LowPassFilter[] filters2;
+    int lastColorSeen[];
+    boolean filtered[];
+
+    float markerSize;
+    float filterFreq = 30f;
+    float filterCut = 0.04f;
+    float filterBeta = 0.2000f;
+    int minMarkerID, maxMarkerID;
+    int nbIds;
+    boolean useLowPass = false;
+
+    public void initTouchListFromMarkers(int min, int max, int markerSize, boolean useLowPass) {
+        nbIds = max - min;
+        filters = new OneEuroFilter[nbIds * filterPerColor];
+        filters2 = new LowPassFilter[nbIds * filterPerColor];
+        minMarkerID = min;
+        maxMarkerID = max;
+        this.markerSize = markerSize;
+        lastColorSeen = new int[nbIds];
+        filtered = new boolean[nbIds];
+        this.useLowPass = useLowPass;
+        try {
+            for (int i = 0; i < filters.length; i++) {
+                filters[i] = new OneEuroFilter(filterFreq, filterCut, filterBeta, 0.5f);
+                filters2[i] = new LowPassFilter(0.1f);
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(PaperScreen.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private boolean validID(int id) {
+        return id > minMarkerID && id < maxMarkerID;
+    }
+
+    public TouchList getTouchListFromMarkers() {
+        Papart papart = Papart.getPapart();
+        Arrays.fill(filtered, false);
+
+        DetectedMarker[] markers = Papart.getPapart().getMarkerList();
+        for (DetectedMarker marker : markers) {
+            if (validID(marker.id)) {
+                PMatrix3D mat = papart.getMarkerMatrix(marker.id, markerSize);
+                if (mat != null) {
+                    PVector pos = papart.projectPositionTo(mat, this);
+                    try {
+
+                        if (useLowPass) {
+                            pos.x = (float) filters2[(marker.id - minMarkerID) * filterPerColor].filter(pos.x);
+                            pos.y = (float) filters2[(marker.id - minMarkerID) * filterPerColor + 1].filter(pos.y);
+                            pos.z = (float) filters2[(marker.id - minMarkerID) * filterPerColor + 2].filter(pos.z);
+                        } else {
+                            pos.x = (float) filters[(marker.id - minMarkerID) * filterPerColor].filter(pos.x);
+                            pos.y = (float) filters[(marker.id - minMarkerID) * filterPerColor + 1].filter(pos.y);
+                            pos.z = (float) filters[(marker.id - minMarkerID) * filterPerColor + 2].filter(pos.z);
+
+                        }
+                        lastColorSeen[marker.id - minMarkerID] = parent.millis();
+                        filtered[marker.id - minMarkerID] = true;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    //		    text(Integer.toString(marker.id), pos.x, pos.y);
+                }
+            }
+        }
+
+        // Filter the other ones
+        if (useLowPass) {
+            for (int i = 0; i < this.nbIds; i++) {
+                if (!filtered[i]) {
+                    filters2[i * filterPerColor + 0].filter();
+                    filters2[i * filterPerColor + 1].filter();
+                    filters2[i * filterPerColor + 2].filter();
+                }
+            }
+        } else {
+            try {
+                for (int i = 0; i < this.nbIds; i++) {
+                    if (!filtered[i]) {
+                        filters[i * filterPerColor + 0].filter();
+                        filters[i * filterPerColor + 1].filter();
+                        filters[i * filterPerColor + 2].filter();
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }
+        TouchList touchList = new TouchList();
+        for (int i = 0; i < nbIds; i++) {
+
+            if (lastColorSeen[i] > 0) {
+                Touch t = new Touch();
+
+                if (useLowPass) {
+                    t.setPosition((float) filters2[i * filterPerColor + 0].lastValue(),
+                            (float) filters2[i * filterPerColor + 1].lastValue(),
+                            (float) filters2[i * filterPerColor + 2].lastValue());
+                } else {
+
+                    t.setPosition((float) filters[i * filterPerColor + 0].lastValue(),
+                            (float) filters[i * filterPerColor + 1].lastValue(),
+                            (float) filters[i * filterPerColor + 2].lastValue());
+                }
+                t.id = i + minMarkerID;
+                touchList.add(t);
+            }
+        }
+
+        return touchList;
     }
 
     ////////////////////////
@@ -1711,6 +1839,52 @@ public class PaperScreen extends DelegatedGraphics {
         ob.setString("name", "captureKeyboard");
         ob.setBoolean("pressed", false);
         redis.publish(prefixPub, ob.toString());
+    }
+
+    /**
+     * Send touch list event to Redis EXPERIMENTAL
+     *
+     * @param t
+     */
+    public void sendTouchs(TouchList touchList) {
+        for (Touch t : touchList) {
+            sendTouch(t);
+        }
+    }
+
+    /**
+     * Send touch event to Redis EXPERIMENTAL
+     *
+     * @param t
+     */
+    public void sendTouch(Touch t) {
+
+        if (t.trackedSource().attachedObject == null) {
+            t.trackedSource().attachedObject = new TouchKiller(t);
+        }
+
+        JSONObject ob = new JSONObject();
+        ob.setString("name", "pointer");
+        ob.setString("id", Integer.toString(t.id));
+        ob.setFloat("x", t.position.x / drawingSize.x);
+        ob.setFloat("y", t.position.y / drawingSize.y);
+        ob.setBoolean("pressed", t.pressed);
+        redis.publish(prefixPub, ob.toString());
+    }
+
+    class TouchKiller implements TouchPointEventHandler {
+        public Touch touch;
+        public TouchKiller(Touch t) {
+            this.touch = t;
+        }
+        @Override
+        public void delete() {
+            JSONObject ob = new JSONObject();
+            ob.setString("name", "pointerDeath");
+            ob.setString("id", Integer.toString(touch.id));
+            redis.publish(prefixPub, ob.toString());
+        }
+
     }
 
     boolean setMode = false;

@@ -20,7 +20,7 @@
  */
 package fr.inria.papart.multitouch.tracking;
 
-import fr.inria.papart.multitouch.tracking.TrackedElement;
+import fr.inria.papart.multitouch.tracking.Trackable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -41,7 +41,7 @@ public class TouchPointTracker {
      * @param newPoints
      * @param currentTime
      */
-    public static <T extends TrackedElement> void trackPoints(ArrayList<T> currentList,
+    public static <T extends Trackable> void trackPoints(ArrayList<T> currentList,
             ArrayList<T> newPoints, int currentTime) {
 
         deleteOldPoints(currentList, currentTime);
@@ -49,20 +49,20 @@ public class TouchPointTracker {
         addNewPoints(currentList, newPoints);
         setNonUpdatedPointsSpeed(currentList);
     }
-    public static <T extends TrackedElement> void filterPositions(ArrayList<T> currentList){
+    public static <T extends Trackable> void filterPositions(ArrayList<T> currentList){
                // Add the new ones ?
-        for (TrackedElement tp : currentList) {
+        for (Trackable tp : currentList) {
                 tp.filter();
         }
     }
-    public static <T extends TrackedElement> void filterPositions(ArrayList<T> currentList, int time){
+    public static <T extends Trackable> void filterPositions(ArrayList<T> currentList, int time){
                // Add the new ones ?
-        for (TrackedElement tp : currentList) {
+        for (Trackable tp : currentList) {
                 tp.filter(time);
         }
     }
 
-    public static <T extends TrackedElement> void updatePoints(ArrayList<T> currentList, ArrayList<T> newPoints) {
+    public static <T extends Trackable> void updatePoints(ArrayList<T> currentList, ArrayList<T> newPoints) {
 
         // many previous points, try to find correspondances.
         ArrayList<TouchPointComparison> tpt = new ArrayList<>();
@@ -77,14 +77,15 @@ public class TouchPointTracker {
         Collections.sort(tpt);
 
         for (TouchPointComparison tpc : tpt) {
-            if (tpc.distance < tpc.newTp.getDetection().getTrackingMaxDistance()) {
+            if (tpc.distance < tpc.newTp.getTrackingMaxDistance()) {
+//            if (tpc.distance < tpc.newTp.getDetection().getTrackingMaxDistance()) {
                 // new points are marked for deletion after update.
                 tpc.update();
             }
         }
     }
 
-    public static <T extends TrackedElement> void addNewPoints(ArrayList<T> currentList, ArrayList<T> newPoints) {
+    public static <T extends Trackable> void addNewPoints(ArrayList<T> currentList, ArrayList<T> newPoints) {
 
         // Add the new ones ?
         for (T tp : newPoints) {
@@ -94,7 +95,7 @@ public class TouchPointTracker {
         }
     }
 
-    public static <T extends TrackedElement> T convertInstanceOfObject(Object o, Class<T> clazz) {
+    public static <T extends Trackable> T convertInstanceOfObject(Object o, Class<T> clazz) {
         try {
             return clazz.cast(o);
         } catch (ClassCastException e) {
@@ -102,10 +103,10 @@ public class TouchPointTracker {
         }
     }
 
-    public static <T extends TrackedElement> void setNonUpdatedPointsSpeed(ArrayList<T> currentList) {
+    public static <T extends Trackable> void setNonUpdatedPointsSpeed(ArrayList<T> currentList) {
 
         // Add the new ones ?
-        for (TrackedElement tp : currentList) {
+        for (Trackable tp : currentList) {
             if (!tp.isUpdated()) {
                 tp.updateAlone();
             }
@@ -113,11 +114,11 @@ public class TouchPointTracker {
         }
     }
 
-    public static <T extends TrackedElement> void deleteOldPoints(ArrayList<T> currentList, int currentTime) {
+    public static <T extends Trackable> void deleteOldPoints(ArrayList<T> currentList, int currentTime) {
         // Clear the old ones 
         for (Iterator<T> it = currentList.iterator();
                 it.hasNext();) {
-            TrackedElement tp = it.next();
+            Trackable tp = it.next();
             tp.setUpdated(false);
 
             if (tp.isObselete(currentTime)) {

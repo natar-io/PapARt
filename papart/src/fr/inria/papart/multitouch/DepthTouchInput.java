@@ -34,6 +34,7 @@ import fr.inria.papart.multitouch.detection.FingerDetection;
 import fr.inria.papart.multitouch.detection.HandDetection;
 import fr.inria.papart.multitouch.detection.ObjectDetection;
 import fr.inria.papart.multitouch.detection.Simple2D;
+import fr.inria.papart.multitouch.detection.TouchDetection;
 import fr.inria.papart.multitouch.detection.TouchDetectionDepth;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.procam.Papart;
@@ -147,7 +148,7 @@ public class DepthTouchInput extends TouchInput {
     /**
      * TouchInput with hand detection: provides Arm, hand and finger detections.
      */
-    public void initHandDetection() {
+    public TouchDetectionDepth initHandDetection() {
         checkCalibrations();
         touchDetections[0] = new ArmDetection(depthAnalysis, touchCalibrations[0]);
         armDetection = (ArmDetection) touchDetections[0];
@@ -158,6 +159,7 @@ public class DepthTouchInput extends TouchInput {
         touchDetections[2] = new FingerDetection(depthAnalysis, touchCalibrations[2]);
         fingerDetection = (FingerDetection) touchDetections[2];
         touchDetectionsReady = true;
+        return touchDetections[2];
     }
 
     private void checkCalibrations() {
@@ -259,6 +261,7 @@ public class DepthTouchInput extends TouchInput {
 
     private static final Touch INVALID_TOUCH = new Touch();
 
+    @Deprecated
     @Override
     public TouchList projectTouchToScreen(PaperScreen screen, BaseDisplay display) {
 
@@ -273,6 +276,17 @@ public class DepthTouchInput extends TouchInput {
         tryToAddTouchs(armDetection, touchList, screen, display);
         tryToAddTouchs(simpleDetection, touchList, screen, display);
 
+        return touchList;
+    }
+    
+   @Override
+    public TouchList projectTouch(PaperScreen paperScreen, BaseDisplay display, TouchDetection td) {
+        return projectTouch(paperScreen, display, (TouchDetectionDepth) td);
+    }
+    
+    public TouchList projectTouch(PaperScreen screen, BaseDisplay display, TouchDetectionDepth touchDetection) {
+        TouchList touchList = new TouchList();
+        tryToAddTouchs(touchDetection, touchList, screen, display);
         return touchList;
     }
 
@@ -659,4 +673,6 @@ public class DepthTouchInput extends TouchInput {
     public Vec3D[] getDepthPoints() {
         return depthAnalysis.getDepthPoints();
     }
+
+ 
 }

@@ -218,6 +218,7 @@ public class TUIOTouchInput extends TouchInput {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    @Override
     public TouchList projectTouch(PaperScreen paperScreen, BaseDisplay display, TouchDetection td) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

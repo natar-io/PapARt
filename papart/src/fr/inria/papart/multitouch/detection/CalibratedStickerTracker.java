@@ -218,6 +218,7 @@ public class CalibratedStickerTracker extends ColorTracker {
         trackedElements.clear();
         trackedElements.addAll(all);
     
+        
 //        TouchPointTracker.trackPoints(trackedElements, newStickers, time);
 //        TouchPointTracker.filterPositions(trackedElements, time);
         return trackedElements;
@@ -232,9 +233,6 @@ public class CalibratedStickerTracker extends ColorTracker {
         }
         return output;
     }
-
-    ArrayList<LineCluster> lineClusters;
-    ArrayList<StickerCluster> clusters;
 
     /**
      * Create a line cluster, of a given size in millimeters.

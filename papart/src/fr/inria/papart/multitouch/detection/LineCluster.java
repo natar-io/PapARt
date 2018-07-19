@@ -7,6 +7,7 @@ package fr.inria.papart.multitouch.detection;
 
 import Jama.Matrix;
 import com.mkobos.pca_transform.PCA;
+import fr.inria.papart.multitouch.tracking.Trackable;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,7 +35,7 @@ class LinePair {
     }
 }
 
-public class LineCluster extends ArrayList<TrackedElement> {
+public class LineCluster extends ArrayList<TrackedElement> implements Trackable {
 
     public LineCluster() {
         super();
@@ -67,6 +68,51 @@ public class LineCluster extends ArrayList<TrackedElement> {
         mean.mult(1f / this.size());
         return mean;
     }
+    
+    public String getStringCode(boolean numeric) {
+        ArrayList<TrackedElement> copy = new ArrayList<>(this);
+        PVector border = this.getBorders()[0].getPosition();
+        Collections.sort(copy, new Comparator<TrackedElement>() {
+            @Override
+            public int compare(TrackedElement t1, TrackedElement t2) {
+                return Float.compare(t2.getPosition().dist(border), t1.getPosition().dist(border));
+            }
+        });
+        
+        String code = "";
+        for (TrackedElement te : copy) {
+            if (numeric) {
+                code += te.attachedValue;
+            }
+            else {
+                switch (te.attachedValue) {
+                    case 0:
+                        code += "R";
+                        break;
+                    case 1:
+                        code += "B";
+                        break;
+                    case 2:
+                        code += "G";
+                        break;
+                    case 3:
+                        code += "Y";
+                        break;
+                    case 4:
+                        code += "P";
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        return code;
+    }
+    
+    public String getFlippedStringCode(boolean numeric) {
+        StringBuilder sb = new StringBuilder(this.getStringCode(numeric));
+        return sb.reverse().toString();
+    }
 
     public TrackedElement[] getBorders() {
         TrackedElement[] borders = new TrackedElement[2];
@@ -79,7 +125,7 @@ public class LineCluster extends ArrayList<TrackedElement> {
                 return Float.compare(t2.getPosition().dist(center), t1.getPosition().dist(center));
             }
         });
-        
+
         borders[0] = copy.get(0);
         borders[1] = copy.get(1);
 
@@ -253,14 +299,13 @@ public class LineCluster extends ArrayList<TrackedElement> {
 
             // Remove it since the beginning. We do not want to find it anymore.
 //            it.remove();
-
 //        for (TrackedElement first : elements) {
 //        TrackedElement first = elements.get(0);
             // Get the closets elements
             ArrayList<TrackedElement> allElements = new ArrayList<TrackedElement>(elements);
 
             allElements.remove(first);
-            
+
 //            tryAttach(currentCluster, first, elements, size, 1);
             ArrayList<TrackedElement> closeElements = elementsCloseTo(elements, first, size);
 
@@ -304,6 +349,7 @@ public class LineCluster extends ArrayList<TrackedElement> {
     }
 
     /**
+     * Try to attach close point recursively.
      *
      * @param currentCluster
      * @param currentPoint
@@ -364,6 +410,144 @@ public class LineCluster extends ArrayList<TrackedElement> {
         float area = (a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y)) / 2;
 //        System.out.println("area: " + area);
         return Math.abs(area) < epsilon;
+    }
+
+    @Override
+    public float distanceTo(Trackable newTp) {
+        return newTp.getPosition().dist(this.getPosition());
+    }
+
+    @Override
+    public void setPosition(PVector pos) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public PVector getPosition() {
+        return this.position();
+    }
+
+    /**
+     * Not supported yet.
+     * @return 
+     */
+    @Override
+    public PVector getPreviousPosition() {
+        return this.position();
+    }
+
+    /**
+     * Not supported yet
+     * @return 
+     */
+    @Override
+    public PVector getSpeed() {
+        return new PVector();
+    }
+
+    /**
+     * Not supported yet.
+     */
+    @Override
+    public void filter() {
+    }
+
+    /**
+     * Not supported yet.
+     */
+    @Override
+    public void filter(int updateTime) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    /**
+     * Not supported yet.
+     */
+    @Override
+    public void forceID(int id) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    /**
+     * Not supported yet.
+     */
+    @Override
+    public int getID() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    int creationTime, updateTime, deletionTime;
+    boolean updated = false, toDelete;
+    int shortTime = 200;
+    int forgetTime = 400;
+    float maxDistance = 40f;
+    
+    /**
+     * Not supported yet.
+     */
+    @Override
+    public void setCreationTime(int timeStamp) {
+        this.creationTime = timeStamp;
+    }
+
+    @Override
+    public int getAge(int currentTime) {
+        return currentTime - creationTime;
+    }
+
+    @Override
+    public boolean isYoung(int currentTime) {
+       return getAge(currentTime) > 200;
+    }
+
+    @Override
+    public void setUpdated(boolean updated) {
+        this.updated = updated;
+    }
+
+    @Override
+    public boolean isUpdated() {
+        return this.updated;
+    }
+
+    @Override
+    public int lastUpdate() {
+        return updateTime;
+    }
+
+    @Override
+    public boolean updateWith(Trackable tp) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void updateAlone() {
+    }
+
+    @Override
+    public boolean isObselete(int currentTime) {
+        return (currentTime - updateTime) > forgetTime;
+    }
+
+    @Override
+    public boolean isToRemove(int currentTime, int duration) {
+          return (currentTime - deletionTime) > duration;
+   }
+
+    @Override
+    public boolean isToDelete() {
+        return toDelete;
+    }
+
+    @Override
+    public void delete(int time) {
+        toDelete = true;
+        deletionTime = time;
+    }
+
+    @Override
+    public float getTrackingMaxDistance() {
+        return maxDistance;
     }
 
 }

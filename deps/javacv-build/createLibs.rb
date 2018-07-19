@@ -37,8 +37,8 @@ end
 
 # build("linux", "armhf")
 # build("android", "arm")
-# build("linux", "x86_64")
-build("windows", "x86_64")
+build("linux", "x86_64")
+# build("windows", "x86_64")
 # build("macosx", "x86_64")
 # build("windows", "x86")
 
