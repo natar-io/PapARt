@@ -27,15 +27,16 @@ import java.util.Iterator;
 
 /**
  * Tracking methods, quite abstract for many uses.
+ *
  * @author Jeremy Laviole laviole@rea.lity.tech
  */
 public class TouchPointTracker {
 
     /**
-     * Update the current list with the new points. 
-     * delete the old points, update the existing with the new ones, adds the 
-     * new points to the current list, and updates the speed of all non-updated
-     * points. 
+     * Update the current list with the new points. delete the old points,
+     * update the existing with the new ones, adds the new points to the current
+     * list, and updates the speed of all non-updated points.
+     *
      * @param <T>
      * @param currentList
      * @param newPoints
@@ -44,21 +45,31 @@ public class TouchPointTracker {
     public static <T extends Trackable> void trackPoints(ArrayList<T> currentList,
             ArrayList<T> newPoints, int currentTime) {
 
+//        System.out.println("In TrackPoints: " + currentList.size() + " new: " + newPoints);
         deleteOldPoints(currentList, currentTime);
+//        System.out.println("deleted old points: " + currentList.size() + ".");
         updatePoints(currentList, newPoints);
-        addNewPoints(currentList, newPoints);
+
+//        System.out.println("updated old points: " + currentList.size() + ".");
+        addNewPoints(currentList, newPoints, currentTime);
+
+//        System.out.println("Added new points: " + currentList.size() + ".");
         setNonUpdatedPointsSpeed(currentList);
+
+//        System.out.println("Updated other points: " + currentList.size() + ".");
     }
-    public static <T extends Trackable> void filterPositions(ArrayList<T> currentList){
-               // Add the new ones ?
+
+    public static <T extends Trackable> void filterPositions(ArrayList<T> currentList) {
+        // Add the new ones ?
         for (Trackable tp : currentList) {
-                tp.filter();
+            tp.filter();
         }
     }
-    public static <T extends Trackable> void filterPositions(ArrayList<T> currentList, int time){
-               // Add the new ones ?
+
+    public static <T extends Trackable> void filterPositions(ArrayList<T> currentList, int time) {
+        // Add the new ones ?
         for (Trackable tp : currentList) {
-                tp.filter(time);
+            tp.filter(time);
         }
     }
 
@@ -85,12 +96,13 @@ public class TouchPointTracker {
         }
     }
 
-    public static <T extends Trackable> void addNewPoints(ArrayList<T> currentList, ArrayList<T> newPoints) {
+    public static <T extends Trackable> void addNewPoints(ArrayList<T> currentList, ArrayList<T> newPoints, int currentTime) {
 
         // Add the new ones ?
         for (T tp : newPoints) {
             if (!tp.isToDelete()) {
                 currentList.add(tp);
+                tp.setCreationTime(currentTime);
             }
         }
     }
@@ -110,7 +122,7 @@ public class TouchPointTracker {
             if (!tp.isUpdated()) {
                 tp.updateAlone();
             }
-            
+
         }
     }
 

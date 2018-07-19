@@ -115,7 +115,9 @@ public class TrackedElement extends TrackedPosition {
 
     @Override
     public void delete(int time) {
-        super.delete(time);
+        this.toDelete = true;
+        teCount--;
+        this.deletionTime = time;
         if (this.attachedObject != null) {
             if (this.attachedObject instanceof TouchPointEventHandler) {
                 ((TouchPointEventHandler) this.attachedObject).delete();

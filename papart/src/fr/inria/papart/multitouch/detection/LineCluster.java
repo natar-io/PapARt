@@ -7,8 +7,16 @@ package fr.inria.papart.multitouch.detection;
 
 import Jama.Matrix;
 import com.mkobos.pca_transform.PCA;
+import fr.inria.papart.multitouch.OneEuroFilter;
 import fr.inria.papart.multitouch.tracking.Trackable;
+import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
+import fr.inria.papart.multitouch.tracking.TrackedPosition;
+import static fr.inria.papart.multitouch.tracking.TrackedPosition.NO_ID;
+import static fr.inria.papart.multitouch.tracking.TrackedPosition.NO_TIME;
+import static fr.inria.papart.multitouch.tracking.TrackedPosition.filterBeta;
+import static fr.inria.papart.multitouch.tracking.TrackedPosition.filterCut;
+import static fr.inria.papart.multitouch.tracking.TrackedPosition.filterFreq;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -68,7 +76,7 @@ public class LineCluster extends ArrayList<TrackedElement> implements Trackable 
         mean.mult(1f / this.size());
         return mean;
     }
-    
+
     public String getStringCode(boolean numeric) {
         ArrayList<TrackedElement> copy = new ArrayList<>(this);
         PVector border = this.getBorders()[0].getPosition();
@@ -78,13 +86,12 @@ public class LineCluster extends ArrayList<TrackedElement> implements Trackable 
                 return Float.compare(t2.getPosition().dist(border), t1.getPosition().dist(border));
             }
         });
-        
+
         StringBuilder code = new StringBuilder();
         for (TrackedElement te : copy) {
             if (numeric) {
                 code.append(Integer.toString(te.attachedValue));
-            }
-            else {
+            } else {
                 switch (te.attachedValue) {
                     case 0:
                         code.append("R");
@@ -108,7 +115,7 @@ public class LineCluster extends ArrayList<TrackedElement> implements Trackable 
         }
         return code.toString();
     }
-    
+
     public String getFlippedStringCode(boolean numeric) {
         StringBuilder sb = new StringBuilder(this.getStringCode(numeric));
         return sb.reverse().toString();
@@ -424,12 +431,17 @@ public class LineCluster extends ArrayList<TrackedElement> implements Trackable 
 
     @Override
     public PVector getPosition() {
-        return this.position();
+        if (filters == null) {
+            return this.position();
+        } else {
+            return this.filteredPosition;
+        }
     }
 
     /**
      * Not supported yet.
-     * @return 
+     *
+     * @return
      */
     @Override
     public PVector getPreviousPosition() {
@@ -438,26 +450,69 @@ public class LineCluster extends ArrayList<TrackedElement> implements Trackable 
 
     /**
      * Not supported yet
-     * @return 
+     *
+     * @return
      */
     @Override
     public PVector getSpeed() {
         return new PVector();
     }
 
-    /**
-     * Not supported yet.
-     */
-    @Override
-    public void filter() {
-    }
+    private PVector filteredPosition = null;
+    private OneEuroFilter[] filters;
+    public static float filterFreq = 30f;
+    public static float filterCut = 0.02f;
+    public static float filterBeta = 0.2000f;
+
+    protected int NUMBER_OF_FILTERS = 3;
 
     /**
      * Not supported yet.
      */
     @Override
+    public void filter() {
+        if (filters == null) {
+            initFilters();
+        }
+        PVector p = this.position();
+        try {
+            filteredPosition.x = (float) filters[0].filter(p.x);
+            filteredPosition.y = (float) filters[1].filter(p.y);
+            filteredPosition.z = (float) filters[2].filter(p.z);
+        } catch (Exception e) {
+            System.out.println("OneEuro init Exception. Pay now." + e);
+        }
+    }
+
+    /**
+     * @param updateTime
+     */
+    @Override
     public void filter(int updateTime) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (filters == null) {
+            initFilters();
+        }
+          PVector p = this.position();
+       
+        try {
+            filteredPosition.x = (float) filters[0].filter(p.x, updateTime);
+            filteredPosition.y = (float) filters[1].filter(p.y, updateTime);
+            filteredPosition.z = (float) filters[2].filter(p.z, updateTime);
+        } catch (Exception e) {
+            System.out.println("OneEuro init Exception. Pay now." + e);
+        }
+    }
+
+    private void initFilters() {
+        try {
+            filters = new OneEuroFilter[NUMBER_OF_FILTERS];
+            for (int i = 0; i < NUMBER_OF_FILTERS; i++) {
+                filters[i] = new OneEuroFilter(filterFreq, filterCut, filterBeta, 0.5f);
+            }
+            filteredPosition = new PVector();
+        } catch (Exception e) {
+            System.out.println("OneEuro Exception. Pay now." + e);
+        }
     }
 
     /**
@@ -465,7 +520,7 @@ public class LineCluster extends ArrayList<TrackedElement> implements Trackable 
      */
     @Override
     public void forceID(int id) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        this.id = id;
     }
 
     /**
@@ -473,43 +528,50 @@ public class LineCluster extends ArrayList<TrackedElement> implements Trackable 
      */
     @Override
     public int getID() {
-        String stringCode = getStringCode(true);
-        
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return this.id;
     }
 
-    int creationTime, updateTime, deletionTime;
-    boolean updated = false, toDelete;
+    protected int updateTime;
+    protected int deletionTime;
+    protected int createTime = NO_TIME;
+    boolean isUpdated = false, toDelete = false;
     int shortTime = 200;
     int forgetTime = 400;
-    float maxDistance = 40f;
-    
+    float maxDistance = 60f;
+
     /**
      * Not supported yet.
+     *
+     * @param timeStamp
      */
     @Override
     public void setCreationTime(int timeStamp) {
-        this.creationTime = timeStamp;
+        this.createTime = timeStamp;
+        this.updateTime = timeStamp;
     }
 
     @Override
     public int getAge(int currentTime) {
-        return currentTime - creationTime;
+        if (this.createTime == NO_TIME) {
+            return NO_TIME;
+        } else {
+            return currentTime - this.createTime;
+        }
     }
 
     @Override
     public boolean isYoung(int currentTime) {
-       return getAge(currentTime) > 200;
+        return getAge(currentTime) > 200;
     }
 
     @Override
     public void setUpdated(boolean updated) {
-        this.updated = updated;
+        this.isUpdated = updated;
     }
 
     @Override
     public boolean isUpdated() {
-        return this.updated;
+        return this.isUpdated;
     }
 
     @Override
@@ -519,7 +581,80 @@ public class LineCluster extends ArrayList<TrackedElement> implements Trackable 
 
     @Override
     public boolean updateWith(Trackable tp) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return updateWith((LineCluster) tp);
+    }
+
+    public static boolean hasSameCode(LineCluster l1, LineCluster l2) {
+        String c1 = l1.getStringCode(true);
+        StringBuilder invB = new StringBuilder(c1);
+        String c1inv = invB.reverse().toString();
+
+        String c2 = l2.getStringCode(true);
+        StringBuilder inv2B = new StringBuilder(c2);
+        String c2inv = inv2B.reverse().toString();
+
+        return c1.equals(c2)
+                || c1.equals(c2inv)
+                || c1inv.equals(c2)
+                || c1inv.equals(c2inv);
+    }
+
+    public boolean updateWith(LineCluster lc) {
+
+        if (isUpdated || lc.isUpdated) {
+            return false;
+        }
+        if (this.createTime == lc.createTime) {
+            return false;
+        }
+
+//        assert (this.createTime <= lc.createTime);
+        // TODO: 
+        // Check if the IDs are comparable.
+        if (hasSameCode(this, lc)) {
+            System.out.println("Same code found, " + lc.getStringCode(false));
+        } else {
+            return false;
+        }
+
+        // these points are used for update. They will not be used again.
+        this.setUpdated(true);
+        lc.setUpdated(true);
+
+        // mark the last update as the creation of the other point. 
+        this.updateTime = lc.createTime;
+        // not deleted soon, TODO: -> need better way
+        this.deletionTime = lc.createTime;
+
+        // delete the updating point (keep the existing one)
+        lc.toDelete = true;
+
+        checkAndSetID();
+
+        updateWithLineContents(lc);
+        return true;
+    }
+
+    private void updateWithLineContents(LineCluster lc) {
+
+        // Easy overkill update where all points are replaced.
+        this.clear();
+        this.addAll(lc);
+    }
+
+    private int id = NO_ID;
+    private static int count = 0;
+    private static int globalID = 1;
+
+    protected void checkAndSetID() {
+        // The touchPoint gets an ID, it is a grown up now. 
+        if (this.id == NO_ID) {
+            if (count == 0) {
+                globalID = 1;
+            }
+            this.id = globalID++;
+            count++;
+        }
     }
 
     @Override
@@ -533,8 +668,8 @@ public class LineCluster extends ArrayList<TrackedElement> implements Trackable 
 
     @Override
     public boolean isToRemove(int currentTime, int duration) {
-          return (currentTime - deletionTime) > duration;
-   }
+        return (currentTime - deletionTime) > duration;
+    }
 
     @Override
     public boolean isToDelete() {

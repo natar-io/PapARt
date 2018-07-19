@@ -28,9 +28,8 @@ import toxi.geom.Vec3D;
  *
  * @author Jeremy Laviole
  */
-public class TrackedPosition implements Trackable{
-    
-    
+public class TrackedPosition implements Trackable {
+
     /**
      * Global counter of tracked elements.
      */
@@ -48,9 +47,10 @@ public class TrackedPosition implements Trackable{
     protected int id = NO_ID;
 
     // time management
+    public static final int NO_TIME = -1;
     protected int updateTime;
     protected int deletionTime;
-    protected int createTime = -1;
+    protected int createTime = NO_TIME;
 
     protected boolean toDelete = false;
     public boolean isUpdated = false;
@@ -60,14 +60,15 @@ public class TrackedPosition implements Trackable{
     public static float filterFreq = 30f;
     public static float filterCut = 0.02f;
     public static float filterBeta = 0.2000f;
-    public static final int NO_TIME = -1;
+
     protected int NUMBER_OF_FILTERS = 3;
     protected int forgetTime;
     protected float maxDistance;
 
     /**
      * Create a trackedElement and force an ID to it.
-     * @param id 
+     *
+     * @param id
      */
     public TrackedPosition(int id) {
         this();
@@ -86,7 +87,7 @@ public class TrackedPosition implements Trackable{
         } catch (Exception e) {
             System.out.println("OneEuro Exception. Pay now." + e);
         }
-        
+
 //        // In test: global ID also for temporary values
 //        this.id = globalIDTemp++; 
 //        if(globalIDTemp == NO_ID){
@@ -213,7 +214,10 @@ public class TrackedPosition implements Trackable{
             return false;
         }
 
-        assert (this.createTime <= tp.createTime);
+//        assert (this.createTime <= tp.createTime);
+        if (this.createTime == tp.createTime) {
+            return false;
+        }
 
         // these points are used for update. They will not be used again.
         this.setUpdated(true);
@@ -228,8 +232,7 @@ public class TrackedPosition implements Trackable{
         tp.toDelete = true;
 
         checkAndSetID();
-        
-        
+
         if (tp instanceof TrackedDepthPoint) {
             ((TrackedDepthPoint) this).updateAdditionalElements((TrackedDepthPoint) tp);
         }
@@ -296,8 +299,8 @@ public class TrackedPosition implements Trackable{
     public boolean isObselete(int currentTime) {
         return (currentTime - updateTime) > forgetTime;
     }
-    
-    public void setForgetTime(int duration){
+
+    public void setForgetTime(int duration) {
         this.forgetTime = duration;
     }
 
@@ -405,7 +408,7 @@ public class TrackedPosition implements Trackable{
     @Override
     public void delete(int time) {
         this.toDelete = true;
-        TrackedElement.teCount--;
+        count--;
         this.deletionTime = time;
     }
 
@@ -435,16 +438,16 @@ public class TrackedPosition implements Trackable{
 
     @Override
     public boolean updateWith(Trackable tp) {
-        return updateWith((TrackedElement)(tp));
+        return updateWith((TrackedElement) (tp));
     }
 
     @Override
     public float getTrackingMaxDistance() {
         return this.maxDistance;
     }
- 
-    public void setMaxDistance(float dist){
+
+    public void setMaxDistance(float dist) {
         this.maxDistance = dist;
     }
-    
+
 }
