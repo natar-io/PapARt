@@ -39,7 +39,7 @@ import processing.core.PImage;
 public class ColorTracker {
 
     protected PaperScreen paperScreen;
-    protected final TrackedView trackedView;
+    protected TrackedView trackedView;
 
     protected PImage capturedImage;
 

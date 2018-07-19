@@ -34,7 +34,7 @@ public class TrackedPosition implements Trackable{
     /**
      * Global counter of tracked elements.
      */
-    public static int count = 0;
+    private static int count = 0;
 
     // protected PVector position... in DepthPoint
     protected PVector position = new PVector();
@@ -254,9 +254,9 @@ public class TrackedPosition implements Trackable{
     }
 
     /**
-     * Find a proper ID for this tracked Element
+     * Find a proper ID for this tracked position
      */
-    void checkAndSetID() {
+    protected void checkAndSetID() {
         // The touchPoint gets an ID, it is a grown up now. 
         if (this.id == NO_ID) {
             if (count == 0) {

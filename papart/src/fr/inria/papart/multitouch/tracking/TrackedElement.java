@@ -19,12 +19,8 @@
  */
 package fr.inria.papart.multitouch.tracking;
 
-import fr.inria.papart.multitouch.OneEuroFilter;
 import fr.inria.papart.multitouch.Touch;
 import fr.inria.papart.multitouch.detection.TouchDetection;
-import fr.inria.papart.multitouch.detection.TouchDetectionDepth;
-import processing.core.PVector;
-import toxi.geom.Vec3D;
 
 /**
  * Tracked element with a position and speed. The position can be filtered, the
@@ -38,7 +34,8 @@ public class TrackedElement extends TrackedPosition {
      * Global counter of tracked elements.
      */
     public static int teCount = 0;
-
+    private int globalID = 0;
+    
     /**
      * You can attach a value to a Tracked Element, it will be passed along
      * tracking.
@@ -90,6 +87,23 @@ public class TrackedElement extends TrackedPosition {
     @Override
     protected void updateAdditionalElements(TrackedElement tp) {
     }
+    
+    
+    /**
+     * Find a proper ID for this tracked position
+     */
+    @Override
+    protected void checkAndSetID() {
+        // The touchPoint gets an ID, it is a grown up now. 
+        if (this.id == NO_ID) {
+            if (teCount == 0) {
+                globalID = 1;
+            }
+            this.id = globalID++;
+            teCount++;
+        }
+    }
+
 
     public float getConfidence() {
         return confidence;

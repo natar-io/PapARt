@@ -27,6 +27,8 @@ import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.tracking.MarkerBoardInvalid;
 import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.utils.ARToolkitPlusUtils;
+import java.nio.ByteBuffer;
+
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.utils.WithSize;
 import java.util.ArrayList;
@@ -36,6 +38,7 @@ import processing.core.PApplet;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
+import redis.clients.jedis.Jedis;
 
 /**
  *
@@ -111,6 +114,58 @@ public class TrackedView implements WithSize {
         }
         cornersSet = true;
     }
+
+    byte[] imageData;
+
+    private void initMemory(int widthStep, int height, int nChannels, int bytePerChannel) {
+        imageData = new byte[nChannels * widthStep * height * bytePerChannel];
+    }
+
+    public void sendImage(Camera cam, Jedis redis, String channel, boolean set, boolean publish) {
+
+        ByteBuffer byteBuffer;
+
+        if (imageData == null) {
+            initMemory(imageWidthPx, imageHeightPx, 3, 1);
+//            initMemory(imageWidthPx, imageHeightPx, 3, 1);
+        }
+        // get the pixels from native memory
+        if (cam.getIplImage() == null) {
+            return;
+        }
+        IplImage img = this.getIplViewOf(cam);
+        byteBuffer = img.getByteBuffer();
+
+        byteBuffer.get(imageData);
+        String name = channel;
+        byte[] id = name.getBytes();
+        String time = Long.toString(cam.getTimeStamp());
+        sendParams(redis, channel);
+        if (set) {
+            redis.set(id, imageData);
+            redis.set((name + ":timestamp"), time);
+            redis.set((name + ":widthMM"), Float.toString(this.getCaptureSizeMM().x));
+            redis.set((name + ":heightMM"), Float.toString(this.getCaptureSizeMM().y));
+            redis.set((name + ":widthStep"), Integer.toString(img.widthStep()));
+//                log("Sending (SET) image to: " + output, "");
+        }
+        if (publish) {
+            redis.publish(id, imageData);
+//                log("Sending (PUBLISH) image to: " + output, "");
+        }
+
+    }
+    
+    private void sendParams(Jedis redis, String channel) {
+        redis.set(channel + ":width", Integer.toString(this.getImageWidthPx()));
+        redis.set(channel + ":height", Integer.toString(this.getImageHeightPx()));
+        redis.set(channel + ":widthMM", Float.toString(this.getCaptureSizeMM().x));
+        redis.set(channel + ":heightMM", Float.toString(this.getCaptureSizeMM().y));
+        redis.set(channel + ":channels", Integer.toString(3));
+        redis.set(channel + ":pixelformat", camera.getPixelFormat().toString());
+    }
+
+    
 
     public void addObjectImagePair(PVector object, PVector image) {
         screenPixelCoordinates.add(object);
@@ -231,7 +286,7 @@ public class TrackedView implements WithSize {
         this.mainImage = img;
         this.camera = camera;
         CvMat homography = computeHomography();
-        ImageUtils.remapImageIpl(homography, camera.getIplImage(), extractedIplImage);
+        ImageUtils.remapImageIpl(homography, img, extractedIplImage);
         return extractedIplImage;
     }
 
@@ -368,7 +423,7 @@ public class TrackedView implements WithSize {
 
         screenPixelCoordinates.clear();
         for (int i = 0; i < 4; i++) {
-            screenPixelCoordinates.add(camera.pdp.worldToPixelUnconstrained(corner3DPos[i])); 
+            screenPixelCoordinates.add(camera.pdp.worldToPixelUnconstrained(corner3DPos[i]));
 //            screenPixelCoordinates.add(camera.pdp.worldToPixel(corner3DPos[i], true));
         }
         cornersSet = true;
