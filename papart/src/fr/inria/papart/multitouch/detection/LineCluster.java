@@ -79,34 +79,34 @@ public class LineCluster extends ArrayList<TrackedElement> implements Trackable 
             }
         });
         
-        String code = "";
+        StringBuilder code = new StringBuilder();
         for (TrackedElement te : copy) {
             if (numeric) {
-                code += te.attachedValue;
+                code.append(Integer.toString(te.attachedValue));
             }
             else {
                 switch (te.attachedValue) {
                     case 0:
-                        code += "R";
+                        code.append("R");
                         break;
                     case 1:
-                        code += "B";
+                        code.append("B");
                         break;
                     case 2:
-                        code += "G";
+                        code.append("G");
                         break;
                     case 3:
-                        code += "Y";
+                        code.append("Y");
                         break;
                     case 4:
-                        code += "P";
+                        code.append("P");
                         break;
                     default:
                         break;
                 }
             }
         }
-        return code;
+        return code.toString();
     }
     
     public String getFlippedStringCode(boolean numeric) {
@@ -473,6 +473,8 @@ public class LineCluster extends ArrayList<TrackedElement> implements Trackable 
      */
     @Override
     public int getID() {
+        String stringCode = getStringCode(true);
+        
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
