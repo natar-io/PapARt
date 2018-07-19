@@ -121,6 +121,21 @@ public class LineCluster extends ArrayList<TrackedElement> implements Trackable 
         return sb.reverse().toString();
     }
 
+    public boolean isCode(String inputCode) {
+        boolean isNumeric = inputCode.contains("0")
+                || inputCode.contains("1")
+                || inputCode.contains("2")
+                || inputCode.contains("3")
+                || inputCode.contains("4")
+                || inputCode.contains("5");
+        
+          StringBuilder sb = new StringBuilder(this.getStringCode(isNumeric));
+          String c = sb.toString();
+        String inverse = sb.reverse().toString();
+
+        return inputCode.equals(c) || inputCode.equals(inverse);
+    }
+
     public TrackedElement[] getBorders() {
         TrackedElement[] borders = new TrackedElement[2];
         ArrayList<TrackedElement> copy = new ArrayList<>(this);
@@ -492,8 +507,8 @@ public class LineCluster extends ArrayList<TrackedElement> implements Trackable 
         if (filters == null) {
             initFilters();
         }
-          PVector p = this.position();
-       
+        PVector p = this.position();
+
         try {
             filteredPosition.x = (float) filters[0].filter(p.x, updateTime);
             filteredPosition.y = (float) filters[1].filter(p.y, updateTime);
@@ -611,9 +626,7 @@ public class LineCluster extends ArrayList<TrackedElement> implements Trackable 
 //        assert (this.createTime <= lc.createTime);
         // TODO: 
         // Check if the IDs are comparable.
-        if (hasSameCode(this, lc)) {
-            System.out.println("Same code found, " + lc.getStringCode(false));
-        } else {
+        if (!hasSameCode(this, lc)) {
             return false;
         }
 
