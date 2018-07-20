@@ -26,6 +26,7 @@ import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.PaperTouchScreen;
 import fr.inria.papart.procam.camera.Camera;
+import fr.inria.papart.procam.camera.CameraNectar;
 import fr.inria.papart.procam.camera.ProjectorAsCamera;
 import fr.inria.papart.procam.camera.TrackedView;
 import fr.inria.papart.procam.display.ARDisplay;
@@ -53,55 +54,25 @@ import tech.lity.rea.skatolo.gui.controllers.HoverButton;
  * @author Jeremy Laviole laviole@rea.lity.tech
  */
 import fr.inria.papart.procam.camera.CameraThread;
+import fr.inria.papart.procam.camera.SubCamera;
 import fr.inria.papart.procam.display.BaseDisplay;
 import static fr.inria.papart.utils.MathUtils.absd;
 import static fr.inria.papart.utils.MathUtils.constrain;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import static org.bytedeco.javacpp.RealSense.camera;
 import org.bytedeco.javacpp.opencv_imgcodecs;
 import static processing.core.PApplet.abs;
 import static processing.core.PApplet.split;
 import static processing.core.PConstants.CORNER;
 import static processing.core.PConstants.LEFT;
 import static processing.core.PConstants.RIGHT;
+import redis.clients.jedis.Jedis;
 import tech.lity.rea.colorconverter.ColorConverter;
 import tech.lity.rea.skatolo.gui.controllers.Button;
 import tech.lity.rea.skatolo.gui.controllers.Toggle;
 import toxi.geom.Plane;
 import toxi.geom.Vec3D;
-
-class TableTest extends PaperTouchScreen {
-
-    public void settings() {
-        try {
-            setDrawingSize(200, 200);
-//            loadMarkerBoard(Papart.markerFolder + "calib1.svg", 297, 210);
-            setDrawOnPaper();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setup() {
-        useManualLocation(true, Papart.getPapart().getTableLocation());
-    }
-
-    public void drawOnPaper() {
-//        setLocation(Papart.getPapart().getTableLocation());
-//        setLocation(-100, -100, 0);
-//        background(180, 20, 20);
-
-        stroke(180);
-        noFill();
-        for (int i = 0; i < 200; i += 10) {
-            line(0, i, drawingSize.x, i);
-        }
-        for (int i = 0; i < 200; i += 10) {
-            line(i, 0, i, drawingSize.y);
-        }
-//        fill(200, 200, 20);
-//        rect(0, 0, 50, 50);
-    }
-
-}
 
 public class MultiCalibrator extends PaperTouchScreen {
 
@@ -195,16 +166,9 @@ public class MultiCalibrator extends PaperTouchScreen {
         }
     }
 
-    public static TableTest tableTest = null;
-
     @Override
     public void setup() {
         try {
-
-            if (tableTest == null) {
-//                tableTest = new TableTest();
-//                tableTest.setDrawing(false);
-            }
             setDrawingFilter(0);
 //            setTrackingFilter(0, 0);
 //            planeProjCalib = new PlaneAndProjectionCalibration();
@@ -531,9 +495,15 @@ public class MultiCalibrator extends PaperTouchScreen {
             // Save also the 3D point from depth cam hopefully there are no fingers or objects.
             PMatrix3D extr = depthCameraDevice.getStereoCalibration().get();
             PVector depthPos = extr.mult(pos3D, new PVector());
-            
-            updateTouch();
+
             int depthPx = depthCameraDevice.getDepthCamera().getProjectiveDevice().worldToPixel(depthPos);
+
+            updateTouch();
+            System.out.println("DepthAnalysis: " + ((DepthTouchInput) touchInput).getDepthAnalysis());
+            System.out.println("DepthPoints: " + ((DepthTouchInput) touchInput).getDepthAnalysis().getDepthPoints());
+
+//            ((DepthTouchInput) touchInput).update();
+//            System.out.println("DepthPoints: " + ((DepthTouchInput) touchInput).getDepthAnalysis().getDepthPoints());
             Vec3D[] depthPoints = ((DepthTouchInput) touchInput).getDepthPoints();
 
             int w = depthCameraDevice.getDepthCamera().width();
@@ -582,8 +552,9 @@ public class MultiCalibrator extends PaperTouchScreen {
                 isCalibratingToggle.setState(false);
                 projectorView.clearObjectImagePairs();
             }
-            calibrateColors();
-
+            if (isColorEnabled) {
+                calibrateColors();
+            }
         } else {
             currentScreenPoint++;
         }
@@ -618,41 +589,103 @@ public class MultiCalibrator extends PaperTouchScreen {
 
         // Homography is ready
         // we can get images from it. 
-        for (int i = 0; i < nbScreenPoints; i++) {
+        // create nectar client to fetch poses.
+        boolean useNectar = false;
+        CameraNectar cam = null;
 
-            IplImage img = savedImages[i];
-            // Set the image in the projector
-            projectorAsCamera.grab(img);
+        if (cameraTracking instanceof SubCamera) {
+            SubCamera sub = (SubCamera) cameraTracking;
+            Camera main = sub.getMainCamera();
+            if (main instanceof CameraNectar) {
+                useNectar = true;
+                cam = (CameraNectar) main;
+            }
+        }
 
-            // Send to the thread, for pose estimation. 
-            projectorFakeThread.setImage(projectorAsCamera.getIplImage());
-            projectorFakeThread.setImage(projectorAsCamera.getIplImage());
-            projectorFakeThread.setImage(projectorAsCamera.getIplImage());
+        if (useNectar) {
+            projectorAsCamera.useNectar(true, cam, "projector0");
 
-            PMatrix3D projPos = getMarkerBoard().getTransfoMat(projectorAsCamera);
+            // Start the thread... 
+            projectorAsCamera.startMarkerTracking(nbScreenPoints, this);
 
-            // TODO: WARNING - IT requires 3 or 4 compute for it to work. 
-            // NO IDEA WHY. 
-            projectorFakeThread.compute();
-            projectorFakeThread.compute();
-            projectorFakeThread.compute();
-            projectorFakeThread.compute();
-            projectorFakeThread.compute();
-            projectorFakeThread.compute();
+            // send the images
+            for (int i = 0; i < nbScreenPoints; i++) {
+                IplImage img = savedImages[i];
 
-            // 5 Max and he found 8 !
+                projectorAsCamera.grab(img);
+                projectorAsCamera.sendImageToNectar();
+            }
+
+            // wait for the response 
+            while (!projectorAsCamera.allMarkersFound()) {
+                try {
+                    Thread.sleep(15);
+                    System.out.println("Waiting for markers...");
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(MultiCalibrator.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+
+            System.out.println("Markers found.");
+            for (int i = 0; i < nbScreenPoints; i++) {
+
+                IplImage img = savedImages[i];
+
+//                projectorAsCamera.grab(img);
+//                projectorAsCamera.setNectarImage(img);
+                getMarkerBoard().updateLocation(projectorAsCamera, img, projectorAsCamera.getMarkers(i));
+                PMatrix3D projPos = getMarkerBoard().getTransfoMat(projectorAsCamera);
+
+                opencv_imgcodecs.cvSaveImage("/home/ditrop/tmp/cam-" + i + ".bmp", img);
+                opencv_imgcodecs.cvSaveImage("/home/ditrop/tmp/proj-" + i + ".bmp", projectorAsCamera.getIplImage());
+                System.out.println("Saved " + "/home/ditrop/tmp/cam-" + i + ".bmp");
+                System.out.println("Saved " + "/home/ditrop/tmp/proj-" + i + ".bmp");
+                projPos.print();
+                snapshots.add(new ExtrinsicSnapshot(savedLocations[i],
+                        projPos, null));
+            }
+        } else {
+
+            for (int i = 0; i < nbScreenPoints; i++) {
+
+                IplImage img = savedImages[i];
+                // Set the image in the projector
+                projectorAsCamera.grab(img);
+
+                // Send Image for pose estimation to Nectar. 
+                // Send to the thread, for pose estimation. 
+                projectorFakeThread.setImage(projectorAsCamera.getIplImage());
+                projectorFakeThread.setImage(projectorAsCamera.getIplImage());
+                projectorFakeThread.setImage(projectorAsCamera.getIplImage());
+
+                PMatrix3D projPos = getMarkerBoard().getTransfoMat(projectorAsCamera);
+
+                System.out.println("Proj Pos:");
+                projPos.print();
+
+                // TODO: WARNING - IT requires 3 or 4 compute for it to work. 
+                // NO IDEA WHY. 
+                projectorFakeThread.compute();
+                projectorFakeThread.compute();
+                projectorFakeThread.compute();
+                projectorFakeThread.compute();
+                projectorFakeThread.compute();
+                projectorFakeThread.compute();
+
+                // 5 Max and he found 8 !
 //            DetectedMarker[] detectedMarkers = projectorAsCamera.getDetectedMarkers();
 //            System.out.println("Number of markers found: " + detectedMarkers.length);
 //            System.out.println("in (fake) Camera: " + projectorAsCamera);
-            projPos = getMarkerBoard().getTransfoMat(projectorAsCamera);
+                projPos = getMarkerBoard().getTransfoMat(projectorAsCamera);
 
-//            opencv_imgcodecs.cvSaveImage("/home/jiii/tmp/cam-" + i + ".bmp", img);
-//            opencv_imgcodecs.cvSaveImage("/home/jiii/tmp/proj-" + i + ".bmp", projectorAsCamera.getIplImage());
-//            System.out.println("Saved " + "/home/jiii/tmp/cam-" + i + ".bmp");
-//            System.out.println("Saved " + "/home/jiii/tmp/proj-" + i + ".bmp");
+                opencv_imgcodecs.cvSaveImage("/home/ditrop/tmp/cam-" + i + ".bmp", img);
+                opencv_imgcodecs.cvSaveImage("/home/ditrop/tmp/proj-" + i + ".bmp", projectorAsCamera.getIplImage());
+                System.out.println("Saved " + "/home/ditrop/tmp/cam-" + i + ".bmp");
+                System.out.println("Saved " + "/home/ditrop/tmp/proj-" + i + ".bmp");
 //            projPos.print();
-            snapshots.add(new ExtrinsicSnapshot(savedLocations[i],
-                    projPos, null));
+                snapshots.add(new ExtrinsicSnapshot(savedLocations[i],
+                        projPos, null));
+            }
         }
 
         ExtrinsicCalibrator calibrationExtrinsic = new ExtrinsicCalibrator(parent);
@@ -1283,6 +1316,12 @@ public class MultiCalibrator extends PaperTouchScreen {
         fill(255, 200, 30, 180);
         ellipse(CENTER_X, CENTER_Y, 15f, 15f);
 
+    }
+
+    private boolean isColorEnabled = true;
+
+    public void disableColor() {
+        this.isColorEnabled = false;
     }
 
     public void setColorOnly(boolean colorOnly) {
