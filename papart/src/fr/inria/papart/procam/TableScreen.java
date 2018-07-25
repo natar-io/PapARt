@@ -16,10 +16,11 @@
  * Public License along with this library; If not, see
  * <http://www.gnu.org/licenses/>.
  */
-
 package fr.inria.papart.procam;
 
 import fr.inria.papart.procam.camera.TrackedView;
+import fr.inria.papart.procam.display.BaseDisplay;
+import processing.core.PMatrix;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 
@@ -38,8 +39,9 @@ public class TableScreen extends PaperTouchScreen {
     }
 
     public TableScreen(float x, float y, float width, float height) {
-        this(new PVector(x,y), new PVector(width, height));
+        this(new PVector(x, y), new PVector(width, height));
     }
+
     public TableScreen(PVector loc, float width, float height) {
         this(loc, new PVector(width, height));
     }
@@ -53,14 +55,13 @@ public class TableScreen extends PaperTouchScreen {
     /**
      * Change the rotation of the screen.
      *
-     * @param r  in radians
+     * @param r in radians
      */
-
     public void setRotation(float r) {
         this.rotation = r;
         updateLocation();
     }
-    
+
     /**
      * Change the location relative to the table.
      *
@@ -81,8 +82,8 @@ public class TableScreen extends PaperTouchScreen {
     @Override
     public void setLocation(float x, float y, float z) {
         this.translation = new PVector(x, y, z);
-        updateLocation(); 
-   }
+        updateLocation();
+    }
 
     private void updateLocation() {
         this.location = table.get();
@@ -90,6 +91,25 @@ public class TableScreen extends PaperTouchScreen {
         this.location.rotate(rotation);
         this.useManualLocation(this.location);
         this.computeWorldToScreenMat(cameraTracking);
+    }
+    
+    @Override
+    public PMatrix3D getLocation(PMatrix3D trackedLocation) {
+        if(getDisplay() instanceof BaseDisplay){
+            return getLocationOnTable();
+        }
+        return getLocation(trackedLocation);
+    }
+        
+    public PMatrix3D getLocationOnTable() {
+        PMatrix3D m = new PMatrix3D(
+                1, 0, 0, 0,
+                0, 1, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1);
+        m.translate(translation.x, translation.y, translation.z);
+        m.rotate(rotation);
+        return m;
     }
 
 }

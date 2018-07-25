@@ -165,23 +165,30 @@ public class TUIOTouchInput extends TouchInput {
         TrackedElement tp = new TrackedElement();
         tp.setCreationTime(parent.millis());
         tp.forceID(getCursorID(tcur));
-        PVector v = getLocalPosition(tcur.getPosition());
-        tp.setPosition(v);
         return tp;
     }
 
     public void updateTuioObject(TuioObject tobj) {
         TrackedElement tp = createTouchPointFrom(tobj);
         TrackedElement known = tuioObjects.get(tobj.getSymbolID());
-             known.setUpdated(false);
+        TuioPoint tuioPoint = tobj.getPosition();
+        PVector v = getLocalPosition(tuioPoint);
+        tp.setPosition(v);
         known.updateWith(tp);
     }
 
     public void updateTuioCursor(TuioCursor tcur) {
         TrackedElement touchPoint = createTouchPointFrom(tcur);
+
+        TuioPoint tuioPoint = tcur.getPosition();
+        PVector v = getLocalPosition(tuioPoint);
+        touchPoint.setPosition(v);
+        
         TrackedElement known = tuioCursors.get(getCursorID(tcur));
-        known.setUpdated(false);
-        boolean up = known.updateWith(touchPoint);
+        known.updateWith(touchPoint);
+
+//        System.out.println("update cursor " + getCursorID(tcur) + " (" + tcur.getSessionID() + ") " + tcur.getX() + " " + tcur.getY()
+//                + " " + tcur.getMotionSpeed() + " " + tcur.getMotionAccel());
     }
 
     private PVector getLocalPosition(TuioPoint tuioPoint) {
@@ -189,7 +196,6 @@ public class TUIOTouchInput extends TouchInput {
         if (useScreen) {
             v.x = v.x * paperScreen.getDrawingSize().x;
             v.y = v.y * paperScreen.getDrawingSize().y;
-            System.out.println("Local: " + v);
         }
         return v;
     }
@@ -214,6 +220,7 @@ public class TUIOTouchInput extends TouchInput {
     public void refresh(TuioTime bundleTime) {
     }
 
+    @Override
     public Touch projectTouch(PaperScreen paperScreen, BaseDisplay display, TrackedElement e) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
