@@ -21,23 +21,15 @@ package fr.inria.papart.procam.camera;
 
 import org.bytedeco.javacv.FrameGrabber;
 
-import java.awt.*;
-import java.awt.image.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
-import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.opencv_core;
 import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;
-import org.bytedeco.javacpp.opencv_imgproc;
-import static org.bytedeco.javacpp.opencv_imgproc.COLOR_BGR2GRAY;
-import static org.bytedeco.javacpp.opencv_imgproc.COLOR_RGB2BGR;
 
 import org.openni.*;
 
@@ -97,21 +89,6 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
             depthCamera.setUndistort(false);
             depthStream.start();
         }
-
-//        grabber.start();
-//
-//        // Override the calibration... 
-//        if (useHardwareIntrinsics) {
-//            if (useColor) {
-//                useHarwareIntrinsics(colorCamera, grabber);
-//            }
-//            if (useIR) {
-//                useHarwareIntrinsics(IRCamera, grabber);
-//            }
-//            if (useDepth) {
-//                useHarwareIntrinsics(depthCamera, grabber);
-//            }
-//        }
     }
 
     private VideoStream initStream(PixelFormat format1,
@@ -297,18 +274,6 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
         device = Device.open(uri);
     }
 
-    int mMaxGray16Value;
-
-    private void calcMaxGray16Value(ByteBuffer gray16Buffer) {
-        while (gray16Buffer.remaining() > 0) {
-            int pixel = (int) gray16Buffer.getShort() & 0xFFFF;
-            if (pixel > mMaxGray16Value) {
-                mMaxGray16Value = pixel;
-            }
-        }
-        gray16Buffer.rewind();
-
-    }
 
     class FrameListener implements VideoStream.NewFrameListener {
 
