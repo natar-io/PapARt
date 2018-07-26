@@ -45,6 +45,8 @@ class LinePair {
 
 public class LineCluster extends ArrayList<TrackedElement> implements Trackable {
 
+    public static final LineCluster INVALID_CLUSTER = new LineCluster();
+
     public LineCluster() {
         super();
     }
@@ -78,7 +80,7 @@ public class LineCluster extends ArrayList<TrackedElement> implements Trackable 
     }
 
     public String getStringCode(boolean numeric) {
-        ArrayList<TrackedElement> copy = new ArrayList<>(this);
+        LineCluster copy = new LineCluster(this);
         PVector border = this.getBorders()[0].getPosition();
         Collections.sort(copy, new Comparator<TrackedElement>() {
             @Override
@@ -87,8 +89,12 @@ public class LineCluster extends ArrayList<TrackedElement> implements Trackable 
             }
         });
 
+        return getCodeFromSorted(copy, numeric);
+    }
+
+    private String getCodeFromSorted(LineCluster line, boolean numeric) {
         StringBuilder code = new StringBuilder();
-        for (TrackedElement te : copy) {
+        for (TrackedElement te : line) {
             if (numeric) {
                 code.append(Integer.toString(te.attachedValue));
             } else {
@@ -122,18 +128,47 @@ public class LineCluster extends ArrayList<TrackedElement> implements Trackable 
     }
 
     public boolean isCode(String inputCode) {
-        boolean isNumeric = inputCode.contains("0")
+        StringBuilder sb = new StringBuilder(this.getStringCode(isNumeric(inputCode)));
+        String c = sb.toString();
+        String inverse = sb.reverse().toString();
+
+        return inputCode.equals(c) || inputCode.equals(inverse);
+    }
+
+    private boolean isNumeric(String inputCode) {
+        return inputCode.contains("0")
                 || inputCode.contains("1")
                 || inputCode.contains("2")
                 || inputCode.contains("3")
                 || inputCode.contains("4")
                 || inputCode.contains("5");
-        
-          StringBuilder sb = new StringBuilder(this.getStringCode(isNumeric));
-          String c = sb.toString();
-        String inverse = sb.reverse().toString();
+    }
 
-        return inputCode.equals(c) || inputCode.equals(inverse);
+    public LineCluster asCode(String lineCode) {
+
+        LineCluster out = new LineCluster(this);
+
+        PVector border = this.getBorders()[0].getPosition();
+        Collections.sort(out, new Comparator<TrackedElement>() {
+            @Override
+            public int compare(TrackedElement t1, TrackedElement t2) {
+                return Float.compare(t2.getPosition().dist(border), t1.getPosition().dist(border));
+            }
+        });
+
+        String c1 = getCodeFromSorted(out, isNumeric(lineCode));
+
+        if (lineCode.equals(c1)) {
+            return out;
+        }
+        Collections.reverse(out);
+        String c2 = getCodeFromSorted(out, isNumeric(lineCode));
+        if (lineCode.equals(c2)) {
+            return out;
+        }
+
+        System.err.println("LineCluster: asCode, code mismatch.");
+        return new LineCluster();
     }
 
     public TrackedElement[] getBorders() {
@@ -237,7 +272,7 @@ public class LineCluster extends ArrayList<TrackedElement> implements Trackable 
         }
     }
 
-    void computeAngleVectors() {
+    private double computeAngleVectors() {
 
         PVector directions = new PVector();
         PVector p0 = this.get(0).getPosition().get();
@@ -250,20 +285,44 @@ public class LineCluster extends ArrayList<TrackedElement> implements Trackable 
             directions.add(d.x, d.y);
         }
 //         System.out.println("d: " + directions);
-        angle = atan2(directions.y, directions.x);
+        return atan2(directions.y, directions.x);
+    }
+
+    public double computeAngleBorders() {
+        TrackedElement[] borders = getBorders();
+        PVector first = borders[0].getPosition().copy();
+        PVector last = borders[1].getPosition().copy();
+        last.sub(first);
+        double r = Math.atan2(last.y, last.x);
+        return r;
+    }
+
+    public double computeAngleLimits() {
+        TrackedElement[] borders = getBorders();
+        PVector first = this.get(0).getPosition().copy();
+        PVector last = this.get(this.size() - 1).getPosition().copy();
+        last.sub(first);
+        double r = Math.atan2(last.y, last.x);
+        return r;
     }
 
     public double e0, e1;
 
     public double angle() {
-        if (angle != Float.MIN_VALUE) {
-            return angle;
-        } else {
-//            computeAnglePCA();
-            computeAngleVectors();
-        }
+//        angle = computeAngleVectors();
+        angle = computeAngleBorders();
         return angle;
     }
+
+//    public double angle() {
+//        if (angle != Float.MIN_VALUE) {
+//            return angle;
+//        } else {
+////            computeAnglePCA();
+//            computeAngleVectors();
+//        }
+//        return angle;
+//    }
 
 //    @Override
     public boolean equals(Object other) {
