@@ -126,6 +126,7 @@ public class CameraNectar extends CameraRGBIRDepth {
 
     private void setMarkers(byte[] message) {
         currentMarkers = parseMarkerList(new String(message));
+        lastMarkers = currentMarkers;
 //        System.out.println("Markers found: " + currentMarkers.length);
     }
 
