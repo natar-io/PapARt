@@ -272,7 +272,7 @@ public class LineCluster extends ArrayList<TrackedElement> implements Trackable 
         }
     }
 
-    private double computeAngleVectors() {
+    public double computeAngleVectors() {
 
         PVector directions = new PVector();
         PVector p0 = this.get(0).getPosition().get();
@@ -658,6 +658,8 @@ public class LineCluster extends ArrayList<TrackedElement> implements Trackable 
         return updateWith((LineCluster) tp);
     }
 
+    // TODO: match previous previous points with current ones, 
+    // If most of them are the same, it is the same cluster.
     public static boolean hasSameCode(LineCluster l1, LineCluster l2) {
         String c1 = l1.getStringCode(true);
         StringBuilder invB = new StringBuilder(c1);
