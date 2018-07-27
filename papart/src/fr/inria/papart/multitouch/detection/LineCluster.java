@@ -25,6 +25,7 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import static processing.core.PApplet.abs;
 import static processing.core.PApplet.atan2;
+import processing.core.PMatrix2D;
 import processing.core.PVector;
 
 /**
@@ -363,6 +364,97 @@ public class LineCluster extends ArrayList<TrackedElement> implements Trackable 
 //        hash = 83 * hash + Objects.hashCode(this.this);
 //        return hash;
 //    }
+    
+    public static final PVector INVALID_VECTOR = new PVector();
+    
+    public static PVector findRotationTranslationFrom(ArrayList<LineCluster> lines, ArrayList<String> lineCode, ArrayList<PVector> linePositions) {
+        if (lines.isEmpty()) {
+//            return new PMatrix3D();
+            return INVALID_VECTOR;
+        }
+
+        ArrayList<LineCluster> sortedLines = new ArrayList<>();
+
+//  Get all the lines, sorted code        
+        lineCode.forEach((code) -> sortedLines.add(findMatchingLine(code, lines)));
+
+        PVector averagePosition = new PVector();
+        double averageRotation = 0;
+        int nbValidPositions = 0;
+
+//        PVector[] imagePoints = new PVector[sortedLines.size()];
+//        PVector[] objectPoints = new PVector[sortedLines.size()];
+//        float[] rotations = new float[sortedLines.size()];
+        int nbPI = 0;
+
+        for (int i = 0; i < sortedLines.size(); i++) {
+            if (sortedLines.get(i) == LineCluster.INVALID_CLUSTER) {
+                continue;
+            }
+            LineCluster line = sortedLines.get(i);
+//            PVector p = line.getPosition().copy();
+//            p.sub(positionOffset);
+            double r = line.computeAngleLimits();
+//            rotations[nbValidPositions] = (float) r;
+
+//            imagePoints[nbValidPositions] = p;
+//            objectPoints[nbValidPositions] = positionOffset;
+            if (Math.abs(r) > Math.PI * 2 - 0.8 || r < 0.8) {
+                r = r + Math.PI;
+                nbPI++;
+            }
+            averageRotation += r;
+
+            // Warning, rotations close to PI and -PI could be the same
+            nbValidPositions++;
+        }
+
+        averageRotation = averageRotation - Math.PI * nbPI;
+        averageRotation = averageRotation / nbValidPositions;
+
+        if (nbValidPositions == 0) {
+            return INVALID_VECTOR;
+        }
+
+        for (int i = 0; i < sortedLines.size(); i++) {
+            if (sortedLines.get(i) == LineCluster.INVALID_CLUSTER) {
+                continue;
+            }
+            LineCluster line = sortedLines.get(i);
+
+            PMatrix2D transfo = new PMatrix2D();
+            PVector positionOffset = linePositions.get(i);
+
+//            PVector p = line.getPosition().copy();
+            PVector p = line.get(0).getPosition().copy();
+            transfo.translate(p.x, p.y);
+            transfo.rotate((float) averageRotation);
+            transfo.translate(-positionOffset.x, -positionOffset.y);
+
+            PVector pos = new PVector(transfo.m02, transfo.m12);
+            averagePosition.add(pos);
+//            System.out.println("pos: " + transfo.m02 + " " + transfo.m12);
+        }
+
+//        HomographyCreator hc = new HomographyCreator(2, 2, nbValidPositions);
+//        for (int i = 0; i < nbValidPositions; i++) {
+//            hc.addPoint(imagePoints[i], objectPoints[i]);
+//        }
+//        if(hc.isComputed()){
+//            HomographyCalibration homography = hc.getHomography();
+//
+//            // Matrix!
+//            return homography.getHomography();
+//        }
+//        return new PMatrix3D();
+//        if (nbValidPositions == 0) {
+//            return new PVector();
+//        }
+        averagePosition.mult(1f / nbValidPositions);
+        averagePosition.z = (float) averageRotation;
+        return averagePosition;
+    }
+    
 
     /**
      * TODO:
