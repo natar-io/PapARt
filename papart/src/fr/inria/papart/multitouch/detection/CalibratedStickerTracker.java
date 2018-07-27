@@ -27,6 +27,8 @@ import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.camera.TrackedView;
 import java.util.ArrayList;
+import java.util.List;
+import static java.util.stream.Collectors.toList;
 import processing.core.PApplet;
 import processing.core.PImage;
 import processing.core.PVector;
@@ -204,21 +206,19 @@ public class CalibratedStickerTracker extends ColorTracker {
 //        trackedElements.addAll(newStickers);
         // Tracking must be enabled for touch with skatolo. 
         // TODO: track by color, then merge again.
-        
         ArrayList<TrackedElement> all = new ArrayList<>();
         for (int i = 0; i < numberOfRefs; i++) {
 
             ArrayList<TrackedElement> current = getColor(trackedElements, i);
             TouchPointTracker.trackPoints(current, getColor(newStickers, i), time);
             TouchPointTracker.filterPositions(current, time);
-            
+
             all.addAll(current);
         }
 
         trackedElements.clear();
         trackedElements.addAll(all);
-    
-        
+
 //        TouchPointTracker.trackPoints(trackedElements, newStickers, time);
 //        TouchPointTracker.filterPositions(trackedElements, time);
         return trackedElements;
@@ -226,11 +226,17 @@ public class CalibratedStickerTracker extends ColorTracker {
 
     public ArrayList<TrackedElement> getColor(ArrayList<TrackedElement> source, int id) {
         ArrayList<TrackedElement> output = new ArrayList<>();
-        for (TrackedElement t : source) {
-            if (t.attachedValue == id) {
-                output.add(t);
-            }
-        }
+
+        source.stream()
+                .filter((t) -> t.attachedValue == id)
+                .forEach((t) -> output.add(t));
+
+//        ArrayList<TrackedElement> output = new ArrayList<>();
+//        for (TrackedElement t : source) {
+//            if (t.attachedValue == id) {
+//                output.add(t);
+//            }
+//        }
         return output;
     }
 
