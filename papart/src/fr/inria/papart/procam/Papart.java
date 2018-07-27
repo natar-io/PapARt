@@ -53,6 +53,8 @@ import fr.inria.papart.procam.camera.CannotCreateCameraException;
 import fr.inria.papart.tracking.DetectedMarker;
 import fr.inria.papart.utils.MathUtils;
 import java.io.File;
+import java.util.Arrays;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import processing.core.PApplet;
@@ -109,7 +111,7 @@ public class Papart {
     public static String homographyCalib = calibrationFolder + "HomographyCalibration.xml";
     public static String planeAndProjectionCalib = calibrationFolder + "PlaneProjectionCalibration.xml";
     public static String touchColorCalib = calibrationFolder + "TouchColorCalibration.xml";
-            public static String colorZoneCalib = calibrationFolder + "ColorZoneCalibration.xml";
+    public static String colorZoneCalib = calibrationFolder + "ColorZoneCalibration.xml";
     public static String touchBlinkCalib = calibrationFolder + "TouchBlinkCalibration.xml";
 
     public static String touchCalib = calibrationFolder + "Touch2DCalibration.xml";
@@ -146,8 +148,8 @@ public class Papart {
     private DepthCameraDevice depthCameraDevice;
 
     /**
-     * Create the main PapARt object, this object is used to hande calibration files 
-     * and automatic creation of cameras and projectors. 
+     * Create the main PapARt object, this object is used to hande calibration
+     * files and automatic creation of cameras and projectors.
      *
      * @param applet
      */
@@ -210,17 +212,18 @@ public class Papart {
     }
 
     public MultiCalibrator multiCalibrator;
+
     public void multiCalibration() {
         multiCalibration(false);
     }
-    
+
     public void multiCalibration(boolean colorOnly) {
 
         try {
 
             if (multiCalibrator == null) {
                 multiCalibrator = new MultiCalibrator();
-               
+
             } else {
                 if (multiCalibrator.isActive()) {
                     multiCalibrator.stopCalib();
@@ -367,7 +370,6 @@ public class Papart {
 //            papart.shouldSetWindowSize = true;
 //            papart.registerPost();
 //        }
-
         try {
             papart.initCamera();
         } catch (CannotCreateCameraException ex) {
@@ -388,9 +390,7 @@ public class Papart {
     public static Papart projection2D(PApplet applet) {
 
 //        ScreenConfiguration screenConfiguration = getDefaultScreenConfiguration(applet);
-
 //        removeFrameBorder(applet);
-
         Papart papart = new Papart(applet);
 
 //        papart.frameSize.set(screenConfiguration.getProjectionScreenWidth(),
@@ -398,7 +398,6 @@ public class Papart {
 //        papart.shouldSetWindowLocation = true;
 //        papart.shouldSetWindowSize = true;
 //        papart.registerPost();
-
         return papart;
     }
 
@@ -819,7 +818,7 @@ public class Papart {
         updateDepthCameraDeviceExtrinsics();
         return (DepthTouchInput) this.getTouchInput();
     }
-    
+
     public void loadIRTouchInput() {
         try {
             initCamera();
@@ -919,12 +918,12 @@ public class Papart {
 
         HomographyCalibration hc = new HomographyCalibration();
         hc.loadFrom(applet, Papart.homographyCalib);
-        
+
         PlaneCalibration pc = new PlaneCalibration();
         pc.loadFrom(applet, Papart.planeCalib);
         calibration.setPlane(pc);
         calibration.setHomography(hc);
-        
+
         DepthTouchInput depthTouchInput
                 = new DepthTouchInput(this.applet,
                         depthCameraDevice,
@@ -934,7 +933,6 @@ public class Papart {
 
         // UPDATE: default is hand.
         // depthTouchInput.initHandDetection();
-
         this.touchInput = depthTouchInput;
         touchInitialized = true;
     }
@@ -973,6 +971,7 @@ public class Papart {
         calib.loadFrom(applet, Papart.touchCalib);
         return calib;
     }
+
     public PlanarTouchCalibration getDefaultObjectTouchCalibration() {
         PlanarTouchCalibration calib = new PlanarTouchCalibration();
         calib.loadFrom(applet, Papart.objectTouchCalib);
@@ -1063,6 +1062,15 @@ public class Papart {
                 || cameraTracking.getDetectedMarkers() == null) {
             return null;
         }
+
+//        Optional<DetectedMarker> marker = Arrays.asList(cameraTracking.getDetectedMarkers())
+//                .stream()
+//                .filter((m) -> m.id == markerID)
+//                .findFirst(); 
+//        
+//        if(marker != null){
+//            return MathUtils.compute3DPos(marker.get(), markerWidth, cameraTracking);
+//        }
 
         for (DetectedMarker marker : cameraTracking.getDetectedMarkers()) {
             if (marker.id == markerID) {

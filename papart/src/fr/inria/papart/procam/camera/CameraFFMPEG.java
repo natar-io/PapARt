@@ -44,7 +44,7 @@ public class CameraFFMPEG extends Camera {
         converter = new OpenCVFrameConverter.ToIplImage();
     }
     
-    private void startVideo() {
+    public void startVideo() {
         FFmpegFrameGrabber grabberFF = new FFmpegFrameGrabber(this.cameraDescription);
         try {
             this.setPixelFormat(PixelFormat.BGR);

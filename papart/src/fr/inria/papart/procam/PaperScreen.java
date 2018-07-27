@@ -877,7 +877,7 @@ public class PaperScreen extends DelegatedGraphics {
     boolean useLowPass = false;
 
     public void initTouchListFromMarkers(int min, int max, int markerSize, boolean useLowPass) {
-        nbIds = max - min;
+        nbIds = max - min +1;
         filters = new OneEuroFilter[nbIds * filterPerColor];
         filters2 = new LowPassFilter[nbIds * filterPerColor];
         minMarkerID = min;
@@ -897,14 +897,17 @@ public class PaperScreen extends DelegatedGraphics {
     }
 
     private boolean validID(int id) {
-        return id > minMarkerID && id < maxMarkerID;
+        return id >= minMarkerID && id <= maxMarkerID;
     }
 
+    
     public TouchList getTouchListFromMarkers() {
         Papart papart = Papart.getPapart();
         Arrays.fill(filtered, false);
 
-        DetectedMarker[] markers = Papart.getPapart().getMarkerList();
+        DetectedMarker[] markers = getCameraTracking().getDetectedMarkers();
+        
+        // Update the positions.
         for (DetectedMarker marker : markers) {
             if (validID(marker.id)) {
                 PMatrix3D mat = papart.getMarkerMatrix(marker.id, markerSize);
