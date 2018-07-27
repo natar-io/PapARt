@@ -34,7 +34,7 @@ public class TrackedElement extends TrackedPosition {
      * Global counter of tracked elements.
      */
     public static int teCount = 0;
-    private int globalID = 0;
+    private static int globalID = 0;
     
     /**
      * You can attach a value to a Tracked Element, it will be passed along
