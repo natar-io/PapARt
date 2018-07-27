@@ -171,6 +171,23 @@ public class LineCluster extends ArrayList<TrackedElement> implements Trackable 
         return new LineCluster();
     }
 
+    /**
+     * 
+     * Get the matching line, sorted is the correct order.
+     * 
+     * @param lineCode  Code, like "BBG" or "001"
+     * @param lines  List of lines
+     * @return the line, or LineCluster.INVALID_CLUSTER.
+     */
+    public static LineCluster findMatchingLine(String lineCode, ArrayList<LineCluster> lines) {
+        for (LineCluster line : lines) {
+            if (line.isCode(lineCode)) {
+                return line.asCode(lineCode);
+            }
+        }
+        return LineCluster.INVALID_CLUSTER;
+    }
+
     public TrackedElement[] getBorders() {
         TrackedElement[] borders = new TrackedElement[2];
         ArrayList<TrackedElement> copy = new ArrayList<>(this);
@@ -323,7 +340,6 @@ public class LineCluster extends ArrayList<TrackedElement> implements Trackable 
 //        }
 //        return angle;
 //    }
-
 //    @Override
     public boolean equals(Object other) {
 //        boolean c1 = ((LineCluster) other).containsAll(this);

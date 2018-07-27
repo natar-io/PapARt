@@ -874,10 +874,11 @@ public class PaperScreen extends DelegatedGraphics {
     float filterBeta = 0.2000f;
     int minMarkerID, maxMarkerID;
     int nbIds;
+    public int longTime = 2000;
     boolean useLowPass = false;
 
     public void initTouchListFromMarkers(int min, int max, int markerSize, boolean useLowPass) {
-        nbIds = max - min +1;
+        nbIds = max - min + 1;
         filters = new OneEuroFilter[nbIds * filterPerColor];
         filters2 = new LowPassFilter[nbIds * filterPerColor];
         minMarkerID = min;
@@ -900,13 +901,12 @@ public class PaperScreen extends DelegatedGraphics {
         return id >= minMarkerID && id <= maxMarkerID;
     }
 
-    
     public TouchList getTouchListFromMarkers() {
         Papart papart = Papart.getPapart();
         Arrays.fill(filtered, false);
 
         DetectedMarker[] markers = getCameraTracking().getDetectedMarkers();
-        
+
         // Update the positions.
         for (DetectedMarker marker : markers) {
             if (validID(marker.id)) {
@@ -915,15 +915,23 @@ public class PaperScreen extends DelegatedGraphics {
                     PVector pos = papart.projectPositionTo(mat, this);
                     try {
 
-                        if (useLowPass) {
-                            pos.x = (float) filters2[(marker.id - minMarkerID) * filterPerColor].filter(pos.x);
-                            pos.y = (float) filters2[(marker.id - minMarkerID) * filterPerColor + 1].filter(pos.y);
-                            pos.z = (float) filters2[(marker.id - minMarkerID) * filterPerColor + 2].filter(pos.z);
-                        } else {
-                            pos.x = (float) filters[(marker.id - minMarkerID) * filterPerColor].filter(pos.x);
-                            pos.y = (float) filters[(marker.id - minMarkerID) * filterPerColor + 1].filter(pos.y);
-                            pos.z = (float) filters[(marker.id - minMarkerID) * filterPerColor + 2].filter(pos.z);
+                        int nbUpdates = 1;
+                        // Teleport when new
+                        if (parent.millis() - lastColorSeen[marker.id - minMarkerID] > longTime) {
+                            nbUpdates = 100;
+                        }
 
+                        for (int i = 0; i < nbUpdates; i++) {
+                            PVector p2 = new PVector(); // ignored
+                            if (useLowPass) {
+                                p2.x = (float) filters2[(marker.id - minMarkerID) * filterPerColor].filter(pos.x);
+                                p2.y = (float) filters2[(marker.id - minMarkerID) * filterPerColor + 1].filter(pos.y);
+                                p2.z = (float) filters2[(marker.id - minMarkerID) * filterPerColor + 2].filter(pos.z);
+                            } else {
+                                p2.x = (float) filters[(marker.id - minMarkerID) * filterPerColor].filter(pos.x);
+                                p2.y = (float) filters[(marker.id - minMarkerID) * filterPerColor + 1].filter(pos.y);
+                                p2.z = (float) filters[(marker.id - minMarkerID) * filterPerColor + 2].filter(pos.z);
+                            }
                         }
                         lastColorSeen[marker.id - minMarkerID] = parent.millis();
                         filtered[marker.id - minMarkerID] = true;
@@ -961,7 +969,7 @@ public class PaperScreen extends DelegatedGraphics {
         TouchList touchList = new TouchList();
         for (int i = 0; i < nbIds; i++) {
 
-            if (lastColorSeen[i] > 0) {
+            if (lastColorSeen[i] > 0 && parent.millis() - lastColorSeen[i] < longTime) {
                 Touch t = new Touch();
 
                 if (useLowPass) {
@@ -984,15 +992,17 @@ public class PaperScreen extends DelegatedGraphics {
 
     // TUIO Touch experimental again.
     private TUIOTouchInput localTUIO;
+
     /**
      * Connect to TUIO server. The input gets transformed to this PaperScreen.
+     *
      * @param server
-     * @param port 
+     * @param port
      */
-    public void connectLocalTUIO(int port){
-       localTUIO = new TUIOTouchInput(parent, this, port);
+    public void connectLocalTUIO(int port) {
+        localTUIO = new TUIOTouchInput(parent, this, port);
     }
-    
+
     public TouchList getLocalTUIOTouchList() {
         return localTUIO.getTouch();
     }
@@ -1004,11 +1014,10 @@ public class PaperScreen extends DelegatedGraphics {
 //    public void connectGloalTUIO(String server, int port){
 //        Papart.getPapart().loadTouchInputTUIO();
 //    }
-    
+
     public TouchList getTouchList(TUIOTouchInput touchInput) {
         return touchInput.projectTouchToScreen(this, getDisplay());
     }
-    
 
     ////////////////////////
     // Location handling. //
@@ -1905,10 +1914,13 @@ public class PaperScreen extends DelegatedGraphics {
     }
 
     class TouchKiller implements TouchPointEventHandler {
+
         public Touch touch;
+
         public TouchKiller(Touch t) {
             this.touch = t;
         }
+
         @Override
         public void delete() {
             JSONObject ob = new JSONObject();
