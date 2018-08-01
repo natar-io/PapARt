@@ -40,6 +40,7 @@ public class CameraNectar extends CameraRGBIRDepth {
     public int DEFAULT_REDIS_PORT = 6379;
     private DetectedMarker[] currentMarkers;
     Jedis redisGet;
+    private Jedis timeRedis;
 
     protected CameraNectar(String cameraName) {
         this.cameraDescription = cameraName;
@@ -75,7 +76,7 @@ public class CameraNectar extends CameraRGBIRDepth {
 
     private void startRGB() {
         Jedis redis = createConnection();
-
+        startTimeConnection();
         int w = Integer.parseInt(redis.get(cameraDescription + ":width"));
         int h = Integer.parseInt(redis.get(cameraDescription + ":height"));
         String format = redis.get(cameraDescription + ":pixelformat");
@@ -92,14 +93,21 @@ public class CameraNectar extends CameraRGBIRDepth {
             new RedisThread(redis, new ImageListener(colorCamera.getPixelFormat()), cameraDescription).start();
         }
     }
-    
-    public Jedis createConnection(){
+
+    private void startTimeConnection() {
+        if (timeRedis != null) {
+            return;
+        }
+        timeRedis = createConnection();
+    }
+
+    public Jedis createConnection() {
         return new Jedis(DEFAULT_REDIS_HOST, DEFAULT_REDIS_PORT);
     }
 
     private void startDepth() {
         Jedis redis2 = new Jedis(DEFAULT_REDIS_HOST, DEFAULT_REDIS_PORT);
-
+        startTimeConnection();
         String v = redis2.get(cameraDescription + ":depth:width");
         if (v != null) {
 
@@ -194,7 +202,16 @@ public class CameraNectar extends CameraRGBIRDepth {
         this.notifyObservers("image");
     }
 
+//    private int firstTouchUpdate = 0;
+//    private long firstImageTime = 0;
+//
+//    private int lastTouchUpdate = 0;
+//    private long lastImageTime = 0;
+
     protected void setDepthImage(byte[] message) {
+        // If the tracking is too slow, we drop frames.
+//        int now = parent.millis();
+//        long newImage = Long.parseLong(this.timeRedis.get(cameraDescription + ":depth:raw:timestamp"));
         int iplDepth = IPL_DEPTH_8U;
         int channels = 2;
 
