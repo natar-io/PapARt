@@ -128,11 +128,8 @@ public class Papart {
     protected float zFar = 6000;
 
     private final PApplet applet;
-    private final Class appletClass;
 
-    private boolean displayInitialized;
     private boolean cameraInitialized;
-    private boolean touchInitialized;
 
     private BaseDisplay display;
     private ARDisplay arDisplay;
@@ -154,12 +151,9 @@ public class Papart {
      * @param applet
      */
     public Papart(Object applet) {
-        this.displayInitialized = false;
         this.cameraInitialized = false;
-        this.touchInitialized = false;
         this.applet = (PApplet) applet;
 
-        this.appletClass = applet.getClass();
         // TODO: singleton -> Better implementation.
         if (Papart.singleton == null) {
             Papart.singleton = this;
@@ -754,7 +748,6 @@ public class Papart {
         arDisplay = projector;
         display = projector;
         projector.init();
-        displayInitialized = true;
         frameSize.set(projector.getWidth(), projector.getHeight());
     }
 
@@ -772,7 +765,6 @@ public class Papart {
         arDisplay.init();
         this.display = arDisplay;
         frameSize.set(arDisplay.getWidth(), arDisplay.getHeight());
-        displayInitialized = true;
     }
 
     @Deprecated
@@ -788,7 +780,6 @@ public class Papart {
         display.setFrameSize(applet.width, applet.height);
         display.setDrawingSize(applet.width, applet.height);
         display.init();
-        displayInitialized = true;
     }
 
     private void checkInitialization() {
@@ -934,7 +925,6 @@ public class Papart {
         // UPDATE: default is hand.
         // depthTouchInput.initHandDetection();
         this.touchInput = depthTouchInput;
-        touchInitialized = true;
     }
 
     private void loadIRTouch() {
@@ -945,7 +935,6 @@ public class Papart {
                 = new ColorTouchInput(this.applet, ((CameraRGBIRDepth) cameraTracking).getIRCamera());
         this.touchInput = colorTouchInput;
         cameraTracking.setTouchInput(colorTouchInput);
-        touchInitialized = true;
     }
 
     public PlanarTouchCalibration getDefaultColorTouchCalibration() {
@@ -1229,7 +1218,6 @@ public class Papart {
     }
 
     public void setDisplay(BaseDisplay display) {
-        displayInitialized = true;
         this.display = display;
     }
 

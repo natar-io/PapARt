@@ -91,7 +91,7 @@ public class LibraryUtils {
         // Sketchbook env variable -- Developpers.
         String sketchbook = System.getenv("SKETCHBOOK");
         if (sketchbook != null) {
-        System.out.println("Papart data path: " + sketchbook + "/libraries/" + LIBRARY_NAME + "/data");
+            System.out.println("Papart data path: " + sketchbook + "/libraries/" + LIBRARY_NAME + "/data");
             return sketchbook + "/libraries/" + LIBRARY_NAME + "/data";
         }
 //         Home env variable -- Linux / OSX.
@@ -136,7 +136,7 @@ public class LibraryUtils {
         // Either there is a data folder, or it is in a subfolder
 //        File data1 = new File(f.getAbsolutePath() + "/data");
         File data2 = new File(f.getParentFile().getAbsolutePath() + "/data");
-        
+
         if (data2.exists()) {
             System.out.println("Papart data path: " + data2.getAbsolutePath());
             return data2.getAbsolutePath();
@@ -147,38 +147,36 @@ public class LibraryUtils {
         return "";
     }
 
-    public static String getLibrariesFolder() {
-        // This is used, as Papart classes are often linked to another folder...
-//        URL main = Matrix4x4.class.getResource("Matrix4x4.class");
-        URL main = Papart.class.getResource("Papart.class");
-        String tmp = main.getPath();
-//        System.out.println("path  " + tmp);
-        // its in a jar
-        if (tmp.contains("!")) {
-            tmp = tmp.substring(0, tmp.indexOf('!'));
-            tmp = tmp.replace("file:", "");
-            //        tmp = tmp.replace("file:/", "");  TODO: OS check ?
-        }
-        File f = new File(tmp);
-        if (!f.exists()) {
-            System.err.println("Error in loading the Sketchbook folder.");
-        }
-        // if the file is within a library/lib folder
-        if (f.getParentFile().getAbsolutePath().endsWith("/lib")) {
-            //     pathToSketchbook/libraries/myLib/library/lib/myLib.jar
-            f = f.getParentFile().getParentFile().getParentFile().getParentFile();
-        } else {
-            //     pathToSketchbook/libraries/myLib/library/myLib.jar
-            f = f.getParentFile().getParentFile().getParentFile();
-        }
-        return f.getAbsolutePath();
-    }
-
+//    public static String getLibrariesFolder() {
+//        // This is used, as Papart classes are often linked to another folder...
+////        URL main = Matrix4x4.class.getResource("Matrix4x4.class");
+//        URL main = Papart.class.getResource("Papart.class");
+//        String tmp = main.getPath();
+////        System.out.println("path  " + tmp);
+//        // its in a jar
+//        if (tmp.contains("!")) {
+//            tmp = tmp.substring(0, tmp.indexOf('!'));
+//            tmp = tmp.replace("file:", "");
+//            //        tmp = tmp.replace("file:/", "");  TODO: OS check ?
+//        }
+//        File f = new File(tmp);
+//        if (!f.exists()) {
+//            System.err.println("Error in loading the Sketchbook folder.");
+//        }
+//        // if the file is within a library/lib folder
+//        if (f.getParentFile().getAbsolutePath().endsWith("/lib")) {
+//            //     pathToSketchbook/libraries/myLib/library/lib/myLib.jar
+//            f = f.getParentFile().getParentFile().getParentFile().getParentFile();
+//        } else {
+//            //     pathToSketchbook/libraries/myLib/library/myLib.jar
+//            f = f.getParentFile().getParentFile().getParentFile();
+//        }
+//        return f.getAbsolutePath();
+//    }
     // processing-java --sketch=/home/jiii/papart/sketches/papartExamples/Kinect/MultiTouchKinect/ --output=/home/jiii/papart/sketches/papartExamples/Kinect/MultiTouchKinect/build --force --run
-    public static String getLibraryFolder(String libname) {
-        return getLibrariesFolder() + "/libraries/" + libname;
-    }
-
+//    public static String getLibraryFolder(String libname) {
+//        return getLibrariesFolder() + "/libraries/" + libname;
+//    }
     /**
      * helper class to check the operating system this Java VM runs in
      *
