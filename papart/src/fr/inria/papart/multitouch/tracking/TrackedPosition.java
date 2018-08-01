@@ -102,6 +102,7 @@ public class TrackedPosition implements Trackable {
      * @return
      */
     public float distanceTo(TrackedElement newTp) {
+        System.out.println("TrackedPosition dist");
         return this.position.dist(newTp.position);
     }
 
@@ -219,7 +220,7 @@ public class TrackedPosition implements Trackable {
             return false;
         }
 
-        // these points are used for update. They will not be used again.
+       // these points are used for update. They will not be used again.
         this.setUpdated(true);
         tp.setUpdated(true);
 
@@ -262,12 +263,9 @@ public class TrackedPosition implements Trackable {
     protected void checkAndSetID() {
         // The touchPoint gets an ID, it is a grown up now. 
         if (this.id == NO_ID) {
-            if (count == 0) {
-                globalID = 1;
-            }
-            this.id = globalID++;
-            count++;
-        }
+            this.id = TrackedPosition.globalID++;
+            TrackedPosition.count++;
+        } 
     }
 
     /**
@@ -408,7 +406,10 @@ public class TrackedPosition implements Trackable {
     @Override
     public void delete(int time) {
         this.toDelete = true;
-        count--;
+        TrackedPosition.count--;
+        if (TrackedPosition.count == 0) {
+            TrackedPosition.globalID = 1;
+        }
         this.deletionTime = time;
     }
 

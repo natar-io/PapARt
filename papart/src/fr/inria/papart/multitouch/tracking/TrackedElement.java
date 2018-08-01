@@ -31,12 +31,6 @@ import fr.inria.papart.multitouch.detection.TouchDetection;
 public class TrackedElement extends TrackedPosition {
 
     /**
-     * Global counter of tracked elements.
-     */
-    public static int teCount = 0;
-    private static int globalID = 0;
-    
-    /**
      * You can attach a value to a Tracked Element, it will be passed along
      * tracking.
      */
@@ -87,23 +81,6 @@ public class TrackedElement extends TrackedPosition {
     @Override
     protected void updateAdditionalElements(TrackedElement tp) {
     }
-    
-    
-    /**
-     * Find a proper ID for this tracked position
-     */
-    @Override
-    protected void checkAndSetID() {
-        // The touchPoint gets an ID, it is a grown up now. 
-        if (this.id == NO_ID) {
-            if (teCount == 0) {
-                globalID = 1;
-            }
-            this.id = globalID++;
-            teCount++;
-        }
-    }
-
 
     public float getConfidence() {
         return confidence;
@@ -115,16 +92,13 @@ public class TrackedElement extends TrackedPosition {
 
     @Override
     public void delete(int time) {
-        this.toDelete = true;
-        teCount--;
-        this.deletionTime = time;
+        super.delete(time);
         if (this.attachedObject != null) {
             if (this.attachedObject instanceof TouchPointEventHandler) {
                 ((TouchPointEventHandler) this.attachedObject).delete();
             }
         }
     }
-
 
     @Override
     public String toString() {
@@ -166,11 +140,6 @@ public class TrackedElement extends TrackedPosition {
     }
 
     @Override
-    public float distanceTo(Trackable newTp) {
-        return distanceTo((TrackedElement) newTp);
-    }
-
-    @Override
     public boolean updateWith(Trackable tp) {
         return updateWith((TrackedElement) (tp));
     }
@@ -178,6 +147,11 @@ public class TrackedElement extends TrackedPosition {
     @Override
     public float getTrackingMaxDistance() {
         return detection.getTrackingMaxDistance();
+    }
+
+    @Override
+    public boolean isObselete(int currentTime) {
+        return (currentTime - updateTime) > detection.getTrackingForgetTime();
     }
 
 }

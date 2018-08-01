@@ -48,22 +48,30 @@ public class TrackedDepthPoint extends TrackedElement {
     private int attachedHandID = NO_HAND;
     private boolean isHand = false;
 
-    
     private TrackedDepthPoint parent;
 
-    public void setParent(TrackedDepthPoint p){
+    public void setParent(TrackedDepthPoint p) {
         parent = p;
     }
-    public TrackedDepthPoint getParent(){
+
+    public TrackedDepthPoint getParent() {
         return parent;
     }
-    
+
     public TrackedDepthPoint(int id) {
         super(id);
     }
 
     public TrackedDepthPoint() {
         super();
+    }
+
+    @Override
+    public float distanceTo(Trackable pt) {
+        if (pt instanceof TrackedDepthPoint) {
+            return positionDepthCam.distanceTo(((TrackedDepthPoint) pt).positionDepthCam);
+        }
+        return super.distanceTo(pt);
     }
 
     public float distanceTo(TrackedDepthPoint pt) {

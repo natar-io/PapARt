@@ -37,14 +37,7 @@ public class TouchPointComparison<T extends Trackable> implements Comparable<Tou
         this.oldTp = oldTp;
         this.newTp = newTp;
 
-        if (oldTp instanceof TrackedDepthPoint) {
-            distance = ((TrackedDepthPoint) oldTp).distanceTo((TrackedDepthPoint) newTp);
-            // Common elements method not used. -> problematic results of jittering.
-//            commonElements = TrackedDepthPoint.numberOfCommonElements((TrackedDepthPoint) oldTp,
-//                    (TrackedDepthPoint) newTp);
-        } else {
-            distance = oldTp.distanceTo(newTp);
-        }
+        distance = oldTp.distanceTo(newTp);
     }
 
     public T getOld() {
@@ -64,9 +57,9 @@ public class TouchPointComparison<T extends Trackable> implements Comparable<Tou
 //        int haveCommons = Integer.compare(commonElements, tpt.commonElements);
 //        if(haveCommons == 0 ){  // same number in common, or none.
 //            // use the distance
-               return Float.compare(distance, tpt.distance);
+        return Float.compare(distance, tpt.distance);
 //        } 
-    
+
 //        return haveCommons;
     }
 

@@ -45,9 +45,11 @@ public class TouchPointTracker {
     public static <T extends Trackable> void trackPoints(ArrayList<T> currentList,
             ArrayList<T> newPoints, int currentTime) {
 
+//        int nbPointsStart = currentList.size();
+        
 //        System.out.println("In TrackPoints: " + currentList.size() + " new: " + newPoints);
         deleteOldPoints(currentList, currentTime);
-//        System.out.println("deleted old points: " + currentList.size() + ".");
+//        System.out.println("deleted old points: " +(nbPointsStart - currentList.size()) + ".");
         updatePoints(currentList, newPoints);
 
 //        System.out.println("updated old points: " + currentList.size() + ".");
