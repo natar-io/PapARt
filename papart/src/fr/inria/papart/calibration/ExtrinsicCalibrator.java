@@ -94,7 +94,7 @@ public class ExtrinsicCalibrator {
         }
         Utils.multMatrix(sum, 1f / (float) snapshots.size());
 
-//        System.out.println("Extrinsics average: ");
+        System.out.println("Extrinsics average: ");
         sum.print();
         PVector sumPos = Utils.posFromMatrix(sum);
 
@@ -108,8 +108,8 @@ public class ExtrinsicCalibrator {
             if (dist < 10f) { // 2 cm !
                 Utils.addMatrices(sum2, extr);
                 k++;
-//                System.out.println("Extrinsics TAKEN: ");
-//                extr.print();
+                System.out.println("Extrinsics TAKEN: ");
+                extr.print();
             }
         }
         Utils.multMatrix(sum2, 1f / (float) k);

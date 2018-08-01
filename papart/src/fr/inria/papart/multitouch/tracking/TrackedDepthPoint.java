@@ -48,16 +48,16 @@ public class TrackedDepthPoint extends TrackedElement {
     private int attachedHandID = NO_HAND;
     private boolean isHand = false;
 
-    
     private TrackedDepthPoint parent;
 
-    public void setParent(TrackedDepthPoint p){
+    public void setParent(TrackedDepthPoint p) {
         parent = p;
     }
-    public TrackedDepthPoint getParent(){
+
+    public TrackedDepthPoint getParent() {
         return parent;
     }
-    
+
     public TrackedDepthPoint(int id) {
         super(id);
     }
@@ -70,15 +70,18 @@ public class TrackedDepthPoint extends TrackedElement {
         return this.positionDepthCam.distanceTo(pt.positionDepthCam);
     }
 
+    @Deprecated
     public void setPositionKinect(Vec3D pos) {
         this.positionDepthCam = new Vec3D(pos);
         this.previousPositionDepthCam = new Vec3D(pos);
     }
 
+    @Deprecated
     public Vec3D getPositionKinect() {
         return this.positionDepthCam;
     }
 
+    @Deprecated
     public Vec3D getPreviousPositionKinect() {
         return this.previousPositionDepthCam;
     }

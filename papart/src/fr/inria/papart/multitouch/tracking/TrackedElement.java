@@ -22,13 +22,13 @@ package fr.inria.papart.multitouch.tracking;
 import fr.inria.papart.multitouch.OneEuroFilter;
 import fr.inria.papart.multitouch.Touch;
 import fr.inria.papart.multitouch.detection.TouchDetection;
-import fr.inria.papart.multitouch.detection.TouchDetectionDepth;
 import processing.core.PVector;
 import toxi.geom.Vec3D;
 
 /**
- * Tracked element with a position and speed. The position can be filtered, the 
+ * Tracked element with a position and speed. The position can be filtered, the
  * filtering must be called directly, it is not automatic.
+ *
  * @author Jeremy Laviole
  */
 public class TrackedElement {
@@ -45,13 +45,14 @@ public class TrackedElement {
 
     // TODO: become this:
 //    protected Object source;
-
     /**
-     * You can attach a value to a Tracked Element, it will be passed along tracking.
+     * You can attach a value to a Tracked Element, it will be passed along
+     * tracking.
      */
     public int attachedValue = -1;
-        /**
-     * You can attach an object to a Tracked Element, it will be passed along tracking.
+    /**
+     * You can attach an object to a Tracked Element, it will be passed along
+     * tracking.
      */
     public Object attachedObject;
 
@@ -88,7 +89,8 @@ public class TrackedElement {
 
     /**
      * Create a trackedElement and force an ID to it.
-     * @param id 
+     *
+     * @param id
      */
     public TrackedElement(int id) {
         this();
@@ -108,14 +110,12 @@ public class TrackedElement {
         } catch (Exception e) {
             System.out.println("OneEuro Exception. Pay now." + e);
         }
-        
+
 //        // In test: global ID also for temporary values
 //        this.id = globalIDTemp++; 
 //        if(globalIDTemp == NO_ID){
 //            globalIDTemp = Integer.MIN_VALUE;
 //        }
-        
-        
         touch = new Touch();
         initTouch();
     }
@@ -306,7 +306,6 @@ public class TrackedElement {
         this.confidence = tp.confidence;
 
 //        this.setSource(tp.source);
-
         speed.set(this.position);
         speed.sub(this.previousPosition);
     }
@@ -401,7 +400,6 @@ public class TrackedElement {
         return this.speed;
     }
 
-    
     public void setUpdated(boolean updated) {
         this.isUpdated = updated;
     }
@@ -421,6 +419,9 @@ public class TrackedElement {
     public void delete(int time) {
         this.toDelete = true;
         TrackedElement.count--;
+        if (TrackedElement.count == 0) {
+            TrackedElement.globalID = 1;
+        }
         this.deletionTime = time;
         if (this.attachedObject != null) {
             if (this.attachedObject instanceof TouchPointEventHandler) {

@@ -74,7 +74,7 @@ public class CameraNectar extends CameraRGBIRDepth {
     }
 
     private void startRGB() {
-        Jedis redis = new Jedis(DEFAULT_REDIS_HOST, DEFAULT_REDIS_PORT);
+        Jedis redis = createConnection();
 
         int w = Integer.parseInt(redis.get(cameraDescription + ":width"));
         int h = Integer.parseInt(redis.get(cameraDescription + ":height"));
@@ -91,6 +91,10 @@ public class CameraNectar extends CameraRGBIRDepth {
         if (!getMode) {
             new RedisThread(redis, new ImageListener(colorCamera.getPixelFormat()), cameraDescription).start();
         }
+    }
+    
+    public Jedis createConnection(){
+        return new Jedis(DEFAULT_REDIS_HOST, DEFAULT_REDIS_PORT);
     }
 
     private void startDepth() {
@@ -199,6 +203,17 @@ public class CameraNectar extends CameraRGBIRDepth {
         }
         rawDepthImage.getByteBuffer().put(message, 0, frameSize);
         depthCamera.updateCurrentImage(rawDepthImage);
+
+        if (getActingCamera() == IRCamera) {
+            ((WithTouchInput) depthCamera).newTouchImageWithColor(IRCamera.currentImage);
+            return;
+        }
+        if (getActingCamera() == colorCamera || useColor && colorCamera.currentImage != null) {
+            ((WithTouchInput) depthCamera).newTouchImageWithColor(colorCamera.currentImage);
+            return;
+        }
+        ((WithTouchInput) depthCamera).newTouchImage();
+
     }
 
     @Override
@@ -239,8 +254,17 @@ public class CameraNectar extends CameraRGBIRDepth {
         }
 
         public void run() {
-            byte[] id = key.getBytes();
-            client.subscribe(listener, id);
+            while (!isClosing()) {
+                try {
+                    byte[] id = key.getBytes();
+                    client.subscribe(listener, id);
+                } catch (Exception e) {
+                    System.out.println("Redis connection error: " + e);
+                    System.out.println("Retrying to connect...");
+                    client.close();
+                    client = createConnection();
+                }
+            }
         }
     }
 
@@ -316,7 +340,7 @@ public class CameraNectar extends CameraRGBIRDepth {
         }
     }
 
-    static DetectedMarker[] parseMarkerList(String jsonMessage) {
+    public static DetectedMarker[] parseMarkerList(String jsonMessage) {
 
         DetectedMarker detectedMarkers[] = new DetectedMarker[0];
 //        Marker m = new Marker(0, corners);

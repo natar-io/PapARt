@@ -60,7 +60,8 @@ import toxi.geom.Vec3D;
  * @author jeremylaviole - laviole@rea.lity.tech
  */
 public class DepthTouchInput extends TouchInput {
-
+    
+  private static final Touch INVALID_TOUCH = new Touch();
     public static final int NO_TOUCH = -1;
     private int touch2DPrecision, touch3DPrecision;
     private DepthAnalysisImpl depthAnalysis;
@@ -81,9 +82,8 @@ public class DepthTouchInput extends TouchInput {
     private HandDetection handDetection;
     private FingerDetection fingerDetection;
 
-    private TouchDetectionDepth touchDetections[] = new TouchDetectionDepth[3];
-
-    private PlanarTouchCalibration touchCalibrations[] = new PlanarTouchCalibration[3];
+    private final TouchDetectionDepth touchDetections[] = new TouchDetectionDepth[3];
+    private final PlanarTouchCalibration touchCalibrations[] = new PlanarTouchCalibration[3];
     private PlanarTouchCalibration simpleTouchCalibration, objectTouchCalibration;
 
     public DepthTouchInput(PApplet applet,
@@ -129,15 +129,18 @@ public class DepthTouchInput extends TouchInput {
 
     /**
      * Create Simple touch detection: detects everything that is on the table.
+     * @return 
      */
-    public void initSimpleTouchDetection() {
+    public Simple2D initSimpleTouchDetection() {
         checkCalibrations();
         simpleDetection = new Simple2D(depthAnalysis, simpleTouchCalibration);
+        return simpleDetection;
     }
 
     /**
      * TouchInput with object detection. Implementation in progress. This may
      * lead to many classes of object detections.
+     * @return 
      */
     public ObjectDetection initObjectDetection() {
         checkCalibrations();
@@ -147,6 +150,7 @@ public class DepthTouchInput extends TouchInput {
 
     /**
      * TouchInput with hand detection: provides Arm, hand and finger detections.
+     * @return 
      */
     public TouchDetectionDepth initHandDetection() {
         checkCalibrations();
@@ -259,12 +263,10 @@ public class DepthTouchInput extends TouchInput {
 
     }
 
-    private static final Touch INVALID_TOUCH = new Touch();
-
+  
     @Deprecated
     @Override
     public TouchList projectTouchToScreen(PaperScreen screen, BaseDisplay display) {
-
         TouchList touchList = new TouchList();
         // Not initialized
         if (fingerDetection == null && armDetection == null && simpleDetection == null) {
