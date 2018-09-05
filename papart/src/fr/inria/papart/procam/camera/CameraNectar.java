@@ -57,9 +57,8 @@ public class CameraNectar extends CameraRGBIRDepth {
                 System.out.println("NECTAR get depth.");
                 startDepth();
             }
-            if (getMode) {
-                redisGet = new Jedis(DEFAULT_REDIS_HOST, DEFAULT_REDIS_PORT);
-            }
+            
+            redisGet = new Jedis(DEFAULT_REDIS_HOST, DEFAULT_REDIS_PORT);
             this.isConnected = true;
         } catch (NumberFormatException e) {
             System.err.println("Could not start Nectar camera: " + cameraDescription + ". " + e);
@@ -279,10 +278,12 @@ public class CameraNectar extends CameraRGBIRDepth {
         @Override
         public void onMessage(byte[] channel, byte[] message) {
             if (this.format == PixelFormat.BGR || this.format == PixelFormat.RGB) {
-                setColorImage(message);
+                byte[] data = redisGet.get(channel);
+                setColorImage(data);
             }
             if (this.format == PixelFormat.OPENNI_2_DEPTH) {
-                setDepthImage(message);
+                byte[] data = redisGet.get(channel);
+                setDepthImage(data);
 //                System.out.println("received depth message image");
 
             }
