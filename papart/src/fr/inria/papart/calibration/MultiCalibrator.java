@@ -614,6 +614,18 @@ public class MultiCalibrator extends PaperTouchScreen {
 
                 projectorAsCamera.grab(img);
                 projectorAsCamera.sendImageToNectar();
+
+                // Wait for response !
+                while (projectorAsCamera.getLastMarkerFound() != i) {
+                    try {
+                        Thread.sleep(15);
+                        System.out.println("Waiting for marker " + i + " .");
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(MultiCalibrator.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                opencv_imgcodecs.cvSaveImage("/home/ditrop/tmp/proj-" + i + ".bmp", projectorAsCamera.getIplImage());
+                System.out.println("Saved " + "/home/ditrop/tmp/proj-" + i + ".bmp");
             }
 
             // wait for the response 
@@ -637,9 +649,9 @@ public class MultiCalibrator extends PaperTouchScreen {
                 PMatrix3D projPos = getMarkerBoard().getTransfoMat(projectorAsCamera);
 
                 opencv_imgcodecs.cvSaveImage("/home/ditrop/tmp/cam-" + i + ".bmp", img);
-                opencv_imgcodecs.cvSaveImage("/home/ditrop/tmp/proj-" + i + ".bmp", projectorAsCamera.getIplImage());
+//                opencv_imgcodecs.cvSaveImage("/home/ditrop/tmp/proj-" + i + ".bmp", projectorAsCamera.getIplImage());
                 System.out.println("Saved " + "/home/ditrop/tmp/cam-" + i + ".bmp");
-                System.out.println("Saved " + "/home/ditrop/tmp/proj-" + i + ".bmp");
+//                System.out.println("Saved " + "/home/ditrop/tmp/proj-" + i + ".bmp");
                 projPos.print();
                 snapshots.add(new ExtrinsicSnapshot(savedLocations[i],
                         projPos, null));

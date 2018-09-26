@@ -40,7 +40,6 @@ public class CameraNectar extends CameraRGBIRDepth {
     public int DEFAULT_REDIS_PORT = 6379;
     private DetectedMarker[] currentMarkers;
     Jedis redisGet;
-    private Jedis timeRedis;
 
     protected CameraNectar(String cameraName) {
         this.cameraDescription = cameraName;
@@ -49,7 +48,7 @@ public class CameraNectar extends CameraRGBIRDepth {
     @Override
     public void start() {
         try {
-
+            redisGet = createConnection();
             if (useColor) {
                 startRGB();
                 startMarkerTracking();
@@ -58,9 +57,7 @@ public class CameraNectar extends CameraRGBIRDepth {
                 System.out.println("NECTAR get depth.");
                 startDepth();
             }
-            if (getMode) {
-                redisGet = new Jedis(DEFAULT_REDIS_HOST, DEFAULT_REDIS_PORT);
-            }
+
             this.isConnected = true;
         } catch (NumberFormatException e) {
             System.err.println("Could not start Nectar camera: " + cameraDescription + ". " + e);
@@ -76,7 +73,7 @@ public class CameraNectar extends CameraRGBIRDepth {
 
     private void startRGB() {
         Jedis redis = createConnection();
-        startTimeConnection();
+
         int w = Integer.parseInt(redis.get(cameraDescription + ":width"));
         int h = Integer.parseInt(redis.get(cameraDescription + ":height"));
         String format = redis.get(cameraDescription + ":pixelformat");
@@ -94,20 +91,13 @@ public class CameraNectar extends CameraRGBIRDepth {
         }
     }
 
-    private void startTimeConnection() {
-        if (timeRedis != null) {
-            return;
-        }
-        timeRedis = createConnection();
-    }
-
     public Jedis createConnection() {
         return new Jedis(DEFAULT_REDIS_HOST, DEFAULT_REDIS_PORT);
     }
 
     private void startDepth() {
         Jedis redis2 = new Jedis(DEFAULT_REDIS_HOST, DEFAULT_REDIS_PORT);
-        startTimeConnection();
+
         String v = redis2.get(cameraDescription + ":depth:width");
         if (v != null) {
 
@@ -202,16 +192,7 @@ public class CameraNectar extends CameraRGBIRDepth {
         this.notifyObservers("image");
     }
 
-//    private int firstTouchUpdate = 0;
-//    private long firstImageTime = 0;
-//
-//    private int lastTouchUpdate = 0;
-//    private long lastImageTime = 0;
-
     protected void setDepthImage(byte[] message) {
-        // If the tracking is too slow, we drop frames.
-//        int now = parent.millis();
-//        long newImage = Long.parseLong(this.timeRedis.get(cameraDescription + ":depth:raw:timestamp"));
         int iplDepth = IPL_DEPTH_8U;
         int channels = 2;
 
@@ -287,23 +268,41 @@ public class CameraNectar extends CameraRGBIRDepth {
         }
     }
 
+    private Jedis checkConnection(Jedis connection) {
+        if (connection == null || !connection.isConnected()) {
+            connection = createConnection();
+        }
+        return connection;
+    }
+
     class ImageListener extends BinaryJedisPubSub {
 
         PixelFormat format;
+        Jedis getConnection;
 
+        
         public ImageListener(PixelFormat format) {
             this.format = format;
+            getConnection = createConnection();
         }
 
         @Override
         public void onMessage(byte[] channel, byte[] message) {
-            if (this.format == PixelFormat.BGR || this.format == PixelFormat.RGB) {
-                setColorImage(message);
-            }
-            if (this.format == PixelFormat.OPENNI_2_DEPTH) {
-                setDepthImage(message);
+            try {
+                getConnection = checkConnection(getConnection);
+                if (this.format == PixelFormat.BGR || this.format == PixelFormat.RGB) {
+                    byte[] data = getConnection.get(channel);
+                    setColorImage(data);
+                }
+                if (this.format == PixelFormat.OPENNI_2_DEPTH) {
+                    byte[] data = getConnection.get(channel);
+                    setDepthImage(data);
 //                System.out.println("received depth message image");
 
+                }
+            } catch (Exception e) {
+                System.out.println("Exception reading data: ");
+                e.printStackTrace();
             }
         }
 
