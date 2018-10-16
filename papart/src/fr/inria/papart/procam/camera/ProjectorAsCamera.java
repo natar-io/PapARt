@@ -38,6 +38,7 @@ import processing.core.PImage;
 import redis.clients.jedis.BinaryJedisPubSub;
 import redis.clients.jedis.Jedis;
 import fr.inria.papart.tracking.DetectedMarker;
+import processing.data.JSONObject;
 
 /**
  *
@@ -50,6 +51,7 @@ public class ProjectorAsCamera extends Camera {
     private IplImage grayImage;
     private final ProjectorDisplay projector;
     private PImage pimage;
+    private MarkerListener markerListener;
 
     public ProjectorAsCamera(ProjectorDisplay projector, Camera cameraTracking, TrackedView view) {
         this.projectorView = view;
@@ -110,6 +112,8 @@ public class ProjectorAsCamera extends Camera {
     boolean isStreamSet = true;
     boolean isStreamPublish = true;
 
+    static int imgID = 0;
+
     private void sendColorImage(IplImage img) {
         ByteBuffer byteBuffer;
         byteBuffer = img.getByteBuffer();
@@ -118,13 +122,19 @@ public class ProjectorAsCamera extends Camera {
         byte[] id = name.getBytes();
         String time = Long.toString(parent.millis());
         System.out.println("Sending Projector image to Nectar.");
-        if (isStreamSet) {
-            redis.set(id, imageData);
-            redis.set((name + ":timestamp"), time);
-        }
-        if (isStreamPublish) {
-            redis.publish(id, imageData);
-        }
+//        if (isStreamSet) {
+//            redis.set(id, imageData);
+//            redis.set((name + ":timestamp"), time);
+//        }
+//        if (isStreamPublish) {
+        redis.set(id, imageData);
+        redis.set((name + ":timestamp"), time);
+
+        JSONObject imageInfo = new JSONObject();
+        imageInfo.setLong("timestamp", System.currentTimeMillis());
+        imageInfo.setLong("imageCount", imgID++);
+        redis.publish(id, imageInfo.toString().getBytes());
+//        }
     }
 
     MultiCalibrator calibrator;
@@ -136,7 +146,8 @@ public class ProjectorAsCamera extends Camera {
         this.detectedMarkers = new ArrayList<>();
         allMarkersFound = false;
         System.out.println("Listening to :  " + nectarProjName + ":markers");
-        new RedisThread(redisSub, new MarkerListener(nbMarkers), nectarProjName + ":markers").start();
+        markerListener = new MarkerListener(nbMarkers);
+        new RedisThread(redisSub, markerListener, nectarProjName + ":markers").start();
     }
 
     private void setMarkers(byte[] message, int id) {
@@ -151,6 +162,10 @@ public class ProjectorAsCamera extends Camera {
 
     public boolean allMarkersFound() {
         return this.allMarkersFound;
+    }
+    
+    public int getLastMarkerFound(){
+        return markerListener.currentMarker();
     }
 
     class RedisThread extends Thread {
@@ -188,12 +203,17 @@ public class ProjectorAsCamera extends Camera {
 
         @Override
         public void onMessage(byte[] channel, byte[] message) {
-            setMarkers(message, currentMarker++);
+            setMarkers(message, currentMarker);
+            currentMarker++;
             System.out.println("got message:  " + currentMarker);
             if (currentMarker == nbMarkersToRead) {
                 allMarkersFound = true;
                 this.unsubscribe();
             }
+        }
+        
+        public int currentMarker(){
+            return currentMarker;
         }
 
         @Override
