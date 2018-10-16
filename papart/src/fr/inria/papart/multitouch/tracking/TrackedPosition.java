@@ -102,7 +102,6 @@ public class TrackedPosition implements Trackable {
      * @return
      */
     public float distanceTo(TrackedElement newTp) {
-        System.out.println("TrackedPosition dist");
         return this.position.dist(newTp.position);
     }
 
