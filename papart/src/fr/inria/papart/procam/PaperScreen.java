@@ -1844,7 +1844,7 @@ public class PaperScreen extends DelegatedGraphics {
 //        event.autoExit(parent);
     }
 
-    private void connectRedis() {
+    public void connectRedis() {
         redis = new Jedis("127.0.0.1", 6379);
         // redis.auth("156;2Asatu:AUI?S2T51235AUEAIU");
     }
@@ -1900,8 +1900,11 @@ public class PaperScreen extends DelegatedGraphics {
      */
     public void sendTouch(Touch t) {
 
+        boolean creation = false;
         if (t.trackedSource().attachedObject == null) {
             t.trackedSource().attachedObject = new TouchKiller(t);
+            creation = true;
+            System.out.println("Attaching tracked source to " + t.id + " -- creation event ?");
         }
 
         JSONObject ob = new JSONObject();
@@ -1910,6 +1913,7 @@ public class PaperScreen extends DelegatedGraphics {
         ob.setFloat("x", t.position.x / drawingSize.x);
         ob.setFloat("y", t.position.y / drawingSize.y);
         ob.setBoolean("pressed", t.pressed);
+        ob.setBoolean("creation", creation);
         redis.publish(prefixPub, ob.toString());
     }
 
