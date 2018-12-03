@@ -165,6 +165,9 @@ public class TUIOTouchInput extends TouchInput {
         TrackedElement tp = new TrackedElement();
         tp.setCreationTime(parent.millis());
         tp.forceID(getCursorID(tcur));
+
+        PVector v = getLocalPosition(tcur.getPosition());
+        tp.setPosition(v);
         return tp;
     }
 
@@ -174,6 +177,7 @@ public class TUIOTouchInput extends TouchInput {
         TuioPoint tuioPoint = tobj.getPosition();
         PVector v = getLocalPosition(tuioPoint);
         tp.setPosition(v);
+        known.setUpdated(false);
         known.updateWith(tp);
     }
 
@@ -183,12 +187,15 @@ public class TUIOTouchInput extends TouchInput {
         TuioPoint tuioPoint = tcur.getPosition();
         PVector v = getLocalPosition(tuioPoint);
         touchPoint.setPosition(v);
-        
+
         TrackedElement known = tuioCursors.get(getCursorID(tcur));
+
+        known.setUpdated(false);
         known.updateWith(touchPoint);
 
-//        System.out.println("update cursor " + getCursorID(tcur) + " (" + tcur.getSessionID() + ") " + tcur.getX() + " " + tcur.getY()
-//                + " " + tcur.getMotionSpeed() + " " + tcur.getMotionAccel());
+        System.out.println("update cursor " + getCursorID(tcur) + " (" + tcur.getSessionID() + ") " + tcur.getX() + " " + tcur.getY()
+                + " " + tcur.getMotionSpeed() + " " + tcur.getMotionAccel());
+        System.out.println("update KNOWN cursor " + known.getPosition().x + " " + known.getPosition().y);
     }
 
     private PVector getLocalPosition(TuioPoint tuioPoint) {
@@ -212,7 +219,7 @@ public class TUIOTouchInput extends TouchInput {
     public void removeTuioCursor(TuioCursor tcur) {
         tuioCursors.get(getCursorID(tcur)).delete(0);
         tuioCursors.remove(getCursorID(tcur));
-        //   System.out.println("remove cursor " + getCursorID(tcur) + " (" + tcur.getSessionID() + ")");
+//           System.out.println("remove cursor " + getCursorID(tcur) + " (" + tcur.getSessionID() + ")");
     }
 
 // called after each message bundle
