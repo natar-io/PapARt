@@ -74,8 +74,9 @@ public class ProjectorDisplay extends ARDisplay {
         DrawUtils.drawImage((PGraphicsOpenGL) parent.g,
                 this.render(),
                 0, 0, this.frameWidth, this.frameHeight);
+        tryToEmitVideo();
     }
-
+    
     /**
      * Previous internal corner calibration.
      */

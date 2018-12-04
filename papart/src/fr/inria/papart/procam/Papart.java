@@ -48,6 +48,7 @@ import fr.inria.papart.multitouch.detection.CalibratedColorTracker;
 import fr.inria.papart.multitouch.detection.ColorTracker;
 import fr.inria.papart.utils.LibraryUtils;
 import fr.inria.papart.procam.camera.CameraFactory;
+import fr.inria.papart.procam.camera.CameraNectar;
 import fr.inria.papart.procam.camera.CameraRGBIRDepth;
 import fr.inria.papart.procam.camera.CannotCreateCameraException;
 import fr.inria.papart.tracking.DetectedMarker;
@@ -61,6 +62,7 @@ import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.event.KeyEvent;
+import redis.clients.jedis.Jedis;
 
 /**
  *
@@ -995,6 +997,25 @@ public class Papart {
         this.getPublicCameraTracking().trackSheets(true);
     }
 
+    public void setDistantCamera(String url, int port){
+        if(this.cameraTracking instanceof CameraNectar){
+            ((CameraNectar)cameraTracking).DEFAULT_REDIS_HOST = url;
+            ((CameraNectar)cameraTracking).DEFAULT_REDIS_PORT = port;
+        }else {
+            System.err.println("Cannot set distant camera url.");
+            return;
+        }
+    }
+    
+    public Jedis videoOutput;
+    public String videoOutputKey;
+    
+    public void streamOutput(Jedis connection, String key){
+        videoOutput = connection;
+        videoOutputKey = key;
+    }
+    
+    
     /**
      * Start the camera thread, and the tracking. it calls automatically
      * startCameraThread().
