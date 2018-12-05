@@ -894,6 +894,8 @@ public class Papart {
         if (depthCameraDevice == null) {
             System.err.println("Could not load the depth camera !" + "Camera Type " + depthCamConfiguration.getCameraType());
         }
+        
+        this.cameraTracking = depthCameraDevice.getMainCamera();
 
         // At this point, cameraTracking & depth Camera are ready. 
         return depthCameraDevice;
