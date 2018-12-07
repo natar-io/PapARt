@@ -165,7 +165,7 @@ public class CameraNectar extends CameraRGBIRDepth {
                 Thread.sleep(15);
             } else {
                 //..nothing the princess is in another thread.
-                Thread.sleep(20);
+                Thread.sleep(200);
             }
         } catch (InterruptedException e) {
             System.err.println("CameraNectar grab Error ! " + e);
