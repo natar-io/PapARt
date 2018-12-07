@@ -26,7 +26,6 @@ import org.bytedeco.javacv.ProjectiveDevice;
 import fr.inria.papart.utils.DrawUtils;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.procam.camera.Camera;
-import tech.lity.rea.nectar.calibration.HasExtrinsics;
 import fr.inria.papart.procam.PaperScreen;
 import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
 
@@ -35,6 +34,7 @@ import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.opengl.PShader;
+import tech.lity.rea.nectar.HasExtrinsics;
 import toxi.geom.Plane;
 import toxi.geom.Ray3D;
 import toxi.geom.ReadonlyVec3D;

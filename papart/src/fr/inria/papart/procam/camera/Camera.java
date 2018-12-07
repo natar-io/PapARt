@@ -24,7 +24,6 @@ package fr.inria.papart.procam.camera;
  * @author jeremylaviole
  */
 import fr.inria.papart.multitouch.TouchInput;
-import tech.lity.rea.nectar.calibration.HasExtrinsics;
 import fr.inria.papart.utils.ImageUtils;
 import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.utils.ARToolkitPlusUtils;
@@ -49,6 +48,7 @@ import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.data.JSONObject;
 import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
+import tech.lity.rea.nectar.HasExtrinsics;
 
 public abstract class Camera extends Observable implements PConstants, HasExtrinsics, WithSize {
 
