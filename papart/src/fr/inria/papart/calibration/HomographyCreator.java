@@ -19,7 +19,7 @@
  */
 package fr.inria.papart.calibration;
 
-import fr.inria.papart.calibration.files.HomographyCalibration;
+import tech.lity.rea.nectar.calibration.files.HomographyCalibration;
 import static org.bytedeco.javacpp.opencv_calib3d.cvFindHomography;
 import org.bytedeco.javacpp.opencv_core;
 import static org.bytedeco.javacpp.opencv_core.CV_32FC1;

@@ -3,33 +3,33 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fr.inria</groupId>
     <artifactId>papart</artifactId>
-    <version>1.4.1-SNAPSHOT</version>
+    <version>2.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>PapARt</name>
     <description>Paper Augmented Reality Toolkit</description>
     <url>https://github.com/poqudrof/PapARt</url>
                 
-  <distributionManagement>
-    <repository>
-      <id>internal</id>
-      <url>http://forum.rea.lity.tech:8081/repository/internal/</url>
-    </repository>
-  </distributionManagement>
+    <distributionManagement>
+        <repository>
+            <id>internal</id>
+            <url>http://forum.rea.lity.tech:8081/repository/internal/</url>
+        </repository>
+    </distributionManagement>
     
     <repositories>
 
         <repository>
-      <id>public</id>
-      <name>RealityTech public repository</name>
-      <url>http://forum.rea.lity.tech:8081/repository/public/</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
+            <id>public</id>
+            <name>RealityTech public repository</name>
+            <url>http://forum.rea.lity.tech:8081/repository/public/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
         
         <repository>
             <id>clojars.org</id>
@@ -53,7 +53,7 @@
         
         <repository>
             <id>realitytech public</id>
-             <url>http://forum.rea.lity.tech:8081/repository/public/</url>
+            <url>http://forum.rea.lity.tech:8081/repository/public/</url>
         </repository>
     </repositories>
     
@@ -88,7 +88,7 @@
             <version>1.0.2</version>
         </dependency>
         
-           <dependency>
+        <dependency>
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
             <version>2.9.0</version>
@@ -110,21 +110,28 @@
         
         <dependency>
             <groupId>tech.lity.rea</groupId>
+            <artifactId>nectar-configuration-loader</artifactId>
+            <version>0.1-SNAPSHOT</version>
+        </dependency>
+        
+        
+        <dependency>
+            <groupId>tech.lity.rea</groupId>
+            <artifactId>javacv-processing</artifactId>
+            <version>0.1-SNAPSHOT</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>tech.lity.rea</groupId>
             <artifactId>ColorConverter</artifactId>
             <version>0.1</version>
         </dependency>
 
         <dependency>
-         <groupId>tech.lity.rea</groupId>
+            <groupId>tech.lity.rea</groupId>
             <artifactId>SimplePointCloud</artifactId>
             <version>0.1</version>
         </dependency>
-<!--    <dependency>
-            <groupId>org.openni</groupId>
-            <artifactId>OpenNI-bin</artifactId>
-            <version>2.3</version>
-            <scope>runtime</scope>
-        </dependency>-->
         
         
         <!--We distribute with PapARt-->
@@ -160,7 +167,7 @@
             <version>2.3.2</version>
         </dependency>
         
-<!--        <dependency>
+        <!--        <dependency>
             <groupId>org.jogamp.jogl</groupId>
             <artifactId>newt-main</artifactId>
             <version>2.3.2</version>
@@ -211,34 +218,6 @@
         
 
         <!--JavaCPP-presets et JavaCV -->
-        <!--We package and distribute--> 
-        
-        <dependency>
-            <groupId>org.bytedeco</groupId>
-            <artifactId>javacv</artifactId>
-            <version>${javacpp.version}</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.bytedeco</groupId>
-            <artifactId>javacv-platform</artifactId>
-            <version>${javacpp.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.bytedeco</groupId>
-            <artifactId>javacpp</artifactId>
-            <version>${javacpp.version}</version>
-        </dependency>
-    
-        <!-- Inport code taken from JavaCV-->
-
-        <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>opencv</artifactId>
-            <version>3.4.0-${javacpp.version}</version>
-        </dependency>
         
         <!--Tests no packaging no distribution --> 
         <dependency>
@@ -280,7 +259,7 @@
         </extensions>
         
         <plugins> 
-            <plugin>
+<!--            <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <version>2.3</version>
                 <executions>
@@ -294,7 +273,7 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin>-->
             
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

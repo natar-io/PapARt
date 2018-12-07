@@ -19,6 +19,7 @@
  */
 package fr.inria.papart.procam;
 
+import fr.inria.papart.Papart;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.multitouch.TouchInput;
@@ -59,9 +60,7 @@ public class PaperTouchScreen extends PaperScreen {
      * @param papart
      */
     public PaperTouchScreen(Papart papart) {
-        this(papart.getApplet(),
-                papart.getPublicCameraTracking(),
-                papart.getDisplay(),
+        this(papart.getDisplay(), papart.getPublicCameraTracking(),
                 papart.getTouchInput());
     }
 
@@ -73,8 +72,8 @@ public class PaperTouchScreen extends PaperScreen {
      * @param proj
      * @param touchinput
      */
-    public PaperTouchScreen(PApplet applet, Camera cam, BaseDisplay proj, TouchInput touchinput) {
-        super(applet, cam, proj);
+    public PaperTouchScreen(BaseDisplay proj, Camera cam, TouchInput touchinput) {
+        super(proj, cam);
         this.touchInput = touchinput;
     }
 

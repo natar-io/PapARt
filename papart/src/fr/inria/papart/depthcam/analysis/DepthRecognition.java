@@ -5,7 +5,7 @@
  */
 package fr.inria.papart.depthcam.analysis;
 
-import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
+import tech.lity.rea.nectar.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.depthcam.ProjectedDepthData;
 
 /**

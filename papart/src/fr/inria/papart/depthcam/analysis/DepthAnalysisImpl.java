@@ -26,7 +26,7 @@ import fr.inria.papart.depthcam.ProjectedDepthData;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.INVALID_POINT;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.papplet;
-import fr.inria.papart.procam.ProjectiveDeviceP;
+import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
 import fr.inria.papart.utils.MathUtils;
 import fr.inria.papart.procam.camera.Camera;
 import java.nio.ByteBuffer;

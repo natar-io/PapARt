@@ -19,18 +19,12 @@
  */
 package fr.inria.papart.tracking;
 
-import static fr.inria.papart.procam.Papart.camCalibARtoolkit;
+import static fr.inria.papart.Papart.camCalibARtoolkit;
 import static fr.inria.papart.tracking.MarkerBoard.BLOCK_UPDATE;
 import static fr.inria.papart.tracking.MarkerBoard.FORCE_UPDATE;
 import static fr.inria.papart.tracking.MarkerBoard.NORMAL;
 import fr.inria.papart.procam.camera.Camera;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.bytedeco.javacpp.ARToolKitPlus;
 import org.bytedeco.javacpp.opencv_core;
 import processing.core.PMatrix3D;

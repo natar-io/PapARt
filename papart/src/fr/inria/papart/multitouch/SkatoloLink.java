@@ -21,7 +21,7 @@
 package fr.inria.papart.multitouch;
 
 import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
-import fr.inria.papart.procam.Papart;
+import fr.inria.papart.Papart;
 import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.PaperTouchScreen;
 import tech.lity.rea.skatolo.Skatolo;

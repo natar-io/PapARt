@@ -18,7 +18,7 @@
  */
 package fr.inria.papart.multitouch.detection;
 
-import fr.inria.papart.procam.Papart;
+import fr.inria.papart.Papart;
 import static fr.inria.papart.utils.MathUtils.absd;
 import static fr.inria.papart.utils.MathUtils.constrain;
 import java.awt.Color;

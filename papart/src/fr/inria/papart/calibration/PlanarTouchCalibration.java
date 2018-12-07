@@ -17,11 +17,12 @@
  * Public License along with this library; If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package fr.inria.papart.calibration.files;
+package fr.inria.papart.calibration;
 
-import fr.inria.papart.calibration.files.Calibration;
+import tech.lity.rea.nectar.calibration.files.Calibration;
 import processing.core.PApplet;
 import processing.data.XML;
+import tech.lity.rea.nectar.calibration.files.Calibration;
 import toxi.geom.Vec3D;
 
 /**

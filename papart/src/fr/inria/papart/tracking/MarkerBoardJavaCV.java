@@ -19,7 +19,7 @@
  */
 package fr.inria.papart.tracking;
 
-import fr.inria.papart.procam.ProjectiveDeviceP;
+import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.tracking.ObjectFinder;
 import java.util.ArrayList;

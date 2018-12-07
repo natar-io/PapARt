@@ -18,21 +18,20 @@
  */
 package fr.inria.papart.multitouch;
 
-import fr.inria.papart.calibration.files.HomographyCalibration;
-import fr.inria.papart.calibration.files.PlanarTouchCalibration;
-import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
-import fr.inria.papart.calibration.files.PlaneCalibration;
-import static fr.inria.papart.calibration.files.PlaneCalibration.CreatePlaneCalibrationFrom;
+import tech.lity.rea.nectar.calibration.files.HomographyCalibration;
+import fr.inria.papart.calibration.PlanarTouchCalibration;
+import tech.lity.rea.nectar.calibration.files.PlaneAndProjectionCalibration;
+import tech.lity.rea.nectar.calibration.files.PlaneCalibration;
 import fr.inria.papart.multitouch.Touch;
 import fr.inria.papart.multitouch.TouchList;
 import fr.inria.papart.multitouch.detection.TouchDetection;
 import fr.inria.papart.multitouch.tracking.TouchPointTracker;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.multitouch.detection.TouchDetectionColor;
-import fr.inria.papart.procam.Papart;
-import static fr.inria.papart.procam.Papart.planeAndProjectionCalib;
+import fr.inria.papart.Papart;
+import static fr.inria.papart.Papart.planeAndProjectionCalib;
 import fr.inria.papart.procam.PaperScreen;
-import fr.inria.papart.procam.ProjectiveDeviceP;
+import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ProjectorDisplay;
@@ -71,13 +70,18 @@ public class ColorTouchInput extends TouchInput {
 
     private final Semaphore touchPointSemaphore = new Semaphore(1, true);
 
+    /**
+     * TODO Repair default calibration
+     * @param parent
+     * @param irCamera 
+     */
     public ColorTouchInput(PApplet parent, Camera irCamera) {
 
         this.parent = parent;
         this.camera = irCamera;
 
 //        this.trackedColors = new HashMap<>();
-        this.calibration = Papart.getPapart().getDefaultColorTouchCalibration();
+//        this.calibration = Papart.getPapart().getDefaultColorTouchCalibration();
         trackedElements = new ArrayList<>();
 
         hue = 40;

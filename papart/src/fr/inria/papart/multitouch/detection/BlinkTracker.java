@@ -5,7 +5,7 @@
  */
 package fr.inria.papart.multitouch.detection;
 
-import fr.inria.papart.calibration.files.PlanarTouchCalibration;
+import fr.inria.papart.calibration.PlanarTouchCalibration;
 import fr.inria.papart.multitouch.tracking.TouchPointTracker;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.procam.FFT;

@@ -22,11 +22,11 @@ package fr.inria.papart.multitouch;
 
 import fr.inria.papart.multitouch.tracking.TouchPointTracker;
 import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
-import fr.inria.papart.calibration.files.PlanarTouchCalibration;
+import fr.inria.papart.calibration.PlanarTouchCalibration;
 import fr.inria.papart.depthcam.DepthDataElementProjected;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 
-import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
+import tech.lity.rea.nectar.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.depthcam.analysis.DepthAnalysisImpl;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.multitouch.detection.ArmDetection;
@@ -37,7 +37,7 @@ import fr.inria.papart.multitouch.detection.Simple2D;
 import fr.inria.papart.multitouch.detection.TouchDetection;
 import fr.inria.papart.multitouch.detection.TouchDetectionDepth;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
-import fr.inria.papart.procam.Papart;
+import fr.inria.papart.Papart;
 import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ProjectorDisplay;
@@ -104,16 +104,24 @@ public class DepthTouchInput extends TouchInput {
         return touchDetectionsReady;
     }
 
+    /**
+     * TODO Repair default calibration
+     */
     public void loadConfiguration() {
         loadConfiguration(Papart.getPapart());
     }
 
+    /**
+     * TODO Repair default calibration
+     *
+     * @param papart
+     */
     public void loadConfiguration(Papart papart) {
-        for (int i = 0; i < 3; i++) {
-            setTouchDetectionCalibration(i, papart.getTouchCalibration(i));
-        }
-        setSimpleTouchDetectionCalibration(papart.getDefaultTouchCalibration());
-        setObjectTouchDetectionCalibration(papart.getDefaultObjectTouchCalibration());
+//        for (int i = 0; i < 3; i++) {
+//            setTouchDetectionCalibration(i, papart.getTouchCalibration(i));
+//        }
+//        setSimpleTouchDetectionCalibration(papart.getDefaultTouchCalibration());
+//        setObjectTouchDetectionCalibration(papart.getDefaultObjectTouchCalibration());
     }
 
     /**
@@ -195,7 +203,7 @@ public class DepthTouchInput extends TouchInput {
                 return;
             }
 
-           lockDepthData();
+            lockDepthData();
             if (!depthAnalysisReady) {
                 initDepthAnalysis();
             }
@@ -278,12 +286,12 @@ public class DepthTouchInput extends TouchInput {
 
         return touchList;
     }
-    
-   @Override
+
+    @Override
     public TouchList projectTouch(PaperScreen paperScreen, BaseDisplay display, TouchDetection td) {
         return projectTouch(paperScreen, display, (TouchDetectionDepth) td);
     }
-    
+
     public TouchList projectTouch(PaperScreen screen, BaseDisplay display, TouchDetectionDepth touchDetection) {
         TouchList touchList = new TouchList();
         tryToAddTouchs(touchDetection, touchList, screen, display);
@@ -674,5 +682,4 @@ public class DepthTouchInput extends TouchInput {
         return depthAnalysis.getDepthPoints();
     }
 
- 
 }

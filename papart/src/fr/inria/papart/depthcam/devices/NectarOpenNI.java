@@ -21,7 +21,7 @@
 package fr.inria.papart.depthcam.devices;
 
 import fr.inria.papart.depthcam.analysis.DepthAnalysis;
-import fr.inria.papart.procam.Papart;
+import fr.inria.papart.Papart;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.CameraNectar;
 import fr.inria.papart.procam.camera.CannotCreateCameraException;

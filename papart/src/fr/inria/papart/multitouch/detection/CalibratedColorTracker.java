@@ -5,12 +5,12 @@
  */
 package fr.inria.papart.multitouch.detection;
 
-import fr.inria.papart.calibration.files.PlanarTouchCalibration;
+import fr.inria.papart.calibration.PlanarTouchCalibration;
 import fr.inria.papart.multitouch.Touch;
 import fr.inria.papart.multitouch.TouchList;
 import fr.inria.papart.multitouch.tracking.TouchPointTracker;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
-import fr.inria.papart.procam.Papart;
+import fr.inria.papart.Papart;
 import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.utils.MathUtils;
 import static fr.inria.papart.utils.MathUtils.absd;
@@ -53,12 +53,15 @@ public class CalibratedColorTracker extends ColorTracker {
         setColorReferences(ColorReferenceThresholds.loadDefaultThresholds(numberOfRefs));
     }
 
-    
+    /**
+     * TODO: repaire Default calibration
+     */
     @Override
     public void initTouchDetection() {
         super.initTouchDetection();
 
         largeDetectionColor = new TouchDetectionLargeColor(trackedView);
+        largerTouchCalibration = Papart.getPapart().getDefaultColorZoneCalibration();
         largerTouchCalibration = Papart.getPapart().getDefaultColorZoneCalibration();
         
         largerTouchCalibration.setMaximumDistance(largerTouchCalibration.getMaximumDistance() * scale);

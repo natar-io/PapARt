@@ -42,7 +42,7 @@ public class CameraFactory {
      * specify the default camera type.
      * @return
      */
-    public static Camera createCamera(Camera.Type type, String description, String format) throws CannotCreateCameraException {
+    public static Camera createCamera(Camera.Type type, String description, String format) {
         Camera camera = null;
         CameraRGBIRDepth cameraMulti = null;
         int cameraNo = 0;
@@ -88,7 +88,6 @@ public class CameraFactory {
             }
         } catch (NullPointerException e) {
             e.printStackTrace();
-            throw new CannotCreateCameraException("Cannot create the camera type " + type.toString() + " " + description);
         }
         throw new RuntimeException("ProCam, Camera: Unspported camera Type");
     }

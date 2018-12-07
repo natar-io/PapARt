@@ -24,10 +24,9 @@ package fr.inria.papart.procam.camera;
  * @author jeremylaviole
  */
 import fr.inria.papart.multitouch.TouchInput;
-import fr.inria.papart.procam.HasExtrinsics;
+import tech.lity.rea.nectar.calibration.HasExtrinsics;
 import fr.inria.papart.utils.ImageUtils;
 import fr.inria.papart.tracking.MarkerBoard;
-import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.utils.ARToolkitPlusUtils;
 import fr.inria.papart.tracking.DetectedMarker;
 import fr.inria.papart.tracking.MarkerList;
@@ -48,6 +47,8 @@ import processing.core.PConstants;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
+import processing.data.JSONObject;
+import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
 
 public abstract class Camera extends Observable implements PConstants, HasExtrinsics, WithSize {
 
@@ -98,6 +99,7 @@ public abstract class Camera extends Observable implements PConstants, HasExtrin
     // Parameters
     // One or the other. 
     protected String cameraDescription = null;
+
     protected int systemNumber = -1;
 
     protected int width, height;
@@ -130,6 +132,10 @@ public abstract class Camera extends Observable implements PConstants, HasExtrin
         return sheets;
     }
 
+    public String getCameraDescription() {
+        return cameraDescription;
+    }
+
     abstract public void start();
 
     /// TESTING 
@@ -159,7 +165,7 @@ public abstract class Camera extends Observable implements PConstants, HasExtrin
 
     @Override
     public String toString() {
-        return "Camera " + cameraDescription + ","+ systemNumber + " + res " + width() + "x" + height() + " calibration " + this.calibrationFile;
+        return "Camera " + cameraDescription + "," + systemNumber + " + res " + width() + "x" + height() + " calibration " + this.calibrationFile;
     }
 
     public PImage getImage() {
@@ -215,6 +221,21 @@ public abstract class Camera extends Observable implements PConstants, HasExtrin
         updateCalibration();
     }
 
+    public void setCalibration(JSONObject calibration) {
+        this.calibrationFile = "manual calibration";
+
+        pdp = ProjectiveDeviceP.loadFromJSON(calibration);
+//        pdp = ProjectiveDeviceP.createDevice(fx, fy, cx, cy, width(), height(), d1, d2, d3, d4, d5);
+        updateCalibration();
+    }
+
+    /**
+     * Set the calibration from a file, it is loaded from Nectar now.
+     *
+     * @param fileName
+     * @deprecated
+     */
+    @Deprecated
     public void setCalibration(String fileName) {
         try {
             this.calibrationFile = fileName;
@@ -223,7 +244,6 @@ public abstract class Camera extends Observable implements PConstants, HasExtrin
             } else {
                 pdp = ProjectiveDeviceP.loadCameraDevice(parent, fileName);
             }
-
             updateCalibration();
         } catch (Exception e) {
             e.printStackTrace();

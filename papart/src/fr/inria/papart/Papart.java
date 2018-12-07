@@ -18,20 +18,14 @@
  * Public License along with this library; If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package fr.inria.papart.procam;
+package fr.inria.papart;
 
 import com.jogamp.newt.opengl.GLWindow;
-import fr.inria.papart.apps.MultiCalibrator;
+import fr.inria.papart.calibration.PlanarTouchCalibration;
 import fr.inria.papart.procam.camera.Camera;
-import fr.inria.papart.calibration.files.CameraConfiguration;
-import fr.inria.papart.calibration.files.HomographyCalibration;
-import fr.inria.papart.calibration.files.PlanarTouchCalibration;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
-import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
-import fr.inria.papart.calibration.files.PlaneCalibration;
-import fr.inria.papart.calibration.files.ScreenConfiguration;
 import fr.inria.papart.depthcam.analysis.DepthAnalysisImpl;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.depthcam.devices.NectarOpenNI;
@@ -42,6 +36,8 @@ import fr.inria.papart.multitouch.DepthTouchInput;
 import fr.inria.papart.multitouch.detection.BlinkTracker;
 import fr.inria.papart.multitouch.detection.CalibratedColorTracker;
 import fr.inria.papart.multitouch.detection.ColorTracker;
+import fr.inria.papart.procam.PaperScreen;
+import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
 import fr.inria.papart.utils.LibraryUtils;
 import fr.inria.papart.procam.camera.CameraFactory;
 import fr.inria.papart.procam.camera.CameraNectar;
@@ -121,13 +117,7 @@ public class Papart {
     public int defaultFontSize = 12;
 
     protected static Papart singleton = null;
-
-    protected float zNear = 10;
-    protected float zFar = 6000;
-
     private final PApplet applet;
-
-    private boolean cameraInitialized;
 
     private BaseDisplay display;
     private ARDisplay arDisplay;
@@ -137,10 +127,15 @@ public class Papart {
     private DepthAnalysisImpl depthAnalysis;
 
     private TouchInput touchInput;
-    private PVector frameSize = new PVector();
     private boolean isWithoutCamera = false;
 
     private DepthCameraDevice depthCameraDevice;
+
+// TODO: zNear and zFar should move somewhere else... in Nectar
+    protected float zNear = 10;
+    protected float zFar = 6000;
+
+    PVector frameSize = new PVector();
 
     /**
      * Create the main PapARt object, this object is used to hande calibration
@@ -149,7 +144,6 @@ public class Papart {
      * @param applet
      */
     public Papart(Object applet) {
-        this.cameraInitialized = false;
         this.applet = (PApplet) applet;
 
         // TODO: singleton -> Better implementation.
@@ -171,12 +165,11 @@ public class Papart {
      * @param applet
      * @return
      */
-    public static CameraConfiguration getDefaultCameraConfiguration(PApplet applet) {
-        CameraConfiguration config = new CameraConfiguration();
-        config.loadFrom(applet, cameraConfig);
-        return config;
-    }
-
+//    public static CameraConfiguration getDefaultCameraConfiguration(PApplet applet) {
+//        CameraConfiguration config = new CameraConfiguration();
+//        config.loadFrom(applet, cameraConfig);
+//        return config;
+//    }
     /**
      * Load the default detph camera configuration, to start the default depth
      * camera.
@@ -184,12 +177,11 @@ public class Papart {
      * @param applet
      * @return
      */
-    public static CameraConfiguration getDefaultDepthCameraConfiguration(PApplet applet) {
-        CameraConfiguration config = new CameraConfiguration();
-        config.loadFrom(applet, depthCameraConfig);
-        return config;
-    }
-
+//    public static CameraConfiguration getDefaultDepthCameraConfiguration(PApplet applet) {
+//        CameraConfiguration config = new CameraConfiguration();
+//        config.loadFrom(applet, depthCameraConfig);
+//        return config;
+//    }
     /**
      * Load the default screen configuration. The screen configuration is not
      * used in the current releases.
@@ -197,39 +189,11 @@ public class Papart {
      * @param applet
      * @return
      */
-    public static ScreenConfiguration getDefaultScreenConfiguration(PApplet applet) {
-        ScreenConfiguration config = new ScreenConfiguration();
-        config.loadFrom(applet, screenConfig);
-        return config;
-    }
-
-    public MultiCalibrator multiCalibrator;
-
-    public void multiCalibration() {
-        multiCalibration(false);
-    }
-
-    public void multiCalibration(boolean colorOnly) {
-
-        try {
-
-            if (multiCalibrator == null) {
-                multiCalibrator = new MultiCalibrator();
-
-            } else {
-                if (multiCalibrator.isActive()) {
-                    multiCalibrator.stopCalib();
-                } else {
-                    multiCalibrator.startCalib();
-                }
-//            calibrationPopup.hide();
-            }
-            multiCalibrator.setColorOnly(colorOnly);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
+//    public static ScreenConfiguration getDefaultScreenConfiguration(PApplet applet) {
+//        ScreenConfiguration config = new ScreenConfiguration();
+//        config.loadFrom(applet, screenConfig);
+//        return config;
+//    }
     /**
      * Start the default camera and projector. This initialize a camera and a
      * ProjectorDisplay. You still need to enable the tracking and start the
@@ -255,30 +219,30 @@ public class Papart {
      */
     public static Papart projection(PApplet applet, float quality) {
 
-        ScreenConfiguration screenConfiguration = getDefaultScreenConfiguration(applet);
-
-        removeFrameBorder(applet);
-
+//        ScreenConfiguration screenConfiguration = getDefaultScreenConfiguration(applet);
+//
+//        removeFrameBorder(applet);
+//
         Papart papart = new Papart(applet);
-
-        papart.frameSize.set(screenConfiguration.getProjectionScreenWidth(),
-                screenConfiguration.getProjectionScreenHeight());
-        papart.shouldSetWindowLocation = false;
-        papart.shouldSetWindowSize = true;
-        papart.registerPost();
-
-        papart.initProjectorDisplay(quality);
-        try {
-            papart.initCamera();
-        } catch (CannotCreateCameraException ex) {
-            throw new RuntimeException("Cannot start the default camera: " + ex);
-        }
-
-        papart.tryLoadExtrinsics();
-        papart.projector.setCamera(papart.getPublicCameraTracking());
-
-        papart.checkInitialization();
-        papart.registerKey();
+//
+//        papart.frameSize.set(screenConfiguration.getProjectionScreenWidth(),
+//                screenConfiguration.getProjectionScreenHeight());
+//        papart.shouldSetWindowLocation = false;
+//        papart.shouldSetWindowSize = true;
+//        papart.registerPost();
+//
+//        papart.initProjectorDisplay(quality);
+//        try {
+//            papart.initCamera();
+//        } catch (CannotCreateCameraException ex) {
+//            throw new RuntimeException("Cannot start the default camera: " + ex);
+//        }
+//
+//        papart.tryLoadExtrinsics();
+//        papart.projector.setCamera(papart.getPublicCameraTracking());
+//
+//        papart.checkInitialization();
+//        papart.registerKey();
 
         return papart;
     }
@@ -295,8 +259,9 @@ public class Papart {
     }
 
     /**
-     * Start the default projector. This initialize a ProjectorDisplay. The
-     * projectorDisplay will run fullscreen on the main screen.
+     * TO IMPLEMENT Start the default projector. This initialize a
+     * ProjectorDisplay. The projectorDisplay will run fullscreen on the main
+     * screen.
      *
      * @param applet
      * @param quality the quality can upscale or downscale the ProjectorDisplay.
@@ -306,19 +271,19 @@ public class Papart {
      */
     public static Papart projectionOnly(PApplet applet, float quality) {
 
-        ScreenConfiguration screenConfiguration = getDefaultScreenConfiguration(applet);
-
-        removeFrameBorder(applet);
-
+//        ScreenConfiguration screenConfiguration = getDefaultScreenConfiguration(applet);
+//
+//        removeFrameBorder(applet);
+//
         Papart papart = new Papart(applet);
-
-        papart.frameSize.set(screenConfiguration.getProjectionScreenWidth(),
-                screenConfiguration.getProjectionScreenHeight());
-        papart.shouldSetWindowLocation = true;
-        papart.shouldSetWindowSize = true;
-        papart.registerPost();
-        papart.initProjectorDisplay(quality);
-        papart.isWithoutCamera = true;
+//
+//        papart.frameSize.set(screenConfiguration.getProjectionScreenWidth(),
+//                screenConfiguration.getProjectionScreenHeight());
+//        papart.shouldSetWindowLocation = true;
+//        papart.shouldSetWindowSize = true;
+//        papart.registerPost();
+//        papart.initProjectorDisplay(quality);
+//        papart.isWithoutCamera = true;
 
         return papart;
     }
@@ -347,30 +312,35 @@ public class Papart {
      * @return
      */
     public static Papart seeThrough(PApplet applet, float quality) {
+        return seeThrough(applet, "camera0", "rgb", quality);
+    }
 
-        ProjectiveDeviceP pdp = null;
-        try {
-            pdp = ProjectiveDeviceP.loadCameraDevice(applet, cameraCalib);
-        } catch (Exception ex) {
-            Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
+    public static Papart seeThrough(PApplet applet, String cameraName, String cameraConfig, float quality) {
         Papart papart = new Papart(applet);
+        CameraNectar camera = papart.initCamera(cameraName, cameraConfig);
+        ARDisplay display = papart.initARDisplay(camera, quality);
 
-//        if (pdp != null) {
-//            papart.frameSize.set(pdp.getWidth(), pdp.getHeight());
-//            papart.shouldSetWindowSize = true;
-//            papart.registerPost();
-//        }
-        try {
-            papart.initCamera();
-        } catch (CannotCreateCameraException ex) {
-            throw new RuntimeException("Cannot start the default camera: " + ex);
-        }
-        papart.initARDisplay(quality);
-        papart.checkInitialization();
+        papart.arDisplay = display;
+        papart.cameraTracking = camera;
 
         return papart;
+    }
+
+    public CameraNectar initCamera() {
+        return initCamera("camera0", "rgb");
+    }
+
+    /**
+     * Initialize a camera for object tracking.
+     *
+     * @param cameraNo
+     * @param cameraFormat
+     * @return the created camera
+     */
+    public CameraNectar initCamera(String cameraNo, String cameraFormat) {
+        CameraNectar cam = (CameraNectar) CameraFactory.createCamera(Camera.Type.NECTAR, cameraNo, cameraFormat);
+        cam.setParent(applet);
+        return cam;
     }
 
     /**
@@ -418,135 +388,6 @@ public class Papart {
 //        }
     }
 
-    /**
-     * Force the size of the sketch to the cameraTracking size. This is used for
-     * SeeThrough augmented reality.
-     */
-    public void forceCameraSize() {
-        forceWindowSize(cameraTracking.width(),
-                cameraTracking.height());
-    }
-
-    /**
-     * Force the size of the sketch to the depthCamera size. This is used for
-     * SeeThrough augmented reality with depth cameras.
-     */
-    public void forceDepthCameraSize() {
-        forceWindowSize(depthCameraDevice.getDepthCamera().width(),
-                depthCameraDevice.getDepthCamera().height());
-    }
-
-    /**
-     * Force a custom window size.
-     *
-     * @param w width in pixels.
-     * @param h height in pixels.
-     */
-    public void forceWindowSize(int w, int h) {
-
-        Papart papart = Papart.getPapart();
-
-        papart.shouldSetWindowLocation = true;
-        papart.shouldSetWindowSize = true;
-        papart.registerPost();
-
-        frameSize.set(w, h);
-//        this.shouldSetWindowSize = true;
-//        registerPost();
-//
-//        GLWindow window = (GLWindow) applet.getSurface().getNative();
-//        window.setUndecorated(false);
-//        window.setSize(w, h);
-    }
-
-    /**
-     * Force the window size to the default projector size.
-     */
-    public void forceProjectorSize() {
-        frameSize.set(projector.getWidth(),
-                projector.getHeight());
-//        this.shouldSetWindowSize = true;
-//        registerPost();
-
-        GLWindow window = (GLWindow) applet.getSurface().getNative();
-        window.setUndecorated(true);
-        window.setSize(projector.getWidth(),
-                projector.getHeight());
-    }
-
-    /**
-     * Force a fullscreen size (for projectors). This call removes the window
-     * decoration: menu bars, and makets it fullscreen.
-     *
-     * @param w width in pixels.
-     * @param h hegiht in pixels.
-     * @param px location in pixels (from left).
-     * @param py location in pixels (from top).
-     */
-    public void forceProjectorSize(int w, int h, int px, int py) {
-        frameSize.set(w, h);
-//        this.shouldSetWindowSize = true;
-//        registerPost();
-
-        GLWindow window = (GLWindow) applet.getSurface().getNative();
-        window.setUndecorated(true);
-        window.setSize(w, h);
-        window.setPosition(px, py);
-    }
-
-    /**
-     * Places the window at the correct location if required, according to the
-     * configuration. Do not call directly, it may crash the application.
-     * Register the method "post" and it will call this method.
-     *
-     */
-    public static void checkWindowLocation() {
-        Papart papart = getPapart();
-
-        if (papart == null) {
-            System.err.println("Cannot update window location without a Papart object.");
-            return;
-        }
-        if (papart.shouldSetWindowLocation) {
-            papart.defaultFrameLocation();
-        }
-        if (papart.shouldSetWindowSize) {
-            papart.setFrameSize();
-        }
-        papart.shouldSetWindowLocation = false;
-        papart.shouldSetWindowSize = false;
-    }
-
-    /**
-     * Does not draw anything, it used only to check the window location. This
-     * is called once then unregistered.
-     */
-    public void post() {
-        checkWindowLocation();
-        applet.unregisterMethod("post", this);
-    }
-
-    /**
-     * Set the frame to default location given by the screenConfiguration.
-     */
-    public void defaultFrameLocation() {
-        ScreenConfiguration screenConfiguration = getDefaultScreenConfiguration(this.applet);
-        this.applet.frame.setLocation(screenConfiguration.getProjectionScreenOffsetX(),
-                screenConfiguration.getProjectionScreenOffsetY());
-
-        GLWindow window = (GLWindow) applet.getSurface().getNative();
-        window.setPosition(screenConfiguration.getProjectionScreenOffsetX(),
-                screenConfiguration.getProjectionScreenOffsetY());
-    }
-
-    /**
-     * Update the applet size to the current frameSize. The current frameSize
-     * depends on which type of rendering is used.
-     */
-    public void setFrameSize() {
-        this.applet.getSurface().setSize((int) frameSize.x, (int) frameSize.y);
-    }
-
     protected static void removeFrameBorder(PApplet applet) {
         if (!applet.g.isGL()) {
             applet.frame.removeNotify();
@@ -565,61 +406,63 @@ public class Papart {
     }
 
     /**
-     * Save a PMatrix3D to the Papart calibration folder. This can be used to
-     * communicate 3D locations between sketches. The calibration folder is
-     * this: sketchbook/libraries/PapARt/data/calibration.
+     * TO REIMPLEMENT Save a PMatrix3D to the Papart calibration folder. This
+     * can be used to communicate 3D locations between sketches. The calibration
+     * folder is this: sketchbook/libraries/PapARt/data/calibration.
      *
      * @param fileName
      * @param mat
      */
     public void saveCalibration(String fileName, PMatrix3D mat) {
-        HomographyCalibration.saveMatTo(applet, mat, Papart.calibrationFolder + fileName);
+//        HomographyCalibration.saveMatTo(applet, mat, Papart.calibrationFolder + fileName);
     }
 
     /**
-     * Saves a 3D transformation matrix (such as a paper location).
+     * TO REIMPLEMENT Saves a 3D transformation matrix (such as a paper
+     * location).
      *
      * @param fileName
      * @param mat
      */
     public void saveLocationTo(String fileName, PMatrix3D mat) {
-        HomographyCalibration.saveMatTo(applet, mat, fileName);
+//        HomographyCalibration.saveMatTo(applet, mat, fileName);
     }
 
     /**
-     * Load a PMatrix3D to the Papart calibration folder. This can be used to
-     * communicate 3D locations between sketches. The calibration folder is
-     * this: sketchbook/libraries/PapARt/data/calibration.
+     * TO REIMPLEMENT Load a PMatrix3D to the Papart calibration folder. This
+     * can be used to communicate 3D locations between sketches. The calibration
+     * folder is this: sketchbook/libraries/PapARt/data/calibration.
      *
      * @param fileName
      * @return null if the file does not exists.
      */
     public PMatrix3D loadCalibration(String fileName) {
-
-        File f = new File(Papart.calibrationFolder + fileName);
-        if (f.exists()) {
-            return HomographyCalibration.getMatFrom(applet, Papart.calibrationFolder + fileName);
-        } else {
-            return null;
-        }
+        return new PMatrix3D();
+//        File f = new File(Papart.calibrationFolder + fileName);
+//        if (f.exists()) {
+//            return HomographyCalibration.getMatFrom(applet, Papart.calibrationFolder + fileName);
+//        } else {
+//            return null;
+//        }
     }
 
     /**
-     * Save the position of a paperScreen as the default table location.
+     * TO REIMPLEMENT Save the position of a paperScreen as the default table
+     * location.
      *
      * @param paperScreen
      */
     public void setTableLocation(PaperScreen paperScreen) {
-        HomographyCalibration.saveMatTo(applet, paperScreen.getLocation(), tablePosition);
+//        HomographyCalibration.saveMatTo(applet, paperScreen.getLocation(), tablePosition);
     }
 
     /**
-     * Save the position of a matrix the default table location.
+     * TO REIMPLEMENT Save the position of a matrix the default table location.
      *
      * @param mat
      */
     public void setTableLocation(PMatrix3D mat) {
-        HomographyCalibration.saveMatTo(applet, mat, tablePosition);
+//        HomographyCalibration.saveMatTo(applet, mat, tablePosition);
     }
 
     /**
@@ -636,43 +479,38 @@ public class Papart {
     }
 
     /**
-     * The location of the table, warning it must be set once by
+     * TO REIMPLEMENT The location of the table, warning it must be set once by
      * setTablePosition.
      *
      * @return
      */
     public PMatrix3D getTableLocation() {
-        return HomographyCalibration.getMatFrom(applet, tablePosition);
+        return new PMatrix3D();
+//        return HomographyCalibration.getMatFrom(applet, tablePosition);
     }
 
     /**
-     * Work in progress function
+     * TO REIMPLEMENT Work in progress function
      *
      * @return
      */
-    public PlaneCalibration getTablePlane() {
-        return PlaneCalibration.CreatePlaneCalibrationFrom(HomographyCalibration.getMatFrom(applet, tablePosition),
-                new PVector(100, 100));
-    }
-
+//    public PlaneCalibration getTablePlane() {
+//        return new PlaneCalibration();
+////        return PlaneCalibration.CreatePlaneCalibrationFrom(HomographyCalibration.getMatFrom(applet, tablePosition),
+////                new PVector(100, 100));
+//    }
     /**
-     * Move a PaperScreen to the table location. After this, the paperScreen
-     * location is not updated anymore. To activate the tracking again use :
-     * paperScreen.useManualLocation(false); You can move the paperScreen
-     * according to its current location with the paperScreen.setLocation()
-     * methods.
+     * TO REIMPLEMENT Move a PaperScreen to the table location. After this, the
+     * paperScreen location is not updated anymore. To activate the tracking
+     * again use : paperScreen.useManualLocation(false); You can move the
+     * paperScreen according to its current location with the
+     * paperScreen.setLocation() methods.
      *
      * @param paperScreen
      */
     public void moveToTablePosition(PaperScreen paperScreen) {
-        paperScreen.useManualLocation(true, HomographyCalibration.getMatFrom(applet, tablePosition));
+//        paperScreen.useManualLocation(true, HomographyCalibration.getMatFrom(applet, tablePosition));
 //        paperScreen.markerBoard.setFakeLocation(getPublicCameraTracking(), HomographyCalibration.getMatFrom(applet, tablePosition));
-    }
-
-    @Deprecated
-    public void initNoCamera(int quality) {
-        this.isWithoutCamera = true;
-        initNoCameraDisplay(quality);
     }
 
     /**
@@ -691,41 +529,6 @@ public class Papart {
         } else {
             arDisplay.setExtrinsics(extrinsics);
         }
-    }
-
-    /**
-     * Initialize the default calibrated camera for object tracking.
-     *
-     * @throws fr.inria.papart.procam.camera.CannotCreateCameraException
-     */
-    public void initCamera() throws CannotCreateCameraException {
-        CameraConfiguration cameraConfiguration = getDefaultCameraConfiguration(applet);
-        initCamera(cameraConfiguration);
-    }
-
-    /**
-     * Initialize a camera for object tracking.
-     *
-     * @param cameraConfiguration
-     * @throws fr.inria.papart.procam.camera.CannotCreateCameraException
-     *
-     */
-    public void initCamera(CameraConfiguration cameraConfiguration) throws CannotCreateCameraException {
-        initCamera(cameraConfiguration.getCameraName(),
-                cameraConfiguration.getCameraType(),
-                cameraConfiguration.getCameraFormat());
-    }
-
-    /**
-     * Initialize a camera for object tracking.
-     *
-     */
-    public void initCamera(String cameraNo, Camera.Type cameraType, String cameraFormat) throws CannotCreateCameraException {
-        assert (!cameraInitialized);
-
-        cameraTracking = CameraFactory.createCamera(cameraType, cameraNo, cameraFormat);
-        cameraTracking.setParent(applet);
-        cameraTracking.setCalibration(cameraCalib);
     }
 
     public void loadDefaultProjector() {
@@ -754,20 +557,25 @@ public class Papart {
      *
      * @param quality
      */
-    private void initARDisplay(float quality) {
-        assert (this.cameraTracking != null && this.applet != null);
+    private ARDisplay initARDisplay(CameraNectar cameraTracking, float quality) {
+        assert (cameraTracking != null && this.applet != null);
 
-        arDisplay = new ARDisplay(this.applet, getPublicCameraTracking());
-        arDisplay.setZNearFar(zNear, zFar);
-        arDisplay.setQuality(quality);
-        arDisplay.init();
-        this.display = arDisplay;
-        frameSize.set(arDisplay.getWidth(), arDisplay.getHeight());
-    }
+        // TODO: It could work with a standard calibration though...
+        // be sure that the camera calibration is loaded.
+        boolean updateCalibration = cameraTracking.updateCalibration();
+        if (!updateCalibration) {
+            String err = "Cannot get the calibration of: " + cameraTracking.getCameraDescription();
+            this.applet.die(err, new RuntimeException(err));
+        }
+        // Crash here ! -- No calibration 
 
-    @Deprecated
-    private void initNoCameraDisplay(float quality) {
-        initDebugDisplay();
+        ARDisplay arDisp = new ARDisplay(this.applet, getPublicCamera(cameraTracking));
+        arDisp.setZNearFar(zNear, zFar);
+        arDisp.setQuality(quality);
+        arDisp.init();
+        this.display = arDisp;
+        frameSize.set(arDisp.getWidth(), arDisp.getHeight());
+        return arDisp;
     }
 
     /**
@@ -778,12 +586,6 @@ public class Papart {
         display.setFrameSize(applet.width, applet.height);
         display.setDrawingSize(applet.width, applet.height);
         display.init();
-    }
-
-    private void checkInitialization() {
-        assert (cameraTracking != null);
-//        this.applet.registerMethod("dispose", this);
-//        this.applet.registerMethod("stop", this);
     }
 
     // TODO: variants: hand, finger, object, small object etc... 
@@ -806,18 +608,6 @@ public class Papart {
         }
         updateDepthCameraDeviceExtrinsics();
         return (DepthTouchInput) this.getTouchInput();
-    }
-
-    public void loadIRTouchInput() {
-        try {
-            initCamera();
-            ((CameraRGBIRDepth) cameraTracking).setUseIR(true);
-            loadIRTouch();
-
-        } catch (CannotCreateCameraException cce) {
-            throw new RuntimeException("Cannot start the depth camera");
-        }
-//        updateDepthCameraDeviceExtrinsics();
     }
 
     /**
@@ -856,27 +646,26 @@ public class Papart {
     }
 
     /**
-     * Initialize the default depth camera. You still need to start the camera.
+     * TO REIMPLEMENT Initialize the default depth camera. You still need to
+     * start the camera.
      *
      * @return @throws CannotCreateCameraException
      */
     public DepthCameraDevice loadDefaultDepthCamera() throws CannotCreateCameraException {
 
         // Two cases, either the other camera running of the same type
-        CameraConfiguration depthCamConfiguration = Papart.getDefaultDepthCameraConfiguration(applet);
-
+//        CameraConfiguration depthCamConfiguration = Papart.getDefaultDepthCameraConfiguration(applet);
         // If the camera is not instanciated, we use depth + color from the camera.
 //        if (cameraTracking == null) {
 //            System.err.println("You must choose a camera to create a DepthCamera.");
 //        }
-        if (depthCamConfiguration.getCameraType() == Camera.Type.NECTAR) {
-            depthCameraDevice = new NectarOpenNI(applet, cameraTracking);
-        }
+//        if (Camera.Type.valueOf(depthCamConfiguration.getCameraType()) == Camera.Type.NECTAR) {
+        depthCameraDevice = new NectarOpenNI(applet, cameraTracking);
 
         if (depthCameraDevice == null) {
-            System.err.println("Could not load the depth camera !" + "Camera Type " + depthCamConfiguration.getCameraType());
+            System.err.println("Could not load the depth camera !");
         }
-        
+
         this.cameraTracking = depthCameraDevice.getMainCamera();
 
         // At this point, cameraTracking & depth Camera are ready. 
@@ -884,43 +673,32 @@ public class Papart {
     }
 
     /**
-     * Initialize the default touch input. You need to create the depth camera
-     * first.
+     * TO REIMPLEMENT Initialize the default touch input. You need to create the
+     * depth camera first.
      */
     private void loadDefaultDepthTouchInput() {
         depthAnalysis = new DepthAnalysisImpl(this.applet, depthCameraDevice);
 
-        PlaneAndProjectionCalibration calibration = new PlaneAndProjectionCalibration();
-//        calibration.loadFrom(this.applet, planeAndProjectionCalib);
-
-        HomographyCalibration hc = new HomographyCalibration();
-        hc.loadFrom(applet, Papart.homographyCalib);
-
-        PlaneCalibration pc = new PlaneCalibration();
-        pc.loadFrom(applet, Papart.planeCalib);
-        calibration.setPlane(pc);
-        calibration.setHomography(hc);
-
-        DepthTouchInput depthTouchInput
-                = new DepthTouchInput(this.applet,
-                        depthCameraDevice,
-                        depthAnalysis, calibration);
-
-        depthCameraDevice.setTouch(depthTouchInput);
-
-        // UPDATE: default is hand.
-        // depthTouchInput.initHandDetection();
-        this.touchInput = depthTouchInput;
-    }
-
-    private void loadIRTouch() {
-
 //        PlaneAndProjectionCalibration calibration = new PlaneAndProjectionCalibration();
 //        calibration.loadFrom(this.applet, planeAndProjectionCalib);
-        ColorTouchInput colorTouchInput
-                = new ColorTouchInput(this.applet, ((CameraRGBIRDepth) cameraTracking).getIRCamera());
-        this.touchInput = colorTouchInput;
-        cameraTracking.setTouchInput(colorTouchInput);
+//        HomographyCalibration hc = new HomographyCalibration();
+//        hc.loadFrom(applet, Papart.homographyCalib);
+//
+//        PlaneCalibration pc = new PlaneCalibration();
+//        pc.loadFrom(applet, Papart.planeCalib);
+//        calibration.setPlane(pc);
+//        calibration.setHomography(hc);
+//
+//        DepthTouchInput depthTouchInput
+//                = new DepthTouchInput(this.applet,
+//                        depthCameraDevice,
+//                        depthAnalysis, calibration);
+//
+//        depthCameraDevice.setTouch(depthTouchInput);
+//
+//        // UPDATE: default is hand.
+//        // depthTouchInput.initHandDetection();
+//        this.touchInput = depthTouchInput;
     }
 
     public PlanarTouchCalibration getDefaultColorTouchCalibration() {
@@ -981,36 +759,47 @@ public class Papart {
         this.getPublicCameraTracking().trackSheets(true);
     }
 
-    public void setDistantCamera(String url, int port){
-        if(this.cameraTracking instanceof CameraNectar){
-            ((CameraNectar)cameraTracking).DEFAULT_REDIS_HOST = url;
-            ((CameraNectar)cameraTracking).DEFAULT_REDIS_PORT = port;
-        }else {
+    public void setDistantCamera(String url, int port) {
+        if (this.cameraTracking instanceof CameraNectar) {
+            ((CameraNectar) cameraTracking).DEFAULT_REDIS_HOST = url;
+            ((CameraNectar) cameraTracking).DEFAULT_REDIS_PORT = port;
+        } else {
             System.err.println("Cannot set distant camera url.");
             return;
         }
     }
-    
+
     public Jedis videoOutput;
     public String videoOutputKey;
-    
-    public void streamOutput(Jedis connection, String key){
+
+    public void streamOutput(Jedis connection, String key) {
         videoOutput = connection;
         videoOutputKey = key;
     }
-    
-    
+
+
     /**
      * Start the camera thread, and the tracking. it calls automatically
      * startCameraThread().
      */
-    public void startTracking() {
-        if (this.cameraTracking == null) {
+    public void startTracking() { 
+        if (cameraTracking == null) {
             System.err.println("Start Tracking requires a Camera...");
             return;
         }
-        this.getPublicCameraTracking().trackSheets(true);
-        startCameraThread();
+        startTracking((CameraNectar) cameraTracking);
+    }
+    /**
+     * Start the camera thread, and the tracking. it calls automatically
+     * startCameraThread().
+     */
+    public void startTracking(CameraNectar camera) {
+        if (camera == null) {
+            System.err.println("Start Tracking requires a Camera...");
+            return;
+        }
+        getPublicCamera(camera).trackSheets(true);
+        startCameraThread(camera);
     }
 
     /**
@@ -1018,6 +807,15 @@ public class Papart {
      * when needed.
      */
     public void startCameraThread() {
+        startCameraThread((CameraNectar) cameraTracking);
+    }
+
+    /**
+     * Start the camera(s) in a thread.This call also starts the depth camera
+ when needed.
+     * @param cameraTracking
+     */
+    public void startCameraThread(CameraNectar cameraTracking) {
         cameraTracking.start();
 
         if (depthCameraDevice != null) {
@@ -1056,15 +854,6 @@ public class Papart {
                 || cameraTracking.getDetectedMarkers() == null) {
             return null;
         }
-
-//        Optional<DetectedMarker> marker = Arrays.asList(cameraTracking.getDetectedMarkers())
-//                .stream()
-//                .filter((m) -> m.id == markerID)
-//                .findFirst(); 
-//        
-//        if(marker != null){
-//            return MathUtils.compute3DPos(marker.get(), markerWidth, cameraTracking);
-//        }
 
         for (DetectedMarker marker : cameraTracking.getDetectedMarkers()) {
             if (marker.id == markerID) {
@@ -1148,7 +937,7 @@ public class Papart {
         out.z = PApplet.atan2(x, y);
 
         out.x = relative.m03;
-        out.y = reference.drawingSize.y - relative.m13;
+        out.y = reference.getDrawingSize().y - relative.m13;
 
         return out;
     }
@@ -1165,58 +954,58 @@ public class Papart {
         CalibratedColorTracker colorTracker = new CalibratedColorTracker(screen, quality);
         return colorTracker;
     }
-
-    /**
-     * Create a red ColorTracker for a PaperScreen.
-     *
-     * @param screen PaperScreen to set the location of the tracking.
-     * @param quality capture quality in px/mm. lower (0.5f) for higher
-     * performance.
-     * @return
-     */
-    public ColorTracker initRedTracking(PaperScreen screen, float quality) {
-        return initColorTracking("red", redThresholds, screen, quality);
-    }
-
-    /**
-     * Create a blue ColorTracker for a PaperScreen.
-     *
-     * @param screen PaperScreen to set the location of the tracking.
-     * @param quality capture quality in px/mm. lower (0.5f) for higher
-     * performance.
-     * @return
-     */
-    public ColorTracker initBlueTracking(PaperScreen screen, float quality) {
-        return initColorTracking("blue", blueThresholds, screen, quality);
-    }
-
-    /**
-     * Create a blue ColorTracker for a PaperScreen.
-     *
-     * @param screen PaperScreen to set the location of the tracking.
-     * @param quality capture quality in px/mm. lower (0.5f) for higher
-     * performance.
-     * @param freq
-     * @return
-     */
-    public BlinkTracker initXTracking(PaperScreen screen, float quality, float freq) {
-        BlinkTracker blinkTracker = new BlinkTracker(screen, getDefaultBlinkTouchCalibration(), quality);
-        String[] list = applet.loadStrings(blinkThresholds);
-        for (String data : list) {
-            blinkTracker.loadParameter(data);
-        }
-        blinkTracker.setName("x");
-        blinkTracker.setFreq(freq);
-        return blinkTracker;
-    }
-
-    private ColorTracker initColorTracking(String name, String calibFile, PaperScreen screen, float quality) {
-        ColorTracker colorTracker = new ColorTracker(screen, getDefaultColorTouchCalibration(), quality);
-        String[] list = applet.loadStrings(calibFile);
-        colorTracker.loadParameters(list);
-        colorTracker.setName(name);
-        return colorTracker;
-    }
+//
+//    /**
+//     * Create a red ColorTracker for a PaperScreen.
+//     *
+//     * @param screen PaperScreen to set the location of the tracking.
+//     * @param quality capture quality in px/mm. lower (0.5f) for higher
+//     * performance.
+//     * @return
+//     */
+//    public ColorTracker initRedTracking(PaperScreen screen, float quality) {
+//        return initColorTracking("red", redThresholds, screen, quality);
+//    }
+//
+//    /**
+//     * Create a blue ColorTracker for a PaperScreen.
+//     *
+//     * @param screen PaperScreen to set the location of the tracking.
+//     * @param quality capture quality in px/mm. lower (0.5f) for higher
+//     * performance.
+//     * @return
+//     */
+//    public ColorTracker initBlueTracking(PaperScreen screen, float quality) {
+//        return initColorTracking("blue", blueThresholds, screen, quality);
+//    }
+//
+//    /**
+//     * Create a blue ColorTracker for a PaperScreen.
+//     *
+//     * @param screen PaperScreen to set the location of the tracking.
+//     * @param quality capture quality in px/mm. lower (0.5f) for higher
+//     * performance.
+//     * @param freq
+//     * @return
+//     */
+//    public BlinkTracker initXTracking(PaperScreen screen, float quality, float freq) {
+//        BlinkTracker blinkTracker = new BlinkTracker(screen, getDefaultBlinkTouchCalibration(), quality);
+//        String[] list = applet.loadStrings(blinkThresholds);
+//        for (String data : list) {
+//            blinkTracker.loadParameter(data);
+//        }
+//        blinkTracker.setName("x");
+//        blinkTracker.setFreq(freq);
+//        return blinkTracker;
+//    }
+//
+//    private ColorTracker initColorTracking(String name, String calibFile, PaperScreen screen, float quality) {
+//        ColorTracker colorTracker = new ColorTracker(screen, getDefaultColorTouchCalibration(), quality);
+//        String[] list = applet.loadStrings(calibFile);
+//        colorTracker.loadParameters(list);
+//        colorTracker.setName(name);
+//        return colorTracker;
+//    }
 
     public BaseDisplay getDisplay() {
         return this.display;
@@ -1250,13 +1039,23 @@ public class Papart {
     }
 
     public Camera getPublicCameraTracking() {
-        if (cameraTracking instanceof CameraRGBIRDepth) {
-            if (((CameraRGBIRDepth) cameraTracking).getActingCamera() == null) {
+        return getPublicCamera(cameraTracking);
+    }
+
+    /**
+     * The public camera is the main one: usually the color.
+     *
+     * @param camera
+     * @return
+     */
+    public Camera getPublicCamera(Camera camera) {
+        if (camera instanceof CameraRGBIRDepth) {
+            if (((CameraRGBIRDepth) camera).getActingCamera() == null) {
                 throw new RuntimeException("Papart: Impossible to use the mainCamera, use a subCamera or set the ActAsX methods.");
             }
-            return ((CameraRGBIRDepth) cameraTracking).getActingCamera();
+            return ((CameraRGBIRDepth) camera).getActingCamera();
         }
-        return this.cameraTracking;
+        return camera;
     }
 
     public TouchInput getTouchInput() {

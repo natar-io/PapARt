@@ -9,7 +9,7 @@ import fr.inria.papart.depthcam.PixelOffset;
 import fr.inria.papart.depthcam.analysis.DepthAnalysisPImageView;
 import fr.inria.papart.multitouch.detection.ColorReferenceThresholds;
 import fr.inria.papart.procam.PaperTouchScreen;
-import fr.inria.papart.procam.ProjectiveDeviceP;
+import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.tracking.DetectedMarker;
 import fr.inria.papart.tracking.MarkerBoard;

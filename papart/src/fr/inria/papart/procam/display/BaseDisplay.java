@@ -20,7 +20,7 @@
 package fr.inria.papart.procam.display;
 
 import fr.inria.papart.procam.HasCamera;
-import fr.inria.papart.procam.Papart;
+import fr.inria.papart.Papart;
 import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.VideoEmitter;
 
@@ -252,6 +252,10 @@ public class BaseDisplay implements HasCamera {
         this.parent = parent;
     }
 
+    public PApplet getParent(){
+        return this.parent;
+    }
+    
     public float getQuality() {
         return quality;
     }

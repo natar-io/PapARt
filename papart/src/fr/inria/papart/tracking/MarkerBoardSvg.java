@@ -19,8 +19,8 @@
  */
 package fr.inria.papart.tracking;
 
-import fr.inria.papart.procam.Papart;
-import fr.inria.papart.procam.ProjectiveDeviceP;
+import fr.inria.papart.Papart;
+import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
 import static fr.inria.papart.tracking.MarkerBoard.BLOCK_UPDATE;
 import static fr.inria.papart.tracking.MarkerBoard.FORCE_UPDATE;
 import static fr.inria.papart.tracking.MarkerBoard.NORMAL;

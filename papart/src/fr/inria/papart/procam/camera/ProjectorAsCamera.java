@@ -19,8 +19,7 @@
  */
 package fr.inria.papart.procam.camera;
 
-import fr.inria.papart.apps.MultiCalibrator;
-import fr.inria.papart.procam.ProjectiveDeviceP;
+import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
 import fr.inria.papart.utils.ARToolkitPlusUtils;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.utils.ImageUtils;
@@ -51,7 +50,6 @@ public class ProjectorAsCamera extends Camera {
     private IplImage grayImage;
     private final ProjectorDisplay projector;
     private PImage pimage;
-    private MarkerListener markerListener;
 
     public ProjectorAsCamera(ProjectorDisplay projector, Camera cameraTracking, TrackedView view) {
         this.projectorView = view;
@@ -59,182 +57,6 @@ public class ProjectorAsCamera extends Camera {
         this.projector = projector;
         this.isConnected = true;
         this.isClosing = false;
-    }
-
-    //// TODO: Subclass current class
-    private boolean useNectar = false;
-    private String projName;
-    private CameraNectar nectarCamera;
-    private String nectarProjName;
-    private Jedis redis;
-
-    private ArrayList<DetectedMarker[]> detectedMarkers;
-
-    public void useNectar(boolean use, CameraNectar cam, String projName) {
-        this.useNectar = use;
-        if (use) {
-            initNectar(cam, projName);
-        }
-    }
-
-    private void initNectar(CameraNectar cam, String projName) {
-        this.nectarCamera = cam;
-        this.nectarProjName = projName;
-        this.format = PixelFormat.BGR;
-
-        redis = cam.createConnection();
-        sendParams(this);
-        // TODO: check nbhchannels
-        initMemory(width, height, 3, 1);
-    }
-
-    private void sendParams(Camera cam) {
-        redis.set(nectarProjName + ":width", Integer.toString(cam.width()));
-        redis.set(nectarProjName + ":height", Integer.toString(cam.height()));
-        redis.set(nectarProjName + ":channels", Integer.toString(3));
-        redis.set(nectarProjName + ":pixelformat", cam.getPixelFormat().toString());
-    }
-
-    byte[] imageData;
-
-    private void initMemory(int width, int height, int nChannels, int bytePerChannel) {
-        imageData = new byte[nChannels * width * height * bytePerChannel];
-    }
-
-    /**
-     * Warning check nb channels.
-     *
-     */
-    public void sendImageToNectar() {
-        sendColorImage(currentImage);
-    }
-
-    boolean isStreamSet = true;
-    boolean isStreamPublish = true;
-
-    static int imgID = 0;
-
-    private void sendColorImage(IplImage img) {
-        ByteBuffer byteBuffer;
-        byteBuffer = img.getByteBuffer();
-        byteBuffer.get(imageData);
-        String name = nectarProjName;
-        byte[] id = name.getBytes();
-        String time = Long.toString(parent.millis());
-        System.out.println("Sending Projector image to Nectar.");
-//        if (isStreamSet) {
-//            redis.set(id, imageData);
-//            redis.set((name + ":timestamp"), time);
-//        }
-//        if (isStreamPublish) {
-        redis.set(id, imageData);
-        redis.set((name + ":timestamp"), time);
-
-        JSONObject imageInfo = new JSONObject();
-        imageInfo.setLong("timestamp", System.currentTimeMillis());
-        imageInfo.setLong("imageCount", imgID++);
-        redis.publish(id, imageInfo.toString().getBytes());
-//        }
-    }
-
-    MultiCalibrator calibrator;
-    private boolean allMarkersFound = false;
-
-    public void startMarkerTracking(int nbMarkers, MultiCalibrator calibrator) {
-        Jedis redisSub = nectarCamera.createConnection();
-        this.calibrator = calibrator;
-        this.detectedMarkers = new ArrayList<>();
-        allMarkersFound = false;
-        System.out.println("Listening to :  " + nectarProjName + ":markers");
-        markerListener = new MarkerListener(nbMarkers);
-        new RedisThread(redisSub, markerListener, nectarProjName + ":markers").start();
-    }
-
-    private void setMarkers(byte[] message, int id) {
-        System.out.println("Setting markers: " + id);
-        this.detectedMarkers.add(id, CameraNectar.parseMarkerList(new String(message)));
-//        System.out.println("Markers found: " + currentMarkers.length);
-    }
-
-    public DetectedMarker[] getMarkers(int id) {
-        return this.detectedMarkers.get(id);
-    }
-
-    public boolean allMarkersFound() {
-        return this.allMarkersFound;
-    }
-    
-    public int getLastMarkerFound(){
-        return markerListener.currentMarker();
-    }
-
-    class RedisThread extends Thread {
-
-        BinaryJedisPubSub listener;
-        private final String key;
-        Jedis client;
-
-        public RedisThread(Jedis client, BinaryJedisPubSub listener, String key) {
-            this.listener = listener;
-            this.key = key;
-            this.client = client;
-        }
-
-        @Override
-        public void run() {
-            try {
-                byte[] id = key.getBytes();
-                System.out.println("Subscribed to: " + key);
-                client.subscribe(listener, id);
-            } catch (Exception e) {
-                System.out.println("ProjectorAsCameraThread: Redis connection error: " + e);
-            }
-        }
-    }
-
-    class MarkerListener extends BinaryJedisPubSub {
-
-        private int currentMarker = 0;
-        private final int nbMarkersToRead;
-
-        public MarkerListener(int nbMarkersToRead) {
-            this.nbMarkersToRead = nbMarkersToRead;
-        }
-
-        @Override
-        public void onMessage(byte[] channel, byte[] message) {
-            setMarkers(message, currentMarker);
-            currentMarker++;
-            System.out.println("got message:  " + currentMarker);
-            if (currentMarker == nbMarkersToRead) {
-                allMarkersFound = true;
-                this.unsubscribe();
-            }
-        }
-        
-        public int currentMarker(){
-            return currentMarker;
-        }
-
-        @Override
-        public void onSubscribe(byte[] channel, int subscribedChannels) {
-        }
-
-        @Override
-        public void onUnsubscribe(byte[] channel, int subscribedChannels) {
-        }
-
-        @Override
-        public void onPSubscribe(byte[] pattern, int subscribedChannels) {
-        }
-
-        @Override
-        public void onPUnsubscribe(byte[] pattern, int subscribedChannels) {
-        }
-
-        @Override
-        public void onPMessage(byte[] pattern, byte[] channel, byte[] message) {
-        }
     }
 
     public void setImage(IplImage image) {

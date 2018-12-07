@@ -18,7 +18,7 @@
  */
 package fr.inria.papart.procam.camera;
 
-import fr.inria.papart.procam.ProjectiveDeviceP;
+import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
 import fr.inria.papart.tracking.DetectedMarker;
 import fr.inria.papart.tracking.MarkerBoard;
 import java.util.List;

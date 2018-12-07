@@ -19,7 +19,7 @@
  */
 package fr.inria.papart.tracking;
 
-import fr.inria.papart.procam.ProjectiveDeviceP;
+import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
 import java.util.ArrayList;
 import java.util.Arrays;
 import org.bytedeco.javacpp.ARToolKitPlus;

@@ -18,13 +18,13 @@
  */
 package fr.inria.papart.multitouch.detection;
 
-import fr.inria.papart.calibration.files.PlanarTouchCalibration;
+import fr.inria.papart.calibration.PlanarTouchCalibration;
 import fr.inria.papart.multitouch.Touch;
 import fr.inria.papart.multitouch.TouchList;
 import static fr.inria.papart.multitouch.detection.CalibratedColorTracker.colorFinderLAB;
 import fr.inria.papart.multitouch.tracking.TouchPointTracker;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
-import fr.inria.papart.procam.Papart;
+import fr.inria.papart.Papart;
 import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.camera.TrackedView;
 import fr.inria.papart.utils.MathUtils;

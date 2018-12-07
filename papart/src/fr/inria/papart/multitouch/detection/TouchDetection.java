@@ -5,7 +5,7 @@
  */
 package fr.inria.papart.multitouch.detection;
 
-import fr.inria.papart.calibration.files.PlanarTouchCalibration;
+import fr.inria.papart.calibration.PlanarTouchCalibration;
 import fr.inria.papart.depthcam.ProjectedDepthData;
 import fr.inria.papart.multitouch.ConnectedComponent;
 import static fr.inria.papart.multitouch.ConnectedComponent.INVALID_COMPONENT;

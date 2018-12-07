@@ -20,10 +20,10 @@
  */
 package fr.inria.papart.depthcam.devices;
 
-import fr.inria.papart.calibration.files.HomographyCalibration;
+import tech.lity.rea.nectar.calibration.files.HomographyCalibration;
 import fr.inria.papart.depthcam.analysis.DepthAnalysis;
 import fr.inria.papart.multitouch.DepthTouchInput;
-import fr.inria.papart.procam.Papart;
+import fr.inria.papart.Papart;
 import fr.inria.papart.utils.ARToolkitPlusUtils;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.CameraFactory;
@@ -91,11 +91,11 @@ public abstract class DepthCameraDevice {
 
     /**
      * *
-     * init a depth camera, depth only as there is another color camera.
+     * TODO: Update Default configuration init a depth camera, depth only as there is another color camera.
      */
     protected final void initDefaultCamera() throws CannotCreateCameraException {
-        String id = Papart.getDefaultDepthCameraConfiguration(parent).getCameraName();
-        camera = (CameraRGBIRDepth) CameraFactory.createCamera(type(), id);
+//        String id = Papart.getDefaultDepthCameraConfiguration(parent).getCameraName();
+        camera = (CameraRGBIRDepth) CameraFactory.createCamera(type(), "0");
         camera.setUseDepth(true);
         camera.setUseColor(true);
         camera.actAsColorCamera();

@@ -20,16 +20,15 @@
  */
 package fr.inria.papart.procam.display;
 
-import fr.inria.papart.apps.MultiCalibrator;
-import fr.inria.papart.calibration.files.PlaneCalibration;
+import tech.lity.rea.nectar.calibration.files.PlaneCalibration;
 import processing.opengl.PGraphicsOpenGL;
 import org.bytedeco.javacv.ProjectiveDevice;
 import fr.inria.papart.utils.DrawUtils;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.procam.camera.Camera;
-import fr.inria.papart.procam.HasExtrinsics;
+import tech.lity.rea.nectar.calibration.HasExtrinsics;
 import fr.inria.papart.procam.PaperScreen;
-import fr.inria.papart.procam.ProjectiveDeviceP;
+import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
 
 import processing.core.PApplet;
 import processing.core.PImage;
@@ -106,12 +105,6 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         } catch (Exception e) {
             System.out.println("ARDisplay, Error at loading internals !!" + e);
         }
-    }
-
-    protected boolean isCalibrationMode = false;
-
-    public void setCalibrationMode(boolean isCalibration) {
-        this.isCalibrationMode = isCalibration;
     }
 
     /**
@@ -193,11 +186,6 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
      */
     @Override
     public void draw() {
-        
-        if(this.isCalibrationMode){
-            MultiCalibrator.drawCalibration(getGraphics());
-            return;
-        }
         drawScreensOver();
         parent.noStroke();
         PImage img = camera.getPImage();

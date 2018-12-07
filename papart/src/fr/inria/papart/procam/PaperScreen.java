@@ -20,12 +20,13 @@
  */
 package fr.inria.papart.procam;
 
+import fr.inria.papart.Papart;
 import fr.inria.papart.calibration.HomographyCreator;
 import fr.inria.papart.tracking.MarkerBoardFactory;
 import fr.inria.papart.tracking.MarkerBoardInvalid;
 import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.procam.camera.Camera;
-import fr.inria.papart.calibration.files.HomographyCalibration;
+import tech.lity.rea.nectar.calibration.files.HomographyCalibration;
 import fr.inria.papart.compositor.AppRunnerTest;
 import fr.inria.papart.compositor.XAppRunner;
 import fr.inria.papart.compositor.XDisplayWithCam;
@@ -37,6 +38,7 @@ import fr.inria.papart.multitouch.TouchList;
 import fr.inria.papart.multitouch.detection.ColorTracker;
 import fr.inria.papart.multitouch.tracking.TouchPointEventHandler;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
+import fr.inria.papart.procam.camera.CameraNectar;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.procam.display.ProjectorDisplay;
@@ -57,11 +59,13 @@ import processing.core.PConstants;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
+import processing.data.JSONArray;
 import processing.data.JSONObject;
 import processing.event.KeyEvent;
 import static processing.event.KeyEvent.PRESS;
 import static processing.event.KeyEvent.RELEASE;
 import redis.clients.jedis.Jedis;
+import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
 import toxi.geom.Plane;
 import toxi.geom.Triangle3D;
 
@@ -115,7 +119,6 @@ public class PaperScreen extends DelegatedGraphics {
     private final int id;
 
     public static int count = 0;
-    protected PMatrix3D table, tableInv;
 
     /**
      * Create a new PaperScreen, a Papart object has to be created first. A
@@ -143,33 +146,29 @@ public class PaperScreen extends DelegatedGraphics {
         this.markerBoard = MarkerBoardInvalid.board;
         // Default to projector graphics.
         // currentGraphics = this.display.getGraphics();
-        loadTableLocation();
         register();
-    }
-
-    public void loadTableLocation() {
-        table = Papart.getPapart().getTableLocation().get();
-        tableInv = Papart.getPapart().getTableLocation().get();
-        tableInv.invert();
     }
 
     /**
-     * Create a PaperScreen with a given camera and display. Instanciation
-     * without the use of a Papart object.
+     * Start without a camera. The paperScreen location has to be manually set.
+     * This is used for debug mode.
      *
-     * @param mainApplet
-     * @param cam
-     * @param proj
+     * @param display
      */
-    public PaperScreen(PApplet mainApplet, Camera cam, BaseDisplay proj) {
-        this.parent = mainApplet;
-        this.cameraTracking = cam;
-        mainDisplay = proj;
-        displays.add(proj);
+    public PaperScreen(BaseDisplay display) {
+        this.parent = display.getParent();
+        this.isWithoutCamera = true;
+        mainDisplay = display;
+        displays.add(display);
         this.id = count++;
         this.markerBoard = MarkerBoardInvalid.board;
-        loadTableLocation();
         register();
+    }
+
+    public PaperScreen(BaseDisplay display, Camera cam) {
+        this(display);
+        this.isWithoutCamera = false;
+        this.cameraTracking = cam;
     }
 
     /**
@@ -184,24 +183,6 @@ public class PaperScreen extends DelegatedGraphics {
 //        displays.add(proj);
         this.id = count++;
         this.markerBoard = MarkerBoardInvalid.board;
-        register();
-    }
-
-    /**
-     * Start without a camera. The paperScreen location has to be manually set.
-     * This is used for debug mode.
-     *
-     * @param display
-     */
-    public PaperScreen(BaseDisplay display) {
-        this.isWithoutCamera = true;
-        mainDisplay = display;
-        displays.add(display);
-        this.id = count++;
-        this.markerBoard = MarkerBoardInvalid.board;
-        table = Papart.getPapart().getTableLocation().get();
-        tableInv = Papart.getPapart().getTableLocation();
-        tableInv.invert();
         register();
     }
 
@@ -696,42 +677,40 @@ public class PaperScreen extends DelegatedGraphics {
 //        System.out.println("drawAroundPaper default, you should not see this.");
     }
 
-    public void drawOnTable() {
-        if (!isDrawingOnDisplay) {
-            return;
-        }
-
+//    public void drawOnTable() {
+//        if (!isDrawingOnDisplay) {
+//            return;
+//        }
+//
+////        PMatrix3D location = this.getLocation().get();
+////        PMatrix3D t = tableInv.get();
+////        t.apply(location);
+////        PVector tableRelativePos = new PVector(t.m03, t.m13, t.m23);
+//        PVector p2 = getRelativePos(new PVector(20, 20, 0));
+//        PVector tableRelativePos = getRelativePos(new PVector(0, 0, 0));
+//
+//        float r = PApplet.atan2(p2.y - tableRelativePos.y, p2.x - tableRelativePos.x);
+//
+//        PMatrix3D locationInv = this.getLocation().get();
+//        locationInv.invert();
+//        currentGraphics.scale(1, -1, 1);
+//        currentGraphics.translate(0, -getSize().y, 0);
+//        currentGraphics.applyMatrix(locationInv);
+//        currentGraphics.applyMatrix(table);
+//        currentGraphics.translate(tableRelativePos.x, tableRelativePos.y);
+//        currentGraphics.rotate(r);
+//        currentGraphics.scale(1, -1, 1);
+//    }
+//    private PVector getRelativePos(PVector v) {
+//
 //        PMatrix3D location = this.getLocation().get();
+//        location.translate(v.x, v.y, v.z);
 //        PMatrix3D t = tableInv.get();
 //        t.apply(location);
 //        PVector tableRelativePos = new PVector(t.m03, t.m13, t.m23);
-        PVector p2 = getRelativePos(new PVector(20, 20, 0));
-        PVector tableRelativePos = getRelativePos(new PVector(0, 0, 0));
-
-        float r = PApplet.atan2(p2.y - tableRelativePos.y, p2.x - tableRelativePos.x);
-
-        PMatrix3D locationInv = this.getLocation().get();
-        locationInv.invert();
-        currentGraphics.scale(1, -1, 1);
-        currentGraphics.translate(0, -getSize().y, 0);
-        currentGraphics.applyMatrix(locationInv);
-        currentGraphics.applyMatrix(table);
-        currentGraphics.translate(tableRelativePos.x, tableRelativePos.y);
-        currentGraphics.rotate(r);
-        currentGraphics.scale(1, -1, 1);
-    }
-
-    private PVector getRelativePos(PVector v) {
-
-        PMatrix3D location = this.getLocation().get();
-        location.translate(v.x, v.y, v.z);
-        PMatrix3D t = tableInv.get();
-        t.apply(location);
-        PVector tableRelativePos = new PVector(t.m03, t.m13, t.m23);
-
-        return tableRelativePos;
-    }
-
+//
+//        return tableRelativePos;
+//    }
     /**
      * Activate/Desactivate the tracking. This is called when loadLocationFrom()
      * is called.

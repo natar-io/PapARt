@@ -20,16 +20,13 @@
  */
 package fr.inria.papart.procam.camera;
 
-import fr.inria.papart.calibration.HomographyCreator;
-import fr.inria.papart.calibration.files.HomographyCalibration;
+import tech.lity.rea.nectar.calibration.files.HomographyCalibration;
 import fr.inria.papart.utils.ImageUtils;
 import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.tracking.MarkerBoardInvalid;
 import fr.inria.papart.procam.PaperScreen;
-import fr.inria.papart.utils.ARToolkitPlusUtils;
 import java.nio.ByteBuffer;
 
-import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.utils.WithSize;
 import java.util.ArrayList;
 import org.bytedeco.javacpp.opencv_core.CvMat;

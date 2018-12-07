@@ -19,14 +19,13 @@
  */
 package fr.inria.papart.procam.display;
 
-import fr.inria.papart.apps.MultiCalibrator;
-import fr.inria.papart.calibration.files.PlaneCalibration;
+import tech.lity.rea.nectar.calibration.files.PlaneCalibration;
 import fr.inria.papart.utils.DrawUtils;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.tracking.MarkerBoard;
-import fr.inria.papart.procam.ProjectiveDeviceP;
+import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
 
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
@@ -65,10 +64,6 @@ public class ProjectorDisplay extends ARDisplay {
 
     @Override
     public void draw() {
-        if (this.isCalibrationMode) {
-            MultiCalibrator.drawCalibration(getGraphics());
-            return;
-        }
         drawScreensOver();
         parent.noStroke();
         DrawUtils.drawImage((PGraphicsOpenGL) parent.g,
@@ -77,31 +72,6 @@ public class ProjectorDisplay extends ARDisplay {
         tryToEmitVideo();
     }
     
-    /**
-     * Previous internal corner calibration.
-     */
-    private void drawCalibration() {
-        parent.g.background(0);
-        if (parent.mousePressed) {
-            mouseClick.set(parent.mouseX, parent.mouseY);
-        }
-        parent.g.ellipse(mouseClick.x, mouseClick.y, 50, 50);
-        parent.g.rect(mouseClick.x - 5, mouseClick.y, 10, 1);
-        parent.g.rect(mouseClick.x, mouseClick.y - 5, 1, 10);
-        parent.g.ellipse(mouseClick.x, mouseClick.y, 50, 50);
-
-        if (this.isSmallCalibration) {
-            projectSmallCornersImage();
-        } else {
-            projectCornersImage();
-        }
-    }
-
-    private boolean isSmallCalibration = false;
-
-    public void setSmallCornerCalibration(boolean smallC) {
-        this.isSmallCalibration = smallC;
-    }
 
     public PGraphicsOpenGL beginDrawOnBoard(Camera camera, MarkerBoard board) {
         this.beginDraw();

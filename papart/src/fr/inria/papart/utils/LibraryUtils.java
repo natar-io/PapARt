@@ -5,7 +5,7 @@
  */
 package fr.inria.papart.utils;
 
-import fr.inria.papart.procam.Papart;
+import fr.inria.papart.Papart;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;

@@ -23,10 +23,12 @@ import fr.inria.papart.tracking.DetectedMarker;
 import org.bytedeco.javacpp.opencv_core;
 import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;
 import processing.core.PImage;
+import processing.core.PMatrix3D;
 import processing.data.JSONArray;
 import processing.data.JSONObject;
 import redis.clients.jedis.BinaryJedisPubSub;
 import redis.clients.jedis.Jedis;
+import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
 
 /**
  *
@@ -43,6 +45,47 @@ public class CameraNectar extends CameraRGBIRDepth {
 
     protected CameraNectar(String cameraName) {
         this.cameraDescription = cameraName;
+    }
+
+    /**
+     * Update the calibration from Nectar.
+     */
+    public boolean updateCalibration() {
+        boolean set = false;
+        Jedis redis = createConnection();
+        if (useColor) {
+            String key = this.cameraDescription + ":calibration";
+            if (redis.exists(key)) {
+                this.colorCamera.setCalibration(JSONObject.parse(redis.get(key)));
+                set = true;
+            }
+        }
+        if (useDepth) {
+            String key = this.cameraDescription + ":depth:calibration";
+            if (redis.exists(key)) {
+                this.depthCamera.setCalibration(JSONObject.parse(redis.get(key)));
+                set = false;
+            }
+        }
+        redis.close();
+        return set;
+    }
+
+    public PMatrix3D getTableLocation() {
+        Jedis redis = ((CameraNectar) this).createConnection();
+        String key = this.getCameraDescription() + ":table";
+        PMatrix3D table = new PMatrix3D();
+        if (redis.exists(key)) {
+            table = ProjectiveDeviceP.JSONtoPMatrix(
+                    JSONArray.parse(
+                            redis.get(
+                                    this.getCameraDescription() + ":table")));
+        }
+        redis.close();
+        return table;
+//  table = Papart.getPapart().getTableLocation().get();
+//        tableInv = table.get();
+//        tableInv.invert();
     }
 
     @Override
@@ -86,6 +129,7 @@ public class CameraNectar extends CameraRGBIRDepth {
         }
         colorCamera.setFrameRate(30);
         colorCamera.isConnected = true;
+
         if (!getMode) {
             new RedisThread(redis, new ImageListener(colorCamera.getPixelFormat()), cameraDescription).start();
         }
@@ -280,7 +324,6 @@ public class CameraNectar extends CameraRGBIRDepth {
         PixelFormat format;
         Jedis getConnection;
 
-        
         public ImageListener(PixelFormat format) {
             this.format = format;
             getConnection = createConnection();

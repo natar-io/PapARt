@@ -15,31 +15,26 @@ import processing.core.PApplet;
  * @author realitytech
  */
 public class XDisplayWithCam extends XDisplay {
-    
+
     public XDisplayWithCam(int width, int height) {
         super(width, height);
     }
-    
-    
+
     private Camera Xcamera = null;
-    
-    public Camera getCamera(PApplet applet){
-        if(Xcamera == null){
+
+    public Camera getCamera(PApplet applet) {
+        if (Xcamera == null) {
             Xcamera = createCamera(applet);
         }
         return Xcamera;
     }
 
-    protected Camera createCamera(PApplet applet ){
+    protected Camera createCamera(PApplet applet) {
         Camera Xcamera = null;
-        try {
-            Xcamera = CameraFactory.createCamera(Camera.Type.FFMPEG, name() + ".0+0,0", "x11grab");
-            Xcamera.setSize(this.getWidth(), this.getHeight());
-            Xcamera.setParent(applet);
-            Xcamera.start();
-        } catch (CannotCreateCameraException cce) {
-
-        }
+        Xcamera = CameraFactory.createCamera(Camera.Type.FFMPEG, name() + ".0+0,0", "x11grab");
+        Xcamera.setSize(this.getWidth(), this.getHeight());
+        Xcamera.setParent(applet);
+        Xcamera.start();
         return Xcamera;
     }
 

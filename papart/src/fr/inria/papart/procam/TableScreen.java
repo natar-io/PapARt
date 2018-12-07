@@ -18,10 +18,14 @@
  */
 package fr.inria.papart.procam;
 
+import fr.inria.papart.Papart;
+import fr.inria.papart.procam.camera.CameraNectar;
 import fr.inria.papart.procam.camera.TrackedView;
 import fr.inria.papart.procam.display.BaseDisplay;
 import processing.core.PMatrix;
 import processing.core.PMatrix3D;
+import redis.clients.jedis.Jedis;
+import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
 import processing.core.PVector;
 
 /**
@@ -86,12 +90,14 @@ public class TableScreen extends PaperTouchScreen {
     }
 
     private void updateLocation() {
-        this.location = table.get();
+        // TODO: this must be without papart
+        this.location = ((CameraNectar) cameraTracking).getTableLocation();
         this.location.translate(translation.x, translation.y, translation.z);
         this.location.rotate(rotation);
         this.useManualLocation(this.location);
         this.computeWorldToScreenMat(cameraTracking);
     }
+    
     
     @Override
     public PMatrix3D getLocation(PMatrix3D trackedLocation) {

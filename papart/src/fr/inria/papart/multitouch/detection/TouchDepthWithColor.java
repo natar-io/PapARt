@@ -20,8 +20,8 @@
  */
 package fr.inria.papart.multitouch.detection;
 
-import fr.inria.papart.calibration.files.PlanarTouchCalibration;
-import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
+import fr.inria.papart.calibration.PlanarTouchCalibration;
+import tech.lity.rea.nectar.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.depthcam.DepthDataElement;
 import fr.inria.papart.depthcam.DepthDataElementProjected;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.INVALID_POINT;
