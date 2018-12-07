@@ -3,8 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package fr.inria.papart.calibration;
+package fr.inria.papart.apps;
 
+import fr.inria.papart.calibration.ExtrinsicCalibrator;
+import fr.inria.papart.calibration.ExtrinsicSnapshot;
+import fr.inria.papart.calibration.HomographyCreator;
+import fr.inria.papart.calibration.Utils;
 import fr.inria.papart.calibration.files.HomographyCalibration;
 import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.calibration.files.PlaneCalibration;

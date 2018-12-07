@@ -23,7 +23,6 @@ package fr.inria.papart.depthcam.analysis;
 import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.depthcam.PixelOffset;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
-import fr.inria.papart.depthcam.devices.KinectOne;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.papplet;
 import fr.inria.papart.procam.camera.Camera;
 import java.util.ArrayList;
@@ -57,10 +56,6 @@ public class DepthAnalysisPImageView extends DepthAnalysisImpl {
         timeFilterDepth = new TimeFilterDepth(4);
     }
 
-    public DepthAnalysisPImageView(PApplet parent, KinectOne kinectOne) {
-        super(parent, kinectOne);
-        init();
-    }
 
     private void init() {
         validPointsPImage = papplet.createImage(getWidth(), getHeight(), PConstants.RGB);

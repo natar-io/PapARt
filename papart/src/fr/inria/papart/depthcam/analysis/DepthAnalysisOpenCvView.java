@@ -21,7 +21,6 @@ package fr.inria.papart.depthcam.analysis;
 
 import fr.inria.papart.depthcam.PixelOffset;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
-import fr.inria.papart.procam.camera.CameraOpenKinect;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;

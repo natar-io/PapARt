@@ -172,20 +172,6 @@
             <version>2.3.2</version>
         </dependency>-->
         
-        <!--Processing Video-->
-        <dependency>
-            <groupId>org.processing</groupId>
-            <artifactId>video</artifactId>
-            <version>3.2.3</version>
-        </dependency>
-        
-        
-        <dependency>
-            <groupId>com.googlecode.gstreamer-java</groupId>
-            <artifactId>gstreamer-java</artifactId>
-            <version>1.5</version>
-        </dependency>
-        
         <!-- Processing libraries -->
         
         <!--We package and distribute--> 
@@ -252,51 +238,6 @@
             <groupId>org.bytedeco.javacpp-presets</groupId>
             <artifactId>opencv</artifactId>
             <version>3.4.0-${javacpp.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>ffmpeg-platform</artifactId>
-            <version>3.4.1-1.4</version>
-        </dependency>
-        <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>flycapture-platform</artifactId>
-            <version>2.11.3.121-1.4</version>
-        </dependency>
-        <!--        <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>libdc1394</artifactId>
-            <version>2.2.4-${javacpp.version}</version>
-        </dependency>-->
-        <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>libfreenect</artifactId>   
-            <version>0.5.3-1.4</version>
-        </dependency>
-        <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>libfreenect2</artifactId>
-            <version>0.2.0-${javacpp.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>librealsense</artifactId>
-            <version>1.12.1-${javacpp.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>videoinput</artifactId>
-            <version>0.200-${javacpp.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>artoolkitplus</artifactId>
-            <version>2.3.1-${javacpp.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>flandmark</artifactId>
-            <version>1.07-${javacpp.version}</version>
         </dependency>
         
         <!--Tests no packaging no distribution --> 

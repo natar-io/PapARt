@@ -64,31 +64,6 @@ public class CameraFactory {
                 case NECTAR:
                     cameraMulti = new CameraNectar(description);
                     break;
-                case FFMPEG:
-                    camera = new CameraFFMPEG(description, format);
-                    break;
-                case PROCESSING:
-                    camera = new CameraProcessing(description);
-                    break;
-                // Depth Cameras
-                case OPEN_KINECT_2:
-                    cameraMulti = new CameraOpenKinect2(cameraNo);
-                    break;
-                case REALSENSE:
-                    cameraMulti = new CameraRealSense(cameraNo);
-                    break;
-                case OPEN_KINECT:
-                    cameraMulti = new CameraOpenKinect(cameraNo);
-                    break;
-                case OPENCV:
-                    camera = new CameraOpenCV(cameraNo);
-                    break;
-                case FLY_CAPTURE:
-                    camera = new CameraFlyCapture(cameraNo);
-                    break;
-                case OPENNI2:
-                    cameraMulti = new CameraOpenNI2(cameraNo);
-                    break;
                 default:
                     throw new RuntimeException("ProCam, Camera: Unspported camera Type");
             }

@@ -24,7 +24,6 @@ import fr.inria.papart.depthcam.analysis.DepthAnalysis;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.CameraNectar;
-import fr.inria.papart.procam.camera.CameraOpenNI2;
 import fr.inria.papart.procam.camera.CannotCreateCameraException;
 import processing.core.PApplet;
 

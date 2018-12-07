@@ -20,7 +20,7 @@
  */
 package fr.inria.papart.procam.display;
 
-import fr.inria.papart.calibration.MultiCalibrator;
+import fr.inria.papart.apps.MultiCalibrator;
 import fr.inria.papart.calibration.files.PlaneCalibration;
 import processing.opengl.PGraphicsOpenGL;
 import org.bytedeco.javacv.ProjectiveDevice;

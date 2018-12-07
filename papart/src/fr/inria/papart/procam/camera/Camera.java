@@ -51,7 +51,7 @@ import processing.core.PVector;
 
 public abstract class Camera extends Observable implements PConstants, HasExtrinsics, WithSize {
 
-    public static Camera INVALID_CAMERA = new CameraOpenCV(-1);
+    public static Camera INVALID_CAMERA = new CameraNectar("-1");
 
     // Images
     protected IplImage currentImage, copyUndist;

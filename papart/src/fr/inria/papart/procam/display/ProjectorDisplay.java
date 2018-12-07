@@ -19,7 +19,7 @@
  */
 package fr.inria.papart.procam.display;
 
-import fr.inria.papart.calibration.MultiCalibrator;
+import fr.inria.papart.apps.MultiCalibrator;
 import fr.inria.papart.calibration.files.PlaneCalibration;
 import fr.inria.papart.utils.DrawUtils;
 import fr.inria.papart.multitouch.TouchInput;

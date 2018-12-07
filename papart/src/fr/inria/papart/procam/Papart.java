@@ -21,7 +21,7 @@
 package fr.inria.papart.procam;
 
 import com.jogamp.newt.opengl.GLWindow;
-import fr.inria.papart.calibration.MultiCalibrator;
+import fr.inria.papart.apps.MultiCalibrator;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.calibration.files.CameraConfiguration;
 import fr.inria.papart.calibration.files.HomographyCalibration;
@@ -32,13 +32,9 @@ import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.calibration.files.PlaneCalibration;
 import fr.inria.papart.calibration.files.ScreenConfiguration;
-import fr.inria.papart.depthcam.devices.Kinect360;
 import fr.inria.papart.depthcam.analysis.DepthAnalysisImpl;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
-import fr.inria.papart.depthcam.devices.KinectOne;
 import fr.inria.papart.depthcam.devices.NectarOpenNI;
-import fr.inria.papart.depthcam.devices.OpenNI2;
-import fr.inria.papart.depthcam.devices.RealSense;
 import fr.inria.papart.multitouch.ColorTouchInput;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.multitouch.TUIOTouchInput;
@@ -873,20 +869,6 @@ public class Papart {
 //        if (cameraTracking == null) {
 //            System.err.println("You must choose a camera to create a DepthCamera.");
 //        }
-        if (depthCamConfiguration.getCameraType() == Camera.Type.REALSENSE) {
-            depthCameraDevice = new RealSense(applet, cameraTracking);
-        }
-
-        if (depthCamConfiguration.getCameraType() == Camera.Type.OPEN_KINECT) {
-            depthCameraDevice = new Kinect360(applet, cameraTracking);
-        }
-
-        if (depthCamConfiguration.getCameraType() == Camera.Type.OPEN_KINECT_2) {
-            depthCameraDevice = new KinectOne(applet, cameraTracking);
-        }
-        if (depthCamConfiguration.getCameraType() == Camera.Type.OPENNI2) {
-            depthCameraDevice = new OpenNI2(applet, cameraTracking);
-        }
         if (depthCamConfiguration.getCameraType() == Camera.Type.NECTAR) {
             depthCameraDevice = new NectarOpenNI(applet, cameraTracking);
         }
