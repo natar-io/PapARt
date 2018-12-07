@@ -203,10 +203,10 @@ public class ArmDetection extends TouchDetectionDepth {
 //        for(TrackedDepthPoint pt: newList){
 //            System.out.println("pt: " + pt.getPosition());
 //        }
-        TouchPointTracker.trackPoints(touchPoints, newList, imageTime);
+//        TouchPointTracker.trackPoints(touchPoints, newList, imageTime);
 
-//        touchPoints.clear();
-//        touchPoints.addAll(newList);
+        touchPoints.clear();
+        touchPoints.addAll(newList);
         // TODO: activate tracking ?! Super slow for some reason...
 //        TouchPointTracker.trackPoints(tipPoints, newTipPoints, imageTime);
         tipPoints.clear();

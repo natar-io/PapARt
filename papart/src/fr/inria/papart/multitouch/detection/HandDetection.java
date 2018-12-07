@@ -211,10 +211,11 @@ public class HandDetection extends TouchDetectionDepth {
         }
 
         int imageTime = this.depthAnalysis.getDepthData().timeStamp;
-//        touchPoints.clear();
 
-        TouchPointTracker.trackPoints(touchPoints, hands, imageTime);
-//        touchPoints.addAll(hands);
+//        TouchPointTracker.trackPoints(touchPoints, hands, imageTime);
+        
+        touchPoints.clear();
+        touchPoints.addAll(hands);
 //            this.touchPoints.addAll(newList);
 //        System.out.println("nbHands: " + newList.size());
 //        this.touchPoints.addAll(newList);
