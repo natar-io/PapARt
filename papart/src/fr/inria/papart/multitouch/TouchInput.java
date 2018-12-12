@@ -19,6 +19,8 @@
  */
 package fr.inria.papart.multitouch;
 
+import fr.inria.papart.multitouch.Touch;
+import fr.inria.papart.multitouch.TouchList;
 import fr.inria.papart.multitouch.detection.TouchDetection;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.procam.PaperScreen;

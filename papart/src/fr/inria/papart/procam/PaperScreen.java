@@ -21,18 +21,16 @@
 package fr.inria.papart.procam;
 
 import fr.inria.papart.Papart;
-import fr.inria.papart.calibration.HomographyCreator;
+import tech.lity.rea.nectar.calibration.files.HomographyCreator;
 import fr.inria.papart.tracking.MarkerBoardFactory;
-import fr.inria.papart.tracking.MarkerBoardInvalid;
-import fr.inria.papart.tracking.MarkerBoard;
+import tech.lity.rea.tracking.MarkerBoardInvalid;
+import tech.lity.rea.tracking.MarkerBoard;
 import tech.lity.rea.nectar.camera.Camera;
 import tech.lity.rea.nectar.calibration.files.HomographyCalibration;
-import fr.inria.papart.multitouch.LowPassFilter;
-import fr.inria.papart.multitouch.OneEuroFilter;
 import fr.inria.papart.multitouch.TUIOTouchInput;
 import fr.inria.papart.multitouch.Touch;
 import fr.inria.papart.multitouch.TouchList;
-import fr.inria.papart.multitouch.detection.ColorTracker;
+import fr.inria.papart.multitouch.detection.color.ColorTracker;
 import fr.inria.papart.multitouch.tracking.TouchPointEventHandler;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
 import tech.lity.rea.nectar.camera.CameraNectar;
@@ -63,6 +61,8 @@ import static processing.event.KeyEvent.PRESS;
 import static processing.event.KeyEvent.RELEASE;
 import redis.clients.jedis.Jedis;
 import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
+import tech.lity.rea.tracking.LowPassFilter;
+import tech.lity.rea.tracking.OneEuroFilter;
 import toxi.geom.Plane;
 import toxi.geom.Triangle3D;
 
@@ -72,6 +72,7 @@ public class PaperScreen extends DelegatedGraphics {
     private static final float DEFAULT_RESOLUTION = 2;
 
     protected PApplet parent;
+
 
     // many
     // current
@@ -1051,30 +1052,6 @@ public class PaperScreen extends DelegatedGraphics {
         return combinedTransfos;
     }
 
-    /**
-     * Get the 3D position. Deprecated.
-     *
-     * @return the bottom right corner of the markerboard (tracked position).
-     */
-    @Deprecated
-    public PVector getScreenPos() {
-        if (this.isWithoutCamera) {
-            PMatrix3D mat = getExtrinsics();
-            return new PVector(mat.m03, mat.m13, mat.m23);
-        } else if (mainDisplay.hasCamera()) {
-            return markerBoard.getBoardLocation(cameraTracking, (ARDisplay) mainDisplay);
-        } else {
-            System.out.println("Could not find the screen Position for the main display.");
-            System.out.println("Looking into secondary displays...");
-            for (BaseDisplay display : displays) {
-                if (display.hasCamera()) {
-                    return markerBoard.getBoardLocation(cameraTracking, (ARDisplay) display);
-                }
-            }
-            System.out.println("Could not find where the Screen is...");
-            return new PVector();
-        }
-    }
 
     /**
      * Disable the drawing and clear the offscreen.
@@ -1255,20 +1232,6 @@ public class PaperScreen extends DelegatedGraphics {
     public void loadLocationFrom(PMatrix3D mat) {
         this.useManualLocation(true, mat);
 //        setMainLocation(mat.get());
-    }
-
-    /**
-     * Experimental - Get the ObjectFinder used in this PaperScreen.
-     *
-     * @return the object finder or null when not in use.
-     */
-    public ObjectFinder getObjectTracking() {
-        if (markerBoard.useJavaCVFinder()) {
-            return markerBoard.getObjectTracking(cameraTracking);
-        } else {
-            System.err.println("getObjectTracking is only accessible with image-based tracking.");
-            return null;
-        }
     }
 
     /**
@@ -1734,6 +1697,11 @@ public class PaperScreen extends DelegatedGraphics {
 
     public void setHalfEyeDist(float halfEyeDist) {
         this.halfEyeDist = halfEyeDist;
+    }
+    
+    
+    public PApplet getParent() {
+        return parent;
     }
     
 }

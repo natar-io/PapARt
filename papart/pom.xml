@@ -81,13 +81,6 @@
   
     <dependencies>
         
-        <!--Experimantal PCA library-->
-        <dependency>
-            <groupId>com.mkobos</groupId>
-            <artifactId>pca_transform</artifactId>
-            <version>1.0.2</version>
-        </dependency>
-        
         <dependency>
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
@@ -114,13 +107,16 @@
             <version>0.1-SNAPSHOT</version>
         </dependency>
         
-        
         <dependency>
             <groupId>tech.lity.rea</groupId>
             <artifactId>javacv-processing</artifactId>
             <version>0.1-SNAPSHOT</version>
         </dependency>
-        
+        <dependency>
+            <groupId>tech.lity.rea</groupId>
+            <artifactId>nectar-detections</artifactId>
+            <version>0.1-SNAPSHOT</version>
+        </dependency>
         
         <dependency>
             <groupId>tech.lity.rea</groupId>

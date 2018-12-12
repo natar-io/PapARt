@@ -18,18 +18,14 @@
  */
 package fr.inria.papart.multitouch;
 
-import tech.lity.rea.nectar.calibration.files.HomographyCalibration;
-import fr.inria.papart.calibration.PlanarTouchCalibration;
+import tech.lity.rea.nectar.calibration.files.PlanarTouchCalibration;
 import tech.lity.rea.nectar.calibration.files.PlaneAndProjectionCalibration;
-import tech.lity.rea.nectar.calibration.files.PlaneCalibration;
-import fr.inria.papart.multitouch.Touch;
-import fr.inria.papart.multitouch.TouchList;
 import fr.inria.papart.multitouch.detection.TouchDetection;
 import fr.inria.papart.multitouch.tracking.TouchPointTracker;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
-import fr.inria.papart.multitouch.detection.TouchDetectionColor;
 import fr.inria.papart.Papart;
 import static fr.inria.papart.Papart.planeAndProjectionCalib;
+import fr.inria.papart.multitouch.detection.color.TouchDetectionColor;
 import fr.inria.papart.procam.PaperScreen;
 import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
 import tech.lity.rea.nectar.camera.Camera;
@@ -38,7 +34,6 @@ import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.utils.MathUtils;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
-import org.bytedeco.javacpp.opencv_core.IplImage;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PImage;

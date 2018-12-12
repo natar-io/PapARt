@@ -21,7 +21,6 @@ package fr.inria.papart.tracking;
 
 import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
 import tech.lity.rea.nectar.camera.Camera;
-import fr.inria.papart.tracking.ObjectFinder;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,6 +28,7 @@ import org.bytedeco.javacpp.opencv_core;
 import static org.bytedeco.javacpp.opencv_imgcodecs.cvLoadImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
+import tech.lity.rea.tracking.MarkerBoard;
 
 /**
  *
@@ -192,7 +192,7 @@ public class MarkerBoardJavaCV extends MarkerBoard {
     private void update(PMatrix3D newPos, int id) {
 
         PMatrix3D transfo = (PMatrix3D) transfos.get(id);
-        fr.inria.papart.multitouch.OneEuroFilter filter[] = filters.get(id);
+        tech.lity.rea.tracking.OneEuroFilter[] filter = filters.get(id);
 
         if (filter == null) {
             transfo.set(newPos);

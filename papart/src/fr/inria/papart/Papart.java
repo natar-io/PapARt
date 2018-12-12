@@ -20,8 +20,7 @@
  */
 package fr.inria.papart;
 
-import com.jogamp.newt.opengl.GLWindow;
-import fr.inria.papart.calibration.PlanarTouchCalibration;
+import tech.lity.rea.nectar.calibration.files.PlanarTouchCalibration;
 import tech.lity.rea.nectar.camera.Camera;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ProjectorDisplay;
@@ -29,32 +28,23 @@ import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.depthcam.analysis.DepthAnalysisImpl;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.depthcam.devices.NectarOpenNI;
-import fr.inria.papart.multitouch.ColorTouchInput;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.multitouch.TUIOTouchInput;
 import fr.inria.papart.multitouch.DepthTouchInput;
-import fr.inria.papart.multitouch.detection.BlinkTracker;
-import fr.inria.papart.multitouch.detection.CalibratedColorTracker;
-import fr.inria.papart.multitouch.detection.ColorTracker;
 import fr.inria.papart.procam.PaperScreen;
-import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
 import fr.inria.papart.utils.LibraryUtils;
 import fr.inria.papart.procam.camera.CameraFactory;
+import fr.inria.papart.utils.MathUtils;
 import tech.lity.rea.nectar.camera.CameraNectar;
 import tech.lity.rea.nectar.camera.CameraRGBIRDepth;
 import tech.lity.rea.nectar.camera.CannotCreateCameraException;
 import tech.lity.rea.markers.DetectedMarker;
-import fr.inria.papart.utils.MathUtils;
-import java.io.File;
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.event.KeyEvent;
 import redis.clients.jedis.Jedis;
+import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
 
 /**
  *
@@ -847,10 +837,33 @@ public class Papart {
 
         for (DetectedMarker marker : cameraTracking.getDetectedMarkers()) {
             if (marker.id == markerID) {
-                return MathUtils.compute3DPos(marker, markerWidth, cameraTracking);
+                return compute3DPos(marker, markerWidth, cameraTracking);
             }
         }
         return null;
+    }
+    
+    
+    // ---- Marker Utility ---- 
+    public static PMatrix3D compute3DPos(DetectedMarker detected, float markerWidth, Camera camera) {
+        // We create a pair model ( markersFromSVG) -> observation (markers) 
+
+        if (detected.confidence < 1.0) {
+            return null;
+        }
+        // Build object corners
+        PVector[] object = new PVector[4];
+        object[0] = new PVector(0, 0);
+        object[1] = new PVector(markerWidth, 0);
+
+        object[2] = new PVector(markerWidth, -markerWidth);
+        object[3] = new PVector(0, -markerWidth);
+
+        PVector[] image = detected.getCorners();
+
+        ProjectiveDeviceP pdp = camera.getProjectiveDevice();
+        return pdp.estimateOrientation(object, image);
+//        return pdp.estimateOrientationRansac(objectArray, imageArray);
     }
 
     /**
@@ -940,10 +953,10 @@ public class Papart {
      * performance.
      * @return
      */
-    public CalibratedColorTracker initAllTracking(PaperScreen screen, float quality) {
-        CalibratedColorTracker colorTracker = new CalibratedColorTracker(screen, quality);
-        return colorTracker;
-    }
+//    public CalibratedColorTracker initAllTracking(PaperScreen screen, float quality) {
+//        CalibratedColorTracker colorTracker = new CalibratedColorTracker(screen, quality);
+//        return colorTracker;
+//    }
 //
 //    /**
 //     * Create a red ColorTracker for a PaperScreen.

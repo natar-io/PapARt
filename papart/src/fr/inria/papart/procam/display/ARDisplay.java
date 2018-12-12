@@ -34,7 +34,6 @@ import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.opengl.PShader;
-import tech.lity.rea.nectar.HasExtrinsics;
 import toxi.geom.Plane;
 import toxi.geom.Ray3D;
 import toxi.geom.ReadonlyVec3D;
@@ -44,7 +43,7 @@ import toxi.geom.Vec3D;
  *
  * @author Jeremy Laviole - laviole@rea.lity.tech
  */
-public class ARDisplay extends BaseDisplay implements HasExtrinsics {
+public class ARDisplay extends BaseDisplay {
 
 //    public PGraphicsOpenGL graphicsUndist;
     private PImage mapImg;
@@ -595,7 +594,6 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         this.hasExtrinsics = true;
     }
 
-    @Override
     public PMatrix3D getExtrinsics() {
         assert (hasExtrinsics());
         return extrinsics.get();
@@ -606,7 +604,6 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         return extrinsicsInv.get();
     }
 
-    @Override
     public boolean hasExtrinsics() {
         return this.hasExtrinsics;
     }

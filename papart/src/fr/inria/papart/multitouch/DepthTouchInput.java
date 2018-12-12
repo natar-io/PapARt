@@ -22,28 +22,24 @@ package fr.inria.papart.multitouch;
 
 import fr.inria.papart.multitouch.tracking.TouchPointTracker;
 import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
-import fr.inria.papart.calibration.PlanarTouchCalibration;
 import fr.inria.papart.depthcam.DepthDataElementProjected;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 
 import tech.lity.rea.nectar.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.depthcam.analysis.DepthAnalysisImpl;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
-import fr.inria.papart.multitouch.detection.ArmDetection;
-import fr.inria.papart.multitouch.detection.FingerDetection;
-import fr.inria.papart.multitouch.detection.HandDetection;
-import fr.inria.papart.multitouch.detection.ObjectDetection;
-import fr.inria.papart.multitouch.detection.Simple2D;
-import fr.inria.papart.multitouch.detection.TouchDetection;
-import fr.inria.papart.multitouch.detection.TouchDetectionDepth;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.Papart;
+import fr.inria.papart.multitouch.detection.TouchDetection;
+import fr.inria.papart.multitouch.detection.depth.ArmDetection;
+import fr.inria.papart.multitouch.detection.depth.FingerDetection;
+import fr.inria.papart.multitouch.detection.depth.HandDetection;
+import fr.inria.papart.multitouch.detection.depth.Simple2D;
+import fr.inria.papart.multitouch.detection.depth.TouchDetectionDepth;
 import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.display.BaseDisplay;
-import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.utils.MathUtils;
 import java.nio.ByteBuffer;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
@@ -52,6 +48,7 @@ import java.util.logging.Logger;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
+import tech.lity.rea.nectar.calibration.files.PlanarTouchCalibration;
 import toxi.geom.Vec3D;
 
 /**
@@ -76,7 +73,6 @@ public class DepthTouchInput extends TouchInput {
     private PlaneAndProjectionCalibration planeAndProjCalibration;
 
     private Simple2D simpleDetection;
-    private ObjectDetection objectDetection;
     private ArmDetection armDetection;
     private HandDetection handDetection;
     private FingerDetection fingerDetection;
@@ -84,7 +80,7 @@ public class DepthTouchInput extends TouchInput {
     private TouchDetectionDepth touchDetections[] = new TouchDetectionDepth[3];
 
     private PlanarTouchCalibration touchCalibrations[] = new PlanarTouchCalibration[3];
-    private PlanarTouchCalibration simpleTouchCalibration, objectTouchCalibration;
+    private PlanarTouchCalibration simpleTouchCalibration;
 
     public DepthTouchInput(PApplet applet,
             DepthCameraDevice kinectDevice,
@@ -141,16 +137,6 @@ public class DepthTouchInput extends TouchInput {
     public void initSimpleTouchDetection() {
         checkCalibrations();
         simpleDetection = new Simple2D(depthAnalysis, simpleTouchCalibration);
-    }
-
-    /**
-     * TouchInput with object detection. Implementation in progress. This may
-     * lead to many classes of object detections.
-     */
-    public ObjectDetection initObjectDetection() {
-        checkCalibrations();
-        objectDetection = new ObjectDetection(depthAnalysis, objectTouchCalibration);
-        return objectDetection;
     }
 
     /**
@@ -226,9 +212,6 @@ public class DepthTouchInput extends TouchInput {
 
             if (simpleDetection != null) {
                 simpleDetection.findTouch(planeAndProjCalibration);
-            }
-            if (objectDetection != null) {
-                objectDetection.findTouch(planeAndProjCalibration);
             }
 
             if (armDetection != null) {
@@ -605,14 +588,6 @@ public class DepthTouchInput extends TouchInput {
 
     public void setSimpleTouchDetectionCalibration(PlanarTouchCalibration touchCalib) {
         simpleTouchCalibration = touchCalib;
-    }
-
-    public void setObjectTouchDetectionCalibration(PlanarTouchCalibration touchCalib) {
-        objectTouchCalibration = touchCalib;
-    }
-
-    public ObjectDetection getObjectDetection() {
-        return objectDetection;
     }
 
     public FingerDetection getFingerDetection() {

@@ -20,8 +20,9 @@
  */
 package fr.inria.papart.multitouch;
 
+import fr.inria.papart.multitouch.Touch;
+import fr.inria.papart.multitouch.TouchList;
 import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
-import fr.inria.papart.Papart;
 import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.PaperTouchScreen;
 import tech.lity.rea.skatolo.Skatolo;
@@ -46,7 +47,7 @@ public class SkatoloLink {
     
 
     public static void addMouseTo(TouchList touchList, Skatolo skatolo, PaperScreen paperScreen) {
-        PApplet applet = Papart.getPapart().getApplet();
+        PApplet applet = paperScreen.getParent();
 
         // Use this ?
 //        Touch touchFromMouse = paperScreen.createTouchFromMouse();

@@ -19,9 +19,12 @@
  */
 package fr.inria.papart.tracking;
 
-import fr.inria.papart.tracking.MarkerBoard.MarkerType;
+import tech.lity.rea.tracking.MarkerBoard.MarkerType;
 import java.util.ArrayList;
 import java.util.HashMap;
+import tech.lity.rea.tracking.MarkerBoard;
+import tech.lity.rea.tracking.MarkerBoardInvalid;
+import tech.lity.rea.tracking.MarkerBoardSvg;
 
 /**
  *
@@ -47,9 +50,9 @@ public static final int DEFAULT_WIDTH = 100, DEFAULT_HEIGHT = 100;
 
         MarkerType type = getType(fileName);
         try {
-            if (type == MarkerType.ARTOOLKITPLUS) {
-                output = new MarkerBoardARToolKitPlus(fileName, width, height);
-            }
+//            if (type == MarkerType.ARTOOLKITPLUS) {
+//                output = new MarkerBoardARToolKitPlus(fileName, width, height);
+//            }
             if (type == MarkerType.JAVACV_FINDER) {
                 output = new MarkerBoardJavaCV(fileName, width, height);
             }
