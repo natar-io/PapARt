@@ -580,16 +580,6 @@ public class PaperScreen extends DelegatedGraphics {
      */
     public void keyEvent(KeyEvent e) {
 
-        // Redis tests
-        if (redis != null) {
-            if (e.getAction() == PRESS) {
-                redis.sadd(prefix + "key:pressed", Integer.toString(e.getKeyCode()));
-            }
-            if (e.getAction() == RELEASE) {
-                redis.sadd(prefix + "key:released", Integer.toString(e.getKeyCode()));
-            }
-        }
-
         String filename = "paper-" + Integer.toString(id) + ".xml";
 
         if (e.isAltDown() || !useAlt) {
@@ -1746,97 +1736,4 @@ public class PaperScreen extends DelegatedGraphics {
         this.halfEyeDist = halfEyeDist;
     }
     
-    
-    // Connection with Virtual pointers backed by Redis.
-
-    private String prefix = "evt:99:";
-    private String prefixPub = "evt:99";
-    private Jedis redis;
-
-    public void connectRedis() {
-        redis = new Jedis("127.0.0.1", 6379);
-        // redis.auth("156;2Asatu:AUI?S2T51235AUEAIU");
-    }
-
-    public void captureMouse() {
-        JSONObject ob = new JSONObject();
-        ob.setString("name", "captureMouse");
-        ob.setBoolean("pressed", true);
-        redis.publish(prefixPub, ob.toString());
-    }
-
-    public void releaseMouse() {
-        JSONObject ob = new JSONObject();
-        ob.setString("name", "captureMouse");
-        ob.setBoolean("pressed", false);
-        redis.publish(prefixPub, ob.toString());
-    }
-
-    public void captureKeyboard() {
-        JSONObject ob = new JSONObject();
-        ob.setString("name", "captureKeyboard");
-        ob.setBoolean("pressed", true);
-        redis.publish(prefixPub, ob.toString());
-    }
-
-    public void releaseKeyboard() {
-        JSONObject ob = new JSONObject();
-        ob.setString("name", "captureKeyboard");
-        ob.setBoolean("pressed", false);
-        redis.publish(prefixPub, ob.toString());
-    }
-
-    /**
-     * Send touch list event to Redis EXPERIMENTAL
-     *
-     * @param t
-     */
-    public void sendTouchs(TouchList touchList) {
-        for (Touch t : touchList) {
-            sendTouch(t);
-        }
-    }
-
-    /**
-     * Send touch event to Redis EXPERIMENTAL
-     *
-     * @param t
-     */
-    public void sendTouch(Touch t) {
-
-        boolean creation = false;
-        if (t.trackedSource().attachedObject == null) {
-            t.trackedSource().attachedObject = new TouchKiller(t);
-            creation = true;
-            System.out.println("Attaching tracked source to " + t.id + " -- creation event ?");
-        }
-
-        JSONObject ob = new JSONObject();
-        ob.setString("name", "pointer");
-        ob.setString("id", Integer.toString(t.id));
-        ob.setFloat("x", t.position.x / drawingSize.x);
-        ob.setFloat("y", t.position.y / drawingSize.y);
-        ob.setBoolean("pressed", t.pressed);
-        ob.setBoolean("creation", creation);
-        redis.publish(prefixPub, ob.toString());
-    }
-
-    class TouchKiller implements TouchPointEventHandler {
-
-        public Touch touch;
-
-        public TouchKiller(Touch t) {
-            this.touch = t;
-        }
-
-        @Override
-        public void delete() {
-            JSONObject ob = new JSONObject();
-            ob.setString("name", "pointerDeath");
-            ob.setString("id", Integer.toString(touch.id));
-            redis.publish(prefixPub, ob.toString());
-        }
-
-    }
-
 }
