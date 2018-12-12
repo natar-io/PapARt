@@ -5,6 +5,7 @@
  */
 package fr.inria.papart.utils;
 
+import tech.lity.rea.utils.WithSize;
 import processing.core.PVector;
 
 /**

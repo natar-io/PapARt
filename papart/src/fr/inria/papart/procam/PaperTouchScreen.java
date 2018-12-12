@@ -20,7 +20,7 @@
 package fr.inria.papart.procam;
 
 import fr.inria.papart.Papart;
-import fr.inria.papart.procam.camera.Camera;
+import tech.lity.rea.nectar.camera.Camera;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.multitouch.Touch;

@@ -21,7 +21,7 @@ package fr.inria.papart.utils;
 
 import fr.inria.papart.Papart;
 import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
-import fr.inria.papart.procam.camera.Camera.PixelFormat;
+import tech.lity.rea.nectar.camera.Camera.PixelFormat;
 
 import org.bytedeco.javacv.CameraDevice;
 import org.bytedeco.javacv.ProjectorDevice;

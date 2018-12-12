@@ -24,7 +24,7 @@ import tech.lity.rea.nectar.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.depthcam.PixelOffset;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.papplet;
-import fr.inria.papart.procam.camera.Camera;
+import tech.lity.rea.nectar.camera.Camera;
 import java.util.ArrayList;
 import java.util.Arrays;
 import org.bytedeco.javacpp.indexer.UByteIndexer;

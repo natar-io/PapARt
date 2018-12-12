@@ -31,7 +31,7 @@ import fr.inria.papart.depthcam.ProjectedDepthData;
 import fr.inria.papart.multitouch.ConnectedComponent;
 import fr.inria.papart.multitouch.tracking.TouchPointTracker;
 import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
-import fr.inria.papart.utils.WithSize;
+import tech.lity.rea.utils.WithSize;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;

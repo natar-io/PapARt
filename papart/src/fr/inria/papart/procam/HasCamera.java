@@ -19,7 +19,7 @@
  */
 package fr.inria.papart.procam;
 
-import fr.inria.papart.procam.camera.Camera;
+import tech.lity.rea.nectar.camera.Camera;
 /**
  *
  * @author Jeremy Laviole

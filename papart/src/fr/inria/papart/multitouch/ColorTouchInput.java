@@ -32,7 +32,7 @@ import fr.inria.papart.Papart;
 import static fr.inria.papart.Papart.planeAndProjectionCalib;
 import fr.inria.papart.procam.PaperScreen;
 import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
-import fr.inria.papart.procam.camera.Camera;
+import tech.lity.rea.nectar.camera.Camera;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.utils.MathUtils;

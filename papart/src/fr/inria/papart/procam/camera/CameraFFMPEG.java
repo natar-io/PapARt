@@ -20,6 +20,7 @@
  */
 package fr.inria.papart.procam.camera;
 
+import tech.lity.rea.nectar.camera.Camera;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bytedeco.javacv.FFmpegFrameGrabber;

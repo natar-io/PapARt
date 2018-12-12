@@ -121,6 +121,13 @@
             <version>0.1-SNAPSHOT</version>
         </dependency>
         
+        
+        <dependency>
+            <groupId>tech.lity.rea</groupId>
+            <artifactId>nectar-helpers</artifactId>
+            <version>0.1-SNAPSHOT</version>
+        </dependency>
+        
         <dependency>
             <groupId>tech.lity.rea</groupId>
             <artifactId>ColorConverter</artifactId>

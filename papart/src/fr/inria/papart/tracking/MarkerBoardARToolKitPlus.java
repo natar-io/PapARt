@@ -23,15 +23,17 @@ import static fr.inria.papart.Papart.camCalibARtoolkit;
 import static fr.inria.papart.tracking.MarkerBoard.BLOCK_UPDATE;
 import static fr.inria.papart.tracking.MarkerBoard.FORCE_UPDATE;
 import static fr.inria.papart.tracking.MarkerBoard.NORMAL;
-import fr.inria.papart.procam.camera.Camera;
+import tech.lity.rea.nectar.camera.Camera;
 import java.util.ArrayList;
 import org.bytedeco.javacpp.ARToolKitPlus;
 import org.bytedeco.javacpp.opencv_core;
+import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
+import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
 
 /**
- *
+ * Legacy class -- Will be removed soon.
  * @author Jérémy Laviole - laviole@rea.lity.tech
  */
 public class MarkerBoardARToolKitPlus extends MarkerBoard {
@@ -66,7 +68,7 @@ public class MarkerBoardARToolKitPlus extends MarkerBoard {
 //  
     @Override
     protected void addTrackerImpl(Camera camera) {
-        
+
         // create a tracker that does:
         //  - 6x6 sized marker images (required for binary markers)
         //  - samples at a maximum of 6x6 
@@ -111,15 +113,15 @@ public class MarkerBoardARToolKitPlus extends MarkerBoard {
 //        tracker.setUseDetectLite(true);
 
         // Deal with the calibration files here...
-        Camera.convertARParams(this.applet, camera.getProjectiveDevice(), camCalibARtoolkit);
+        convertARParams(this.applet, camera.getProjectiveDevice(), camCalibARtoolkit);
         camera.setCalibrationARToolkit(camCalibARtoolkit);
-        
+
         // Initialize the tracker, with camera parameters and marker config. 
         if (!tracker.init(camera.getCalibrationARToolkit(), this.getFileName(), 1.0f, 10000.f)) {
             System.err.println("Init ARTOOLKIT Error " + camera.getCalibrationARToolkit() + " " + this.getFileName());
         }
 
-	//        loadSizeConfig();
+        //        loadSizeConfig();
 //        float[] transfo = new float[16];
 //        for (int i = 0; i < 3; i++) {
 //            transfo[12 + i] = 0;
@@ -236,7 +238,6 @@ public class MarkerBoardARToolKitPlus extends MarkerBoard {
 //        inputMatrix.scale(1, -1, 1);
 //        inputMatrix.translate(0, -height / 2, 0);
         // Invert the scales so that it fits Inkscape's view. 
-        
         inputMatrix.scale(1, -1, 1);
         inputMatrix.translate(0, -markerBoardSize.y, 0);
 
@@ -245,6 +246,32 @@ public class MarkerBoardARToolKitPlus extends MarkerBoard {
 //    Z negation ?
 //        tmp.scale(1, 1, -1);
 //        transfo[11] = -transfo[11];
+    }
+
+    static public void convertARParams(PApplet parent, String calibrationFile,
+            String calibrationARtoolkit) {
+        convertARParams(parent, calibrationFile, calibrationARtoolkit, 0, 0);
+    }
+
+    static public void convertARParams(PApplet parent, String calibrationFile,
+            String calibrationARtoolkit, int width, int height) {
+        try {
+            // ARToolkit Plus 2.1.1
+//            fr.inria.papart.procam.Utils.convertARParam(parent, calibrationYAML, calibrationData, width, height);
+            // ARToolkit Plus 2.3.0
+            fr.inria.papart.utils.ARToolkitPlusUtils.convertARParam2(parent, calibrationFile, calibrationARtoolkit);
+        } catch (Exception e) {
+            PApplet.println("Conversion error. " + e);
+        }
+    }
+
+    static public void convertARParams(PApplet parent, ProjectiveDeviceP projectiveDevice,
+            String calibrationARtoolkit) {
+        try {
+            fr.inria.papart.utils.ARToolkitPlusUtils.convertARParamFromDevice(parent, projectiveDevice, calibrationARtoolkit);
+        } catch (Exception e) {
+            PApplet.println("Conversion error. " + e);
+        }
     }
 
 }

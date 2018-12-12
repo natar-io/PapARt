@@ -5,13 +5,14 @@
  */
 package fr.inria.papart.utils;
 
+import tech.lity.rea.utils.WithSize;
 import fr.inria.papart.depthcam.PixelOffset;
 import fr.inria.papart.depthcam.analysis.DepthAnalysisPImageView;
 import fr.inria.papart.multitouch.detection.ColorReferenceThresholds;
 import fr.inria.papart.procam.PaperTouchScreen;
 import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
-import fr.inria.papart.procam.camera.Camera;
-import fr.inria.papart.tracking.DetectedMarker;
+import tech.lity.rea.nectar.camera.Camera;
+import tech.lity.rea.markers.DetectedMarker;
 import fr.inria.papart.tracking.MarkerBoard;
 import java.io.FileNotFoundException;
 import java.nio.ByteBuffer;

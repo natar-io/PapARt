@@ -25,12 +25,12 @@ import fr.inria.papart.depthcam.analysis.DepthAnalysis;
 import fr.inria.papart.multitouch.DepthTouchInput;
 import fr.inria.papart.Papart;
 import fr.inria.papart.utils.ARToolkitPlusUtils;
-import fr.inria.papart.procam.camera.Camera;
+import tech.lity.rea.nectar.camera.Camera;
 import fr.inria.papart.procam.camera.CameraFactory;
-import fr.inria.papart.procam.camera.CameraRGBIRDepth;
-import fr.inria.papart.procam.camera.CannotCreateCameraException;
-import fr.inria.papart.procam.camera.SubCamera;
-import fr.inria.papart.procam.camera.SubDepthCamera;
+import tech.lity.rea.nectar.camera.CameraRGBIRDepth;
+import tech.lity.rea.nectar.camera.CannotCreateCameraException;
+import tech.lity.rea.nectar.camera.SubCamera;
+import tech.lity.rea.nectar.camera.SubDepthCamera;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bytedeco.javacpp.opencv_core.IplImage;
@@ -106,8 +106,14 @@ public abstract class DepthCameraDevice {
         camera.close();
     }
 
+    /**
+     * Automatic touch is going away
+     * @param kinectTouchInput
+     * @deprecated
+     */
+    @Deprecated
     public void setTouch(DepthTouchInput kinectTouchInput) {
-        camera.getDepthCamera().setTouchInput(kinectTouchInput);
+//        camera.getDepthCamera().setTouchInput(kinectTouchInput);
     }
 
     public void setStereoCalibration(String fileName) {

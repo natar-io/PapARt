@@ -22,7 +22,7 @@ package fr.inria.papart;
 
 import com.jogamp.newt.opengl.GLWindow;
 import fr.inria.papart.calibration.PlanarTouchCalibration;
-import fr.inria.papart.procam.camera.Camera;
+import tech.lity.rea.nectar.camera.Camera;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
@@ -40,10 +40,10 @@ import fr.inria.papart.procam.PaperScreen;
 import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
 import fr.inria.papart.utils.LibraryUtils;
 import fr.inria.papart.procam.camera.CameraFactory;
-import fr.inria.papart.procam.camera.CameraNectar;
-import fr.inria.papart.procam.camera.CameraRGBIRDepth;
-import fr.inria.papart.procam.camera.CannotCreateCameraException;
-import fr.inria.papart.tracking.DetectedMarker;
+import tech.lity.rea.nectar.camera.CameraNectar;
+import tech.lity.rea.nectar.camera.CameraRGBIRDepth;
+import tech.lity.rea.nectar.camera.CannotCreateCameraException;
+import tech.lity.rea.markers.DetectedMarker;
 import fr.inria.papart.utils.MathUtils;
 import java.io.File;
 import java.util.Arrays;
@@ -748,16 +748,6 @@ public class Papart {
         return tuioTouch;
     }
 
-    /**
-     * Start the tracking without a thread.
-     */
-    public void startTrackingWithoutThread() {
-        if (this.cameraTracking == null) {
-            System.err.println("Start Tracking requires a Camera...");
-            return;
-        }
-        this.getPublicCameraTracking().trackSheets(true);
-    }
 
     public void setDistantCamera(String url, int port) {
         if (this.cameraTracking instanceof CameraNectar) {
@@ -798,7 +788,7 @@ public class Papart {
             System.err.println("Start Tracking requires a Camera...");
             return;
         }
-        getPublicCamera(camera).trackSheets(true);
+//        getPublicCamera(camera).trackSheets(true);
         startCameraThread(camera);
     }
 

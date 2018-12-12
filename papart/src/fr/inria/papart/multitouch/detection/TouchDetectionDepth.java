@@ -29,7 +29,7 @@ import static fr.inria.papart.depthcam.analysis.DepthAnalysis.INVALID_POINT;
 import fr.inria.papart.depthcam.analysis.DepthAnalysisImpl;
 import fr.inria.papart.multitouch.ConnectedComponent;
 import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
-import fr.inria.papart.utils.WithSize;
+import tech.lity.rea.utils.WithSize;
 import java.util.ArrayList;
 import java.util.Comparator;
 import processing.core.PApplet;

@@ -20,14 +20,15 @@
  */
 package fr.inria.papart.procam.camera;
 
+import tech.lity.rea.nectar.camera.Camera;
 import tech.lity.rea.nectar.calibration.files.HomographyCalibration;
-import fr.inria.papart.utils.ImageUtils;
+import tech.lity.rea.nectar.camera.ImageUtils;
 import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.tracking.MarkerBoardInvalid;
 import fr.inria.papart.procam.PaperScreen;
 import java.nio.ByteBuffer;
 
-import fr.inria.papart.utils.WithSize;
+import tech.lity.rea.utils.WithSize;
 import java.util.ArrayList;
 import org.bytedeco.javacpp.opencv_core.CvMat;
 import org.bytedeco.javacpp.opencv_core.IplImage;
@@ -421,7 +422,7 @@ public class TrackedView implements WithSize {
 
         screenPixelCoordinates.clear();
         for (int i = 0; i < 4; i++) {
-            screenPixelCoordinates.add(camera.pdp.worldToPixelUnconstrained(corner3DPos[i]));
+            screenPixelCoordinates.add(camera.getPdp().worldToPixelUnconstrained(corner3DPos[i]));
 //            screenPixelCoordinates.add(camera.pdp.worldToPixel(corner3DPos[i], true));
         }
         cornersSet = true;

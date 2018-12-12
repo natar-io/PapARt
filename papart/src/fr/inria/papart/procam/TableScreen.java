@@ -19,7 +19,7 @@
 package fr.inria.papart.procam;
 
 import fr.inria.papart.Papart;
-import fr.inria.papart.procam.camera.CameraNectar;
+import tech.lity.rea.nectar.camera.CameraNectar;
 import fr.inria.papart.procam.camera.TrackedView;
 import fr.inria.papart.procam.display.BaseDisplay;
 import processing.core.PMatrix;

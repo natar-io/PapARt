@@ -23,7 +23,7 @@ import static fr.inria.papart.multitouch.detection.CalibratedColorTracker.colorF
 import static fr.inria.papart.multitouch.detection.CalibratedColorTracker.colorFinderLABError;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.utils.MathUtils;
-import fr.inria.papart.utils.WithSize;
+import tech.lity.rea.utils.WithSize;
 import java.util.ArrayList;
 import java.util.Arrays;
 import processing.core.PImage;

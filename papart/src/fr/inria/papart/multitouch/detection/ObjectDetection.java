@@ -36,7 +36,7 @@ import static fr.inria.papart.multitouch.ConnectedComponent.INVALID_COMPONENT;
 import fr.inria.papart.multitouch.tracking.TouchPointTracker;
 import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
 import fr.inria.papart.procam.camera.TrackedView;
-import fr.inria.papart.utils.WithSize;
+import tech.lity.rea.utils.WithSize;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;

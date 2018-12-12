@@ -19,7 +19,7 @@
  */
 package fr.inria.papart.multitouch;
 
-import fr.inria.papart.utils.WithSize;
+import tech.lity.rea.utils.WithSize;
 import java.util.ArrayList;
 import toxi.geom.Vec3D;
 

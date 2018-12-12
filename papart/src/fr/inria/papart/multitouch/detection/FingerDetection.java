@@ -34,7 +34,7 @@ import fr.inria.papart.multitouch.tracking.TouchPointTracker;
 import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
 import fr.inria.papart.Papart;
 import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
-import fr.inria.papart.utils.ImageUtils;
+import tech.lity.rea.nectar.camera.ImageUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import org.bytedeco.javacpp.opencv_core;

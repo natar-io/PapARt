@@ -25,7 +25,7 @@ import fr.inria.papart.calibration.HomographyCreator;
 import fr.inria.papart.tracking.MarkerBoardFactory;
 import fr.inria.papart.tracking.MarkerBoardInvalid;
 import fr.inria.papart.tracking.MarkerBoard;
-import fr.inria.papart.procam.camera.Camera;
+import tech.lity.rea.nectar.camera.Camera;
 import tech.lity.rea.nectar.calibration.files.HomographyCalibration;
 import fr.inria.papart.multitouch.LowPassFilter;
 import fr.inria.papart.multitouch.OneEuroFilter;
@@ -35,11 +35,11 @@ import fr.inria.papart.multitouch.TouchList;
 import fr.inria.papart.multitouch.detection.ColorTracker;
 import fr.inria.papart.multitouch.tracking.TouchPointEventHandler;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
-import fr.inria.papart.procam.camera.CameraNectar;
+import tech.lity.rea.nectar.camera.CameraNectar;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.procam.display.ProjectorDisplay;
-import fr.inria.papart.tracking.DetectedMarker;
+import tech.lity.rea.markers.DetectedMarker;
 import fr.inria.papart.tracking.ObjectFinder;
 import fr.inria.papart.utils.MathUtils;
 import java.nio.ByteBuffer;
@@ -503,9 +503,9 @@ public class PaperScreen extends DelegatedGraphics {
         }
 
         this.useTracking();
-        if (!cameraTracking.tracks(markerBoard)) {
-            cameraTracking.track(markerBoard);
-        }
+//        if (!cameraTracking.tracks(markerBoard)) {
+//            cameraTracking.track(markerBoard);
+//        }
     }
 
     private void register() {
@@ -1459,7 +1459,7 @@ public class PaperScreen extends DelegatedGraphics {
         this.displays.add(display);
         display.addPaperScreen(this);
         if (display.hasCamera()) {
-            display.getCamera().trackMarkerBoard(markerBoard);
+//            display.getCamera().trackMarkerBoard(markerBoard);
         }
     }
 
