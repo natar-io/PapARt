@@ -5,8 +5,8 @@
  */
 package fr.inria.papart.procam;
 
-import tech.lity.rea.tracking.MarkerBoard;
-import static tech.lity.rea.tracking.MarkerBoardInvalid.board;
+import tech.lity.rea.nectar.tracking.MarkerBoard;
+import static tech.lity.rea.nectar.tracking.MarkerBoardInvalid.board;
 import processing.core.PVector;
 import tech.lity.rea.nectar.camera.Camera;
 import tech.lity.rea.nectar.camera.TrackedView;

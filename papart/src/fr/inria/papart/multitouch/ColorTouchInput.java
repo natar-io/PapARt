@@ -18,8 +18,8 @@
  */
 package fr.inria.papart.multitouch;
 
-import tech.lity.rea.nectar.calibration.files.PlanarTouchCalibration;
-import tech.lity.rea.nectar.calibration.files.PlaneAndProjectionCalibration;
+import tech.lity.rea.nectar.calibration.PlanarTouchCalibration;
+import tech.lity.rea.nectar.calibration.PlaneAndProjectionCalibration;
 import fr.inria.papart.multitouch.detection.TouchDetection;
 import fr.inria.papart.multitouch.tracking.TouchPointTracker;
 import fr.inria.papart.multitouch.tracking.TrackedElement;

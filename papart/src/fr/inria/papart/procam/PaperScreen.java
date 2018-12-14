@@ -21,12 +21,13 @@
 package fr.inria.papart.procam;
 
 import fr.inria.papart.Papart;
-import tech.lity.rea.nectar.calibration.files.HomographyCreator;
-import fr.inria.papart.tracking.MarkerBoardFactory;
-import tech.lity.rea.tracking.MarkerBoardInvalid;
-import tech.lity.rea.tracking.MarkerBoard;
+import tech.lity.rea.nectar.tracking.OneEuroFilter;
+import tech.lity.rea.nectar.calibration.HomographyCreator;
+import tech.lity.rea.nectar.tracking.MarkerBoardFactory;
+import tech.lity.rea.nectar.tracking.MarkerBoardInvalid;
+import tech.lity.rea.nectar.tracking.MarkerBoard;
 import tech.lity.rea.nectar.camera.Camera;
-import tech.lity.rea.nectar.calibration.files.HomographyCalibration;
+import tech.lity.rea.nectar.calibration.HomographyCalibration;
 import fr.inria.papart.multitouch.TUIOTouchInput;
 import fr.inria.papart.multitouch.Touch;
 import fr.inria.papart.multitouch.TouchList;
@@ -37,8 +38,9 @@ import tech.lity.rea.nectar.camera.CameraNectar;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.procam.display.ProjectorDisplay;
-import tech.lity.rea.markers.DetectedMarker;
-import fr.inria.papart.tracking.ObjectFinder;
+import fr.inria.papart.tracking.MarkerBoardSvgNectar;
+import tech.lity.rea.nectar.markers.DetectedMarker;
+import tech.lity.rea.nectar.tracking.ObjectFinder;
 import fr.inria.papart.utils.MathUtils;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -61,8 +63,7 @@ import static processing.event.KeyEvent.PRESS;
 import static processing.event.KeyEvent.RELEASE;
 import redis.clients.jedis.Jedis;
 import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
-import tech.lity.rea.tracking.LowPassFilter;
-import tech.lity.rea.tracking.OneEuroFilter;
+import tech.lity.rea.nectar.tracking.LowPassFilter;
 import toxi.geom.Plane;
 import toxi.geom.Triangle3D;
 
@@ -490,7 +491,7 @@ public class PaperScreen extends DelegatedGraphics {
         if (!isWithoutCamera) {
             // automatic update of the paper screen, regarding the camera.
             trackCurrentMarkerBoard();
-            updateBoardFiltering();
+//            updateBoardFiltering();
         }
     }
 
@@ -502,7 +503,7 @@ public class PaperScreen extends DelegatedGraphics {
             System.out.println("Cannot start the tracking with cam: " + isWithoutCamera + ", board: " + this.markerBoard);
             return;
         }
-
+        this.markerBoard.addTracker(parent, cameraTracking);
         this.useTracking();
 //        if (!cameraTracking.tracks(markerBoard)) {
 //            cameraTracking.track(markerBoard);
@@ -1481,7 +1482,18 @@ public class PaperScreen extends DelegatedGraphics {
         }
         trackCurrentMarkerBoard();
     }
+ 
+    
+    /**
+     * Select a markerboard from Nectar / redis.
+     * @param name 
+     */
+    public void loadMarkerBoard(String name) {
+        this.markerBoard = new MarkerBoardSvgNectar(name, (CameraNectar) this.cameraTracking);
 
+        trackCurrentMarkerBoard();
+    }
+    
     /**
      * Assign an existing markerboard to this PaperScreen.
      */

@@ -19,12 +19,12 @@
  */
 package fr.inria.papart.procam.display;
 
-import tech.lity.rea.nectar.calibration.files.PlaneCalibration;
+import tech.lity.rea.nectar.calibration.PlaneCalibration;
 import fr.inria.papart.utils.DrawUtils;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.procam.PaperScreen;
 import tech.lity.rea.nectar.camera.Camera;
-import tech.lity.rea.tracking.MarkerBoard;
+import tech.lity.rea.nectar.tracking.MarkerBoard;
 import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
 
 import processing.core.PApplet;

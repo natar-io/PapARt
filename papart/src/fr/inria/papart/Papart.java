@@ -20,7 +20,7 @@
  */
 package fr.inria.papart;
 
-import tech.lity.rea.nectar.calibration.files.PlanarTouchCalibration;
+import tech.lity.rea.nectar.calibration.PlanarTouchCalibration;
 import tech.lity.rea.nectar.camera.Camera;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ProjectorDisplay;
@@ -38,7 +38,7 @@ import fr.inria.papart.utils.MathUtils;
 import tech.lity.rea.nectar.camera.CameraNectar;
 import tech.lity.rea.nectar.camera.CameraRGBIRDepth;
 import tech.lity.rea.nectar.camera.CannotCreateCameraException;
-import tech.lity.rea.markers.DetectedMarker;
+import tech.lity.rea.nectar.markers.DetectedMarker;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
@@ -47,11 +47,12 @@ import redis.clients.jedis.Jedis;
 import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
 
 /**
- *
+ * TODO: This whole class will be removed. 
  * @author Jeremy Laviole
  */
 public class Papart {
 
+    
     public final static String folder = LibraryUtils.getPapartDataFolder() + "/";
     public final static String calibrationFolder = folder + "calibration/";
     public final static String markerFolder = folder + "markers/";
@@ -1087,12 +1088,12 @@ public class Papart {
         return this.depthAnalysis;
     }
 
-    public Camera.Type getDepthCameraType() {
-        if (depthCameraDevice == null) {
-            return Camera.Type.FAKE;
-        }
-        return depthCameraDevice.type();
-    }
+//    public Camera.Type getDepthCameraType() {
+//        if (depthCameraDevice == null) {
+//            return Camera.Type.FAKE;
+//        }
+//        return depthCameraDevice.type();
+//    }
 
     public PApplet getApplet() {
         return applet;

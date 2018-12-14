@@ -19,9 +19,9 @@
  */
 package fr.inria.papart.calibration;
 
-import tech.lity.rea.nectar.calibration.files.HomographyCalibration;
-import tech.lity.rea.nectar.calibration.files.PlaneCalibration;
-import tech.lity.rea.nectar.calibration.files.PlaneAndProjectionCalibration;
+import tech.lity.rea.nectar.calibration.HomographyCalibration;
+import tech.lity.rea.nectar.calibration.PlaneCalibration;
+import tech.lity.rea.nectar.calibration.PlaneAndProjectionCalibration;
 import fr.inria.papart.Sketch;
 import java.util.logging.Level;
 import java.util.logging.Logger;

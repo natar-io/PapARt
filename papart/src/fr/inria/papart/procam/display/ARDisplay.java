@@ -20,7 +20,6 @@
  */
 package fr.inria.papart.procam.display;
 
-import tech.lity.rea.nectar.calibration.files.PlaneCalibration;
 import processing.opengl.PGraphicsOpenGL;
 import org.bytedeco.javacv.ProjectiveDevice;
 import fr.inria.papart.utils.DrawUtils;
@@ -34,7 +33,7 @@ import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.opengl.PShader;
-import toxi.geom.Plane;
+import tech.lity.rea.nectar.calibration.PlaneCalibration;
 import toxi.geom.Ray3D;
 import toxi.geom.ReadonlyVec3D;
 import toxi.geom.Vec3D;
@@ -70,6 +69,7 @@ public class ARDisplay extends BaseDisplay {
      * @param parent
      * @param calibrationYAML
      */
+    @Deprecated
     public ARDisplay(PApplet parent, String calibrationYAML) {
         super(parent);
         loadCalibration(calibrationYAML);
@@ -77,7 +77,7 @@ public class ARDisplay extends BaseDisplay {
 
     public ARDisplay(PApplet parent, Camera camera) {
         super(parent);
-        this.camera = camera;
+        this.camera = camera.getPublicCamera();
         this.hasCamera = true;
         setCalibration(camera.getProjectiveDevice());
     }

@@ -19,8 +19,8 @@
  */
 package fr.inria.papart.calibration;
 
-import tech.lity.rea.nectar.calibration.files.HomographyCalibration;
-import tech.lity.rea.nectar.calibration.files.Calibration;
+import tech.lity.rea.nectar.calibration.HomographyCalibration;
+import tech.lity.rea.nectar.calibration.Calibration;
 import fr.inria.papart.Sketch;
 import org.junit.Test;
 import static org.junit.Assert.*;

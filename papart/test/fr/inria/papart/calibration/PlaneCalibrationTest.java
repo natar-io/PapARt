@@ -19,9 +19,9 @@
 // */
 //package fr.inria.papart.calibration;
 //
-//import tech.lity.rea.nectar.calibration.files.PlaneCalibration;
+//import tech.lity.rea.nectar.calibration.PlaneCalibration;
 //import fr.inria.papart.calibration.PlaneCreator;
-//import tech.lity.rea.nectar.calibration.files.Calibration;
+//import tech.lity.rea.nectar.calibration.Calibration;
 //import fr.inria.papart.Sketch;
 //import static fr.inria.papart.calibration.HomographyCalibrationTest.DIMS;
 //import org.junit.Test;
