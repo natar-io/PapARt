@@ -285,6 +285,28 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
         return new PVector(px, py);
     }
 
+    /**
+     * Similar tor worldToPixel without border checking.
+     *
+     * @param pt
+     * @return
+     */
+    public PVector worldToPixelUnconstrained(PVector pt, boolean undistort) {
+
+        // Reprojection 
+        float invZ = 1.0f / pt.z;
+
+        float px = ((pt.x * invZ * fx) + cx);
+        float py = ((pt.y * invZ * fy) + cy);
+        
+        if (undistort && this.handleDistorsion) {
+            double[] out = device.distort(px, py);
+            return new PVector((float) out[0], (float) out[1]);
+        } else {
+            return new PVector(px, py);
+        }
+    }
+
     public PVector worldToPixel(PVector pt, boolean undistort) {
 
         // Reprojection 
@@ -599,7 +621,7 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
         }
         return p;
     }
-    
+
     // Without PApplet
     public static ProjectiveDeviceP loadCameraDevice(String filename) throws Exception {
         return loadCameraDevice(filename, 0);
@@ -625,8 +647,8 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
 
         return p;
     }
-    
-      public static ProjectiveDeviceP loadProjectorDevice(String filename) throws Exception {
+
+    public static ProjectiveDeviceP loadProjectorDevice(String filename) throws Exception {
         return loadProjectorDevice(filename, 0);
     }
 

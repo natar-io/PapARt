@@ -179,6 +179,8 @@ public class DepthTouchInput extends TouchInput {
     public void update() {
         Instant initUpdate = Instant.now();
         try {
+            
+//            System.out.println("Update " + parent.millis());
             IplImage depthImage;
             IplImage colImage = null;
 
@@ -210,11 +212,12 @@ public class DepthTouchInput extends TouchInput {
             if (armDetection != null) {
                 initPrecision = armDetection.getPrecision();
             }
-            //System.out.println("ComputeDepthNormals: " + initPrecision);
-//            Instant start = Instant.now();
+//            System.out.println("ComputeDepthNormals: " + initPrecision);
+            Instant start = Instant.now();
 
-            depthAnalysis.computeDepthAndNormals(depthImage, colImage, initPrecision);
-//            Instant depth = Instant.now();
+//            depthAnalysis.computeDepthAndNormals(depthImage, colImage, initPrecision);
+            depthAnalysis.computeDepth(depthImage, colImage, initPrecision);
+            Instant depth = Instant.now();
 
             if (simpleDetection != null) {
                 simpleDetection.findTouch(planeAndProjCalibration);
@@ -236,8 +239,8 @@ public class DepthTouchInput extends TouchInput {
             if (fingerDetection != null) {
                 fingerDetection.findTouch(handDetection, armDetection, colImage, planeAndProjCalibration);
             }
-//            Instant touch3 = Instant.now();
-//            Instant end = Instant.now();
+            Instant touch3 = Instant.now();
+            Instant end = Instant.now();
 
 //            System.out.println("Depth: " + Duration.between(start, depth).toMillis() + " milliseconds");
 //            System.out.println("Arm: " + Duration.between(depth, touch1).toMillis() + " milliseconds");

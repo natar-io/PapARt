@@ -52,7 +52,7 @@ public class Compute2DFrom3D extends DepthRecognition {
 //        depthAnalysis.computeDepthAndDoAround(precision2D, offset, area, new SelectAll());
         // Computation of elements in a zone
         depthAnalysis.computeDepthAndDoAround(precision2D, offset, area, new Select2DPlaneProjection());
-        depthAnalysis.doForEachPointAround(precision2D, offset, area, new ComputeNormal());
+//        depthAnalysis.doForEachPointAround(precision2D, offset, area, new ComputeNormal());
 
 //        depthAnalysis.computeDepthAndDo(precision2D, new Select2DPlaneProjection());
 //        depthAnalysis.doForEachPoint(precision2D, new ComputeNormal());

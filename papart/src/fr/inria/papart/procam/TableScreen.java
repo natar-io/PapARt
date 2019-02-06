@@ -47,6 +47,7 @@ public class TableScreen extends PaperTouchScreen {
     }
 
     public TableScreen(PVector loc, PVector size) {
+        super();
         setDrawOnPaper();
         setDrawingSize(size.x, size.y);
         setLocation(loc);
@@ -98,7 +99,7 @@ public class TableScreen extends PaperTouchScreen {
         if(getDisplay() instanceof BaseDisplay){
             return getLocationOnTable();
         }
-        return getLocation(trackedLocation);
+        return super.getLocation(trackedLocation);
     }
         
     public PMatrix3D getLocationOnTable() {

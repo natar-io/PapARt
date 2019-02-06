@@ -92,20 +92,20 @@ public class FingerDetection extends TouchDetectionDepth {
                     /// Distance to plane
                     && depthData.planeAndProjectionCalibration.getPlane().getDistanceToPoint(depthData.depthPoints[candidate]) < calib.getTest1()
                     // Lower than the hand.
-                    && depthData.planeAndProjectionCalibration.distanceTo(depthData.depthPoints[candidate]) < (handCalib.getTest2() - 0.5f)
+                    && depthData.planeAndProjectionCalibration.distanceTo(depthData.depthPoints[candidate]) < (handCalib.getTest2())
                     //                    && depthData.planeAndProjectionCalibration.distanceTo(depthData.depthPoints[candidate]) < 20f
                     && depthData.depthPoints[initialPoint].distanceTo(depthData.depthPoints[candidate]) < calib.getMaximumDistanceInit()
                     && depthData.depthPoints[candidate].distanceTo(depthData.depthPoints[currentPoint]) < calib.getMaximumDistance();
 
-            boolean goodNormal = true;
-
-            if (depthData.normals[candidate] != null) {
-                float dN = (depthData.planeAndProjectionCalibration.getPlane().normal).distanceToSquared(depthData.normals[candidate]);
-             
-                // WARNING MAGIC NUMBER HERE
-//                boolean higher = depthData.projectedPoints[candidate].z < depthData.projectedPoints[currentPoint].z;
-                goodNormal = (depthData.normals[candidate] != null && dN > calib.getNormalFilter());  // Higher  than Xmm
-            }
+//            boolean goodNormal = true;
+//
+//            if (depthData.normals[candidate] != null) {
+//                float dN = (depthData.planeAndProjectionCalibration.getPlane().normal).distanceToSquared(depthData.normals[candidate]);
+//             
+//                // WARNING MAGIC NUMBER HERE
+////                boolean higher = depthData.projectedPoints[candidate].z < depthData.projectedPoints[currentPoint].z;
+//                goodNormal = (depthData.normals[candidate] != null && dN > calib.getNormalFilter());  // Higher  than Xmm
+//            }
 
 //            int[] neighbourColorList = depthData.connexity.getNeighbourColorList(getX(candidate), 
 //                    getY(candidate), 
@@ -115,15 +115,15 @@ public class FingerDetection extends TouchDetectionDepth {
 //                  int g = (argb >> 8) & 0xFF;
 //                  colorSum += g / 255;
 //            }
-            int argb = depthData.pointColors[candidate];
-//            boolean goodColor = ((depthData.pointColors[candidate] & 0xFF) >> 8) == 255;  // 0xFF = 255
-            int r = (argb >> 16) & 0xFF;  // Faster way of getting red(argb)
-            int g = (argb >> 8) & 0xFF;   // Faster way of getting green(argb)
-            int b = argb & 0xFF;          // Faster way of getting blue(argb)
-            int total = r + g + b;
+//            int argb = depthData.pointColors[candidate];
+////            boolean goodColor = ((depthData.pointColors[candidate] & 0xFF) >> 8) == 255;  // 0xFF = 255
+//            int r = (argb >> 16) & 0xFF;  // Faster way of getting red(argb)
+//            int g = (argb >> 8) & 0xFF;   // Faster way of getting green(argb)
+//            int b = argb & 0xFF;          // Faster way of getting blue(argb)
+//            int total = r + g + b;
 
 //            System.out.println("sum: " + colorSum);
-            return classicCheck && goodNormal;
+            return classicCheck; // && goodNormal;
         }
    private int initialPoint;
 

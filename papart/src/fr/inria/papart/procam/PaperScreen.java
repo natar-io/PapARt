@@ -1251,7 +1251,6 @@ public class PaperScreen extends DelegatedGraphics {
      * @return
      */
     public PMatrix3D getLocation() {
-
         return this.getLocation(cameraTracking);
     }
 
