@@ -9,21 +9,14 @@ import Jama.Matrix;
 import com.mkobos.pca_transform.PCA;
 import fr.inria.papart.multitouch.OneEuroFilter;
 import fr.inria.papart.multitouch.tracking.Trackable;
-import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
-import fr.inria.papart.multitouch.tracking.TrackedPosition;
 import static fr.inria.papart.multitouch.tracking.TrackedPosition.NO_ID;
 import static fr.inria.papart.multitouch.tracking.TrackedPosition.NO_TIME;
-import static fr.inria.papart.multitouch.tracking.TrackedPosition.filterBeta;
-import static fr.inria.papart.multitouch.tracking.TrackedPosition.filterCut;
-import static fr.inria.papart.multitouch.tracking.TrackedPosition.filterFreq;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.Objects;
 import java.util.function.Predicate;
-import static processing.core.PApplet.abs;
 import static processing.core.PApplet.atan2;
 import processing.core.PMatrix2D;
 import processing.core.PVector;
@@ -169,7 +162,7 @@ public class LineCluster extends ArrayList<TrackedElement> implements Trackable 
         }
 
         System.err.println("LineCluster: asCode, code mismatch.");
-        return new LineCluster();
+        return LineCluster.INVALID_CLUSTER;
     }
 
     /**

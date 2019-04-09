@@ -173,7 +173,7 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
         try {
 //            System.out.println("Sleeping color cam");
 //            Thread.sleep((long) ((1.0f / (float) colorCamera.frameRate) * 1000f));
-            Thread.sleep((long) ((1.0f / (float) colorCamera.frameRate) * 800f));
+            Thread.sleep((long) ((1.0f / (float) colorCamera.frameRate) * 2f));
 //          System.out.println("awake color cam");
         } catch (InterruptedException ex) {
             Logger.getLogger(CameraOpenNI2.class.getName()).log(Level.SEVERE, null, ex);
@@ -185,7 +185,7 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
     public void grabColor() {
         try {
          //   System.out.println("Sleeping color cam");
-            Thread.sleep((long) ((1.0f / (float) colorCamera.frameRate) * 1000f));
+            Thread.sleep((long) ((1.0f / (float) colorCamera.frameRate) * 2f));
 //            Thread.sleep((long) ((1.0f / (float) colorCamera.frameRate) * 5000f));
 //            System.out.println("awake color cam");
         } catch (InterruptedException ex) {
@@ -333,7 +333,6 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
                 rawVideoImage.getByteBuffer().put(frameDataBytes, 0, frameSize);
 //                opencv_imgproc.cvCvtColor(rawVideoImage, rawVideoImage, COLOR_RGB2BGR);
 //                opencv_imgproc.cvCvtColor(rawVideoImage, rawVideoImageGray, COLOR_BGR2GRAY);
-
                 camera.updateCurrentImage(rawVideoImage);
                 updateColor();
 //                camera.updateCurrentImage(rawVideoImageGray);
