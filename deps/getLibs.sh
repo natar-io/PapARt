@@ -1,3 +1,11 @@
+# @Author: PALARD Nicolas <nclsp>
+# @Date:   2019-04-25T18:24:44+02:00
+# @Email:  palard@rea.lity.tech
+# @Project: Natar.io
+# @Last modified by:   nclsp
+# @Last modified time: 2019-04-29T10:38:15+02:00
+# @Copyright: RealityTech 2018-2019
+
 #!/bin/bash
 
 mkdir libraries
@@ -18,6 +26,11 @@ wget https://github.com/Rea-lity-Tech/SimplePointCloud/releases/download/1.0/Sim
 tar xvzf SimplePointCloud.tgz
 rm SimplePointCloud.tgz
 
+echo "ColorConverter"
+wget https://github.com/Rea-lity-Tech/ColorConverter/releases/download/0.1/ColorConverter.tgz
+tar xvzf ColorConverter.tgz
+rm ColorConverter.tgz
+
 echo "Processing Video"
 wget https://github.com/processing/processing-video/releases/download/2/video-2.zip
 unzip video-2.zip
@@ -34,7 +47,7 @@ unzip oscP5-0.9.8.zip
 rm oscP5-0.9.8.zip
 
 echo "Skatolo"
-wget https://github.com/rea-lity-tech/Skatolo/releases/download/1.1/skatolo.tgz
+wget https://github.com/Rea-lity-Tech/Skatolo/releases/download/1.1.1/skatolo.tgz
 tar xvzf skatolo.tgz
 rm skatolo.tgz
 
