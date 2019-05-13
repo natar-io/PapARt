@@ -331,11 +331,11 @@
         <outputDirectory>target/classes</outputDirectory>
         <extensions>
             <!-- Enabling the use of FTP -->
-            <extension>
+<!--            <extension>
                 <groupId>org.apache.maven.wagon</groupId>
                 <artifactId>wagon-ftp</artifactId>
                 <version>3.0.0</version>
-            </extension>
+            </extension>-->
         </extensions>
         
         <plugins> 

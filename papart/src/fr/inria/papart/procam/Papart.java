@@ -48,12 +48,15 @@ import fr.inria.papart.multitouch.detection.CalibratedColorTracker;
 import fr.inria.papart.multitouch.detection.ColorTracker;
 import fr.inria.papart.utils.LibraryUtils;
 import fr.inria.papart.procam.camera.CameraFactory;
+import fr.inria.papart.procam.camera.CameraNectar;
 import fr.inria.papart.procam.camera.CameraRGBIRDepth;
 import fr.inria.papart.procam.camera.CannotCreateCameraException;
 import fr.inria.papart.tracking.DetectedMarker;
 import fr.inria.papart.utils.MathUtils;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -61,6 +64,7 @@ import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.event.KeyEvent;
+import redis.clients.jedis.Jedis;
 
 /**
  *
@@ -725,9 +729,63 @@ public class Papart {
     public void initCamera(String cameraNo, Camera.Type cameraType, String cameraFormat) throws CannotCreateCameraException {
         assert (!cameraInitialized);
 
-        cameraTracking = CameraFactory.createCamera(cameraType, cameraNo, cameraFormat);
-        cameraTracking.setParent(applet);
-        cameraTracking.setCalibration(cameraCalib);
+        //  HACK Natar :
+        //Check if Natar is aread
+        boolean cameraServerFound = false;
+        try {
+            CameraNectar cameraNectar = (CameraNectar) CameraFactory.createCamera(Camera.Type.NECTAR, "camera0", "rgb");
+            Jedis jedis = cameraNectar.createConnection();
+//            jedis.get(folder)
+            ClientList list = new ClientList(jedis.clientList());
+            if (list.hasClient("CameraServer")) {
+                cameraServerFound = true;
+                System.out.println("Switching to Natar");
+                        
+                cameraTracking = cameraNectar;
+                cameraTracking.setParent(applet);
+                cameraTracking.setCalibration(cameraCalib);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if (!cameraServerFound) {
+            cameraTracking = CameraFactory.createCamera(cameraType, cameraNo, cameraFormat);
+            cameraTracking.setParent(applet);
+            cameraTracking.setCalibration(cameraCalib);
+        }
+    }
+
+    class ClientList extends ArrayList<HashMap<String, String>> {
+
+        public ClientList(String clientList) {
+            super();
+            String[] clients = clientList.split("\\r?\\n");
+            for (String c : clients) {
+                HashMap<String, String> map = new HashMap<>();
+                for (String element : c.split(" ")) {
+                    String[] el = element.split("=");
+                    if (el.length > 1) {
+                        map.put(el[0], el[1]);
+                    }
+                }
+                if (map.containsKey("name")) {
+                    System.out.println("Client: " + map.get("name"));
+                }
+                this.add(map);
+            }
+        }
+
+        public boolean hasClient(String name) {
+            boolean found = false;
+            for (HashMap<String, String> map : this) {
+                if (map.containsKey("name")) {
+                    found = found || map.get("name").startsWith(name);
+                }
+            }
+            return found;
+        }
     }
 
     public void loadDefaultProjector() {
@@ -867,6 +925,21 @@ public class Papart {
         // Two cases, either the other camera running of the same type
         CameraConfiguration depthCamConfiguration = Papart.getDefaultDepthCameraConfiguration(applet);
 
+        
+        try {
+            CameraNectar cameraNectar = (CameraNectar) CameraFactory.createCamera(Camera.Type.NECTAR, "camera0", "rgb");
+            Jedis jedis = cameraNectar.createConnection();
+//            jedis.get(folder)
+            ClientList list = new ClientList(jedis.clientList());
+            if (list.hasClient("DepthCameraServer")) {
+                System.out.println("Switching to Natar for Depth Camera");
+                depthCamConfiguration.setCameraType(Camera.Type.NECTAR);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
         // If the camera is not instanciated, we use depth + color from the camera.
 //        if (cameraTracking == null) {
 //            System.err.println("You must choose a camera to create a DepthCamera.");
@@ -892,6 +965,8 @@ public class Papart {
         if (depthCameraDevice == null) {
             System.err.println("Could not load the depth camera !" + "Camera Type " + depthCamConfiguration.getCameraType());
         }
+
+        this.cameraTracking = depthCameraDevice.getMainCamera();
 
         // At this point, cameraTracking & depth Camera are ready. 
         return depthCameraDevice;
@@ -995,6 +1070,24 @@ public class Papart {
         this.getPublicCameraTracking().trackSheets(true);
     }
 
+    public void setDistantCamera(String url, int port) {
+        if (this.cameraTracking instanceof CameraNectar) {
+            ((CameraNectar) cameraTracking).setRedisHost(url);
+            ((CameraNectar) cameraTracking).setRedisPort(port);
+        } else {
+            System.err.println("Cannot set distant camera url.");
+            return;
+        }
+    }
+
+    public Jedis videoOutput;
+    public String videoOutputKey;
+
+    public void streamOutput(Jedis connection, String key) {
+        videoOutput = connection;
+        videoOutputKey = key;
+    }
+
     /**
      * Start the camera thread, and the tracking. it calls automatically
      * startCameraThread().
@@ -1060,7 +1153,6 @@ public class Papart {
 //        if(marker != null){
 //            return MathUtils.compute3DPos(marker.get(), markerWidth, cameraTracking);
 //        }
-
         for (DetectedMarker marker : cameraTracking.getDetectedMarkers()) {
             if (marker.id == markerID) {
                 return MathUtils.compute3DPos(marker, markerWidth, cameraTracking);

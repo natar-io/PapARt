@@ -38,6 +38,8 @@ public class CameraNectar extends CameraRGBIRDepth {
 
     public String DEFAULT_REDIS_HOST = "localhost";
     public int DEFAULT_REDIS_PORT = 6379;
+    private String redisHost = DEFAULT_REDIS_HOST;
+    private int redisPort = DEFAULT_REDIS_PORT;
     private DetectedMarker[] currentMarkers;
     Jedis redisGet;
 
@@ -71,6 +73,7 @@ public class CameraNectar extends CameraRGBIRDepth {
         }
     }
 
+
     private void startRGB() {
         Jedis redis = createConnection();
 
@@ -92,11 +95,11 @@ public class CameraNectar extends CameraRGBIRDepth {
     }
 
     public Jedis createConnection() {
-        return new Jedis(DEFAULT_REDIS_HOST, DEFAULT_REDIS_PORT);
+        return new Jedis(redisHost, redisPort);
     }
 
     private void startDepth() {
-        Jedis redis2 = new Jedis(DEFAULT_REDIS_HOST, DEFAULT_REDIS_PORT);
+        Jedis redis2 = new Jedis(redisHost, redisPort);
 
         String v = redis2.get(cameraDescription + ":depth:width");
         if (v != null) {
@@ -116,7 +119,15 @@ public class CameraNectar extends CameraRGBIRDepth {
     }
 
     public void startMarkerTracking() {
-        Jedis redis = new Jedis(DEFAULT_REDIS_HOST, DEFAULT_REDIS_PORT);
+        Jedis redis = new Jedis(redisHost, redisPort);
+        int id = (int) (Math.abs(Math.random()));
+        
+        // New: set a name, with an ID.
+        redis.clientSetname("CameraClient:" + id);
+        
+        // Link the ID to a description
+        redis.set("clients:CameraClient:" + id, cameraDescription);
+        
         if (!getMode) {
             new RedisThread(redis, new MarkerListener(), cameraDescription + ":markers").start();
         }
@@ -399,6 +410,23 @@ public class CameraNectar extends CameraRGBIRDepth {
             }
         }
         return detectedMarkers;
+    }
+    
+    
+    public String getRedisHost() {
+        return redisHost;
+    }
+
+    public void setRedisHost(String redisHost) {
+        this.redisHost = redisHost;
+    }
+
+    public int getRedisPort() {
+        return redisPort;
+    }
+
+    public void setRedisPort(int redisPort) {
+        this.redisPort = redisPort;
     }
 
 }
