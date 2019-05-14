@@ -740,14 +740,14 @@ public class Papart {
             if (list.hasClient("CameraServer")) {
                 cameraServerFound = true;
                 System.out.println("Switching to Natar");
-                        
+
                 cameraTracking = cameraNectar;
                 cameraTracking.setParent(applet);
                 cameraTracking.setCalibration(cameraCalib);
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Natar not found");
         }
 
         if (!cameraServerFound) {
@@ -756,37 +756,7 @@ public class Papart {
             cameraTracking.setCalibration(cameraCalib);
         }
     }
-
-    class ClientList extends ArrayList<HashMap<String, String>> {
-
-        public ClientList(String clientList) {
-            super();
-            String[] clients = clientList.split("\\r?\\n");
-            for (String c : clients) {
-                HashMap<String, String> map = new HashMap<>();
-                for (String element : c.split(" ")) {
-                    String[] el = element.split("=");
-                    if (el.length > 1) {
-                        map.put(el[0], el[1]);
-                    }
-                }
-                if (map.containsKey("name")) {
-                    System.out.println("Client: " + map.get("name"));
-                }
-                this.add(map);
-            }
-        }
-
-        public boolean hasClient(String name) {
-            boolean found = false;
-            for (HashMap<String, String> map : this) {
-                if (map.containsKey("name")) {
-                    found = found || map.get("name").startsWith(name);
-                }
-            }
-            return found;
-        }
-    }
+   
 
     public void loadDefaultProjector() {
         initProjectorDisplay(1);
@@ -925,21 +895,21 @@ public class Papart {
         // Two cases, either the other camera running of the same type
         CameraConfiguration depthCamConfiguration = Papart.getDefaultDepthCameraConfiguration(applet);
 
-        
         try {
             CameraNectar cameraNectar = (CameraNectar) CameraFactory.createCamera(Camera.Type.NECTAR, "camera0", "rgb");
             Jedis jedis = cameraNectar.createConnection();
-//            jedis.get(folder)
             ClientList list = new ClientList(jedis.clientList());
             if (list.hasClient("DepthCameraServer")) {
                 System.out.println("Switching to Natar for Depth Camera");
                 depthCamConfiguration.setCameraType(Camera.Type.NECTAR);
+                depthCamConfiguration.setCameraName("camera0");
+                depthCamConfiguration.setCameraFormat("");
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Natar not found");
         }
-        
+
         // If the camera is not instanciated, we use depth + color from the camera.
 //        if (cameraTracking == null) {
 //            System.err.println("You must choose a camera to create a DepthCamera.");

@@ -23,10 +23,13 @@ package fr.inria.papart.depthcam.devices;
 import fr.inria.papart.calibration.files.HomographyCalibration;
 import fr.inria.papart.depthcam.analysis.DepthAnalysis;
 import fr.inria.papart.multitouch.DepthTouchInput;
+import fr.inria.papart.procam.ClientList;
 import fr.inria.papart.procam.Papart;
+import static fr.inria.papart.procam.Papart.cameraCalib;
 import fr.inria.papart.utils.ARToolkitPlusUtils;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.CameraFactory;
+import fr.inria.papart.procam.camera.CameraNectar;
 import fr.inria.papart.procam.camera.CameraRGBIRDepth;
 import fr.inria.papart.procam.camera.CannotCreateCameraException;
 import fr.inria.papart.procam.camera.SubCamera;
@@ -37,6 +40,7 @@ import org.bytedeco.javacpp.opencv_core.IplImage;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
+import redis.clients.jedis.Jedis;
 import toxi.geom.Vec3D;
 
 /**
@@ -63,8 +67,9 @@ public abstract class DepthCameraDevice {
     }
 
     public abstract void loadDataFromDevice();
+
     public abstract DepthAnalysis.DepthComputation createDepthComputation();
-    
+
     public CameraRGBIRDepth getMainCamera() {
         return camera;
     }
@@ -95,7 +100,29 @@ public abstract class DepthCameraDevice {
      */
     protected final void initDefaultCamera() throws CannotCreateCameraException {
         String id = Papart.getDefaultDepthCameraConfiguration(parent).getCameraName();
-        camera = (CameraRGBIRDepth) CameraFactory.createCamera(type(), id);
+
+        //  HACK Natar :
+        //Check if Natar is aread
+        boolean cameraServerFound = false;
+        try {
+            CameraNectar cameraNectar = (CameraNectar) CameraFactory.createCamera(Camera.Type.NECTAR, "camera0", "rgb");
+            Jedis jedis = cameraNectar.createConnection();
+//            jedis.get(folder)
+            ClientList list = new ClientList(jedis.clientList());
+            if (list.hasClient("CameraServer")) {
+                cameraServerFound = true;
+                System.out.println("Switching to Natar");
+                camera = cameraNectar;
+                cameraServerFound = true;
+            }
+
+        } catch (Exception e) {
+            System.out.println("Natar not found");
+        }
+
+        if (!cameraServerFound) {
+            camera = (CameraRGBIRDepth) CameraFactory.createCamera(type(), id);
+        }
         camera.setUseDepth(true);
         camera.setUseColor(true);
         camera.actAsColorCamera();
@@ -143,7 +170,7 @@ public abstract class DepthCameraDevice {
     public int findMainImageOffset(PVector v) {
         return findMainImageOffset(v.x, v.y, v.z);
     }
-    
+
     public int findColorOffset(Vec3D v) {
         return findColorOffset(v.x, v.y, v.z);
     }
@@ -151,10 +178,11 @@ public abstract class DepthCameraDevice {
     public int findColorOffset(PVector v) {
         return findColorOffset(v.x, v.y, v.z);
     }
-    
+
     public int findDepthOffset(PVector v) {
         return findDepthOffset(v.x, v.y, v.z);
     }
+
     public int findDepthOffset(Vec3D v) {
         return findDepthOffset(v.x, v.y, v.z);
     }
@@ -179,7 +207,7 @@ public abstract class DepthCameraDevice {
         getStereoCalibration().mult(vt, vt2);
         return getColorCamera().getProjectiveDevice().worldToPixel(vt2.x, vt2.y, vt2.z);
     }
-    
+
     /**
      * Warning not thread safe.
      *
@@ -201,7 +229,7 @@ public abstract class DepthCameraDevice {
     }
 
     private int findDepthOffset(float x, float y, float z) {
-        return getDepthCamera().getProjectiveDevice().worldToPixel(x,y,z);
+        return getDepthCamera().getProjectiveDevice().worldToPixel(x, y, z);
     }
 
 }
