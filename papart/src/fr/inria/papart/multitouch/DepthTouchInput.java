@@ -210,10 +210,11 @@ public class DepthTouchInput extends TouchInput {
             if (armDetection != null) {
                 initPrecision = armDetection.getPrecision();
             }
-            //System.out.println("ComputeDepthNormals: " + initPrecision);
+//            System.out.println("ComputeDepthNormals: " + initPrecision);
 //            Instant start = Instant.now();
 
-            depthAnalysis.computeDepthAndNormals(depthImage, colImage, initPrecision);
+            depthAnalysis.computeDepthOptim(depthImage, initPrecision);
+//            depthAnalysis.computeDepthAndNormals(depthImage, colImage, initPrecision);
 //            Instant depth = Instant.now();
 
             if (simpleDetection != null) {
@@ -226,15 +227,16 @@ public class DepthTouchInput extends TouchInput {
             if (armDetection != null) {
                 armDetection.findTouch(planeAndProjCalibration);
             }
-            Instant touch1 = Instant.now();
+//            Instant touch1 = Instant.now();
 
             if (handDetection != null) {
                 handDetection.findTouch(armDetection, planeAndProjCalibration);
             }
-            Instant touch2 = Instant.now();
+//            Instant touch2 = Instant.now();
 
             if (fingerDetection != null) {
-                fingerDetection.findTouch(handDetection, armDetection, colImage, planeAndProjCalibration);
+                fingerDetection.findTouchOptim(handDetection, armDetection,  planeAndProjCalibration);
+//                fingerDetection.findTouch(handDetection, armDetection, colImage, planeAndProjCalibration);
             }
 //            Instant touch3 = Instant.now();
 //            Instant end = Instant.now();

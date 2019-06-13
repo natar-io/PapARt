@@ -170,7 +170,7 @@ public class MultiCalibrator extends PaperTouchScreen {
     public void setup() {
         try {
             setDrawingFilter(0);
-//            setTrackingFilter(0, 0);
+            setTrackingFilter(0, 0);
 //            planeProjCalib = new PlaneAndProjectionCalibration();
             savedImages = new IplImage[nbScreenPoints];
             savedLocations = new PMatrix3D[nbScreenPoints];

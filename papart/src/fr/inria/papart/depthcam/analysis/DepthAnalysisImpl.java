@@ -183,6 +183,33 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         }
 //        doForEachPoint(skip2D, new ComputeNormal());
     }
+    
+    public void computeDepthOptim(opencv_core.IplImage depth, int skip2D) {
+        updateRawDepth(depth);
+        // optimisation no Color. 
+//        if (color != null) {
+//            updateRawColor(color);
+//        }
+        depthData.clear();
+        depthData.timeStamp = papplet.millis();
+
+//        depthData.connexity.setPrecision(skip2D);
+
+        
+        computeDepthAndDo(skip2D, new DoNothing());
+//        computeDepthAndDo(skip2D, new ComputeNormal());
+
+//        if (this.colorCamera.getPixelFormat() == Camera.PixelFormat.GRAY) {
+//            doForEachPoint(skip2D, new SetImageDataGRAY());
+//        }
+//        if (this.colorCamera.getPixelFormat() == Camera.PixelFormat.RGB) {
+//            doForEachPoint(skip2D, new SetImageDataRGB());
+//        }
+//        if (this.colorCamera.getPixelFormat() == Camera.PixelFormat.BGR) {
+//            doForEachPoint(skip2D, new SetImageData());
+//        }
+//        doForEachPoint(skip2D, new ComputeNormal());
+    }
 
     public void computeDepthAndDo(int precision, DepthPointManiplation manip) {
         PixelList pixels = new PixelList(precision);

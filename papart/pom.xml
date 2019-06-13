@@ -176,7 +176,8 @@
         <dependency>
             <groupId>org.processing</groupId>
             <artifactId>video</artifactId>
-            <version>3.3.7</version>
+            <!--<version>3.2.33.3.7</version>-->
+            <version>3.2.3</version>
         </dependency>
         
         
@@ -197,10 +198,15 @@
         
         <!--We package and distribute--> 
         <dependency>
-            <groupId>tech.lity.rea</groupId>
+            <groupId>fr.inria.potioc</groupId>
             <artifactId>ProcessingTUIO</artifactId>
             <version>1.1.0</version>
         </dependency>
+<!--        <dependency>
+            <groupId>tech.lity.rea</groupId>
+            <artifactId>ProcessingTUIO</artifactId>
+            <version>1.1.0</version>
+        </dependency>-->
         
         <!--We package and distribute--> 
         <dependency>

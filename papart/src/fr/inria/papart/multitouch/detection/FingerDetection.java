@@ -115,12 +115,13 @@ public class FingerDetection extends TouchDetectionDepth {
 //                  int g = (argb >> 8) & 0xFF;
 //                  colorSum += g / 255;
 //            }
-            int argb = depthData.pointColors[candidate];
-//            boolean goodColor = ((depthData.pointColors[candidate] & 0xFF) >> 8) == 255;  // 0xFF = 255
-            int r = (argb >> 16) & 0xFF;  // Faster way of getting red(argb)
-            int g = (argb >> 8) & 0xFF;   // Faster way of getting green(argb)
-            int b = argb & 0xFF;          // Faster way of getting blue(argb)
-            int total = r + g + b;
+
+//            int argb = depthData.pointColors[candidate];
+////            boolean goodColor = ((depthData.pointColors[candidate] & 0xFF) >> 8) == 255;  // 0xFF = 255
+//            int r = (argb >> 16) & 0xFF;  // Faster way of getting red(argb)
+//            int g = (argb >> 8) & 0xFF;   // Faster way of getting green(argb)
+//            int b = argb & 0xFF;          // Faster way of getting blue(argb)
+//            int total = r + g + b;
 
 //            System.out.println("sum: " + colorSum);
             return classicCheck && goodNormal;
@@ -180,6 +181,86 @@ public class FingerDetection extends TouchDetectionDepth {
             touchRecognition.find2DTouchFrom3D(planeAndProjCalibration,
                     getPrecision(),
                     pointColor,
+                    offset,
+                    (int) this.calib.getTest2());
+
+            // Use arm 
+//            depthSelection = arm.getDepthSelection();
+//       use local
+            DepthData.DepthSelection depthSelection = touchRecognition.getSelection();
+            pointCheck.setSelection(depthSelection);
+            
+            // Start from the hand -- not the detected points !
+            
+//            this.toVisit.addAll(depthSelection.validPointsList);
+            this.toVisit.addAll(currentArm.getDepthDataAsConnectedComponent());
+
+            // 2. Select points that are part of the border 
+//            DepthElementList handBounds = subHand.getDepthDataElements();
+//            handBounds =  handBounds.getBoundaries(depthData, touchPoint.getDetection());
+            // 3. Select the ones that not part of the contour. 
+//            handBounds.selectDark(depthData);
+//            System.out.println("Bounds in Hand and not in Edge detection: " + handBounds.size());
+            // USELESS?
+            // 4. Remove the points that are also in the arm
+//            handBounds.removeAll(currentArm.getDepthDataElements());
+//            System.out.println("Same not in arm: " + handBounds.size());
+            // Start searching from the bounds
+//            this.toVisit.addAll(handBounds.toConnectedComponent());
+            // Search points "black"  -> not in bounds ?
+            // Generate a touch list from these points. 
+            ArrayList<TrackedDepthPoint> newList;
+            newList = this.compute(this.depthAnalysis.getDepthData());
+
+            // WARNING - FINGERS CAN JUMP FROM ONE HAND TO ANOTHER
+            allNewFingers.addAll(newList);
+        }
+
+        // TODO: Hand have IDs, we track the IDs, assign a list of touchPoints 
+        // that is tracked within this array.
+        int imageTime = this.depthAnalysis.getDepthData().timeStamp;
+
+//        touchPoints.clear();
+//        touchPoints.addAll(allNewFingers);
+        TouchPointTracker.trackPoints(touchPoints, allNewFingers, imageTime);
+        TouchPointTracker.filterPositions(touchPoints, imageTime);
+    }
+    /**
+     *
+     * @param planeAndProjCalibration
+     * @param colorImg
+     * @param hand
+     */
+    public void findTouchOptim(HandDetection hand, ArmDetection arm,
+            PlaneAndProjectionCalibration planeAndProjCalibration) {
+
+        // Warning, this should be done before ?
+        this.depthData = depthAnalysis.getDepthData();
+        this.handCalib = hand.getCalibration();
+        this.currentPlaneProj = planeAndProjCalibration;
+
+        ArrayList<TrackedDepthPoint> allNewFingers = new ArrayList<TrackedDepthPoint>();
+        // For each hand
+        for (TrackedDepthPoint subHand : hand.getTouchPoints()) {
+
+            int offset = depthAnalysis.getDepthCameraDevice().findDepthOffset(subHand.getPositionDepthCam());
+//
+            offset = getValidOffset(offset);
+            currentHand = subHand;
+            currentArm = subHand.getParent();
+            handOffset = offset;
+            handPos = subHand.getPositionDepthCam();
+
+            int rectSize = (int) this.calib.getTest1();
+
+            // the IRImage here is the modified one. 
+            // 1. Compute the contours of the hand.
+//            IplImage irImg = computeContour(colorImg, offset, (int) this.calib.getTest1());
+//            IplImage pointColor = irImg;
+
+            // Set the contour Color data. 
+            touchRecognition.find2DTouchFrom3DOptim(planeAndProjCalibration,
+                    getPrecision(),
                     offset,
                     (int) this.calib.getTest2());
 
