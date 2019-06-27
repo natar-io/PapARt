@@ -426,7 +426,7 @@ public class MultiCalibrator extends PaperTouchScreen {
             nextScreenshot();
             waitForMovement = true;
 
-            if (this.currentScreenPoint == 1) {
+            if (this.currentScreenPoint == 1f && !colorOnly) {
                 System.out.println("Save the table location.");
                 PMatrix3D tableCenter = savedLocations[0].get();
                 tableCenter.translate(CENTER_X * SCALE_FACTOR, CENTER_Y * SCALE_FACTOR);
@@ -434,8 +434,8 @@ public class MultiCalibrator extends PaperTouchScreen {
 
                 /// if useTouch ?
                 if (!seeThrough) {
-                    System.out.println("Save a simple touch plane.");
-                    computeAndSaveTouch();
+//                    System.out.println("Save a simple touch plane.");
+//                    computeAndSaveTouch();
                 }
             }
 

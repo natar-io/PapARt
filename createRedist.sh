@@ -18,6 +18,8 @@ cp papart/target/$NAME.jar $TMP/$NAME/library/$NAME.jar
 cp deps/jama.jar $TMP/$NAME/library/
 cp deps/pca_transform.jar $TMP/$NAME/library/
 cp deps/jedis-2.9.0.jar $TMP/$NAME/library/
+cp deps/commons-pool2-2.2.jar $TMP/$NAME/library/
+cp deps/ColorConverter.jar $TMP/$NAME/library/
 
 echo "Copy the sources"
 # copy the source also
