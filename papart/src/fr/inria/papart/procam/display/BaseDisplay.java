@@ -22,6 +22,7 @@ package fr.inria.papart.procam.display;
 import fr.inria.papart.procam.HasCamera;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.PaperScreen;
+import fr.inria.papart.procam.VideoEmitter;
 
 import fr.inria.papart.procam.camera.Camera;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import processing.core.PApplet;
+import processing.core.PConstants;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
@@ -53,6 +55,7 @@ public class BaseDisplay implements HasCamera {
     protected int drawingSizeX = DEFAULT_SIZE, drawingSizeY = DEFAULT_SIZE;
     protected float quality = 1;
     protected boolean hasCamera = false;
+    private VideoEmitter videoEmitter = null;
 
     public BaseDisplay() {
         setParent(Papart.getPapart().getApplet());
@@ -71,6 +74,23 @@ public class BaseDisplay implements HasCamera {
     public void init() {
         initGraphics();
         automaticMode();
+    }
+
+    public void setVideoEmitter(VideoEmitter emitter) {
+        this.videoEmitter = emitter;
+    }
+
+    PImage copy = null;
+
+    protected void tryToEmitVideo() {
+        if (videoEmitter != null) {
+
+//            if(copy == null){
+//                copy = parent.createImage(this.graphics.width/2, this.graphics.height/2, PConstants.RGB);
+//            }
+//            copy.copy(this.graphics, 0, 0, this.graphics.width, this.graphics.height, 0, 0, copy.width, copy.height);
+            videoEmitter.sendImage(this.graphics, parent.millis());
+        }
     }
 
     /**
@@ -108,6 +128,7 @@ public class BaseDisplay implements HasCamera {
      */
     public void pre() {
         this.clear();
+
     }
 
     public void clear() {
@@ -144,7 +165,6 @@ public class BaseDisplay implements HasCamera {
             screenPos = paperScreen.getExtrinsics();
         }
         this.beginDraw();
-        this.graphics.applyMatrix(screenPos);
 
         // Same origin as in DrawOnPaper
         this.graphics.translate(0, paperScreen.getSize().y);
@@ -252,7 +272,7 @@ public class BaseDisplay implements HasCamera {
     public int getHeight() {
         return frameHeight;
     }
-
+    
     public void setDrawingSize(int w, int h) {
         this.drawingSizeX = w;
         this.drawingSizeY = h;
@@ -292,7 +312,7 @@ public class BaseDisplay implements HasCamera {
     public PVector project(PaperScreen screen, float x, float y) {
         boolean isProjector = this instanceof ProjectorDisplay;
         boolean isARDisplay = this instanceof ARDisplay;
-        // check that the correct method is called !
+// check that the correct method is called !
         PVector paperScreenCoord;
         if (isProjector) {
             paperScreenCoord = ((ProjectorDisplay) this).projectPointer(screen, x, y);
