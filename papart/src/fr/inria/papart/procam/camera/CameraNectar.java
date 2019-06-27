@@ -19,10 +19,10 @@
  */
 package fr.inria.papart.procam.camera;
 
+import fr.inria.papart.procam.RedisClientImpl;
 import fr.inria.papart.tracking.DetectedMarker;
 import org.bytedeco.javacpp.opencv_core;
 import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;
-import processing.core.PImage;
 import processing.data.JSONArray;
 import processing.data.JSONObject;
 import redis.clients.jedis.BinaryJedisPubSub;
@@ -32,7 +32,7 @@ import redis.clients.jedis.Jedis;
  *
  * @author Jeremy Laviole
  */
-public class CameraNectar extends CameraRGBIRDepth {
+public class CameraNectar extends CameraRGBIRDepth{
 
     private boolean getMode = false;
 
@@ -42,11 +42,13 @@ public class CameraNectar extends CameraRGBIRDepth {
     private int redisPort = DEFAULT_REDIS_PORT;
     private DetectedMarker[] currentMarkers;
     Jedis redisGet;
+    
+    protected final RedisClientImpl RedisClientGenerator = new RedisClientImpl();
 
     protected CameraNectar(String cameraName) {
         this.cameraDescription = cameraName;
     }
-
+    
     @Override
     public void start() {
         try {
@@ -73,7 +75,6 @@ public class CameraNectar extends CameraRGBIRDepth {
         }
     }
 
-
     private void startRGB() {
         Jedis redis = createConnection();
 
@@ -92,10 +93,6 @@ public class CameraNectar extends CameraRGBIRDepth {
         if (!getMode) {
             new RedisThread(redis, new ImageListener(colorCamera.getPixelFormat()), cameraDescription).start();
         }
-    }
-
-    public Jedis createConnection() {
-        return new Jedis(redisHost, redisPort);
     }
 
     private void startDepth() {
@@ -121,13 +118,13 @@ public class CameraNectar extends CameraRGBIRDepth {
     public void startMarkerTracking() {
         Jedis redis = new Jedis(redisHost, redisPort);
         int id = (int) (Math.abs(Math.random()));
-        
+
         // New: set a name, with an ID.
         redis.clientSetname("CameraClient:" + id);
-        
+
         // Link the ID to a description
         redis.set("clients:CameraClient:" + id, cameraDescription);
-        
+
         if (!getMode) {
             new RedisThread(redis, new MarkerListener(), cameraDescription + ":markers").start();
         }
@@ -291,7 +288,6 @@ public class CameraNectar extends CameraRGBIRDepth {
         PixelFormat format;
         Jedis getConnection;
 
-        
         public ImageListener(PixelFormat format) {
             this.format = format;
             getConnection = createConnection();
@@ -413,20 +409,29 @@ public class CameraNectar extends CameraRGBIRDepth {
     }
     
     
+    public Jedis createConnection() {
+        return RedisClientGenerator.createConnection();
+    }
+
     public String getRedisHost() {
-        return redisHost;
+        return RedisClientGenerator.getRedisHost();
     }
 
     public void setRedisHost(String redisHost) {
-        this.redisHost = redisHost;
+        RedisClientGenerator.setRedisHost(redisHost);
+    }
+
+    public void setRedisAuth(String redisAuth) {
+        RedisClientGenerator.setRedisAuth(redisAuth);
     }
 
     public int getRedisPort() {
-        return redisPort;
+        return RedisClientGenerator.getRedisPort();
     }
 
     public void setRedisPort(int redisPort) {
-        this.redisPort = redisPort;
+        RedisClientGenerator.setRedisPort(redisPort);
     }
+
 
 }

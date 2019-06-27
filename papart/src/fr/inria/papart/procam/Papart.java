@@ -1050,12 +1050,8 @@ public class Papart {
         }
     }
 
-    public Jedis videoOutput;
-    public String videoOutputKey;
-
-    public void streamOutput(Jedis connection, String key) {
-        videoOutput = connection;
-        videoOutputKey = key;
+    public void streamOutput(String host, int port, String auth, String key) {
+        projector.setVideoEmitter(new VideoEmitter(host, port, auth, key));
     }
 
     /**

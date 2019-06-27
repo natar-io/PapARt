@@ -22,30 +22,23 @@ import redis.clients.jedis.Jedis;
  *
  * @author Jeremy Laviole
  */
-public class VideoEmitter {
+public class VideoEmitter extends RedisClientImpl {
 
     Jedis redis, redisSend;
 
-    // Arguments
-    public static final int REDIS_PORT = 6379;
-    public static final String REDIS_HOST = "localhost";
-
-    private String host = REDIS_HOST;
-    private int port = REDIS_PORT;
     private String output = "image";
-
     private PImage imageRef;
     private int colorImageCount;
 
     public VideoEmitter() {
     }
 
-    public VideoEmitter(String key, String host, int port) {
-        this.host = host;
-        this.port = port;
+    public VideoEmitter(String host, int port, String auth, String key) {
+        this.setRedisHost(host);
+        this.setRedisPort(port);
+        this.setRedisAuth(auth);
         this.output = key;
-
-        connectRedis();
+        redis = createConnection();
     }
 
     public void setReference(PImage img) {
@@ -54,7 +47,6 @@ public class VideoEmitter {
     }
 
     public void sendImage(PImage img, int time) {
-
         if (imageRef == null || img.width != imageRef.width || img.height != imageRef.height) {
             setReference(img);
         }
@@ -90,26 +82,13 @@ public class VideoEmitter {
         return baos.toByteArray();
     }
 
-    private void checkConnection() {
-    }
-
-    private void connectRedis() {
-        try {
-            redis = new Jedis(host, port);
-            if (redis == null) {
-                throw new Exception("Cannot connect to server. ");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.exit(0);
-        }
-        // redis.auth("156;2Asatu:AUI?S2T51235AUEAIU");
-    }
 
     private void sendParams(PImage img) {
         redis.set(output + ":width", Integer.toString(img.width));
         redis.set(output + ":height", Integer.toString(img.height));
         redis.set(output + ":channels", Integer.toString(4));
+        redis.clientSetname("VideoEmitter");
+        
         if (img.format == RGB) {
             redis.set(output + ":pixelformat", Camera.PixelFormat.RGB.toString());
         }
