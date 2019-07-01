@@ -60,7 +60,6 @@ public class VideoEmitter extends RedisClientImpl {
             System.err.println("Cannot convert image to bytes.");
             return;
         }
-
         colorImageCount++;
 
         String name = output;
@@ -70,6 +69,7 @@ public class VideoEmitter extends RedisClientImpl {
         imageInfo.setLong("imageCount", colorImageCount);
         redis.set(id, imageData);
         redis.publish(id, imageInfo.toString().getBytes());
+        System.out.println("Sending (PUBLISH) image " + img.width + "x" + img.height + " to: " + output);
     }
 
     byte[] integersToBytes(int[] values) throws IOException {

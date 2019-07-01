@@ -32,7 +32,7 @@ import redis.clients.jedis.Jedis;
  *
  * @author Jeremy Laviole
  */
-public class CameraNectar extends CameraRGBIRDepth{
+public class CameraNectar extends CameraRGBIRDepth {
 
     private boolean getMode = false;
 
@@ -42,13 +42,17 @@ public class CameraNectar extends CameraRGBIRDepth{
     private int redisPort = DEFAULT_REDIS_PORT;
     private DetectedMarker[] currentMarkers;
     Jedis redisGet;
-    
+
     protected final RedisClientImpl RedisClientGenerator = new RedisClientImpl();
 
     protected CameraNectar(String cameraName) {
         this.cameraDescription = cameraName;
     }
     
+    public String getCameraKey(){
+        return this.cameraDescription;
+    }
+
     @Override
     public void start() {
         try {
@@ -96,7 +100,7 @@ public class CameraNectar extends CameraRGBIRDepth{
     }
 
     private void startDepth() {
-        Jedis redis2 = new Jedis(redisHost, redisPort);
+        Jedis redis2 = createConnection();
 
         String v = redis2.get(cameraDescription + ":depth:width");
         if (v != null) {
@@ -116,7 +120,7 @@ public class CameraNectar extends CameraRGBIRDepth{
     }
 
     public void startMarkerTracking() {
-        Jedis redis = new Jedis(redisHost, redisPort);
+        Jedis redis = createConnection();
         int id = (int) (Math.abs(Math.random()));
 
         // New: set a name, with an ID.
@@ -173,7 +177,7 @@ public class CameraNectar extends CameraRGBIRDepth{
                 Thread.sleep(15);
             } else {
                 //..nothing the princess is in another thread.
-                Thread.sleep(20);
+                Thread.sleep(200);
             }
         } catch (InterruptedException e) {
             System.err.println("CameraNectar grab Error ! " + e);
@@ -278,6 +282,7 @@ public class CameraNectar extends CameraRGBIRDepth{
 
     private Jedis checkConnection(Jedis connection) {
         if (connection == null || !connection.isConnected()) {
+            System.out.println("Camera: " + this.cameraDescription + ". Trying to reconnect.");
             connection = createConnection();
         }
         return connection;
@@ -296,6 +301,8 @@ public class CameraNectar extends CameraRGBIRDepth{
         @Override
         public void onMessage(byte[] channel, byte[] message) {
             try {
+                System.out.println("Get an Image: " + parent.millis());
+
                 getConnection = checkConnection(getConnection);
                 if (this.format == PixelFormat.BGR || this.format == PixelFormat.RGB) {
                     byte[] data = getConnection.get(channel);
@@ -407,8 +414,7 @@ public class CameraNectar extends CameraRGBIRDepth{
         }
         return detectedMarkers;
     }
-    
-    
+
     public Jedis createConnection() {
         return RedisClientGenerator.createConnection();
     }
@@ -432,6 +438,5 @@ public class CameraNectar extends CameraRGBIRDepth{
     public void setRedisPort(int redisPort) {
         RedisClientGenerator.setRedisPort(redisPort);
     }
-
 
 }

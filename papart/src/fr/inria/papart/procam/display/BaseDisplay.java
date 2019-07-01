@@ -82,7 +82,7 @@ public class BaseDisplay implements HasCamera {
 
     PImage copy = null;
 
-    protected void tryToEmitVideo() {
+    public void tryToEmitVideo() {
         if (videoEmitter != null) {
 
 //            if(copy == null){
@@ -90,6 +90,9 @@ public class BaseDisplay implements HasCamera {
 //            }
 //            copy.copy(this.graphics, 0, 0, this.graphics.width, this.graphics.height, 0, 0, copy.width, copy.height);
             videoEmitter.sendImage(this.graphics, parent.millis());
+            System.out.println("emit!");
+        } else {
+            System.out.println("Cannot emit");
         }
     }
 
@@ -272,7 +275,7 @@ public class BaseDisplay implements HasCamera {
     public int getHeight() {
         return frameHeight;
     }
-    
+
     public void setDrawingSize(int w, int h) {
         this.drawingSizeX = w;
         this.drawingSizeY = h;

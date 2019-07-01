@@ -148,8 +148,8 @@ public class PaperScreen extends DelegatedGraphics {
     }
 
     public void loadTableLocation() {
-        table = Papart.getPapart().getTableLocation().get();
-        tableInv = Papart.getPapart().getTableLocation().get();
+        table = Papart.getPapart().getTableLocation();
+        tableInv = Papart.getPapart().getTableLocation();
         tableInv.invert();
     }
 
@@ -199,7 +199,7 @@ public class PaperScreen extends DelegatedGraphics {
         displays.add(display);
         this.id = count++;
         this.markerBoard = MarkerBoardInvalid.board;
-        table = Papart.getPapart().getTableLocation().get();
+        table = Papart.getPapart().getTableLocation();
         tableInv = Papart.getPapart().getTableLocation();
         tableInv.invert();
         register();

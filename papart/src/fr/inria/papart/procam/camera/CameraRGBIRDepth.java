@@ -285,7 +285,7 @@ public abstract class CameraRGBIRDepth extends Camera {
     }
 
     @Override
-    protected String getCameraDevice() {
+    public String getCameraDevice() {
         return actAsCamera.getCameraDevice();
     }
 

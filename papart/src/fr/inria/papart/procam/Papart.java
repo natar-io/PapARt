@@ -648,6 +648,15 @@ public class Papart {
      * @return
      */
     public PMatrix3D getTableLocation() {
+        
+        if(this.cameraTracking instanceof CameraNectar){
+            CameraNectar cam = ((CameraNectar) this.cameraTracking);
+            Jedis connection = cam.createConnection();
+            System.out.println("Loading table location from Natar camera. Key: " + cam.getCameraKey() + ":table .");
+            String data = connection.get(cam.getCameraKey() + ":table");
+            return HomographyCalibration.getMatFromData(data);
+        }
+        
         return HomographyCalibration.getMatFrom(applet, tablePosition);
     }
 
@@ -1051,7 +1060,7 @@ public class Papart {
     }
 
     public void streamOutput(String host, int port, String auth, String key) {
-        projector.setVideoEmitter(new VideoEmitter(host, port, auth, key));
+        display.setVideoEmitter(new VideoEmitter(host, port, auth, key));
     }
 
     /**
