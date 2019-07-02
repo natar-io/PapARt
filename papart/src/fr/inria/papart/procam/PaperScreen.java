@@ -907,6 +907,11 @@ public class PaperScreen extends DelegatedGraphics {
 
         DetectedMarker[] markers = getCameraTracking().getDetectedMarkers();
 
+        TouchList touchList = new TouchList();
+        if(markers == null){
+            return touchList;
+        }
+        
         // Update the positions.
         for (DetectedMarker marker : markers) {
             if (validID(marker.id)) {
@@ -966,7 +971,7 @@ public class PaperScreen extends DelegatedGraphics {
             }
 
         }
-        TouchList touchList = new TouchList();
+
         for (int i = 0; i < nbIds; i++) {
 
             if (lastColorSeen[i] > 0 && parent.millis() - lastColorSeen[i] < longTime) {
