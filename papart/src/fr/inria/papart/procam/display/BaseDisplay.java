@@ -83,16 +83,22 @@ public class BaseDisplay implements HasCamera {
     PImage copy = null;
 
     public void tryToEmitVideo() {
+//        System.out.println("VideoEmitter: " + videoEmitter);
         if (videoEmitter != null) {
-
+//            System.out.println("Try to emit!");
 //            if(copy == null){
 //                copy = parent.createImage(this.graphics.width/2, this.graphics.height/2, PConstants.RGB);
 //            }
 //            copy.copy(this.graphics, 0, 0, this.graphics.width, this.graphics.height, 0, 0, copy.width, copy.height);
-            videoEmitter.sendImage(this.graphics, parent.millis());
-            System.out.println("emit!");
+
+// FIX a p5 bug
+            parent.g.width = this.graphics.width;
+            parent.g.height = this.graphics.height;
+
+            videoEmitter.sendImage(parent.g, parent.millis());
+//            System.out.println("emit!");
         } else {
-            System.out.println("Cannot emit");
+//            System.out.println("Cannot emit");
         }
     }
 
