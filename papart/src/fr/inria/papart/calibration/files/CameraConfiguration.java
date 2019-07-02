@@ -19,7 +19,7 @@
  */
 package fr.inria.papart.calibration.files;
 
-import fr.inria.papart.procam.camera.CameraFactory;
+import tech.lity.rea.nectar.camera.CameraFactory;
 import processing.core.PApplet;
 import processing.data.XML;
 import tech.lity.rea.nectar.camera.Camera;

@@ -24,7 +24,7 @@ import tech.lity.rea.nectar.calibration.PlaneCalibration;
 import fr.inria.papart.utils.DrawUtils;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.procam.PaperScreen;
-import fr.inria.papart.tracking.MarkerBoard;
+import tech.lity.rea.nectar.tracking.MarkerBoard;
 
 import processing.core.PApplet;
 import processing.core.PMatrix3D;

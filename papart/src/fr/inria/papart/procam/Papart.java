@@ -27,13 +27,12 @@ import fr.inria.papart.calibration.files.PlanarTouchCalibration;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
-import fr.inria.papart.depthcam.devices.Kinect360;
+import tech.lity.rea.nectar.depthcam.Kinect360;
 import fr.inria.papart.depthcam.analysis.DepthAnalysisImpl;
-import fr.inria.papart.depthcam.devices.DepthCameraDevice;
-import fr.inria.papart.depthcam.devices.KinectOne;
-import fr.inria.papart.depthcam.devices.NectarOpenNI;
-import fr.inria.papart.depthcam.devices.OpenNI2;
-import fr.inria.papart.depthcam.devices.RealSense;
+import tech.lity.rea.nectar.depthcam.DepthCameraDevice;
+import tech.lity.rea.nectar.depthcam.KinectOne;
+import tech.lity.rea.nectar.camera.NectarOpenNI;
+import tech.lity.rea.nectar.depthcam.OpenNI2;
 import fr.inria.papart.multitouch.ColorTouchInput;
 import fr.inria.papart.multitouch.TouchInput;
 import fr.inria.papart.multitouch.TUIOTouchInput;
@@ -41,8 +40,9 @@ import fr.inria.papart.multitouch.DepthTouchInput;
 import fr.inria.papart.multitouch.detection.BlinkTracker;
 import fr.inria.papart.multitouch.detection.CalibratedColorTracker;
 import fr.inria.papart.multitouch.detection.ColorTracker;
+import fr.inria.papart.procam.camera.CameraComputeThread;
 import fr.inria.papart.utils.LibraryUtils;
-import fr.inria.papart.procam.camera.CameraFactory;
+import tech.lity.rea.nectar.camera.CameraFactory;
 import tech.lity.rea.nectar.markers.DetectedMarker;
 import fr.inria.papart.utils.MathUtils;
 import java.io.File;
@@ -67,6 +67,7 @@ import tech.lity.rea.nectar.camera.CameraNectar;
 import tech.lity.rea.nectar.camera.CameraRGBIRDepth;
 import tech.lity.rea.nectar.camera.CannotCreateCameraException;
 import tech.lity.rea.nectar.camera.VideoEmitter;
+import tech.lity.rea.nectar.depthcam.RealSense;
 
 /**
  *
@@ -1094,7 +1095,9 @@ public class Papart {
             arDisplay.reloadCalibration();
         }
 
-        cameraTracking.setThread();
+        cameraTracking.setThread(new CameraComputeThread(cameraTracking));
+        cameraTracking.trackSheets(true);
+//        cameraTracking.setTrackingThread();
 
         if (depthCameraDevice != null
                 && cameraTracking != depthCameraDevice.getMainCamera()) {

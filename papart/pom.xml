@@ -107,11 +107,16 @@
             <version>2.3.1</version>
         </dependency>
         
+        <dependency>
+            <groupId>tech.lity.rea</groupId>
+            <artifactId>natar-multi-camera-server</artifactId>
+            <version>0.1.2b</version>
+        </dependency>
         
         <dependency>
             <groupId>tech.lity.rea</groupId>
             <artifactId>natar-core</artifactId>
-            <version>0.1.1-SNAPSHOT</version>
+            <version>0.1.2a-SNAPSHOT</version>
         </dependency>
         
         <dependency>

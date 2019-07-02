@@ -20,9 +20,9 @@
  */
 package fr.inria.papart.procam;
 
-import fr.inria.papart.tracking.MarkerBoardFactory;
-import fr.inria.papart.tracking.MarkerBoardInvalid;
-import fr.inria.papart.tracking.MarkerBoard;
+import tech.lity.rea.nectar.tracking.MarkerBoardFactory;
+import tech.lity.rea.nectar.tracking.MarkerBoardInvalid;
+import tech.lity.rea.nectar.tracking.MarkerBoard;
 import tech.lity.rea.nectar.calibration.HomographyCalibration;
 import fr.inria.papart.compositor.AppRunnerTest;
 import fr.inria.papart.compositor.XAppRunner;
@@ -63,6 +63,7 @@ import redis.clients.jedis.Jedis;
 import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
 import tech.lity.rea.nectar.calibration.HomographyCreator;
 import tech.lity.rea.nectar.camera.Camera;
+import tech.lity.rea.nectar.camera.TrackedObject;
 import toxi.geom.Plane;
 import toxi.geom.Triangle3D;
 
@@ -1102,20 +1103,45 @@ public class PaperScreen extends DelegatedGraphics {
             PMatrix3D mat = getExtrinsics();
             return new PVector(mat.m03, mat.m13, mat.m23);
         } else if (mainDisplay.hasCamera()) {
-            return markerBoard.getBoardLocation(cameraTracking, (ARDisplay) mainDisplay);
+            return getBoardLocation(markerBoard, cameraTracking, (ARDisplay) mainDisplay);
         } else {
             System.out.println("Could not find the screen Position for the main display.");
             System.out.println("Looking into secondary displays...");
             for (BaseDisplay display : displays) {
                 if (display.hasCamera()) {
-                    return markerBoard.getBoardLocation(cameraTracking, (ARDisplay) display);
+                    return getBoardLocation(markerBoard, cameraTracking, (ARDisplay) display);
                 }
             }
             System.out.println("Could not find where the Screen is...");
             return new PVector();
         }
     }
+    
+    
+    //    // We suppose that the ARDisplay is the one of the camera...
+    public static PVector getBoardLocation(MarkerBoard board, Camera camera, ARDisplay display) {
+        int id = board.getId(camera);
+        PVector v = board.getPositionVector(id);
 
+        // Apply extrinsics if required.
+        if (display.hasExtrinsics()) {
+            PMatrix3D extr = display.getExtrinsics();
+            PVector v2 = new PVector();
+            extr.mult(v, v2);
+            v = v2;
+        }
+        PVector px = display.getProjectiveDeviceP().worldToPixel(v, true);
+        return px;
+    }
+
+//    public boolean isSeenBy(MarkerBoard board, Camera camera, ProjectorDisplay projector, float error) {
+//        PVector px = getBoardLocation(board, camera, projector);
+//        return !(px.x < (0 - error)
+//                || px.x > projector.getWidth()
+//                || px.y < (0 - error)
+//                || px.y > (projector.getHeight() + error));
+//    }
+//    
     /**
      * Disable the drawing and clear the offscreen.
      */
@@ -1302,13 +1328,14 @@ public class PaperScreen extends DelegatedGraphics {
      *
      * @return the object finder or null when not in use.
      */
+    @Deprecated
     public ObjectFinder getObjectTracking() {
-        if (markerBoard.useJavaCVFinder()) {
-            return markerBoard.getObjectTracking(cameraTracking);
-        } else {
-            System.err.println("getObjectTracking is only accessible with image-based tracking.");
+//        if (markerBoard.useJavaCVFinder()) {
+//            return markerBoard.getObjectTracking(cameraTracking);
+//        } else {
+//            System.err.println("getObjectTracking is only accessible with image-based tracking.");
             return null;
-        }
+//        }
     }
 
     /**

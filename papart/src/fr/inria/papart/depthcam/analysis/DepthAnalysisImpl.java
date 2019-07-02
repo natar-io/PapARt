@@ -23,7 +23,7 @@ package fr.inria.papart.depthcam.analysis;
 import fr.inria.papart.depthcam.DepthData;
 import fr.inria.papart.depthcam.PixelOffset;
 import fr.inria.papart.depthcam.ProjectedDepthData;
-import fr.inria.papart.depthcam.devices.DepthCameraDevice;
+import tech.lity.rea.nectar.depthcam.DepthCameraDevice;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.INVALID_POINT;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.papplet;
 import fr.inria.papart.utils.MathUtils;
@@ -42,6 +42,7 @@ import processing.core.PApplet;
 import processing.core.PVector;
 import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
 import tech.lity.rea.nectar.camera.Camera;
+import static tech.lity.rea.nectar.depthcam.DepthComputation.INVALID_DEPTH;
 import toxi.geom.Vec3D;
 
 /**
@@ -60,9 +61,6 @@ public class DepthAnalysisImpl extends DepthAnalysis {
     protected ByteBuffer depthRawBuffer;
     protected byte[] colorRaw;
     protected float[] depth;
-
-    // static values
-    public static final float INVALID_DEPTH = -1;
 
     protected DepthCameraDevice depthCameraDevice;
     protected Camera colorCamera;

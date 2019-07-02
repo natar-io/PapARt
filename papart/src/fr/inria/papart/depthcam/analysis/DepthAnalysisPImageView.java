@@ -21,8 +21,8 @@
 package fr.inria.papart.depthcam.analysis;
 
 import fr.inria.papart.depthcam.PixelOffset;
-import fr.inria.papart.depthcam.devices.DepthCameraDevice;
-import fr.inria.papart.depthcam.devices.KinectOne;
+import tech.lity.rea.nectar.depthcam.DepthCameraDevice;
+import tech.lity.rea.nectar.depthcam.KinectOne;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.papplet;
 import java.util.Arrays;
 import org.bytedeco.javacpp.indexer.UByteIndexer;

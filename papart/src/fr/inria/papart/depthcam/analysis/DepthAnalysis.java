@@ -25,6 +25,7 @@ import tech.lity.rea.nectar.utils.WithSize;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import processing.core.PApplet;
 import processing.core.PVector;
+import tech.lity.rea.nectar.depthcam.DepthComputation;
 import toxi.geom.Vec3D;
 
 /**
@@ -73,16 +74,6 @@ public abstract class DepthAnalysis implements WithSize {
      */
     protected float getDepth(int offset) {
         return depthComputationMethod.findDepth(offset);
-    }
-    
-    /**
-     * Method that transforms depth buffer data to 3D points.
-     */
-    public interface DepthComputation {
-
-        public void updateDepth(IplImage depthImg);
-
-        public float findDepth(int offset);
     }
 
     public interface InvalidPointManiplation {

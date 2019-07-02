@@ -22,7 +22,7 @@ package fr.inria.papart.calibration;
 import tech.lity.rea.nectar.calibration.HomographyCalibration;
 import tech.lity.rea.nectar.calibration.PlaneAndProjectionCalibration;
 import tech.lity.rea.nectar.calibration.PlaneCalibration;
-import fr.inria.papart.depthcam.devices.DepthCameraDevice;
+import tech.lity.rea.nectar.depthcam.DepthCameraDevice;
 import fr.inria.papart.multitouch.DepthTouchInput;
 import fr.inria.papart.procam.Papart;
 import tech.lity.rea.nectar.camera.Camera;

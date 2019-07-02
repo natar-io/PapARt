@@ -22,8 +22,8 @@ package fr.inria.papart.procam.camera;
 
 import tech.lity.rea.nectar.calibration.HomographyCalibration;
 import fr.inria.papart.utils.ImageUtils;
-import fr.inria.papart.tracking.MarkerBoard;
-import fr.inria.papart.tracking.MarkerBoardInvalid;
+import tech.lity.rea.nectar.tracking.MarkerBoard;
+import tech.lity.rea.nectar.tracking.MarkerBoardInvalid;
 import fr.inria.papart.procam.PaperScreen;
 import java.nio.ByteBuffer;
 

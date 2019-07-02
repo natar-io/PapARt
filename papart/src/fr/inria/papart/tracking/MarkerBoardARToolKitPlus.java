@@ -20,9 +20,9 @@
 package fr.inria.papart.tracking;
 
 import static fr.inria.papart.procam.Papart.camCalibARtoolkit;
-import static fr.inria.papart.tracking.MarkerBoard.BLOCK_UPDATE;
-import static fr.inria.papart.tracking.MarkerBoard.FORCE_UPDATE;
-import static fr.inria.papart.tracking.MarkerBoard.NORMAL;
+import static tech.lity.rea.nectar.tracking.MarkerBoard.BLOCK_UPDATE;
+import static tech.lity.rea.nectar.tracking.MarkerBoard.FORCE_UPDATE;
+import static tech.lity.rea.nectar.tracking.MarkerBoard.NORMAL;
 import tech.lity.rea.nectar.camera.Camera;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -31,6 +31,8 @@ import org.bytedeco.javacpp.ARToolKitPlus;
 import org.bytedeco.javacpp.opencv_core;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
+import tech.lity.rea.nectar.tracking.MarkerBoard;
+import tech.lity.rea.nectar.tracking.OneEuroFilter;
 
 /**
  *
@@ -199,7 +201,7 @@ public class MarkerBoardARToolKitPlus extends MarkerBoard {
     }
 
     private void update(ARToolKitPlus.ARMultiMarkerInfoT multiMarkerConfig, int id) {
-        fr.inria.papart.multitouch.OneEuroFilter filter[] = filters.get(id);
+        OneEuroFilter filter[] = filters.get(id);
 
         PMatrix3D inputMatrix = new PMatrix3D();
 

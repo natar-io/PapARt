@@ -20,7 +20,7 @@
 package fr.inria.papart.procam.camera;
 
 import fr.inria.papart.procam.Papart;
-import fr.inria.papart.tracking.MarkerBoard;
+import tech.lity.rea.nectar.tracking.MarkerBoard;
 import tech.lity.rea.nectar.markers.DetectedMarker;
 import java.util.ArrayList;
 import java.util.List;
@@ -109,7 +109,7 @@ public class CameraComputeThread extends CameraGrabberThread {
             checkSubCamera();
             camera.grab();
             // If there is no camera for tracking...
-            if (cameraForMarkerboard == null || !compute || camera.getTrackedSheets().isEmpty()) {
+            if (cameraForMarkerboard == null || !compute || cameraForMarkerboard.getTrackedSheets().isEmpty()) {
                 continue;
             }
             image = camera.getIplImage();
@@ -341,7 +341,7 @@ public class CameraComputeThread extends CameraGrabberThread {
     }
 
     protected void updateSequential() {
-        for (TrackedObject tracked : (List<TrackedObject>) camera.getTrackedSheets()) {
+        for (TrackedObject tracked : (List<TrackedObject>) cameraForMarkerboard.getTrackedSheets()) {
             MarkerBoard markerBoard = (MarkerBoard) tracked;
             updateBoardLocation(markerBoard);
         }
