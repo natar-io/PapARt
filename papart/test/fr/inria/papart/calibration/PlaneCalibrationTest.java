@@ -19,8 +19,7 @@
  */
 package fr.inria.papart.calibration;
 
-import fr.inria.papart.calibration.files.PlaneCalibration;
-import fr.inria.papart.calibration.PlaneCreator;
+import tech.lity.rea.nectar.calibration.PlaneCreator;
 import fr.inria.papart.calibration.files.Calibration;
 import fr.inria.papart.Sketch;
 import static fr.inria.papart.calibration.HomographyCalibrationTest.DIMS;
@@ -29,6 +28,7 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 import processing.core.PApplet;
 import processing.data.XML;
+import tech.lity.rea.nectar.calibration.PlaneCalibration;
 import toxi.geom.Plane;
 import toxi.geom.Vec3D;
 

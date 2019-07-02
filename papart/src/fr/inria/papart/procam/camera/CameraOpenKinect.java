@@ -24,6 +24,9 @@ import java.util.logging.Logger;
 import org.bytedeco.javacpp.freenect;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.OpenKinectFrameGrabber;
+import tech.lity.rea.nectar.camera.Camera;
+import tech.lity.rea.nectar.camera.CameraRGBIRDepth;
+import tech.lity.rea.nectar.camera.SubCamera;
 
 /**
  *
@@ -71,9 +74,9 @@ public class CameraOpenKinect extends CameraRGBIRDepth {
     @Override
     public void grabDepth() {
         try {
-            depthCamera.currentImage = grabber.grabDepth();
+            depthCamera.forceCurrentImage(grabber.grabDepth());
 
-            ((WithTouchInput) depthCamera).newTouchImageWithColor(colorCamera.currentImage);
+            ((WithTouchInput) depthCamera).newTouchImageWithColor(colorCamera.getIplImage());
         } catch (FrameGrabber.Exception ex) {
             Logger.getLogger(CameraOpenKinect.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -92,7 +95,7 @@ public class CameraOpenKinect extends CameraRGBIRDepth {
     public void setUseDepth(boolean use) {
         if (use) {
             depthCamera.setPixelFormat(PixelFormat.DEPTH_KINECT_MM);
-            depthCamera.type = SubCamera.Type.DEPTH;
+            depthCamera.setType(SubCamera.Type.DEPTH);
             depthCamera.setSize(640, 480);
             grabber.setDepthFormat(freenect.FREENECT_DEPTH_MM);
         }

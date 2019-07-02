@@ -25,7 +25,7 @@ import fr.inria.papart.multitouch.tracking.TouchPointTracker;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.PaperScreen;
-import fr.inria.papart.procam.camera.TrackedView;
+import fr.inria.papart.procam.camera.TrackedViewPapart;
 import java.util.ArrayList;
 import java.util.List;
 import static java.util.stream.Collectors.toList;
@@ -43,7 +43,7 @@ public class CalibratedStickerTracker extends ColorTracker {
     public int numberOfRefs = 5;
     private ColorReferenceThresholds references[];
     private TouchDetectionInnerCircles innerCirclesDetection;
-    public TrackedView circleView;
+    public TrackedViewPapart circleView;
     protected float circleSize;
 
 //       protected TouchDetectionColor touchDetectionCircles;
@@ -100,7 +100,7 @@ public class CalibratedStickerTracker extends ColorTracker {
      * @param capSize, optionnal
      */
     public void initTouchDetection(PVector offset, PVector capSize) {
-        circleView = new TrackedView(paperScreen);
+        circleView = new TrackedViewPapart(paperScreen);
 
         PVector captureSize = new PVector();
         // No cap size, we capture the whole paperscreen.

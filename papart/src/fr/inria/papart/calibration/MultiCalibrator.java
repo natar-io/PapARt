@@ -1,37 +1,26 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package fr.inria.papart.calibration;
 
-import fr.inria.papart.calibration.files.HomographyCalibration;
-import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
-import fr.inria.papart.calibration.files.PlaneCalibration;
+import tech.lity.rea.nectar.calibration.HomographyCalibration;
+import tech.lity.rea.nectar.calibration.PlaneAndProjectionCalibration;
+import tech.lity.rea.nectar.calibration.PlaneCalibration;
 import fr.inria.papart.depthcam.DepthDataElementProjected;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.INVALID_POINT;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.multitouch.DepthTouchInput;
-import fr.inria.papart.multitouch.SkatoloLink;
-import fr.inria.papart.multitouch.Touch;
-import fr.inria.papart.multitouch.TouchInput;
-import fr.inria.papart.multitouch.TouchList;
-import fr.inria.papart.multitouch.detection.BlinkTracker;
 import fr.inria.papart.multitouch.detection.ColorReferenceThresholds;
-import fr.inria.papart.multitouch.detection.ColorTracker;
 import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
-import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.procam.ColorDetection;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.PaperTouchScreen;
-import fr.inria.papart.procam.camera.Camera;
-import fr.inria.papart.procam.camera.CameraNectar;
+import fr.inria.papart.procam.camera.CameraComputeThread;
+import tech.lity.rea.nectar.camera.Camera;
+import tech.lity.rea.nectar.camera.CameraNectar;
 import fr.inria.papart.procam.camera.ProjectorAsCamera;
-import fr.inria.papart.procam.camera.TrackedView;
+import fr.inria.papart.procam.camera.TrackedViewPapart;
 import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.procam.display.ProjectorDisplay;
-import fr.inria.papart.tracking.DetectedMarker;
 import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.utils.DrawUtils;
 import java.util.ArrayList;
@@ -47,28 +36,17 @@ import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.opengl.PGraphicsOpenGL;
 import tech.lity.rea.skatolo.Skatolo;
-import tech.lity.rea.skatolo.gui.controllers.HoverButton;
-
-/**
- *
- * @author Jeremy Laviole laviole@rea.lity.tech
- */
-import fr.inria.papart.procam.camera.CameraThread;
-import fr.inria.papart.procam.camera.SubCamera;
+import tech.lity.rea.nectar.camera.CameraGrabberThread;
+import tech.lity.rea.nectar.camera.SubCamera;
 import fr.inria.papart.procam.display.BaseDisplay;
-import static fr.inria.papart.utils.MathUtils.absd;
-import static fr.inria.papart.utils.MathUtils.constrain;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static org.bytedeco.javacpp.RealSense.camera;
 import org.bytedeco.javacpp.opencv_imgcodecs;
-import static processing.core.PApplet.abs;
-import static processing.core.PApplet.split;
 import static processing.core.PConstants.CORNER;
 import static processing.core.PConstants.LEFT;
 import static processing.core.PConstants.RIGHT;
-import redis.clients.jedis.Jedis;
 import tech.lity.rea.colorconverter.ColorConverter;
+import tech.lity.rea.nectar.calibration.HomographyCreator;
 import tech.lity.rea.skatolo.gui.controllers.Button;
 import tech.lity.rea.skatolo.gui.controllers.Toggle;
 import toxi.geom.Plane;
@@ -133,8 +111,8 @@ public class MultiCalibrator extends PaperTouchScreen {
     IplImage savedImages[];
     PMatrix3D savedLocations[];
     int savedColors[][];
-    private TrackedView projectorView;
-    private TrackedView calibView;
+    private TrackedViewPapart projectorView;
+    private TrackedViewPapart calibView;
     private ProjectorAsCamera projectorAsCamera;
 
     private boolean colorOnly = false;
@@ -183,7 +161,7 @@ public class MultiCalibrator extends PaperTouchScreen {
 
             initColorTrackers();
 
-            calibView = new TrackedView(this);
+            calibView = new TrackedViewPapart(this);
             float viewSize = 20; // mm
             calibView.setTopLeftCorner(new PVector(CENTER_X - viewSize, CENTER_Y - viewSize));
             calibView.setCaptureSizeMM(new PVector(viewSize * 2, viewSize * 2));
@@ -322,7 +300,7 @@ public class MultiCalibrator extends PaperTouchScreen {
         }
         projector = (ProjectorDisplay) getDisplay();
 
-        projectorView = new TrackedView();
+        projectorView = new TrackedViewPapart();
         projectorView.setImageWidthPx(projector.getWidth());
         projectorView.setImageHeightPx(projector.getHeight());
 
@@ -577,7 +555,7 @@ public class MultiCalibrator extends PaperTouchScreen {
 
         ArrayList<ExtrinsicSnapshot> snapshots = new ArrayList<ExtrinsicSnapshot>();
 
-        CameraThread projectorFakeThread = new CameraThread(projectorAsCamera);
+        CameraComputeThread projectorFakeThread = new CameraComputeThread(projectorAsCamera);
 
         PMatrix3D tableCenter = savedLocations[0].get();
 

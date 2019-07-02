@@ -26,7 +26,6 @@ import fr.inria.papart.calibration.files.PlanarTouchCalibration;
 import fr.inria.papart.depthcam.DepthDataElementProjected;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 
-import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.depthcam.analysis.DepthAnalysisImpl;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.multitouch.detection.ArmDetection;
@@ -52,6 +51,7 @@ import java.util.logging.Logger;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
+import tech.lity.rea.nectar.calibration.PlaneAndProjectionCalibration;
 import toxi.geom.Vec3D;
 
 /**

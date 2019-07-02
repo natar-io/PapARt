@@ -22,9 +22,9 @@ package fr.inria.papart.depthcam;
 import fr.inria.papart.depthcam.analysis.Connexity;
 import fr.inria.papart.depthcam.analysis.DepthAnalysis;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.INVALID_COLOR;
-import fr.inria.papart.procam.ProjectiveDeviceP;
 import java.util.ArrayList;
 import java.util.Arrays;
+import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
 import toxi.geom.Vec3D;
 
 /**

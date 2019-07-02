@@ -11,7 +11,7 @@ import fr.inria.papart.multitouch.ConnectedComponent;
 import static fr.inria.papart.multitouch.ConnectedComponent.INVALID_COMPONENT;
 import fr.inria.papart.multitouch.detection.Simple2D.CheckTouchPoint;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
-import fr.inria.papart.utils.WithSize;
+import tech.lity.rea.nectar.utils.WithSize;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;

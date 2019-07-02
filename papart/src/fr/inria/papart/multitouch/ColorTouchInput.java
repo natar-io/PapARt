@@ -18,13 +18,7 @@
  */
 package fr.inria.papart.multitouch;
 
-import fr.inria.papart.calibration.files.HomographyCalibration;
 import fr.inria.papart.calibration.files.PlanarTouchCalibration;
-import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
-import fr.inria.papart.calibration.files.PlaneCalibration;
-import static fr.inria.papart.calibration.files.PlaneCalibration.CreatePlaneCalibrationFrom;
-import fr.inria.papart.multitouch.Touch;
-import fr.inria.papart.multitouch.TouchList;
 import fr.inria.papart.multitouch.detection.TouchDetection;
 import fr.inria.papart.multitouch.tracking.TouchPointTracker;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
@@ -32,19 +26,19 @@ import fr.inria.papart.multitouch.detection.TouchDetectionColor;
 import fr.inria.papart.procam.Papart;
 import static fr.inria.papart.procam.Papart.planeAndProjectionCalib;
 import fr.inria.papart.procam.PaperScreen;
-import fr.inria.papart.procam.ProjectiveDeviceP;
-import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.utils.MathUtils;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
-import org.bytedeco.javacpp.opencv_core.IplImage;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
+import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
+import tech.lity.rea.nectar.calibration.PlaneAndProjectionCalibration;
+import tech.lity.rea.nectar.camera.Camera;
 import toxi.geom.Ray3D;
 import toxi.geom.ReadonlyVec3D;
 import toxi.geom.Vec3D;

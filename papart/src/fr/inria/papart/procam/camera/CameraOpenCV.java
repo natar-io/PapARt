@@ -26,6 +26,8 @@ import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.OpenCVFrameConverter;
 import org.bytedeco.javacv.OpenCVFrameGrabber;
 import processing.core.PImage;
+import tech.lity.rea.nectar.camera.Camera;
+import tech.lity.rea.nectar.camera.CannotCreateCameraException;
 
 /**
  *

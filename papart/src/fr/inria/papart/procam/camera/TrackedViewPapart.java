@@ -20,17 +20,15 @@
  */
 package fr.inria.papart.procam.camera;
 
-import fr.inria.papart.calibration.HomographyCreator;
-import fr.inria.papart.calibration.files.HomographyCalibration;
+import tech.lity.rea.nectar.calibration.HomographyCalibration;
 import fr.inria.papart.utils.ImageUtils;
 import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.tracking.MarkerBoardInvalid;
 import fr.inria.papart.procam.PaperScreen;
-import fr.inria.papart.utils.ARToolkitPlusUtils;
 import java.nio.ByteBuffer;
 
-import fr.inria.papart.procam.camera.Camera;
-import fr.inria.papart.utils.WithSize;
+import tech.lity.rea.nectar.camera.Camera;
+import tech.lity.rea.nectar.utils.WithSize;
 import java.util.ArrayList;
 import org.bytedeco.javacpp.opencv_core.CvMat;
 import org.bytedeco.javacpp.opencv_core.IplImage;
@@ -44,7 +42,7 @@ import redis.clients.jedis.Jedis;
  *
  * @author jeremylaviole IDEA: can it inherit camera ?
  */
-public class TrackedView implements WithSize {
+public class TrackedViewPapart implements WithSize {
 
     private PImage extractedPImage = null;
     private IplImage extractedIplImage = null;
@@ -76,7 +74,7 @@ public class TrackedView implements WithSize {
     private IplImage mainImage;
 
     // Public constructor for capturing the whole markerboard 
-    public TrackedView(MarkerBoard board) {
+    public TrackedViewPapart(MarkerBoard board) {
         this.board = board;
         this.useBoardLocation = true;
 //        this.setImageHeightPx((int) board.getHeight());
@@ -92,7 +90,7 @@ public class TrackedView implements WithSize {
      *
      * @param paperScreen
      */
-    public TrackedView(PaperScreen paperScreen) {
+    public TrackedViewPapart(PaperScreen paperScreen) {
         this.paperScreen = paperScreen;
         this.usePaperLocation = true;
         setTopLeftCorner(new PVector(0, 0));
@@ -101,7 +99,7 @@ public class TrackedView implements WithSize {
         this.setCaptureSizeMM(paperScreen.getDrawingSize());
     }
 
-    public TrackedView() {
+    public TrackedViewPapart() {
         this.useManualConrers = true;
     }
 
@@ -424,7 +422,7 @@ public class TrackedView implements WithSize {
 
         screenPixelCoordinates.clear();
         for (int i = 0; i < 4; i++) {
-            screenPixelCoordinates.add(camera.pdp.worldToPixelUnconstrained(corner3DPos[i]));
+            screenPixelCoordinates.add(camera.getProjectiveDevice().worldToPixelUnconstrained(corner3DPos[i]));
 //            screenPixelCoordinates.add(camera.pdp.worldToPixel(corner3DPos[i], true));
         }
         cornersSet = true;
@@ -485,7 +483,7 @@ public class TrackedView implements WithSize {
         return imageWidthPx;
     }
 
-    public TrackedView setImageWidthPx(int imageWidthPx) {
+    public TrackedViewPapart setImageWidthPx(int imageWidthPx) {
         this.imageWidthPx = imageWidthPx;
         return this;
     }
@@ -521,7 +519,7 @@ public class TrackedView implements WithSize {
         return getWidth() * getHeight();
     }
 
-    public TrackedView setImageHeightPx(int imageHeightPx) {
+    public TrackedViewPapart setImageHeightPx(int imageHeightPx) {
         this.imageHeightPx = imageHeightPx;
         return this;
     }

@@ -26,9 +26,7 @@ import fr.inria.papart.depthcam.ProjectedDepthData;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.INVALID_POINT;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.papplet;
-import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.utils.MathUtils;
-import fr.inria.papart.procam.camera.Camera;
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
@@ -42,6 +40,8 @@ import java.util.concurrent.FutureTask;
 import org.bytedeco.javacpp.opencv_core;
 import processing.core.PApplet;
 import processing.core.PVector;
+import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
+import tech.lity.rea.nectar.camera.Camera;
 import toxi.geom.Vec3D;
 
 /**

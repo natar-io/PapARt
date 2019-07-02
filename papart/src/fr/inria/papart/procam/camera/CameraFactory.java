@@ -18,6 +18,10 @@
  * <http://www.gnu.org/licenses/>.
  */
 package fr.inria.papart.procam.camera;
+import tech.lity.rea.nectar.camera.Camera;
+import tech.lity.rea.nectar.camera.CameraNectar;
+import tech.lity.rea.nectar.camera.CameraRGBIRDepth;
+import tech.lity.rea.nectar.camera.CannotCreateCameraException;
 
 /**
  *

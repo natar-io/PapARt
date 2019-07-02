@@ -31,6 +31,9 @@ import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.RealSenseFrameGrabber;
 import processing.core.PMatrix3D;
+import tech.lity.rea.nectar.camera.Camera;
+import tech.lity.rea.nectar.camera.CameraRGBIRDepth;
+import tech.lity.rea.nectar.camera.SubCamera;
 
 /**
  *
@@ -175,11 +178,11 @@ public class CameraRealSense extends CameraRGBIRDepth {
         // update the touch input
 
         if (getActingCamera() == IRCamera) {
-            ((WithTouchInput) depthCamera).newTouchImageWithColor(IRCamera.currentImage);
+            ((WithTouchInput) depthCamera).newTouchImageWithColor(IRCamera.getIplImage());
             return;
         }
         if (getActingCamera() == colorCamera || useColor) {
-            ((WithTouchInput) depthCamera).newTouchImageWithColor(colorCamera.currentImage);
+            ((WithTouchInput) depthCamera).newTouchImageWithColor(colorCamera.getIplImage());
             return;
         }
         ((WithTouchInput) depthCamera).newTouchImage();

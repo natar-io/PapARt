@@ -22,9 +22,8 @@ package fr.inria.papart.procam.display;
 import fr.inria.papart.procam.HasCamera;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.PaperScreen;
-import fr.inria.papart.procam.VideoEmitter;
+import tech.lity.rea.nectar.camera.VideoEmitter;
 
-import fr.inria.papart.procam.camera.Camera;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
@@ -35,6 +34,7 @@ import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.opengl.PGraphicsOpenGL;
+import tech.lity.rea.nectar.camera.Camera;
 
 /**
  *

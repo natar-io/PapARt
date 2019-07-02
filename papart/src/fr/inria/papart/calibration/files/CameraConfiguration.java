@@ -19,11 +19,11 @@
  */
 package fr.inria.papart.calibration.files;
 
-import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.CameraFactory;
-import fr.inria.papart.procam.camera.CannotCreateCameraException;
 import processing.core.PApplet;
 import processing.data.XML;
+import tech.lity.rea.nectar.camera.Camera;
+import tech.lity.rea.nectar.camera.CannotCreateCameraException;
 
 /**
  *

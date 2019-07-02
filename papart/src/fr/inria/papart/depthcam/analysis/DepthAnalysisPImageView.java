@@ -20,22 +20,19 @@
  */
 package fr.inria.papart.depthcam.analysis;
 
-import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.depthcam.PixelOffset;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.depthcam.devices.KinectOne;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.papplet;
-import fr.inria.papart.procam.camera.Camera;
-import java.util.ArrayList;
 import java.util.Arrays;
 import org.bytedeco.javacpp.indexer.UByteIndexer;
-import org.bytedeco.javacpp.opencv_core;
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PImage;
+import tech.lity.rea.nectar.camera.Camera;
 import toxi.geom.Vec3D;
 
 /**

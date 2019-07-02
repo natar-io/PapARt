@@ -21,21 +21,21 @@
 package fr.inria.papart.procam.display;
 
 import fr.inria.papart.calibration.MultiCalibrator;
-import fr.inria.papart.calibration.files.PlaneCalibration;
+import tech.lity.rea.nectar.calibration.PlaneCalibration;
 import processing.opengl.PGraphicsOpenGL;
 import org.bytedeco.javacv.ProjectiveDevice;
 import fr.inria.papart.utils.DrawUtils;
 import fr.inria.papart.multitouch.TouchInput;
-import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.HasExtrinsics;
 import fr.inria.papart.procam.PaperScreen;
-import fr.inria.papart.procam.ProjectiveDeviceP;
 
 import processing.core.PApplet;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.opengl.PShader;
+import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
+import tech.lity.rea.nectar.camera.Camera;
 import toxi.geom.Plane;
 import toxi.geom.Ray3D;
 import toxi.geom.ReadonlyVec3D;

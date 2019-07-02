@@ -6,7 +6,7 @@
 package fr.inria.papart.utils;
 
 import fr.inria.papart.procam.PaperTouchScreen;
-import fr.inria.papart.procam.camera.Camera;
+import tech.lity.rea.nectar.camera.Camera;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.List;

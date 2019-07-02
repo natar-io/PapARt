@@ -20,27 +20,22 @@
  */
 package fr.inria.papart.depthcam.devices;
 
-import fr.inria.papart.calibration.files.HomographyCalibration;
 import fr.inria.papart.depthcam.analysis.DepthAnalysis;
 import fr.inria.papart.multitouch.DepthTouchInput;
 import fr.inria.papart.procam.ClientList;
 import fr.inria.papart.procam.Papart;
-import static fr.inria.papart.procam.Papart.cameraCalib;
-import fr.inria.papart.utils.ARToolkitPlusUtils;
-import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.CameraFactory;
-import fr.inria.papart.procam.camera.CameraNectar;
-import fr.inria.papart.procam.camera.CameraRGBIRDepth;
-import fr.inria.papart.procam.camera.CannotCreateCameraException;
-import fr.inria.papart.procam.camera.SubCamera;
-import fr.inria.papart.procam.camera.SubDepthCamera;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.bytedeco.javacpp.opencv_core.IplImage;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import redis.clients.jedis.Jedis;
+import tech.lity.rea.nectar.calibration.HomographyCalibration;
+import tech.lity.rea.nectar.camera.Camera;
+import tech.lity.rea.nectar.camera.CameraNectar;
+import tech.lity.rea.nectar.camera.CameraRGBIRDepth;
+import tech.lity.rea.nectar.camera.CannotCreateCameraException;
+import tech.lity.rea.nectar.camera.SubCamera;
+import tech.lity.rea.nectar.camera.SubDepthCamera;
 import toxi.geom.Vec3D;
 
 /**

@@ -18,9 +18,9 @@
  */
 package fr.inria.papart.calibration;
 
-import fr.inria.papart.tracking.DetectedMarker;
-import fr.inria.papart.tracking.MarkerList;
-import fr.inria.papart.tracking.MarkerSvg;
+import tech.lity.rea.nectar.markers.DetectedMarker;
+import tech.lity.rea.nectar.markers.MarkerList;
+import tech.lity.rea.nectar.markers.MarkerSvg;
 import java.util.Arrays;
 import org.bytedeco.javacv.GeometricCalibrator;
 import org.bytedeco.javacv.Marker;

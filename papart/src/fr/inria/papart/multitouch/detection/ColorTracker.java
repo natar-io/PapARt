@@ -26,7 +26,7 @@ import fr.inria.papart.multitouch.tracking.TouchPointTracker;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.PaperScreen;
-import fr.inria.papart.procam.camera.TrackedView;
+import fr.inria.papart.procam.camera.TrackedViewPapart;
 import fr.inria.papart.utils.MathUtils;
 import java.util.ArrayList;
 import processing.core.PConstants;
@@ -39,7 +39,7 @@ import processing.core.PImage;
 public class ColorTracker {
 
     protected PaperScreen paperScreen;
-    protected TrackedView trackedView;
+    protected TrackedViewPapart trackedView;
 
     protected PImage capturedImage;
 
@@ -88,7 +88,7 @@ public class ColorTracker {
         this.paperScreen = paperScreen;
 
         this.calibration = calibration;
-        this.trackedView = new TrackedView(paperScreen);
+        this.trackedView = new TrackedViewPapart(paperScreen);
         this.trackedView.setScale(scale);
         trackedView.init();
         this.scale = scale;
@@ -122,7 +122,7 @@ public class ColorTracker {
         colorFoundArray = touchDetectionColor.createInputArray();
     }
 
-    public TrackedView getTrackedView() {
+    public TrackedViewPapart getTrackedView() {
         return trackedView;
     }
 

@@ -5,8 +5,6 @@
  */
 package fr.inria.papart.depthcam.analysis;
 
-import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
-import fr.inria.papart.depthcam.ProjectedDepthData;
 
 /**
  * Handle the use of the depthAnalysis, and extend it by composition.

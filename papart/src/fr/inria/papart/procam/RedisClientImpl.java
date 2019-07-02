@@ -5,8 +5,6 @@
  */
 package fr.inria.papart.procam;
 
-import static fr.inria.papart.procam.VideoEmitter.REDIS_HOST;
-import static fr.inria.papart.procam.VideoEmitter.REDIS_PORT;
 import redis.clients.jedis.Jedis;
 
 /**

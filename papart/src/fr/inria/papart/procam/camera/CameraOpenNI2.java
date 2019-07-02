@@ -32,6 +32,9 @@ import org.bytedeco.javacpp.opencv_core;
 import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;
 
 import org.openni.*;
+import tech.lity.rea.nectar.camera.Camera;
+import tech.lity.rea.nectar.camera.CameraRGBIRDepth;
+import tech.lity.rea.nectar.camera.SubCamera;
 
 /**
  *
@@ -42,6 +45,8 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
     private VideoStream colorStream, IRStream, depthStream;
     // From the OpenNI example.
     Device device;
+    
+    protected CameraComputeThread computeThread;
 
     protected CameraOpenNI2(int cameraNo) {
         this.systemNumber = cameraNo;
@@ -148,9 +153,9 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
      */
     @Override
     public void setThread() {
-        if (thread == null) {
-            thread = new CameraThread(this);
-            thread.setCompute(trackSheets);
+        if (computeThread == null) {
+            computeThread = new CameraComputeThread(this);
+            computeThread.setCompute(trackSheets);
         } else {
             System.err.println("Camera: Error Thread already launched");
         }
@@ -161,7 +166,7 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
         try {
 //            System.out.println("Sleeping color cam");
 //            Thread.sleep((long) ((1.0f / (float) colorCamera.frameRate) * 1000f));
-            Thread.sleep((long) ((1.0f / (float) colorCamera.frameRate) * 800f));
+            Thread.sleep((long) ((1.0f / (float) colorCamera.getFrameRate()) * 800f));
 //            System.out.println("awake color cam");
         } catch (InterruptedException ex) {
             Logger.getLogger(CameraOpenNI2.class.getName()).log(Level.SEVERE, null, ex);
@@ -173,7 +178,7 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
         try {
 //            System.out.println("Sleeping color cam");
 //            Thread.sleep((long) ((1.0f / (float) colorCamera.frameRate) * 1000f));
-            Thread.sleep((long) ((1.0f / (float) colorCamera.frameRate) * 2f));
+            Thread.sleep((long) ((1.0f / (float) colorCamera.getFrameRate()) * 2f));
 //          System.out.println("awake color cam");
         } catch (InterruptedException ex) {
             Logger.getLogger(CameraOpenNI2.class.getName()).log(Level.SEVERE, null, ex);
@@ -185,7 +190,7 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
     public void grabColor() {
         try {
          //   System.out.println("Sleeping color cam");
-            Thread.sleep((long) ((1.0f / (float) colorCamera.frameRate) * 2f));
+            Thread.sleep((long) ((1.0f / (float) colorCamera.getFrameRate()) * 2f));
 //            Thread.sleep((long) ((1.0f / (float) colorCamera.frameRate) * 5000f));
 //            System.out.println("awake color cam");
         } catch (InterruptedException ex) {
@@ -199,11 +204,11 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
     // Similar to grabDepth, as grabDepth is disable here
     private void updateDepth() {
         if (getActingCamera() == IRCamera) {
-            ((WithTouchInput) depthCamera).newTouchImageWithColor(IRCamera.currentImage);
+            ((WithTouchInput) depthCamera).newTouchImageWithColor(IRCamera.getIplImage());
             return;
         }
-        if (getActingCamera() == colorCamera || useColor && colorCamera.currentImage != null) {
-            ((WithTouchInput) depthCamera).newTouchImageWithColor(colorCamera.currentImage);
+        if (getActingCamera() == colorCamera || useColor && colorCamera.getIplImage() != null) {
+            ((WithTouchInput) depthCamera).newTouchImageWithColor(colorCamera.getIplImage());
             return;
         }
         ((WithTouchInput) depthCamera).newTouchImage();
@@ -211,11 +216,11 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
 
     // Similar to grabDepth, as grabDepth is disable here
     private void updateColor() {
-        if (thread != null) {
+        if (computeThread != null) {
             if (!colorCamera.getTrackedSheets().isEmpty()) {
 //                System.out.println("Tracking... " + colorCamera.getTrackedSheets().get(0));
-                thread.setImage(colorCamera.currentImage);
-                thread.compute();
+                computeThread.setImage(colorCamera.getIplImage());
+                computeThread.compute();
             }
         }
     }

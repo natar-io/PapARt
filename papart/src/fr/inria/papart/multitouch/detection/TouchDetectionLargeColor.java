@@ -18,14 +18,8 @@
  */
 package fr.inria.papart.multitouch.detection;
 
-import fr.inria.papart.multitouch.ConnectedComponent;
-import fr.inria.papart.multitouch.tracking.TrackedElement;
-import fr.inria.papart.utils.MathUtils;
-import fr.inria.papart.utils.WithSize;
-import java.util.ArrayList;
-import java.util.Arrays;
+import tech.lity.rea.nectar.utils.WithSize;
 import processing.core.PVector;
-import toxi.geom.Vec3D;
 
 /**
  *

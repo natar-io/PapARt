@@ -5,13 +5,13 @@
  */
 package fr.inria.papart.depthcam.analysis;
 
-import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.depthcam.DepthData;
 import fr.inria.papart.depthcam.DepthData.DepthSelection;
 import fr.inria.papart.depthcam.PixelOffset;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.isInside;
 import fr.inria.papart.depthcam.ProjectedDepthData;
 import processing.core.PVector;
+import tech.lity.rea.nectar.calibration.PlaneAndProjectionCalibration;
 import toxi.geom.Vec3D;
 
 /**

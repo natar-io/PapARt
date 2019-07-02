@@ -5,10 +5,10 @@
  */
 package fr.inria.papart.compositor;
 
-import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.CameraFactory;
-import fr.inria.papart.procam.camera.CannotCreateCameraException;
 import processing.core.PApplet;
+import tech.lity.rea.nectar.camera.Camera;
+import tech.lity.rea.nectar.camera.CannotCreateCameraException;
 
 /**
  *

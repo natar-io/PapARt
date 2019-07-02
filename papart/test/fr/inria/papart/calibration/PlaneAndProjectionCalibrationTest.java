@@ -19,16 +19,12 @@
  */
 package fr.inria.papart.calibration;
 
-import fr.inria.papart.calibration.files.HomographyCalibration;
-import fr.inria.papart.calibration.files.PlaneCalibration;
-import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
+import tech.lity.rea.nectar.calibration.HomographyCalibration;
+import tech.lity.rea.nectar.calibration.PlaneCalibration;
+import tech.lity.rea.nectar.calibration.PlaneAndProjectionCalibration;
 import fr.inria.papart.Sketch;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import processing.core.PApplet;
-import processing.core.PMatrix3D;
 
 /**
  *

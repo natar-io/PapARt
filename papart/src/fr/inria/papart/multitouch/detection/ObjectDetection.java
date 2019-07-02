@@ -21,26 +21,17 @@
 package fr.inria.papart.multitouch.detection;
 
 import fr.inria.papart.calibration.files.PlanarTouchCalibration;
-import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
-import fr.inria.papart.depthcam.DepthData;
-import fr.inria.papart.depthcam.DepthDataElement;
-import fr.inria.papart.depthcam.DepthDataElementProjected;
-import static fr.inria.papart.depthcam.analysis.DepthAnalysis.INVALID_POINT;
-import static fr.inria.papart.depthcam.analysis.DepthAnalysis.isValidPoint;
+import tech.lity.rea.nectar.calibration.PlaneAndProjectionCalibration;
 import fr.inria.papart.depthcam.analysis.DepthAnalysisImpl;
 import fr.inria.papart.depthcam.analysis.Compute2D;
 import fr.inria.papart.depthcam.analysis.DepthAnalysis;
 import fr.inria.papart.depthcam.ProjectedDepthData;
 import fr.inria.papart.multitouch.ConnectedComponent;
-import static fr.inria.papart.multitouch.ConnectedComponent.INVALID_COMPONENT;
 import fr.inria.papart.multitouch.tracking.TouchPointTracker;
 import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
-import fr.inria.papart.procam.camera.TrackedView;
-import fr.inria.papart.utils.WithSize;
+import tech.lity.rea.nectar.camera.TrackedView;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import toxi.geom.Vec3D;
 
 /**
  *

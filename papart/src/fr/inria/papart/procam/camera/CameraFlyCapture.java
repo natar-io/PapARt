@@ -27,6 +27,7 @@ import org.bytedeco.javacv.FlyCapture2FrameGrabber;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.OpenCVFrameConverter;
 import processing.core.PImage;
+import tech.lity.rea.nectar.camera.Camera;
 
 /**
  *

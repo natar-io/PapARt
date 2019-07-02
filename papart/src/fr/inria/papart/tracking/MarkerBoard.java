@@ -19,28 +19,24 @@
  */
 package fr.inria.papart.tracking;
 
-import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.multitouch.OneEuroFilter;
-import fr.inria.papart.procam.camera.CameraRGBIRDepth;
 import fr.inria.papart.tracking.ObjectFinder;
 import org.bytedeco.javacpp.ARToolKitPlus;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.bytedeco.javacpp.ARToolKitPlus.TrackerMultiMarker;
-import static org.bytedeco.javacpp.opencv_imgcodecs.cvLoadImage;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
+import tech.lity.rea.nectar.camera.Camera;
+import tech.lity.rea.nectar.camera.TrackedObject;
 
 /**
  *
  * @author jeremylaviole
  */
-public abstract class MarkerBoard {
+public abstract class MarkerBoard implements TrackedObject{
 
     protected final String fileName;
     protected float width;

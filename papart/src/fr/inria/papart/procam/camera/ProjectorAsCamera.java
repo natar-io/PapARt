@@ -20,7 +20,6 @@
 package fr.inria.papart.procam.camera;
 
 import fr.inria.papart.calibration.MultiCalibrator;
-import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.utils.ARToolkitPlusUtils;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.utils.ImageUtils;
@@ -37,8 +36,11 @@ import processing.core.PApplet;
 import processing.core.PImage;
 import redis.clients.jedis.BinaryJedisPubSub;
 import redis.clients.jedis.Jedis;
-import fr.inria.papart.tracking.DetectedMarker;
+import tech.lity.rea.nectar.markers.DetectedMarker;
 import processing.data.JSONObject;
+import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
+import tech.lity.rea.nectar.camera.Camera;
+import tech.lity.rea.nectar.camera.CameraNectar;
 
 /**
  *
@@ -46,14 +48,14 @@ import processing.data.JSONObject;
  */
 public class ProjectorAsCamera extends Camera {
 
-    private final TrackedView projectorView;
+    private final TrackedViewPapart projectorView;
     private final Camera cameraTracking;
     private IplImage grayImage;
     private final ProjectorDisplay projector;
     private PImage pimage;
     private MarkerListener markerListener;
 
-    public ProjectorAsCamera(ProjectorDisplay projector, Camera cameraTracking, TrackedView view) {
+    public ProjectorAsCamera(ProjectorDisplay projector, Camera cameraTracking, TrackedViewPapart view) {
         this.projectorView = view;
         this.cameraTracking = cameraTracking;
         this.projector = projector;

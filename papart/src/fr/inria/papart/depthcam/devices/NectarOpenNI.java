@@ -22,11 +22,10 @@ package fr.inria.papart.depthcam.devices;
 
 import fr.inria.papart.depthcam.analysis.DepthAnalysis;
 import fr.inria.papart.procam.Papart;
-import fr.inria.papart.procam.camera.Camera;
-import fr.inria.papart.procam.camera.CameraNectar;
-import fr.inria.papart.procam.camera.CameraOpenNI2;
-import fr.inria.papart.procam.camera.CannotCreateCameraException;
 import processing.core.PApplet;
+import tech.lity.rea.nectar.camera.Camera;
+import tech.lity.rea.nectar.camera.CameraNectar;
+import tech.lity.rea.nectar.camera.CannotCreateCameraException;
 
 /**
  *

@@ -21,19 +21,16 @@
 package fr.inria.papart.multitouch.detection;
 
 import fr.inria.papart.calibration.files.PlanarTouchCalibration;
-import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
-import fr.inria.papart.calibration.files.PlaneCalibration;
 import fr.inria.papart.depthcam.ProjectedDepthData;
 import fr.inria.papart.depthcam.analysis.DepthAnalysis;
-import static fr.inria.papart.depthcam.analysis.DepthAnalysis.INVALID_POINT;
 import fr.inria.papart.depthcam.analysis.DepthAnalysisImpl;
 import fr.inria.papart.multitouch.ConnectedComponent;
 import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
-import fr.inria.papart.utils.WithSize;
 import java.util.ArrayList;
 import java.util.Comparator;
 import processing.core.PApplet;
 import processing.core.PVector;
+import tech.lity.rea.nectar.calibration.PlaneCalibration;
 import toxi.geom.Vec3D;
 
 /**

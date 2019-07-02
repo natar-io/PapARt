@@ -21,7 +21,7 @@ package fr.inria.papart.depthcam.analysis;
 
 import fr.inria.papart.depthcam.ProjectedDepthData;
 import fr.inria.papart.depthcam.PixelOffset;
-import fr.inria.papart.utils.WithSize;
+import tech.lity.rea.nectar.utils.WithSize;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import processing.core.PApplet;
 import processing.core.PVector;

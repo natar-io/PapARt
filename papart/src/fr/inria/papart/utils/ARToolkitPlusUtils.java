@@ -19,32 +19,13 @@
  */
 package fr.inria.papart.utils;
 
-import fr.inria.papart.procam.Papart;
-import fr.inria.papart.procam.ProjectiveDeviceP;
-import fr.inria.papart.procam.camera.Camera.PixelFormat;
+import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
 
 import org.bytedeco.javacv.CameraDevice;
 import org.bytedeco.javacv.ProjectorDevice;
-import org.bytedeco.javacpp.opencv_imgproc;
-import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_calib3d.*;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.net.URL;
-import java.nio.ByteBuffer;
 import processing.core.*;
-import static processing.core.PConstants.ARGB;
-import static processing.core.PConstants.RGB;
-import processing.opengl.Texture;
-import toxi.geom.Matrix4x4;
-import toxi.geom.Vec3D;
-import java.io.*;
-import java.nio.FloatBuffer;
-import static processing.core.PConstants.ALPHA;
-import static processing.core.PConstants.GRAY;
-import static processing.core.PConstants.HSB;
 
 /**
  *

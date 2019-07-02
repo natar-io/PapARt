@@ -20,8 +20,8 @@
  */
 package fr.inria.papart.procam;
 
+import fr.inria.papart.procam.camera.TrackedViewPapart;
 import fr.inria.papart.utils.MathUtils;
-import fr.inria.papart.procam.camera.TrackedView;
 import java.util.Arrays;
 import processing.core.PApplet;
 import static processing.core.PApplet.sqrt;
@@ -34,7 +34,7 @@ import processing.core.PVector;
 public class ColorDetection {
 
     private final PaperScreen paperScreen;
-    protected TrackedView boardView;
+    protected TrackedViewPapart boardView;
 
     private final PVector captureSize = new PVector(10, 10);
     private final PVector pos = new PVector();
@@ -66,7 +66,7 @@ public class ColorDetection {
 
     @Deprecated
     public void initialize() {
-        boardView = new TrackedView(paperScreen);
+        boardView = new TrackedViewPapart(paperScreen);
         setPosition(pos);
         boardView.setCaptureSizeMM(captureSize);
         boardView.setImageWidthPx(picWidth);
@@ -160,7 +160,7 @@ public class ColorDetection {
             return null;
         }
 
-        PImage out = boardView.getViewOf(paperScreen.cameraTracking);
+        PImage out = boardView.getViewOf(paperScreen.getCameraTracking());
         return out;
     }
 

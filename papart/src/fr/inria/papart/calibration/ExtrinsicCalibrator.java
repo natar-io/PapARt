@@ -19,18 +19,19 @@
  */
 package fr.inria.papart.calibration;
 
-import fr.inria.papart.calibration.files.HomographyCalibration;
-import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
-import fr.inria.papart.calibration.files.PlaneCalibration;
+import tech.lity.rea.nectar.calibration.HomographyCalibration;
+import tech.lity.rea.nectar.calibration.PlaneAndProjectionCalibration;
+import tech.lity.rea.nectar.calibration.PlaneCalibration;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.multitouch.DepthTouchInput;
 import fr.inria.papart.procam.Papart;
-import fr.inria.papart.procam.camera.Camera;
+import tech.lity.rea.nectar.camera.Camera;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import java.util.ArrayList;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
+import tech.lity.rea.nectar.calibration.HomographyCreator;
 import toxi.geom.Plane;
 import toxi.geom.Vec3D;
 

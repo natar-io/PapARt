@@ -26,6 +26,7 @@ import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.OpenCVFrameConverter;
 import processing.core.PImage;
+import tech.lity.rea.nectar.camera.Camera;
 
 /**
  *

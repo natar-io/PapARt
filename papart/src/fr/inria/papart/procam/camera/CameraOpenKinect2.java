@@ -23,6 +23,8 @@ import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.OpenKinect2FrameGrabber;
 import processing.core.PImage;
+import tech.lity.rea.nectar.camera.CameraRGBIRDepth;
+import tech.lity.rea.nectar.camera.SubCamera;
 
 /**
  *
@@ -119,8 +121,8 @@ public class CameraOpenKinect2 extends CameraRGBIRDepth {
 
     @Override
     public void grabDepth() {
-        depthCamera.currentImage = grabber.getDepthImage();
-        ((WithTouchInput) depthCamera).newTouchImageWithColor(colorCamera.currentImage);
+        depthCamera.forceCurrentImage(grabber.getDepthImage());
+        ((WithTouchInput) depthCamera).newTouchImageWithColor(colorCamera.getIplImage());
     }
 
     @Override

@@ -22,16 +22,11 @@ package fr.inria.papart.procam;
 
 import com.jogamp.newt.opengl.GLWindow;
 import fr.inria.papart.calibration.MultiCalibrator;
-import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.calibration.files.CameraConfiguration;
-import fr.inria.papart.calibration.files.HomographyCalibration;
 import fr.inria.papart.calibration.files.PlanarTouchCalibration;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
-import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
-import fr.inria.papart.calibration.files.PlaneCalibration;
-import fr.inria.papart.calibration.files.ScreenConfiguration;
 import fr.inria.papart.depthcam.devices.Kinect360;
 import fr.inria.papart.depthcam.analysis.DepthAnalysisImpl;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
@@ -48,10 +43,7 @@ import fr.inria.papart.multitouch.detection.CalibratedColorTracker;
 import fr.inria.papart.multitouch.detection.ColorTracker;
 import fr.inria.papart.utils.LibraryUtils;
 import fr.inria.papart.procam.camera.CameraFactory;
-import fr.inria.papart.procam.camera.CameraNectar;
-import fr.inria.papart.procam.camera.CameraRGBIRDepth;
-import fr.inria.papart.procam.camera.CannotCreateCameraException;
-import fr.inria.papart.tracking.DetectedMarker;
+import tech.lity.rea.nectar.markers.DetectedMarker;
 import fr.inria.papart.utils.MathUtils;
 import java.io.File;
 import java.util.ArrayList;
@@ -65,6 +57,16 @@ import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.event.KeyEvent;
 import redis.clients.jedis.Jedis;
+import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
+import tech.lity.rea.nectar.calibration.HomographyCalibration;
+import tech.lity.rea.nectar.calibration.PlaneAndProjectionCalibration;
+import tech.lity.rea.nectar.calibration.PlaneCalibration;
+import tech.lity.rea.nectar.calibration.ScreenConfiguration;
+import tech.lity.rea.nectar.camera.Camera;
+import tech.lity.rea.nectar.camera.CameraNectar;
+import tech.lity.rea.nectar.camera.CameraRGBIRDepth;
+import tech.lity.rea.nectar.camera.CannotCreateCameraException;
+import tech.lity.rea.nectar.camera.VideoEmitter;
 
 /**
  *

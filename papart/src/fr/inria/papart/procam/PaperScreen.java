@@ -20,12 +20,10 @@
  */
 package fr.inria.papart.procam;
 
-import fr.inria.papart.calibration.HomographyCreator;
 import fr.inria.papart.tracking.MarkerBoardFactory;
 import fr.inria.papart.tracking.MarkerBoardInvalid;
 import fr.inria.papart.tracking.MarkerBoard;
-import fr.inria.papart.procam.camera.Camera;
-import fr.inria.papart.calibration.files.HomographyCalibration;
+import tech.lity.rea.nectar.calibration.HomographyCalibration;
 import fr.inria.papart.compositor.AppRunnerTest;
 import fr.inria.papart.compositor.XAppRunner;
 import fr.inria.papart.compositor.XDisplayWithCam;
@@ -40,7 +38,7 @@ import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.procam.display.ProjectorDisplay;
-import fr.inria.papart.tracking.DetectedMarker;
+import tech.lity.rea.nectar.markers.DetectedMarker;
 import fr.inria.papart.tracking.ObjectFinder;
 import fr.inria.papart.utils.MathUtils;
 import java.nio.ByteBuffer;
@@ -62,6 +60,9 @@ import processing.event.KeyEvent;
 import static processing.event.KeyEvent.PRESS;
 import static processing.event.KeyEvent.RELEASE;
 import redis.clients.jedis.Jedis;
+import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
+import tech.lity.rea.nectar.calibration.HomographyCreator;
+import tech.lity.rea.nectar.camera.Camera;
 import toxi.geom.Plane;
 import toxi.geom.Triangle3D;
 

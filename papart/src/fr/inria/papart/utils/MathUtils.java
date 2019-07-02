@@ -6,19 +6,15 @@
 package fr.inria.papart.utils;
 
 import fr.inria.papart.depthcam.PixelOffset;
-import fr.inria.papart.depthcam.analysis.DepthAnalysisPImageView;
-import fr.inria.papart.multitouch.detection.ColorReferenceThresholds;
 import fr.inria.papart.procam.PaperTouchScreen;
-import fr.inria.papart.procam.ProjectiveDeviceP;
-import fr.inria.papart.procam.camera.Camera;
-import fr.inria.papart.tracking.DetectedMarker;
-import fr.inria.papart.tracking.MarkerBoard;
+import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
+import tech.lity.rea.nectar.camera.Camera;
+import tech.lity.rea.nectar.markers.DetectedMarker;
 import java.io.FileNotFoundException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import org.bytedeco.javacpp.opencv_core;
 import processing.core.PApplet;
 import static processing.core.PApplet.abs;
@@ -27,6 +23,7 @@ import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.data.JSONArray;
+import tech.lity.rea.nectar.utils.WithSize;
 import toxi.geom.Vec3D;
 
 /**
