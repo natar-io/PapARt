@@ -61,7 +61,6 @@ import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
 import tech.lity.rea.nectar.calibration.HomographyCalibration;
 import tech.lity.rea.nectar.calibration.PlaneAndProjectionCalibration;
 import tech.lity.rea.nectar.calibration.PlaneCalibration;
-import tech.lity.rea.nectar.calibration.ScreenConfiguration;
 import tech.lity.rea.nectar.camera.Camera;
 import tech.lity.rea.nectar.camera.CameraNectar;
 import tech.lity.rea.nectar.camera.CameraRGBIRDepth;
@@ -75,55 +74,57 @@ import tech.lity.rea.nectar.depthcam.RealSense;
  */
 public class Papart {
 
-    public final static String folder = LibraryUtils.getPapartDataFolder() + "/";
-    public final static String calibrationFolder = folder + "calibration/";
-    public final static String markerFolder = folder + "markers/";
+    private final static String folder = LibraryUtils.getPapartDataFolder() + "/";
+    private final static String calibrationFolder = folder + "calibration/";
+    private final static String markerFolder = folder + "markers/";
 
-    public static boolean isInria = false;
-    public static boolean isReality = true;
-    public static String calibrationFileName = "A4-calib.svg";
-
-    public static String cameraCalibName = "camera.yaml";
-    public static String projectorCalibName = "projector.yaml";
-
-    public static String cameraCalib = calibrationFolder + cameraCalibName;
-    public static String projectorCalib = calibrationFolder + projectorCalibName;
-
+    // This one stays, it is not used but necessary for ARToolkitPlus
     public static String camCalibARtoolkit = calibrationFolder + "camera-projector.cal";
-    public static String kinectIRCalib = calibrationFolder + "calibration-kinect-IR.yaml";
-    public static String SR300IRCalib = calibrationFolder + "calibration-SR300-IR.yaml";
-    public static String kinectRGBCalib = calibrationFolder + "calibration-kinect-RGB.yaml";
-    public static String kinectStereoCalib = calibrationFolder + "calibration-kinect-Stereo.xml";
 
-    public static String AstraSDepthCalib = calibrationFolder + "calibration-AstraS-depth.yaml";
-    public static String AstraSRGBCalib = calibrationFolder + "calibration-AstraS-rgb.yaml";
-    public static String AstraSIRCalib = calibrationFolder + "calibration-AstraS-ir.yaml";
-    public static String AstraSStereoCalib = calibrationFolder + "calibration-AstraS-stereo.xml";
+    private static boolean isInria = false;
+    private static boolean isReality = true;
+    private static String calibrationFileName = "A4-calib.svg";
 
-    public static String kinectTrackingCalib = "kinectTracking.xml";
-    public static String cameraProjExtrinsics = "camProjExtrinsics.xml";
-    public static String cameraProjHomography = "camProjHomography.xml";
+    private static String cameraCalibName = "camera.yaml";
+    private static String projectorCalibName = "projector.yaml";
 
-    public static String screenConfig = calibrationFolder + "screenConfiguration.xml";
-    public static String cameraConfig = calibrationFolder + "cameraConfiguration.xml";
-    public static String depthCameraConfig = calibrationFolder + "depthCameraConfiguration.xml";
+    private static String cameraCalib = calibrationFolder + cameraCalibName;
+    private static String projectorCalib = calibrationFolder + projectorCalibName;
 
-    public static String colorThresholds = calibrationFolder + "colorThreshold";
-    public static String redThresholds = calibrationFolder + "redThresholds.txt";
-    public static String blueThresholds = calibrationFolder + "blueThresholds.txt";
-    public static String blinkThresholds = calibrationFolder + "blinkThresholds.txt";
+    private static String kinectIRCalib = calibrationFolder + "calibration-kinect-IR.yaml";
+    private static String SR300IRCalib = calibrationFolder + "calibration-SR300-IR.yaml";
+    private static String kinectRGBCalib = calibrationFolder + "calibration-kinect-RGB.yaml";
+    private static String kinectStereoCalib = calibrationFolder + "calibration-kinect-Stereo.xml";
 
-    public static String tablePosition = calibrationFolder + "tablePosition.xml";
-    public static String planeCalib = calibrationFolder + "PlaneCalibration.xml";
-    public static String homographyCalib = calibrationFolder + "HomographyCalibration.xml";
-    public static String planeAndProjectionCalib = calibrationFolder + "PlaneProjectionCalibration.xml";
-    public static String touchColorCalib = calibrationFolder + "TouchColorCalibration.xml";
-    public static String colorZoneCalib = calibrationFolder + "ColorZoneCalibration.xml";
-    public static String touchBlinkCalib = calibrationFolder + "TouchBlinkCalibration.xml";
+    private static String AstraSDepthCalib = calibrationFolder + "calibration-AstraS-depth.yaml";
+    private static String AstraSRGBCalib = calibrationFolder + "calibration-AstraS-rgb.yaml";
+    private static String AstraSIRCalib = calibrationFolder + "calibration-AstraS-ir.yaml";
+    private static String AstraSStereoCalib = calibrationFolder + "calibration-AstraS-stereo.xml";
 
-    public static String touchCalib = calibrationFolder + "Touch2DCalibration.xml";
-    public static String objectTouchCalib = calibrationFolder + "ObjectTouchCalibration.xml";
-    public static String touchCalib3D = calibrationFolder + "Touch3DCalibration.xml";
+    private static String kinectTrackingCalib = "kinectTracking.xml";
+    private static String cameraProjExtrinsics = "camProjExtrinsics.xml";
+    private static String cameraProjHomography = "camProjHomography.xml";
+
+    private static String screenConfig = calibrationFolder + "screenConfiguration.xml";
+    private static String cameraConfig = calibrationFolder + "cameraConfiguration.xml";
+    private static String depthCameraConfig = calibrationFolder + "depthCameraConfiguration.xml";
+
+    private static String colorThresholds = calibrationFolder + "colorThreshold";
+    private static String redThresholds = calibrationFolder + "redThresholds.txt";
+    private static String blueThresholds = calibrationFolder + "blueThresholds.txt";
+    private static String blinkThresholds = calibrationFolder + "blinkThresholds.txt";
+
+    private static String tablePosition = calibrationFolder + "tablePosition.xml";
+    private static String planeCalib = calibrationFolder + "PlaneCalibration.xml";
+    private static String homographyCalib = calibrationFolder + "HomographyCalibration.xml";
+    private static String planeAndProjectionCalib = calibrationFolder + "PlaneProjectionCalibration.xml";
+    private static String touchColorCalib = calibrationFolder + "TouchColorCalibration.xml";
+    private static String colorZoneCalib = calibrationFolder + "ColorZoneCalibration.xml";
+    private static String touchBlinkCalib = calibrationFolder + "TouchBlinkCalibration.xml";
+
+    private static String touchCalib = calibrationFolder + "Touch2DCalibration.xml";
+    private static String objectTouchCalib = calibrationFolder + "ObjectTouchCalibration.xml";
+    private static String touchCalib3D = calibrationFolder + "Touch3DCalibration.xml";
 
     public static String touchCalibrations[];
 
@@ -199,18 +200,6 @@ public class Papart {
         return config;
     }
 
-    /**
-     * Load the default screen configuration. The screen configuration is not
-     * used in the current releases.
-     *
-     * @param applet
-     * @return
-     */
-    public static ScreenConfiguration getDefaultScreenConfiguration(PApplet applet) {
-        ScreenConfiguration config = new ScreenConfiguration();
-        config.loadFrom(applet, screenConfig);
-        return config;
-    }
 
     public MultiCalibrator multiCalibrator;
 
@@ -264,14 +253,14 @@ public class Papart {
      */
     public static Papart projection(PApplet applet, float quality) {
 
-        ScreenConfiguration screenConfiguration = getDefaultScreenConfiguration(applet);
-
         removeFrameBorder(applet);
 
         Papart papart = new Papart(applet);
 
-        papart.frameSize.set(screenConfiguration.getProjectionScreenWidth(),
-                screenConfiguration.getProjectionScreenHeight());
+//        papart.frameSize.set(screenConfiguration.getProjectionScreenWidth(),
+//                screenConfiguration.getProjectionScreenHeight());
+
+// TODO: load the frameSize from the projector calibration !
         papart.shouldSetWindowLocation = false;
         papart.shouldSetWindowSize = true;
         papart.registerPost();
@@ -315,14 +304,14 @@ public class Papart {
      */
     public static Papart projectionOnly(PApplet applet, float quality) {
 
-        ScreenConfiguration screenConfiguration = getDefaultScreenConfiguration(applet);
+//        ScreenConfiguration screenConfiguration = getDefaultScreenConfiguration(applet);
 
         removeFrameBorder(applet);
 
         Papart papart = new Papart(applet);
 
-        papart.frameSize.set(screenConfiguration.getProjectionScreenWidth(),
-                screenConfiguration.getProjectionScreenHeight());
+//        papart.frameSize.set(screenConfiguration.getProjectionScreenWidth(),
+//                screenConfiguration.getProjectionScreenHeight());
         papart.shouldSetWindowLocation = true;
         papart.shouldSetWindowSize = true;
         papart.registerPost();
@@ -517,7 +506,7 @@ public class Papart {
             return;
         }
         if (papart.shouldSetWindowLocation) {
-            papart.defaultFrameLocation();
+//            papart.defaultFrameLocation();
         }
         if (papart.shouldSetWindowSize) {
             papart.setFrameSize();
@@ -535,18 +524,18 @@ public class Papart {
         applet.unregisterMethod("post", this);
     }
 
-    /**
-     * Set the frame to default location given by the screenConfiguration.
-     */
-    public void defaultFrameLocation() {
-        ScreenConfiguration screenConfiguration = getDefaultScreenConfiguration(this.applet);
-        this.applet.frame.setLocation(screenConfiguration.getProjectionScreenOffsetX(),
-                screenConfiguration.getProjectionScreenOffsetY());
-
-        GLWindow window = (GLWindow) applet.getSurface().getNative();
-        window.setPosition(screenConfiguration.getProjectionScreenOffsetX(),
-                screenConfiguration.getProjectionScreenOffsetY());
-    }
+//    /**
+//     * Set the frame to default location given by the screenConfiguration.
+//     */
+//    public void defaultFrameLocation() {
+//        ScreenConfiguration screenConfiguration = getDefaultScreenConfiguration(this.applet);
+//        this.applet.frame.setLocation(screenConfiguration.getProjectionScreenOffsetX(),
+//                screenConfiguration.getProjectionScreenOffsetY());
+//
+//        GLWindow window = (GLWindow) applet.getSurface().getNative();
+//        window.setPosition(screenConfiguration.getProjectionScreenOffsetX(),
+//                screenConfiguration.getProjectionScreenOffsetY());
+//    }
 
     /**
      * Update the applet size to the current frameSize. The current frameSize
@@ -651,15 +640,15 @@ public class Papart {
      * @return
      */
     public PMatrix3D getTableLocation() {
-        
-        if(this.cameraTracking instanceof CameraNectar){
+
+        if (this.cameraTracking instanceof CameraNectar) {
             CameraNectar cam = ((CameraNectar) this.cameraTracking);
             Jedis connection = cam.createConnection();
             System.out.println("Loading table location from Natar camera. Key: " + cam.getCameraKey() + ":table .");
             String data = connection.get(cam.getCameraKey() + ":table");
             return HomographyCalibration.getMatFromData(data);
         }
-        
+
         return HomographyCalibration.getMatFrom(applet, tablePosition);
     }
 
@@ -768,7 +757,6 @@ public class Papart {
             cameraTracking.setCalibration(cameraCalib);
         }
     }
-   
 
     public void loadDefaultProjector() {
         initProjectorDisplay(1);

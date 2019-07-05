@@ -1,4 +1,3 @@
-
 package fr.inria.papart.calibration;
 
 import tech.lity.rea.nectar.calibration.HomographyCalibration;
@@ -84,7 +83,7 @@ public class MultiCalibrator extends PaperTouchScreen {
     private DepthCameraDevice depthCameraDevice;
 
 //    public float zShift = 0f;
-    public static String PAPER = "calib1.svg";
+    public static String PAPER = "calib1";
     public static float ZSHIFT = 0;
     public static float SCALE_FACTOR = 1f;
     public static float CENTER_X = 149.2f;   // 148.6
@@ -127,7 +126,7 @@ public class MultiCalibrator extends PaperTouchScreen {
         papart = Papart.getPapart();
         try {
             setDrawingSize(297, 210);
-            loadMarkerBoard(Papart.markerFolder + PAPER, 297, 210);
+            loadMarkerBoard(PAPER, 297, 210);
             setDrawOnPaper();
         } catch (Exception e) {
             e.printStackTrace();
@@ -316,7 +315,9 @@ public class MultiCalibrator extends PaperTouchScreen {
         projectorView.clearObjectImagePairs();
 
         projectorAsCamera = new ProjectorAsCamera(projector, cameraTracking, projectorView);
-        projectorAsCamera.setCalibration(Papart.projectorCalib);
+
+        // It is loaded from Natar now. 
+//        projectorAsCamera.setCalibration(Papart.projectorCalib);
         projectorAsCamera.setParent(parent);
 
         MarkerBoard board = this.getMarkerBoard();
@@ -551,9 +552,13 @@ public class MultiCalibrator extends PaperTouchScreen {
 
         // Do homography here. 
         // Save homography
-        Papart.getPapart().saveCalibration(Papart.cameraProjHomography,
-                projectorView.getHomographyOf(cameraTracking).getHomography());
+        // No more calibration files
+//        Papart.getPapart().saveCalibration(Papart.cameraProjHomography,
+//                projectorView.getHomographyOf(cameraTracking).getHomography());
+//        
+        projectorAsCamera.saveExtrinsics(projectorView.getHomographyOf(cameraTracking));
 
+        // -> Save the calibration in projector0:extrinsics !
         ArrayList<ExtrinsicSnapshot> snapshots = new ArrayList<ExtrinsicSnapshot>();
 
         CameraComputeThread projectorFakeThread = new CameraComputeThread(projectorAsCamera);
@@ -681,6 +686,7 @@ public class MultiCalibrator extends PaperTouchScreen {
 
         ExtrinsicCalibrator calibrationExtrinsic = new ExtrinsicCalibrator(parent);
         calibrationExtrinsic.setProjector(projector);
+        calibrationExtrinsic.setProjectorAsCamera(projectorAsCamera);
 
         // Compute, save and set !...
         calibrationExtrinsic.computeProjectorCameraExtrinsics(snapshots);
@@ -725,7 +731,7 @@ public class MultiCalibrator extends PaperTouchScreen {
 //        this.planeProjCalib.setPlane(planeCalib);
         // Now the projection for screen-space.
         // planes from the camera perspective. 
-        PlaneCalibration planeCalibCam = calibrationExtrinsic.computeAveragePlaneCam(snapshots);
+        PlaneCalibration planeCalibCam = calibrationExtrinsic.computeAveragePlaneTrackingCam(snapshots);
         planeCalibCam.flipNormal();
 
         // identity - no external camera for ProCam calibration
@@ -1184,10 +1190,24 @@ public class MultiCalibrator extends PaperTouchScreen {
         phc.setHomography(hc);
         phc.setPlane(pc);
 
-        pc.saveTo(parent, Papart.planeCalib);
-        hc.saveTo(parent, Papart.homographyCalib);
+        boolean set = false;
+        if (cameraTracking instanceof SubCamera) {
+            SubCamera sub = (SubCamera) cameraTracking;
+            Camera main = sub.getMainCamera();
+            if (main instanceof CameraNectar) {
+                CameraNectar cam = (CameraNectar) main;
+                pc.saveToXML(cam.getRedisClient(), cam.getCameraDescription() + ":plane");
+                hc.saveToXML(cam.getRedisClient(), cam.getCameraDescription() + ":plane");
+                set = true;
 
-        phc.saveTo(parent, Papart.planeAndProjectionCalib);
+            }
+        }
+
+        // TODO: unless set...
+//       pc.saveTo(parent, Papart.planeCalib);
+//        hc.saveTo(parent, Papart.homographyCalib);
+//        phc.saveTo(parent, Papart.planeAndProjectionCalib);
+
 //        touchInput.setPlaneAndProjCalibration(planeProjCalib);
         depthTouchInput.setPlaneAndProjCalibration(phc);
         System.out.println("Plane and Projection calibration saved !");

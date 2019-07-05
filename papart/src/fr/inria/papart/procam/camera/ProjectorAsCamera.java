@@ -23,22 +23,27 @@ import fr.inria.papart.calibration.MultiCalibrator;
 import fr.inria.papart.utils.ARToolkitPlusUtils;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.utils.ImageUtils;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.xml.parsers.ParserConfigurationException;
 import org.bytedeco.javacpp.opencv_core;
 import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
 import static org.bytedeco.javacpp.opencv_imgproc.cvCvtColor;
+import org.xml.sax.SAXException;
 import processing.core.PApplet;
 import processing.core.PImage;
+import processing.core.PMatrix3D;
 import redis.clients.jedis.BinaryJedisPubSub;
 import redis.clients.jedis.Jedis;
 import tech.lity.rea.nectar.markers.DetectedMarker;
 import processing.data.JSONObject;
 import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
+import tech.lity.rea.nectar.calibration.HomographyCalibration;
 import tech.lity.rea.nectar.camera.Camera;
 import tech.lity.rea.nectar.camera.CameraNectar;
 
@@ -86,6 +91,12 @@ public class ProjectorAsCamera extends Camera {
 
         redis = cam.createConnection();
         sendParams(this);
+
+        String key = this.cameraDescription + ":calibration";
+        if (redis.exists(key)) {
+            this.setCalibration(JSONObject.parse(redis.get(key)));
+        }
+
         // TODO: check nbhchannels
         initMemory(width, height, 3, 1);
     }
@@ -165,9 +176,15 @@ public class ProjectorAsCamera extends Camera {
     public boolean allMarkersFound() {
         return this.allMarkersFound;
     }
-    
-    public int getLastMarkerFound(){
+
+    public int getLastMarkerFound() {
         return markerListener.currentMarker();
+    }
+
+    public void saveExtrinsics(HomographyCalibration homography) {
+        String json = homography.exportToJSONString();
+        String key = this.cameraDescription + ":extrinsics";
+        redis.set(key, json);
     }
 
     class RedisThread extends Thread {
@@ -213,8 +230,8 @@ public class ProjectorAsCamera extends Camera {
                 this.unsubscribe();
             }
         }
-        
-        public int currentMarker(){
+
+        public int currentMarker() {
             return currentMarker;
         }
 
@@ -243,6 +260,10 @@ public class ProjectorAsCamera extends Camera {
         this.currentImage = image;
     }
 
+    /**
+     * *
+     * @param fileName
+     */
     @Override
     public void setCalibration(String fileName) {
         try {

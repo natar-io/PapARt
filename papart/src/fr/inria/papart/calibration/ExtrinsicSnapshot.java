@@ -29,7 +29,7 @@ public class ExtrinsicSnapshot {
 
     PMatrix3D mainCameraPaper = null;
     PMatrix3D projectorPaper = null;
-    PMatrix3D kinectPaper = null;
+    PMatrix3D depthCamPaper = null;
 
     public ExtrinsicSnapshot(PMatrix3D cameraPaperCalibration,
             PMatrix3D projectorPaperCalibration,
@@ -42,7 +42,7 @@ public class ExtrinsicSnapshot {
             projectorPaper = projectorPaperCalibration.get();
         }
         if (kinectPaperCalibration != null) {
-            kinectPaper = kinectPaperCalibration.get();
+            depthCamPaper = kinectPaperCalibration.get();
         }
     }
 

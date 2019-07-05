@@ -24,7 +24,6 @@ import fr.inria.papart.multitouch.tracking.TouchPointTracker;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.multitouch.detection.TouchDetectionColor;
 import fr.inria.papart.procam.Papart;
-import static fr.inria.papart.procam.Papart.planeAndProjectionCalib;
 import fr.inria.papart.procam.PaperScreen;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ProjectorDisplay;
