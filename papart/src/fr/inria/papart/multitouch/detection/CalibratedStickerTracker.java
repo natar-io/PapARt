@@ -32,6 +32,7 @@ import static java.util.stream.Collectors.toList;
 import processing.core.PApplet;
 import processing.core.PImage;
 import processing.core.PVector;
+import tech.lity.rea.nectar.camera.CameraNectar;
 
 /**
  * [experimental] Find small round colored stickers (gomettes).
@@ -89,7 +90,17 @@ public class CalibratedStickerTracker extends ColorTracker {
      * Load the default color references from PapARt.
      */
     public void loadDefaultColorReferences() {
-        setColorReferences(ColorReferenceThresholds.loadDefaultThresholds(numberOfRefs));
+
+        if (paperScreen.getCameraTracking() instanceof CameraNectar) {
+            CameraNectar cam = (CameraNectar) paperScreen.getCameraTracking();
+
+            setColorReferences(ColorReferenceThresholds.loadThresholds(numberOfRefs,
+                    cam.getRedisClient(), cam.getCameraDescription()));
+        } else {
+            System.out.println("Cannot load color calibrations without a Natar Camera.");
+        }
+
+//        setColorReferences(ColorReferenceThresholds.loadDefaultThresholds(numberOfRefs));
     }
 
     /**

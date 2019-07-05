@@ -761,20 +761,29 @@ public class MultiCalibrator extends PaperTouchScreen {
                 colorData[i] = this.savedColors[i][colorId];
             }
 
-            String[] list = c.createReference(colorData);
-            if (list != ColorReferenceThresholds.INVALID_COLOR) {
-                String saveFile = Papart.colorThresholds + colorId + ".txt";
-                parent.saveStrings(saveFile, list);
+            // Try save reference instead ?
+            if (cameraTracking instanceof SubCamera) {
+                SubCamera sub = (SubCamera) cameraTracking;
+                Camera main = sub.getMainCamera();
+                if (main instanceof CameraNectar) {
+                    CameraNectar cam = (CameraNectar) main;
 
-                if (colorId == 0) {
-                    parent.saveStrings(Papart.redThresholds, list);
+                    System.out.println("Saving color: " + colorId);
+                    c.saveReference(colorData,
+                            cam.getRedisClient(),
+                            cam.getCameraKey(),
+                            colorId);
                 }
-                if (colorId == 1) {
-                    parent.saveStrings(Papart.blueThresholds, list);
-                }
-            } else {
-                System.out.println("could not determine color: " + colorId);
             }
+//
+//            String[] list = c.createReference(colorData);
+//            if (list != ColorReferenceThresholds.INVALID_COLOR) {
+//                String saveFile = Papart.colorThresholds + colorId + ".txt";
+//                parent.saveStrings(saveFile, list);
+//
+//            } else {
+//                System.out.println("could not determine color: " + colorId);
+//            }
         }
 
     }
@@ -1207,7 +1216,6 @@ public class MultiCalibrator extends PaperTouchScreen {
 //       pc.saveTo(parent, Papart.planeCalib);
 //        hc.saveTo(parent, Papart.homographyCalib);
 //        phc.saveTo(parent, Papart.planeAndProjectionCalib);
-
 //        touchInput.setPlaneAndProjCalibration(planeProjCalib);
         depthTouchInput.setPlaneAndProjCalibration(phc);
         System.out.println("Plane and Projection calibration saved !");

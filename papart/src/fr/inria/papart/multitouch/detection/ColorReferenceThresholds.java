@@ -25,7 +25,10 @@ import java.awt.Color;
 import static processing.core.PApplet.abs;
 import static processing.core.PApplet.split;
 import processing.core.PGraphics;
+import processing.data.JSONObject;
+import redis.clients.jedis.Jedis;
 import tech.lity.rea.colorconverter.ColorConverter;
+import tech.lity.rea.nectar.camera.RedisClient;
 
 /**
  *
@@ -96,7 +99,7 @@ public class ColorReferenceThresholds {
         }
 
         double[] lab = converter.RGBtoLAB((int) this.red(c), (int) this.green(c), (int) this.blue(c));
-boolean updated = false;
+        boolean updated = false;
 //        System.out.println("Updated color: " + this.id + " before: " + this.averageL + " " + this.averageA + " " + this.averageB);
 
         if (this.averageL - (float) lab[0] > 2f) {
@@ -105,12 +108,12 @@ boolean updated = false;
         }
         if (this.averageA - (float) lab[1] > 2f) {
             this.averageA = (averageA + (float) lab[1]) / 2.0f;
-             updated = true;
+            updated = true;
         }
 
         if (this.averageB - (float) lab[1] > 2f) {
             this.averageB = (averageB + (float) lab[2]) / 2.0f;
-             updated = true;
+            updated = true;
         }
 //        // Narrow the thresholds
 //        if (this.AThreshold > 3) {
@@ -123,9 +126,9 @@ boolean updated = false;
 //            this.BThreshold = this.BThreshold * 0.9f;
 //        }
 
-if(updated){
-        System.out.println("Updated color: " + this.id + " after: " + this.averageL + " " + this.averageA + " " + this.averageB);
-}
+        if (updated) {
+            System.out.println("Updated color: " + this.id + " after: " + this.averageL + " " + this.averageA + " " + this.averageB);
+        }
 //        System.out.println("Updated color: " + this.id);
     }
 
@@ -213,7 +216,7 @@ if(updated){
 
     public static String[] INVALID_COLOR = new String[]{""};
 
-    public String[] createReference(int[] colorData) {
+    public void saveReference(int[] colorData, RedisClient connection, String key, int id) {
 
         double averageL = 0;
         double averageA = 0;
@@ -328,107 +331,67 @@ if(updated){
 
         // Check the stdev... when too high the value is not stored.
         if (stdevL > 40 || stdevA > 40 || stdevB > 40) {
-//            System.out.println("Could not determine color");
-            return INVALID_COLOR;
+            System.out.println("Could not determine color: " + id + " (" + key + ").");
+            return; //INVALID_COLOR;
         }
-        
+
         stdevL += 10;
         stdevA += 10;
         stdevB += 10;
 
-        String words = "hue:" + Float.toString(stdevHue * 3) + " "
-                + "sat:" + Float.toString(stdevSat * 3) + " "
-                + "intens:" + Float.toString(stdevIntens * 3) + " "
-                + "erosion:" + Integer.toString(1) + " "
-                + "red:" + Float.toString(stdevR * 3) + " "
-                + "blue:" + Float.toString(stdevBlue * 3) + " "
-                + "green:" + Float.toString(stdevG * 3) + " "
-                + "l:" + Double.toString(stdevL) + " "
-                + "A:" + Double.toString(stdevA) + " "
-                + "B:" + Double.toString(stdevB) + " "
-                + "valL:" + Double.toString(averageL) + " "
-                + "valA:" + Double.toString(averageA) + " "
-                + "valB:" + Double.toString(averageB) + " ";
+        JSONObject output = new JSONObject();
 
-        words = words + "id:" + Integer.toString(id) + " ";
-        words = words + "col:" + Integer.toString(averageCol);
+        output.setInt("id", id);
+        output.setFloat("hue", stdevHue * 3);
+        output.setFloat("sat", stdevSat * 3);
+        output.setFloat("intens", stdevIntens * 3);
+        output.setInt("erosion", 1);
+        output.setFloat("red", stdevR * 3);
+        output.setFloat("blue", stdevBlue * 3);
+        output.setFloat("green", stdevG * 3);
+        output.setFloat("l", (float) stdevL);
+        output.setFloat("A", (float) stdevA);
+        output.setFloat("B", (float) stdevB);
+        output.setFloat("valL", (float) averageL);
+        output.setFloat("valA", (float) averageA);
+        output.setFloat("valB", (float) averageB);
 
-        String[] list = split(words, ' ');
-        return list;
+        Jedis jedis = connection.createConnection();
+        jedis.set(key + ":colors:" + Integer.toString(id), output.toString());
     }
 
-    public void loadParameter(String data) {
-        try {
-            String[] pair = data.split(":");
-            if (pair[0].startsWith("hue")) {
-                hue = Float.parseFloat(pair[1]);
-            }
-            if (pair[0].startsWith("sat")) {
-                saturation = Float.parseFloat(pair[1]);
-            }
-            if (pair[0].startsWith("intens")) {
-                this.brightness = Float.parseFloat(pair[1]);
-            }
+    public void loadReference(RedisClient connection, String key, int id) {
+        String data = connection.createConnection().get(key + ":colors:" + id);
 
-            if (pair[0].startsWith("erosion")) {
-                this.erosion = Integer.parseInt(pair[1]);
-            }
-            if (pair[0].startsWith("col")) {
-                this.referenceColor = Integer.parseInt(pair[1]);
-            }
+        JSONObject input = JSONObject.parse(data);
 
-            if (pair[0].startsWith("red")) {
-                this.redThreshold = Float.parseFloat(pair[1]);
-            }
-            if (pair[0].startsWith("blue")) {
-                this.blueThreshold = Float.parseFloat(pair[1]);
-            }
-            if (pair[0].startsWith("green")) {
-                this.greenThreshold = Float.parseFloat(pair[1]);
-            }
-            if (pair[0].startsWith("l")) {
-                this.LThreshold = Float.parseFloat(pair[1]);
-            }
-            if (pair[0].startsWith("A")) {
-                this.AThreshold = Float.parseFloat(pair[1]);
-            }
-            if (pair[0].startsWith("B")) {
-                this.BThreshold = Float.parseFloat(pair[1]);
-            }
-            if (pair[0].startsWith("valL")) {
-                this.averageL = Float.parseFloat(pair[1]);
-                this.initL = Float.parseFloat(pair[1]);
-            }
-            if (pair[0].startsWith("valA")) {
-                this.averageA = Float.parseFloat(pair[1]);
-                this.initA = Float.parseFloat(pair[1]);
-            }
-            if (pair[0].startsWith("valB")) {
-                this.averageB = Float.parseFloat(pair[1]);
-                this.initB = Float.parseFloat(pair[1]);
-            }
-            if (pair[0].startsWith("id")) {
-                this.id = Integer.parseInt(pair[1]);
-            }
-        } catch (NumberFormatException nfe) {
-            nfe.printStackTrace();
-        }
+        this.id = input.getInt("id");
+        this.hue = input.getFloat("hue");
+        this.saturation = input.getFloat("sat");
+        this.brightness = input.getFloat("intens");
+        this.erosion = input.getInt("erosion");
+        this.redThreshold = input.getFloat("red");
+        this.blueThreshold = input.getFloat("blue");
+        this.greenThreshold = input.getFloat("green");
+        this.LThreshold = input.getFloat("l");
+        this.AThreshold = input.getFloat("A");
+        this.BThreshold = input.getFloat("B");
+        this.averageL = input.getFloat("valL");
+        this.averageA = input.getFloat("valA");
+        this.averageB = input.getFloat("valB");
+        this.initL = input.getFloat("valL");
+        this.initA = input.getFloat("valA");
+        this.initB = input.getFloat("valB");
     }
 
-    public static ColorReferenceThresholds[] loadDefaultThresholds(int numberOfRefs) {
+    public static ColorReferenceThresholds[] loadThresholds(int numberOfRefs, RedisClient connection, String key) {
         ColorReferenceThresholds[] references = new ColorReferenceThresholds[numberOfRefs];
-
-        // Load all the colors. 
-        for (int fileId = 0; fileId < numberOfRefs; fileId++) {
-            String fileName = Papart.colorThresholds + fileId + ".txt";
-            String[] list = Papart.getPapart().getApplet().loadStrings(fileName);
-
-            references[fileId] = new ColorReferenceThresholds();
-
-            for (String data : list) {
-                references[fileId].loadParameter(data);
-            }
+        for (int i = 0; i < numberOfRefs; i++) {
+            ColorReferenceThresholds crt = new ColorReferenceThresholds();
+            crt.loadReference(connection, key, i);
+            references[i] = crt;
         }
+
         return references;
     }
 

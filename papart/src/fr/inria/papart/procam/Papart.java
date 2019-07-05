@@ -1221,58 +1221,6 @@ public class Papart {
         return colorTracker;
     }
 
-    /**
-     * Create a red ColorTracker for a PaperScreen.
-     *
-     * @param screen PaperScreen to set the location of the tracking.
-     * @param quality capture quality in px/mm. lower (0.5f) for higher
-     * performance.
-     * @return
-     */
-    public ColorTracker initRedTracking(PaperScreen screen, float quality) {
-        return initColorTracking("red", redThresholds, screen, quality);
-    }
-
-    /**
-     * Create a blue ColorTracker for a PaperScreen.
-     *
-     * @param screen PaperScreen to set the location of the tracking.
-     * @param quality capture quality in px/mm. lower (0.5f) for higher
-     * performance.
-     * @return
-     */
-    public ColorTracker initBlueTracking(PaperScreen screen, float quality) {
-        return initColorTracking("blue", blueThresholds, screen, quality);
-    }
-
-    /**
-     * Create a blue ColorTracker for a PaperScreen.
-     *
-     * @param screen PaperScreen to set the location of the tracking.
-     * @param quality capture quality in px/mm. lower (0.5f) for higher
-     * performance.
-     * @param freq
-     * @return
-     */
-    public BlinkTracker initXTracking(PaperScreen screen, float quality, float freq) {
-        BlinkTracker blinkTracker = new BlinkTracker(screen, getDefaultBlinkTouchCalibration(), quality);
-        String[] list = applet.loadStrings(blinkThresholds);
-        for (String data : list) {
-            blinkTracker.loadParameter(data);
-        }
-        blinkTracker.setName("x");
-        blinkTracker.setFreq(freq);
-        return blinkTracker;
-    }
-
-    private ColorTracker initColorTracking(String name, String calibFile, PaperScreen screen, float quality) {
-        ColorTracker colorTracker = new ColorTracker(screen, getDefaultColorTouchCalibration(), quality);
-        String[] list = applet.loadStrings(calibFile);
-        colorTracker.loadParameters(list);
-        colorTracker.setName(name);
-        return colorTracker;
-    }
-
     public BaseDisplay getDisplay() {
         return this.display;
     }

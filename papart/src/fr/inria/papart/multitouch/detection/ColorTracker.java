@@ -263,17 +263,6 @@ public class ColorTracker {
         return output;
     }
 
-    public void loadParameters(String[] list) {
-        for (int i = 0; i < list.length; i++) {
-            String data = list[i];
-            loadParameter(data);
-        }
-    }
-
-    public void loadParameter(String data) {
-        reference.loadParameter(data);
-    }
-
     public String getName() {
         return name;
     }

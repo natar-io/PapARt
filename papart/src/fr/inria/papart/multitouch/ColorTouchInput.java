@@ -35,9 +35,12 @@ import processing.core.PConstants;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
+import redis.clients.jedis.Jedis;
 import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
 import tech.lity.rea.nectar.calibration.PlaneAndProjectionCalibration;
+import tech.lity.rea.nectar.calibration.PlaneCalibration;
 import tech.lity.rea.nectar.camera.Camera;
+import tech.lity.rea.nectar.camera.CameraNectar;
 import toxi.geom.Ray3D;
 import toxi.geom.ReadonlyVec3D;
 import toxi.geom.Vec3D;
@@ -64,10 +67,10 @@ public class ColorTouchInput extends TouchInput {
 
     private final Semaphore touchPointSemaphore = new Semaphore(1, true);
 
-    public ColorTouchInput(PApplet parent, Camera irCamera) {
+    public ColorTouchInput(PApplet parent, Camera camera) {
 
         this.parent = parent;
-        this.camera = irCamera;
+        this.camera = camera;
 
 //        this.trackedColors = new HashMap<>();
         this.calibration = Papart.getPapart().getDefaultColorTouchCalibration();
@@ -103,8 +106,17 @@ public class ColorTouchInput extends TouchInput {
             touchDetectionColor.setCalibration(calibration);
             colorFoundArray = touchDetectionColor.createInputArray();
 
-            planeCalib = new PlaneAndProjectionCalibration();
-            planeCalib.loadFrom(parent, planeAndProjectionCalib);
+            PlaneCalibration planeCalib = new PlaneCalibration();
+            
+            if (camera instanceof CameraNectar){
+                CameraNectar cam = (CameraNectar) camera;
+                
+                Jedis jedis = cam.createConnection();
+                String plane = jedis.get(cam.getCameraKey() + ":plane");
+                planeCalib.loadFrom(plane);
+            }else{
+                System.out.println("Color Touch Input is invalid without natar.");
+            }
         }
         if (camera.getIplImage() != null) {
 
@@ -230,8 +242,7 @@ public class ColorTouchInput extends TouchInput {
             projDev = projector.getProjectiveDeviceP();
         }
 
-        PMatrix3D camProjHomography = Papart.getPapart().loadCalibration(Papart.cameraProjHomography);
-
+        
         for (TrackedElement te : trackedElements) {
             PVector position = te.getPosition();
             ProjectiveDeviceP camDevice = camera.getProjectiveDevice();

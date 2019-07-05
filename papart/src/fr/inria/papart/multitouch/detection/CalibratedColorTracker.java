@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import processing.core.PConstants;
 import processing.core.PGraphics;
 import tech.lity.rea.colorconverter.ColorConverter;
+import tech.lity.rea.nectar.camera.CameraNectar;
 
 /**
  * Color Tracker with the calibrated colors.
@@ -36,7 +37,7 @@ public class CalibratedColorTracker extends ColorTracker {
         super(paperScreen, scale);
         loadDefaultColorReferences();
     }
-    
+
     /**
      * Set the color references for identification.
      *
@@ -50,17 +51,23 @@ public class CalibratedColorTracker extends ColorTracker {
      * Load the default color references from PapARt.
      */
     public void loadDefaultColorReferences() {
-        setColorReferences(ColorReferenceThresholds.loadDefaultThresholds(numberOfRefs));
+        if (paperScreen.getCameraTracking() instanceof CameraNectar) {
+            CameraNectar cam = (CameraNectar) paperScreen.getCameraTracking();
+
+            setColorReferences(ColorReferenceThresholds.loadThresholds(numberOfRefs,
+                    cam.getRedisClient(), cam.getCameraDescription()));
+        } else {
+            System.out.println("Cannot load color calibrations without a Natar Camera.");
+        }
     }
 
-    
     @Override
     public void initTouchDetection() {
         super.initTouchDetection();
 
         largeDetectionColor = new TouchDetectionLargeColor(trackedView);
         largerTouchCalibration = Papart.getPapart().getDefaultColorZoneCalibration();
-        
+
         largerTouchCalibration.setMaximumDistance(largerTouchCalibration.getMaximumDistance() * scale);
         largerTouchCalibration.setMinimumComponentSize((int) (largerTouchCalibration.getMinimumComponentSize() * scale * scale)); // Quadratic (area)
         largerTouchCalibration.setSearchDepth((int) (largerTouchCalibration.getSearchDepth() * scale));
@@ -73,7 +80,7 @@ public class CalibratedColorTracker extends ColorTracker {
         // share the colorFoundArray ?
         largeColorFoundArray = largeDetectionColor.createInputArray();
 
-    }    
+    }
     protected byte[] largeColorFoundArray;
 
     public int getReferenceColor(int id) {
@@ -139,42 +146,41 @@ public class CalibratedColorTracker extends ColorTracker {
         lastFound = colorFoundArray.clone();
 //        ArrayList<TrackedElement> newElements
 //                = touchDetectionColor.compute(time, erosion, this.scale);
-      smallElements = touchDetectionColor.compute(time, erosion, this.scale);
-        
+        smallElements = touchDetectionColor.compute(time, erosion, this.scale);
 
         // Step 2 -> Large -scale colors (ensemble de gomettes) 
         TouchPointTracker.trackPoints(trackedElements, smallElements, time);
-        
+
 //        for(TrackedElement te : trackedElements){
 //            te.filter(time);
 //        }
-
         return trackedElements;
     }
 
     public byte[] lastFound;
-    
-     ArrayList<TrackedElement> smallElements;
-       protected final ArrayList<TrackedElement> trackedLargeElements = new ArrayList<>();
-    public  ArrayList<TrackedElement> smallElements(){
+
+    ArrayList<TrackedElement> smallElements;
+    protected final ArrayList<TrackedElement> trackedLargeElements = new ArrayList<>();
+
+    public ArrayList<TrackedElement> smallElements() {
         return trackedElements;
     }
-    
-       public TouchList getTouchList(int id) {
+
+    public TouchList getTouchList(int id) {
         TouchList output = new TouchList();
         for (TrackedElement te : trackedElements) {
             Touch t = te.getTouch();
-            if(t.trackedSource().attachedValue == id){
-                      t.is3D = false;
+            if (t.trackedSource().attachedValue == id) {
+                t.is3D = false;
 //            System.out.println("pid: " + t.id);
 //            System.out.println("p: " + te.getPosition());
-            t.setPosition(te.getPosition());
-            output.add(t);
+                t.setPosition(te.getPosition());
+                output.add(t);
             }
         }
         return output;
     }
-    
+
     public static ColorConverter converter = new ColorConverter();
 
     /**
@@ -218,7 +224,7 @@ public class CalibratedColorTracker extends ColorTracker {
         double l = constrain(lab[0], 0, 100);
         double A = constrain(lab[1], -128, 128);
         double B = constrain(lab[2], -128, 128);
-        
+
         double d
                 = Math.sqrt(Math.pow(l - ref.averageL, 2)
                         + Math.pow(A - ref.averageA, 2)
@@ -240,13 +246,13 @@ public class CalibratedColorTracker extends ColorTracker {
     public static boolean colorFinderLAB(int incomingPix,
             ColorReferenceThresholds ref) {
 
-        double[] lab = converter.RGBtoLAB((int) ((incomingPix >> 16) & 0xFF) ,
-                (int) ((incomingPix >> 8) & 0xFF), (int) (incomingPix & 0xFF) );
+        double[] lab = converter.RGBtoLAB((int) ((incomingPix >> 16) & 0xFF),
+                (int) ((incomingPix >> 8) & 0xFF), (int) (incomingPix & 0xFF));
 
         double l = constrain(lab[0], 0, 100);
         double A = constrain(lab[1], -128, 128);
         double B = constrain(lab[2], -128, 128);
-        
+
         double d
                 = Math.sqrt(Math.pow(l - ref.averageL, 2)
                         + Math.pow(A - ref.averageA, 2)
@@ -255,6 +261,7 @@ public class CalibratedColorTracker extends ColorTracker {
 //        System.out.println("d: "  + d);
         return d < (ref.AThreshold + ref.BThreshold + ref.LThreshold) * 2f;
     }
+
     /**
      * Color distance on the LAB scale. The incomingPix is compared with the
      * baseline. The method returns true if each channel validates the condition
@@ -268,13 +275,13 @@ public class CalibratedColorTracker extends ColorTracker {
     public static boolean colorFinderLAB(int incomingPix,
             ColorReferenceThresholds ref, float error) {
 
-        double[] lab = converter.RGBtoLAB((int) ((incomingPix >> 16) & 0xFF) ,
-                (int) ((incomingPix >> 8) & 0xFF), (int) (incomingPix & 0xFF) );
+        double[] lab = converter.RGBtoLAB((int) ((incomingPix >> 16) & 0xFF),
+                (int) ((incomingPix >> 8) & 0xFF), (int) (incomingPix & 0xFF));
 
         double l = constrain(lab[0], 0, 100);
         double A = constrain(lab[1], -128, 128);
         double B = constrain(lab[2], -128, 128);
-        
+
         double d
                 = Math.sqrt(Math.pow(l - ref.averageL, 2)
                         + Math.pow(A - ref.averageA, 2)
@@ -283,6 +290,7 @@ public class CalibratedColorTracker extends ColorTracker {
 //        System.out.println("d: "  + d);
         return d < error;
     }
+
     /**
      * Color distance on the LAB scale. The incomingPix is compared with the
      * baseline. The method returns true if each channel validates the condition
@@ -295,13 +303,13 @@ public class CalibratedColorTracker extends ColorTracker {
     public static float colorFinderLABError(int incomingPix,
             ColorReferenceThresholds ref) {
 
-        double[] lab = converter.RGBtoLAB((int) ((incomingPix >> 16) & 0xFF) ,
-                (int) ((incomingPix >> 8) & 0xFF), (int) (incomingPix & 0xFF) );
+        double[] lab = converter.RGBtoLAB((int) ((incomingPix >> 16) & 0xFF),
+                (int) ((incomingPix >> 8) & 0xFF), (int) (incomingPix & 0xFF));
 
         double l = constrain(lab[0], 0, 100);
         double A = constrain(lab[1], -128, 128);
         double B = constrain(lab[2], -128, 128);
-        
+
         double d
                 = Math.sqrt(Math.pow(l - ref.averageL, 2)
                         + Math.pow(A - ref.averageA, 2)
@@ -310,5 +318,5 @@ public class CalibratedColorTracker extends ColorTracker {
 //        System.out.println("d: "  + d);
         return (float) d;
     }
-    
+
 }
