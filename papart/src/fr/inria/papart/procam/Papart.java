@@ -897,7 +897,7 @@ public class Papart {
         if (planeHomoData == null) {
             System.out.println("Cannot find key: " + key + ":planeHomography");
         }
-        hc.loadFromJSONString(planeHomoData);
+        hc.loadFrom(planeHomoData);
         PlaneCalibration pc = new PlaneCalibration();
 
         String planeData = redis.get(key + ":plane");
