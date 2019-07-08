@@ -19,7 +19,6 @@
  */
 package fr.inria.papart.procam.camera;
 
-import fr.inria.papart.procam.Papart;
 import tech.lity.rea.nectar.tracking.MarkerBoard;
 import tech.lity.rea.nectar.markers.DetectedMarker;
 import java.util.ArrayList;
@@ -35,20 +34,14 @@ import org.bytedeco.javacpp.ARToolKitPlus;
 import static org.bytedeco.javacpp.ARToolKitPlus.MARKER_ID_BCH;
 import static org.bytedeco.javacpp.ARToolKitPlus.PIXEL_FORMAT_LUM;
 import static org.bytedeco.javacpp.ARToolKitPlus.UNDIST_NONE;
-import org.bytedeco.javacpp.IntPointer;
 import static org.bytedeco.javacpp.opencv_core.CV_32F;
-import static org.bytedeco.javacpp.opencv_core.CV_TERMCRIT_EPS;
 import org.bytedeco.javacpp.opencv_core.CvMemStorage;
 import org.bytedeco.javacpp.opencv_core.CvPoint2D32f;
 import org.bytedeco.javacpp.opencv_core.CvSize;
-import org.bytedeco.javacpp.opencv_core.CvTermCriteria;
 import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;
 import org.bytedeco.javacpp.opencv_core.Mat;
-import static org.bytedeco.javacpp.opencv_core.cvSize;
-import org.bytedeco.javacpp.opencv_imgcodecs;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
 import static org.bytedeco.javacpp.opencv_imgproc.cvCvtColor;
-import processing.core.PVector;
 import java.util.Arrays;
 import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacpp.opencv_core;

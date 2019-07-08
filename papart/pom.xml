@@ -110,7 +110,7 @@
         <dependency>
             <groupId>tech.lity.rea</groupId>
             <artifactId>natar-multi-camera-server</artifactId>
-            <version>0.1.2b</version>
+            <version>0.1.2b-SNAPSHOT</version>
         </dependency>
         
         <dependency>

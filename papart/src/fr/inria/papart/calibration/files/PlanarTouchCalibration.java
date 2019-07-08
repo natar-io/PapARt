@@ -20,6 +20,11 @@
 package fr.inria.papart.calibration.files;
 
 import fr.inria.papart.calibration.files.Calibration;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.xml.parsers.ParserConfigurationException;
+import org.xml.sax.SAXException;
 import processing.core.PApplet;
 import processing.data.XML;
 import toxi.geom.Vec3D;
@@ -170,6 +175,21 @@ public class PlanarTouchCalibration extends Calibration {
         getFrom(planarTouchCalibNode);
     }
 
+    @Override
+    public void loadFrom(String data) {
+        try {
+            XML root = XML.parse(data);
+            XML planarTouchCalibNode = root.getChild(PLANAR_TOUCH_CALIBRATION_XML_NAME);
+            getFrom(planarTouchCalibNode);
+        } catch (IOException ex) {
+            Logger.getLogger(PlanarTouchCalibration.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ParserConfigurationException ex) {
+            Logger.getLogger(PlanarTouchCalibration.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SAXException ex) {
+            Logger.getLogger(PlanarTouchCalibration.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
     public float getMaximumDistance() {
         return maximumDistance;
     }
@@ -305,5 +325,4 @@ public class PlanarTouchCalibration extends Calibration {
     public void addTo(StringBuilder yaml) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-
 }

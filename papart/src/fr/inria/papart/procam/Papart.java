@@ -46,12 +46,15 @@ import tech.lity.rea.nectar.camera.CameraFactory;
 import tech.lity.rea.nectar.markers.DetectedMarker;
 import fr.inria.papart.utils.MathUtils;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.xml.parsers.ParserConfigurationException;
+import org.xml.sax.SAXException;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
@@ -62,9 +65,11 @@ import tech.lity.rea.nectar.calibration.HomographyCalibration;
 import tech.lity.rea.nectar.calibration.PlaneAndProjectionCalibration;
 import tech.lity.rea.nectar.calibration.PlaneCalibration;
 import tech.lity.rea.nectar.camera.Camera;
+import tech.lity.rea.nectar.camera.Camera.Type;
 import tech.lity.rea.nectar.camera.CameraNectar;
 import tech.lity.rea.nectar.camera.CameraRGBIRDepth;
 import tech.lity.rea.nectar.camera.CannotCreateCameraException;
+import tech.lity.rea.nectar.camera.RedisClientImpl;
 import tech.lity.rea.nectar.camera.VideoEmitter;
 import tech.lity.rea.nectar.depthcam.RealSense;
 
@@ -81,51 +86,9 @@ public class Papart {
     // This one stays, it is not used but necessary for ARToolkitPlus
     public static String camCalibARtoolkit = calibrationFolder + "camera-projector.cal";
 
-    private static boolean isInria = false;
-    private static boolean isReality = true;
-    private static String calibrationFileName = "A4-calib.svg";
-
-    private static String cameraCalibName = "camera.yaml";
-    private static String projectorCalibName = "projector.yaml";
-
-    private static String cameraCalib = calibrationFolder + cameraCalibName;
-    private static String projectorCalib = calibrationFolder + projectorCalibName;
-
-    private static String kinectIRCalib = calibrationFolder + "calibration-kinect-IR.yaml";
-    private static String SR300IRCalib = calibrationFolder + "calibration-SR300-IR.yaml";
-    private static String kinectRGBCalib = calibrationFolder + "calibration-kinect-RGB.yaml";
-    private static String kinectStereoCalib = calibrationFolder + "calibration-kinect-Stereo.xml";
-
-    private static String AstraSDepthCalib = calibrationFolder + "calibration-AstraS-depth.yaml";
-    private static String AstraSRGBCalib = calibrationFolder + "calibration-AstraS-rgb.yaml";
-    private static String AstraSIRCalib = calibrationFolder + "calibration-AstraS-ir.yaml";
-    private static String AstraSStereoCalib = calibrationFolder + "calibration-AstraS-stereo.xml";
-
-    private static String kinectTrackingCalib = "kinectTracking.xml";
-    private static String cameraProjExtrinsics = "camProjExtrinsics.xml";
-    private static String cameraProjHomography = "camProjHomography.xml";
-
-    private static String screenConfig = calibrationFolder + "screenConfiguration.xml";
-    private static String cameraConfig = calibrationFolder + "cameraConfiguration.xml";
-    private static String depthCameraConfig = calibrationFolder + "depthCameraConfiguration.xml";
-
-    private static String colorThresholds = calibrationFolder + "colorThreshold";
-    private static String redThresholds = calibrationFolder + "redThresholds.txt";
-    private static String blueThresholds = calibrationFolder + "blueThresholds.txt";
-    private static String blinkThresholds = calibrationFolder + "blinkThresholds.txt";
-
-    private static String tablePosition = calibrationFolder + "tablePosition.xml";
-    private static String planeCalib = calibrationFolder + "PlaneCalibration.xml";
-    private static String homographyCalib = calibrationFolder + "HomographyCalibration.xml";
-    private static String planeAndProjectionCalib = calibrationFolder + "PlaneProjectionCalibration.xml";
-    private static String touchColorCalib = calibrationFolder + "TouchColorCalibration.xml";
-    private static String colorZoneCalib = calibrationFolder + "ColorZoneCalibration.xml";
-    private static String touchBlinkCalib = calibrationFolder + "TouchBlinkCalibration.xml";
-
-    private static String touchCalib = calibrationFolder + "Touch2DCalibration.xml";
-    private static String objectTouchCalib = calibrationFolder + "ObjectTouchCalibration.xml";
-    private static String touchCalib3D = calibrationFolder + "Touch3DCalibration.xml";
-
+//    private static String touchCalib = calibrationFolder + "Touch2DCalibration.xml";
+//    private static String objectTouchCalib = calibrationFolder + "ObjectTouchCalibration.xml";
+//    private static String touchCalib3D = calibrationFolder + "Touch3DCalibration.xml";
     public static String touchCalibrations[];
 
     public int defaultFontSize = 12;
@@ -144,6 +107,7 @@ public class Papart {
     private ProjectorDisplay projector;
 
     private Camera cameraTracking;
+    private CameraNectar cameraNectar;
     private DepthAnalysisImpl depthAnalysis;
 
     private TouchInput touchInput;
@@ -151,6 +115,8 @@ public class Papart {
     private boolean isWithoutCamera = false;
 
     private DepthCameraDevice depthCameraDevice;
+    private static RedisClientImpl mainConnection;
+    private static Jedis redis;
 
     /**
      * Create the main PapARt object, this object is used to hande calibration
@@ -171,6 +137,8 @@ public class Papart {
                 touchCalibrations[i] = calibrationFolder + "TouchCalibration" + i + ".xml";
             }
 
+            mainConnection = RedisClientImpl.getMainConnection();
+            redis = mainConnection.createConnection();
             fr.inria.papart.utils.DrawUtils.applet = (PApplet) applet;
         }
     }
@@ -183,7 +151,8 @@ public class Papart {
      */
     public static CameraConfiguration getDefaultCameraConfiguration(PApplet applet) {
         CameraConfiguration config = new CameraConfiguration();
-        config.loadFrom(applet, cameraConfig);
+        String data = redis.get("papart:cameraConfiguration");
+        config.loadFrom(data);
         return config;
     }
 
@@ -196,10 +165,11 @@ public class Papart {
      */
     public static CameraConfiguration getDefaultDepthCameraConfiguration(PApplet applet) {
         CameraConfiguration config = new CameraConfiguration();
-        config.loadFrom(applet, depthCameraConfig);
+//        config.loadFrom(applet, depthCameraConfig);
+        String data = redis.get("papart:depthCameraConfiguration");
+        config.loadFrom(data);
         return config;
     }
-
 
     public MultiCalibrator multiCalibrator;
 
@@ -259,7 +229,6 @@ public class Papart {
 
 //        papart.frameSize.set(screenConfiguration.getProjectionScreenWidth(),
 //                screenConfiguration.getProjectionScreenHeight());
-
 // TODO: load the frameSize from the projector calibration !
         papart.shouldSetWindowLocation = false;
         papart.shouldSetWindowSize = true;
@@ -272,7 +241,6 @@ public class Papart {
             throw new RuntimeException("Cannot start the default camera: " + ex);
         }
 
-        papart.tryLoadExtrinsics();
         papart.projector.setCamera(papart.getPublicCameraTracking());
 
         papart.checkInitialization();
@@ -305,7 +273,6 @@ public class Papart {
     public static Papart projectionOnly(PApplet applet, float quality) {
 
 //        ScreenConfiguration screenConfiguration = getDefaultScreenConfiguration(applet);
-
         removeFrameBorder(applet);
 
         Papart papart = new Papart(applet);
@@ -346,13 +313,14 @@ public class Papart {
      */
     public static Papart seeThrough(PApplet applet, float quality) {
 
-        ProjectiveDeviceP pdp = null;
-        try {
-            pdp = ProjectiveDeviceP.loadCameraDevice(applet, cameraCalib);
-        } catch (Exception ex) {
-            Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
+//        ProjectiveDeviceP pdp = null;
+//        try {
+//            // -> This wil
+//            pdp = ProjectiveDeviceP.loadCameraDevice(applet, cameraCalib);
+//        } catch (Exception ex) {
+//            Logger.getLogger(Papart.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+// Get camera0:width / height to set the size...
         Papart papart = new Papart(applet);
 
 //        if (pdp != null) {
@@ -536,7 +504,6 @@ public class Papart {
 //        window.setPosition(screenConfiguration.getProjectionScreenOffsetX(),
 //                screenConfiguration.getProjectionScreenOffsetY());
 //    }
-
     /**
      * Update the applet size to the current frameSize. The current frameSize
      * depends on which type of rendering is used.
@@ -603,24 +570,6 @@ public class Papart {
     }
 
     /**
-     * Save the position of a paperScreen as the default table location.
-     *
-     * @param paperScreen
-     */
-    public void setTableLocation(PaperScreen paperScreen) {
-        HomographyCalibration.saveMatTo(applet, paperScreen.getLocation(), tablePosition);
-    }
-
-    /**
-     * Save the position of a matrix the default table location.
-     *
-     * @param mat
-     */
-    public void setTableLocation(PMatrix3D mat) {
-        HomographyCalibration.saveMatTo(applet, mat, tablePosition);
-    }
-
-    /**
      * Use if the table location is relative to the projector.
      *
      * @return
@@ -648,32 +597,9 @@ public class Papart {
             String data = connection.get(cam.getCameraKey() + ":table");
             return HomographyCalibration.getMatFromData(data);
         }
-
-        return HomographyCalibration.getMatFrom(applet, tablePosition);
-    }
-
-    /**
-     * Work in progress function
-     *
-     * @return
-     */
-    public PlaneCalibration getTablePlane() {
-        return PlaneCalibration.CreatePlaneCalibrationFrom(HomographyCalibration.getMatFrom(applet, tablePosition),
-                new PVector(100, 100));
-    }
-
-    /**
-     * Move a PaperScreen to the table location. After this, the paperScreen
-     * location is not updated anymore. To activate the tracking again use :
-     * paperScreen.useManualLocation(false); You can move the paperScreen
-     * according to its current location with the paperScreen.setLocation()
-     * methods.
-     *
-     * @param paperScreen
-     */
-    public void moveToTablePosition(PaperScreen paperScreen) {
-        paperScreen.useManualLocation(true, HomographyCalibration.getMatFrom(applet, tablePosition));
-//        paperScreen.markerBoard.setFakeLocation(getPublicCameraTracking(), HomographyCalibration.getMatFrom(applet, tablePosition));
+        System.out.println("Loading Table location from hard drive impossible, use natar.");
+        return new PMatrix3D();
+//        return HomographyCalibration.getMatFrom(applet, tablePosition);
     }
 
     @Deprecated
@@ -691,23 +617,21 @@ public class Papart {
         initDebugDisplay();
     }
 
-    private void tryLoadExtrinsics() {
-        PMatrix3D extrinsics = loadCalibration(cameraProjExtrinsics);
-        if (extrinsics == null) {
-            System.out.println("loading default extrinsics. Could not find " + cameraProjExtrinsics + " .");
-        } else {
-            arDisplay.setExtrinsics(extrinsics);
-        }
-    }
-
     /**
      * Initialize the default calibrated camera for object tracking.
      *
      * @throws fr.inria.papart.procam.camera.CannotCreateCameraException
      */
     public void initCamera() throws CannotCreateCameraException {
-        CameraConfiguration cameraConfiguration = getDefaultCameraConfiguration(applet);
-        initCamera(cameraConfiguration);
+        initCamera(getDefaultNectarCameraConfiguration());
+    }
+
+    public CameraConfiguration getDefaultNectarCameraConfiguration() {
+        CameraConfiguration cameraConfiguration = new CameraConfiguration();
+        cameraConfiguration.setCameraFormat("rgb");
+        cameraConfiguration.setCameraName("camera0");
+        cameraConfiguration.setCameraType(Type.NECTAR);
+        return cameraConfiguration;
     }
 
     /**
@@ -734,17 +658,17 @@ public class Papart {
         //Check if Natar is aread
         boolean cameraServerFound = false;
         try {
-            CameraNectar cameraNectar = (CameraNectar) CameraFactory.createCamera(Camera.Type.NECTAR, "camera0", "rgb");
-            Jedis jedis = cameraNectar.createConnection();
+            CameraNectar camNectar = (CameraNectar) CameraFactory.createCamera(Camera.Type.NECTAR, "camera0", "rgb");
+            Jedis jedis = camNectar.createConnection();
 //            jedis.get(folder)
             ClientList list = new ClientList(jedis.clientList());
             if (list.hasClient("CameraServer")) {
                 cameraServerFound = true;
                 System.out.println("Switching to Natar");
 
-                cameraTracking = cameraNectar;
+                cameraTracking = camNectar;
+                cameraNectar = camNectar;
                 cameraTracking.setParent(applet);
-                cameraTracking.setCalibration(cameraCalib);
             }
 
         } catch (Exception e) {
@@ -754,7 +678,11 @@ public class Papart {
         if (!cameraServerFound) {
             cameraTracking = CameraFactory.createCamera(cameraType, cameraNo, cameraFormat);
             cameraTracking.setParent(applet);
-            cameraTracking.setCalibration(cameraCalib);
+        }
+
+        if (cameraTracking instanceof CameraNectar) {
+            cameraNectar = (CameraNectar) cameraTracking;
+            cameraNectar.loadCalibrations();
         }
     }
 
@@ -770,11 +698,12 @@ public class Papart {
      */
     private void initProjectorDisplay(float quality) {
         // TODO: check if file exists !
-        projector = new ProjectorDisplay(this.applet, projectorCalib);
+        projector = new ProjectorDisplay(this.applet, "projector0");
         projector.setZNearFar(zNear, zFar);
         projector.setQuality(quality);
         arDisplay = projector;
         display = projector;
+        projector.loadCalibration("projector0");
         projector.init();
         frameSize.set(projector.getWidth(), projector.getHeight());
     }
@@ -838,6 +767,7 @@ public class Papart {
         return (DepthTouchInput) this.getTouchInput();
     }
 
+    @Deprecated
     public void loadIRTouchInput() {
         try {
             initCamera();
@@ -868,11 +798,11 @@ public class Papart {
 
 //            System.out.println("Papart: Using Touchextrinsics from the device.");
         } else {
-            // Two different cameras  
+            // Two different cameras  DEPRECATED -- Tests with Natar to do. 
             // setExtrinsics must after the kinect stereo calibration is loaded
-            PMatrix3D extr = (Papart.getPapart()).loadCalibration(Papart.kinectTrackingCalib);
-            extr.invert();
-            depthCameraDevice.getDepthCamera().setExtrinsics(extr);
+//            PMatrix3D extr = (Papart.getPapart()).loadCalibration(Papart.kinectTrackingCalib);
+//            extr.invert();
+//            depthCameraDevice.getDepthCamera().setExtrinsics(extr);
 //            System.out.println("Papart: Using Touchextrinsics from the calibrated File.");
         }
     }
@@ -893,7 +823,8 @@ public class Papart {
     public DepthCameraDevice loadDefaultDepthCamera() throws CannotCreateCameraException {
 
         // Two cases, either the other camera running of the same type
-        CameraConfiguration depthCamConfiguration = Papart.getDefaultDepthCameraConfiguration(applet);
+//        CameraConfiguration depthCamConfiguration = Papart.getDefaultDepthCameraConfiguration(applet);
+        CameraConfiguration depthCamConfiguration = getDefaultNectarCameraConfiguration();
 
         try {
             CameraNectar cameraNectar = (CameraNectar) CameraFactory.createCamera(Camera.Type.NECTAR, "camera0", "rgb");
@@ -903,7 +834,7 @@ public class Papart {
                 System.out.println("Switching to Natar for Depth Camera");
                 depthCamConfiguration.setCameraType(Camera.Type.NECTAR);
                 depthCamConfiguration.setCameraName("camera0");
-                depthCamConfiguration.setCameraFormat("");
+                depthCamConfiguration.setCameraFormat("rgb");
             }
 
         } catch (Exception e) {
@@ -929,6 +860,9 @@ public class Papart {
             depthCameraDevice = new OpenNI2(applet, cameraTracking);
         }
         if (depthCamConfiguration.getCameraType() == Camera.Type.NECTAR) {
+            if(cameraTracking == null){ 
+                initCamera();
+            }
             depthCameraDevice = new NectarOpenNI(applet, cameraTracking);
         }
 
@@ -953,10 +887,25 @@ public class Papart {
 //        calibration.loadFrom(this.applet, planeAndProjectionCalib);
 
         HomographyCalibration hc = new HomographyCalibration();
-        hc.loadFrom(applet, Papart.homographyCalib);
 
+        String key = "camera0";
+        if (cameraNectar != null) {
+            key = cameraNectar.getCameraKey();
+        }
+
+        String planeHomoData = redis.get(key + ":planeHomography");
+        if (planeHomoData == null) {
+            System.out.println("Cannot find key: " + key + ":planeHomography");
+        }
+        hc.loadFromJSONString(planeHomoData);
         PlaneCalibration pc = new PlaneCalibration();
-        pc.loadFrom(applet, Papart.planeCalib);
+
+        String planeData = redis.get(key + ":plane");
+        if (planeData == null) {
+            System.out.println("Cannot find key: " + key + ":plane");
+        }
+        pc.loadFrom(planeData);
+//        pc.loadFrom(applet, Papart.planeCalib);
         calibration.setPlane(pc);
         calibration.setHomography(hc);
 
@@ -972,6 +921,7 @@ public class Papart {
         this.touchInput = depthTouchInput;
     }
 
+    @Deprecated
     private void loadIRTouch() {
 
 //        PlaneAndProjectionCalibration calibration = new PlaneAndProjectionCalibration();
@@ -979,48 +929,46 @@ public class Papart {
         ColorTouchInput colorTouchInput
                 = new ColorTouchInput(this.applet, ((CameraRGBIRDepth) cameraTracking).getIRCamera());
         this.touchInput = colorTouchInput;
-        cameraTracking.setTouchInput(colorTouchInput);
+        ((CameraRGBIRDepth) cameraTracking).getDepthCamera().setTouchInput(colorTouchInput);
     }
 
     public PlanarTouchCalibration getDefaultColorTouchCalibration() {
         PlanarTouchCalibration calib = new PlanarTouchCalibration();
-        calib.loadFrom(applet, Papart.touchColorCalib);
+        calib.loadFrom(redis.get("papart:touchColorCalib"));
         return calib;
     }
 
     public PlanarTouchCalibration getDefaultColorZoneCalibration() {
         PlanarTouchCalibration calib = new PlanarTouchCalibration();
-        calib.loadFrom(applet, Papart.colorZoneCalib);
+        calib.loadFrom(redis.get("papart:colorZoneCalibration"));
         return calib;
     }
 
-    public PlanarTouchCalibration getDefaultBlinkTouchCalibration() {
-        PlanarTouchCalibration calib = new PlanarTouchCalibration();
-        calib.loadFrom(applet, Papart.touchBlinkCalib);
-        return calib;
-    }
-
+//    public PlanarTouchCalibration getDefaultBlinkTouchCalibration() {
+//        PlanarTouchCalibration calib = new PlanarTouchCalibration();
+//        
+//        calib.loadFrom( redis.get("papart:colorZoneCalibration"));
+//        return calib;
+//    }
     public PlanarTouchCalibration getDefaultTouchCalibration() {
         PlanarTouchCalibration calib = new PlanarTouchCalibration();
-        calib.loadFrom(applet, Papart.touchCalib);
-        return calib;
-    }
-
-    public PlanarTouchCalibration getDefaultObjectTouchCalibration() {
-        PlanarTouchCalibration calib = new PlanarTouchCalibration();
-        calib.loadFrom(applet, Papart.objectTouchCalib);
+        calib.loadFrom(redis.get("papart:touchCalibration"));
         return calib;
     }
 
     public PlanarTouchCalibration getDefaultTouchCalibration3D() {
         PlanarTouchCalibration calib = new PlanarTouchCalibration();
-        calib.loadFrom(applet, Papart.touchCalib3D);
+        String data = redis.get("papart:touch3DCalibration");
+        if(data == null){
+            System.out.println("Cannot read key: " + "papart:touch3DCalibration");
+        }
+        calib.loadFrom(data);
         return calib;
     }
 
     public PlanarTouchCalibration getTouchCalibration(int id) {
         PlanarTouchCalibration calib = new PlanarTouchCalibration();
-        calib.loadFrom(applet, Papart.touchCalibrations[id]);
+        calib.loadFrom(redis.get("papart:touchCalibrations:" + id));
         return calib;
     }
 

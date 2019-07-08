@@ -69,4 +69,5 @@ public abstract class Calibration {
     }
 
     public abstract void loadFrom(PApplet parent, String fileName);
+    public abstract void loadFrom(String data);
 }

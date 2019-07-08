@@ -46,6 +46,7 @@ import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
 import tech.lity.rea.nectar.calibration.HomographyCalibration;
 import tech.lity.rea.nectar.camera.Camera;
 import tech.lity.rea.nectar.camera.CameraNectar;
+import tech.lity.rea.nectar.camera.RedisClientImpl;
 
 /**
  *
@@ -72,7 +73,7 @@ public class ProjectorAsCamera extends Camera {
     private boolean useNectar = false;
     private String projName;
     private CameraNectar nectarCamera;
-    private String nectarProjName;
+    private String cameraDescription;
     private Jedis redis;
 
     private ArrayList<DetectedMarker[]> detectedMarkers;
@@ -86,31 +87,33 @@ public class ProjectorAsCamera extends Camera {
 
     private void initNectar(CameraNectar cam, String projName) {
         this.nectarCamera = cam;
-        this.nectarProjName = projName;
+        this.cameraDescription = projName;
         this.format = PixelFormat.BGR;
 
         redis = cam.createConnection();
-        sendParams(this);
 
         String key = this.cameraDescription + ":calibration";
         if (redis.exists(key)) {
             this.setCalibration(JSONObject.parse(redis.get(key)));
+            System.out.println("Setting " + cameraDescription + " calibration... ");
         }
 
         // TODO: check nbhchannels
+        sendParams(this);
         initMemory(width, height, 3, 1);
     }
 
     private void sendParams(Camera cam) {
-        redis.set(nectarProjName + ":width", Integer.toString(cam.width()));
-        redis.set(nectarProjName + ":height", Integer.toString(cam.height()));
-        redis.set(nectarProjName + ":channels", Integer.toString(3));
-        redis.set(nectarProjName + ":pixelformat", cam.getPixelFormat().toString());
+        redis.set(cameraDescription + ":width", Integer.toString(width));
+        redis.set(cameraDescription + ":height", Integer.toString(height));
+        redis.set(cameraDescription + ":channels", Integer.toString(3));
+        redis.set(cameraDescription + ":pixelformat", cam.getPixelFormat().toString());
     }
 
     byte[] imageData;
 
     private void initMemory(int width, int height, int nChannels, int bytePerChannel) {
+        System.out.println("Init Projector as camera nectar memory: " + width + " " + height + " " + nChannels + " " + bytePerChannel);
         imageData = new byte[nChannels * width * height * bytePerChannel];
     }
 
@@ -122,16 +125,29 @@ public class ProjectorAsCamera extends Camera {
         sendColorImage(currentImage);
     }
 
+    public void republish() {
+        byte[] id = cameraDescription.getBytes();
+        JSONObject imageInfo = new JSONObject();
+        imageInfo.setLong("timestamp", System.currentTimeMillis());
+        imageInfo.setLong("imageCount", imgID++);
+        redis.publish(id, imageInfo.toString().getBytes());
+    }
+
     boolean isStreamSet = true;
     boolean isStreamPublish = true;
 
     static int imgID = 0;
 
     private void sendColorImage(IplImage img) {
+        
+        System.out.println("CurrentImage:");
+        System.out.println(img.width());
+        System.out.println(img.height());
+        System.out.println(img.nChannels());
         ByteBuffer byteBuffer;
         byteBuffer = img.getByteBuffer();
         byteBuffer.get(imageData);
-        String name = nectarProjName;
+        String name = cameraDescription;
         byte[] id = name.getBytes();
         String time = Long.toString(parent.millis());
         System.out.println("Sending Projector image to Nectar.");
@@ -158,9 +174,9 @@ public class ProjectorAsCamera extends Camera {
         this.calibrator = calibrator;
         this.detectedMarkers = new ArrayList<>();
         allMarkersFound = false;
-        System.out.println("Listening to :  " + nectarProjName + ":markers");
+        System.out.println("Listening to :  " + cameraDescription + ":markers");
         markerListener = new MarkerListener(nbMarkers);
-        new RedisThread(redisSub, markerListener, nectarProjName + ":markers").start();
+        new RedisThread(redisSub, markerListener, cameraDescription + ":markers").start();
     }
 
     private void setMarkers(byte[] message, int id) {
@@ -184,6 +200,12 @@ public class ProjectorAsCamera extends Camera {
     public void saveExtrinsics(HomographyCalibration homography) {
         String json = homography.exportToJSONString();
         String key = this.cameraDescription + ":extrinsics";
+        Jedis redis;
+        if (nectarCamera != null) {
+            redis = nectarCamera.createConnection();
+        } else {
+            redis = RedisClientImpl.getMainConnection().createConnection();
+        }
         redis.set(key, json);
     }
 
@@ -327,7 +349,7 @@ public class ProjectorAsCamera extends Camera {
         if (img != null) {
             currentImage = img;
             if (this.format == PixelFormat.GRAY) {
-                currentImage = greyProjectorImage(img);
+//                currentImage = greyProjectorImage(img);
             }
         }
     }
@@ -342,7 +364,7 @@ public class ProjectorAsCamera extends Camera {
         if (img != null) {
             currentImage = img;
             if (this.format == PixelFormat.GRAY) {
-                currentImage = greyProjectorImage(img);
+//                currentImage = greyProjectorImage(img);
             }
         }
     }

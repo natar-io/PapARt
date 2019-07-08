@@ -27,14 +27,16 @@ import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.procam.display.ProjectorDisplay;
 import java.util.ArrayList;
+import org.bytedeco.javacpp.opencv_core.IplImage;
 import processing.core.PVector;
+import tech.lity.rea.nectar.camera.LockedUpdater;
 import toxi.geom.Vec3D;
 
 /**
  *
  * @author Jeremy Laviole
  */
-public abstract class TouchInput {
+public abstract class TouchInput implements LockedUpdater {
 
     public static PVector NO_INTERSECTION = new PVector();
 
@@ -47,7 +49,9 @@ public abstract class TouchInput {
         return true;
     }
 
+    @Override
     abstract public void update();
+    abstract public void updateColors(IplImage colorImage);
 
     abstract public TouchList projectTouchToScreen(PaperScreen paperScreen, BaseDisplay display);
     abstract public TouchList projectTouch(PaperScreen paperScreen, BaseDisplay display, TouchDetection td);

@@ -86,8 +86,10 @@ public class MultiCalibrator extends PaperTouchScreen {
     public static String PAPER = "calib1";
     public static float ZSHIFT = 0;
     public static float SCALE_FACTOR = 1f;
-    public static float CENTER_X = 149.2f;   // 148.6
-    public static float CENTER_Y = 103.6f;
+    public static float CENTER_X = 149; //.2f;   // 148.6
+    public static float CENTER_Y = 104f;
+//    public static float CENTER_X = 149.2f;   // 148.6
+//    public static float CENTER_Y = 103.6f;
 
 //    private Skatolo skatolo;
 //    private HoverButton hoverButton, resetButton;
@@ -143,6 +145,7 @@ public class MultiCalibrator extends PaperTouchScreen {
             currentScreenPoint = 0;
         }
     }
+    float viewSize = 20; // mm
 
     @Override
     public void setup() {
@@ -320,6 +323,15 @@ public class MultiCalibrator extends PaperTouchScreen {
 //        projectorAsCamera.setCalibration(Papart.projectorCalib);
         projectorAsCamera.setParent(parent);
 
+        if (cameraTracking instanceof SubCamera) {
+            SubCamera sub = (SubCamera) cameraTracking;
+            Camera main = sub.getMainCamera();
+            if (main instanceof CameraNectar) {
+                CameraNectar cam = (CameraNectar) main;
+                projectorAsCamera.useNectar(true, cam, "projector0");
+            }
+        }
+
         MarkerBoard board = this.getMarkerBoard();
         // if it uses gray images.
         // All of this needs to be more explicit. 
@@ -358,8 +370,9 @@ public class MultiCalibrator extends PaperTouchScreen {
                 drawTouch(10);
             }
 
-            float d = getMarkerBoard().lastMovementDistance(getCameraTracking());
+            calibView.setTopLeftCorner(new PVector(CENTER_X - viewSize, CENTER_Y - viewSize));
 
+            float d = getMarkerBoard().lastMovementDistance(getCameraTracking());
             if (waitForMovement && d > 20) {
                 waitForMovement = false;
             }
@@ -369,7 +382,6 @@ public class MultiCalibrator extends PaperTouchScreen {
             if (showProjection) {
                 drawDebugZones();
             }
-
 //            PMatrix3D camPos = currentCamBoard();
 //            PVector pos3D = new PVector(camPos.m03, camPos.m13, camPos.m23);
 //            PVector pxCam = cameraTracking.getProjectiveDevice().worldToPixelCoord(pos3D, false);
@@ -401,7 +413,7 @@ public class MultiCalibrator extends PaperTouchScreen {
 
     void valid() {
         pressedAmt++;
-        if (pressedAmt == maxPressedAmt) {
+        if (pressedAmt >= maxPressedAmt) {
             savePicture();
             nextScreenshot();
             waitForMovement = true;
@@ -410,7 +422,7 @@ public class MultiCalibrator extends PaperTouchScreen {
                 System.out.println("Save the table location.");
                 PMatrix3D tableCenter = savedLocations[0].get();
                 tableCenter.translate(CENTER_X * SCALE_FACTOR, CENTER_Y * SCALE_FACTOR);
-                Papart.getPapart().setTableLocation(tableCenter);
+                saveTableLocation(tableCenter);
 
                 /// if useTouch ?
                 if (!seeThrough) {
@@ -497,7 +509,13 @@ public class MultiCalibrator extends PaperTouchScreen {
                     int x = depthPx % w + j;
 
                     int offset = y * w + x;
-                    Vec3D candidate = depthPoints[offset];
+
+                    Vec3D candidate = INVALID_POINT;
+
+                    // TODO: check Offrest for bounds
+                    if (offset < w * depthCameraDevice.getDepthCamera().height()) {
+                        candidate = depthPoints[offset];
+                    }
                     if (candidate != INVALID_POINT && candidate.distanceTo(origin) > 1) {
                         point = new Vec3D(candidate); // a copy of it.
                     }
@@ -569,8 +587,9 @@ public class MultiCalibrator extends PaperTouchScreen {
         // the paper. So the scale impacts its location.
         tableCenter.translate(CENTER_X * SCALE_FACTOR, CENTER_Y * SCALE_FACTOR);
 
-        Papart.getPapart().setTableLocation(tableCenter);
+        saveTableLocation(tableCenter);
 
+//        Papart.getPapart().setTableLocation(tableCenter);
         // Homography is ready
         // we can get images from it. 
         // create nectar client to fetch poses.
@@ -583,12 +602,11 @@ public class MultiCalibrator extends PaperTouchScreen {
             if (main instanceof CameraNectar) {
                 useNectar = true;
                 cam = (CameraNectar) main;
+                
             }
         }
 
         if (useNectar) {
-            projectorAsCamera.useNectar(true, cam, "projector0");
-
             // Start the thread... 
             projectorAsCamera.startMarkerTracking(nbScreenPoints, this);
 
@@ -602,8 +620,9 @@ public class MultiCalibrator extends PaperTouchScreen {
                 // Wait for response !
                 while (projectorAsCamera.getLastMarkerFound() != i) {
                     try {
-                        Thread.sleep(15);
-                        System.out.println("Waiting for marker " + i + " .");
+                        Thread.sleep(400);
+                        System.out.println("Waiting for marker " + i + " . Republish");
+//                        projectorAsCamera.republish();
                     } catch (InterruptedException ex) {
                         Logger.getLogger(MultiCalibrator.class.getName()).log(Level.SEVERE, null, ex);
                     }
@@ -747,6 +766,15 @@ public class MultiCalibrator extends PaperTouchScreen {
         this.saveTouch(planeCalib, homography);
         // Now projector-space homography. 
 
+    }
+
+    private void saveTableLocation(PMatrix3D tableCenter) {
+        if (cameraTracking instanceof CameraNectar) {
+            CameraNectar cam = (CameraNectar) cameraTracking;
+            cam.setTableLocation(tableCenter);
+        } else {
+            System.out.println("Cannot set table location");
+        }
     }
 
     void calibrateColors() {
@@ -1206,7 +1234,7 @@ public class MultiCalibrator extends PaperTouchScreen {
             if (main instanceof CameraNectar) {
                 CameraNectar cam = (CameraNectar) main;
                 pc.saveToXML(cam.getRedisClient(), cam.getCameraDescription() + ":plane");
-                hc.saveToXML(cam.getRedisClient(), cam.getCameraDescription() + ":plane");
+                hc.saveToXML(cam.getRedisClient(), cam.getCameraDescription() + ":planeHomography");
                 set = true;
 
             }

@@ -27,6 +27,7 @@ import fr.inria.papart.multitouch.tracking.TrackedElement;
 import fr.inria.papart.procam.PaperScreen;
 import processing.core.PApplet;
 import java.util.*;
+import org.bytedeco.javacpp.opencv_core;
 import processing.core.PVector;
 
 /**
@@ -227,6 +228,22 @@ public class TUIOTouchInput extends TouchInput {
 
     @Override
     public TouchList projectTouch(PaperScreen paperScreen, BaseDisplay display, TouchDetection td) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+
+    @Override
+    public void updateColors(opencv_core.IplImage colorImage) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void lock() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void unlock() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

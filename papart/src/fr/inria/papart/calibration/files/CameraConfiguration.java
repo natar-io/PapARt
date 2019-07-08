@@ -19,6 +19,11 @@
  */
 package fr.inria.papart.calibration.files;
 
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.xml.parsers.ParserConfigurationException;
+import org.xml.sax.SAXException;
 import tech.lity.rea.nectar.camera.CameraFactory;
 import processing.core.PApplet;
 import processing.data.XML;
@@ -62,11 +67,24 @@ public class CameraConfiguration  extends Calibration {
     }
 
     @Override
+    public void loadFrom(String data) {
+        try {
+            // throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            XML root = XML.parse(data);
+            XML cameraNode = root.getChild(CAMERA_XML_NAME);
+            loadCameraFrom(cameraNode);
+        } catch (IOException ex) {
+            Logger.getLogger(CameraConfiguration.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ParserConfigurationException ex) {
+            Logger.getLogger(CameraConfiguration.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SAXException ex) {
+            Logger.getLogger(CameraConfiguration.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    @Override
     public void loadFrom(PApplet parent, String fileName) {
         // throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-
         XML root = parent.loadXML(fileName);
-
         XML cameraNode = root.getChild(CAMERA_XML_NAME);
         loadCameraFrom(cameraNode);
     }

@@ -113,7 +113,7 @@ public class DepthTouchInput extends TouchInput {
             setTouchDetectionCalibration(i, papart.getTouchCalibration(i));
         }
         setSimpleTouchDetectionCalibration(papart.getDefaultTouchCalibration());
-        setObjectTouchDetectionCalibration(papart.getDefaultObjectTouchCalibration());
+//        setObjectTouchDetectionCalibration(papart.getDefaultObjectTouchCalibration());
     }
 
     /**
@@ -484,8 +484,11 @@ public class DepthTouchInput extends TouchInput {
         }
     }
 
+    public void updateColors(IplImage colorImage) {
+        getTouch2DColors(colorImage);
+    }
+    
     public void getTouch2DColors(IplImage colorImage) {
-
         // FingerDetection can be not initialized
         if (fingerDetection != null) {
             getTouchColors(colorImage, fingerDetection.getTouchPoints());

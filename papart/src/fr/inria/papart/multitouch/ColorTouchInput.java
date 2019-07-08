@@ -30,6 +30,7 @@ import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.utils.MathUtils;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
+import org.bytedeco.javacpp.opencv_core;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PImage;
@@ -402,6 +403,21 @@ public class ColorTouchInput extends TouchInput {
 
     @Override
     public TouchList projectTouch(PaperScreen paperScreen, BaseDisplay display, TouchDetection td) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void updateColors(opencv_core.IplImage colorImage) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void lock() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void unlock() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

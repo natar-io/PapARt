@@ -33,9 +33,13 @@ import processing.core.PApplet;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
+import processing.data.JSONObject;
 import processing.opengl.PShader;
+import redis.clients.jedis.Jedis;
 import tech.lity.rea.javacvprocessing.ProjectiveDeviceP;
+import tech.lity.rea.nectar.calibration.HomographyCalibration;
 import tech.lity.rea.nectar.camera.Camera;
+import tech.lity.rea.nectar.camera.RedisClientImpl;
 import toxi.geom.Plane;
 import toxi.geom.Ray3D;
 import toxi.geom.ReadonlyVec3D;
@@ -65,16 +69,17 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
     protected float zNear = 20, zFar = 10000;
 
     private boolean distort = false;
+    protected String key;
 
     /**
      * Warning Not used directly.
      *
      * @param parent
-     * @param calibrationYAML
+     * @param key
      */
-    public ARDisplay(PApplet parent, String calibrationYAML) {
+    public ARDisplay(PApplet parent, String key) {
         super(parent);
-        loadCalibration(calibrationYAML);
+        loadCalibration(key);
     }
 
     public ARDisplay(PApplet parent, Camera camera) {
@@ -97,15 +102,33 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         automaticMode();
     }
 
-    protected void loadCalibration(String calibrationYAML) {
+    public void loadCalibration(String key) {
 // Load the camera parameters.
+        this.key = key;
         try {
-//            pdp = ProjectiveDeviceP.loadProjectiveDevice(calibrationYAML, 0);
-            projectiveDeviceP = ProjectiveDeviceP.loadCameraDevice(parent, calibrationYAML, 0);
+//            System.out.println("Load calibration... " + key);
+            String data = RedisClientImpl.getMainConnection().createConnection().get(key + ":calibration");
+            JSONObject dataJSON = JSONObject.parse(data);
+//            System.out.println("Data: " + data);
+            projectiveDeviceP = ProjectiveDeviceP.loadFromJSON(dataJSON);
             setCalibration(projectiveDeviceP);
+            loadExtrinsics();
+            // Load the extrinsics.. 
         } catch (Exception e) {
             System.out.println("ARDisplay, Error at loading internals !!" + e);
         }
+    }
+
+    /**
+     * Fetch the extrinsics (color-depth) from Redis / Nectar.
+     *
+     * @param key
+     */
+    public void loadExtrinsics() {
+        Jedis connection = RedisClientImpl.getMainConnection().createConnection();
+        String data = connection.get(key + ":extrinsics");
+        PMatrix3D extr = HomographyCalibration.CreateMatrixFrom(data);
+        this.setExtrinsics(extr);
     }
 
     protected boolean isCalibrationMode = false;
@@ -193,8 +216,8 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
      */
     @Override
     public void draw() {
-        
-        if(this.isCalibrationMode){
+
+        if (this.isCalibrationMode) {
             MultiCalibrator.drawCalibration(getGraphics());
             return;
         }
@@ -210,7 +233,7 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         DrawUtils.drawImage((PGraphicsOpenGL) parent.g,
                 this.render(),
                 0, 0, parent.width, parent.height);
-        
+
         tryToEmitVideo();
     }
 

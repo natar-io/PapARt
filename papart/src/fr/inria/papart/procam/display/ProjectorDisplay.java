@@ -38,21 +38,8 @@ import toxi.geom.Vec3D;
 
 public class ProjectorDisplay extends ARDisplay {
 
-    public ProjectorDisplay(PApplet parent, String calibrationYAML) {
-        super(parent, calibrationYAML);
-    }
-
-    @Override
-    protected void loadCalibration(String calibrationYAML) {
-//        System.out.println("Loading projector internals ... " + calibrationYAML);
-        try {
-            projectiveDeviceP = ProjectiveDeviceP.loadProjectorDevice(parent, calibrationYAML);
-            setCalibration(projectiveDeviceP);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Error loading the projector device." + e);
-        }
+    public ProjectorDisplay(PApplet parent, String key) {
+        super(parent, key);
     }
 
     @Override
