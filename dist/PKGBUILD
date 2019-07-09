@@ -1,6 +1,6 @@
 # Maintainer: Jeremy Laviole <jiii@jiii-mi>
-pkgname=PapARt
-pkgver=r1049.0696dfb5
+pkgname=PapARt14
+pkgver=1.4.2
 pkgrel=1
 epoch=
 pkgdesc=""
@@ -8,29 +8,23 @@ arch=('i686' 'x86_64')
 url=""
 license=('GPL')
 groups=()
-depends=('processing>=3.3' 'java-natar-apps' 'java-natar-multi-camera-server')
+depends=('processing>=3.3')
 makedepends=()
 checkdepends=()
 optdepends=()
 provides=()
-conflicts=()
+conflicts=('PapARt')
 replaces=()
 backup=()
 options=()
 install=
 changelog=
-source=("${pkgname%-git}::git+ssh://git@forge.pole-aquinetic.net/RealityTech/PapARt.git#branch=1.5")
+source=("${pkgname%-git}::git+ssh://git@forge.pole-aquinetic.net/RealityTech/PapARt.git#branch=1.4")
 md5sums=('SKIP')
 
 noextract=()
 
-pkgver() {
-	cd "$srcdir/${pkgname%-git}"
-	printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
-}
-
 build() {
-
   cd "$srcdir/$pkgname"
   cd papart
   mvn package
@@ -51,9 +45,7 @@ package() {
   cp deps/commons-pool2-2.2.jar $out_dir/library/
   cp deps/ColorConverter.jar $out_dir/library/
 
-  ln -s /usr/share/java/natar-core.jar $out_dir/library/
-  ln -s /usr/share/java/natar-multi-camera-server.jar $out_dir/library/
-  ln -s /usr/share/java/javacv-processing.jar $out_dir/library/
+  # ln -s /usr/share/java/javacv-processing.jar $out_dir/library/
 
   cp -R papart/target/site/apidocs $pkgdir/usr/share/processing/modes/java/libraries/$pkgname/reference
   cp -R papart/data $pkgdir/usr/share/processing/modes/java/libraries/$pkgname/data
