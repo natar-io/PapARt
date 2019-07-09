@@ -620,7 +620,7 @@ public class Papart {
     /**
      * Initialize the default calibrated camera for object tracking.
      *
-     * @throws fr.inria.papart.procam.camera.CannotCreateCameraException
+     * @throws tech.lity.rea.nectar.camera.CannotCreateCameraException
      */
     public void initCamera() throws CannotCreateCameraException {
         initCamera(getDefaultNectarCameraConfiguration());
@@ -638,7 +638,7 @@ public class Papart {
      * Initialize a camera for object tracking.
      *
      * @param cameraConfiguration
-     * @throws fr.inria.papart.procam.camera.CannotCreateCameraException
+     * @throws tech.lity.rea.nectar.camera.CannotCreateCameraException
      *
      */
     public void initCamera(CameraConfiguration cameraConfiguration) throws CannotCreateCameraException {

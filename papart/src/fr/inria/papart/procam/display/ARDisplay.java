@@ -122,7 +122,6 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
     /**
      * Fetch the extrinsics (color-depth) from Redis / Nectar.
      *
-     * @param key
      */
     public void loadExtrinsics() {
         Jedis connection = RedisClientImpl.getMainConnection().createConnection();

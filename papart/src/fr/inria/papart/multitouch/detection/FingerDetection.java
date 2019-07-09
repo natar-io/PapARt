@@ -226,7 +226,7 @@ public class FingerDetection extends TouchDetectionDepth {
     /**
      *
      * @param planeAndProjCalibration
-     * @param colorImg
+     * @param arm
      * @param hand
      */
     public void findTouchOptim(HandDetection hand, ArmDetection arm,
