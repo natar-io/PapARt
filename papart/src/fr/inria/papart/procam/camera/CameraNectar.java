@@ -301,8 +301,6 @@ public class CameraNectar extends CameraRGBIRDepth {
         @Override
         public void onMessage(byte[] channel, byte[] message) {
             try {
-                System.out.println("Get an Image: " + parent.millis());
-
                 getConnection = checkConnection(getConnection);
                 if (this.format == PixelFormat.BGR || this.format == PixelFormat.RGB) {
                     byte[] data = getConnection.get(channel);
