@@ -96,6 +96,9 @@ public class DepthTouchInput extends TouchInput {
         this.planeAndProjCalibration = calibration;
     }
 
+    public void setDepthAnalysis(DepthAnalysisImpl depthAnalysis){
+        this.depthAnalysis = depthAnalysis;
+    }
     private boolean touchDetectionsReady = false;
     private boolean depthAnalysisReady = false;
 

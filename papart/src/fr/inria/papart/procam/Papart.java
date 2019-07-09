@@ -882,6 +882,15 @@ public class Papart {
      */
     private void loadDefaultDepthTouchInput() {
         depthAnalysis = new DepthAnalysisImpl(this.applet, depthCameraDevice);
+        loadDepthTouchInput(depthAnalysis);
+    }
+    
+    /**
+     * Initialize the default touch input.You need to create the depth camera
+ first.
+     * @param depthAnalysis
+     */
+    public void loadDepthTouchInput(DepthAnalysisImpl depthAnalysis) {
 
         PlaneAndProjectionCalibration calibration = new PlaneAndProjectionCalibration();
 //        calibration.loadFrom(this.applet, planeAndProjectionCalib);
