@@ -8,8 +8,8 @@
 
 #!/bin/bash
 
-# mkdir libraries
-# cd libraries
+mkdir libraries
+cd libraries
 
 if [ ! -f toxiclibs-complete-0020.zip ]; then
     echo "Toxiclibs"
