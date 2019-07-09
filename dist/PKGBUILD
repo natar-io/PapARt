@@ -1,5 +1,5 @@
 # Maintainer: Jeremy Laviole <jiii@jiii-mi>
-pkgname=PapARt14
+pkgname=PapARt
 pkgver=1.4.2
 pkgrel=1
 epoch=
@@ -13,13 +13,13 @@ makedepends=()
 checkdepends=()
 optdepends=()
 provides=()
-conflicts=('PapARt')
+conflicts=('PapARt-natar')
 replaces=()
 backup=()
 options=()
 install=
 changelog=
-source=("${pkgname%-git}::git+ssh://git@forge.pole-aquinetic.net/RealityTech/PapARt.git#branch=1.4")
+source=("${pkgname%-git}::git+ssh://git@forge.pole-aquinetic.net/RealityTech/PapARt.git#branch=1.4ma")
 md5sums=('SKIP')
 
 noextract=()
@@ -45,7 +45,8 @@ package() {
   cp deps/commons-pool2-2.2.jar $out_dir/library/
   cp deps/ColorConverter.jar $out_dir/library/
 
-  # ln -s /usr/share/java/javacv-processing.jar $out_dir/library/
+  chmod 777 $pkgdir/usr/share/processing/modes/java/libraries/$pkgname/data
+
 
   cp -R papart/target/site/apidocs $pkgdir/usr/share/processing/modes/java/libraries/$pkgname/reference
   cp -R papart/data $pkgdir/usr/share/processing/modes/java/libraries/$pkgname/data
