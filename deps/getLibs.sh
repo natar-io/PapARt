@@ -18,6 +18,14 @@ if [ ! -f toxiclibs-complete-0020.zip ]; then
 #    rm toxiclibs-complete-0020.zip
 fi
 
+if [ ! -f OpenNI.tar.gz ]; then
+    wget http://dist.rea.lity.tech/libs/OpenNI.tar.gz
+    tar xvzf OpenNI.tar.gz
+    #    rm OpenNI.tar.gz
+fi
+
+
+
 if [ ! -f SVGExtended.tgz ]; then
     echo "SVGExtended"
     wget https://github.com/Rea-lity-Tech/SVGExtended/releases/download/3.3.7.2/SVGExtended.tgz
