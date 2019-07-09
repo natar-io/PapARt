@@ -1,5 +1,5 @@
 # Maintainer: Jeremy Laviole <jiii@jiii-mi>
-pkgname=PapARt
+pkgname=PapARt-natar
 pkgver=r1049.0696dfb5
 pkgrel=1
 epoch=
@@ -13,7 +13,7 @@ makedepends=()
 checkdepends=()
 optdepends=()
 provides=()
-conflicts=()
+conflicts=(PapARt)
 replaces=()
 backup=()
 options=()
