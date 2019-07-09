@@ -1,0 +1,67 @@
+# Maintainer: Jeremy Laviole <jiii@jiii-mi>
+pkgname=PapARt-dependencies
+pkgver=1.5
+pkgrel=1
+epoch=
+pkgdesc=""
+arch=('i686' 'x86_64')
+url=""
+license=('GPL')
+groups=()
+depends=('processing>=3.3' 'ruby')
+makedepends=()
+checkdepends=()
+optdepends=()
+provides=()
+conflicts=()
+replaces=()
+backup=()
+options=()
+install=
+changelog=
+source=("${pkgname%-git}::git+ssh://git@forge.pole-aquinetic.net/RealityTech/PapARt.git#branch=1.5")
+md5sums=('SKIP')
+
+noextract=()
+
+
+build() {
+  cd "$srcdir/$pkgname"
+
+  cd deps
+  sh getLibs.sh
+
+  cd javacv-build
+  ruby createLibs.rb
+}
+
+package() {
+  cd "$srcdir/${pkgname}/"
+
+  out_dir=$pkgdir/usr/share/processing/modes/java/libraries
+  mkdir -p $out_dir
+
+  cd deps/libraries
+  
+  cp -R audioutils $out_dir/
+  cp -R guiModes $out_dir/
+  cp -R oscP5 $out_dir/
+  cp -R reflections $out_dir/
+  cp -R skatolo $out_dir/
+  cp -R toxiclibs_p5 $out_dir/
+  cp -R volumeutils $out_dir/
+  cp -R colorutils $out_dir/
+  cp -R javacv $out_dir/
+  cp -R peasycam $out_dir/
+  cp -R SimplePointCloud $out_dir/
+  cp -R SVGExtended $out_dir/
+  cp -R verletphysics $out_dir/
+  cp -R datautils $out_dir/
+  cp -R OpenNI $out_dir/
+  cp -R processingTUIO $out_dir/
+  cp -R simutils $out_dir/
+  cp -R toxiclibscore $out_dir/
+  cp -R video $out_dir/
+
+}
+

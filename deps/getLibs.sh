@@ -62,10 +62,10 @@ unzip peasycam_302.zip
 rm peasycam_302.zip
 
 
-echo "Jedis"
-cd ..
-wget http://central.maven.org/maven2/redis/clients/jedis/2.9.0/jedis-2.9.0.jar
-cd libraries
+# echo "Jedis"
+# cd ..
+# wget http://central.maven.org/maven2/redis/clients/jedis/2.9.0/jedis-2.9.0.jar
+# cd libraries
 
 echo "Compile reflections"
 cd ..
