@@ -1,9 +1,0 @@
-hue:34.948242
-sat:81.97763
-intens:49.5
-erosion:1
-red:49.5
-blue:120.0
-green:120.0
-id:0
-col:-3458934
