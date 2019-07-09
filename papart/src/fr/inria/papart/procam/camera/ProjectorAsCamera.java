@@ -59,7 +59,7 @@ public class ProjectorAsCamera extends Camera {
     private IplImage grayImage;
     private final ProjectorDisplay projector;
     private PImage pimage;
-    private MarkerListener markerListener;
+//    private MarkerListener markerListener;
 
     public ProjectorAsCamera(ProjectorDisplay projector, Camera cameraTracking, TrackedViewPapart view) {
         this.projectorView = view;
@@ -99,15 +99,16 @@ public class ProjectorAsCamera extends Camera {
         }
 
         // TODO: check nbhchannels
-        sendParams(this);
+        sendParams(cameraDescription);
+        
         initMemory(width, height, 3, 1);
     }
 
-    private void sendParams(Camera cam) {
+    private void sendParams(String cameraDescription) {
         redis.set(cameraDescription + ":width", Integer.toString(width));
         redis.set(cameraDescription + ":height", Integer.toString(height));
         redis.set(cameraDescription + ":channels", Integer.toString(3));
-        redis.set(cameraDescription + ":pixelformat", cam.getPixelFormat().toString());
+        redis.set(cameraDescription + ":pixelformat", "RGB");
     }
 
     byte[] imageData;
@@ -120,9 +121,10 @@ public class ProjectorAsCamera extends Camera {
     /**
      * Warning check nb channels.
      *
+     * @param i
      */
-    public void sendImageToNectar() {
-        sendColorImage(currentImage);
+    public void sendImageToNectar(int i) {
+        sendColorImage(currentImage, i);
     }
 
     public void republish() {
@@ -138,24 +140,14 @@ public class ProjectorAsCamera extends Camera {
 
     static int imgID = 0;
 
-    private void sendColorImage(IplImage img) {
-        
-        System.out.println("CurrentImage:");
-        System.out.println(img.width());
-        System.out.println(img.height());
-        System.out.println(img.nChannels());
+    private void sendColorImage(IplImage img, int i) {
+
         ByteBuffer byteBuffer;
         byteBuffer = img.getByteBuffer();
         byteBuffer.get(imageData);
         String name = cameraDescription;
-        byte[] id = name.getBytes();
+        byte[] id = (name + ":" + i).getBytes();
         String time = Long.toString(parent.millis());
-        System.out.println("Sending Projector image to Nectar.");
-//        if (isStreamSet) {
-//            redis.set(id, imageData);
-//            redis.set((name + ":timestamp"), time);
-//        }
-//        if (isStreamPublish) {
         redis.set(id, imageData);
         redis.set((name + ":timestamp"), time);
 
@@ -163,40 +155,42 @@ public class ProjectorAsCamera extends Camera {
         imageInfo.setLong("timestamp", System.currentTimeMillis());
         imageInfo.setLong("imageCount", imgID++);
         redis.publish(id, imageInfo.toString().getBytes());
-//        }
     }
 
     MultiCalibrator calibrator;
     private boolean allMarkersFound = false;
-
+    private int nbMarkers;
+    
     public void startMarkerTracking(int nbMarkers, MultiCalibrator calibrator) {
         Jedis redisSub = nectarCamera.createConnection();
+        this.nbMarkers = nbMarkers;
         this.calibrator = calibrator;
         this.detectedMarkers = new ArrayList<>();
         allMarkersFound = false;
         System.out.println("Listening to :  " + cameraDescription + ":markers");
-        markerListener = new MarkerListener(nbMarkers);
-        new RedisThread(redisSub, markerListener, cameraDescription + ":markers").start();
+
+        new RedisThread(redisSub, new MarkerListener(), cameraDescription + ":markers").start();
     }
 
-    private void setMarkers(byte[] message, int id) {
-        System.out.println("Setting markers: " + id);
-        this.detectedMarkers.add(id, CameraNectar.parseMarkerList(new String(message)));
-//        System.out.println("Markers found: " + currentMarkers.length);
+    int currentMarker = 0;
+    
+    private void setMarkers(byte[] message) {
+        System.out.println("Setting markers: " + currentMarker);
+        this.detectedMarkers.add(currentMarker, CameraNectar.parseMarkerList(new String(message)));
+        currentMarker++;
     }
+
 
     public DetectedMarker[] getMarkers(int id) {
         return this.detectedMarkers.get(id);
     }
 
     public boolean allMarkersFound() {
-        return this.allMarkersFound;
+        return currentMarker == nbMarkers;
     }
-
     public int getLastMarkerFound() {
-        return markerListener.currentMarker();
+        return currentMarker;
     }
-
     public void saveExtrinsics(HomographyCalibration homography) {
         String json = homography.exportToJSONString();
         String key = this.cameraDescription + ":extrinsics";
@@ -235,26 +229,14 @@ public class ProjectorAsCamera extends Camera {
 
     class MarkerListener extends BinaryJedisPubSub {
 
-        private int currentMarker = 0;
-        private final int nbMarkersToRead;
-
-        public MarkerListener(int nbMarkersToRead) {
-            this.nbMarkersToRead = nbMarkersToRead;
+        public MarkerListener() {
         }
 
         @Override
         public void onMessage(byte[] channel, byte[] message) {
-            setMarkers(message, currentMarker);
-            currentMarker++;
-            System.out.println("got message:  " + currentMarker);
-            if (currentMarker == nbMarkersToRead) {
-                allMarkersFound = true;
-                this.unsubscribe();
-            }
-        }
-
-        public int currentMarker() {
-            return currentMarker;
+            setMarkers(message);
+            System.out.println("Got markers: " + currentMarker);
+//            this.unsubscribe();
         }
 
         @Override
