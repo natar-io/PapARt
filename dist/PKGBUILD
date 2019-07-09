@@ -19,7 +19,7 @@ backup=()
 options=()
 install=
 changelog=
-source=("${pkgname%-git}::git+ssh://git@forge.pole-aquinetic.net/RealityTech/PapARt.git#branch=1.4ma")
+source=("${pkgname%-git}::git+ssh://git@forge.pole-aquinetic.net/RealityTech/PapARt.git#branch=1.4")
 md5sums=('SKIP')
 
 noextract=()
@@ -32,11 +32,12 @@ build() {
 }
 
 package() {
-  cd "$srcdir/${pkgname%-git}/"
+  cd "$srcdir/${pkgname}/"
 
   out_dir=$pkgdir/usr/share/processing/modes/java/libraries/$pkgname
 
   mkdir -p $out_dir/library
+  mkdir -p $out_dir/data
   
   cp papart/target/$pkgname.jar $out_dir/library/$pkgname.jar
   cp deps/jama.jar $out_dir/library/
@@ -47,8 +48,7 @@ package() {
 
   chmod 777 $pkgdir/usr/share/processing/modes/java/libraries/$pkgname/data
 
-
   cp -R papart/target/site/apidocs $pkgdir/usr/share/processing/modes/java/libraries/$pkgname/reference
-  cp -R papart/data $pkgdir/usr/share/processing/modes/java/libraries/$pkgname/data
+  cp -R papart/data/* $pkgdir/usr/share/processing/modes/java/libraries/$pkgname/data/
 }
 

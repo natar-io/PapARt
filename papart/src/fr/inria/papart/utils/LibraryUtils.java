@@ -89,13 +89,25 @@ public class LibraryUtils {
     public static String getPapartDataFolder() {
 
         // Sketchbook env variable -- Developpers.
+        String sketchbookInstalled = "/usr/share/processing/modes/java/libraries/" + LIBRARY_NAME + "/data";
+        File candidate = null;
+
+        candidate = new File(sketchbookInstalled);
+        System.out.println("Check: " + sketchbookInstalled);
+        if (candidate.exists()) {
+            System.out.println("Papart data path [installed]: " + sketchbookInstalled);
+            return sketchbookInstalled;
+        }
+
+        // Installed is now first ?
         String sketchbook = System.getenv("SKETCHBOOK");
-        if (sketchbook != null) {
-            System.out.println("Papart data path: " + sketchbook + "/libraries/" + LIBRARY_NAME + "/data");
+        if (new File(sketchbook).exists()) {
+            System.out.println("Papart data path [env SKETCHBOOK]: " + sketchbook + "/libraries/" + LIBRARY_NAME + "/data");
             return sketchbook + "/libraries/" + LIBRARY_NAME + "/data";
         }
+
 //         Home env variable -- Linux / OSX.
-        File candidate = null;
+        candidate = null;
         String home = System.getenv("HOME");
         if (home != null) {
             OsCheck.OSType ostype = OsCheck.getOperatingSystemType();
@@ -103,7 +115,7 @@ public class LibraryUtils {
                 case Windows:
                     break;
                 case MacOS:
-                    System.out.println("PapARt data folder: " + home + "/Processing/libraries/" + LIBRARY_NAME);
+                    System.out.println("PapARt data folder [HOME]: " + home + "/Processing/libraries/" + LIBRARY_NAME);
                     candidate = new File(home + "/Processing/libraries/" + LIBRARY_NAME + "/data");
                     break;
                 case Linux:
@@ -115,7 +127,7 @@ public class LibraryUtils {
         }
 
         if (candidate != null && candidate.exists()) {
-            System.out.println("Papart data path: " + candidate.getAbsolutePath());
+            System.out.println("Papart data path [HOME]: " + candidate.getAbsolutePath());
             return candidate.getAbsolutePath();
         }
         // Use the jar to find the data folder -- any OS.
@@ -138,7 +150,7 @@ public class LibraryUtils {
         File data2 = new File(f.getParentFile().getAbsolutePath() + "/data");
 
         if (data2.exists()) {
-            System.out.println("Papart data path: " + data2.getAbsolutePath());
+            System.out.println("Papart data path [LIBRARY]: " + data2.getAbsolutePath());
             return data2.getAbsolutePath();
         }
 
