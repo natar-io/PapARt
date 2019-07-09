@@ -999,9 +999,8 @@ public class PaperScreen extends DelegatedGraphics {
     private TUIOTouchInput localTUIO;
 
     /**
-     * Connect to TUIO server. The input gets transformed to this PaperScreen.
+     * Connect to TUIO server.The input gets transformed to this PaperScreen.
      *
-     * @param server
      * @param port
      */
     public void connectLocalTUIO(int port) {
@@ -1890,7 +1889,7 @@ public class PaperScreen extends DelegatedGraphics {
     /**
      * Send touch list event to Redis EXPERIMENTAL
      *
-     * @param t
+     * @param touchList
      */
     public void sendTouchs(TouchList touchList) {
         for (Touch t : touchList) {
