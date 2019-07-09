@@ -26,6 +26,9 @@ def build(platform, arch)
   `mv target javacv`
   `mv javacv/library/javacv-1.4.jar javacv/library/javacv.jar`
 
+  puts "install library"
+  `cp -R javacv ../libraries/`
+  
   puts "compress library"
   `tar -zcf javacv-#{platform}-#{arch}.tgz javacv`
   `rm -rf javacv`

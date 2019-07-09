@@ -1,0 +1,48 @@
+# Maintainer: Jeremy Laviole <jiii@jiii-mi>
+pkgname=PapARt-dependencies
+pkgver=1.5
+pkgrel=1
+epoch=
+pkgdesc=""
+arch=('i686' 'x86_64')
+url=""
+license=('GPL')
+groups=()
+depends=('processing>=3.3' 'ruby')
+makedepends=()
+checkdepends=()
+optdepends=()
+provides=()
+conflicts=()
+replaces=()
+backup=()
+options=()
+install=
+changelog=
+source=("${pkgname%-git}::git+ssh://git@forge.pole-aquinetic.net/RealityTech/PapARt.git#branch=1.5")
+md5sums=('SKIP')
+
+noextract=()
+
+
+build() {
+  cd "$srcdir/$pkgname-$pkgver"
+
+  cd deps
+  sh getLibs.sh
+
+  cd javacv-build
+  ruby createLibs.sh
+
+}
+
+package() {
+  cd "$srcdir/${pkgname}/"
+
+  out_dir=$pkgdir/usr/share/processing/modes/java/libraries
+  mkdir -p $out_dir
+
+  cd deps
+  cp -R * $outdir/
+}
+
