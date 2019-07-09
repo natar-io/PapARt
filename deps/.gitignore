@@ -2,3 +2,6 @@
 *.tgz
 /OpenNI/
 *.tar.gz
+/PapARt-dependencies/
+/src/
+/pkg/

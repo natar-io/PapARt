@@ -26,14 +26,13 @@ noextract=()
 
 
 build() {
-  cd "$srcdir/$pkgname-$pkgver"
+  cd "$srcdir/$pkgname"
 
   cd deps
   sh getLibs.sh
 
   cd javacv-build
-  ruby createLibs.sh
-
+  ruby createLibs.rb
 }
 
 package() {
@@ -42,7 +41,27 @@ package() {
   out_dir=$pkgdir/usr/share/processing/modes/java/libraries
   mkdir -p $out_dir
 
-  cd deps
-  cp -R * $outdir/
+  cd deps/libraries
+  
+  cp -R audioutils $out_dir/
+  cp -R guiModes $out_dir/
+  cp -R oscP5 $out_dir/
+  cp -R reflections $out_dir/
+  cp -R skatolo $out_dir/
+  cp -R toxiclibs_p5 $out_dir/
+  cp -R volumeutils $out_dir/
+  cp -R colorutils $out_dir/
+  cp -R javacv $out_dir/
+  cp -R peasycam $out_dir/
+  cp -R SimplePointCloud $out_dir/
+  cp -R SVGExtended $out_dir/
+  cp -R verletphysics $out_dir/
+  cp -R datautils $out_dir/
+  cp -R OpenNI $out_dir/
+  cp -R processingTUIO $out_dir/
+  cp -R simutils $out_dir/
+  cp -R toxiclibscore $out_dir/
+  cp -R video $out_dir/
+
 }
 

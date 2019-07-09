@@ -1,0 +1,61 @@
+# Maintainer: Jeremy Laviole <jiii@jiii-mi>
+pkgname=PapARt
+pkgver=r1049.0696dfb5
+pkgrel=1
+epoch=
+pkgdesc=""
+arch=('i686' 'x86_64')
+url=""
+license=('GPL')
+groups=()
+depends=('processing>=3.3' 'java-natar-apps' 'java-natar-multi-camera-server')
+makedepends=()
+checkdepends=()
+optdepends=()
+provides=()
+conflicts=()
+replaces=()
+backup=()
+options=()
+install=
+changelog=
+source=("${pkgname%-git}::git+ssh://git@forge.pole-aquinetic.net/RealityTech/PapARt.git#branch=1.5")
+md5sums=('SKIP')
+
+noextract=()
+
+pkgver() {
+	cd "$srcdir/${pkgname%-git}"
+	printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+
+  cd "$srcdir/$pkgname"
+  cd papart
+  mvn package
+  mvn javadoc:javadoc
+}
+
+package() {
+  cd "$srcdir/${pkgname%-git}/"
+
+  out_dir=$pkgdir/usr/share/processing/modes/java/libraries/$pkgname
+
+  mkdir -p $out_dir/library
+  
+  cp papart/target/$pkgname.jar $out_dir/library/$pkgname.jar
+  cp deps/jama.jar $out_dir/library/
+  cp deps/pca_transform.jar $out_dir/library/
+  cp deps/jedis-2.9.0.jar $out_dir/library/
+  cp deps/commons-pool2-2.2.jar $out_dir/library/
+  cp deps/ColorConverter.jar $out_dir/library/
+
+  ln -s /usr/share/java/natar-core.jar $out_dir/library/
+  ln -s /usr/share/java/natar-multi-camera-server.jar $out_dir/library/
+  ln -s /usr/share/java/javacv-processing.jar $out_dir/library/
+
+  cp -R papart/target/site/apidocs $pkgdir/usr/share/processing/modes/java/libraries/$pkgname/reference
+  cp -R papart/data $pkgdir/usr/share/processing/modes/java/libraries/$pkgname/data
+}
+
