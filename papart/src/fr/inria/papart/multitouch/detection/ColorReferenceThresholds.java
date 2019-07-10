@@ -332,9 +332,9 @@ if(updated){
             return INVALID_COLOR;
         }
         
-        stdevL += 10;
-        stdevA += 10;
-        stdevB += 10;
+        stdevL += 5;
+        stdevA += 5;
+        stdevB += 5;
 
         String words = "hue:" + Float.toString(stdevHue * 3) + " "
                 + "sat:" + Float.toString(stdevSat * 3) + " "
