@@ -46,9 +46,9 @@ package() {
   cp deps/commons-pool2-2.2.jar $out_dir/library/
   cp deps/ColorConverter.jar $out_dir/library/
 
-  chmod 777 $pkgdir/usr/share/processing/modes/java/libraries/$pkgname/data
-
   cp -R papart/target/site/apidocs $pkgdir/usr/share/processing/modes/java/libraries/$pkgname/reference
   cp -R papart/data/* $pkgdir/usr/share/processing/modes/java/libraries/$pkgname/data/
+
+  chmod -R 777 $pkgdir/usr/share/processing/modes/java/libraries/$pkgname/data
 }
 
