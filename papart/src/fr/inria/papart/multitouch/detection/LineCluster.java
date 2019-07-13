@@ -513,7 +513,7 @@ public class LineCluster extends ArrayList<TrackedElement> implements Trackable 
                 tryAttach(currentCluster, second, allElements, size);
                 tryAttach(currentCluster, first, allElements, size);
 
-                if (currentCluster.size() > 2) {
+                if (currentCluster.size() >= 2) {
 
                     if (!lines.contains(currentCluster)) {
                         lines.add(currentCluster);
