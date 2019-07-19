@@ -138,6 +138,11 @@ public abstract class Camera extends Observable implements PConstants, HasExtrin
     public void setTouchInput(TouchInput touchInput) {
         this.touchInput = touchInput;
     }
+    
+    protected String captureFormat = null;
+    public void setCaptureFormat(String format){
+        this.captureFormat = format;
+    }
 
     /**
      * Get the information if the camera is started (ready to give images).

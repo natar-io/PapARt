@@ -48,7 +48,12 @@ public class CameraOpenCV extends Camera {
         grabberCV.setImageWidth(width());
         grabberCV.setImageHeight(height());
         grabberCV.setFrameRate(frameRate);
-        grabberCV.setImageMode(FrameGrabber.ImageMode.COLOR);
+
+        if (this.captureFormat.length() > 0) {
+            grabberCV.setFormat(this.captureFormat);
+        }
+//        grabberCV.setImageMode(FrameGrabber.ImageMode.COLOR);
+//        grabberCV.setImageMode(FrameGrabber.ImageMode.RAW);
 
         try {
             grabberCV.start();

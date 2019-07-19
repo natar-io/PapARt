@@ -728,14 +728,15 @@ public class Papart {
     public void initCamera(CameraConfiguration cameraConfiguration) throws CannotCreateCameraException {
         initCamera(cameraConfiguration.getCameraName(),
                 cameraConfiguration.getCameraType(),
-                cameraConfiguration.getCameraFormat());
+                cameraConfiguration.getCameraFormat(),
+                cameraConfiguration.getCaptureFormat());
     }
 
     /**
      * Initialize a camera for object tracking.
      *
      */
-    public void initCamera(String cameraNo, Camera.Type cameraType, String cameraFormat) throws CannotCreateCameraException {
+    public void initCamera(String cameraNo, Camera.Type cameraType, String cameraFormat, String captureFormat) throws CannotCreateCameraException {
         assert (!cameraInitialized);
 
         //  HACK Natar :
@@ -764,6 +765,8 @@ public class Papart {
             cameraTracking.setParent(applet);
             cameraTracking.setCalibration(cameraCalib);
         }
+        
+        cameraTracking.setCaptureFormat(captureFormat);
     }
    
 
