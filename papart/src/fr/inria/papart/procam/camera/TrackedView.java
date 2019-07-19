@@ -256,6 +256,7 @@ public class TrackedView implements WithSize {
 
         IplImage img = camera.getIplImage();
         if (!isExtractionReady(img)) {
+            System.out.println("Image extraction error.");
             return null;
         }
         this.mainImage = img;
