@@ -45,6 +45,7 @@ import fr.inria.papart.multitouch.TUIOTouchInput;
 import fr.inria.papart.multitouch.DepthTouchInput;
 import fr.inria.papart.multitouch.detection.BlinkTracker;
 import fr.inria.papart.multitouch.detection.CalibratedColorTracker;
+import fr.inria.papart.multitouch.detection.ColorReferenceThresholds;
 import fr.inria.papart.multitouch.detection.ColorTracker;
 import fr.inria.papart.utils.LibraryUtils;
 import fr.inria.papart.procam.camera.CameraFactory;
@@ -648,15 +649,15 @@ public class Papart {
      * @return
      */
     public PMatrix3D getTableLocation() {
-        
-        if(this.cameraTracking instanceof CameraNectar){
+
+        if (this.cameraTracking instanceof CameraNectar) {
             CameraNectar cam = ((CameraNectar) this.cameraTracking);
             Jedis connection = cam.createConnection();
             System.out.println("Loading table location from Natar camera. Key: " + cam.getCameraKey() + ":table .");
             String data = connection.get(cam.getCameraKey() + ":table");
             return HomographyCalibration.getMatFromData(data);
         }
-        
+
         return HomographyCalibration.getMatFrom(applet, tablePosition);
     }
 
@@ -765,10 +766,9 @@ public class Papart {
             cameraTracking.setParent(applet);
             cameraTracking.setCalibration(cameraCalib);
         }
-        
+
         cameraTracking.setCaptureFormat(captureFormat);
     }
-   
 
     public void loadDefaultProjector() {
         initProjectorDisplay(1);
@@ -1359,6 +1359,25 @@ public class Papart {
 
     public PApplet getApplet() {
         return applet;
+    }
+
+    public void createColorReference(int colorId, int[] colorData) {
+        ColorReferenceThresholds c = new ColorReferenceThresholds(colorId);
+
+        String[] list = c.createReference(colorData);
+        if (list != ColorReferenceThresholds.INVALID_COLOR) {
+            String saveFile = Papart.colorThresholds + colorId + ".txt";
+            applet.saveStrings(saveFile, list);
+
+            if (colorId == 0) {
+                applet.saveStrings(Papart.redThresholds, list);
+            }
+            if (colorId == 1) {
+                applet.saveStrings(Papart.blueThresholds, list);
+            }
+        } else {
+            System.out.println("could not determine color: " + colorId);
+        }
     }
 
 }

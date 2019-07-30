@@ -93,7 +93,7 @@ public class MultiCalibrator extends PaperTouchScreen {
     // 1. Homography computation:  Camera - projector.
     // 2. Extract 4-6 projector images. 
     // 3. Find markers if these projector images +  find markers in Cam images. 
-    // 4. Match 3D positions for extrinsic calibration and save it. 
+    // 4. Match 3D positions for extrinsic calibration and f it. 
     // 5. Check - Extrinsic calibration ? (How to do it easily?)  
     // 6. Compute color histograms, take the most commons, compute H,S,B + R,G,B  means + stdev. 
     // 7. Check the colors for color tracking across 4-6 screenshots. save the colors.
@@ -777,31 +777,13 @@ public class MultiCalibrator extends PaperTouchScreen {
     void calibrateColors() {
         // Save the color calibration 
         colorMode(RGB, 255);
-
         for (int colorId = 0; colorId < nbColors; colorId++) {
-            ColorReferenceThresholds c = new ColorReferenceThresholds(colorId);
-
             int[] colorData = new int[nbScreenPoints * 2];
             for (int i = 0; i < nbScreenPoints * 2; i++) {
                 colorData[i] = this.savedColors[i][colorId];
             }
-
-            String[] list = c.createReference(colorData);
-            if (list != ColorReferenceThresholds.INVALID_COLOR) {
-                String saveFile = Papart.colorThresholds + colorId + ".txt";
-                parent.saveStrings(saveFile, list);
-
-                if (colorId == 0) {
-                    parent.saveStrings(Papart.redThresholds, list);
-                }
-                if (colorId == 1) {
-                    parent.saveStrings(Papart.blueThresholds, list);
-                }
-            } else {
-                System.out.println("could not determine color: " + colorId);
-            }
+            papart.createColorReference(colorId, colorData);
         }
-
     }
 
     public void stopCalib() {
@@ -858,6 +840,7 @@ public class MultiCalibrator extends PaperTouchScreen {
 
         drawFrame(parent, g, multiCalibrator);
 
+        // Draw calibration view
         PImage trackedImg = multiCalibrator.calibView.getViewOf(papart.getCameraTracking());
 //        g.tint(200, 100, 0);
         g.image(trackedImg, 0, 400, 200, 200);
@@ -868,7 +851,6 @@ public class MultiCalibrator extends PaperTouchScreen {
 
         // number of valid 
         PVector point = multiCalibrator.screenPoints[multiCalibrator.currentScreenPoint];
-
         drawProgress(g, multiCalibrator, point);
 
         if (multiCalibrator.doCalibration) {
@@ -1023,20 +1005,20 @@ public class MultiCalibrator extends PaperTouchScreen {
         g.popMatrix();
 
         // Color captures
-        int[][] savedColors = multiCalibrator.savedColors;
-        g.noStroke();
-        int rectSize = 15;
-        for (int i = 0; i < multiCalibrator.nbScreenPoints; i++) {
+        if (multiCalibrator.colorOnly) {
+            int[][] savedColors = multiCalibrator.savedColors;
+            g.noStroke();
+            int rectSize = 15;
+            for (int i = 0; i < multiCalibrator.nbScreenPoints; i++) {
+                for (int j = 0; j < multiCalibrator.nbColors; j++) {
+                    g.fill(savedColors[i * 2][j]);
+                    g.rect(i * rectSize, j * 2 * rectSize, rectSize, rectSize);
 
-            for (int j = 0; j < multiCalibrator.nbColors; j++) {
-                g.fill(savedColors[i * 2][j]);
-                g.rect(i * rectSize, j * 2 * rectSize, rectSize, rectSize);
-
-                g.fill(savedColors[i * 2 + 1][j]);
-                g.rect(i * rectSize, (j * 2 + 1) * rectSize, rectSize, rectSize);
+                    g.fill(savedColors[i * 2 + 1][j]);
+                    g.rect(i * rectSize, (j * 2 + 1) * rectSize, rectSize, rectSize);
+                }
             }
         }
-
     }
 
     public static void drawHints(PGraphicsOpenGL g,
@@ -1310,28 +1292,28 @@ public class MultiCalibrator extends PaperTouchScreen {
         rect(75f, 145f, 146f, 50f);
 
         // green circles
-        fill(0, 255, 0);
+        fill(0, 255, 0, 150);
         rect(79.8f, 123.8f, 15f, 15f);
         rect(208.2f, 123.8f, 15f, 15f);
 
         // purple circles
-        fill(153, 0, 204);
+        fill(153, 0, 204, 150);
         rect(108.1f, 123.8f, 15f, 15f);
         rect(179.4f, 123.8f, 15f, 15f);
 
         // red circles
         // 2 color trackers ici
-        fill(255, 0, 0);
+        fill(255, 0, 0, 150);
         rect(79.8f, 95.2f, 15f, 15f);
         rect(208.2f, 95.2f, 15f, 15f);
 
         // blue circles
-        fill(0, 0, 255);
+        fill(0, 0, 255, 150);
         rect(79.8f, 67.1f, 15f, 15f);
         rect(208.2f, 67.1f, 15f, 15f);
 //
 //        // orange circles
-        fill(255, 200, 30);
+        fill(255, 200, 30, 150);
         rect(108.1f, 67.1f, 15f, 15f);
         rect(179.4f, 67.1f, 15f, 15f);
 

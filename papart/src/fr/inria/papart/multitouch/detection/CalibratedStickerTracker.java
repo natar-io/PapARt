@@ -72,7 +72,7 @@ public class CalibratedStickerTracker extends ColorTracker {
         this.circleSize = size;
         this.paperScreen = paperScreen;
 
-        loadDefaultColorReferences();
+        loadDefaultColorReferences(numberOfRefs);
         initTouchDetection(offset, capSize);
     }
 
@@ -84,12 +84,22 @@ public class CalibratedStickerTracker extends ColorTracker {
     public void setColorReferences(ColorReferenceThresholds[] refs) {
         references = refs;
     }
-
+    
+    public void setSensitivity(float sensitive) {
+        innerCirclesDetection.setSentivity(sensitive);
+    }
+    
     /**
      * Load the default color references from PapARt.
+     * @param numberRefs
      */
-    public void loadDefaultColorReferences() {
+    public void loadDefaultColorReferences(int numberRefs) {
+        this.numberOfRefs = numberRefs;
         setColorReferences(ColorReferenceThresholds.loadDefaultThresholds(numberOfRefs));
+    }
+    
+     public void setAutoRefineColors(boolean auto){
+        innerCirclesDetection.setAutoRefineColors(auto);
     }
 
     /**
@@ -145,6 +155,10 @@ public class CalibratedStickerTracker extends ColorTracker {
     public int getReferenceColor(int id) {
         return references[id].getReferenceColor();
     }
+    
+    public ColorReferenceThresholds getReference(int id) {
+        return references[id];
+    }
 
     /**
      * Find the circular colored elements. It only selects the one with a known
@@ -169,6 +183,9 @@ public class CalibratedStickerTracker extends ColorTracker {
         lastImageTime = currentImageTime;
 
         PImage circleImage = circleView.getViewOf(paperScreen.getCameraTracking());
+        if(circleImage == null){
+            return new ArrayList<>();
+        }
         circleImage.loadPixels();
         int xstart = 0;
         int ystart = 0;

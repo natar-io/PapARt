@@ -26,6 +26,7 @@ import fr.inria.papart.utils.MathUtils;
 import fr.inria.papart.utils.WithSize;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.stream.IntStream;
 import processing.core.PImage;
 import processing.core.PVector;
 import toxi.geom.Vec3D;
@@ -42,12 +43,35 @@ public class TouchDetectionInnerCircles extends TouchDetection {
         currentPointValidityCondition = new CheckColorPoint();
     }
 
+    public static final float HIGH_ERROR = 200;
     public static final byte INVALID_COLOR = -2;
     public static final byte UNKNOWN_COLOR = -1;
-    protected byte[] localSegmentedImage = null;
-    protected byte[] segmentedImage;
+    protected byte[] segmentedImage = null;
+    protected float[] segmentedImageError;
     protected byte[] segmentedImageCopy;
     protected int erosionLevel;
+
+    private boolean autoRefineColors = false;
+
+    /**
+     * Auto-refine colors. The colors references get updatated with really 
+     * detections of the color to look for. 
+     * @param auto 
+     */
+    void setAutoRefineColors(boolean auto) {
+        this.autoRefineColors = auto;
+    }
+
+    private float sensitivity;
+    
+    /**
+     * Increase or decrease the finding rates of all colors. 
+     * Use a positive value to increase it, a negative one to decrease.
+     * @param sensitive 
+     */
+    void setSentivity(float sensitive) {
+        this.sensitivity = sensitive;
+    }
 
     public class CheckColorPoint implements PointValidityCondition {
 
@@ -78,12 +102,14 @@ public class TouchDetectionInnerCircles extends TouchDetection {
     }
 
     public byte[] createInputArray() {
-        localSegmentedImage = new byte[imgSize.getSize()];
-        return localSegmentedImage;
+        segmentedImage = new byte[imgSize.getSize()];
+        segmentedImageError = new float[imgSize.getSize()];
+        return segmentedImage;
     }
 
     public void resetInputArray() {
-        Arrays.fill(localSegmentedImage, TouchDetectionInnerCircles.INVALID_COLOR);
+        Arrays.fill(segmentedImage, TouchDetectionInnerCircles.INVALID_COLOR);
+        Arrays.fill(segmentedImageError, TouchDetectionInnerCircles.HIGH_ERROR);
     }
 
     ColorReferenceThresholds references[];
@@ -101,10 +127,9 @@ public class TouchDetectionInnerCircles extends TouchDetection {
             ColorReferenceThresholds references[],
             PImage mainImg,
             float scale) {
-        this.segmentedImage = localSegmentedImage;
         this.references = references;
         this.mainImg = mainImg;
-        
+
         setCurrentTime(timestamp);
         ArrayList<ConnectedComponent> connectedComponents = findConnectedComponents();
         ArrayList<TrackedElement> colorPoints = this.createTouchPointsFrom(connectedComponents, scale);
@@ -115,27 +140,30 @@ public class TouchDetectionInnerCircles extends TouchDetection {
     protected void setSearchParameters() {
         this.toVisit.clear();
 
+        // this checks the colors of each inner circle pixels,
+        // and flags them with the nearest valid color found in the refs.
         mainImg.loadPixels();
         for (int i = 0; i < segmentedImage.length; i++) {
             if (segmentedImage[i] != INVALID_COLOR) {
-                // Check the color here ? 
-                // The index can set the color... 
 
                 int c = mainImg.pixels[i];
-                float minError = 30; // Use std error !
                 int currentID = -1;
 
+                float[] errors = new float[references.length];
                 for (byte id = 0; id < references.length; id++) {
-                    float currentError = colorFinderLABError(c, references[id]);
+                    errors[id] = colorFinderLABError(c, references[id]);
+                }
 
-                    float err =  references[id].AThreshold + references[id].BThreshold + references[id].LThreshold;
-//                    boolean smallError = colorFinderLAB(c, references[id], err);
-                    
-                    if ( currentError < minError) {
-//                    if (smallError && currentError < minError) {
-                        minError = currentError;
-                        currentID = id;
-                    }
+                // Sort by indexes
+                int[] sortedIndices = IntStream.range(0, errors.length)
+                        .boxed().sorted((k, j) -> Float.compare(errors[k], errors[j]))
+                        .mapToInt(ele -> ele).toArray();
+
+                int id = sortedIndices[0];
+                segmentedImageError[id] = errors[id];
+
+                if (errors[id] + sensitivity < references[id].getLABErrorsSum()) {
+                    currentID = sortedIndices[0];
                 }
 
                 if (currentID != -1) {
@@ -162,25 +190,53 @@ public class TouchDetectionInnerCircles extends TouchDetection {
             byte selectedID = UNKNOWN_COLOR;
             boolean ambiguous = false;
 
-            // TODO: number of colors 
-            // WARNING: magic number
-            int[] colors = new int[6];
-            for (int idx : connectedComponent) {
-                byte candidate = segmentedImage[idx];
-                if (candidate > 0) {
-                    colors[candidate]++;
+            // Cumulate errors on all colors.. 
+            int[] colors = new int[references.length];
+
+            int[] nbColors = new int[references.length];
+            // Average error for each color...
+            float[] errors = new float[references.length];
+
+            // each color
+            for (int colorID = 0; colorID < references.length; colorID++) {
+                // each index 
+                for (int idx : connectedComponent) {
+                    byte candidate = segmentedImage[idx];
+                    if (candidate == colorID) {
+                        nbColors[candidate]++;
+                        errors[candidate] += segmentedImageError[idx];
+                    }
+                }
+                if (nbColors[colorID] != 0) {
+                    errors[colorID] = errors[colorID] / nbColors[colorID];
+                } else {
+                    errors[colorID] = HIGH_ERROR;
                 }
             }
-            int max = 0;
-            int id = 0;
-            for (int i = 0; i < colors.length; i++) {
-                if (colors[i] > max && colors[i] > UNKNOWN_COLOR) {
-                    max = colors[i];
-                    id = i;
-                }
-            }
+
+//            for (int idx : connectedComponent) {
+//                byte candidate = segmentedImage[idx];
+//                if (candidate >= 0) {
+//                    colors[candidate]++;
+//                    errors[candidate] += segmentedImageError[idx];
+//                }
+//            }
+            // Sort by indexes
+            int[] sortedIndices = IntStream.range(0, errors.length)
+                    .boxed().sorted((k, j) -> Float.compare(errors[k], errors[j]))
+                    .mapToInt(ele -> ele).toArray();
+
+            int id = sortedIndices[0];
+//            int max = 0;
+//            int id = 0;
+//            for (int i = 0; i < colors.length; i++) {
+//                if (colors[i] > max && colors[i] > UNKNOWN_COLOR) {
+//                    max = colors[i];
+//                    id = i;
+//                }
+//            }
             selectedID = (byte) id;
-            
+
             if (id > 0) {
                 for (int i = 1; i < colors.length; i++) {
                     if (i != id && colors[i] != 0) {
@@ -199,15 +255,19 @@ public class TouchDetectionInnerCircles extends TouchDetection {
 //                    selectedID = segmentedImage[idx];
 //                }
 //            }
+            if (autoRefineColors) {
 
-            if (!ambiguous && selectedID != UNKNOWN_COLOR) {
-                for (int idx : connectedComponent) {
-//                    ColorReferenceThresholds ref = references[selectedID - 1];
-                    ColorReferenceThresholds ref = references[selectedID];
-                    int selectedColor = mainImg.pixels[idx];
+                // No ambiguity
+                if (!ambiguous && selectedID != UNKNOWN_COLOR) {
+                    for (int idx : connectedComponent) {
+                        ColorReferenceThresholds ref = references[selectedID];
 
-                   
-//                    ref.updateReference(selectedColor);
+                        // Very low error
+                        if ((errors[selectedID] < (ref.getLABErrorsSum() / 9))) {
+                            int selectedColor = mainImg.pixels[idx];
+                            ref.updateReference(selectedColor);
+                        }
+                    }
                 }
             }
 
@@ -237,14 +297,6 @@ public class TouchDetectionInnerCircles extends TouchDetection {
         tp.setCreationTime(this.currentTime);
         tp.setConfidence(connectedComponent.size());
         return tp;
-    }
-
-    public byte[] getSegmentedImage() {
-        return segmentedImage;
-    }
-
-    public void setSegmentedImage(byte[] segmentedImage) {
-        this.segmentedImage = segmentedImage;
     }
 
 }

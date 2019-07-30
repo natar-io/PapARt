@@ -35,12 +35,21 @@ public class ColorReferenceThresholds {
 
     private static final ColorConverter converter = new ColorConverter();
 
+    // TODO: remove (clean)  RGB and HSB values.
     public float brightness, saturation;
     public float hue;
     public float redThreshold, blueThreshold, greenThreshold;
+
+    // this is for the error
     public float LThreshold, AThreshold, BThreshold;
+
+    // this is for the value
     public float averageL, averageA, averageB;
+
+    // This is for the value stored in the file, if the average value changes
     public float initL, initA, initB;
+
+    // Erosion is to remove
     public int referenceColor, erosion;
     public int id;
 
@@ -96,7 +105,7 @@ public class ColorReferenceThresholds {
         }
 
         double[] lab = converter.RGBtoLAB((int) this.red(c), (int) this.green(c), (int) this.blue(c));
-boolean updated = false;
+        boolean updated = false;
 //        System.out.println("Updated color: " + this.id + " before: " + this.averageL + " " + this.averageA + " " + this.averageB);
 
         if (this.averageL - (float) lab[0] > 2f) {
@@ -105,12 +114,12 @@ boolean updated = false;
         }
         if (this.averageA - (float) lab[1] > 2f) {
             this.averageA = (averageA + (float) lab[1]) / 2.0f;
-             updated = true;
+            updated = true;
         }
 
         if (this.averageB - (float) lab[1] > 2f) {
             this.averageB = (averageB + (float) lab[2]) / 2.0f;
-             updated = true;
+            updated = true;
         }
 //        // Narrow the thresholds
 //        if (this.AThreshold > 3) {
@@ -123,9 +132,9 @@ boolean updated = false;
 //            this.BThreshold = this.BThreshold * 0.9f;
 //        }
 
-if(updated){
-        System.out.println("Updated color: " + this.id + " after: " + this.averageL + " " + this.averageA + " " + this.averageB);
-}
+        if (updated) {
+            System.out.println("Updated color: " + this.id + " after: " + this.averageL + " " + this.averageA + " " + this.averageB);
+        }
 //        System.out.println("Updated color: " + this.id);
     }
 
@@ -209,6 +218,18 @@ if(updated){
 
     private int color(int r, int g, int b) {
         return (r << 16) | (g << 8) | b;
+    }
+
+    public void setReference(int c, float threshold) {
+        double[] lab = converter.RGBtoLAB((int) this.red(c), (int) this.green(c), (int) this.blue(c));
+        averageL = (float) constrain(lab[0], 0.0, 100.0);
+        averageA = (float) constrain(lab[1], -128, 128);
+        averageB = (float) constrain(lab[2], -128, 128);
+
+        LThreshold = threshold;
+        AThreshold = threshold;
+        BThreshold = threshold;
+        setReferenceColor(c);
     }
 
     public static String[] INVALID_COLOR = new String[]{""};
@@ -331,7 +352,7 @@ if(updated){
 //            System.out.println("Could not determine color");
             return INVALID_COLOR;
         }
-        
+
         stdevL += 5;
         stdevA += 5;
         stdevB += 5;
@@ -512,6 +533,10 @@ if(updated){
 
     public void setBThreshold(float BThreshold) {
         this.BThreshold = BThreshold;
+    }
+
+    public float getLABErrorsSum() {
+        return AThreshold + BThreshold + LThreshold;
     }
 
 }
