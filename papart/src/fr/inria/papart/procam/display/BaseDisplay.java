@@ -54,6 +54,7 @@ public class BaseDisplay implements HasCamera {
     protected int frameWidth = DEFAULT_SIZE, frameHeight = DEFAULT_SIZE;
     protected int drawingSizeX = DEFAULT_SIZE, drawingSizeY = DEFAULT_SIZE;
     protected float quality = 1;
+    protected float scale = 1;
     protected boolean hasCamera = false;
     private VideoEmitter videoEmitter = null;
 
@@ -66,8 +67,9 @@ public class BaseDisplay implements HasCamera {
         this.setDrawingSize(applet.width, applet.height);
     }
 
-    public BaseDisplay(PApplet applet, int quality) {
+    public BaseDisplay(PApplet applet, float quality, float scale) {
         setParent(applet);
+        this.scale = scale;
         this.quality = quality;
     }
 
@@ -191,11 +193,14 @@ public class BaseDisplay implements HasCamera {
      * Called in Automatic mode to display the image.
      */
     public void draw() {
+        parent.g.pushMatrix();
         parent.g.background(30, 30, 30);
         drawScreensOver();
         parent.noStroke();
+        parent.g.scale(scale);
         parent.g.image(this.render(), 0, 0, this.drawingSizeX, this.drawingSizeY);
 
+        parent.g.popMatrix();
 //        pxCopy = getPixelsCopy();
     }
 

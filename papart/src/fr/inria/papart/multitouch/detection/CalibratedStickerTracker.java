@@ -238,6 +238,7 @@ public class CalibratedStickerTracker extends ColorTracker {
 
 //        TouchPointTracker.trackPoints(trackedElements, newStickers, time);
 //        TouchPointTracker.filterPositions(trackedElements, time);
+        
         return trackedElements;
     }
 
@@ -315,7 +316,8 @@ public class CalibratedStickerTracker extends ColorTracker {
     {1, 1, 1},
     {1, 1, 1}};
 
-    public static int convolutionMin = 5;
+    public static int convolutionMin = 2;
+    public static int convolutionErr = 1;
 
     /**
      * Perform the erosion operation, given a structure in a matrix..
@@ -354,7 +356,7 @@ public class CalibratedStickerTracker extends ColorTracker {
 
             }
         }
-        return sum == matSum;
+        return sum + convolutionErr >= matSum;
     }
 
     /**
@@ -385,7 +387,7 @@ public class CalibratedStickerTracker extends ColorTracker {
                 total += (img.pixels[loc] & 0xFF) * matrix[i][j];  // b
             }
         }
-        return total / 3;
+        return total;
     }
 
 }

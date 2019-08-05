@@ -692,12 +692,17 @@ public class Papart {
     }
 
     /**
-     * Load a BaseDisplay, used for debug. This call replaces the projector or
+     * Load a BaseDisplay, used for debug.This call replaces the projector or
      * seeThrough.
+     *
+     * @param applet
+     * @return
      */
-    public void initDebug() {
-        this.isWithoutCamera = true;
-        initDebugDisplay();
+    public static Papart initDebug(PApplet applet, float quality, float scale) {
+        Papart papart = new Papart(applet);
+        papart.isWithoutCamera = true;
+        papart.initDebugDisplay(applet, quality, scale);
+        return papart;
     }
 
     private void tryLoadExtrinsics() {
@@ -809,14 +814,14 @@ public class Papart {
 
     @Deprecated
     private void initNoCameraDisplay(float quality) {
-        initDebugDisplay();
+     //   initDebugDisplay(applet, 1);
     }
 
     /**
      * Create a BaseDisplay.
      */
-    private void initDebugDisplay() {
-        display = new BaseDisplay();
+    private void initDebugDisplay(PApplet applet, float quality, float scale) {
+        display = new BaseDisplay(applet, quality, scale);
         display.setFrameSize(applet.width, applet.height);
         display.setDrawingSize(applet.width, applet.height);
         display.init();
