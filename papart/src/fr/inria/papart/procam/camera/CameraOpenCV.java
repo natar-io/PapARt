@@ -22,6 +22,7 @@ package fr.inria.papart.procam.camera;
 import javassist.tools.reflect.CannotCreateException;
 import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_core.IplImage;
+//import static org.bytedeco.javacpp.opencv_videoio.CAP_PROP_BUFFERSIZE;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.OpenCVFrameConverter;
 import org.bytedeco.javacv.OpenCVFrameGrabber;
@@ -49,10 +50,9 @@ public class CameraOpenCV extends Camera {
         grabberCV.setImageHeight(height());
         grabberCV.setFrameRate(frameRate);
 
-        if (this.captureFormat.length() > 0) {
+        if (this.captureFormat != null && this.captureFormat.length() > 0) {
             grabberCV.setFormat(this.captureFormat);
         }
-//        grabberCV.setImageMode(FrameGrabber.ImageMode.COLOR);
 //        grabberCV.setImageMode(FrameGrabber.ImageMode.RAW);
 
         try {
