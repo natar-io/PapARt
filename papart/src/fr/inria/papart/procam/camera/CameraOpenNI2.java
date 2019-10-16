@@ -269,7 +269,6 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
         if (devicesInfo.isEmpty()) {
             JOptionPane.showMessageDialog(null, "No device is connected", "Error", JOptionPane.ERROR_MESSAGE);
             System.exit(-1);
-            return;
         }
         uri = devicesInfo.get(this.systemNumber).getUri();
         device = Device.open(uri);
