@@ -64,11 +64,10 @@ public class BaseDisplay implements HasCamera {
 
     public BaseDisplay(PApplet applet) {
         setParent(applet);
-        this.setDrawingSize(applet.width, applet.height);
     }
 
     public BaseDisplay(PApplet applet, float quality, float scale) {
-        setParent(applet);
+        this(applet);
         this.scale = scale;
         this.quality = quality;
     }
@@ -197,7 +196,7 @@ public class BaseDisplay implements HasCamera {
         parent.g.background(30, 30, 30);
         drawScreensOver();
         parent.noStroke();
-        parent.g.scale(scale);
+//        parent.g.scale(scale);
         parent.g.image(this.render(), 0, 0, this.drawingSizeX, this.drawingSizeY);
 
         parent.g.popMatrix();
