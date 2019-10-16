@@ -1,7 +1,7 @@
 # Maintainer: Jeremy Laviole <jiii@jiii-mi>
 pkgname=PapARt
 pkgver=1.4.2
-pkgrel=1
+pkgrel=5
 epoch=
 pkgdesc=""
 arch=('i686' 'x86_64')
