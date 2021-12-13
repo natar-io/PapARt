@@ -33,7 +33,7 @@
         
         <repository>
             <id>clojars.org</id>
-            <url>http://clojars.org/repo</url>
+            <url>https://repo.clojars.org/</url>
         </repository>
 
         <repository>
@@ -176,7 +176,6 @@
         <dependency>
             <groupId>org.processing</groupId>
             <artifactId>video</artifactId>
-            <!--<version>3.2.33.3.7</version>-->
             <version>3.2.3</version>
         </dependency>
         
@@ -202,18 +201,13 @@
             <artifactId>ProcessingTUIO</artifactId>
             <version>1.1.0</version>
         </dependency>
-<!--        <dependency>
-            <groupId>tech.lity.rea</groupId>
-            <artifactId>ProcessingTUIO</artifactId>
-            <version>1.1.0</version>
-        </dependency>-->
         
-        <!--We package and distribute--> 
-        <dependency>
-            <groupId>org.clojars.frederikdb</groupId>
-            <artifactId>oscp5</artifactId>
-            <version>0.9.8</version>
-        </dependency>
+        <!--We package and distribute-->
+	<dependency>
+	  <groupId>de.sojamo</groupId>
+	  <artifactId>oscp5</artifactId>
+	  <version>0.9.8</version>
+	</dependency>
         
         <!--Toxiclibs already packaged, we distribute -->
         <dependency>
@@ -337,11 +331,11 @@
         <outputDirectory>target/classes</outputDirectory>
         <extensions>
             <!-- Enabling the use of FTP -->
-<!--            <extension>
+            <extension>
                 <groupId>org.apache.maven.wagon</groupId>
                 <artifactId>wagon-ftp</artifactId>
                 <version>3.0.0</version>
-            </extension>-->
+            </extension>
         </extensions>
         
         <plugins> 
