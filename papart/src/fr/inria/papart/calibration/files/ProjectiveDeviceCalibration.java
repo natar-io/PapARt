@@ -27,7 +27,7 @@ import processing.data.XML;
 
 /**
  *
- * @author Jeremy Laviole jeremy.laviole@inria.fr
+ * @author Jeremy Laviole laviole@rea.lity.tech
  */
 public class ProjectiveDeviceCalibration extends Calibration {
 
@@ -209,6 +209,25 @@ public class ProjectiveDeviceCalibration extends Calibration {
     @Override
     public void loadFrom(PApplet parent, String fileName) {
         XML root = parent.loadXML(fileName);
+        XML resolutionNode = root.getChild(RESOLUTION_XML_NAME);
+        this.width = resolutionNode.getInt(WIDTH_XML_NAME);
+        this.height = resolutionNode.getInt(HEIGHT_XML_NAME);
+
+        XML intrinsicsNode = root.getChild(INTRINSICS_XML_NAME);
+        getMatFrom(intrinsicsNode, intrinsics);
+
+        XML extrinsicsNode = root.getChild(EXTRINSICS_XML_NAME);
+        if (extrinsicsNode == null) {
+            this.hasExtrinsics = false;
+            return;
+        }
+        getMatFrom(extrinsicsNode, extrinsics);
+
+        checkExtrinsics();
+    }
+    
+     public void loadFrom(String fileName) {
+        XML root = new XML(fileName);
         XML resolutionNode = root.getChild(RESOLUTION_XML_NAME);
         this.width = resolutionNode.getInt(WIDTH_XML_NAME);
         this.height = resolutionNode.getInt(HEIGHT_XML_NAME);

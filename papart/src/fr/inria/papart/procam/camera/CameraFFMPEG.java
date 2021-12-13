@@ -44,21 +44,18 @@ public class CameraFFMPEG extends Camera {
         converter = new OpenCVFrameConverter.ToIplImage();
     }
     
-    /**
-     * TODO: Check the use of this. 
-     * @deprecated
-     */
-    @Deprecated
     public void startVideo() {
         FFmpegFrameGrabber grabberFF = new FFmpegFrameGrabber(this.cameraDescription);
         try {
-            grabberFF.setFrameRate(30);
             this.setPixelFormat(PixelFormat.BGR);
             grabberFF.start();
             this.grabber = grabberFF;
             this.setSize(grabber.getImageWidth(), grabber.getImageHeight());
 //            this.setFrameRate((int) grabberFF.getFrameRate());
             grabberFF.setFrameRate(30);
+            
+            System.out.println("Video length: " + grabber.getLengthInFrames());
+            
             this.isConnected = true;
         } catch (Exception e) {
             System.err.println("Could not FFMPEG frameGrabber... " + e);
@@ -70,6 +67,12 @@ public class CameraFFMPEG extends Camera {
 
     @Override
     public void start() {
+        
+        if("video".equals(this.imageFormat)){
+            startVideo();
+            return;
+        }
+        
         FFmpegFrameGrabber grabberFF = new FFmpegFrameGrabber(this.cameraDescription);
 
         grabberFF.setImageMode(FrameGrabber.ImageMode.COLOR);
@@ -118,9 +121,12 @@ public class CameraFFMPEG extends Camera {
 
     private void checkEndOfVideo() {
         // 10 frames from the end.
-        if (grabber.getFrameNumber() + 10 > grabber.getLengthInFrames()) {
+//           System.out.println("Frame: " + grabber.getFrameNumber());
+        if (grabber.getFrameNumber() + 100 > grabber.getLengthInFrames()) {
             try {
-                grabber.setFrameNumber(0);
+//                System.out.println("end of video soon.");
+                grabber.restart();
+//                grabber.setFrameNumber(0);
             } catch (FrameGrabber.Exception ex) {
                 Logger.getLogger(CameraFFMPEG.class.getName()).log(Level.SEVERE, null, ex);
             }

@@ -21,11 +21,7 @@ package fr.inria.papart.depthcam;
 
 import fr.inria.papart.depthcam.analysis.Connexity;
 import fr.inria.papart.depthcam.analysis.DepthAnalysis;
-import fr.inria.papart.calibration.files.HomographyCalibration;
-import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
-import fr.inria.papart.calibration.files.PlaneCalibration;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysis.INVALID_COLOR;
-import static fr.inria.papart.depthcam.analysis.DepthAnalysis.INVALID_POINT;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import java.util.ArrayList;
 import java.util.Arrays;

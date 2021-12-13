@@ -16,11 +16,13 @@ import toxi.geom.Vec3D;
 
 /**
  * Find 2D information, used in Simple2D touchInput.
+ *
  * @author Jeremy Laviole
  */
 public class Compute2D extends DepthRecognition {
 
     private DepthSelection selection;
+    protected ProjectedDepthData depthData;
 
     public Compute2D(DepthAnalysisImpl depthAnalysis) {
         super(depthAnalysis);
@@ -37,6 +39,8 @@ public class Compute2D extends DepthRecognition {
     public void find2DTouch(PlaneAndProjectionCalibration calib, int skip2D) {
         // TODO: ensure that this has been computed.
 //         depthData.clearValidPoints();
+        depthData = depthAnalysis.depthData;
+
         selection = depthData.createSelection();
         depthData.planeAndProjectionCalibration = calib;
         depthAnalysis.doForEachPoint(skip2D, new Select2DPlaneProjection());

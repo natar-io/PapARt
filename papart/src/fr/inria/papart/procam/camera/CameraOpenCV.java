@@ -19,8 +19,10 @@
  */
 package fr.inria.papart.procam.camera;
 
+import javassist.tools.reflect.CannotCreateException;
 import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_core.IplImage;
+//import static org.bytedeco.javacpp.opencv_videoio.CAP_PROP_BUFFERSIZE;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.OpenCVFrameConverter;
 import org.bytedeco.javacv.OpenCVFrameGrabber;
@@ -47,8 +49,12 @@ public class CameraOpenCV extends Camera {
         grabberCV.setImageWidth(width());
         grabberCV.setImageHeight(height());
         grabberCV.setFrameRate(frameRate);
-        grabberCV.setImageMode(FrameGrabber.ImageMode.COLOR);
- 
+
+        if (this.captureFormat != null && this.captureFormat.length() > 0) {
+            grabberCV.setFormat(this.captureFormat);
+        }
+//        grabberCV.setImageMode(FrameGrabber.ImageMode.RAW);
+
         try {
             grabberCV.start();
             this.grabber = grabberCV;
@@ -59,8 +65,11 @@ public class CameraOpenCV extends Camera {
             System.err.println("Could not camera start frameGrabber... " + e);
             System.err.println("Camera ID " + this.systemNumber + " could not start.");
             System.err.println("Check cable connection, ID and resolution asked.");
-
             this.grabber = null;
+            parent.die("Cannot start camera.", new CannotCreateCameraException("Cannot load " + this.toString()));
+            System.exit(-1);
+//            throw new RuntimeException("Cannot start camera.");
+
         }
     }
 
@@ -99,7 +108,7 @@ public class CameraOpenCV extends Camera {
             try {
                 grabber.stop();
                 System.out.println("Stopping grabber (OpencV)");
-               
+
             } catch (Exception e) {
                 System.out.println("Impossible to close " + e);
             }

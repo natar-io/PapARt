@@ -1,7 +1,20 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Part of the PapARt project - https://project.inria.fr/papart/
+ *
+ * Copyright (C) 2017-2018 RealityTech
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation, version 2.1.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package fr.inria.papart.multitouch.detection;
 
@@ -16,24 +29,35 @@ import tech.lity.rea.colorconverter.ColorConverter;
 
 /**
  *
- * @author jiii
+ * @author Jeremy Laviole laviole@rea.lity.tech
  */
 public class ColorReferenceThresholds {
 
     private static final ColorConverter converter = new ColorConverter();
 
+    // TODO: remove (clean)  RGB and HSB values.
     public float brightness, saturation;
     public float hue;
     public float redThreshold, blueThreshold, greenThreshold;
+
+    // this is for the error
     public float LThreshold, AThreshold, BThreshold;
+
+    // this is for the value
     public float averageL, averageA, averageB;
+
+    // This is for the value stored in the file, if the average value changes
+    public float initL, initA, initB;
+
+    // Erosion is to remove
     public int referenceColor, erosion;
     public int id;
 
-    public ColorReferenceThresholds(){
-        
+    public ColorReferenceThresholds() {
+
     }
-    public ColorReferenceThresholds(int id){
+
+    public ColorReferenceThresholds(int id) {
         this.id = id;
     }
 
@@ -67,6 +91,101 @@ public class ColorReferenceThresholds {
     private int blue(int v) {
         return v & 0xFF;
     }
+
+    public void updateReference(int c) {
+        updateReference(c, 30);
+    }
+
+    public void updateReference(int c, float error) {
+
+        float currentError = colorFinderInitLABError(c);
+        // Too much distance
+        if (currentError > error) {
+            return;
+        }
+
+        double[] lab = converter.RGBtoLAB((int) this.red(c), (int) this.green(c), (int) this.blue(c));
+        boolean updated = false;
+//        System.out.println("Updated color: " + this.id + " before: " + this.averageL + " " + this.averageA + " " + this.averageB);
+
+        if (this.averageL - (float) lab[0] > 2f) {
+            this.averageL = (averageL + (float) lab[0]) / 2.0f;
+            updated = true;
+        }
+        if (this.averageA - (float) lab[1] > 2f) {
+            this.averageA = (averageA + (float) lab[1]) / 2.0f;
+            updated = true;
+        }
+
+        if (this.averageB - (float) lab[1] > 2f) {
+            this.averageB = (averageB + (float) lab[2]) / 2.0f;
+            updated = true;
+        }
+//        // Narrow the thresholds
+//        if (this.AThreshold > 3) {
+//            this.AThreshold = this.AThreshold * 0.9f;
+//        }
+//        if (this.LThreshold > 3) {
+//            this.LThreshold = this.LThreshold * 0.9f;
+//        }
+//        if (this.BThreshold > 3) {
+//            this.BThreshold = this.BThreshold * 0.9f;
+//        }
+
+        if (updated) {
+            System.out.println("Updated color: " + this.id + " after: " + this.averageL + " " + this.averageA + " " + this.averageB);
+        }
+//        System.out.println("Updated color: " + this.id);
+    }
+
+    /**
+     * Color distance on the LAB scale. The incomingPix is compared with the
+     * baseline. The method returns true if each channel validates the condition
+     * for the given threshold. Use the error d to match the points.
+     *
+     * @param incomingPix
+     * @return
+     */
+    public float colorFinderLABError(int incomingPix) {
+
+        double[] lab = converter.RGBtoLAB((int) ((incomingPix >> 16) & 0xFF),
+                (int) ((incomingPix >> 8) & 0xFF), (int) (incomingPix & 0xFF));
+
+        double l = constrain(lab[0], 0, 100);
+        double A = constrain(lab[1], -128, 128);
+        double B = constrain(lab[2], -128, 128);
+
+        double d
+                = Math.sqrt(Math.pow(l - averageL, 2)
+                        + Math.pow(A - averageA, 2)
+                        + Math.pow(B - averageB, 2));
+        return (float) d;
+    }
+
+    /**
+     * Color distance on the LAB scale. The incomingPix is compared with the
+     * baseline. The method returns true if each channel validates the condition
+     * for the given threshold. Use the error d to match the points.
+     *
+     * @param incomingPix
+     * @return
+     */
+    public float colorFinderInitLABError(int incomingPix) {
+
+        double[] lab = converter.RGBtoLAB((int) ((incomingPix >> 16) & 0xFF),
+                (int) ((incomingPix >> 8) & 0xFF), (int) (incomingPix & 0xFF));
+
+        double l = constrain(lab[0], 0, 100);
+        double A = constrain(lab[1], -128, 128);
+        double B = constrain(lab[2], -128, 128);
+
+        double d
+                = Math.sqrt(Math.pow(l - initL, 2)
+                        + Math.pow(A - initA, 2)
+                        + Math.pow(B - initB, 2));
+        return (float) d;
+    }
+
     int cacheHsbKey = 0;
     float cacheHsbValue[] = new float[3];
 
@@ -101,7 +220,19 @@ public class ColorReferenceThresholds {
         return (r << 16) | (g << 8) | b;
     }
 
-    public String[] INVALID_COLOR = new String[]{""};
+    public void setReference(int c, float threshold) {
+        double[] lab = converter.RGBtoLAB((int) this.red(c), (int) this.green(c), (int) this.blue(c));
+        averageL = (float) constrain(lab[0], 0.0, 100.0);
+        averageA = (float) constrain(lab[1], -128, 128);
+        averageB = (float) constrain(lab[2], -128, 128);
+
+        LThreshold = threshold;
+        AThreshold = threshold;
+        BThreshold = threshold;
+        setReferenceColor(c);
+    }
+
+    public static String[] INVALID_COLOR = new String[]{""};
 
     public String[] createReference(int[] colorData) {
 
@@ -217,23 +348,14 @@ public class ColorReferenceThresholds {
         stdevB /= colorData.length;
 
         // Check the stdev... when too high the value is not stored.
-        if (stdevHue > 40 || stdevSat > 40 || stdevIntens > 50) {
-            System.out.println("Could not determine color");
+        if (stdevL > 40 || stdevA > 40 || stdevB > 40) {
+//            System.out.println("Could not determine color");
             return INVALID_COLOR;
         }
 
-        // Good dev, make it larger
-        if (stdevHue < 3) {
-            stdevHue = 4;
-        }
-        // Good dev, make it larger
-        if (stdevSat < 5) {
-            stdevSat = 10;
-        }
-        // Good dev, make it larger
-        if (stdevIntens < 5) {
-            stdevIntens = 10;
-        }
+        stdevL += 5;
+        stdevA += 5;
+        stdevB += 5;
 
         String words = "hue:" + Float.toString(stdevHue * 3) + " "
                 + "sat:" + Float.toString(stdevSat * 3) + " "
@@ -296,12 +418,18 @@ public class ColorReferenceThresholds {
             }
             if (pair[0].startsWith("valL")) {
                 this.averageL = Float.parseFloat(pair[1]);
+                this.initL = Float.parseFloat(pair[1]);
             }
             if (pair[0].startsWith("valA")) {
                 this.averageA = Float.parseFloat(pair[1]);
+                this.initA = Float.parseFloat(pair[1]);
             }
             if (pair[0].startsWith("valB")) {
                 this.averageB = Float.parseFloat(pair[1]);
+                this.initB = Float.parseFloat(pair[1]);
+            }
+            if (pair[0].startsWith("id")) {
+                this.id = Integer.parseInt(pair[1]);
             }
         } catch (NumberFormatException nfe) {
             nfe.printStackTrace();
@@ -405,6 +533,10 @@ public class ColorReferenceThresholds {
 
     public void setBThreshold(float BThreshold) {
         this.BThreshold = BThreshold;
+    }
+
+    public float getLABErrorsSum() {
+        return AThreshold + BThreshold + LThreshold;
     }
 
 }

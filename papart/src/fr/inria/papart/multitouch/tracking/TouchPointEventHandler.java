@@ -21,7 +21,7 @@ package fr.inria.papart.multitouch.tracking;
 
 /**
  *
- * @author Jeremy Laviole jeremy.laviole@inria.fr
+ * @author Jeremy Laviole laviole@rea.lity.tech
  */
 public interface TouchPointEventHandler {
 

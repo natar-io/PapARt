@@ -22,6 +22,7 @@ package fr.inria.papart.procam.display;
 import fr.inria.papart.procam.HasCamera;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.PaperScreen;
+import fr.inria.papart.procam.VideoEmitter;
 
 import fr.inria.papart.procam.camera.Camera;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import processing.core.PApplet;
+import processing.core.PConstants;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
@@ -52,7 +54,9 @@ public class BaseDisplay implements HasCamera {
     protected int frameWidth = DEFAULT_SIZE, frameHeight = DEFAULT_SIZE;
     protected int drawingSizeX = DEFAULT_SIZE, drawingSizeY = DEFAULT_SIZE;
     protected float quality = 1;
+    protected float scale = 1;
     protected boolean hasCamera = false;
+    private VideoEmitter videoEmitter = null;
 
     public BaseDisplay() {
         setParent(Papart.getPapart().getApplet());
@@ -60,17 +64,43 @@ public class BaseDisplay implements HasCamera {
 
     public BaseDisplay(PApplet applet) {
         setParent(applet);
-        this.setDrawingSize(applet.width, applet.height);
     }
 
-    public BaseDisplay(PApplet applet, int quality) {
-        setParent(applet);
+    public BaseDisplay(PApplet applet, float quality, float scale) {
+        this(applet);
+        this.scale = scale;
         this.quality = quality;
     }
 
     public void init() {
         initGraphics();
         automaticMode();
+    }
+
+    public void setVideoEmitter(VideoEmitter emitter) {
+        this.videoEmitter = emitter;
+    }
+
+    PImage copy = null;
+
+    public void tryToEmitVideo() {
+//        System.out.println("VideoEmitter: " + videoEmitter);
+        if (videoEmitter != null) {
+//            System.out.println("Try to emit!");
+//            if(copy == null){
+//                copy = parent.createImage(this.graphics.width/2, this.graphics.height/2, PConstants.RGB);
+//            }
+//            copy.copy(this.graphics, 0, 0, this.graphics.width, this.graphics.height, 0, 0, copy.width, copy.height);
+
+// FIX a p5 bug
+            parent.g.width = this.graphics.width;
+            parent.g.height = this.graphics.height;
+
+            videoEmitter.sendImage(parent.g, parent.millis());
+//            System.out.println("emit!");
+        } else {
+//            System.out.println("Cannot emit");
+        }
     }
 
     /**
@@ -108,6 +138,7 @@ public class BaseDisplay implements HasCamera {
      */
     public void pre() {
         this.clear();
+
     }
 
     public void clear() {
@@ -144,7 +175,6 @@ public class BaseDisplay implements HasCamera {
             screenPos = paperScreen.getExtrinsics();
         }
         this.beginDraw();
-        this.graphics.applyMatrix(screenPos);
 
         // Same origin as in DrawOnPaper
         this.graphics.translate(0, paperScreen.getSize().y);
@@ -162,11 +192,14 @@ public class BaseDisplay implements HasCamera {
      * Called in Automatic mode to display the image.
      */
     public void draw() {
+        parent.g.pushMatrix();
         parent.g.background(30, 30, 30);
         drawScreensOver();
         parent.noStroke();
+//        parent.g.scale(scale);
         parent.g.image(this.render(), 0, 0, this.drawingSizeX, this.drawingSizeY);
 
+        parent.g.popMatrix();
 //        pxCopy = getPixelsCopy();
     }
 
@@ -291,7 +324,7 @@ public class BaseDisplay implements HasCamera {
 
     public PVector project(PaperScreen screen, float x, float y) {
         boolean isARDisplay = this instanceof ARDisplay;
-        // check that the correct method is called !
+// check that the correct method is called !
         PVector paperScreenCoord;
         if (isARDisplay) {
             paperScreenCoord = ((ARDisplay) this).projectPointer(screen, x, y);

@@ -46,6 +46,14 @@ public class MarkerSvg implements Cloneable {
         this.matrix = matrix.get();
     }
 
+    public String toString() {
+        return "mid: " + id + " corners: "
+                + corners[0].x + " " + corners[0].y + "\n"
+                + corners[1].x + " " + corners[1].y + "\n"
+                + corners[2].x + " " + corners[2].y + "\n"
+                + corners[3].x + " " + corners[3].y + "\n";
+    }
+
     public Marker copyAsMarker() {
         double[] corners = new double[this.corners.length * 4];
         int k = 0;

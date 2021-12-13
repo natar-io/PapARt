@@ -102,12 +102,15 @@ public class CameraRealSense extends CameraRGBIRDepth {
         if (useHardwareIntrinsics) {
             if (useColor) {
                 useHarwareIntrinsics(colorCamera, grabber);
+                colorCamera.setUndistort(false);
             }
             if (useIR) {
                 useHarwareIntrinsics(IRCamera, grabber);
+                IRCamera.setUndistort(false);
             }
             if (useDepth) {
                 useHarwareIntrinsics(depthCamera, grabber);
+                depthCamera.setUndistort(false);
             }
         }
 
@@ -161,9 +164,9 @@ public class CameraRealSense extends CameraRGBIRDepth {
     @Override
     public void grabIR() {
         IRCamera.updateCurrentImage(grabber.grabIR());
-        if (this.touchInput != null) {
-            touchInput.update();
-        }
+//        if (this.touchInput != null) {
+//            touchInput.update();
+//        }
     }
 
     @Override
@@ -285,7 +288,7 @@ public class CameraRealSense extends CameraRGBIRDepth {
         float cy = fb.get(3);
         float fx = fb.get(4);
         float fy = fb.get(5);
-        
+
         float a = fb.get(7);
         float b = fb.get(8);
         float c = fb.get(9);
@@ -305,5 +308,5 @@ public class CameraRealSense extends CameraRGBIRDepth {
 //0.1214191      11
         camera.setCalibration(fx, fy, cx, cy, a, b, c, d, e);
     }
-    
+
 }

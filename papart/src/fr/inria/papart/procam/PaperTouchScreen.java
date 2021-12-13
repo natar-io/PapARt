@@ -19,7 +19,6 @@
  */
 package fr.inria.papart.procam;
 
-import fr.inria.papart.utils.ARToolkitPlusUtils;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.display.BaseDisplay;
 import fr.inria.papart.multitouch.TouchInput;
@@ -27,15 +26,18 @@ import fr.inria.papart.multitouch.Touch;
 import fr.inria.papart.multitouch.DepthTouchInput;
 import fr.inria.papart.multitouch.TUIOTouchInput;
 import fr.inria.papart.multitouch.TouchList;
+import fr.inria.papart.multitouch.detection.ColorTracker;
+import fr.inria.papart.multitouch.detection.TouchDetection;
+import fr.inria.papart.multitouch.detection.TouchDetectionDepth;
 import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
 import fr.inria.papart.multitouch.tracking.TrackedElement;
-import fr.inria.papart.utils.MathUtils;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import processing.core.PApplet;
-import processing.core.PImage;
 import processing.core.PVector;
 
+/**
+ *
+ * @author Jeremy Laviole
+ */
 public class PaperTouchScreen extends PaperScreen {
 
     protected TouchList touchList = new TouchList();
@@ -84,11 +86,11 @@ public class PaperTouchScreen extends PaperScreen {
     public void pre() {
         super.pre();
 
-        if (this.touchInput == null && Papart.getPapart().isTouchInitialized()) {
+        if (this.touchInput == null) {
             this.touchInput = Papart.getPapart().getTouchInput();
         }
         if (this.touchInput != null) {
-            updateTouch();
+//            updateTouch();
         }
     }
 
@@ -113,7 +115,7 @@ public class PaperTouchScreen extends PaperScreen {
     public void setLocation(float x, float y, float z) {
         super.setLocation(x, y, z);
         this.computeWorldToScreenMat(cameraTracking);
-        updateTouch();
+//        updateTouch();
     }
 
     private PVector touchOffset = new PVector();
@@ -145,10 +147,22 @@ public class PaperTouchScreen extends PaperScreen {
         this.touchOffset.set(touchOffset);
     }
 
-    /**
-     * Update the touch locations. Call this after setTouchOffset.
-     */
+    public TouchList getTouchListFrom(TouchDetection touchDetection) {
+//          touchList.invertY(drawingSize);
+        return touchInput.projectTouch(this, mainDisplay, touchDetection).invertY(drawingSize);
+    }
+
+    @Deprecated
     public void updateTouch() {
+        updateTouch(false);
+    }
+
+    /**
+     * Update touch location, filtering the tracked touchpoints.
+     *
+     * @param filter
+     */
+    public void updateTouch(boolean filter) {
         if (!(touchInput instanceof TUIOTouchInput)) {
             if (!this.isDrawing()) {
                 return;
@@ -162,13 +176,21 @@ public class PaperTouchScreen extends PaperScreen {
         // Warning TODO: Hack.. V_V 
         // Touch in 2D  mode has boundaries. 
         // Touch in 3D mode has no boundaries. 
-        touchInput.computeOutsiders(!this.isDraw2D());
+        touchInput.projectOutsiders(!this.isDraw2D());
 
         if (touchInput instanceof TUIOTouchInput) {
-            touchInput.computeOutsiders(true);
+            touchInput.projectOutsiders(true);
         }
 
         touchList = touchInput.projectTouchToScreen(this, getDisplay());
+
+        if (filter) {
+            for (Touch t : touchList) {
+                if (t.touchPoint != null) {
+                    t.touchPoint.filter(parent.millis());
+                }
+            }
+        }
         touchList.sortAlongYAxis();
 
         touchList.addOffset(touchOffset);
@@ -183,12 +205,21 @@ public class PaperTouchScreen extends PaperScreen {
 
     }
 
+    public Touch projectTouch(TrackedDepthPoint te) {
+        return touchInput.projectTouch(this, getDisplay(), te);
+    }
+
+    public Touch projectTouch(TrackedElement te) {
+        return touchInput.projectTouch(this, getDisplay(), te);
+    }
+
     static private final int DEFAULT_TOUCH_SIZE = 15;
 
     /**
      * Draw the touch points, good for debug.
      */
-    protected void drawTouch() {
+    @Deprecated
+    public void drawTouch() {
         drawTouch(DEFAULT_TOUCH_SIZE);
     }
 
@@ -197,55 +228,21 @@ public class PaperTouchScreen extends PaperScreen {
      *
      * @param ellipseSize size of the points.
      */
-    protected void drawTouch(int ellipseSize) {
+    @Deprecated
+    public void drawTouch(int ellipseSize) {
         for (Touch t : touchList) {
             if (t.is3D) {
                 // fill(185, 142, 62);
             } else {
-            
+
                 if (t.trackedSource != null && t.trackedSource.mainFinger) {
-                       fill(58, 190, 52);
-                    ellipse(t.position.x, t.position.y, ellipseSize*1.5f, ellipseSize*1.5f);
+                    fill(58, 190, 52);
+                    ellipse(t.position.x, t.position.y, ellipseSize * 1.5f, ellipseSize * 1.5f);
                 } else {
-                        fill(58, 71, 198);
+                    fill(58, 71, 198);
                     ellipse(t.position.x, t.position.y, ellipseSize, ellipseSize);
                 }
             }
-        }
-    }
-
-    /**
-     * Draw the touch, all the touch founds.
-     *
-     * @param ellipseSize
-     */
-    protected void drawFullTouch(int ellipseSize) {
-        for (Touch t : touchList) {
-            if (t.is3D) {
-                fill(185, 142, 62);
-            } else {
-                fill(58, 71, 198);
-            }
-            ellipse(t.pposition.x, t.pposition.y, ellipseSize / 2, ellipseSize / 2);
-            pushMatrix();
-            translate(t.position.x, t.position.y);
-            ellipse(0, 0, ellipseSize, ellipseSize);
-            line(0, 0, t.speed.x * 4, t.speed.y * 4);
-            popMatrix();
-        }
-    }
-
-    /**
-     * Draw the touch, with previous locations.
-     */
-    protected void drawTouchSpeed() {
-        for (Touch t : touchList) {
-            if (t.is3D) {
-                fill(185, 142, 62);
-            } else {
-                fill(58, 71, 198);
-            }
-            ellipse(t.position.x, t.position.y, t.speed.x * 3, t.speed.y * 3);
         }
     }
 
@@ -255,6 +252,7 @@ public class PaperTouchScreen extends PaperScreen {
      *
      * @return list of Touch objects.
      */
+    @Deprecated
     public TouchList getTouchList() {
         return touchList;
     }
@@ -266,6 +264,7 @@ public class PaperTouchScreen extends PaperScreen {
      *
      * @return
      */
+    @Deprecated
     public TouchInput getTouchInput() {
         return touchInput;
     }

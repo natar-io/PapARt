@@ -19,9 +19,6 @@
  */
 package fr.inria.papart.calibration;
 
-import fr.inria.papart.calibration.ExtrinsicSnapshot;
-import fr.inria.papart.calibration.HomographyCreator;
-import fr.inria.papart.calibration.Utils;
 import fr.inria.papart.calibration.files.HomographyCalibration;
 import fr.inria.papart.calibration.files.PlaneAndProjectionCalibration;
 import fr.inria.papart.calibration.files.PlaneCalibration;
@@ -29,6 +26,7 @@ import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.multitouch.DepthTouchInput;
 import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.camera.Camera;
+import fr.inria.papart.procam.display.ProjectorDisplay;
 import java.util.ArrayList;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
@@ -38,7 +36,7 @@ import toxi.geom.Vec3D;
 
 /**
  *
- * @author Jérémy Laviole - jeremy.laviole@inria.fr
+ * @author Jérémy Laviole - laviole@rea.lity.tech
  */
 public class ExtrinsicCalibrator {
 
@@ -48,6 +46,7 @@ public class ExtrinsicCalibrator {
     private static final float OPEN_KINECT_Z_OFFSET = -25f;
     private static final float REALSENSE_Z_OFFSET = -15f;
     // Cameras
+    private ProjectorDisplay projector;
     private final PMatrix3D kinectCameraExtrinsics = new PMatrix3D();
     private final Papart papart;
 
@@ -59,6 +58,9 @@ public class ExtrinsicCalibrator {
         papart = Papart.getPapart();
     }
 
+    public void setProjector(ProjectorDisplay projector) {
+        this.projector = projector;
+    }
 
     public void setDefaultDepthCamera() {
         this.depthCameraDevice = papart.getDepthCameraDevice();
@@ -72,13 +74,97 @@ public class ExtrinsicCalibrator {
         return this.kinectCameraExtrinsics;
     }
 
+    public PMatrix3D computeProjectorCameraExtrinsics(ArrayList<ExtrinsicSnapshot> snapshots) {
+        PMatrix3D sum = new PMatrix3D(0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0);
+        PMatrix3D sum2 = new PMatrix3D(0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0);
+
+        for (ExtrinsicSnapshot snapshot : snapshots) {
+            PMatrix3D extr = computeExtrinsics(snapshot.mainCameraPaper,
+                    snapshot.projectorPaper);
+
+//            System.out.println("Extrinsics: ");
+//            extr.print();
+            Utils.addMatrices(sum, extr);
+        }
+        Utils.multMatrix(sum, 1f / (float) snapshots.size());
+
+        System.out.println("Extrinsics average: ");
+        sum.print();
+        PVector sumPos = Utils.posFromMatrix(sum);
+
+        // Second pass - remove the outliers  (distant from X mm)
+        int k = 0;
+        for (ExtrinsicSnapshot snapshot : snapshots) {
+            PMatrix3D extr = computeExtrinsics(snapshot.mainCameraPaper,
+                    snapshot.projectorPaper);
+
+            float dist = Utils.posFromMatrix(extr).dist(sumPos);
+            if (dist < 10f) { // 2 cm !
+                Utils.addMatrices(sum2, extr);
+                k++;
+                System.out.println("Extrinsics TAKEN: ");
+                extr.print();
+            }
+        }
+        Utils.multMatrix(sum2, 1f / (float) k);
+
+        sum.print();
+        sum2.print();
+
+        if (k == 0) {
+            saveProCamExtrinsics(sum);
+        } else {
+            saveProCamExtrinsics(sum2);
+        }
+        return sum2;
+    }
+
+    public void saveProCamExtrinsics(PMatrix3D extr) {
+        papart.saveCalibration(Papart.cameraProjExtrinsics, extr);
+        projector.setExtrinsics(extr);
+    }
+
     public void calibrateKinect(ArrayList<ExtrinsicSnapshot> snapshots, boolean useExternal) {
         if (depthCameraDevice == null) {
             return;
         }
         if (useExternal) {
             calibrateDepthAndExternalCam(snapshots);
+        } else {
+            calibrateProjectorDepthCam(snapshots);
         }
+    }
+
+    protected void calibrateProjectorDepthCam(ArrayList<ExtrinsicSnapshot> snapshots) {
+        PMatrix3D kinectExtr = depthCameraDevice.getStereoCalibration().get();
+        kinectExtr.invert();
+
+        PlaneCalibration planeCalibCam = computeAveragePlaneCam(snapshots);
+        planeCalibCam.flipNormal();
+
+        // identity - no external camera for ProCam calibration
+        PMatrix3D kinectCameraExtrinsics = new PMatrix3D();
+        // Depth -> Color calibration.
+        kinectCameraExtrinsics.set(kinectExtr);
+
+        HomographyCalibration homography = ExtrinsicCalibrator.computeScreenPaperIntersection(projector, planeCalibCam, kinectCameraExtrinsics);
+
+        if (homography == HomographyCalibration.INVALID) {
+            System.err.println("No intersection");
+            return;
+        }
+
+        // TODO: not sure here... ?
+        movePlaneAlongOffset(planeCalibCam);
+
+        saveKinectPlaneCalibration(planeCalibCam, homography);
+        saveKinectCameraExtrinsics(kinectCameraExtrinsics);
     }
 
     private void movePlaneAlongOffset(PlaneCalibration planeCalib) {
@@ -95,6 +181,7 @@ public class ExtrinsicCalibrator {
 
     protected void calibrateDepthAndExternalCam(ArrayList<ExtrinsicSnapshot> snapshots) {
         calibrateDepthToExternalExtr(snapshots);
+        calibrateDepthCamPlane(snapshots);
     }
 
     protected void calibrateDepthToExternalExtr(ArrayList<ExtrinsicSnapshot> snapshots) {
@@ -112,6 +199,66 @@ public class ExtrinsicCalibrator {
 
         this.kinectCameraExtrinsics.set(kinectCameraExtr);
         saveKinectCameraExtrinsics(kinectCameraExtr);
+    }
+
+    public boolean calibrateDepthCamPlane(ArrayList<ExtrinsicSnapshot> snapshots) {
+        // Depth -> color  extrinsics
+        PMatrix3D kinectExtr = depthCameraDevice.getStereoCalibration().get();
+
+        // color -> depth  extrinsics
+        kinectExtr.invert();
+
+        PlaneCalibration planeCalibCam = computeAveragePlaneCam(snapshots);
+        PlaneCalibration planeCalibKinect = computeAveragePlaneKinect(snapshots, kinectExtr);
+        planeCalibCam.flipNormal();
+
+        // Tracking --> depth
+        PMatrix3D kinectCameraExtr = papart.loadCalibration(Papart.kinectTrackingCalib);
+
+        HomographyCalibration homography = ExtrinsicCalibrator.computeScreenPaperIntersection(projector,
+                planeCalibCam,
+                kinectCameraExtr);
+        if (homography == HomographyCalibration.INVALID) {
+            System.err.println("No intersection");
+            return false;
+        }
+
+        // move the plane up a little.
+        planeCalibKinect.flipNormal();
+        movePlaneAlongOffset(planeCalibKinect);
+
+        saveKinectPlaneCalibration(planeCalibKinect, homography);
+        return true;
+    }
+
+    public boolean calibrateDepthCamPlaneOnly(ArrayList<ExtrinsicSnapshot> snapshots) {
+        // Depth -> color  extrinsics
+        PMatrix3D kinectExtr = depthCameraDevice.getStereoCalibration().get();
+
+        // color -> depth  extrinsics
+        kinectExtr.invert();
+
+        PlaneCalibration planeCalibCam = computeAveragePlaneCam(snapshots);
+        PlaneCalibration planeCalibKinect = computeAveragePlaneKinect(snapshots, kinectExtr);
+        planeCalibCam.flipNormal();
+
+        // Tracking --> depth
+        PMatrix3D kinectCameraExtr = papart.loadCalibration(Papart.kinectTrackingCalib);
+
+        HomographyCalibration homography = ExtrinsicCalibrator.computeScreenPaperIntersection(projector,
+                planeCalibCam,
+                kinectCameraExtr);
+        if (homography == HomographyCalibration.INVALID) {
+            System.err.println("No intersection");
+            return false;
+        }
+
+        // move the plane up a little.
+        planeCalibKinect.flipNormal();
+        movePlaneAlongOffset(planeCalibKinect);
+
+        saveKinectPlaneCalibration(planeCalibKinect, homography);
+        return true;
     }
 
     private PMatrix3D computeKinectCamExtrinsics(ArrayList<ExtrinsicSnapshot> snapshots, PMatrix3D stereoExtr) {
@@ -226,6 +373,40 @@ public class ExtrinsicCalibrator {
         return extr;
     }
 
-  
+    /**
+     * Computes the intersection of the corners of the projector viewed by a
+     * camera
+     *
+     * @param projector
+     * @param planeCalibCam
+     * @param kinectCameraExtrinsics
+     * @return
+     */
+    public static HomographyCalibration computeScreenPaperIntersection(ProjectorDisplay projector, PlaneCalibration planeCalibCam, PMatrix3D kinectCameraExtrinsics) {
+        // generate coordinates...
+        float step = 0.5f;
+        int nbPoints = (int) ((1 + 1.0F / step) * (1 + 1.0F / step));
+        HomographyCreator homographyCreator = new HomographyCreator(3, 2, nbPoints);
+
+        // Creates 3D points on the corner of the screen
+        for (float i = 0; i <= 1.0; i += step) {
+            for (float j = 0; j <= 1.0; j += step) {
+                PVector screenPoint = new PVector(i, j);
+                PVector kinectPoint = new PVector();
+
+                PVector inter = projector.getProjectedPointOnPlane(planeCalibCam, i, j);
+
+                if (inter == null) {
+                    return HomographyCalibration.INVALID;
+                }
+
+                // get the point from the Kinect's point of view. 
+                kinectCameraExtrinsics.mult(inter, kinectPoint);
+
+                homographyCreator.addPoint(kinectPoint, screenPoint);
+            }
+        }
+        return homographyCreator.getHomography();
+    }
 
 }

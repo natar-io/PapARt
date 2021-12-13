@@ -37,6 +37,7 @@ import org.bytedeco.javacpp.opencv_core.IplImage;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Observable;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -48,7 +49,7 @@ import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 
-public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
+public abstract class Camera extends Observable implements PConstants, HasExtrinsics, WithSize {
 
     public static Camera INVALID_CAMERA = new CameraOpenCV(-1);
 
@@ -64,7 +65,7 @@ public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
     private boolean hasExtrinsics = false;
 
     public enum Type {
-        OPENCV, FFMPEG, PROCESSING, REALSENSE, OPEN_KINECT, OPEN_KINECT_2, 
+        OPENCV, FFMPEG, PROCESSING, REALSENSE, OPEN_KINECT, OPEN_KINECT_2,
         FLY_CAPTURE, OPENNI2, NECTAR,
         FAKE
     }
@@ -92,7 +93,6 @@ public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
                 || pixelFormat == PixelFormat.RGBA;
     }
 
-    
     protected PixelFormat format;
 
     // Parameters
@@ -134,8 +134,14 @@ public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
 
     /// TESTING 
     public TouchInput touchInput;
+
     public void setTouchInput(TouchInput touchInput) {
         this.touchInput = touchInput;
+    }
+    
+    protected String captureFormat = null;
+    public void setCaptureFormat(String format){
+        this.captureFormat = format;
     }
 
     /**
@@ -158,7 +164,7 @@ public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
 
     @Override
     public String toString() {
-        return "Camera, res " + width() + "x" + height() + " calibration " + this.calibrationFile;
+        return "Camera " + cameraDescription + ","+ systemNumber + " + res " + width() + "x" + height() + " calibration " + this.calibrationFile;
     }
 
     public PImage getImage() {
@@ -206,9 +212,8 @@ public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
         pdp = ProjectiveDeviceP.createSimpleDevice(fx, fy, cx, cy, w, h);
         updateCalibration();
     }
-    
-       
-    public void setCalibration(float fx, float fy, float cx, float cy, 
+
+    public void setCalibration(float fx, float fy, float cx, float cy,
             float d1, float d2, float d3, float d4, float d5) {
         this.calibrationFile = "manual calibration";
         pdp = ProjectiveDeviceP.createDevice(fx, fy, cx, cy, width(), height(), d1, d2, d3, d4, d5);
@@ -218,7 +223,12 @@ public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
     public void setCalibration(String fileName) {
         try {
             this.calibrationFile = fileName;
-            pdp = ProjectiveDeviceP.loadCameraDevice(parent, fileName);
+            if (parent == null) {
+                pdp = ProjectiveDeviceP.loadCameraDevice(fileName);
+            } else {
+                pdp = ProjectiveDeviceP.loadCameraDevice(parent, fileName);
+            }
+
             updateCalibration();
         } catch (Exception e) {
             e.printStackTrace();
@@ -280,10 +290,10 @@ public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
         applet.registerMethod("dispose", this);
     }
 
-    public void dispose(){
+    public void dispose() {
         close();
     }
-    
+
     public void setSystemNumber(int systemNumber) {
         this.systemNumber = systemNumber;
     }
@@ -343,8 +353,8 @@ public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
      *
      * @param sheet
      */
-    public void trackMarkerBoard(MarkerBoard sheet) {
-        sheet.addTracker(parent, this);
+    public void track(MarkerBoard sheet) {
+        sheet.addTracker(parent, checkActingCamera(this));
         try {
             getSheetSemaphore().acquire();
             this.sheets.add(sheet);
@@ -355,7 +365,16 @@ public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
         } catch (NullPointerException e) {
             throw new RuntimeException("Marker detection not initialized. " + e);
         }
+    }
 
+    /**
+     * Add a markerboard to track with this camera.
+     *
+     * @param sheet
+     */
+    @Deprecated
+    public void trackMarkerBoard(MarkerBoard sheet) {
+        track(sheet);
     }
 
     /**
@@ -415,6 +434,7 @@ public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
     public int getTimeStamp() {
         return timeStamp;
     }
+
     /**
      * Update the current Image, from the specific grabber, lens distorsions are
      * handled here.
@@ -422,9 +442,11 @@ public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
      * @param img
      */
     protected void updateCurrentImage(IplImage img) {
-        
-        this.timeStamp = parent.millis();
-        
+
+        if (parent != null) {
+            this.timeStamp = parent.millis();
+        }
+
         if (undistort) {
             if (pdp == null || !pdp.handleDistorsions()) {
                 System.err.println("I cannot distort the image for processing. The "
@@ -474,6 +496,38 @@ public abstract class Camera implements PConstants, HasExtrinsics, WithSize {
 
     public ProjectiveDeviceP getProjectiveDevice() {
         return this.pdp;
+    }
+
+    /**
+     * Enable or disable auto white balance, depends on camera driver for
+     * availability.
+     *
+     * @param v
+     */
+    public void setAutoWhiteBalance(boolean v) {
+    }
+
+    /**
+     * Enable or disable auto exposure, depends on camera driver for
+     * availability.
+     *
+     * @param v
+     */
+    public void setAutoExposure(boolean v) {
+    }
+
+    /**
+     * Get info about auto exposure, depends on camera driver for availability.
+     */
+    public boolean isAutoExposure() {
+        return true;
+    }
+
+    /**
+     * Get info about white balance, depends on camera driver for availability.
+     */
+    public boolean isAutoWhiteBalance() {
+        return true;
     }
 
     public abstract void close();

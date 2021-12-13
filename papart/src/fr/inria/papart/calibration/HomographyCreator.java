@@ -30,7 +30,7 @@ import toxi.geom.Matrix4x4;
 
 /**
  *
- * @author Jeremy Laviole jeremy.laviole@inria.fr
+ * @author Jeremy Laviole laviole@rea.lity.tech
  */
 public class HomographyCreator {
 

@@ -82,7 +82,7 @@ public class SubCamera extends Camera {
             System.err.println("Camera: Error Thread already launched");
         }
     }
-
+    
     @Override
     public PImage getPImage() {
         // TODO: time management to avoid to send multiple times the same 

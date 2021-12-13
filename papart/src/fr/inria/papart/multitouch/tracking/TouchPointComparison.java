@@ -20,13 +20,13 @@
 package fr.inria.papart.multitouch.tracking;
 
 import fr.inria.papart.multitouch.tracking.TrackedDepthPoint;
-import fr.inria.papart.multitouch.tracking.TrackedElement;
+import fr.inria.papart.multitouch.tracking.Trackable;
 
 /**
  *
  * @author jeremy Laviole - laviole@rea.lity.tech
  */
-public class TouchPointComparison<T extends TrackedElement> implements Comparable<TouchPointComparison<T>> {
+public class TouchPointComparison<T extends Trackable> implements Comparable<TouchPointComparison<T>> {
 
     T oldTp;
     T newTp;
@@ -37,14 +37,7 @@ public class TouchPointComparison<T extends TrackedElement> implements Comparabl
         this.oldTp = oldTp;
         this.newTp = newTp;
 
-        if (oldTp instanceof TrackedDepthPoint) {
-            distance = ((TrackedDepthPoint) oldTp).distanceTo((TrackedDepthPoint) newTp);
-            // Common elements method not used. -> problematic results of jittering.
-//            commonElements = TrackedDepthPoint.numberOfCommonElements((TrackedDepthPoint) oldTp,
-//                    (TrackedDepthPoint) newTp);
-        } else {
-            distance = oldTp.distanceTo(newTp);
-        }
+        distance = oldTp.distanceTo(newTp);
     }
 
     public T getOld() {
@@ -64,9 +57,9 @@ public class TouchPointComparison<T extends TrackedElement> implements Comparabl
 //        int haveCommons = Integer.compare(commonElements, tpt.commonElements);
 //        if(haveCommons == 0 ){  // same number in common, or none.
 //            // use the distance
-               return Float.compare(distance, tpt.distance);
+        return Float.compare(distance, tpt.distance);
 //        } 
-    
+
 //        return haveCommons;
     }
 

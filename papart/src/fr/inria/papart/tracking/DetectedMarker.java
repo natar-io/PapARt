@@ -50,6 +50,19 @@ public class DetectedMarker implements Cloneable {
         return id;
     }
 
+    @Override
+    public String toString() {
+        return "Marker id: " + id + " corners: "
+                + corners[0] + " "
+                + corners[1] + " "
+                + corners[2] + " "
+                + corners[3] + " "
+                + corners[4] + " "
+                + corners[5] + " "
+                + corners[6] + " "
+                + corners[7];
+    }
+
     public Marker copyAsMarker() {
         return new org.bytedeco.javacv.Marker(id, corners, confidence);
     }
@@ -249,7 +262,7 @@ public class DetectedMarker implements Cloneable {
         ArrayList<PVector> objectPoints = new ArrayList<PVector>();
         ArrayList<PVector> imagePoints = new ArrayList<PVector>();
         int k = 0;
-
+        
         for (DetectedMarker detected : detectedMarkers) {
             if (markersFromSVG.containsKey(detected.id)) {
 
@@ -265,7 +278,6 @@ public class DetectedMarker implements Cloneable {
 //                PVector image = new PVector((float) im[0], (float) im[1]);
 //                objectPoints.add(object);
 //                imagePoints.add(image);
-
                 ////// Corners 
                 PVector[] object = markersFromSVG.get(detected.id).getCorners();
                 PVector[] image = detected.getCorners();
@@ -288,7 +300,14 @@ public class DetectedMarker implements Cloneable {
         imageArray = imagePoints.toArray(imageArray);
 
         ProjectiveDeviceP pdp = camera.getProjectiveDevice();
-        return pdp.estimateOrientation(objectArray, imageArray);
+        
+//        System.out.println("Pose estimation: " + pdp.toString());
+//        System.out.println("Object/image: ");
+//        for(int i = 0; i < k; i++)
+//        {
+//            System.out.println(objectArray[i] + " " + imageArray[i]);
+//        }
+            return pdp.estimateOrientation(objectArray, imageArray);
 //        return pdp.estimateOrientationRansac(objectArray, imageArray);
     }
 

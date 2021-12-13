@@ -27,7 +27,7 @@ import processing.data.XML;
 
 /**
  *
- * @author Jeremy Laviole jeremy.laviole@inria.fr
+ * @author Jeremy Laviole laviole@rea.lity.tech
  */
 public class CameraConfiguration  extends Calibration {
     
@@ -35,11 +35,13 @@ public class CameraConfiguration  extends Calibration {
     static final String CAMERA_ID_XML_NAME = "CameraID";
     static final String CAMERA_NAME_XML_NAME = "CameraName";
     static final String CAMERA_FORMAT_XML_NAME = "CameraFormat";
+    static final String CAMERA_CAPTURE_FORMAT_XML_NAME = "CaptureFormat";
     static final String CAMERA_TYPE_XML_NAME = "CameraType";
 
     private String cameraName = "";
     private String cameraFormat = "";
     private Camera.Type cameraType = Camera.Type.OPENCV;
+    private String captureFormat = "";
 
     @Override
     public boolean isValid() {
@@ -75,6 +77,7 @@ public class CameraConfiguration  extends Calibration {
     private void loadCameraFrom(XML cameraNode) {
         this.cameraName = cameraNode.getString(CAMERA_NAME_XML_NAME);
         this.cameraFormat = cameraNode.getString(CAMERA_FORMAT_XML_NAME);
+        this.captureFormat = cameraNode.getString(CAMERA_CAPTURE_FORMAT_XML_NAME);
         this.cameraType = Camera.Type.valueOf(cameraNode.getString(CAMERA_TYPE_XML_NAME));
     }
 
@@ -82,6 +85,7 @@ public class CameraConfiguration  extends Calibration {
         XML cameraNode = new XML(CAMERA_XML_NAME);
         cameraNode.setString(CAMERA_NAME_XML_NAME, cameraName);
         cameraNode.setString(CAMERA_FORMAT_XML_NAME, cameraFormat);
+        cameraNode.setString(CAMERA_CAPTURE_FORMAT_XML_NAME, captureFormat);
         String type = this.cameraType.name();
         cameraNode.setString(CAMERA_TYPE_XML_NAME, type);
 
@@ -98,6 +102,9 @@ public class CameraConfiguration  extends Calibration {
 
     public String getCameraFormat() {
         return cameraFormat;
+    }
+    public String getCaptureFormat() {
+        return captureFormat;
     }
 
     public void setCameraFormat(String cameraFormat) {

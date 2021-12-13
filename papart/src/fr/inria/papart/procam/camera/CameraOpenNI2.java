@@ -23,6 +23,9 @@ import org.bytedeco.javacv.FrameGrabber;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.time.Instant;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.opencv_core;
@@ -59,7 +62,6 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
 
             colorStream.setMirroringEnabled(false);
             colorCamera.setUndistort(false);
-
             colorStream.start();
         }
 
@@ -87,21 +89,6 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
             depthCamera.setUndistort(false);
             depthStream.start();
         }
-
-//        grabber.start();
-//
-//        // Override the calibration... 
-//        if (useHardwareIntrinsics) {
-//            if (useColor) {
-//                useHarwareIntrinsics(colorCamera, grabber);
-//            }
-//            if (useIR) {
-//                useHarwareIntrinsics(IRCamera, grabber);
-//            }
-//            if (useDepth) {
-//                useHarwareIntrinsics(depthCamera, grabber);
-//            }
-//        }
     }
 
     private VideoStream initStream(PixelFormat format1,
@@ -155,12 +142,62 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
         }
     }
 
+    /**
+     * *
+     * The thread does not start, each sub camera has its own native thread.
+     */
+    @Override
+    public void setThread() {
+        if (thread == null) {
+            thread = new CameraThread(this);
+            thread.setCompute(trackSheets);
+        } else {
+            System.err.println("Camera: Error Thread already launched");
+        }
+    }
+
     @Override
     public void grabIR() {
+        try {
+//            System.out.println("Sleeping color cam");
+//            Thread.sleep((long) ((1.0f / (float) colorCamera.frameRate) * 1000f));
+            Thread.sleep((long) ((1.0f / (float) colorCamera.frameRate) * 800f));
+//            System.out.println("awake color cam");
+        } catch (InterruptedException ex) {
+            Logger.getLogger(CameraOpenNI2.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override
     public void grabDepth() {
+        try {
+//            System.out.println("Sleeping color cam");
+//            Thread.sleep((long) ((1.0f / (float) colorCamera.frameRate) * 1000f));
+            Thread.sleep((long) ((1.0f / (float) colorCamera.frameRate) * 2f));
+//          System.out.println("awake color cam");
+        } catch (InterruptedException ex) {
+            Logger.getLogger(CameraOpenNI2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    // WARNING, in thread  it does not wait for a new image ?
+    @Override
+    public void grabColor() {
+        try {
+         //   System.out.println("Sleeping color cam");
+            Thread.sleep((long) ((1.0f / (float) colorCamera.frameRate) * 2f));
+//            Thread.sleep((long) ((1.0f / (float) colorCamera.frameRate) * 5000f));
+//            System.out.println("awake color cam");
+        } catch (InterruptedException ex) {
+            Logger.getLogger(CameraOpenNI2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+// Try to wait for a new timestamp ?
+//        this.getTimeStamp();
+    }
+
+    // Similar to grabDepth, as grabDepth is disable here
+    private void updateDepth() {
         if (getActingCamera() == IRCamera) {
             ((WithTouchInput) depthCamera).newTouchImageWithColor(IRCamera.currentImage);
             return;
@@ -172,19 +209,15 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
         ((WithTouchInput) depthCamera).newTouchImage();
     }
 
-    // WARNING, in thread  it does not wait for a new image ?
-    @Override
-    public void grabColor() {
-        try {
-//            System.out.println("Sleeping color cam");
-            Thread.sleep((long) ((1.0f / (float) colorCamera.frameRate) * 1000f));
-//            Thread.sleep((long) ((1.0f / (float) colorCamera.frameRate) * 5000f));
-//            System.out.println("awake color cam");
-        } catch (InterruptedException ex) {
+    // Similar to grabDepth, as grabDepth is disable here
+    private void updateColor() {
+        if (thread != null) {
+            if (!colorCamera.getTrackedSheets().isEmpty()) {
+//                System.out.println("Tracking... " + colorCamera.getTrackedSheets().get(0));
+                thread.setImage(colorCamera.currentImage);
+                thread.compute();
+            }
         }
-
-// Try to wait for a new timestamp ?
-        this.getTimeStamp();
     }
 
     @Override
@@ -235,68 +268,12 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
         java.util.List<DeviceInfo> devicesInfo = OpenNI.enumerateDevices();
         if (devicesInfo.isEmpty()) {
             JOptionPane.showMessageDialog(null, "No device is connected", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
+            System.exit(-1);
         }
         uri = devicesInfo.get(this.systemNumber).getUri();
-//        System.out.println("OpenNI URI: " + uri.toString());
-
         device = Device.open(uri);
-//        mDeviceSensors = new ArrayList<SensorType>();
-//
-//        if (device.getSensorInfo(SensorType.COLOR) != null) {
-//            mDeviceSensors.add(SensorType.COLOR);
-//            System.out.println("Sensor can do color.");
-//        }
-//
-//        if (device.getSensorInfo(SensorType.DEPTH) != null) {
-//            mDeviceSensors.add(SensorType.DEPTH);
-//            System.out.println("Sensor can do depth.");
-//        }
-//
-//        if (device.getSensorInfo(SensorType.IR) != null) {
-//            mDeviceSensors.add(SensorType.IR);
-//            System.out.println("Sensor can do ir.");
-//        }
-
-//        if (mVideoStream != null) {
-//            mVideoStream.stop();
-//            setStream(null);
-//            mVideoStream.destroy();
-//            mVideoStream = null;
-//        }
-//        VideoFrameRef readFrame = mVideoStream.readFrame();
-//        SensorType type = mDeviceSensors.get(0);
-//        mVideoStream = VideoStream.create(device, type);
-//        java.util.List<VideoMode> supportedModes = mVideoStream.getSensorInfo().getSupportedVideoModes();
-//        mSupportedModes = new ArrayList<VideoMode>();
-//        // now only keeo the ones that our application supports
-//        for (VideoMode mode : supportedModes) {
-//            switch (mode.getPixelFormat()) {
-//                case DEPTH_1_MM:
-//                case DEPTH_100_UM:
-//                case SHIFT_9_2:
-//                case SHIFT_9_3:
-//                case RGB888:
-//                case GRAY8:
-//                case GRAY16:
-//                    mSupportedModes.add(mode);
-//                    break;
-//            }
-//        }
-        // now only keep the ones that our application supports
     }
 
-    int mMaxGray16Value;
-
-    private void calcMaxGray16Value(ByteBuffer gray16Buffer) {
-        while (gray16Buffer.remaining() > 0) {
-            int pixel = (int) gray16Buffer.getShort() & 0xFFFF;
-            if (pixel > mMaxGray16Value) {
-                mMaxGray16Value = pixel;
-            }
-        }
-        gray16Buffer.rewind();
-    }
 
     class FrameListener implements VideoStream.NewFrameListener {
 
@@ -315,12 +292,13 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
 
         @Override
         public synchronized void onFrameReady(VideoStream stream) {
+            Instant initUpdate = Instant.now();
+
 //            if (this.camera == colorCamera) {
 //                System.out.println("Getting a color frame.");
 //            } else {
 //                System.out.println("Getting another frame.");
 //            }
-
             if (lastFrame != null) {
                 lastFrame.release();
                 lastFrame = null;
@@ -355,12 +333,13 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
                 rawVideoImage.getByteBuffer().put(frameDataBytes, 0, frameSize);
 //                opencv_imgproc.cvCvtColor(rawVideoImage, rawVideoImage, COLOR_RGB2BGR);
 //                opencv_imgproc.cvCvtColor(rawVideoImage, rawVideoImageGray, COLOR_BGR2GRAY);
-
                 camera.updateCurrentImage(rawVideoImage);
+                updateColor();
 //                camera.updateCurrentImage(rawVideoImageGray);
             }
 
             if (camera.getPixelFormat() == PixelFormat.OPENNI_2_DEPTH) {
+
                 int iplDepth = IPL_DEPTH_8U;
                 int channels = 2;
 
@@ -373,29 +352,42 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
                 }
                 rawVideoImage.getByteBuffer().put(frameDataBytes, 0, frameSize);
                 camera.updateCurrentImage(rawVideoImage);
-            }
+                updateDepth();
 
-            // Not supported yet...
-//                case GRAY8:
-//                    pos = 0;
-//                    while (frameData.remaining() > 0) {
-//                        int pixel = (int) frameData.get() & 0xFF;
-//                        mImagePixels[pos] = 0xFF000000 | (pixel << 16) | (pixel << 8) | pixel;
-//                        pos++;
-//                    }
-//                    break;
-//                case GRAY16:
-//                    calcMaxGray16Value(frameData);
-//                    pos = 0;
-//                    while (frameData.remaining() > 0) {
-//                        int pixel = (int) frameData.getShort() & 0xFFFF;
-//                        pixel = (int) (pixel * 255.0 / mMaxGray16Value);
-//                        mImagePixels[pos] = 0xFF000000 | (pixel << 16) | (pixel << 8) | pixel;
-//                        pos++;
-//                    }
-//                    break;
-//        repaint();
+            }
+            Instant endUpdate = Instant.now();
+//            System.out.println("CAM TREATMENT: " + Duration.between(initUpdate, endUpdate).toMillis() + " milliseconds");
+
         }
+
     }
 
+    @Override
+    public void setAutoWhiteBalance(boolean v) {
+        this.colorStream.getCameraSettings().setAutoWhiteBalanceEnabled(v);
+    }
+
+    @Override
+    public void setAutoExposure(boolean v) {
+        this.colorStream.getCameraSettings().setAutoExposureEnabled(v);
+    }
+
+    @Override
+    public boolean isAutoExposure() {
+        return this.colorStream.getCameraSettings().getAutoExposureEnabled();
+    }
+
+    @Override
+    public boolean isAutoWhiteBalance() {
+        return this.colorStream.getCameraSettings().getAutoWhiteBalanceEnabled();
+    }
+
+    public void test() {
+        this.colorStream.getCameraSettings().setAutoExposureEnabled(useIR);
+        this.colorStream.getCameraSettings().setAutoWhiteBalanceEnabled(useIR);
+    }
+
+//    public CameraSettings getCameraSettings(){
+//        
+//    }
 }

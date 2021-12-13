@@ -30,7 +30,6 @@ public abstract class TouchDetection {
 
     protected boolean[] assignedPoints = null;
     protected byte[] connectedComponentImage = null;
-    protected int initialPoint;
 
     protected boolean[] boundaries = null;
 
@@ -68,6 +67,8 @@ public abstract class TouchDetection {
          * @return true if the offset point can join.
          */
         public boolean checkPoint(int offset, int currentPoint);
+
+        public void setInitialPoint(int offset);
     }
 
     public TouchDetection(WithSize imgSize, PlanarTouchCalibration calibration) {
@@ -134,34 +135,18 @@ public abstract class TouchDetection {
 
         w = imgSize.getWidth();
         h = imgSize.getHeight();
-        
+
 //        ConnectedComponent cc = findNeighboursRec(startingPoint, 0, getX(startingPoint), getY(startingPoint));
         ConnectedComponent cc = findNeighboursFloodFill(startingPoint);
 
         // Do not accept 1 point compo ?!
-        if (cc.size() == 1) {
-            connectedComponentImage[startingPoint] = NO_CONNECTED_COMPONENT;
-            boundaries[startingPoint] = false;
-            return INVALID_COMPONENT;
-        }
+//        if (cc.size() == 1) {
+//            connectedComponentImage[startingPoint] = NO_CONNECTED_COMPONENT;
+//            boundaries[startingPoint] = false;
+//            return INVALID_COMPONENT;
+//        }
         cc.setId(currentCompo);
         currentCompo++;
-
-        // TODO: Filtering for all ?!!
-        // DEBUG
-//        if (currentPointValidityCondition instanceof CheckTouchPoint) {
-//            // Filter the points with wrong normals
-//            ProjectedDepthData data = ((CheckTouchPoint) currentPointValidityCondition).getData();
-//            Vec3D depthPoint = data.depthPoints[startingPoint];
-////            System.out.println("SIZE: " + cc.size() + " Starting Point: " + depthPoint);
-//
-//            // Debug: Print out the connected component
-//            for (int i = 0; i < cc.size(); i++) {
-//                int offset = cc.get(i);
-//                depthPoint = data.depthPoints[offset];
-////                System.out.println("CC(" + currentCompo + ")/Depth Point (" + i + "): " + depthPoint);
-//            }
-//        }
         return cc;
     }
 
@@ -219,7 +204,7 @@ public abstract class TouchDetection {
         // Then we create a list of points to visit in the next iteration
         // searchDepth is going to be 1 for now. 
 //        searchDepth = calib.getPrecision();
-        initialPoint = currentPoint;
+        currentPointValidityCondition.setInitialPoint(currentPoint);
 
         // Lets do it with a while 
         while (recLevel <= calib.getMaximumRecursion()) {
@@ -294,7 +279,7 @@ public abstract class TouchDetection {
 
         // At least one point in connected compo !
         if (recLevel == 0) {
-            this.initialPoint = currentPoint;
+            currentPointValidityCondition.setInitialPoint(currentPoint);
             addPointTo(neighbourList, currentPoint);
         }
 

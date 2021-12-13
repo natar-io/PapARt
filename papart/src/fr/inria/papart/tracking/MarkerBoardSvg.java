@@ -25,6 +25,9 @@ import static fr.inria.papart.tracking.MarkerBoard.BLOCK_UPDATE;
 import static fr.inria.papart.tracking.MarkerBoard.FORCE_UPDATE;
 import static fr.inria.papart.tracking.MarkerBoard.NORMAL;
 import fr.inria.papart.procam.camera.Camera;
+import fr.inria.papart.procam.camera.CameraNectar;
+import fr.inria.papart.procam.camera.SubCamera;
+import java.io.File;
 import java.util.ArrayList;
 import org.bytedeco.javacpp.opencv_core;
 import processing.core.PMatrix3D;
@@ -33,11 +36,11 @@ import processing.data.XML;
 
 /**
  *
- * @author Jérémy Laviole - jeremy.laviole@inria.fr
+ * @author Jérémy Laviole - laviole@rea.lity.tech
  */
 public class MarkerBoardSvg extends MarkerBoard {
 
-    private  MarkerList markersFromSVG;
+    private MarkerList markersFromSVG;
 
     public MarkerBoardSvg(String fileName, float width, float height) {
         super(fileName, width, height);
@@ -47,10 +50,14 @@ public class MarkerBoardSvg extends MarkerBoard {
 
         try {
             // TODO: better than getting the Papart object...
-            XML xml = Papart.getPapart().getApplet().loadXML(getFileName());
-
+            XML xml;
+            if (Papart.getPapart() != null) {
+                xml = Papart.getPapart().getApplet().loadXML(getFileName());
+            } else {
+                xml = new XML(new File(fileName));
+            }
+            
             markersFromSVG = (new MarkerSVGReader(xml)).getList();
-//        markersFromSVG = MarkerSvg.getMarkersFromSVG(xml);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -76,7 +83,23 @@ public class MarkerBoardSvg extends MarkerBoard {
             opencv_core.IplImage img,
             Object globalTracking) {
 
-        DetectedMarker[] markers = (DetectedMarker[]) globalTracking;
+        // Get markers here
+        DetectedMarker[] markers;
+
+        markers = (DetectedMarker[]) globalTracking;
+
+        if (camera instanceof SubCamera) {
+            SubCamera sub = (SubCamera) camera;
+            Camera main = sub.getMainCamera();
+            if (main instanceof CameraNectar) {
+                markers = ((CameraNectar) main).getMarkers();
+            }
+        } else {
+            if (camera instanceof CameraNectar) {
+                markers = ((CameraNectar) camera).getMarkers();
+            }
+        }
+
         PMatrix3D newPos = DetectedMarker.compute3DPos(markers, markersFromSVG, camera);
 
         if (newPos == INVALID_LOCATION) {

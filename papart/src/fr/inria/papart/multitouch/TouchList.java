@@ -120,10 +120,11 @@ public class TouchList extends ArrayList<Touch> {
         return selectedTouch;
     }
 
-    public void invertY(PVector drawingSize) {
+    public TouchList invertY(PVector drawingSize) {
         for (Touch touch : this) {
             touch.invertY(drawingSize.y);
         }
+        return this;
     }
     
     public String toString(){

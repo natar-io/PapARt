@@ -89,13 +89,25 @@ public class LibraryUtils {
     public static String getPapartDataFolder() {
 
         // Sketchbook env variable -- Developpers.
+        String sketchbookInstalled = "/usr/share/processing/modes/java/libraries/" + LIBRARY_NAME + "/data";
+        File candidate = null;
+
+        candidate = new File(sketchbookInstalled);
+        System.out.println("Check: " + sketchbookInstalled);
+        if (candidate.exists()) {
+            System.out.println("Papart data path [installed]: " + sketchbookInstalled);
+            return sketchbookInstalled;
+        }
+
+        // Installed is now first ?
         String sketchbook = System.getenv("SKETCHBOOK");
-        if (sketchbook != null) {
-        System.out.println("Papart data path: " + sketchbook + "/libraries/" + LIBRARY_NAME + "/data");
+        if (new File(sketchbook).exists()) {
+            System.out.println("Papart data path [env SKETCHBOOK]: " + sketchbook + "/libraries/" + LIBRARY_NAME + "/data");
             return sketchbook + "/libraries/" + LIBRARY_NAME + "/data";
         }
+
 //         Home env variable -- Linux / OSX.
-        File candidate = null;
+        candidate = null;
         String home = System.getenv("HOME");
         if (home != null) {
             OsCheck.OSType ostype = OsCheck.getOperatingSystemType();
@@ -103,7 +115,7 @@ public class LibraryUtils {
                 case Windows:
                     break;
                 case MacOS:
-                    System.out.println("PapARt data folder: " + home + "/Processing/libraries/" + LIBRARY_NAME);
+                    System.out.println("PapARt data folder [HOME]: " + home + "/Processing/libraries/" + LIBRARY_NAME);
                     candidate = new File(home + "/Processing/libraries/" + LIBRARY_NAME + "/data");
                     break;
                 case Linux:
@@ -115,7 +127,7 @@ public class LibraryUtils {
         }
 
         if (candidate != null && candidate.exists()) {
-            System.out.println("Papart data path: " + candidate.getAbsolutePath());
+            System.out.println("Papart data path [HOME]: " + candidate.getAbsolutePath());
             return candidate.getAbsolutePath();
         }
         // Use the jar to find the data folder -- any OS.
@@ -136,9 +148,9 @@ public class LibraryUtils {
         // Either there is a data folder, or it is in a subfolder
 //        File data1 = new File(f.getAbsolutePath() + "/data");
         File data2 = new File(f.getParentFile().getAbsolutePath() + "/data");
-        
+
         if (data2.exists()) {
-            System.out.println("Papart data path: " + data2.getAbsolutePath());
+            System.out.println("Papart data path [LIBRARY]: " + data2.getAbsolutePath());
             return data2.getAbsolutePath();
         }
 
@@ -147,38 +159,36 @@ public class LibraryUtils {
         return "";
     }
 
-    public static String getLibrariesFolder() {
-        // This is used, as Papart classes are often linked to another folder...
-//        URL main = Matrix4x4.class.getResource("Matrix4x4.class");
-        URL main = Papart.class.getResource("Papart.class");
-        String tmp = main.getPath();
-//        System.out.println("path  " + tmp);
-        // its in a jar
-        if (tmp.contains("!")) {
-            tmp = tmp.substring(0, tmp.indexOf('!'));
-            tmp = tmp.replace("file:", "");
-            //        tmp = tmp.replace("file:/", "");  TODO: OS check ?
-        }
-        File f = new File(tmp);
-        if (!f.exists()) {
-            System.err.println("Error in loading the Sketchbook folder.");
-        }
-        // if the file is within a library/lib folder
-        if (f.getParentFile().getAbsolutePath().endsWith("/lib")) {
-            //     pathToSketchbook/libraries/myLib/library/lib/myLib.jar
-            f = f.getParentFile().getParentFile().getParentFile().getParentFile();
-        } else {
-            //     pathToSketchbook/libraries/myLib/library/myLib.jar
-            f = f.getParentFile().getParentFile().getParentFile();
-        }
-        return f.getAbsolutePath();
-    }
-
+//    public static String getLibrariesFolder() {
+//        // This is used, as Papart classes are often linked to another folder...
+////        URL main = Matrix4x4.class.getResource("Matrix4x4.class");
+//        URL main = Papart.class.getResource("Papart.class");
+//        String tmp = main.getPath();
+////        System.out.println("path  " + tmp);
+//        // its in a jar
+//        if (tmp.contains("!")) {
+//            tmp = tmp.substring(0, tmp.indexOf('!'));
+//            tmp = tmp.replace("file:", "");
+//            //        tmp = tmp.replace("file:/", "");  TODO: OS check ?
+//        }
+//        File f = new File(tmp);
+//        if (!f.exists()) {
+//            System.err.println("Error in loading the Sketchbook folder.");
+//        }
+//        // if the file is within a library/lib folder
+//        if (f.getParentFile().getAbsolutePath().endsWith("/lib")) {
+//            //     pathToSketchbook/libraries/myLib/library/lib/myLib.jar
+//            f = f.getParentFile().getParentFile().getParentFile().getParentFile();
+//        } else {
+//            //     pathToSketchbook/libraries/myLib/library/myLib.jar
+//            f = f.getParentFile().getParentFile().getParentFile();
+//        }
+//        return f.getAbsolutePath();
+//    }
     // processing-java --sketch=/home/jiii/papart/sketches/papartExamples/Kinect/MultiTouchKinect/ --output=/home/jiii/papart/sketches/papartExamples/Kinect/MultiTouchKinect/build --force --run
-    public static String getLibraryFolder(String libname) {
-        return getLibrariesFolder() + "/libraries/" + libname;
-    }
-
+//    public static String getLibraryFolder(String libname) {
+//        return getLibrariesFolder() + "/libraries/" + libname;
+//    }
     /**
      * helper class to check the operating system this Java VM runs in
      *

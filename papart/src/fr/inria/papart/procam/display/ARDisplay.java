@@ -210,6 +210,8 @@ public class ARDisplay extends BaseDisplay implements HasExtrinsics {
         DrawUtils.drawImage((PGraphicsOpenGL) parent.g,
                 this.render(),
                 0, 0, parent.width, parent.height);
+        
+        tryToEmitVideo();
     }
 
     /**

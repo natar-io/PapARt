@@ -39,7 +39,7 @@ public abstract class CameraRGBIRDepth extends Camera {
     protected SubDepthCamera depthCamera;
     protected SubCamera colorCamera;
     protected SubCamera IRCamera;
-    private SubCamera actAsCamera = null;
+    protected SubCamera actAsCamera = null;
 
     protected boolean useIR = false;
     protected boolean useDepth = false;
@@ -285,7 +285,7 @@ public abstract class CameraRGBIRDepth extends Camera {
     }
 
     @Override
-    protected String getCameraDevice() {
+    public String getCameraDevice() {
         return actAsCamera.getCameraDevice();
     }
 

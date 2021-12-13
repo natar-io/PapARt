@@ -1,85 +1,91 @@
+# @Author: PALARD Nicolas <nclsp>
+# @Date:   2019-04-25T18:24:44+02:00
+# @Email:  palard@rea.lity.tech
+# @Project: Natar.io
+# @Last modified by:   nclsp
+# @Last modified time: 2019-04-29T10:38:15+02:00
+# @Copyright: RealityTech 2018-2019
+
 #!/bin/bash
 
-
 mkdir libraries
+cd libraries
 
-echo "Get Toxiclibs"
-
+echo "Toxiclibs"
 wget https://bitbucket.org/postspectacular/toxiclibs/downloads/toxiclibs-complete-0020.zip
-
 unzip toxiclibs-complete-0020.zip
-mv audioutils libraries/
-mv colorutils libraries/
-mv datautils libraries/
-mv simutils libraries/
-mv toxiclibscore libraries/
-mv toxiclibs_p5 libraries/
-mv verletphysics libraries/
-mv volumeutils libraries/
+rm toxiclibs-complete-0020.zip
 
-echo "Get SVGExtended"
-wget https://github.com/Rea-lity-Tech/SVGExtended/releases/download/3.3.5/SVGExtended.tgz
+echo "SVGExtended"
+wget https://github.com/Rea-lity-Tech/SVGExtended/releases/download/3.3.7.2/SVGExtended.tgz
+tar xvzf SVGExtended.tgz
+rm SVGExtended.tgz
 
-tar xvzf SVGExtended.tgz 
-mv SVGExtended libraries/
-
-echo "Compile SimplePointCloud"
-wget https://github.com/Rea-lity-Tech/SimplePointCloud/releases/download/0.1/SimplePointCloud.tgz
+echo "SimplePointCloud"
+wget https://github.com/Rea-lity-Tech/SimplePointCloud/releases/download/1.0/SimplePointCloud.tgz
 tar xvzf SimplePointCloud.tgz
-mv SimplePointCloud libraries/
+rm SimplePointCloud.tgz
 
-echo "Get Processing Video"
-#wget https://github.com/processing/processing-video/releases/download/latest/video.zip
+echo "ColorConverter"
+wget https://github.com/Rea-lity-Tech/ColorConverter/releases/download/0.1/ColorConverter.tgz
+tar xvzf ColorConverter.tgz
+rm ColorConverter.tgz
 
-unzip video.zip
-unzip video
-mv video libraries/
+echo "Processing Video"
+wget https://github.com/processing/processing-video/releases/download/2/video-2.zip
+unzip video-2.zip
+rm video-2.zip
 
-
-echo "Get Processing TUIO" 
+echo "Processing TUIO"
 wget https://github.com/poqudrof/ProcessingTUIO/releases/download/0.5/processingTUIO.tgz
+tar xvzf processingTUIO.tgz
+rm processingTUIO.tgz
 
-tar xvzf processingTUIO.tgz 
-mv processingTUIO libraries/
-
-
-echo "Get OSCP5"
+echo "OSCP5"
 wget http://www.sojamo.de/libraries/oscP5/download/oscP5-0.9.8.zip
-
 unzip oscP5-0.9.8.zip
-mv oscP5 libraries/
+rm oscP5-0.9.8.zip
 
-echo "Get Skatolo"
-wget https://github.com/rea-lity-tech/Skatolo/releases/download/1.1/skatolo.tgz
-
+echo "Skatolo"
+wget https://github.com/Rea-lity-Tech/Skatolo/releases/download/1.1.1/skatolo.tgz
 tar xvzf skatolo.tgz
-mv skatolo libraries/
+rm skatolo.tgz
 
-echo "Get Gui Modes"
+echo "Gui Modes"
 wget https://github.com/poqudrof/guiModes/releases/download/0.5/guiModes.tgz
-
 tar xvzf guiModes.tgz
-mv guiModes libraries/
+rm guiModes.tgz
 
-echo "get Peasycam"
-wget http://mrfeinberg.com/peasycam/peasycam_202.zip
-unzip peasycam_202.zip
-mv peasycam libraries/
+echo "Peasycam"
+wget http://mrfeinberg.com/peasycam/peasycam_302.zip
+unzip peasycam_302.zip
+rm peasycam_302.zip
+
+
+# echo "Jedis"
+# cd ..
+# wget http://central.maven.org/maven2/redis/clients/jedis/2.9.0/jedis-2.9.0.jar
+# cd libraries
 
 echo "Compile reflections"
+cd ..
 cd reflections-build
 ruby createLibs.rb
-cp reflections.tgz ..
-cd ..
+mv reflections.tgz ../libraries
+cd ../libraries
 tar xvzf reflections.tgz
-mv reflections libraries/
+rm reflections.tgz
 
 echo "Compile JavaCV"
+cd ..
 cd javacv-build
 ruby createLibs.rb
-mv javacv-*.tgz ..
+mv javacv-*.tgz ../libraries
+cd ../libraries
+tar xvzf javacv-*.tgz
+rm javacv-*.tgz
 
 ## Missing: OpenNI
-
+cd ..
 echo "compile all"
 zip -r libraries.zip libraries
