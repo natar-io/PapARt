@@ -37,15 +37,18 @@ import fr.inria.papart.procam.ProjectiveDeviceP;
 import fr.inria.papart.utils.ImageUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
-import org.bytedeco.javacpp.opencv_core;
-import org.bytedeco.javacpp.opencv_core.IplImage;
-import org.bytedeco.javacpp.opencv_core.Mat;
-import org.bytedeco.javacpp.opencv_core.Size;
-import static org.bytedeco.javacpp.opencv_core.cvCopy;
-import static org.bytedeco.javacpp.opencv_core.cvRect;
-import static org.bytedeco.javacpp.opencv_core.cvSetImageROI;
-import org.bytedeco.javacpp.opencv_imgproc;
-import static org.bytedeco.javacpp.opencv_imgproc.cvCanny;
+import org.bytedeco.opencv.opencv_core.*;
+
+
+//import org.bytedeco.opencv.opencv_core.IplImage;
+//import org.bytedeco.opencv.opencv_core.Mat;
+//import org.bytedeco.opencv.opencv_core.Size;
+import static org.bytedeco.opencv.global.opencv_core.cvCopy;
+// import static org.bytedeco.opencv.global.opencv_core.CvRect;
+import static org.bytedeco.opencv.global.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_core.cvSetImageROI;
+import org.bytedeco.opencv.opencv_imgproc.*;
+import static org.bytedeco.opencv.global.opencv_imgproc.cvCanny;
 import static processing.core.PConstants.ALPHA;
 import processing.core.PImage;
 import toxi.geom.Vec3D;
@@ -309,19 +312,19 @@ public class FingerDetection extends TouchDetectionDepth {
     private IplImage irImage = null;
     public PImage irPImage = null;
     private int lastSize = 0;
-    opencv_core.IplImage irDetect;
+    IplImage irDetect;
 
-    private IplImage computeContour(opencv_core.IplImage image, int offset, int imageSize) {
+    private IplImage computeContour(IplImage image, int offset, int imageSize) {
 
         if (irImage == null) {
-//            irImage = opencv_core.IplImage.create(image.width(), image.height(), 8, 1);
-            irImage = opencv_core.IplImage.create(image.width(), image.height(), image.depth(), image.nChannels());
+//            irImage = IplImage.create(image.width(), image.height(), 8, 1);
+            irImage = IplImage.create(image.width(), image.height(), image.depth(), image.nChannels());
 
         }
 
         if (imageSize != lastSize) {
             lastSize = imageSize;
-            irDetect = opencv_core.IplImage.create(imageSize, imageSize, 8, 1);
+            irDetect = IplImage.create(imageSize, imageSize, 8, 1);
             irPImage = Papart.getPapart().getApplet().createImage(imageSize, imageSize, ALPHA);
         }
 
@@ -351,15 +354,15 @@ public class FingerDetection extends TouchDetectionDepth {
             minY = projectiveDevice.getHeight() - imageSize - 1;
         }
 
-        opencv_core.CvRect defaultRoi = cvRect(0, 0,
+        CvRect defaultRoi = CvRect(0, 0,
                 projectiveDevice.getWidth(), projectiveDevice.getHeight());
 
-        opencv_core.CvRect roi = cvRect(minX, minY, imageSize, imageSize);
+        CvRect roi = cvRect(minX, minY, imageSize, imageSize);
 
         // Select the zone 
         cvSetImageROI(irImage, roi);
 
-        opencv_imgproc.medianBlur(new opencv_core.Mat(irImage), new opencv_core.Mat(irImage), 1);
+       medianBlur(new Mat(irImage), new Mat(irImage), 1);
 //        opencv_imgproc.blur(new Mat(irImage), new Mat(irImage), new Size(2, 2));
 
         cvCanny(irImage, irImage,
@@ -368,10 +371,10 @@ public class FingerDetection extends TouchDetectionDepth {
                 7);
 
         int morph_size = 1;
-        opencv_core.Mat element = opencv_imgproc.getStructuringElement(0, new opencv_core.Size(2 * morph_size + 1, 2 * morph_size + 1), new opencv_core.Point(morph_size, morph_size));
-        opencv_imgproc.dilate(new opencv_core.Mat(irImage), new opencv_core.Mat(irImage), element);
-        opencv_imgproc.dilate(new opencv_core.Mat(irImage), new opencv_core.Mat(irImage), element);
-        opencv_imgproc.erode(new opencv_core.Mat(irImage), new opencv_core.Mat(irImage), element);
+        Mat element = getStructuringElement(0, new Size(2 * morph_size + 1, 2 * morph_size + 1), new Point(morph_size, morph_size));
+        dilate(new Mat(irImage), new Mat(irImage), element);
+        dilate(new Mat(irImage), new Mat(irImage), element);
+        erode(new Mat(irImage), new Mat(irImage), element);
 
         cvCopy(irImage, irDetect);
 
@@ -404,8 +407,8 @@ public class FingerDetection extends TouchDetectionDepth {
 //        hullList.clear();
 //
 //        CvMemStorage storage = CvMemStorage.create();
-//        opencv_core.CvSeq contours = new opencv_core.CvContour(null);
-//        cvFindContours(dst, storage, contours, Loader.sizeof(opencv_core.CvContour.class),
+//        CvSeq contours = new CvContour(null);
+//        cvFindContours(dst, storage, contours, Loader.sizeof(CvContour.class),
 //                CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);
 //
 //        CvSeq bigContour = null;
@@ -428,7 +431,7 @@ public class FingerDetection extends TouchDetectionDepth {
 //        }
 //        contourPointsSize = bigContour.total();
 //        if (contourPoints == null || contourPoints.capacity() < contourPointsSize) {
-//            contourPoints = new opencv_core.CvPoint(contourPointsSize);
+//            contourPoints = new CvPoint(contourPointsSize);
 //            contourPointsBuffer = contourPoints.asByteBuffer().asIntBuffer();
 //        }
 //        cvCvtSeqToArray(bigContour, contourPoints.position(0));

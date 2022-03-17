@@ -28,8 +28,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.bytedeco.javacpp.Pointer;
-import org.bytedeco.javacpp.opencv_core;
-import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;
+import org.bytedeco.opencv.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_core.IPL_DEPTH_8U;
 
 import org.openni.*;
 
@@ -41,7 +41,7 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
 
     private VideoStream colorStream, IRStream, depthStream;
     // From the OpenNI example.
-    Device device;
+    org.openni.Device device;
 
     protected CameraOpenNI2(int cameraNo) {
         this.systemNumber = cameraNo;
@@ -265,13 +265,13 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
 
         String uri;
 
-        java.util.List<DeviceInfo> devicesInfo = OpenNI.enumerateDevices();
+        java.util.List<org.openni.DeviceInfo> devicesInfo = OpenNI.enumerateDevices();
         if (devicesInfo.isEmpty()) {
             JOptionPane.showMessageDialog(null, "No device is connected", "Error", JOptionPane.ERROR_MESSAGE);
             System.exit(-1);
         }
         uri = devicesInfo.get(this.systemNumber).getUri();
-        device = Device.open(uri);
+        device = org.openni.Device.open(uri);
     }
 
 
@@ -287,8 +287,8 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
         private Pointer rawDepthImageData = new Pointer((Pointer) null),
                 rawVideoImageData = new Pointer((Pointer) null),
                 rawIRImageData = new Pointer((Pointer) null);
-        private opencv_core.IplImage rawVideoImage = null;
-        private opencv_core.IplImage rawVideoImageGray = null;
+        private IplImage rawVideoImage = null;
+        private IplImage rawVideoImageGray = null;
 
         @Override
         public synchronized void onFrameReady(VideoStream stream) {
@@ -327,8 +327,8 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
                 byte[] frameDataBytes = new byte[frameSize];
                 frameData.get(frameDataBytes);
                 if (rawVideoImage == null || rawVideoImage.width() != deviceWidth || rawVideoImage.height() != deviceHeight) {
-                    rawVideoImage = opencv_core.IplImage.create(deviceWidth, deviceHeight, iplDepth, channels);
-                    rawVideoImageGray = opencv_core.IplImage.create(deviceWidth, deviceHeight, iplDepth, 1);
+                    rawVideoImage = IplImage.create(deviceWidth, deviceHeight, iplDepth, channels);
+                    rawVideoImageGray = IplImage.create(deviceWidth, deviceHeight, iplDepth, 1);
                 }
                 rawVideoImage.getByteBuffer().put(frameDataBytes, 0, frameSize);
 //                opencv_imgproc.cvCvtColor(rawVideoImage, rawVideoImage, COLOR_RGB2BGR);
@@ -348,7 +348,7 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
                 byte[] frameDataBytes = new byte[frameSize];
                 frameData.get(frameDataBytes);
                 if (rawVideoImage == null || rawVideoImage.width() != deviceWidth || rawVideoImage.height() != deviceHeight) {
-                    rawVideoImage = opencv_core.IplImage.create(deviceWidth, deviceHeight, iplDepth, channels);
+                    rawVideoImage = IplImage.create(deviceWidth, deviceHeight, iplDepth, channels);
                 }
                 rawVideoImage.getByteBuffer().put(frameDataBytes, 0, frameSize);
                 camera.updateCurrentImage(rawVideoImage);

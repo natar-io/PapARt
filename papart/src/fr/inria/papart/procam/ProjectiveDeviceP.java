@@ -24,10 +24,13 @@ import org.bytedeco.javacv.CameraDevice;
 import org.bytedeco.javacv.ProjectiveDevice;
 import org.bytedeco.javacv.ProjectorDevice;
 import org.bytedeco.javacpp.indexer.FloatIndexer;
-import org.bytedeco.javacpp.opencv_calib3d;
 
-import static org.bytedeco.javacpp.opencv_calib3d.*;
-import static org.bytedeco.javacpp.opencv_core.*;
+import org.bytedeco.opencv.opencv_calib3d.*;
+import org.bytedeco.opencv.opencv_core.*;
+
+
+import static org.bytedeco.opencv.global.opencv_calib3d.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
 
 import processing.core.PApplet;
 import processing.core.PConstants;
@@ -328,11 +331,11 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
         initNativeIntrinsic();
         fillNative(objectPoints, imagePoints, op, ip);
 
-        boolean solved = opencv_calib3d.solvePnP(op,
+        boolean solved = solvePnP(op,
                 ip,
                 intrinsicsMat, new Mat(),
                 rotation, translation,
-                false, opencv_calib3d.SOLVEPNP_ITERATIVE);
+                false, SOLVEPNP_ITERATIVE);
 
         Mat rotMat = new Mat(3, 3, CV_64FC1);
         Rodrigues(rotation, rotMat);
@@ -374,7 +377,7 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
 //        distort.put(1, 0, 0);
 //        distort.put(2, 0, 0);
 //        distort.put(3, 0, 0);
-        boolean solvePnPRansac = opencv_calib3d.solvePnPRansac(
+        boolean solvePnPRansac = solvePnPRansac(
                 op,
                 ip,
                 intrinsicsMat,
@@ -386,7 +389,7 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
                 8.0f, // reprojError
                 0.99, // confidence
                 new Mat(), // outputArray
-                opencv_calib3d.SOLVEPNP_ITERATIVE);
+                SOLVEPNP_ITERATIVE);
 //        boolean solvePnPRansac = opencv_calib3d.solvePnPRansac(
 //                op,
 //                ip,

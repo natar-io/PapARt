@@ -20,8 +20,8 @@
 package fr.inria.papart.procam.camera;
 
 import javassist.tools.reflect.CannotCreateException;
-import org.bytedeco.javacpp.opencv_core;
-import org.bytedeco.javacpp.opencv_core.IplImage;
+import org.bytedeco.opencv.opencv_core.*;
+// import org.bytedeco.opencv.IplImage;
 //import static org.bytedeco.javacpp.opencv_videoio.CAP_PROP_BUFFERSIZE;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.OpenCVFrameConverter;

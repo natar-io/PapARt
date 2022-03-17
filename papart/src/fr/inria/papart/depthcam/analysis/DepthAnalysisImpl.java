@@ -39,7 +39,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
-import org.bytedeco.javacpp.opencv_core;
+import org.bytedeco.opencv.opencv_core.*;
 import processing.core.PApplet;
 import processing.core.PVector;
 import toxi.geom.Vec3D;
@@ -159,7 +159,7 @@ public class DepthAnalysisImpl extends DepthAnalysis {
         PixelOffset.initStaticMode(getWidth(), getHeight());
     }
 
-    public void computeDepthAndNormals(opencv_core.IplImage depth, opencv_core.IplImage color, int skip2D) {
+    public void computeDepthAndNormals(IplImage depth, IplImage color, int skip2D) {
         updateRawDepth(depth);
         // optimisation no Color. 
         if (color != null) {
@@ -184,7 +184,7 @@ public class DepthAnalysisImpl extends DepthAnalysis {
 //        doForEachPoint(skip2D, new ComputeNormal());
     }
     
-    public void computeDepthOptim(opencv_core.IplImage depth, int skip2D) {
+    public void computeDepthOptim(IplImage depth, int skip2D) {
         updateRawDepth(depth);
         // optimisation no Color. 
 //        if (color != null) {
@@ -428,11 +428,11 @@ public class DepthAnalysisImpl extends DepthAnalysis {
 //        return Utils.toPVector(depthData.depthPoints[worldToPixel]);
     }
 
-    protected void updateRawDepth(opencv_core.IplImage depthImage) {
+    protected void updateRawDepth(IplImage depthImage) {
         depthComputationMethod.updateDepth(depthImage);
     }
 
-    protected void updateRawColor(opencv_core.IplImage colorImage) {
+    protected void updateRawColor(IplImage colorImage) {
         ByteBuffer colBuff = colorImage.getByteBuffer();
         colBuff.get(colorRaw);
     }
@@ -757,12 +757,12 @@ public class DepthAnalysisImpl extends DepthAnalysis {
     }
 
     @Deprecated
-    public void undistortRGB(opencv_core.IplImage rgb, opencv_core.IplImage out) {
+    public void undistortRGB(IplImage rgb, IplImage out) {
         calibColor.getDevice().undistort(rgb, out);
     }
 
     @Deprecated
-    public void undistortIR(opencv_core.IplImage ir, opencv_core.IplImage out) {
+    public void undistortIR(IplImage ir, IplImage out) {
         calibDepth.getDevice().undistort(ir, out);
     }
 

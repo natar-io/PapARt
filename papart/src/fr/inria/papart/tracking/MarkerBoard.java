@@ -25,13 +25,19 @@ import fr.inria.papart.procam.display.ARDisplay;
 import fr.inria.papart.multitouch.OneEuroFilter;
 import fr.inria.papart.procam.camera.CameraRGBIRDepth;
 import fr.inria.papart.tracking.ObjectFinder;
-import org.bytedeco.javacpp.ARToolKitPlus;
-import org.bytedeco.javacpp.opencv_core.IplImage;
+//import org.bytedeco.javacpp.ARToolKitPlus;
+//import org.bytedeco.javacpp.ARToolKitPlus.TrackerMultiMarker;
+
+import org.bytedeco.artoolkitplus.*;
+import static org.bytedeco.artoolkitplus.global.ARToolKitPlus.*;
+
+import org.bytedeco.opencv.opencv_core.IplImage;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.bytedeco.javacpp.ARToolKitPlus.TrackerMultiMarker;
-import static org.bytedeco.javacpp.opencv_imgcodecs.cvLoadImage;
+
+import static org.bytedeco.opencv.global.opencv_imgcodecs.*;
+
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
@@ -95,7 +101,7 @@ public abstract class MarkerBoard {
     protected abstract void addTrackerImpl(Camera camera);
 
     public void addTracker(PApplet applet, Camera camera) {
-//    public void addTracker(PApplet applet, Camera camera, ARToolKitPlus.TrackerMultiMarker tracker, float[] transfo) {
+//    public void addTracker(PApplet applet, Camera camera, TrackerMultiMarker tracker, float[] transfo) {
         this.applet = applet;
 
         this.cameras.add(camera);
@@ -301,9 +307,9 @@ public abstract class MarkerBoard {
         return (ObjectFinder) getTracking(camera);
     }
 
-    public ARToolKitPlus.TrackerMultiMarker getARToolkitTracking(Camera camera) {
+    public TrackerMultiMarker getARToolkitTracking(Camera camera) {
         assert (this.useMarkers());
-        return (ARToolKitPlus.TrackerMultiMarker) getTracking(camera);
+        return (TrackerMultiMarker) getTracking(camera);
     }
 
     private Object getTracking(Camera camera) {

@@ -39,7 +39,7 @@ import fr.inria.papart.procam.display.ProjectorDisplay;
 import fr.inria.papart.utils.MathUtils;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
-import org.bytedeco.javacpp.opencv_core.IplImage;
+import org.bytedeco.opencv.opencv_core.IplImage;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PImage;

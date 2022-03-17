@@ -24,9 +24,9 @@ import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.procam.camera.CameraOpenKinect;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;
-import org.bytedeco.javacpp.opencv_core.IplImage;
-import static org.bytedeco.javacpp.opencv_core.cvSize;
+import static org.bytedeco.opencv.global.opencv_core.IPL_DEPTH_8U;
+import org.bytedeco.opencv.opencv_core.IplImage;
+import static org.bytedeco.opencv.global.opencv_core.cvSize;
 import processing.core.PApplet;
 import toxi.geom.Vec3D;
 

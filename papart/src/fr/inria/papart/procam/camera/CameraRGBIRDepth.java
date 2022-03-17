@@ -23,7 +23,7 @@ import fr.inria.papart.tracking.DetectedMarker;
 import fr.inria.papart.tracking.MarkerBoard;
 import java.util.List;
 import java.util.concurrent.Semaphore;
-import org.bytedeco.javacpp.opencv_core;
+import org.bytedeco.opencv.opencv_core.*;
 import org.bytedeco.javacv.OpenKinectFrameGrabber;
 import processing.core.PApplet;
 import processing.core.PImage;
@@ -81,7 +81,7 @@ public abstract class CameraRGBIRDepth extends Camera {
         return this.actAsCamera;
     }
 
-    public opencv_core.IplImage getDepthImage() {
+    public IplImage getDepthImage() {
         return depthCamera.getIplImage();
     }
 
@@ -430,12 +430,12 @@ public abstract class CameraRGBIRDepth extends Camera {
     }
 
     @Override
-    public void forceCurrentImage(opencv_core.IplImage img) {
+    public void forceCurrentImage(IplImage img) {
         actAsCamera.forceCurrentImage(img);
     }
 
     @Override
-    protected void updateCurrentImage(opencv_core.IplImage img) {
+    protected void updateCurrentImage(IplImage img) {
         actAsCamera.updateCurrentImage(img);
     }
 
@@ -455,7 +455,7 @@ public abstract class CameraRGBIRDepth extends Camera {
     }
 
     @Override
-    public opencv_core.IplImage getIplImage() {
+    public IplImage getIplImage() {
         return actAsCamera.getIplImage();
     }
 

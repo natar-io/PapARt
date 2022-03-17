@@ -32,8 +32,8 @@ import java.nio.ByteBuffer;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.utils.WithSize;
 import java.util.ArrayList;
-import org.bytedeco.javacpp.opencv_core.CvMat;
-import org.bytedeco.javacpp.opencv_core.IplImage;
+import org.bytedeco.opencv.opencv_core.*;
+import org.bytedeco.opencv.opencv_core.IplImage;
 import processing.core.PApplet;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
@@ -224,7 +224,7 @@ public class TrackedView implements WithSize {
         this.mainImage = img;
         this.camera = camera;
 
-        CvMat homography = computeHomography();
+        Mat homography = computeHomography();
 
         boolean useRGB = camera.getPixelFormat() == Camera.PixelFormat.RGB;
         // Convert to the good type... 
@@ -243,7 +243,7 @@ public class TrackedView implements WithSize {
         this.mainImage = img;
         this.camera = camera;
 
-        CvMat homography = computeHomography();
+        Mat homography = computeHomography();
 
         boolean useRGB = camera.getPixelFormat() == Camera.PixelFormat.RGB;
         // Convert to the good type... 
@@ -262,7 +262,7 @@ public class TrackedView implements WithSize {
         this.mainImage = img;
         this.camera = camera;
 
-        CvMat homography = computeHomography();
+        Mat homography = computeHomography();
         double[] homoMat = homography.get();
         HomographyCalibration homoCalib = new HomographyCalibration();
         homoCalib.setMatrix(new PMatrix3D(
@@ -286,7 +286,7 @@ public class TrackedView implements WithSize {
 
         this.mainImage = img;
         this.camera = camera;
-        CvMat homography = computeHomography();
+        Mat homography = computeHomography();
         ImageUtils.remapImageIpl(homography, img, extractedIplImage);
         
         return extractedIplImage;
@@ -318,7 +318,7 @@ public class TrackedView implements WithSize {
                 || (useManualConrers && cornersSet));
     }
 
-    private CvMat computeHomography() {
+    private Mat computeHomography() {
         if (!this.useListofPairs) {
             computeCorners();
         }
@@ -330,7 +330,7 @@ public class TrackedView implements WithSize {
 ////            System.out.println("id: " + k + " scr: " + screen + " img: " + img);
 //            k++;
 //        }
-        CvMat homography = ImageUtils.createHomography(screenPixelCoordinates, imagePixelCoordinates);
+        Mat homography = ImageUtils.createHomography(screenPixelCoordinates, imagePixelCoordinates);
         return homography;
     }
 

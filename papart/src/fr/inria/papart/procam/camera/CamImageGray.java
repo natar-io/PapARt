@@ -25,7 +25,7 @@ import fr.inria.papart.utils.ARToolkitPlusUtils;
 import fr.inria.papart.procam.camera.Camera.PixelFormat;
 import java.awt.Image;
 import java.nio.ByteBuffer;
-import org.bytedeco.javacpp.opencv_core;
+import org.bytedeco.opencv.opencv_core.*;
 import processing.core.PApplet;
 import processing.opengl.PGraphicsOpenGL;
 import processing.opengl.Texture;
@@ -62,7 +62,7 @@ public class CamImageGray extends CamImage {
     }
 
     @Override
-    public void update(opencv_core.IplImage iplImage) {
+    public void update(IplImage iplImage) {
 
         Texture tex = ((PGraphicsOpenGL) parent.g).getTexture(this);
         ByteBuffer imageBuffer = iplImage.getByteBuffer();

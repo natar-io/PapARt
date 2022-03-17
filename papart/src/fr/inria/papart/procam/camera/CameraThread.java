@@ -27,14 +27,17 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
-import org.bytedeco.javacpp.opencv_core.IplImage;
+import org.bytedeco.opencv.opencv_core.IplImage;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.bytedeco.javacpp.ARToolKitPlus;
-import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;
-import org.bytedeco.javacpp.opencv_imgcodecs;
-import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
-import static org.bytedeco.javacpp.opencv_imgproc.cvCvtColor;
+
+import org.bytedeco.javacpp.*;
+import org.bytedeco.artoolkitplus.*;
+import static org.bytedeco.artoolkitplus.global.ARToolKitPlus.*;
+
+import static org.bytedeco.opencv.global.opencv_core.IPL_DEPTH_8U;
+import static org.bytedeco.opencv.global.opencv_imgproc.CV_BGR2GRAY;
+import static org.bytedeco.opencv.global.opencv_imgproc.cvCvtColor;
 import processing.core.PVector;
 
 /**
@@ -179,7 +182,7 @@ public class CameraThread extends Thread {
         grayImage = IplImage.create(width, height, IPL_DEPTH_8U, 1);
     }
 
-    private ARToolKitPlus.MultiTracker tracker = null;
+    private MultiTracker tracker = null;
 
     private void initMarkerTracking() {
         int cameraWidth = camera.width();

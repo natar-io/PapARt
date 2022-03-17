@@ -8,7 +8,7 @@ package fr.inria.papart.depthcam.devices;
 import fr.inria.papart.depthcam.analysis.DepthAnalysis;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysisImpl.INVALID_DEPTH;
 import java.nio.ShortBuffer;
-import org.bytedeco.javacpp.opencv_core;
+import org.bytedeco.opencv.opencv_core.*;
 
 /**
  *
@@ -32,7 +32,7 @@ public class OpenNIDepth implements DepthAnalysis.DepthComputation {
     }
 
     @Override
-    public void updateDepth(opencv_core.IplImage depthImage) {
+    public void updateDepth(IplImage depthImage) {
         frameData = depthImage.getShortBuffer();
     }
 }

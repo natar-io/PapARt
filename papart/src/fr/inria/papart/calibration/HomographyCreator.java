@@ -20,10 +20,14 @@
 package fr.inria.papart.calibration;
 
 import fr.inria.papart.calibration.files.HomographyCalibration;
-import static org.bytedeco.javacpp.opencv_calib3d.cvFindHomography;
-import org.bytedeco.javacpp.opencv_core;
-import static org.bytedeco.javacpp.opencv_core.CV_32FC1;
-import static org.bytedeco.javacpp.opencv_core.cvCreateMat;
+import org.bytedeco.opencv.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_core.CV_32FC1;
+import static org.bytedeco.opencv.global.opencv_core.cvCreateMat;
+import static org.bytedeco.opencv.global.opencv_core.cvMat;
+
+import org.bytedeco.javacpp.indexer.FloatIndexer;
+
+import static org.bytedeco.opencv.global.opencv_calib3d.findHomography;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import toxi.geom.Matrix4x4;
@@ -34,12 +38,12 @@ import toxi.geom.Matrix4x4;
  */
 public class HomographyCreator {
 
-    private opencv_core.CvMat cvMat;
+    private Mat cvMat;
     private Matrix4x4 mat;
     private PMatrix3D pmatrix;
 
-    private opencv_core.CvMat srcPoints;
-    private opencv_core.CvMat dstPoints;
+    private Mat srcPoints;
+    private Mat dstPoints;
 
     private final int srcDim;
     private final int dstDim;
@@ -58,25 +62,29 @@ public class HomographyCreator {
 
     private void init() {
         currentPoint = 0;
-        srcPoints = cvCreateMat(srcDim, nbPoints, CV_32FC1);
-        dstPoints = cvCreateMat(dstDim, nbPoints, CV_32FC1);
-        cvMat = cvCreateMat(3, 3, CV_32FC1);
+        srcPoints = new Mat(srcDim, nbPoints, CV_32FC1);
+        dstPoints = new Mat(dstDim, nbPoints, CV_32FC1);
+        cvMat = new Mat(3, 3, CV_32FC1);
         homographyCalibrationOutput = new HomographyCalibration();
     }
     
     public boolean addPoint(PVector src, PVector dst) {
+        
         addPointCvMat(srcPoints, src);
         addPointCvMat(dstPoints, dst);
         currentPoint++;
         return checkAndComputeHomography();
     }
 
-    private void addPointCvMat(opencv_core.CvMat points, PVector point) {
-        points.put(currentPoint, point.x);
-        points.put(currentPoint + nbPoints, point.y);
+    private void addPointCvMat(Mat points, PVector point) {
+
+        FloatIndexer idx = points.createIndexer();
+  
+        idx.put(currentPoint, point.x);
+        idx.put(currentPoint + nbPoints, point.y);
         if (points == srcPoints && srcDim == 3
                 || points == dstPoints && dstDim == 3) {
-            points.put(currentPoint + (nbPoints * 2), point.z);
+            idx.put(currentPoint + (nbPoints * 2), point.z);
         }
     }
 
@@ -89,18 +97,20 @@ public class HomographyCreator {
     }
 
     private void createHomography() {
-        cvFindHomography(srcPoints, dstPoints, cvMat);
+        findHomography(srcPoints, dstPoints, cvMat);
         currentPoint = 0;
 
+        FloatIndexer idx = cvMat.createIndexer();
+
         if (srcDim == dstDim && srcDim == 2) {
-            mat = new Matrix4x4(cvMat.get(0), cvMat.get(1), 0, cvMat.get(2),
-                    cvMat.get(3), cvMat.get(4), 0, cvMat.get(5),
+            mat = new Matrix4x4(idx.get(0), idx.get(1), 0, idx.get(2),
+                    idx.get(3), idx.get(4), 0, idx.get(5),
                     0, 0, 1, 0,
                     0, 0, 0, 1);
         } else {
-            mat = new Matrix4x4(cvMat.get(0), cvMat.get(1), cvMat.get(2), 0,
-                    cvMat.get(3), cvMat.get(4), cvMat.get(5), 0,
-                    cvMat.get(6), cvMat.get(7), cvMat.get(8), 0,
+            mat = new Matrix4x4(idx.get(0), idx.get(1), idx.get(2), 0,
+                    idx.get(3), idx.get(4), idx.get(5), 0,
+                    idx.get(6), idx.get(7), idx.get(8), 0,
                     0, 0, 0, 1);
         }
         this.pmatrix = new PMatrix3D(

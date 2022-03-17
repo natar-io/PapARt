@@ -20,7 +20,7 @@ package fr.inria.papart.procam.camera;
 
 import fr.inria.papart.multitouch.DepthTouchInput;
 import fr.inria.papart.multitouch.TouchInput;
-import org.bytedeco.javacpp.opencv_core;
+import org.bytedeco.opencv.opencv_core.*;
 
 /**
  *
@@ -49,7 +49,7 @@ public class SubDepthCamera extends SubCamera implements WithTouchInput{
     }
 
     @Override
-    public void newTouchImageWithColor(opencv_core.IplImage colorImage) {
+    public void newTouchImageWithColor(IplImage colorImage) {
         if (touchInput != null) {
             touchInput.lock();
             touchInput.update();

@@ -19,7 +19,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import org.bytedeco.javacpp.opencv_core;
+
+import org.bytedeco.opencv.opencv_core.*;
+import org.bytedeco.opencv.opencv_core.IplImage;
+import static org.bytedeco.opencv.global.opencv_core.*;
 import processing.core.PApplet;
 import static processing.core.PApplet.abs;
 import processing.core.PGraphics;
@@ -251,7 +254,7 @@ public class MathUtils {
      * @param RGB true if RGB, false if BGR
      * @return
      */
-    public static int getColor(opencv_core.IplImage img, int x, int y, boolean RGB) {
+    public static int getColor(IplImage img, int x, int y, boolean RGB) {
         if (img.nChannels() == 3) {
             ByteBuffer buff = img.getByteBuffer();
             int offset = (img.width() * y + x) * 3;

@@ -26,7 +26,7 @@ import fr.inria.papart.procam.camera.CameraRealSense;
 import fr.inria.papart.procam.camera.CannotCreateCameraException;
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
-import org.bytedeco.javacpp.opencv_core;
+import org.bytedeco.opencv.opencv_core.*;
 import processing.core.PApplet;
 
 /**
@@ -100,7 +100,7 @@ public final class RealSense extends DepthCameraDevice {
         }
 
         @Override
-        public void updateDepth(opencv_core.IplImage depthImage) {
+        public void updateDepth(IplImage depthImage) {
             ByteBuffer depthRawBuffer = depthImage.getByteBuffer();
             depthRawShortBuffer = depthRawBuffer.asShortBuffer();
         }

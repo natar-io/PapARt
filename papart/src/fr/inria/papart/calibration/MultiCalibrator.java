@@ -35,7 +35,10 @@ import fr.inria.papart.tracking.DetectedMarker;
 import fr.inria.papart.tracking.MarkerBoard;
 import fr.inria.papart.utils.DrawUtils;
 import java.util.ArrayList;
-import org.bytedeco.javacpp.opencv_core.IplImage;
+import org.bytedeco.opencv.opencv_core.IplImage;
+// import org.bytedeco.opencv.opencv_imgproc;
+import static org.bytedeco.opencv.global.opencv_imgcodecs.*;
+
 import processing.core.PApplet;
 import processing.core.PConstants;
 import static processing.core.PConstants.CENTER;
@@ -60,8 +63,10 @@ import static fr.inria.papart.utils.MathUtils.absd;
 import static fr.inria.papart.utils.MathUtils.constrain;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static org.bytedeco.javacpp.RealSense.camera;
-import org.bytedeco.javacpp.opencv_imgcodecs;
+
+import org.bytedeco.librealsense.*;
+import static org.bytedeco.librealsense.global.RealSense.*;
+
 import static processing.core.PApplet.abs;
 import static processing.core.PApplet.split;
 import static processing.core.PConstants.CORNER;
@@ -632,7 +637,7 @@ public class MultiCalibrator extends PaperTouchScreen {
                         Logger.getLogger(MultiCalibrator.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
-                opencv_imgcodecs.cvSaveImage("/home/ditrop/tmp/proj-" + i + ".bmp", projectorAsCamera.getIplImage());
+                cvSaveImage("/home/ditrop/tmp/proj-" + i + ".bmp", projectorAsCamera.getIplImage());
                 System.out.println("Saved " + "/home/ditrop/tmp/proj-" + i + ".bmp");
             }
 
@@ -656,7 +661,7 @@ public class MultiCalibrator extends PaperTouchScreen {
                 getMarkerBoard().updateLocation(projectorAsCamera, img, projectorAsCamera.getMarkers(i));
                 PMatrix3D projPos = getMarkerBoard().getTransfoMat(projectorAsCamera);
 
-                opencv_imgcodecs.cvSaveImage("/home/ditrop/tmp/cam-" + i + ".bmp", img);
+                cvSaveImage("/home/ditrop/tmp/cam-" + i + ".bmp", img);
 //                opencv_imgcodecs.cvSaveImage("/home/ditrop/tmp/proj-" + i + ".bmp", projectorAsCamera.getIplImage());
                 System.out.println("Saved " + "/home/ditrop/tmp/cam-" + i + ".bmp");
 //                System.out.println("Saved " + "/home/ditrop/tmp/proj-" + i + ".bmp");

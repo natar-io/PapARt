@@ -21,8 +21,8 @@ package fr.inria.papart.procam.camera;
 
 import fr.inria.papart.procam.RedisClientImpl;
 import fr.inria.papart.tracking.DetectedMarker;
-import org.bytedeco.javacpp.opencv_core;
-import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;
+import org.bytedeco.opencv.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_core.IPL_DEPTH_8U;
 import processing.data.JSONArray;
 import processing.data.JSONObject;
 import redis.clients.jedis.BinaryJedisPubSub;
@@ -187,13 +187,13 @@ public class CameraNectar extends CameraRGBIRDepth {
         }
     }
 
-    private opencv_core.IplImage rawVideoImage = null;
-    private opencv_core.IplImage rawDepthImage = null;
+    private IplImage rawVideoImage = null;
+    private IplImage rawDepthImage = null;
 
     protected void setColorImage(byte[] message) {
         int channels = 3;
         if (rawVideoImage == null || rawVideoImage.width() != colorCamera.width || rawVideoImage.height() != colorCamera.height) {
-            rawVideoImage = opencv_core.IplImage.create(colorCamera.width, colorCamera.height, IPL_DEPTH_8U, 3);
+            rawVideoImage = IplImage.create(colorCamera.width, colorCamera.height, IPL_DEPTH_8U, 3);
         }
         int frameSize = colorCamera.width * colorCamera.height * channels;
         rawVideoImage.getByteBuffer().put(message, 0, frameSize);
@@ -211,7 +211,7 @@ public class CameraNectar extends CameraRGBIRDepth {
         int frameSize = depthCamera.width * depthCamera.height * channels;
         // TODO: Handle as a sort buffer instead of byte.
         if (rawDepthImage == null || rawDepthImage.width() != depthCamera.width || rawDepthImage.height() != depthCamera.height) {
-            rawDepthImage = opencv_core.IplImage.create(depthCamera.width, depthCamera.height, iplDepth, channels);
+            rawDepthImage = IplImage.create(depthCamera.width, depthCamera.height, iplDepth, channels);
         }
         rawDepthImage.getByteBuffer().put(message, 0, frameSize);
         depthCamera.updateCurrentImage(rawDepthImage);

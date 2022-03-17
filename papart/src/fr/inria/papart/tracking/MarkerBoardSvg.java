@@ -29,7 +29,7 @@ import fr.inria.papart.procam.camera.CameraNectar;
 import fr.inria.papart.procam.camera.SubCamera;
 import java.io.File;
 import java.util.ArrayList;
-import org.bytedeco.javacpp.opencv_core;
+import org.bytedeco.opencv.opencv_core.*;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.data.XML;
@@ -80,7 +80,7 @@ public class MarkerBoardSvg extends MarkerBoard {
             int endTime,
             int mode,
             Camera camera,
-            opencv_core.IplImage img,
+            IplImage img,
             Object globalTracking) {
 
         // Get markers here

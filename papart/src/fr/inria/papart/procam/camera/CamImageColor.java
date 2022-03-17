@@ -23,7 +23,7 @@ import fr.inria.papart.utils.ImageUtils;
 import fr.inria.papart.utils.ARToolkitPlusUtils;
 import java.awt.Image;
 import java.nio.ByteBuffer;
-import org.bytedeco.javacpp.opencv_core.IplImage;
+import org.bytedeco.opencv.opencv_core.IplImage;
 import processing.core.PApplet;
 import static processing.core.PConstants.ARGB;
 import processing.opengl.PGraphicsOpenGL;

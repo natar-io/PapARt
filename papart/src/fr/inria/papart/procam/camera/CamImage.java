@@ -22,7 +22,7 @@ package fr.inria.papart.procam.camera;
 import fr.inria.papart.procam.camera.Camera.PixelFormat;
 import java.awt.Image;
 import java.nio.ByteBuffer;
-import org.bytedeco.javacpp.opencv_core.IplImage;
+import org.bytedeco.opencv.opencv_core.IplImage;
 import processing.core.PApplet;
 import processing.core.PImage;
 

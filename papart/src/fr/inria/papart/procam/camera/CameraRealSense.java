@@ -24,9 +24,13 @@ import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.bytedeco.javacpp.RealSense;
-import org.bytedeco.javacpp.RealSense.device;
-import org.bytedeco.javacpp.opencv_core;
+
+import org.bytedeco.librealsense.*;
+import org.bytedeco.librealsense.presets.RealSense;
+import static org.bytedeco.librealsense.global.RealSense.*;
+//import org.bytedeco.javacpp.RealSense;
+//import org.bytedeco.javacpp.RealSense.device;
+import org.bytedeco.opencv.opencv_core.*;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.RealSenseFrameGrabber;
@@ -155,7 +159,7 @@ public class CameraRealSense extends CameraRGBIRDepth {
 
     @Override
     public void grabColor() {
-        opencv_core.IplImage video = grabber.grabVideo();
+        IplImage video = grabber.grabVideo();
         if (video != null) {
             colorCamera.updateCurrentImage(video);
         }

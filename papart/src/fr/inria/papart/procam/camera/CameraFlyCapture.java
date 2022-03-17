@@ -19,11 +19,15 @@
  */
 package fr.inria.papart.procam.camera;
 
-import org.bytedeco.javacpp.opencv_core;
-import org.bytedeco.javacpp.opencv_core.CvSize;
-import org.bytedeco.javacpp.opencv_core.IplImage;
-import org.bytedeco.javacpp.opencv_imgproc;
-import org.bytedeco.javacv.FlyCapture2FrameGrabber;
+import org.bytedeco.opencv.opencv_core.*;
+import org.bytedeco.opencv.opencv_core.CvSize;
+import org.bytedeco.opencv.opencv_core.IplImage;
+import static org.bytedeco.opencv.global.opencv_core.IPL_DEPTH_8U;
+import org.bytedeco.opencv.opencv_imgproc.*;
+
+import static org.bytedeco.opencv.global.opencv_imgproc.*;
+
+import org.bytedeco.javacv.*; // FlyCapture2FrameGrabber;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.OpenCVFrameConverter;
 import processing.core.PImage;
@@ -34,14 +38,14 @@ import processing.core.PImage;
  */
 public class CameraFlyCapture extends Camera {
 
-    private FrameGrabber grabber;
+    private org.bytedeco.javacv.FrameGrabber grabber;
     private boolean useBayerDecode = true;
-    private final OpenCVFrameConverter.ToIplImage converter;
+    private final org.bytedeco.javacv.OpenCVFrameConverter.ToIplImage converter;
 
     protected CameraFlyCapture(int cameraNo) {
         this.systemNumber = cameraNo;
         this.setPixelFormat(PixelFormat.BGR);
-        converter = new OpenCVFrameConverter.ToIplImage();
+        converter = new org.bytedeco.javacv.OpenCVFrameConverter.ToIplImage();
     }
 
     @Override
@@ -52,12 +56,12 @@ public class CameraFlyCapture extends Camera {
             grabberFly.setImageHeight(height());
 
             if (useBayerDecode) {
-                grabberFly.setImageMode(FrameGrabber.ImageMode.GRAY);
+                grabberFly.setImageMode(org.bytedeco.javacv.FrameGrabber.ImageMode.GRAY);
 
             } else {
                 // Hack for now ... 
                 // real Gray colors are not supported by Processing anyway !
-                grabberFly.setImageMode(FrameGrabber.ImageMode.COLOR);
+                grabberFly.setImageMode(org.bytedeco.javacv.FrameGrabber.ImageMode.COLOR);
             }
             this.grabber = grabberFly;
             grabberFly.start();
@@ -101,10 +105,10 @@ public class CameraFlyCapture extends Camera {
             CvSize outSize = new CvSize();
             outSize.width(source.width());
             outSize.height(source.height());
-            debayer = opencv_core.cvCreateImage(outSize, opencv_core.IPL_DEPTH_8U, 3);
+            debayer = cvCreateImage(outSize, IPL_DEPTH_8U, 3);
         }
 
-        opencv_imgproc.cvCvtColor(source, debayer, opencv_imgproc.CV_BayerBG2BGR);
+        cvCvtColor(source, debayer, CV_BayerBG2BGR);
         return debayer;
     }
 

@@ -21,7 +21,11 @@ package fr.inria.papart.procam.camera;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.bytedeco.javacpp.freenect;
+import org.bytedeco.javacpp.*;
+import org.bytedeco.libfreenect.global.freenect;
+import static java.lang.Math.*;
+import static org.bytedeco.libfreenect.global.freenect.*;
+
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.OpenKinectFrameGrabber;
 
