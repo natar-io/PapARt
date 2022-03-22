@@ -32,6 +32,8 @@ import java.nio.ByteBuffer;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.utils.WithSize;
 import java.util.ArrayList;
+
+import org.bytedeco.javacpp.indexer.FloatIndexer;
 import org.bytedeco.opencv.opencv_core.*;
 import org.bytedeco.opencv.opencv_core.IplImage;
 import processing.core.PApplet;
@@ -263,12 +265,13 @@ public class TrackedView implements WithSize {
         this.camera = camera;
 
         Mat homography = computeHomography();
-        double[] homoMat = homography.get();
+        // double[] homoMat = homography.get();
+        FloatIndexer homoMatIdx = homography.createIndexer();
         HomographyCalibration homoCalib = new HomographyCalibration();
         homoCalib.setMatrix(new PMatrix3D(
-                (float) homoMat[0], (float) homoMat[1], 0, (float) homoMat[2],
-                (float) homoMat[3], (float) homoMat[4], 0, (float) homoMat[5],
-                0, 0, 1, (float) homoMat[8],
+                homoMatIdx.get(0), homoMatIdx.get(1), 0, homoMatIdx.get(2),
+                homoMatIdx.get(3), homoMatIdx.get(4), 0, homoMatIdx.get(5),
+                0, 0, 1, homoMatIdx.get(8),
                 0, 0, 0, 1));
 //        homoCalib.setMatrix(new PMatrix3D(
 //                (float) homoMat[0], (float) homoMat[1], (float) homoMat[2], 0,
@@ -299,7 +302,7 @@ public class TrackedView implements WithSize {
 
         this.mainImage = img;
         this.camera = camera;
-        CvMat homography = computeHomography();
+        Mat homography = computeHomography();
         ImageUtils.remapImageIpl(homography, img, extractedIplImage);
         return extractedIplImage;
     }
