@@ -426,7 +426,7 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
         int k = 0;
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
-                intrinsicIdx.put(k++, 0);
+                intrinsicIdx.put(i, j, 0);
             }
         }
 

@@ -105,7 +105,7 @@ public class CameraFlyCapture extends Camera {
             CvSize outSize = new CvSize();
             outSize.width(source.width());
             outSize.height(source.height());
-            debayer = cvCreateImage(outSize, IPL_DEPTH_8U, 3);
+            debayer =  IplImage.create(outSize, IPL_DEPTH_8U, 3);
         }
 
         cvCvtColor(source, debayer, CV_BayerBG2BGR);

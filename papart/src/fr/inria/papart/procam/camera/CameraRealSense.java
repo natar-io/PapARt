@@ -26,6 +26,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.bytedeco.librealsense.*;
+
+import org.bytedeco.librealsense.extrinsics; 
+// import org.bytedeco.librealsense; 
+
 import org.bytedeco.librealsense.presets.RealSense;
 import static org.bytedeco.librealsense.global.RealSense.*;
 //import org.bytedeco.javacpp.RealSense;
@@ -263,7 +267,7 @@ public class CameraRealSense extends CameraRGBIRDepth {
     }
 
     public PMatrix3D getHardwareExtrinsics() {
-        RealSense.extrinsics extrinsics = grabber.getRealSenseDevice().get_extrinsics(RealSense.color, RealSense.depth);
+        extrinsics extrinsics = grabber.getRealSenseDevice().get_extrinsics(org.bytedeco.librealsense.global.RealSense.color, org.bytedeco.librealsense.global.RealSense.depth);
         FloatBuffer fb = extrinsics.position(0).asByteBuffer().asFloatBuffer();
         return new PMatrix3D(
                 fb.get(0), fb.get(3), fb.get(6), -fb.get(9) * 1000f,
@@ -278,15 +282,15 @@ public class CameraRealSense extends CameraRGBIRDepth {
         }
         int camType = 0;
         if (camera.type == SubCamera.Type.COLOR) {
-            camType = RealSense.color;
+            camType = color;
         }
         if (camera.type == SubCamera.Type.IR) {
-            camType = RealSense.infrared;
+            camType = infrared;
         }
         if (camera.type == SubCamera.Type.DEPTH) {
-            camType = RealSense.depth;
+            camType = depth;
         }
-        RealSense.intrinsics intrinsics = grabber.getRealSenseDevice().get_stream_intrinsics(camType);
+        intrinsics intrinsics = grabber.getRealSenseDevice().get_stream_intrinsics(camType);
         FloatBuffer fb = intrinsics.position(0).asByteBuffer().asFloatBuffer();
         float cx = fb.get(2);
         float cy = fb.get(3);

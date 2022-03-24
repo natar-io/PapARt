@@ -49,6 +49,15 @@ import static org.bytedeco.opencv.global.opencv_core.*;
 import static org.bytedeco.opencv.global.opencv_core.cvSetImageROI;
 import org.bytedeco.opencv.opencv_imgproc.*;
 import static org.bytedeco.opencv.global.opencv_imgproc.cvCanny;
+
+import org.bytedeco.opencv.opencv_core.*;
+import org.bytedeco.opencv.opencv_imgproc.*;
+import org.bytedeco.opencv.opencv_objdetect.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_imgproc.*;
+import static org.bytedeco.opencv.global.opencv_objdetect.*;
+
+
 import static processing.core.PConstants.ALPHA;
 import processing.core.PImage;
 import toxi.geom.Vec3D;
@@ -354,7 +363,7 @@ public class FingerDetection extends TouchDetectionDepth {
             minY = projectiveDevice.getHeight() - imageSize - 1;
         }
 
-        CvRect defaultRoi = CvRect(0, 0,
+        CvRect defaultRoi = cvRect(0, 0,
                 projectiveDevice.getWidth(), projectiveDevice.getHeight());
 
         CvRect roi = cvRect(minX, minY, imageSize, imageSize);
