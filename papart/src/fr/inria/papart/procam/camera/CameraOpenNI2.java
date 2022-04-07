@@ -245,10 +245,11 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
     @Override
     public void setUseColor(boolean use) {
         if (use) {
-            colorCamera.setPixelFormat(PixelFormat.BGR);
-            colorCamera.type = SubCamera.Type.COLOR;
-            colorCamera.setSize(640, 480);
-            colorCamera.setFrameRate(30);
+            SubCamera cam = (SubCamera) colorCamera;
+            cam.setPixelFormat(PixelFormat.BGR);
+            cam.type = SubCamera.Type.COLOR;
+            cam.setSize(640, 480);
+            cam.setFrameRate(30);
         }
         this.useColor = use;
     }

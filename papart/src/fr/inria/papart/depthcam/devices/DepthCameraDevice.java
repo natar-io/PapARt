@@ -78,7 +78,7 @@ public abstract class DepthCameraDevice {
         return anotherCamera;
     }
 
-    public SubCamera getColorCamera() {
+    public Camera getColorCamera() {
         return camera.getColorCamera();
     }
 

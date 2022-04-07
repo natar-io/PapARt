@@ -37,9 +37,9 @@ import processing.core.PVector;
 public abstract class CameraRGBIRDepth extends Camera {
 
     protected SubDepthCamera depthCamera;
-    protected SubCamera colorCamera;
+    protected Camera colorCamera;
     protected SubCamera IRCamera;
-    protected SubCamera actAsCamera = null;
+    protected Camera actAsCamera = null;
 
     protected boolean useIR = false;
     protected boolean useDepth = false;
@@ -73,11 +73,11 @@ public abstract class CameraRGBIRDepth extends Camera {
         return this.IRCamera;
     }
 
-    public SubCamera getColorCamera() {
+    public Camera getColorCamera() {
         return this.colorCamera;
     }
 
-    public SubCamera getActingCamera() {
+    public Camera getActingCamera() {
         return this.actAsCamera;
     }
 

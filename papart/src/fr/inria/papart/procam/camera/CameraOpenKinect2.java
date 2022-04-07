@@ -104,9 +104,10 @@ public class CameraOpenKinect2 extends CameraRGBIRDepth {
     @Override
     public void setUseColor(boolean use) {
         if (use) {
-            colorCamera.setPixelFormat(PixelFormat.ARGB);
-            colorCamera.type = SubCamera.Type.COLOR;
-            colorCamera.setSize(1920, 1080);
+            SubCamera cam = (SubCamera) colorCamera;
+            cam.setPixelFormat(PixelFormat.ARGB);
+            cam.type = SubCamera.Type.COLOR;
+            cam.setSize(1920, 1080);
             grabber.enableColorStream();
         }
              this.useColor = use;

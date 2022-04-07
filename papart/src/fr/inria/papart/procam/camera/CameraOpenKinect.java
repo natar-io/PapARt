@@ -117,12 +117,13 @@ public class CameraOpenKinect extends CameraRGBIRDepth {
     @Override
     public void setUseColor(boolean use) {
         if (use) {
-            colorCamera.setPixelFormat(PixelFormat.BGR);
-            colorCamera.type = SubCamera.Type.COLOR;
-            colorCamera.setSize(640, 480);
+            SubCamera cam = (SubCamera) colorCamera;
+            cam.setPixelFormat(PixelFormat.BGR);
+            cam.type = SubCamera.Type.COLOR;
+            cam.setSize(640, 480);
 
-            grabber.setImageWidth(colorCamera.width());
-            grabber.setImageHeight(colorCamera.height());
+            grabber.setImageWidth(cam.width());
+            grabber.setImageHeight(cam.height());
             kinectVideoFormat = freenect.FREENECT_VIDEO_RGB;
             grabber.setVideoFormat(kinectVideoFormat);
         }

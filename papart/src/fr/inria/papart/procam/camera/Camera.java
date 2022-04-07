@@ -68,7 +68,7 @@ public abstract class Camera extends Observable implements PConstants, HasExtrin
 
     public enum Type {
         OPENCV, FFMPEG, PROCESSING, REALSENSE, OPEN_KINECT, OPEN_KINECT_2,
-        FLY_CAPTURE, OPENNI2, NECTAR,
+        FLY_CAPTURE, OPENNI2, NECTAR, OPENCV_DEPTH,
         FAKE
     }
 
