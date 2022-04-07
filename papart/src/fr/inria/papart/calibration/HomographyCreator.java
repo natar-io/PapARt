@@ -50,15 +50,14 @@ public class HomographyCreator {
     private Mat srcPoints, dstPoints;
     private FloatBuffer srcIdx, dstIdx;
 
-
-   // private FloatPointer srcPoints, dstPoints; 
-
     private final int srcDim;
     private final int dstDim;
     private final int nbPoints;
 
-    private HomographyCalibration homographyCalibrationOutput;
+    public static final Mat INVALID_HOMOGRAPHY = new Mat(); 
 
+    private HomographyCalibration homographyCalibrationOutput;
+    private Mat homographyMat;
     private int currentPoint = 0;
 
     // SRCDim is always 3 for now
@@ -116,10 +115,13 @@ public class HomographyCreator {
     private void createHomography() {
 
       Mat H = findHomography(srcPoints, dstPoints); // , cvMat);
+      homographyMat = H;
+
       if(H.empty()){
         System.out.println("H empty");
         return;
       }
+
      //  Mat H = findHomography(pt1, pt2, CV_RANSAC, settings.ransacReprojThreshold, mask, 2000, 0.995);
       double[] h = (double[])H.createIndexer(false).array();
 
@@ -165,6 +167,10 @@ public class HomographyCreator {
     public HomographyCalibration getHomography() {
         assert (isComputed());
         return this.homographyCalibrationOutput;
+    }
+
+    public Mat getHomographyMat(){
+      return homographyMat;
     }
 
     @Override

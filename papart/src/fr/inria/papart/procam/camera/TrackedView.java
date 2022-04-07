@@ -217,15 +217,12 @@ public class TrackedView implements WithSize {
 
     public PImage getViewOf(Camera camera) {
         camera = Camera.checkActingCamera(camera);
-
         IplImage img = camera.getIplImage();
         if (!isExtractionReady(img)) {
             return null;
         }
-
         this.mainImage = img;
         this.camera = camera;
-
         Mat homography = computeHomography();
 
         boolean useRGB = camera.getPixelFormat() == Camera.PixelFormat.RGB;
@@ -322,18 +319,17 @@ public class TrackedView implements WithSize {
     }
 
     private Mat computeHomography() {
+
         if (!this.useListofPairs) {
             computeCorners();
         }
 
-//        System.out.println("ComputeHomograpy with these points: ");
-//        int k = 0;
-//        for (PVector screen : screenPixelCoordinates) {
-//            PVector img = imagePixelCoordinates.get(k);
-////            System.out.println("id: " + k + " scr: " + screen + " img: " + img);
-//            k++;
-//        }
-        Mat homography = ImageUtils.createHomography(screenPixelCoordinates, imagePixelCoordinates);
+        HomographyCreator creator = new HomographyCreator(2, 2, screenPixelCoordinates.size());
+        for(int i = 0; i < screenPixelCoordinates.size(); i++) {
+          creator.addPoint(screenPixelCoordinates.get(i),imagePixelCoordinates.get(i));
+        }
+        Mat homography = creator.getHomographyMat();
+      
         return homography;
     }
 

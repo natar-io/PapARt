@@ -30,6 +30,8 @@ import processing.core.PImage;
 import processing.core.PVector;
 import processing.opengl.Texture;
 
+import fr.inria.papart.calibration.HomographyCreator;
+
 /**
  *
  * @author Jeremy Laviole
@@ -51,69 +53,76 @@ public class ImageUtils {
         argb.rewind();
     }
 
+    // Do not use.
+    @Deprecated
     public static Mat createHomography(List<PVector> in, List<PVector> out) {
-        Mat srcPoints;
-        Mat dstPoints;
+        Mat srcPoints, dstPoints;
+        FloatBuffer srcIdx, dstIdx;
         int nbPoints = in.size();
         // Mat homography;
 
         // TODO: no create map
-        srcPoints = new Mat(2, in.size(), CV_32FC1);
-        dstPoints = new Mat(2, in.size(), CV_32FC1);
-        // homography = new Mat(3, 3, CV_32FC1);
+        srcPoints = new Mat(in.size(), 1, CV_32FC2);
+        dstPoints = new Mat(in.size(), 1, CV_32FC2);
 
-//         if (in.size() == 4 && out.size() == 4) {
-//             double[] src = new double[8];
-//             double[] dst = new double[8];
-// //            CvMat map = CvMat.create(3, 3);
-//             for (int i = 0; i < 4; i++) {
-//                 src[i * 2] = in.get(i).x;
-//                 src[i * 2 + 1] = in.get(i).y;
-//                 dst[i * 2] = out.get(i).x;
-//                 dst[i * 2 + 1] = out.get(i).y;
-//             }
-// //            System.out.println("JavaCV perspective...");
-//             JavaCV.getPerspectiveTransform(src, dst, homography);
-//             return homography;
-//         }
+        srcIdx = srcPoints.createBuffer();
+        dstIdx = dstPoints.createBuffer();
 
-        FloatIndexer srcPointsIdx = srcPoints.createIndexer();
-        FloatIndexer dstPointsIdx = dstPoints.createIndexer();
-        
         for (int i = 0; i < in.size(); i++) {
- 
-            srcPointsIdx.put(i, in.get(i).x);
-            srcPointsIdx.put(i + nbPoints, in.get(i).y);
-            dstPointsIdx.put(i, out.get(i).x);
-            dstPointsIdx.put(i + nbPoints, out.get(i).y);
+          if (in.get(i).x == Float.NaN || in.get(i).y == Float.NaN){ 
+            return HomographyCreator.INVALID_HOMOGRAPHY;
+          }
+
+          srcIdx.put(i, in.get(i).x);
+          srcIdx.put(i + nbPoints, in.get(i).y);
+
+          dstIdx.put(i, out.get(i).x);
+          dstIdx.put(i + nbPoints, out.get(i).y);
         }
         Mat homography2 = findHomography(srcPoints, dstPoints);
        
-//        opencv_imgproc.cvGetPerspectiveTransform(cpd, cpd1, srcPoints) //       It is better to use : GetPerspectiveTransform
+        if(homography2.empty()){
+          return HomographyCreator.INVALID_HOMOGRAPHY;
+        }
+//        opencv_imgproc.cvGetPerspectiveTransform(cpd, cpd1, srcPoints) // 
         return homography2;
     }
 
+    //  Do not use.
+    @Deprecated
     public static Mat createHomography(PVector[] in, PVector[] out) {
-        Mat srcPoints;
-        Mat dstPoints;
+        Mat srcPoints, dstPoints;
+        FloatBuffer srcIdx, dstIdx;
         int nbPoints = in.length;
         Mat homography;
         // TODO: no create map
-        srcPoints = new Mat(2, in.length, CV_32FC1);
-        dstPoints = new Mat(2, in.length, CV_32FC1);
+        srcPoints = new Mat(in.length, 1, CV_32FC2);
+        dstPoints = new Mat(in.length, 1, CV_32FC2);
         // homography = new Mat(3, 3, CV_32FC1);
 
-        FloatIndexer srcPointsIdx = srcPoints.createIndexer();
-        FloatIndexer dstPointsIdx = dstPoints.createIndexer();
+        srcPoints = new Mat(in.length, 1, CV_32FC2);
+        dstPoints = new Mat(in.length, 1, CV_32FC2);
+
+        srcIdx = srcPoints.createBuffer();
+        dstIdx = dstPoints.createBuffer();
+  
         
         for (int i = 0; i < in.length; i++) {
-            srcPointsIdx.put(i, in[i].x);
-            srcPointsIdx.put(i + nbPoints, in[i].y);
-            dstPointsIdx.put(i, out[i].x);
-            dstPointsIdx.put(i + nbPoints, out[i].y);
+          if (in[i].x == Float.NaN || in[i].y == Float.NaN){ 
+            return HomographyCreator.INVALID_HOMOGRAPHY;
+          }
+          srcIdx.put(i, in[i].x);
+          srcIdx.put(i + nbPoints, in[i].y);
+
+          dstIdx.put(i, out[i].x);
+          dstIdx.put(i + nbPoints, out[i].y);
         }
+ 
         homography = findHomography(srcPoints, dstPoints); // , homography);
-        //       It is better to use : GetPerspectiveTransform
+
+        if(homography.empty()){
+          return HomographyCreator.INVALID_HOMOGRAPHY;
+        }
         return homography;
     }
 
