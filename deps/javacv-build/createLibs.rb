@@ -4,7 +4,6 @@
 platforms = ["linux", "windows", "macosx"]
 archs = ["x86_64", "x86", "arm"]
 
-
 def build(platform, arch)
 
   puts "Build " + platform
@@ -14,7 +13,7 @@ def build(platform, arch)
   else
     %x(cp pom-other.xml pom.xml)
   end
-    
+
   puts "Get the library"
 
   %x(mvn -Djavacpp.platform=#{platform}-#{arch} dependency:copy-dependencies)
@@ -24,7 +23,7 @@ def build(platform, arch)
 
   `mv target/dependency target/library`
   `mv target javacv`
-  `mv javacv/library/javacv-1.4.jar javacv/library/javacv.jar`
+  `mv javacv/library/javacv-1.5.7.jar javacv/library/javacv.jar`
 
   puts "compress library"
   `tar -zcf javacv-#{platform}-#{arch}.tgz javacv`
