@@ -54,7 +54,7 @@ public final class DepthAstraPlus extends DepthCameraDevice {
          camera = (CameraRGBIRDepth) CameraFactory.createCamera(type(), id);
          camera.setParent(parent);
          camera.setUseDepth(true);
-         camera.setUseColor(true);
+         camera.setUseColor(false);
 
          ((CameraOpenCVDepth) camera).setExternalColorCamera(anotherCam);
 

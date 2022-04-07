@@ -99,7 +99,10 @@ public class CameraOpenCVDepth extends CameraRGBIRDepth {
               //  this.updateCurrentImage(img);
            }
 
-           ((WithTouchInput) depthCamera).newTouchImageWithColor(colorCamera.currentImage);
+           // TODO: pass the color image here for color in touch.
+           // ((WithTouchInput) depthCamera).newTouchImageWithColor(colorCamera.currentImage);
+           ((WithTouchInput) depthCamera).newTouchImage();
+
        } catch (FrameGrabber.Exception ex) {
            Logger.getLogger(CameraOpenKinect.class.getName()).log(Level.SEVERE, null, ex);
        }

@@ -89,6 +89,9 @@ public class CameraFactory {
                 case OPENNI2:
                     cameraMulti = new CameraOpenNI2(cameraNo);
                     break;
+                case OPENCV_DEPTH:
+                    cameraMulti = new CameraOpenCVDepth(cameraNo);
+                    break;
                 default:
                     throw new RuntimeException("ProCam, Camera: Unspported camera Type");
             }
