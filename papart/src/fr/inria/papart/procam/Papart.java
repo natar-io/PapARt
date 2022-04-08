@@ -953,6 +953,10 @@ public class Papart {
 
         if (depthCamConfiguration.getCameraType() == Camera.Type.OPENCV_DEPTH) {
           depthCameraDevice = new DepthAstraPlus(applet, cameraTracking);
+
+          // Start the Depth camera here.. TODO: clear this out.
+          //depthCameraDevice.getMainCamera().start();
+          // depthCameraDevice.getMainCamera().setThread();
         }
 
 

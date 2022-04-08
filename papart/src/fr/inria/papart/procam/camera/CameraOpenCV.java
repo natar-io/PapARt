@@ -55,6 +55,8 @@ public class CameraOpenCV extends Camera {
         }
 //        grabberCV.setImageMode(FrameGrabber.ImageMode.RAW);
 
+        System.out.println("GRABBERCV: Camera NO" + this.systemNumber);
+        System.out.println("GRABBERCV: GRAB INIT " + grabberCV);
         try {
             grabberCV.start();
             this.grabber = grabberCV;
@@ -80,6 +82,8 @@ public class CameraOpenCV extends Camera {
             return;
         }
         try {
+            System.out.println("GRABBERCV: GRAB " + grabber);
+
             IplImage img = converter.convertToIplImage(grabber.grab());
             if (img != null) {
                 this.updateCurrentImage(img);

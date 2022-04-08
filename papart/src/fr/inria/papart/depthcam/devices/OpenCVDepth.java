@@ -27,7 +27,7 @@ public class OpenCVDepth implements DepthAnalysis.DepthComputation {
 
         // TODO: Find how to compute the depth 
       
-        int depth = (int) (frameData.get(offset) & 0xFFFF);
+        int depth = (int) frameData.get(offset & 0xFFFF);
         if (depth == 0) {
             return INVALID_DEPTH;
         }
@@ -36,9 +36,9 @@ public class OpenCVDepth implements DepthAnalysis.DepthComputation {
 
     @Override
     public void updateDepth(IplImage depthImage) {
-
+    
+      frameData = (ShortBuffer) depthImage.createBuffer();
       // TODO: Find the depth 
-      System.out.println("in UPDATE DEPTH");
-      frameData = depthImage.getShortBuffer();
+      // frameData = depthImage.getShortBuffer();
     }
 }

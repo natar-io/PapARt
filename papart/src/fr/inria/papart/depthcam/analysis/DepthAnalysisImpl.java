@@ -118,14 +118,20 @@ public class DepthAnalysisImpl extends DepthAnalysis {
 
         if (depthCamera.getMainCamera().isUseIR()) {
             colorCamera = depthCamera.getIRCamera();
-        }
+        }     
+
         if (depthCamera.getMainCamera().isUseColor()) {
             colorCamera = depthCamera.getColorCamera();
         }
 
-        calibColor = colorCamera.getProjectiveDevice();
+        // TODO: this class should not have a colorCamera or calls to it.
+        if(colorCamera == null){
+          calibColor =  null; // colorCamera.getProjectiveDevice();
+        } else {
+          calibColor = colorCamera.getProjectiveDevice();
+        }
+    
         calibDepth = depthCamera.getDepthCamera().getProjectiveDevice();
-
         initMemory();
         initDone = true;
     }
@@ -144,19 +150,18 @@ public class DepthAnalysisImpl extends DepthAnalysis {
 
     private void initMemory() {
 //        System.out.println("Allocations: " + getColorSize() + " " + depthCameraDevice.rawDepthSize());
-
         if (depthCameraDevice.getMainCamera().isPixelFormatGray()) {
             colorRaw = new byte[getColorSize()];
         } else {
             colorRaw = new byte[getColorSize() * 3];
         }
+
         depth = new float[depthCameraDevice.getDepthCamera().width() * depthCameraDevice.getDepthCamera().height()];
 
         depthData = new ProjectedDepthData(this);
         depthData.projectiveDevice = this.calibDepth;
-        System.out.println("ColorRaw initialized !" + colorRaw.length);
-
         PixelOffset.initStaticMode(getWidth(), getHeight());
+
     }
 
     public void computeDepthAndNormals(IplImage depth, IplImage color, int skip2D) {

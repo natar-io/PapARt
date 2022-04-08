@@ -169,7 +169,7 @@ public abstract class CameraRGBIRDepth extends Camera {
     @Override
     public void grab() {
 
-        if (this.isClosing()) {
+    if (this.isClosing()) {
             return;
         }
         // update the images.
@@ -183,7 +183,6 @@ public abstract class CameraRGBIRDepth extends Camera {
             if (useIR) {
                 IRCamera.grab();
             }
-
             if (useDepth) {
                 depthCamera.grab();
             }

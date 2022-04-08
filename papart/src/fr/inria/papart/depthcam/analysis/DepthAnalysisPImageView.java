@@ -122,36 +122,40 @@ public class DepthAnalysisPImageView extends DepthAnalysisImpl {
      * @return
      */
     public PImage update(IplImage depth, IplImage color, int skip) {
+
         if(!initDone){
             initWithCalibrations(depthCameraDevice);
         }
+ 
         if (depth == null || color == null) {
             return validPointsPImage;
         }
 
         updateRawDepth(depth);
         if (color != null) {
-//            System.out.println("color: " + color.height()+  " " + color.width() + color.depth());
-//            System.out.println("colorraw: " + colorRaw.length);
+            // System.out.println("color: " + color.height()+  " " + color.width() + color.depth());
+            // System.out.println("colorraw: " + colorRaw.length);
             updateRawColor(color);
         }
+   
         depthData.clear();
         depthData.timeStamp = papplet.millis();
         validPointsPImage.loadPixels();
         // set a default color. 
-
+        
         Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 0));
 
         // TODO: get the color with Kinect2... 
         if (this.colorCamera.getPixelFormat() == Camera.PixelFormat.RGB) {
             computeDepthAndDo(skip, new SetImageDataRGB());
         }
+
         if (this.colorCamera.getPixelFormat() == Camera.PixelFormat.BGR) {
             computeDepthAndDo(skip, new SetImageData());
         }
+
         validPointsPImage.updatePixels();
         return validPointsPImage;
-
     }
 
     class SetTouchInformation implements DepthPointManiplation {
