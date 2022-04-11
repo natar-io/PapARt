@@ -119,6 +119,12 @@ public class HomographyCreator {
 
       if(H.empty()){
         System.out.println("H empty");
+
+        homographyCalibrationOutput.setMatrix(
+          new PMatrix3D(0,0,0,0, 
+                        0,0,0,0, 
+                        0,0,0,0, 
+                        0,0,0,0));
         return;
       }
 
