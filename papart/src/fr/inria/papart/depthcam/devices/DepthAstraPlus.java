@@ -41,26 +41,26 @@ public final class DepthAstraPlus extends DepthCameraDevice {
 
     public DepthAstraPlus(PApplet parent, Camera anotherCam) throws CannotCreateCameraException {
         super(parent);
+        
+        // initDefaultCamera();
+        String id = Papart.getDefaultDepthCameraConfiguration(parent).getCameraName();
 
-        // Pass the main color camera. 
+        camera = (CameraRGBIRDepth) CameraFactory.createCamera(type(), id);
+        camera.setParent(parent);
+        camera.setUseDepth(true);
+        
+        if(anotherCam != null){
+          // Pass the main color camera. 
+          this.anotherCamera = anotherCam;
+          ((CameraOpenCVDepth) camera).setExternalColorCamera(anotherCam);
+          camera.actAsColorCamera();
 
-        this.anotherCamera = anotherCam;
-
-        // TODO: Adjust all of this
-
-         // initDefaultCamera();
-         String id = Papart.getDefaultDepthCameraConfiguration(parent).getCameraName();
-
-         camera = (CameraRGBIRDepth) CameraFactory.createCamera(type(), id);
-         camera.setParent(parent);
-         camera.setUseDepth(true);
-         camera.setUseColor(true);
-
-         ((CameraOpenCVDepth) camera).setExternalColorCamera(anotherCam);
-          
+          // WARNING: this calls grab on color when true... 
+          camera.setUseColor(true);
+        }
          // camera.actAsColorCamera();
 
-         camera.actAsColorCamera();
+       
         //  camera.actAsDepthCamera();
 
         // if (anotherCam instanceof CameraOpenCV) {

@@ -7,6 +7,8 @@ package fr.inria.papart.depthcam.devices;
 
 import fr.inria.papart.depthcam.analysis.DepthAnalysis;
 import static fr.inria.papart.depthcam.analysis.DepthAnalysisImpl.INVALID_DEPTH;
+
+import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 import org.bytedeco.opencv.opencv_core.*;
 
@@ -16,7 +18,8 @@ import org.bytedeco.opencv.opencv_core.*;
  */
 public class OpenCVDepth implements DepthAnalysis.DepthComputation {
 
-    private ShortBuffer frameData;
+  private ShortBuffer frameData;
+  //private ByteBuffer frameData;
     // float[] histogram;
 
     public OpenCVDepth() {
@@ -27,7 +30,7 @@ public class OpenCVDepth implements DepthAnalysis.DepthComputation {
 
         // TODO: Find how to compute the depth 
       
-        int depth = (int) frameData.get(offset & 0xFFFF);
+        int depth = (int) (frameData.get(offset)); //  & 0xFFFF);
         if (depth == 0) {
             return INVALID_DEPTH;
         }
@@ -37,7 +40,8 @@ public class OpenCVDepth implements DepthAnalysis.DepthComputation {
     @Override
     public void updateDepth(IplImage depthImage) {
     
-      frameData = (ShortBuffer) depthImage.createBuffer();
+       frameData = (ShortBuffer) depthImage.createBuffer();
+      //frameData = (ByteBuffer) depthImage.createBuffer();
       // TODO: Find the depth 
       // frameData = depthImage.getShortBuffer();
     }
