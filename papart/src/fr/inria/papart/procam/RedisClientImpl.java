@@ -30,6 +30,13 @@ public class RedisClientImpl implements RedisClient {
         }
         return jedis;
     }
+    public RedisClientImpl() {
+    }
+
+    public RedisClientImpl(RedisClient client) {
+      this.setRedisHost(client.getRedisHost());
+      this.setRedisPort(client.getRedisPort());
+    }
 
     @Override
     public String getRedisHost() {
@@ -45,6 +52,7 @@ public class RedisClientImpl implements RedisClient {
     public void setRedisAuth(String redisAuth) {
         this.redisAuth = redisAuth;
     }
+    
 
     @Override
     public int getRedisPort() {

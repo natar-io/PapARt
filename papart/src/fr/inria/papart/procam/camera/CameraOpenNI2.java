@@ -33,6 +33,10 @@ import static org.bytedeco.opencv.global.opencv_core.IPL_DEPTH_8U;
 
 import org.openni.*;
 
+import fr.inria.papart.procam.RedisClient;
+import fr.inria.papart.procam.VideoEmitter;
+import redis.clients.jedis.Jedis;
+
 /**
  *
  * @author Jeremy Laviole
@@ -42,6 +46,8 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
     private VideoStream colorStream, IRStream, depthStream;
     // From the OpenNI example.
     org.openni.Device device;
+    private int colorImageCount;
+    private int depthImageCount;
 
     protected CameraOpenNI2(int cameraNo) {
         this.systemNumber = cameraNo;
@@ -273,6 +279,30 @@ public class CameraOpenNI2 extends CameraRGBIRDepth {
         }
         uri = devicesInfo.get(this.systemNumber).getUri();
         device = org.openni.Device.open(uri);
+    }
+
+
+    Jedis redis;
+    RedisClient client;
+    VideoEmitter colorVideoEmitter;
+    VideoEmitter depthVideoEmitter;
+    int time = 0;
+    
+    public void sendToRedis(RedisClient client, String keyColor, String keyDepth) {
+        this.client = client;
+        colorVideoEmitter = new VideoEmitter(client, keyColor);
+        depthVideoEmitter = new VideoEmitter(client, keyDepth);
+//        this.redis = redis;
+    }
+
+    protected void sendColor(byte[] imageData) {
+        colorImageCount++;
+        colorVideoEmitter.sendRawImage(imageData, time++);
+    }
+
+    protected void sendDepth(byte[] imageData) {
+        depthImageCount++;
+        depthVideoEmitter.sendRawImage(imageData, time++);
     }
 
 

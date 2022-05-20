@@ -30,3 +30,27 @@ $ sh create-redist.sh
 ```
 
 You will obtain a file named `PapARt.tar.gz` which unpacks like any other Processing library. 
+
+
+## Natar Video output 
+
+
+#### Compilation: 
+mvn install -Djavacpp.platform=linux-x86_64
+
+
+#### Run 
+
+`java -jar -Xmx64m target/papart-1.6-jar-with-dependencies.jar --driver OPENCV --device-id 0 --format rgb --output camera0 --resolution 640x480 --stream`
+
+
+```
+## OpenCV camera
+java -jar -Xmx64m target/nectar-camera-server-0.1-SNAPSHOT-jar-with-dependencies.jar --driver OPENCV --device-id 0 --format rgb --output camera0 --resolution 640x480 --stream --stream-set --depth-camera camera0:depth" 
+
+## Depth camera 
+java -jar -Xmx64m target/nectar-camera-server-0.1-SNAPSHOT-jar-with-dependencies.jar --driver OPENNI2 --device-id 0 --format rgb --output camera0 --resolution 640x480 --stream --depth-camera camera0:depth" 
+
+## Play a video
+java -jar -Xmx64m target/nectar-camera-server-0.1-SNAPSHOT-jar-with-dependencies.jar --driver FFMPEG --device-id "/home/ditrop/Documents/chat-fr.mp4" --format video --output video0	--stream --stream-set
+```

@@ -33,6 +33,12 @@ public class VideoEmitter extends RedisClientImpl {
     public VideoEmitter() {
     }
 
+    public VideoEmitter(RedisClient client, String key) {
+      super(client);
+      this.output = key;
+      redis = createConnection();
+  }
+
     public VideoEmitter(String host, int port, String auth, String key) {
         this.setRedisHost(host);
         this.setRedisPort(port);
@@ -45,57 +51,74 @@ public class VideoEmitter extends RedisClientImpl {
         imageRef = img;
         sendParams(img);
     }
-
     public void sendImage(PImage img, int time) {
-        if (imageRef == null || img.width != imageRef.width || img.height != imageRef.height) {
-            setReference(img);
-        }
+      if (imageRef == null || img.width != imageRef.width || img.height != imageRef.height) {
+          setReference(img);
+      }
 
-        img.loadPixels();
-        byte[] imageData;
-        try {
-            imageData = integersToBytes(img.pixels);
-        } catch (IOException ex) {
-            Logger.getLogger(VideoEmitter.class.getName()).log(Level.SEVERE, null, ex);
-            System.err.println("Cannot convert image to bytes.");
-            return;
-        }
-        colorImageCount++;
+      img.loadPixels();
+      byte[] imageData;
+      try {
+          imageData = integersToBytes(img.pixels);
+      } catch (IOException ex) {
+          Logger.getLogger(VideoEmitter.class.getName()).log(Level.SEVERE, null, ex);
+          System.err.println("Cannot convert image to bytes.");
+          return;
+      }
 
-        String name = output;
-        byte[] id = name.getBytes();
-        JSONObject imageInfo = new JSONObject();
-        imageInfo.setLong("timestamp", time);
-        imageInfo.setLong("imageCount", colorImageCount);
-        redis.set(id, imageData);
-        redis.publish(id, imageInfo.toString().getBytes());
-        System.out.println("Sending (PUBLISH) image " + img.width + "x" + img.height + " to: " + output);
-    }
+      sendRawImage(imageData, time);
 
-    byte[] integersToBytes(int[] values) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        DataOutputStream dos = new DataOutputStream(baos);
-        for (int i = 0; i < values.length; ++i) {
-            dos.writeInt(values[i]);
-        }
+  }
 
-        return baos.toByteArray();
-    }
+  public void sendRawImage(byte[] imageData, int time) {
+      colorImageCount++;
+      byte[] id = output.getBytes();
+      JSONObject imageInfo = new JSONObject();
+      imageInfo.setLong("timestamp", time);
+      imageInfo.setLong("imageCount", colorImageCount);
+      try {
+          redis.set(id, imageData);
+          redis.publish(id, imageInfo.toString().getBytes());
+      } catch (Exception e) {
+          System.out.println("Sending: " + output + " : " + imageInfo.toString());
+          System.out.println("Exception: " + e);
+          e.printStackTrace();
+      }
+  }
 
+  public void republish() {
+      byte[] id = output.getBytes();
+      JSONObject imageInfo = new JSONObject();
+      imageInfo.setLong("timestamp", System.currentTimeMillis());
+      imageInfo.setLong("imageCount", colorImageCount);
+      redis.publish(id, imageInfo.toString().getBytes());
+  }
 
-    private void sendParams(PImage img) {
-        redis.set(output + ":width", Integer.toString(img.width));
-        redis.set(output + ":height", Integer.toString(img.height));
-        redis.set(output + ":channels", Integer.toString(4));
-        redis.clientSetname("VideoEmitter");
-        
-        if (img.format == RGB) {
-            redis.set(output + ":pixelformat", Camera.PixelFormat.RGB.toString());
-        }
+  byte[] integersToBytes(int[] values) throws IOException {
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      DataOutputStream dos = new DataOutputStream(baos);
+      for (int i = 0; i < values.length; ++i) {
+          dos.writeInt(values[i]);
+      }
 
-        if (img.format == ARGB) {
-            redis.set(output + ":pixelformat", Camera.PixelFormat.ARGB.toString());
-        }
+      return baos.toByteArray();
+  }
 
-    }
+  private void sendParams(PImage img) {
+      System.out.println("PImage: " + img);
+      System.out.println("connec: " + redis);
+      redis.set(output + ":width", Integer.toString(img.width));
+      redis.set(output + ":height", Integer.toString(img.height));
+      redis.set(output + ":channels", Integer.toString(4));
+      redis.clientSetname("VideoEmitter");
+
+      if (img.format == RGB) {
+          redis.set(output + ":pixelformat", Camera.PixelFormat.RGB.toString());
+      }
+
+      if (img.format == ARGB) {
+          redis.set(output + ":pixelformat", Camera.PixelFormat.ARGB.toString());
+      }
+
+  }
 }
