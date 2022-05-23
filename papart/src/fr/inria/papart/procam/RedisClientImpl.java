@@ -22,6 +22,16 @@ public class RedisClientImpl implements RedisClient {
     protected int redisPort = REDIS_PORT;
     private String redisAuth = NO_AUTH;
 
+    private static final RedisClientImpl mainClient = new RedisClientImpl();
+
+    public static RedisClientImpl getMainConnection() {
+        return mainClient;
+    }
+
+    public static Jedis createMainConnection() {
+        return mainClient.createConnection();
+    }
+
     @Override
     public Jedis createConnection() {
         Jedis jedis = new Jedis(redisHost, redisPort);

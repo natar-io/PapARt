@@ -44,8 +44,6 @@ public class MarkerBoardSvg extends MarkerBoard {
 
     public MarkerBoardSvg(String fileName, float width, float height) {
         super(fileName, width, height);
-        // Trackers not used
-//        trackers = new ArrayList<>();
         this.type = MarkerType.SVG;
 
         try {
@@ -61,7 +59,20 @@ public class MarkerBoardSvg extends MarkerBoard {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
 
+    public MarkerBoardSvg(String name, MarkerList markers) {
+      super(name, 200, 200);
+      this.type = MarkerType.SVG;
+      this.markersFromSVG = markers;
+    }
+
+    public MarkerList getMarkerList() {
+      return markersFromSVG;
+    }
+
+    public MarkerBoardSvg(String fileName) {
+      this(fileName, 200, 200);
     }
 
     @Override

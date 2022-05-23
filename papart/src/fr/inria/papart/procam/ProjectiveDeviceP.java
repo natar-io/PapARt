@@ -34,8 +34,11 @@ import static org.bytedeco.opencv.global.opencv_core.*;
 
 import processing.core.PApplet;
 import processing.core.PConstants;
+import processing.core.PMatrix2D;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
+import processing.data.JSONArray;
+import processing.data.JSONObject;
 import toxi.geom.ReadonlyVec3D;
 import toxi.geom.Vec3D;
 
@@ -90,6 +93,13 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
     public PMatrix3D getExtrinsics() {
         assert (this.hasExtrinsics());
         return this.extrinsics;
+    }
+
+    public void setExtrinsics(PMatrix3D extrinsics) {
+      if(!this.hasExtrinsics){
+          this.extrinsics = new PMatrix3D();
+      }
+      this.extrinsics.set(extrinsics);
     }
 
     public ProjectiveDevice getDevice() {
@@ -743,4 +753,109 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
                 + " fx " + fx + " fy " + fy
                 + " cx " + cx + " cy " + cy;
     }
+
+
+    public JSONObject toJSON() {
+      JSONObject output = new JSONObject();
+      output.setJSONArray("intrinsics", PMatrixToJSON(intrinsics));
+
+      if (extrinsics != null) {
+          output.setJSONArray("extrinsics", PMatrixToJSON(extrinsics));
+      }
+      output.setFloat("width", w);
+      output.setFloat("height", h);
+
+      output.setFloat("fx", fx);
+      output.setFloat("fy", fy);
+      output.setFloat("cx", cx);
+      output.setFloat("cy", cy);
+      return output;
+  }
+  
+  public static ProjectiveDeviceP loadFromJSON(JSONObject json) {
+      ProjectiveDeviceP pdp = new ProjectiveDeviceP();
+
+      pdp.setIntrinsics(JSONtoPMatrix(json.getJSONArray("intrinsics")));
+      
+      if(json.hasKey("extrinsics")){
+             pdp.setExtrinsics(JSONtoPMatrix(json.getJSONArray("extrinsics")));
+      }
+      pdp.w = (int) json.getFloat("width");
+      pdp.h = (int) json.getFloat("height");
+      
+//        pdp.fx = json.getFloat("fx");
+//        pdp.fy = json.getFloat("fy");
+//        pdp.cx = json.getFloat("cx");
+//        pdp.cy = json.getFloat("cy");
+      
+      pdp.updateFromIntrinsics();
+      return pdp;
+  }
+
+  public static JSONArray PMatrix2DToJSON(PMatrix2D mat) {
+      JSONArray output = new JSONArray();
+      output.append(mat.m00);
+      output.append(mat.m01);
+      output.append(mat.m02);
+
+      output.append(mat.m10);
+      output.append(mat.m11);
+      output.append(mat.m12);
+      return output;
+  }
+  
+  public static JSONArray PMatrixToJSON(PMatrix3D mat) {
+      JSONArray output = new JSONArray();
+      output.append(mat.m00);
+      output.append(mat.m01);
+      output.append(mat.m02);
+      output.append(mat.m03);
+
+      output.append(mat.m10);
+      output.append(mat.m11);
+      output.append(mat.m12);
+      output.append(mat.m13);
+
+      output.append(mat.m20);
+      output.append(mat.m21);
+      output.append(mat.m22);
+      output.append(mat.m23);
+
+      output.append(mat.m30);
+      output.append(mat.m31);
+      output.append(mat.m32);
+      output.append(mat.m33);
+      return output;
+  }
+
+  public static PMatrix3D JSONtoPMatrix(JSONArray array) {
+      return new PMatrix3D(
+              array.getFloat(0),
+              array.getFloat(1),
+              array.getFloat(2),
+              array.getFloat(3),
+              array.getFloat(4),
+              array.getFloat(5),
+              array.getFloat(6),
+              array.getFloat(7),
+              array.getFloat(8),
+              array.getFloat(9),
+              array.getFloat(10),
+              array.getFloat(11),
+              array.getFloat(12),
+              array.getFloat(13),
+              array.getFloat(14),
+              array.getFloat(15));
+  }
+  
+  public static PMatrix2D JSONtoPMatrix2D(JSONArray array) {
+      return new PMatrix2D(
+              array.getFloat(0),
+              array.getFloat(1),
+              array.getFloat(2),
+              array.getFloat(3),
+              array.getFloat(4),
+              array.getFloat(5));
+  }
+
 }

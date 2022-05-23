@@ -1,4 +1,4 @@
-package fr.inria.papart.procam.camera;
+package fr.inria.papart.apps;
 
 import redis.clients.jedis.Jedis;
 

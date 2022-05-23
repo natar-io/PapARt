@@ -1,4 +1,4 @@
-package fr.inria.papart.utils;
+package fr.inria.papart.apps;
 
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.codec.ByteArrayCodec;

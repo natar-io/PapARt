@@ -1,4 +1,4 @@
-package fr.inria.papart.utils;
+package fr.inria.papart.apps;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;

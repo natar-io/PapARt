@@ -1,4 +1,4 @@
-package fr.inria.papart.procam.camera;
+package fr.inria.papart.apps;
 
 import processing.core.*;
 import java.nio.ByteBuffer;
@@ -14,7 +14,11 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.ParseException;
 
 import fr.inria.papart.procam.RedisClientImpl;
-import fr.inria.papart.utils.NectarApplication;
+import fr.inria.papart.procam.camera.Camera;
+import fr.inria.papart.procam.camera.CameraFactory;
+import fr.inria.papart.procam.camera.CameraOpenNI2;
+import fr.inria.papart.procam.camera.CameraRGBIRDepth;
+import fr.inria.papart.procam.camera.CannotCreateCameraException;
 import redis.clients.jedis.Jedis;
 
 import processing.data.JSONObject;

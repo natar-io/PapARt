@@ -1,4 +1,4 @@
-package fr.inria.papart.utils;
+package fr.inria.papart.apps;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;

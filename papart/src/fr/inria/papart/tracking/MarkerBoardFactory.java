@@ -19,7 +19,10 @@
  */
 package fr.inria.papart.tracking;
 
+import fr.inria.papart.procam.RedisClientImpl;
 import fr.inria.papart.tracking.MarkerBoard.MarkerType;
+import processing.data.JSONArray;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -30,7 +33,8 @@ import java.util.HashMap;
 public class MarkerBoardFactory {
 
     private static final HashMap<String, MarkerBoard> allBoards = new HashMap<>();
-public static final int DEFAULT_WIDTH = 100, DEFAULT_HEIGHT = 100;
+    public static final int DEFAULT_WIDTH = 100, DEFAULT_HEIGHT = 100;
+    public static boolean USE_JSON = false;
     
     public static MarkerBoard create(String fileName) {
             return MarkerBoardFactory.create(fileName, DEFAULT_WIDTH, DEFAULT_HEIGHT);
@@ -54,6 +58,25 @@ public static final int DEFAULT_WIDTH = 100, DEFAULT_HEIGHT = 100;
                 output = new MarkerBoardJavaCV(fileName, width, height);
             }
 
+            if (type == MarkerType.SVG_NECTAR) {
+                
+              /**
+               * Experimental and buggy, to fix maybe.
+               */
+              if (USE_JSON) {
+                  String key = "markerboards:json:" + fileName;
+                  JSONArray markersJson = JSONArray.parse(RedisClientImpl.getMainConnection().createConnection().get(key));  // TODO: check that the get succeeded
+                  if (markersJson == null) {
+                      System.out.println("Cannot read marker configuration: " + fileName);
+                  }
+                  MarkerList markers = MarkerList.createFromJSON(markersJson);
+                  output = new MarkerBoardSvg(fileName, markers);
+                  System.out.println("Loaded markerboraBoard json: " + fileName);
+              } else {
+                  output = new MarkerBoardSvgNectar(fileName);
+              }
+          }
+
             if (type == MarkerType.SVG) {
                 output = new MarkerBoardSvg(fileName, width, height);
             }
@@ -69,16 +92,23 @@ public static final int DEFAULT_WIDTH = 100, DEFAULT_HEIGHT = 100;
     }
 
     private static MarkerType getType(String name) {
-        if (name.endsWith("cfg")) {
-            return MarkerType.ARTOOLKITPLUS;
-        }
-        if (name.endsWith("svg")) {
-            return MarkerType.SVG;
-        }
-        if (name.endsWith("png") || name.endsWith("jpg") || name.endsWith("bmp")) {
-            return MarkerType.JAVACV_FINDER;
-        }
-        return MarkerType.INVALID;
+
+
+        // Load board from file system if contains a '.' (dot) !
+        if (name.contains(".")) {
+          if (name.endsWith("cfg")) {
+              return MarkerType.ARTOOLKITPLUS;
+          }
+          if (name.endsWith("svg")) {
+              return MarkerType.SVG;
+          }
+          if (name.endsWith("png") || name.endsWith("jpg") || name.endsWith("bmp")) {
+              return MarkerType.JAVACV_FINDER;
+          }
+      } else {
+          return MarkerType.SVG_NECTAR;
+      }
+      return MarkerType.INVALID;
     }
 
 }

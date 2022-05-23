@@ -19,10 +19,14 @@
  */
 package fr.inria.papart.procam.camera;
 
+import fr.inria.papart.calibration.files.HomographyCalibration;
+import fr.inria.papart.procam.RedisClient;
 import fr.inria.papart.procam.RedisClientImpl;
 import fr.inria.papart.tracking.DetectedMarker;
 import org.bytedeco.opencv.opencv_core.*;
 import static org.bytedeco.opencv.global.opencv_core.IPL_DEPTH_8U;
+
+import processing.core.PMatrix3D;
 import processing.data.JSONArray;
 import processing.data.JSONObject;
 import redis.clients.jedis.BinaryJedisPubSub;
@@ -41,17 +45,28 @@ public class CameraNectar extends CameraRGBIRDepth {
     private String redisHost = DEFAULT_REDIS_HOST;
     private int redisPort = DEFAULT_REDIS_PORT;
     private DetectedMarker[] currentMarkers;
+
+    protected RedisClient redisClientGenerator = new RedisClientImpl();
     Jedis redisGet;
 
     protected final RedisClientImpl RedisClientGenerator = new RedisClientImpl();
 
-    protected CameraNectar(String cameraName) {
+    public CameraNectar(String cameraName) {
         this.cameraDescription = cameraName;
     }
     
     public String getCameraKey(){
         return this.cameraDescription;
     }
+
+    public RedisClient getRedisClient() {
+        return this.redisClientGenerator;
+    }
+
+    public void setRedisClient(RedisClient client) {
+        this.redisClientGenerator = client;
+    }
+
 
     @Override
     public void start() {
@@ -146,6 +161,73 @@ public class CameraNectar extends CameraRGBIRDepth {
             return new DetectedMarker[0];
         }
         return currentMarkers;
+    }
+
+ /**
+     * Fetch the calibrations(intrinsics) from Redis / Nectar.
+     */
+    public void loadCalibrations() {
+      redisGet = createConnection();
+      try {
+          JSONObject calib = JSONObject.parse(redisGet.get(cameraDescription + ":calibration"));
+          colorCamera.setCalibration(calib);
+      } catch (Exception e) {
+          System.out.println("cannot load camera (" + cameraDescription + ") calibration: " + e);
+          e.printStackTrace();
+      }
+      try {
+          JSONObject calib2 = JSONObject.parse(redisGet.get(cameraDescription + ":depth:calibration"));
+          depthCamera.setCalibration(calib2);
+      } catch (Exception e) {
+          System.out.println("cannot load depth camera  (" + cameraDescription + ") calibrations: " + e);
+          e.printStackTrace();
+      }
+  }
+
+    /**
+     * Fetch the extrinsics (color-depth) from Redis / Nectar.
+     */
+    public void loadStereoExtrinsics() {
+        Jedis connection = redisClientGenerator.createConnection();
+        String data = connection.get(cameraDescription + ":extrinsics:depth");
+        PMatrix3D extr = HomographyCalibration.CreateMatrixFrom(data);
+        depthCamera.setExtrinsics(extr);
+    }
+
+    /**
+     * Fetch the extrinsics (color-depth) from Redis / Nectar.
+     *
+     * @param key
+     */
+    public void loadExtrinsics(String key) {
+        Jedis connection = redisClientGenerator.createConnection();
+        String data = connection.get(cameraDescription + ":extrinsics:" + key);
+        PMatrix3D extr = HomographyCalibration.CreateMatrixFrom(data);
+        this.setExtrinsics(extr);
+    }
+
+    /**
+     * Fetch the extrinsics (color-depth) from Redis / Nectar.
+     *
+     * @param key
+     */
+    public void saveExtrinsics(String key) {
+        PMatrix3D extr = this.getExtrinsics();
+        HomographyCalibration hc = new HomographyCalibration();
+        hc.setMatrix(extr);
+        hc.saveToXML(redisClientGenerator, this.getCameraDescription() + ":extrinsics:" + key);
+    }
+
+    public void setTableLocation(PMatrix3D tableCenter) {
+        HomographyCalibration hc = new HomographyCalibration();
+        hc.setMatrix(tableCenter);
+        hc.saveToXML(redisClientGenerator, this.getCameraDescription() + ":table");
+    }
+
+    public PMatrix3D loadTableLocation() {
+        Jedis connection = redisClientGenerator.createConnection();
+        String data = connection.get(cameraDescription + ":table");
+        return HomographyCalibration.CreateMatrixFrom(data);
     }
 
     /**

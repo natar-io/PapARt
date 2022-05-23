@@ -48,7 +48,7 @@ import processing.core.PVector;
  */
 public abstract class MarkerBoard {
 
-    protected final String fileName;
+    protected String fileName;
     protected float width;
     protected float height;
     protected ArrayList<Camera> cameras;
@@ -73,7 +73,7 @@ public abstract class MarkerBoard {
 
     public enum MarkerType {
 
-        ARTOOLKITPLUS, JAVACV_FINDER, SVG, INVALID
+      ARTOOLKITPLUS, JAVACV_FINDER, SVG, SVG_NECTAR, INVALID
     }
 
     public MarkerType getMarkerType() {
@@ -84,19 +84,23 @@ public abstract class MarkerBoard {
         this.fileName = "Invalid MarkerBoard";
     }
 
-    public MarkerBoard(String fileName, float width, float height) {
-        this.fileName = fileName;
-        this.width = width;
-        this.height = height;
-        cameras = new ArrayList<Camera>();
-        filters = new ArrayList<OneEuroFilter[]>();
-        drawingMode = new ArrayList<Boolean>();
-        minDistanceDrawingMode = new ArrayList<Float>();
-        lastPos = new ArrayList<PVector>();
-        lastDistance = new ArrayList<Float>();
-        nextTimeEvent = new ArrayList<Integer>();
-        updateStatus = new ArrayList<Integer>();
-    }
+    public MarkerBoard(float width, float height) {
+      this.width = width;
+      this.height = height;
+      cameras = new ArrayList<Camera>();
+      filters = new ArrayList<OneEuroFilter[]>();
+      drawingMode = new ArrayList<Boolean>();
+      minDistanceDrawingMode = new ArrayList<Float>();
+      lastPos = new ArrayList<PVector>();
+      lastDistance = new ArrayList<Float>();
+      nextTimeEvent = new ArrayList<Integer>();
+      updateStatus = new ArrayList<Integer>();
+  }
+
+  public MarkerBoard(String fileName, float width, float height) {
+      this(width, height);
+      this.fileName = fileName;
+  }
 
     protected abstract void addTrackerImpl(Camera camera);
 
