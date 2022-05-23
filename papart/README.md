@@ -36,13 +36,21 @@ You will obtain a file named `PapARt.tar.gz` which unpacks like any other Proces
 
 
 #### Compilation: 
-mvn install -Djavacpp.platform=linux-x86_64
+mvn compile -Djavacpp.platform=linux-x86_64
 
 
-#### Run 
+#### Run Natar
 
+Video server: 
 `java -jar -Xmx64m target/papart-1.6-jar-with-dependencies.jar --driver OPENCV --device-id 0 --format rgb --output camera0 --resolution 640x480 --stream`
 
+Video Server:
+`mvn exec:java -Dexec.mainClass="fr.inria.papart.procam.camera.CameraServerImpl"  -Dexec.args=" --driver OPENCV --device-id 0 --format rgb --output camera0 --resolution 640x480 --stream"`
+
+Video client: 
+`mvn exec:java -Dexec.mainClass="fr.inria.papart.utils.CameraTest"  -Dexec.args="-i camera0"`
+
+Previous examples **Deprecated**:
 
 ```
 ## OpenCV camera
