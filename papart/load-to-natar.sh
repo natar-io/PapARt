@@ -15,3 +15,4 @@ mvn exec:java -Dexec.mainClass="${prog}" -Dexec.args="-p ${SKETCHBOOK}/libraries
 
 #Table
 mvn exec:java -Dexec.mainClass="${prog}" -Dexec.args="-p ${SKETCHBOOK}/libraries/PapARt/ -f data/calibration/tablePosition.xml -m -o camera0:table:position"
+mvn exec:java -Dexec.mainClass="${prog}" -Dexec.args="-p ${SKETCHBOOK}/libraries/PapARt/ -f data/calibration/tablePosition.xml -m -o camera0:table"
