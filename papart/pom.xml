@@ -19,7 +19,7 @@
 
         <repository>
             <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <url>https://oss.sonatype.org/content/repositories/$s</url>
         </repository>
 
         <repository>
@@ -31,6 +31,13 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+
+      <repository>
+        <id>reposilite-repository-releases</id>
+        <name>Reposilite Repository</name>
+        <url>http://repo.natar.fr/releases</url>
+      </repository>
+
     </repositories>
 
     <licenses>
@@ -114,7 +121,7 @@
         <dependency>
             <groupId>org.processing</groupId>
             <artifactId>core</artifactId>
-            <version>3.3.7</version>
+            <version>4.0-b8</version>
         </dependency>
 
         <!--Processing OpenGL-->
@@ -166,7 +173,7 @@
 
         <!--We package and distribute-->
         <dependency>
-            <groupId>tech.lity.rea</groupId>
+            <groupId>tech.lity.rea</gcroupId>
             <artifactId>SVGExtended</artifactId>
             <version>3.3.7.3</version>
         </dependency>
@@ -293,8 +300,6 @@
             <version>4.7</version>
             <scope>test</scope>
         </dependency>
-
-
     </dependencies>
 
     <reporting>

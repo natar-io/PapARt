@@ -517,7 +517,8 @@ public class Papart {
             return;
         }
         if (papart.shouldSetWindowLocation) {
-            papart.defaultFrameLocation();
+          // TODO: frame location to be tested in Processing 4. 
+          papart.defaultFrameLocation();
         }
         if (papart.shouldSetWindowSize) {
             papart.setFrameSize();
@@ -540,9 +541,8 @@ public class Papart {
      */
     public void defaultFrameLocation() {
         ScreenConfiguration screenConfiguration = getDefaultScreenConfiguration(this.applet);
-        this.applet.frame.setLocation(screenConfiguration.getProjectionScreenOffsetX(),
-                screenConfiguration.getProjectionScreenOffsetY());
-
+        // this.applet.frame.setLocation(screenConfiguration.getProjectionScreenOffsetX(),
+        //         screenConfiguration.getProjectionScreenOffsetY());
         GLWindow window = (GLWindow) applet.getSurface().getNative();
         window.setPosition(screenConfiguration.getProjectionScreenOffsetX(),
                 screenConfiguration.getProjectionScreenOffsetY());
@@ -558,9 +558,13 @@ public class Papart {
 
     protected static void removeFrameBorder(PApplet applet) {
         if (!applet.g.isGL()) {
-            applet.frame.removeNotify();
-            applet.frame.setUndecorated(true);
-            applet.frame.addNotify();
+            // applet.frame.removeNotify();
+            // applet.frame.setUndecorated(true);
+            // applet.frame.addNotify();
+
+            GLWindow window = (GLWindow) applet.getSurface().getNative();
+            // window.setAlwaysOnTop(true);
+            window.setUndecorated(true);
         }
     }
 
