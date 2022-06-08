@@ -19,7 +19,7 @@ backup=()
 options=()
 install=
 changelog=
-source=("${pkgname%-git}::git+ssh://git@forge.pole-aquinetic.net/RealityTech/PapARt.git#branch=1.4")
+source=("${pkgname%-git}::git+ssh://git@github.com:natar-io/PapARt.git#branch=1.4-github")
 md5sums=('SKIP')
 
 noextract=()

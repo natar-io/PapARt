@@ -32,7 +32,7 @@ import redis.clients.jedis.JedisPubSub;
 /**
  * TODO: Extend NectarApplication
  *
- * @author Jeremy Laviole, <laviole@rea.lity.tech>
+ * @author Jeremy Laviole, poqudrof@gmail.com
  */
 @SuppressWarnings("serial")
 public class PoseEstimator extends NectarApplication {

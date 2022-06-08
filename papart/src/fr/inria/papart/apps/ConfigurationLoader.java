@@ -29,7 +29,7 @@ import redis.clients.jedis.Jedis;
  * Load a configuration file: Projective Device, 3D Transformation (matrix), and
  * markerboards into Redis for Nectar.
  *
- * @author Jeremy Laviole, <laviole@rea.lity.tech>
+ * @author Jeremy Laviole, poqudrof@gmail.com
  */
 @SuppressWarnings("serial")
 public class ConfigurationLoader extends NectarApplication {

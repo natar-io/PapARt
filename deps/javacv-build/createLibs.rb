@@ -8,18 +8,19 @@ def build(platform, arch)
 
   puts "Build " + platform
 
-  if(platform == "linux")
-    %x(cp pom-linux.xml pom.xml)
-  else
-    %x(cp pom-other.xml pom.xml)
-  end
+  %x(mvn clean)
+  # if(platform == "linux")
+  %x(cp pom-#{platform}.xml pom.xml)
+  #else
+  #  %x(cp pom-other.xml pom.xml)
+  #end
 
   puts "Get the library"
 
   %x(mvn -Djavacpp.platform=#{platform}-#{arch} dependency:copy-dependencies)
 
-  %x(rm target/dependency/*linux*)   if platform.eql? "windows"
-  %x(rm target/dependency/*linux*)   if platform.eql? "macosx"
+  #%x(rm target/dependency/*linux*)   if platform.eql? "windows"
+  #%x(rm target/dependency/*linux*)   if platform.eql? "macosx"
 
   `mv target/dependency target/library`
   `mv target javacv`
@@ -37,7 +38,7 @@ end
 # build("linux", "armhf")
 # build("android", "arm")
 build("linux", "x86_64")
-# build("windows", "x86_64")
+build("windows", "x86_64")
 # build("macosx", "x86_64")
 # build("windows", "x86")
 

@@ -4,7 +4,7 @@ import redis.clients.jedis.Jedis;
 
 /**
  *
- * @author Jeremy Laviole, <laviole@rea.lity.tech>
+ * @author Jeremy Laviole, poqudrof@gmail.com
  */
 public abstract interface CameraServer {
 

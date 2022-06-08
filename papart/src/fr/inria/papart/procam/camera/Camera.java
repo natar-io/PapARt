@@ -192,7 +192,6 @@ public abstract class Camera extends Observable implements PConstants, HasExtrin
       /**
        * The public camera is the main one: usually the color.
        *
-       * @param camera
        * @return
        */
       public Camera getPublicCamera() {

@@ -21,7 +21,7 @@ import org.apache.commons.cli.ParseException;
 
 /**
  *
- * @author Jeremy Laviole, <laviole@rea.lity.tech>
+ * @author Jeremy Laviole, poqudrof@gmail.com
  */
 @SuppressWarnings("serial")
 public class CameraTestLettuce extends PApplet {

@@ -26,7 +26,7 @@ import processing.data.JSONObject;
 
 /**
  *
- * @author Jeremy Laviole, <laviole@rea.lity.tech>
+ * @author Jeremy Laviole, poqudrof@gmail.com
  */
 public class CameraServerImpl extends NectarApplication implements Runnable {
 
