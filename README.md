@@ -1,10 +1,112 @@
 ## PapARt Library
 
-PapARt is a software development kit (SDK) that enables the creation of interactive projection mapping. Today, it is developed by the Inria Potioc team. It comes from the augmented physical drawing tools created by Jeremy Laviole, which are documented in his PhD thesis (free to read).
+PapARt is a software development kit (SDK) that enables the creation of interactive projection mapping.
+It is a long running project by Jeremy Laviole, created by Inria, Bordeaux University and the lastest updates
+are from CATIE. 
+
+It comes from the augmented physical drawing tools created by Jeremy Laviole, which are documented in his PhD thesis (free to read).
+
+### Main features 
+
+#### Unified rendering - Projection and SeeThrough 
+
+It is possible to switch easily between AR on top of video (SeeThrough) and 
+AR using Projection just by changing a few lines of code. 
+
+#### Object tracking 
+
+The native tracking in PapARt is based on ARToolkitPlus, nowadays it is possible to 
+use higher quality marker tracking with ARUCO. 
+We have a built-in support for color detection in RGB, HSV and Cie XYZ color spaces. 
+The latest examples use custom circular tracking for colored stickers that provide 
+position, and orientation. 
+
+#### Arm, Hand, Finger tracking using depth cameras 
+
+Many depth cameras are supported : Kinect, Orbbec Astra, Realsense Depth cameras (older models). 
+For these depth images, we have two object detection, a simple one that detect and track 
+objects over a plane. The second one is a hierarchical tracking, of arm, hand and finger detection 
+and tracking. It achieves high quality results for finger tracking but it is still harder to tweak
+and requires more hardware resources.
+
+#### Integrated UI kit 
+
+We use a fork of ControlP5 called Skatalo which is updated to handle multiple "touch" events 
+instead of a single cursor and click. The elements detected and tracked can be used to activate
+widgets: buttons, toggles, sliders. 
+
+#### API at millimeter scale 
+
+We follow the Processing APIs, using millimeters instead of pixels. 
+The interesting consequence is that rendering can be adjusted following the 
+hardware capabilities and projector location. 
+
+#### Open source ecosystem 
+
+PapARt is build on top of Processing, OpenCV, JavaCV and JavaCPP. Our calibration 
+boards use the SVG format and are created using Inkscape. 
+
+The latest updates rely on Redis, ARUCO, and other open source projects. 
+
+This library is an outcome enabled by many open source communities. 
+#### Advanced examples
+
+
+We include advanced examples of uses: 
+
+* 3D Rendering inside a secondary screen (in PapARt initial article). 
+* Compatibility with Unity3D though Natar. 
+* 3D Scanner using Gray Code. 
+* Teaching of color blending application. 
+
+## PapARt 1.6 - Back to monolith 
+
+After a two years break a new version comes to life. It integrates back the Natar developments 
+and builds up a new structure from the micro-service creation experience. 
+
+The main update is the support of modern version of OpenCV : 4.5.4, and modern operating systems and machines. 
+This new support is permitted by the Processing community.
+
+* Windows 10/11 support. 
+* Arch linux support. 
+* OSX, M1 architecture. 
+
+Support on other architecture and devices should be possible, notably Raspberry PI or Android. 
+
+
+### *New* - Hardware production 
+
+PapARt hardware from RealityTech will be distributed soon with a free licence (Creative Commons). 
+The 3D models and sample calibrations for known hardware will be released. 
+
+The bill of materials will be included also, with projector, camera, screen support and
+recommended configuration. 
+
+Although RealityTech is not in operation anymore, we could help with the creation of such devices 
+and for research/industrial projects with PapARt you can contact us at CATIE:  j.laviole@catie.fr .
+
+### New features 
+#### Update to Processing 4 and Java 17
+
+Processing 4 is currently in beta, it brings support of Java 17. 
+We support again all major OS for this release. 
+#### Integration of Natar 
+
+Initially, Natar was the follow-up project of PapARt for larger projects.
+Natar is a communication protocol for images based on Redis. It features a support of 
+calibration files within Redis. 
+
+* There are now programs to load calibration files from PapARt to Redis to use in 
+other languages and SDKs, notably Unity3D. 
+* PapARt can be used to load cameras feeds to Natar, RGB, IR and Depth videos. 
+* Natar video feeds can be loaded into PapARt. 
+* Natar pose estimators using Aruco can be used in PapARt. 
+
+The full support and update is in progress and full tutorials are to be created. 
+
 
 
 ## PapARt 1.4.2 - Christmas 2021 Release 
-
 ### Everything is open-source 
 
 The last bits are opened, as RealityTech stopped its AR two years ago. 
