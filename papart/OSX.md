@@ -17,17 +17,5 @@ You can also install maven and ant to compile your software:
 
 `brew install openblas`
 
-### Install a custom version 
-
-https://blog.sandipb.net/2021/09/02/installing-a-specific-version-of-a-homebrew-formula/
-
-Openblas 0.3.20 is not yet published in javacpp-presets, and homebrew installs it. 
-
-```
-brew tap-new $USER/local-openblas
-brew extract --version=0.3.19 openblas $USER/local-openblas
-brew install $USER/local-openblas/openblas@0.3.19
-```
-
 ## Javacv 
 Download the Javacv release in the release assets.

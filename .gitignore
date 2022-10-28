@@ -16,3 +16,9 @@ lib
 /Papart-examples/
 *.tgz
 /papart/lib/target/
+
+# Dependencies
+deps/javacv-build/target/library/**/*.jar
+
+# OSX files
+**/.DS_Store
