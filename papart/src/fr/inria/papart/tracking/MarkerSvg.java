@@ -22,6 +22,9 @@ package fr.inria.papart.tracking;
 import java.util.ArrayList;
 import java.util.HashMap;
 import org.bytedeco.javacv.Marker;
+
+import fr.inria.papart.procam.ProjectiveDeviceP;
+
 import static processing.core.PApplet.println;
 import static processing.core.PConstants.RECT;
 import processing.core.PMatrix;
@@ -29,6 +32,8 @@ import processing.core.PMatrix2D;
 import processing.core.PMatrix3D;
 import processing.core.PShape;
 import processing.core.PVector;
+import processing.data.JSONArray;
+import processing.data.JSONObject;
 import processing.data.XML;
 import tech.lity.rea.svgextended.PShapeSVGExtended;
 
@@ -63,6 +68,33 @@ public class MarkerSvg implements Cloneable {
         }
         return new org.bytedeco.javacv.Marker(id, corners, 1.0);
     }
+
+
+    public JSONObject toJSON() {
+      JSONObject output = new JSONObject();
+      JSONArray cornersJ = new JSONArray();
+      // 4 coners
+      for (int i = 0; i < 4; i++) {
+          JSONObject corner = new JSONObject();
+          corner.setFloat("x", corners[i].x);
+          corner.setFloat("y", corners[i].y);
+          cornersJ.append(corner);
+      }
+      output.setJSONArray("corners", cornersJ);
+      output.setJSONArray("matrix2D", ProjectiveDeviceP.PMatrix2DToJSON(matrix));
+      output.setInt("id", id);
+      output.setFloat("size", size.x);
+      return output;
+  }
+
+  public static MarkerSvg createFromJSON(JSONObject input) {
+
+      PMatrix2D matrix = ProjectiveDeviceP.JSONtoPMatrix2D(input.getJSONArray("matrix2D"));
+      int id = input.getInt("id");
+      float s = input.getInt("size");
+
+      return new MarkerSvg(id, matrix, new PVector(s, s));
+  }
 
     public int getId() {
         return id;

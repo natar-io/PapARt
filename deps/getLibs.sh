@@ -17,17 +17,17 @@ unzip toxiclibs-complete-0020.zip
 rm toxiclibs-complete-0020.zip
 
 echo "SVGExtended"
-wget https://github.com/Rea-lity-Tech/SVGExtended/releases/download/3.3.7.2/SVGExtended.tgz
+wget https://github.com/natar-io/SVGExtended/releases/download/3.2.1/SVGExtended.tgz
 tar xvzf SVGExtended.tgz
 rm SVGExtended.tgz
 
 echo "SimplePointCloud"
-wget https://github.com/Rea-lity-Tech/SimplePointCloud/releases/download/1.0/SimplePointCloud.tgz
+wget https://github.com/natar-io/SimplePointCloud/releases/download/1.0/SimplePointCloud.tgz
 tar xvzf SimplePointCloud.tgz
 rm SimplePointCloud.tgz
 
 echo "ColorConverter"
-wget https://github.com/Rea-lity-Tech/ColorConverter/releases/download/0.1/ColorConverter.tgz
+wget https://github.com/natar-io/ColorConverter/releases/download/0.1/ColorConverter.tgz
 tar xvzf ColorConverter.tgz
 rm ColorConverter.tgz
 
@@ -47,7 +47,7 @@ unzip oscP5-0.9.8.zip
 rm oscP5-0.9.8.zip
 
 echo "Skatolo"
-wget https://github.com/Rea-lity-Tech/Skatolo/releases/download/1.1.1/skatolo.tgz
+wget https://github.com/natar-io/Skatolo/releases/download/1.1.1/skatolo.tgz
 tar xvzf skatolo.tgz
 rm skatolo.tgz
 
@@ -80,10 +80,10 @@ echo "Compile JavaCV"
 cd ..
 cd javacv-build
 ruby createLibs.rb
-mv javacv-*.tgz ../libraries
-cd ../libraries
-tar xvzf javacv-*.tgz
-rm javacv-*.tgz
+# mv javacv-*.tgz ../libraries
+# cd ../libraries
+# tar xvzf javacv-*.tgz
+# rm javacv-*.tgz
 
 ## Missing: OpenNI
 cd ..

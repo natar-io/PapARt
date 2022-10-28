@@ -9,7 +9,8 @@ def build(platform, arch)
 
   puts "Build " + platform
 
-  #if(platform == "linux")
+  %x(mvn clean)
+  # if(platform == "linux")
   %x(cp pom-#{platform}.xml pom.xml)
   #else
   #  %x(cp pom-other.xml pom.xml)
@@ -19,8 +20,10 @@ def build(platform, arch)
   # mvn -Djavacpp.platform=macosx-arm64 dependency:copy-dependencies -f pom-macosx.xml
   %x(mvn -Djavacpp.platform=#{platform}-#{arch} dependency:copy-dependencies -f pom-#{platform}.xml)
 
-  # %x(rm target/dependency/*linux*)   if platform.eql? "windows"
-  # %x(rm target/dependency/*linux*)   if platform.eql? "macosx"
+  %x(mvn -Djavacpp.platform=#{platform}-#{arch} dependency:copy-dependencies)
+
+  %x(rm target/dependency/*linux*)   if platform.eql? "windows"
+  %x(rm target/dependency/*linux*)   if platform.eql? "macosx"
 
   `mv target/dependency target/library`
   #`mv target javacv`
@@ -39,7 +42,7 @@ end
 # build("android", "arm")
 #build("linux", "x86_64")
 build("macosx", "arm64")
-# build("windows", "x86_64")
+#build("windows", "x86_64")
 # build("macosx", "x86_64")
 # build("windows", "x86")
 
