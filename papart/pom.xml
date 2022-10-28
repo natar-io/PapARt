@@ -173,7 +173,7 @@
 
         <!--We package and distribute-->
         <dependency>
-            <groupId>tech.lity.rea</gcroupId>
+            <groupId>tech.lity.rea</groupId>
             <artifactId>SVGExtended</artifactId>
             <version>3.3.7.3</version>
         </dependency>
