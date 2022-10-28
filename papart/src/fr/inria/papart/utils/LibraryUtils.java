@@ -114,8 +114,8 @@ public class LibraryUtils {
         case Windows:
           break;
         case MacOS:
-          System.out.println("PapARt data folder [HOME]: " + home + "/Processing/libraries/" + LIBRARY_NAME);
-          candidate = new File(home + "/Processing/libraries/" + LIBRARY_NAME + "/data");
+          System.out.println("PapARt data folder [HOME]: " + home + "/Documents/Processing/libraries/" + LIBRARY_NAME);
+          candidate = new File(home + "/Documents/Processing/libraries/" + LIBRARY_NAME + "/data");
           break;
         case Linux:
           candidate = new File(home + "/sketchbook/libraries/" + LIBRARY_NAME + "/data");

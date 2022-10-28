@@ -10,7 +10,6 @@
     <description>Paper Augmented Reality Toolkit</description>
     <url>https://github.com/natar-io/PapARt</url>
 
-
     <repositories>
         <repository>
             <id>clojars.org</id>
@@ -89,15 +88,7 @@
             <artifactId>commons-cli</artifactId>
             <version>1.4</version>
         </dependency>
-        
-
-        <dependency>
-            <groupId>org.openni</groupId>
-            <artifactId>OpenNI</artifactId>
-            <version>2.3.1</version>
-        </dependency>
-
-
+      
         <dependency>
             <groupId>tech.lity.rea</groupId>
             <artifactId>ColorConverter</artifactId>
@@ -109,13 +100,6 @@
             <artifactId>SimplePointCloud</artifactId>
             <version>0.1</version>
         </dependency>
-<!--    <dependency>
-            <groupId>org.openni</groupId>
-            <artifactId>OpenNI-bin</artifactId>
-            <version>2.3</version>
-            <scope>runtime</scope>
-        </dependency>-->
-
 
         <!--We distribute with PapARt-->
         <dependency>
@@ -151,6 +135,11 @@
         </dependency>
 
 
+        <dependency>
+            <groupId>org.openni</groupId>
+            <artifactId>OpenNI</artifactId>
+            <version>2.3.1</version>
+        </dependency>
 <!--        <dependency>
             <groupId>org.jogamp.jogl</groupId>
             <artifactId>newt-main</artifactId>
