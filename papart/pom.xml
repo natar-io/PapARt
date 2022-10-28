@@ -128,7 +128,7 @@
         <dependency>
             <groupId>org.processing</groupId>
             <artifactId>core</artifactId>
-            <version>4.0-b8</version>
+            <version>4.0.1</version>
         </dependency>
 
         <!--Processing OpenGL-->
