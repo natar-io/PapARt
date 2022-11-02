@@ -22,3 +22,4 @@ deps/javacv-build/target/library/**/*.jar
 
 # OSX files
 **/.DS_Store
+deps/javacv-build/pom.xml
