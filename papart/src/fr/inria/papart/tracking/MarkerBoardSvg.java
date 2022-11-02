@@ -29,7 +29,7 @@ import fr.inria.papart.procam.camera.CameraNectar;
 import fr.inria.papart.procam.camera.SubCamera;
 import java.io.File;
 import java.util.ArrayList;
-import org.bytedeco.javacpp.opencv_core;
+import org.bytedeco.opencv.opencv_core.*;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 import processing.data.XML;
@@ -44,8 +44,6 @@ public class MarkerBoardSvg extends MarkerBoard {
 
     public MarkerBoardSvg(String fileName, float width, float height) {
         super(fileName, width, height);
-        // Trackers not used
-//        trackers = new ArrayList<>();
         this.type = MarkerType.SVG;
 
         try {
@@ -61,7 +59,20 @@ public class MarkerBoardSvg extends MarkerBoard {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
 
+    public MarkerBoardSvg(String name, MarkerList markers) {
+      super(name, 200, 200);
+      this.type = MarkerType.SVG;
+      this.markersFromSVG = markers;
+    }
+
+    public MarkerList getMarkerList() {
+      return markersFromSVG;
+    }
+
+    public MarkerBoardSvg(String fileName) {
+      this(fileName, 200, 200);
     }
 
     @Override
@@ -80,7 +91,7 @@ public class MarkerBoardSvg extends MarkerBoard {
             int endTime,
             int mode,
             Camera camera,
-            opencv_core.IplImage img,
+            IplImage img,
             Object globalTracking) {
 
         // Get markers here

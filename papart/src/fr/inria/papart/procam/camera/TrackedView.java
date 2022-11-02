@@ -32,8 +32,10 @@ import java.nio.ByteBuffer;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.utils.WithSize;
 import java.util.ArrayList;
-import org.bytedeco.javacpp.opencv_core.CvMat;
-import org.bytedeco.javacpp.opencv_core.IplImage;
+
+import org.bytedeco.javacpp.indexer.FloatIndexer;
+import org.bytedeco.opencv.opencv_core.*;
+import org.bytedeco.opencv.opencv_core.IplImage;
 import processing.core.PApplet;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
@@ -215,16 +217,13 @@ public class TrackedView implements WithSize {
 
     public PImage getViewOf(Camera camera) {
         camera = Camera.checkActingCamera(camera);
-
         IplImage img = camera.getIplImage();
         if (!isExtractionReady(img)) {
             return null;
         }
-
         this.mainImage = img;
         this.camera = camera;
-
-        CvMat homography = computeHomography();
+        Mat homography = computeHomography();
 
         boolean useRGB = camera.getPixelFormat() == Camera.PixelFormat.RGB;
         // Convert to the good type... 
@@ -243,7 +242,7 @@ public class TrackedView implements WithSize {
         this.mainImage = img;
         this.camera = camera;
 
-        CvMat homography = computeHomography();
+        Mat homography = computeHomography();
 
         boolean useRGB = camera.getPixelFormat() == Camera.PixelFormat.RGB;
         // Convert to the good type... 
@@ -262,13 +261,14 @@ public class TrackedView implements WithSize {
         this.mainImage = img;
         this.camera = camera;
 
-        CvMat homography = computeHomography();
-        double[] homoMat = homography.get();
+        Mat homography = computeHomography();
+        // double[] homoMat = homography.get();
+        FloatIndexer homoMatIdx = homography.createIndexer();
         HomographyCalibration homoCalib = new HomographyCalibration();
         homoCalib.setMatrix(new PMatrix3D(
-                (float) homoMat[0], (float) homoMat[1], 0, (float) homoMat[2],
-                (float) homoMat[3], (float) homoMat[4], 0, (float) homoMat[5],
-                0, 0, 1, (float) homoMat[8],
+                homoMatIdx.get(0), homoMatIdx.get(1), 0, homoMatIdx.get(2),
+                homoMatIdx.get(3), homoMatIdx.get(4), 0, homoMatIdx.get(5),
+                0, 0, 1, homoMatIdx.get(8),
                 0, 0, 0, 1));
 //        homoCalib.setMatrix(new PMatrix3D(
 //                (float) homoMat[0], (float) homoMat[1], (float) homoMat[2], 0,
@@ -286,7 +286,7 @@ public class TrackedView implements WithSize {
 
         this.mainImage = img;
         this.camera = camera;
-        CvMat homography = computeHomography();
+        Mat homography = computeHomography();
         ImageUtils.remapImageIpl(homography, img, extractedIplImage);
         
         return extractedIplImage;
@@ -299,7 +299,7 @@ public class TrackedView implements WithSize {
 
         this.mainImage = img;
         this.camera = camera;
-        CvMat homography = computeHomography();
+        Mat homography = computeHomography();
         ImageUtils.remapImageIpl(homography, img, extractedIplImage);
         return extractedIplImage;
     }
@@ -318,19 +318,18 @@ public class TrackedView implements WithSize {
                 || (useManualConrers && cornersSet));
     }
 
-    private CvMat computeHomography() {
+    private Mat computeHomography() {
+
         if (!this.useListofPairs) {
             computeCorners();
         }
 
-//        System.out.println("ComputeHomograpy with these points: ");
-//        int k = 0;
-//        for (PVector screen : screenPixelCoordinates) {
-//            PVector img = imagePixelCoordinates.get(k);
-////            System.out.println("id: " + k + " scr: " + screen + " img: " + img);
-//            k++;
-//        }
-        CvMat homography = ImageUtils.createHomography(screenPixelCoordinates, imagePixelCoordinates);
+        HomographyCreator creator = new HomographyCreator(2, 2, screenPixelCoordinates.size());
+        for(int i = 0; i < screenPixelCoordinates.size(); i++) {
+          creator.addPoint(screenPixelCoordinates.get(i),imagePixelCoordinates.get(i));
+        }
+        Mat homography = creator.getHomographyMat();
+      
         return homography;
     }
 

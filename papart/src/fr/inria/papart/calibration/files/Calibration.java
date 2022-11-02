@@ -20,6 +20,8 @@
 package fr.inria.papart.calibration.files;
 
 import java.io.FileNotFoundException;
+
+import fr.inria.papart.procam.RedisClient;
 import processing.core.PApplet;
 import processing.data.XML;
 
@@ -51,6 +53,14 @@ public abstract class Calibration {
         
         parent.saveStrings(fileName, new String[] {builder.toString()});
     }
+
+    public void saveToXML(RedisClient client, String key) {
+      assert (isValid());
+      XML root = new XML(Calibration.CALIBRATION_XML_NAME);
+      this.addTo(root);
+      client.createConnection().set(key, root.toString());
+  }
+
 
     public void saveTo(PApplet parent, String fileName) {
         if (fileName.endsWith(".xml")) {

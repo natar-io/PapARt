@@ -36,7 +36,7 @@ import fr.inria.papart.procam.camera.SubCamera;
 import fr.inria.papart.procam.camera.SubDepthCamera;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.bytedeco.javacpp.opencv_core.IplImage;
+import org.bytedeco.opencv.*; //IplImage;
 import processing.core.PApplet;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
@@ -78,7 +78,7 @@ public abstract class DepthCameraDevice {
         return anotherCamera;
     }
 
-    public SubCamera getColorCamera() {
+    public Camera getColorCamera() {
         return camera.getColorCamera();
     }
 

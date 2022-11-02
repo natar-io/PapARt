@@ -34,6 +34,7 @@ import fr.inria.papart.calibration.files.PlaneCalibration;
 import fr.inria.papart.calibration.files.ScreenConfiguration;
 import fr.inria.papart.depthcam.devices.Kinect360;
 import fr.inria.papart.depthcam.analysis.DepthAnalysisImpl;
+import fr.inria.papart.depthcam.devices.DepthAstraPlus;
 import fr.inria.papart.depthcam.devices.DepthCameraDevice;
 import fr.inria.papart.depthcam.devices.KinectOne;
 import fr.inria.papart.depthcam.devices.NectarOpenNI;
@@ -50,6 +51,7 @@ import fr.inria.papart.multitouch.detection.ColorTracker;
 import fr.inria.papart.utils.LibraryUtils;
 import fr.inria.papart.procam.camera.CameraFactory;
 import fr.inria.papart.procam.camera.CameraNectar;
+import fr.inria.papart.procam.camera.CameraOpenCVDepth;
 import fr.inria.papart.procam.camera.CameraRGBIRDepth;
 import fr.inria.papart.procam.camera.CannotCreateCameraException;
 import fr.inria.papart.tracking.DetectedMarker;
@@ -515,7 +517,8 @@ public class Papart {
             return;
         }
         if (papart.shouldSetWindowLocation) {
-            papart.defaultFrameLocation();
+          // TODO: frame location to be tested in Processing 4. 
+          papart.defaultFrameLocation();
         }
         if (papart.shouldSetWindowSize) {
             papart.setFrameSize();
@@ -538,9 +541,8 @@ public class Papart {
      */
     public void defaultFrameLocation() {
         ScreenConfiguration screenConfiguration = getDefaultScreenConfiguration(this.applet);
-        this.applet.frame.setLocation(screenConfiguration.getProjectionScreenOffsetX(),
-                screenConfiguration.getProjectionScreenOffsetY());
-
+        // this.applet.frame.setLocation(screenConfiguration.getProjectionScreenOffsetX(),
+        //         screenConfiguration.getProjectionScreenOffsetY());
         GLWindow window = (GLWindow) applet.getSurface().getNative();
         window.setPosition(screenConfiguration.getProjectionScreenOffsetX(),
                 screenConfiguration.getProjectionScreenOffsetY());
@@ -556,9 +558,13 @@ public class Papart {
 
     protected static void removeFrameBorder(PApplet applet) {
         if (!applet.g.isGL()) {
-            applet.frame.removeNotify();
-            applet.frame.setUndecorated(true);
-            applet.frame.addNotify();
+            // applet.frame.removeNotify();
+            // applet.frame.setUndecorated(true);
+            // applet.frame.addNotify();
+
+            GLWindow window = (GLWindow) applet.getSurface().getNative();
+            // window.setAlwaysOnTop(true);
+            window.setUndecorated(true);
         }
     }
 
@@ -948,6 +954,15 @@ public class Papart {
         if (depthCamConfiguration.getCameraType() == Camera.Type.NECTAR) {
             depthCameraDevice = new NectarOpenNI(applet, cameraTracking);
         }
+
+        if (depthCamConfiguration.getCameraType() == Camera.Type.OPENCV_DEPTH) {
+          depthCameraDevice = new DepthAstraPlus(applet, cameraTracking);
+
+          // Start the Depth camera here.. TODO: clear this out.
+          //depthCameraDevice.getMainCamera().start();
+          // depthCameraDevice.getMainCamera().setThread();
+        }
+
 
         if (depthCameraDevice == null) {
             System.err.println("Could not load the depth camera !" + "Camera Type " + depthCamConfiguration.getCameraType());

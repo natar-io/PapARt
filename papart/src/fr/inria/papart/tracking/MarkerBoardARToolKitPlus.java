@@ -31,8 +31,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.bytedeco.javacpp.ARToolKitPlus;
-import org.bytedeco.javacpp.opencv_core;
+
+import org.bytedeco.javacpp.*;
+import org.bytedeco.artoolkitplus.*;
+import static org.bytedeco.artoolkitplus.global.ARToolKitPlus.*;
+
+import org.bytedeco.opencv.opencv_core.*;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 
@@ -46,7 +50,7 @@ public class MarkerBoardARToolKitPlus extends MarkerBoard {
 
     public MarkerBoardARToolKitPlus(String fileName, float width, float height) {
         super(fileName, width, height);
-        trackers = new ArrayList<ARToolKitPlus.TrackerMultiMarker>();
+        trackers = new ArrayList<TrackerMultiMarker>();
         this.type = MarkerType.ARTOOLKITPLUS;
     }
 
@@ -79,23 +83,23 @@ public class MarkerBoardARToolKitPlus extends MarkerBoard {
         //  - works with luminance (gray) images
         //  - can load a maximum of 0 non-binary pattern
         //  - can detect a maximum of 8 patterns in one image
-        ARToolKitPlus.TrackerMultiMarker tracker = new ARToolKitPlus.TrackerMultiMarker(camera.width(), camera.height(), 20, 6, 6, 6, 5);
+        TrackerMultiMarker tracker = new TrackerMultiMarker(camera.width(), camera.height(), 20, 6, 6, 6, 5);
 
         // Working in gray images. 
-        int pixfmt = ARToolKitPlus.PIXEL_FORMAT_LUM;
+        int pixfmt = PIXEL_FORMAT_LUM;
 
 //        switch (camera.getPixelFormat()) {
 //            case BGR:
-//                pixfmt = ARToolKitPlus.PIXEL_FORMAT_BGR;
+//                pixfmt = PIXEL_FORMAT_BGR;
 //                break;
 //            case RGB:
-//                pixfmt = ARToolKitPlus.PIXEL_FORMAT_RGB;
+//                pixfmt = PIXEL_FORMAT_RGB;
 //                break;
 //            case ARGB: // closest, not the same.
-//                pixfmt = ARToolKitPlus.PIXEL_FORMAT_ABGR;
+//                pixfmt = PIXEL_FORMAT_ABGR;
 //                break;
 //            case RGBA:
-//                pixfmt = ARToolKitPlus.PIXEL_FORMAT_RGBA;
+//                pixfmt = PIXEL_FORMAT_RGBA;
 //            default:
 //                throw new RuntimeException("ARtoolkit : Camera pixel format unknown");
 //        }
@@ -103,15 +107,15 @@ public class MarkerBoardARToolKitPlus extends MarkerBoard {
         tracker.setBorderWidth(0.125f);
         tracker.activateAutoThreshold(true);
 //        tracker.activateAutoThreshold(false);
-        tracker.setUndistortionMode(ARToolKitPlus.UNDIST_NONE);
-        tracker.setPoseEstimator(ARToolKitPlus.POSE_ESTIMATOR_RPP);
+        tracker.setUndistortionMode(UNDIST_NONE);
+        tracker.setPoseEstimator(POSE_ESTIMATOR_RPP);
 
-//            tracker.setPoseEstimator(ARToolKitPlus.POSE_ESTIMATOR_ORIGINAL_CONT);
-        tracker.setMarkerMode(ARToolKitPlus.MARKER_ID_BCH);
+//            tracker.setPoseEstimator(POSE_ESTIMATOR_ORIGINAL_CONT);
+        tracker.setMarkerMode(MARKER_ID_BCH);
 
         // TODO: find why  FULL RES is not working with a FULL HD image. 
-        tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_FULL_RES);
-//        tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_HALF_RES);
+        tracker.setImageProcessingMode(IMAGE_FULL_RES);
+//        tracker.setImageProcessingMode(IMAGE_HALF_RES);
 
         tracker.setUseDetectLite(false);
 //        tracker.setUseDetectLite(true);
@@ -140,9 +144,9 @@ public class MarkerBoardARToolKitPlus extends MarkerBoard {
 
     @Override
     protected void updatePositionImpl(int id, int currentTime, int endTime, int mode,
-            Camera camera, opencv_core.IplImage img, Object globalTracking) {
+            Camera camera, IplImage img, Object globalTracking) {
 
-        ARToolKitPlus.TrackerMultiMarker tracker = (ARToolKitPlus.TrackerMultiMarker) trackers.get(id);
+        TrackerMultiMarker tracker = (TrackerMultiMarker) trackers.get(id);
 
 //        tracker.getCamera().changeFrameSize(camera.width(), camera.height());
         // Find the markers
@@ -153,7 +157,7 @@ public class MarkerBoardARToolKitPlus extends MarkerBoard {
             return;
         }
 
-        ARToolKitPlus.ARMultiMarkerInfoT multiMarkerConfig = tracker.getMultiMarkerConfig();
+        ARMultiMarkerInfoT multiMarkerConfig = tracker.getMultiMarkerConfig();
 
         PVector currentPos = new PVector((float) multiMarkerConfig.trans().get(3),
                 (float) multiMarkerConfig.trans().get(7),
@@ -197,7 +201,7 @@ public class MarkerBoardARToolKitPlus extends MarkerBoard {
 
     }
 
-    private void update(ARToolKitPlus.ARMultiMarkerInfoT multiMarkerConfig, int id) {
+    private void update(ARMultiMarkerInfoT multiMarkerConfig, int id) {
         fr.inria.papart.multitouch.OneEuroFilter filter[] = filters.get(id);
 
         PMatrix3D inputMatrix = new PMatrix3D();

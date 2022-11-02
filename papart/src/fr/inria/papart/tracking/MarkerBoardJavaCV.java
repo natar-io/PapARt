@@ -25,8 +25,8 @@ import fr.inria.papart.tracking.ObjectFinder;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.bytedeco.javacpp.opencv_core;
-import static org.bytedeco.javacpp.opencv_imgcodecs.cvLoadImage;
+import org.bytedeco.opencv.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_imgcodecs.cvLoadImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
 
@@ -43,7 +43,7 @@ public class MarkerBoardJavaCV extends MarkerBoard {
     private final PVector botLeft = new PVector();
     private final PVector botRight = new PVector();
 
-    private opencv_core.IplImage imgToFind;
+    private IplImage imgToFind;
 
     public MarkerBoardJavaCV(String fileName, float width, float height) throws Exception {
         super(fileName, width, height);
@@ -114,7 +114,7 @@ public class MarkerBoardJavaCV extends MarkerBoard {
 
     @Override
     protected void updatePositionImpl(int id, int currentTime, int endTime, int mode,
-            Camera camera, opencv_core.IplImage img, Object globalTracking) {
+            Camera camera, IplImage img, Object globalTracking) {
 
 //        Do not find when not needed. 
         if (this.subscribersAmount == 0

@@ -3,122 +3,150 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fr.inria</groupId>
     <artifactId>papart-deps</artifactId>
-    <version>0.7-SNAPSHOT</version>
+    <version>1.6</version>
     <packaging>jar</packaging>
 
     <name>PapARt-deps</name>
     <description>Paper Augmented Reality Toolkit</description>
-    <url>http://papart.gforge.inria.fr</url>
-    
+    <url>https://github.com/natar-io/PapARt</url>
+
+      
     <repositories>
-        <repository>
-            <id>clojars.org</id>
-            <url>http://clojars.org/repo</url>
-        </repository>
+          <repository>
+              <id>clojars.org</id>
+              <url>http://clojars.org/repo</url>
+          </repository>
 
-        <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </repository>
+          <repository>
+              <id>ossrh</id>
+              <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+          </repository>
 
-        <repository>
-            <id>central</id>
-            <name>Maven Repository Switchboard</name>
-            <layout>default</layout>
-            <url>http://repo1.maven.org/maven2</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-    
-    <licenses>
-        <license>
-            <name> GNU Lesser General Public License version 2 (LGPLv2)</name>
-            <url>https://www.gnu.org/licenses/lgpl.html</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
-    
-    <developers>
-        <developer>
-            <name>Jeremy Laviole</name>
-            <email>jeremy.laviole@inria.fr</email>
-        </developer>
-    </developers>
+          <repository>
+              <id>central</id>
+              <name>Maven Repository Switchboard</name>
+              <layout>default</layout>
+              <url>http://repo1.maven.org/maven2</url>
+              <snapshots>
+                  <enabled>true</enabled>
+              </snapshots>
+          </repository>
+      </repositories>
+
+      <licenses>
+          <license>
+              <name> GNU Lesser General Public License version 2 (LGPLv2)</name>
+              <url>https://www.gnu.org/licenses/lgpl.html</url>
+              <distribution>repo</distribution>
+          </license>
+      </licenses>
+
+      <developers>
+          <developer>
+              <name>Jeremy Laviole</name>
+              <email>jeremy.laviole@inria.fr</email>
+          </developer>
+      </developers>
+
     
     
     <properties>
-        <platform>windows-${os.arch}</platform> <!-- For Android: -Dplatform=android-arm                                        -->
+      <platform>windows-${os.arch}</platform>
+      <!-- For Android: -Dplatform=android-arm -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.build.timestamp.format>yyyyMMddhhmm</maven.build.timestamp.format>
+        <javacpp.version>1.5.7</javacpp.version>
+        <javacpp.platform>windows-x86_64</javacpp.platform>
+
     </properties>
+
     
     <dependencies>
-           <!--JavaCPP-presets et JavaCV -->
-        <!--We package and distribute--> 
-     <dependency>
+   
+
+        <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacv</artifactId>
             <version>${javacpp.version}</version>
         </dependency>
-        
+
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>javacv-platform</artifactId>
+            <version>${javacpp.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacpp</artifactId>
             <version>${javacpp.version}</version>
         </dependency>
 
-   
-	<dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
+        <!-- Inport code taken from JavaCV-->
+
+         <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>opencv</artifactId>
+            <version>4.5.5-${javacpp.version}</version>
+        </dependency>
+
+         <dependency>
+            <groupId>org.bytedeco</groupId>
             <artifactId>opencv-platform</artifactId>
-            <version>3.4.0-${javacpp.version}</version>
+            <version>4.5.5-1.5.7</version>
         </dependency>
+
         <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <groupId>org.bytedeco</groupId>
             <artifactId>ffmpeg-platform</artifactId>
-            <version>3.4.1-${javacpp.version}</version>
+            <version>5.0-${javacpp.version}</version>
         </dependency>
+
         <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <groupId>org.bytedeco</groupId>
             <artifactId>flycapture-platform</artifactId>
-            <version>2.11.3.121-${javacpp.version}</version>
+            <version>2.13.3.31-${javacpp.version}</version>
         </dependency>
-        <!-- <dependency> -->
-        <!--     <groupId>org.bytedeco.javacpp-presets</groupId> -->
-        <!--     <artifactId>libdc1394-platform</artifactId> -->
-        <!--     <version>2.2.5-${javacpp.version}</version> -->
-        <!-- </dependency> -->
-        <dependency>
+        <!--        <dependency>
             <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>libdc1394</artifactId>
+            <version>2.2.4-${javacpp.version}</version>
+        </dependency>-->
+
+        <dependency>
+            <groupId>org.bytedeco</groupId>
             <artifactId>libfreenect-platform</artifactId>
-            <version>0.5.3-${javacpp.version}</version>
+            <version>0.5.7-${javacpp.version}</version>
         </dependency>
+
         <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>libfreenect2-platform</artifactId>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>libfreenect2</artifactId>
             <version>0.2.0-${javacpp.version}</version>
         </dependency>
+
         <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <groupId>org.bytedeco</groupId>
             <artifactId>librealsense-platform</artifactId>
-            <version>1.12.1-${javacpp.version}</version>
+            <version>1.12.4-1.5.7</version>
         </dependency>
         <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>videoinput-platform</artifactId>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>videoinput</artifactId>
             <version>0.200-${javacpp.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <groupId>org.bytedeco</groupId>
             <artifactId>artoolkitplus-platform</artifactId>
-            <version>2.3.1-${javacpp.version}</version>
+            <version>2.3.1-1.5.7</version>
         </dependency>
         <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>flandmark-platform</artifactId>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>flandmark</artifactId>
             <version>1.07-${javacpp.version}</version>
         </dependency>
-              
+
     </dependencies>
     
     <build>

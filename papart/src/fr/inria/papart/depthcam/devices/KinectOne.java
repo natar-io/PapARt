@@ -24,7 +24,7 @@ import fr.inria.papart.procam.Papart;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.CameraOpenKinect2;
 import fr.inria.papart.procam.camera.CannotCreateCameraException;
-import org.bytedeco.javacpp.opencv_core;
+import org.bytedeco.opencv.opencv_core.*;
 import processing.core.PApplet;
 
 /**
@@ -91,7 +91,7 @@ public final class KinectOne extends DepthCameraDevice {
         }
 
         @Override
-        public void updateDepth(opencv_core.IplImage depthImage) {
+        public void updateDepth(IplImage depthImage) {
             depthImage.getByteBuffer().get(depthRaw);
         }
     }

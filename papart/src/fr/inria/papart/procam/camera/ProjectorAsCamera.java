@@ -28,11 +28,13 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.bytedeco.javacpp.opencv_core;
-import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;
-import org.bytedeco.javacpp.opencv_core.IplImage;
-import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
-import static org.bytedeco.javacpp.opencv_imgproc.cvCvtColor;
+import org.bytedeco.opencv.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_core.IPL_DEPTH_8U;
+
+//import org.bytedeco.opencv.opencv_core.IplImage;
+
+import static org.bytedeco.opencv.global.opencv_imgproc.CV_BGR2GRAY;
+import static org.bytedeco.opencv.global.opencv_imgproc.cvCvtColor;
 import processing.core.PApplet;
 import processing.core.PImage;
 import redis.clients.jedis.BinaryJedisPubSub;
@@ -324,7 +326,7 @@ public class ProjectorAsCamera extends Camera {
         }
     }
 
-    private opencv_core.IplImage greyProjectorImage(opencv_core.IplImage projImage) {
+    private IplImage greyProjectorImage(IplImage projImage) {
 
         if (projImage.nChannels() == 1) {
             grayImage = projImage;
@@ -332,7 +334,7 @@ public class ProjectorAsCamera extends Camera {
         }
 
         if (grayImage == null) {
-            grayImage = opencv_core.IplImage.create(projector.getWidth(),
+            grayImage = IplImage.create(projector.getWidth(),
                     projector.getHeight(),
                     IPL_DEPTH_8U, 1);
         }

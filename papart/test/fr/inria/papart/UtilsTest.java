@@ -20,7 +20,7 @@
 package fr.inria.papart;
 
 import fr.inria.papart.utils.ARToolkitPlusUtils;
-import org.bytedeco.javacpp.opencv_core.IplImage;
+import org.bytedeco.opencv.opencv_core.IplImage;
 import processing.core.PApplet;
 
 /**

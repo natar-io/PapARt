@@ -19,7 +19,7 @@
 package fr.inria.papart.procam.camera;
 
 import fr.inria.papart.multitouch.DepthTouchInput;
-import org.bytedeco.javacpp.opencv_core.IplImage;
+import org.bytedeco.opencv.opencv_core.IplImage;
 
 /**
  *

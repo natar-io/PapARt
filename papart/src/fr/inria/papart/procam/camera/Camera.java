@@ -32,8 +32,10 @@ import fr.inria.papart.utils.ARToolkitPlusUtils;
 import fr.inria.papart.tracking.DetectedMarker;
 import fr.inria.papart.tracking.MarkerList;
 import fr.inria.papart.utils.WithSize;
-import org.bytedeco.javacpp.opencv_core.CvMat;
-import org.bytedeco.javacpp.opencv_core.IplImage;
+
+import static org.bytedeco.opencv.global.opencv_core.*;
+import org.bytedeco.opencv.opencv_core.IplImage;
+import org.bytedeco.opencv.opencv_core.CvMat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -48,6 +50,7 @@ import processing.core.PConstants;
 import processing.core.PImage;
 import processing.core.PMatrix3D;
 import processing.core.PVector;
+import processing.data.JSONObject;
 
 public abstract class Camera extends Observable implements PConstants, HasExtrinsics, WithSize {
 
@@ -66,7 +69,7 @@ public abstract class Camera extends Observable implements PConstants, HasExtrin
 
     public enum Type {
         OPENCV, FFMPEG, PROCESSING, REALSENSE, OPEN_KINECT, OPEN_KINECT_2,
-        FLY_CAPTURE, OPENNI2, NECTAR,
+        FLY_CAPTURE, OPENNI2, NECTAR, OPENCV_DEPTH,
         FAKE
     }
 
@@ -130,6 +133,10 @@ public abstract class Camera extends Observable implements PConstants, HasExtrin
         return sheets;
     }
 
+    public String getCameraDescription() {
+      return cameraDescription;
+  }
+
     abstract public void start();
 
     /// TESTING 
@@ -181,6 +188,22 @@ public abstract class Camera extends Observable implements PConstants, HasExtrin
         return camera;
     }
 
+
+      /**
+       * The public camera is the main one: usually the color.
+       *
+       * @return
+       */
+      public Camera getPublicCamera() {
+        if (this instanceof CameraRGBIRDepth) {
+            if (((CameraRGBIRDepth) this).getActingCamera() == null) {
+                throw new RuntimeException("Papart: Impossible to use the mainCamera, use a subCamera or set the ActAsX methods.");
+            }
+            return ((CameraRGBIRDepth) this).getActingCamera();
+        }
+        return this;
+    }
+    
     public abstract PImage getPImage();
 
     void setMarkers(DetectedMarker[] detectedMarkers) {
@@ -220,6 +243,14 @@ public abstract class Camera extends Observable implements PConstants, HasExtrin
         updateCalibration();
     }
 
+    public void setCalibration(JSONObject calibration) {
+      this.calibrationFile = "manual calibration";
+
+      pdp = ProjectiveDeviceP.loadFromJSON(calibration);
+//        pdp = ProjectiveDeviceP.createDevice(fx, fy, cx, cy, width(), height(), d1, d2, d3, d4, d5);
+      updateCalibration();
+  }
+  
     public void setCalibration(String fileName) {
         try {
             this.calibrationFile = fileName;

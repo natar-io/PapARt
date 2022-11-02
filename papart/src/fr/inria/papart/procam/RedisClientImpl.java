@@ -22,6 +22,16 @@ public class RedisClientImpl implements RedisClient {
     protected int redisPort = REDIS_PORT;
     private String redisAuth = NO_AUTH;
 
+    private static final RedisClientImpl mainClient = new RedisClientImpl();
+
+    public static RedisClientImpl getMainConnection() {
+        return mainClient;
+    }
+
+    public static Jedis createMainConnection() {
+        return mainClient.createConnection();
+    }
+
     @Override
     public Jedis createConnection() {
         Jedis jedis = new Jedis(redisHost, redisPort);
@@ -29,6 +39,13 @@ public class RedisClientImpl implements RedisClient {
             jedis.auth(redisAuth);
         }
         return jedis;
+    }
+    public RedisClientImpl() {
+    }
+
+    public RedisClientImpl(RedisClient client) {
+      this.setRedisHost(client.getRedisHost());
+      this.setRedisPort(client.getRedisPort());
     }
 
     @Override
@@ -45,6 +62,7 @@ public class RedisClientImpl implements RedisClient {
     public void setRedisAuth(String redisAuth) {
         this.redisAuth = redisAuth;
     }
+    
 
     @Override
     public int getRedisPort() {

@@ -19,8 +19,8 @@
  */
 package fr.inria.papart.procam.camera;
 
-import org.bytedeco.javacpp.opencv_core;
-import org.bytedeco.javacpp.opencv_core.IplImage;
+import org.bytedeco.opencv.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
 import java.nio.ByteBuffer;
 import processing.core.PApplet;
 import processing.core.PConstants;
@@ -52,8 +52,7 @@ public class CaptureIpl extends Capture implements PConstants {
     }
 
     private void init() {
-
-        iplImage = IplImage.create(width, height, opencv_core.IPL_DEPTH_8U, 4);
+        iplImage = IplImage.create(width, height, IPL_DEPTH_8U, 4);
     }
 
     @Override

@@ -22,13 +22,16 @@ package fr.inria.papart.tracking;
 import fr.inria.papart.procam.ProjectiveDeviceP;
 import java.util.ArrayList;
 import java.util.Arrays;
-import org.bytedeco.javacpp.ARToolKitPlus;
 
-import static org.bytedeco.javacpp.ARToolKitPlus.*;
+import org.bytedeco.javacpp.*;
+import org.bytedeco.artoolkitplus.*;
+import static org.bytedeco.artoolkitplus.global.ARToolKitPlus.*;
+
 import org.bytedeco.javacpp.IntPointer;
-import org.bytedeco.javacpp.opencv_core;
-import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_imgproc.cvFindCornerSubPix;
+import org.bytedeco.opencv.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_imgproc.cvFindCornerSubPix;
+
 import org.bytedeco.javacv.Marker;
 import processing.core.PGraphics;
 import processing.core.PMatrix3D;
@@ -135,8 +138,8 @@ public class DetectedMarker implements Cloneable {
         return getImage(id);
     }
 
-    public static ARToolKitPlus.MultiTracker createDetector(int width, int height) {
-        ARToolKitPlus.MultiTracker tracker = new ARToolKitPlus.MultiTracker(width, height);
+    public static MultiTracker createDetector(int width, int height) {
+        MultiTracker tracker = new MultiTracker(width, height);
 
         tracker.setPixelFormat(PIXEL_FORMAT_LUM);
         tracker.setBorderWidth(0.125f);
@@ -147,13 +150,13 @@ public class DetectedMarker implements Cloneable {
         tracker.setUndistortionMode(UNDIST_NONE);
 
 //      tracker.setPoseEstimator(POSE_ESTIMATOR_RPP);
-//      tracker.setPoseEstimator(ARToolKitPlus.POSE_ESTIMATOR_ORIGINAL);
-//      tracker.setPoseEstimator(ARToolKitPlus.POSE_ESTIMATOR_ORIGINAL_CONT);
-        tracker.setPoseEstimator(ARToolKitPlus.POSE_ESTIMATOR_RPP);
+//      tracker.setPoseEstimator(POSE_ESTIMATOR_ORIGINAL);
+//      tracker.setPoseEstimator(POSE_ESTIMATOR_ORIGINAL_CONT);
+        tracker.setPoseEstimator(POSE_ESTIMATOR_RPP);
 
         tracker.setMarkerMode(MARKER_ID_BCH);
 //        tracker.setImageProcessingMode(IMAGE_HALF_RES);
-        tracker.setImageProcessingMode(ARToolKitPlus.IMAGE_FULL_RES);
+        tracker.setImageProcessingMode(IMAGE_FULL_RES);
         tracker.setUseDetectLite(false);
         return tracker;
     }
@@ -168,7 +171,7 @@ public class DetectedMarker implements Cloneable {
         return imageCache[id];
     }
 
-    public static DetectedMarker[] detect(ARToolKitPlus.TrackerMultiMarker tracker, opencv_core.IplImage image) {
+    public static DetectedMarker[] detect(TrackerMultiMarker tracker, IplImage image) {
 
         int cameraWidth = image.width();
         int cameraHeight = image.height();
@@ -190,7 +193,7 @@ public class DetectedMarker implements Cloneable {
 //        tracker.setThreshold(128);
         int n = 0;
         IntPointer markerNum = new IntPointer(1);
-        ARToolKitPlus.ARMarkerInfo markers = new ARToolKitPlus.ARMarkerInfo(null);
+        ARMarkerInfo markers = new ARMarkerInfo(null);
 //        tracker.arDetectMarkerLite(image.imageData(), tracker.getThreshold() /* 100 */, markers, markerNum);
         tracker.arDetectMarker(image.imageData(), tracker.getThreshold() /* 100 */, markers, markerNum);
         DetectedMarker[] markers2 = new DetectedMarker[markerNum.get(0)];

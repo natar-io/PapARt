@@ -29,10 +29,10 @@ import fr.inria.papart.procam.camera.Camera;
 import java.util.ArrayList;
 import java.util.Arrays;
 import org.bytedeco.javacpp.indexer.UByteIndexer;
-import org.bytedeco.javacpp.opencv_core;
-import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_imgproc.*;
-import org.bytedeco.javacpp.opencv_core.IplImage;
+import org.bytedeco.opencv.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_imgproc.*;
+import org.bytedeco.opencv.opencv_core.IplImage;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PImage;
@@ -122,36 +122,40 @@ public class DepthAnalysisPImageView extends DepthAnalysisImpl {
      * @return
      */
     public PImage update(IplImage depth, IplImage color, int skip) {
+
         if(!initDone){
             initWithCalibrations(depthCameraDevice);
         }
+ 
         if (depth == null || color == null) {
             return validPointsPImage;
         }
 
         updateRawDepth(depth);
         if (color != null) {
-//            System.out.println("color: " + color.height()+  " " + color.width() + color.depth());
-//            System.out.println("colorraw: " + colorRaw.length);
+            // System.out.println("color: " + color.height()+  " " + color.width() + color.depth());
+            // System.out.println("colorraw: " + colorRaw.length);
             updateRawColor(color);
         }
+   
         depthData.clear();
         depthData.timeStamp = papplet.millis();
         validPointsPImage.loadPixels();
         // set a default color. 
-
+        
         Arrays.fill(validPointsPImage.pixels, papplet.color(0, 0, 0));
 
         // TODO: get the color with Kinect2... 
         if (this.colorCamera.getPixelFormat() == Camera.PixelFormat.RGB) {
             computeDepthAndDo(skip, new SetImageDataRGB());
         }
+
         if (this.colorCamera.getPixelFormat() == Camera.PixelFormat.BGR) {
             computeDepthAndDo(skip, new SetImageData());
         }
+
         validPointsPImage.updatePixels();
         return validPointsPImage;
-
     }
 
     class SetTouchInformation implements DepthPointManiplation {

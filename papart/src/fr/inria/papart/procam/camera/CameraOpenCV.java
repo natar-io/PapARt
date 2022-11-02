@@ -20,8 +20,8 @@
 package fr.inria.papart.procam.camera;
 
 import javassist.tools.reflect.CannotCreateException;
-import org.bytedeco.javacpp.opencv_core;
-import org.bytedeco.javacpp.opencv_core.IplImage;
+import org.bytedeco.opencv.opencv_core.*;
+// import org.bytedeco.opencv.IplImage;
 //import static org.bytedeco.javacpp.opencv_videoio.CAP_PROP_BUFFERSIZE;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.OpenCVFrameConverter;
@@ -34,85 +34,86 @@ import processing.core.PImage;
  */
 public class CameraOpenCV extends Camera {
 
-    private OpenCVFrameGrabber grabber;
-    private final OpenCVFrameConverter.ToIplImage converter;
+  private OpenCVFrameGrabber grabber;
+  private final OpenCVFrameConverter.ToIplImage converter;
 
-    protected CameraOpenCV(int cameraNo) {
-        this.systemNumber = cameraNo;
-        this.setPixelFormat(PixelFormat.BGR);
-        converter = new OpenCVFrameConverter.ToIplImage();
+  protected CameraOpenCV(int cameraNo) {
+    this.systemNumber = cameraNo;
+    this.setPixelFormat(PixelFormat.BGR);
+    converter = new OpenCVFrameConverter.ToIplImage();
+  }
+
+  @Override
+  public void start() {
+    OpenCVFrameGrabber grabberCV = new OpenCVFrameGrabber(this.systemNumber);
+    grabberCV.setImageWidth(width());
+    grabberCV.setImageHeight(height());
+    grabberCV.setFrameRate(frameRate);
+
+    if (this.captureFormat != null && this.captureFormat.length() > 0) {
+      grabberCV.setFormat(this.captureFormat);
     }
+    // grabberCV.setImageMode(FrameGrabber.ImageMode.RAW);
 
-    @Override
-    public void start() {
-        OpenCVFrameGrabber grabberCV = new OpenCVFrameGrabber(this.systemNumber);
-        grabberCV.setImageWidth(width());
-        grabberCV.setImageHeight(height());
-        grabberCV.setFrameRate(frameRate);
+    try {
+      grabberCV.start();
+      this.grabber = grabberCV;
+      this.isConnected = true;
+    } catch (Exception e) {
+      System.err.println("Could not start frameGrabber... " + e);
 
-        if (this.captureFormat != null && this.captureFormat.length() > 0) {
-            grabberCV.setFormat(this.captureFormat);
-        }
-//        grabberCV.setImageMode(FrameGrabber.ImageMode.RAW);
+      System.err.println("Could not camera start frameGrabber... " + e);
+      System.err.println("Camera ID " + this.systemNumber + " could not start.");
+      System.err.println("Check cable connection, ID and resolution asked.");
+      this.grabber = null;
+      parent.die("Cannot start camera.", new CannotCreateCameraException("Cannot load " + this.toString()));
+      System.exit(-1);
+      // throw new RuntimeException("Cannot start camera.");
 
-        try {
-            grabberCV.start();
-            this.grabber = grabberCV;
-            this.isConnected = true;
-        } catch (Exception e) {
-            System.err.println("Could not start frameGrabber... " + e);
-
-            System.err.println("Could not camera start frameGrabber... " + e);
-            System.err.println("Camera ID " + this.systemNumber + " could not start.");
-            System.err.println("Check cable connection, ID and resolution asked.");
-            this.grabber = null;
-            parent.die("Cannot start camera.", new CannotCreateCameraException("Cannot load " + this.toString()));
-            System.exit(-1);
-//            throw new RuntimeException("Cannot start camera.");
-
-        }
     }
+  }
 
-    @Override
-    public void grab() {
+  @Override
+  public void grab() {
 
-        if (this.isClosing()) {
-            return;
-        }
-        try {
-            IplImage img = converter.convertToIplImage(grabber.grab());
-            if (img != null) {
-                this.updateCurrentImage(img);
-            }
-        } catch (Exception e) {
-            System.err.println("Camera: OpenCV Grab() Error ! " + e);
-        }
+    if (this.isClosing()) {
+      return;
     }
+    try {
 
-    @Override
-    public PImage getPImage() {
-
-        if (currentImage != null) {
-            this.checkCamImage();
-            camImage.update(currentImage);
-            return camImage;
-        }
-        // TODO: exceptions !!!
-        return null;
+      IplImage img = converter.convertToIplImage(grabber.grab());
+      if (img != null) {
+        this.updateCurrentImage(img);
+      }
+    } catch (Exception e) {
+      System.err.println("Camera: OpenCV Grab() Error ! " + e);
     }
+  }
 
-    @Override
-    public void close() {
-        this.setClosing();
-        if (grabber != null) {
-            try {
-                grabber.stop();
-                System.out.println("Stopping grabber (OpencV)");
+  @Override
+  public PImage getPImage() {
 
-            } catch (Exception e) {
-                System.out.println("Impossible to close " + e);
-            }
-        }
+    if (currentImage != null) {
+      this.checkCamImage();
+      camImage.update(currentImage);
+      return camImage;
     }
+    // TODO: exceptions !!!
+    return null;
+  }
+
+  @Override
+  public void close() {
+    this.setClosing();
+    if (grabber != null) {
+      try {
+        grabber.stop();
+        System.out.println("Stopping grabber (OpencV)");
+
+      } catch (Exception e) {
+        System.out.println("Impossible to close " + e);
+      }
+    }
+  }
 
 }

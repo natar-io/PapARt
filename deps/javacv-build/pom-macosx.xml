@@ -3,13 +3,12 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fr.inria</groupId>
     <artifactId>papart-deps</artifactId>
-    <version>0.7-SNAPSHOT</version>
+      <version>1.6</version>
     <packaging>jar</packaging>
 
     <name>PapARt-deps</name>
     <description>Paper Augmented Reality Toolkit</description>
-    <url>http://papart.gforge.inria.fr</url>
-
+    <url>https://github.com/natar-io/PapARt</url>
     <repositories>
         <repository>
             <id>clojars.org</id>
@@ -49,106 +48,116 @@
 
 
     <properties>
-        <platform>macosx-${os.arch}</platform> <!-- For Android: -Dplatform=android-arm                                        -->
+    	<javacpp.version>1.5.7</javacpp.version>
+	    <javacpp.platform>macosx-arm64</javacpp.platform>
+      <platform>macosx-arm64</platform> <!-- For Android: -Dplatform=android-arm                                        -->
     </properties>
 
     <dependencies>
            <!--JavaCPP-presets et JavaCV -->
         <!--We package and distribute-->
-     <dependency>
+
+        <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacv</artifactId>
-            <version>${javacpp.version}</version>
+            <version>1.5.7</version>
         </dependency>
-        
+
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>javacv-platform</artifactId>
+            <version>1.5.7</version>
+            <scope>runtime</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacpp</artifactId>
-            <version>${javacpp.version}</version>
+            <version>1.5.7</version>
         </dependency>
 
-   
-	<dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
+        <!-- Inport code taken from JavaCV-->
+
+         <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>opencv</artifactId>
+            <version>4.5.5-1.5.7</version>
+        </dependency>
+
+         <dependency>
+            <groupId>org.bytedeco</groupId>
             <artifactId>opencv-platform</artifactId>
-            <version>3.4.0-${javacpp.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>ffmpeg-platform</artifactId>
-            <version>3.4.1-${javacpp.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>flycapture-platform</artifactId>
-            <version>2.11.3.121-${javacpp.version}</version>
-        </dependency>
-        <!-- <dependency> -->
-        <!--     <groupId>org.bytedeco.javacpp-presets</groupId> -->
-        <!--     <artifactId>libdc1394-platform</artifactId> -->
-        <!--     <version>2.2.5-${javacpp.version}</version> -->
-        <!-- </dependency> -->
-        <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>libfreenect-platform</artifactId>
-            <version>0.5.3-${javacpp.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>libfreenect2-platform</artifactId>
-            <version>0.2.0-${javacpp.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>librealsense-platform</artifactId>
-            <version>1.12.1-${javacpp.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>videoinput-platform</artifactId>
-            <version>0.200-${javacpp.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>artoolkitplus-platform</artifactId>
-            <version>2.3.1-${javacpp.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>flandmark-platform</artifactId>
-            <version>1.07-${javacpp.version}</version>
+            <version>4.5.5-1.5.7</version>
         </dependency>
 
-         <!--Freenect 2 is out for now...-->
-<!--        <dependency>
-            <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>libfreenect2</artifactId>
-            <version>0.2.0-1.2.2-SNAPSHOT</version>
+         <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>openblas</artifactId>
+            <version>0.3.20-1.5.7</version>
         </dependency>
+
+         <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>openblas-platform</artifactId>
+            <version>0.3.20-1.5.7</version>
+        </dependency>
+
         <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>ffmpeg-platform</artifactId>
+            <version>5.0-1.5.7</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>flycapture-platform</artifactId>
+            <version>2.13.3.31-1.5.7</version>
+        </dependency>
+        <!--        <dependency>
             <groupId>org.bytedeco.javacpp-presets</groupId>
-            <artifactId>libfreenect2</artifactId>
-            <version>0.2.0-1.2.2-SNAPSHOT</version>
-            <classifier>${platform}</classifier>
-            <scope>runtime</scope>
+            <artifactId>libdc1394</artifactId>
+            <version>2.2.4-1.5.7</version>
         </dependency>-->
 
-        <!-- <dependency> -->
-        <!--     <groupId>org.bytedeco.javacpp-presets</groupId> -->
-        <!--     <artifactId>librealsense</artifactId> -->
-        <!--     <version>1.9.6-1.3</version> -->
-        <!-- </dependency> -->
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>libfreenect-platform</artifactId>
+            <version>0.5.7-1.5.7</version>
+        </dependency>
 
-        <!-- <dependency> -->
-        <!--     <groupId>org.bytedeco.javacpp-presets</groupId> -->
-        <!--     <artifactId>librealsense</artifactId> -->
-        <!--     <version>1.9.6-1.3</version> -->
-        <!--     <classifier>${platform}</classifier> -->
-        <!--     <scope>runtime</scope> -->
-        <!-- </dependency> -->
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>libfreenect2</artifactId>
+            <version>0.2.0-1.5.7</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>librealsense-platform</artifactId>
+            <version>1.12.4-1.5.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>videoinput</artifactId>
+            <version>0.200-1.5.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>artoolkitplus</artifactId>
+            <version>2.3.1-1.5.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>artoolkitplus-platform</artifactId>
+            <version>2.3.1-1.5.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>flandmark</artifactId>
+            <version>1.07-1.5.7</version>
+        </dependency>
 
     </dependencies>
-
     <build>
         <sourceDirectory>src</sourceDirectory>
         <testSourceDirectory>test</testSourceDirectory>

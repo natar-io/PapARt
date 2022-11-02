@@ -19,7 +19,7 @@
  */
 package fr.inria.papart.procam.camera;
 
-import org.bytedeco.javacpp.opencv_core;
+import org.bytedeco.opencv.opencv_core.*;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.OpenKinect2FrameGrabber;
 import processing.core.PImage;
@@ -104,9 +104,10 @@ public class CameraOpenKinect2 extends CameraRGBIRDepth {
     @Override
     public void setUseColor(boolean use) {
         if (use) {
-            colorCamera.setPixelFormat(PixelFormat.ARGB);
-            colorCamera.type = SubCamera.Type.COLOR;
-            colorCamera.setSize(1920, 1080);
+            SubCamera cam = (SubCamera) colorCamera;
+            cam.setPixelFormat(PixelFormat.ARGB);
+            cam.type = SubCamera.Type.COLOR;
+            cam.setSize(1920, 1080);
             grabber.enableColorStream();
         }
              this.useColor = use;
@@ -125,7 +126,7 @@ public class CameraOpenKinect2 extends CameraRGBIRDepth {
 
     @Override
     public void grabColor() {
-        opencv_core.IplImage videoImage = grabber.getVideoImage();
+        IplImage videoImage = grabber.getVideoImage();
         if (videoImage != null) {
             colorCamera.updateCurrentImage(videoImage);
         }

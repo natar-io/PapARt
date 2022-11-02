@@ -8,7 +8,7 @@
 
     <name>PapARt-deps</name>
     <description>Paper Augmented Reality Toolkit</description>
-    <url>http://papart.gforge.inria.fr</url>
+    <url>https://github.com/natar-io/PapARt</url>
     
     <repositories>
         <repository>

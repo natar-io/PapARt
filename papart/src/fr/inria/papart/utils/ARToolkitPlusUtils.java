@@ -25,9 +25,8 @@ import fr.inria.papart.procam.camera.Camera.PixelFormat;
 
 import org.bytedeco.javacv.CameraDevice;
 import org.bytedeco.javacv.ProjectorDevice;
-import org.bytedeco.javacpp.opencv_imgproc;
-import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_calib3d.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_calib3d.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.OutputStream;

@@ -20,7 +20,7 @@
 package fr.inria.papart.tracking;
 
 import fr.inria.papart.procam.camera.Camera;
-import org.bytedeco.javacpp.opencv_core;
+import org.bytedeco.opencv.opencv_core.*;
 
 /**
  *
@@ -39,6 +39,6 @@ public class MarkerBoardInvalid extends MarkerBoard {
     }
 
     @Override
-    protected void updatePositionImpl(int id, int currentTime, int endTime, int mode, Camera camera, opencv_core.IplImage img, Object globalTracking) {
+    protected void updatePositionImpl(int id, int currentTime, int endTime, int mode, Camera camera, IplImage img, Object globalTracking) {
     }
 }
