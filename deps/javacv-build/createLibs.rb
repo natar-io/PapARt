@@ -20,18 +20,16 @@ def build(platform, arch)
   # mvn -Djavacpp.platform=macosx-arm64 dependency:copy-dependencies -f pom-macosx.xml
   %x(mvn -Djavacpp.platform=#{platform}-#{arch} dependency:copy-dependencies -f pom-#{platform}.xml)
 
-  %x(mvn -Djavacpp.platform=#{platform}-#{arch} dependency:copy-dependencies)
-
-  %x(rm target/dependency/*linux*)   if platform.eql? "windows"
-  %x(rm target/dependency/*linux*)   if platform.eql? "macosx"
+  #%x(rm target/dependency/*linux*)   if platform.eql? "windows"
+  #%x(rm target/dependency/*linux*)   if platform.eql? "macosx"
 
   `mv target/dependency target/library`
-  #`mv target javacv`
-  #`mv javacv/library/javacv-1.5.7.jar javacv/library/javacv.jar`
+  `mv target javacv`
+  `mv javacv/library/javacv-1.5.7.jar javacv/library/javacv.jar`
 
- # puts "compress library"
- # `tar -zcf javacv-#{platform}-#{arch}.tgz javacv`
- # `rm -rf javacv`
+  puts "compress library"
+  `tar -zcf javacv-#{platform}-#{arch}.tgz javacv`
+  `rm -rf javacv`
 
   puts "done javacv-" + platform + "-" + arch
 

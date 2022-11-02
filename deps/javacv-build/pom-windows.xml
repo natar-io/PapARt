@@ -3,12 +3,12 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fr.inria</groupId>
     <artifactId>papart-deps</artifactId>
-    <version>1.4</version>
+    <version>1.6</version>
     <packaging>jar</packaging>
 
     <name>PapARt-deps</name>
     <description>Paper Augmented Reality Toolkit</description>
-    <url>http://papart.gforge.inria.fr</url>
+    <url>https://github.com/natar-io/PapARt</url>
 
       
     <repositories>

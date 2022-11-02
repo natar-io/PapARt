@@ -3,12 +3,12 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fr.inria</groupId>
     <artifactId>papart-deps</artifactId>
-      <version>1.4</version>
+      <version>1.6</version>
     <packaging>jar</packaging>
 
     <name>PapARt-deps</name>
     <description>Paper Augmented Reality Toolkit</description>
-    <url>http://papart.gforge.inria.fr</url>
+    <url>https://github.com/natar-io/PapARt</url>
     <repositories>
         <repository>
             <id>clojars.org</id>
@@ -140,6 +140,11 @@
             <groupId>org.bytedeco</groupId>
             <artifactId>videoinput</artifactId>
             <version>0.200-1.5.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>artoolkitplus</artifactId>
+            <version>2.3.1-1.5.7</version>
         </dependency>
         <dependency>
             <groupId>org.bytedeco</groupId>

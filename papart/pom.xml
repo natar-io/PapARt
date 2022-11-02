@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fr.inria</groupId>
     <artifactId>papart</artifactId>
-    <version>1.6</version>
+    <version>1.6-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>PapARt</name>
@@ -31,11 +31,11 @@
             </snapshots>
         </repository>
 
-      <repository>
-        <id>reposilite-repository-releases</id>
-        <name>Reposilite Repository</name>
-        <url>http://repo.natar.fr/releases</url>
-      </repository>
+        <repository>
+          <id>natar-io-releases</id>
+          <name>Natar and PapARt repository</name>
+          <url>https://repo.natar.fr/releases</url>
+        </repository>
 
     </repositories>
 
@@ -54,6 +54,18 @@
         </developer>
     </developers>
 
+    <distributionManagement>
+      <snapshotRepository>
+      <id>natar-io</id>
+        <name>Natar and PapARt repository</name>
+        <url>https://repo.natar.fr/snapshots</url>
+     </snapshotRepository>
+      <repository>
+        <id>natar-io</id>
+        <name>Natar and PapARt repository</name>
+        <url>https://repo.natar.fr/releases</url>
+      </repository>  
+    </distributionManagement>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
