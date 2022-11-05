@@ -49,7 +49,7 @@ public class CalibratedStickerTracker extends ColorTracker {
 //       protected TouchDetectionColor touchDetectionCircles;
     public float bias = 1.00f;
     private int circleViewWidth, circleViewHeight;
-    private int[] conv;
+    private float[] conv;
     private byte[] innerCircles;
 
     public CalibratedStickerTracker(PaperScreen paperScreen, float size) {
@@ -134,7 +134,7 @@ public class CalibratedStickerTracker extends ColorTracker {
         circleView.setImageHeightPx(circleViewHeight);
         circleView.init();
         this.trackedView = circleView;
-        conv = new int[circleViewWidth * circleViewHeight];
+        conv = new float[circleViewWidth * circleViewHeight];
         innerCircles = new byte[circleViewWidth * circleViewHeight];
 
         innerCirclesDetection = new TouchDetectionInnerCircles(circleView);
@@ -196,7 +196,7 @@ public class CalibratedStickerTracker extends ColorTracker {
         // Convolution -> get the circles.
         for (int x = xstart; x < xend; x++) {
             for (int y = ystart; y < yend; y++) {
-                int c = convolution(x, y, matrix5conv, matrixsize, circleImage);
+                float c = convolution(x, y, matrix5conv, matrixsize, circleImage);
                 int loc = x + y * circleImage.width;
                 conv[loc] = c;
             }
@@ -205,11 +205,11 @@ public class CalibratedStickerTracker extends ColorTracker {
         for (int x = xstart; x < xend; x++) {
             for (int y = ystart; y < yend; y++) {
                 int loc = x + y * circleImage.width;
-                boolean v = erosion(x, y, circleImage.width, matrix3erode, 3, conv);
+                float v = erosion(x, y, circleImage.width, matrix3erode, 3, conv);
                 if (v) {
 //                    System.out.println("eroded ok: " + x + " " + y );
                 }
-                innerCircles[loc] = (byte) (v ? TouchDetectionInnerCircles.UNKNOWN_COLOR : TouchDetectionInnerCircles.INVALID_COLOR);
+                innerCircles[loc] = (byte) (v >= convolutionErr ? TouchDetectionInnerCircles.UNKNOWN_COLOR : TouchDetectionInnerCircles.INVALID_COLOR);
             }
         }
         // At this step, the circles are max  2x2 pixels wide booleans.
@@ -330,7 +330,7 @@ public class CalibratedStickerTracker extends ColorTracker {
      * @param img
      * @return
      */
-    private boolean erosion(int x, int y, int w, float[][] matrix, int matrixsize, int[] img) {
+    private float erosion(int x, int y, int w, float[][] matrix, int matrixsize, float[] img) {
         int matSum = 0;
         for (int i = 0; i < matrixsize; i++) {
             for (int j = 0; j < matrixsize; j++) {
@@ -350,13 +350,15 @@ public class CalibratedStickerTracker extends ColorTracker {
                 loc = PApplet.constrain(loc, 0, img.length - 1);
 
                 // Calculate erosion
-                if (matrix[i][j] == 1 && img[loc] >= convolutionMin) {
-                    sum++;
-                }
+                // if (matrix[i][j] == 1 && img[loc] >= convolutionMin) {
+                //     sum++;
+                // }
+
+                sum += img[loc]; 
 
             }
         }
-        return sum + convolutionErr >= matSum;
+        return sum / matSum; //  + convolutionErr >= matSum;
     }
 
     /**
@@ -370,8 +372,8 @@ public class CalibratedStickerTracker extends ColorTracker {
      * @param img
      * @return
      */
-    private int convolution(int x, int y, float[][] matrix, int matrixsize, PImage img) {
-        int total = 0;
+    private float convolution(int x, int y, float[][] matrix, int matrixsize, PImage img) {
+        float total = 0;
         int offset = matrixsize / 2;
         for (int i = 0; i < matrixsize; i++) {
             for (int j = 0; j < matrixsize; j++) {
@@ -382,9 +384,9 @@ public class CalibratedStickerTracker extends ColorTracker {
                 // Make sure we haven't walked off our image, we could do better here
                 loc = PApplet.constrain(loc, 0, img.pixels.length - 1);
                 // Calculate the convolution
-                total += ((img.pixels[loc] >> 16) & 0xFF) * matrix[i][j]; // r
-                total += ((img.pixels[loc] >> 8) & 0xFF) * matrix[i][j]; // g 
-                total += (img.pixels[loc] & 0xFF) * matrix[i][j];  // b
+                total += ((img.pixels[loc] >> 16) & 0xFF) * matrix[i][j] * 0.216f; // r
+                total += ((img.pixels[loc] >> 8) & 0xFF) * matrix[i][j] * 0.750f; // g 
+                total += (img.pixels[loc] & 0xFF) * matrix[i][j] * 0.072f;  // b
             }
         }
         return total;
