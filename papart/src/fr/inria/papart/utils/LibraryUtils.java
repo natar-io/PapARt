@@ -132,10 +132,13 @@ public class LibraryUtils {
 
     // Use env variable after
     String sketchbook = System.getenv("SKETCHBOOK");
-    if (new File(sketchbook).exists()) {
-      System.out.println("Papart data path [env SKETCHBOOK]: " + sketchbook +
-          "/libraries/" + LIBRARY_NAME + "/data");
-      return sketchbook + "/libraries/" + LIBRARY_NAME + "/data";
+    if(sketchbook != null){
+      File f = new File(sketchbook);
+      if (f != null && f.exists()) {
+        System.out.println("Papart data path [env SKETCHBOOK]: " + sketchbook +
+            "/libraries/" + LIBRARY_NAME + "/data");
+        return sketchbook + "/libraries/" + LIBRARY_NAME + "/data";
+      }
     }
 
     // Use the jar to find the data folder -- any OS.
