@@ -47,10 +47,11 @@ public class PlaneCalibration extends Calibration {
 
     private float height = HEIGHT_NOT_SET;
     private Plane plane;
-    
-    public PlaneCalibration(){}
-    
-    public PlaneCalibration(Plane p, float height){
+
+    public PlaneCalibration() {
+    }
+
+    public PlaneCalibration(Plane p, float height) {
         this.plane = p;
         this.height = height;
     }
@@ -66,7 +67,7 @@ public class PlaneCalibration extends Calibration {
         } else if (d > MathUtils.EPS) {
             return true;
         }
-        return true; //ON_PLANE;
+        return true; // ON_PLANE;
     }
 
     public boolean hasGoodOrientationAndDistance(Vec3D point) {
@@ -180,6 +181,7 @@ public class PlaneCalibration extends Calibration {
 
     @Override
     public void loadFrom(PApplet parent, String fileName) {
+        System.out.println("Loading plane calibration: " + fileName);
         XML root = parent.loadXML(fileName);
         XML planeNode = root.getChild(PLANE_XML_NAME);
         XML posNode = planeNode.getChild(PLANE_POS_XML_NAME);
@@ -227,14 +229,15 @@ public class PlaneCalibration extends Calibration {
         PlaneCalibration planeCalibration = planeCreator.getPlaneCalibration();
 
         planeCalibration.flipNormal();
-//        planeCalibration.moveAlongNormal(DEFAULT_PLANE_SHIFT);
+        // planeCalibration.moveAlongNormal(DEFAULT_PLANE_SHIFT);
         assert (planeCalibration.isValid());
         return planeCalibration;
     }
 
     @Override
     public void addTo(StringBuilder yaml) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
+                                                                       // Tools | Templates.
     }
 
 }

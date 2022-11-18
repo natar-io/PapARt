@@ -35,7 +35,7 @@ public class ColorReferenceThresholds {
 
     private static final ColorConverter converter = new ColorConverter();
 
-    // TODO: remove (clean)  RGB and HSB values.
+    // TODO: remove (clean) RGB and HSB values.
     public float brightness, saturation;
     public float hue;
     public float redThreshold, blueThreshold, greenThreshold;
@@ -106,7 +106,8 @@ public class ColorReferenceThresholds {
 
         double[] lab = converter.RGBtoLAB((int) this.red(c), (int) this.green(c), (int) this.blue(c));
         boolean updated = false;
-//        System.out.println("Updated color: " + this.id + " before: " + this.averageL + " " + this.averageA + " " + this.averageB);
+        // System.out.println("Updated color: " + this.id + " before: " + this.averageL
+        // + " " + this.averageA + " " + this.averageB);
 
         if (this.averageL - (float) lab[0] > 2f) {
             this.averageL = (averageL + (float) lab[0]) / 2.0f;
@@ -121,21 +122,22 @@ public class ColorReferenceThresholds {
             this.averageB = (averageB + (float) lab[2]) / 2.0f;
             updated = true;
         }
-//        // Narrow the thresholds
-//        if (this.AThreshold > 3) {
-//            this.AThreshold = this.AThreshold * 0.9f;
-//        }
-//        if (this.LThreshold > 3) {
-//            this.LThreshold = this.LThreshold * 0.9f;
-//        }
-//        if (this.BThreshold > 3) {
-//            this.BThreshold = this.BThreshold * 0.9f;
-//        }
+        // // Narrow the thresholds
+        // if (this.AThreshold > 3) {
+        // this.AThreshold = this.AThreshold * 0.9f;
+        // }
+        // if (this.LThreshold > 3) {
+        // this.LThreshold = this.LThreshold * 0.9f;
+        // }
+        // if (this.BThreshold > 3) {
+        // this.BThreshold = this.BThreshold * 0.9f;
+        // }
 
         if (updated) {
-            System.out.println("Updated color: " + this.id + " after: " + this.averageL + " " + this.averageA + " " + this.averageB);
+            System.out.println("Updated color: " + this.id + " after: " + this.averageL + " " + this.averageA + " "
+                    + this.averageB);
         }
-//        System.out.println("Updated color: " + this.id);
+        // System.out.println("Updated color: " + this.id);
     }
 
     /**
@@ -155,10 +157,9 @@ public class ColorReferenceThresholds {
         double A = constrain(lab[1], -128, 128);
         double B = constrain(lab[2], -128, 128);
 
-        double d
-                = Math.sqrt(Math.pow(l - averageL, 2)
-                        + Math.pow(A - averageA, 2)
-                        + Math.pow(B - averageB, 2));
+        double d = Math.sqrt(Math.pow(l - averageL, 2)
+                + Math.pow(A - averageA, 2)
+                + Math.pow(B - averageB, 2));
         return (float) d;
     }
 
@@ -179,10 +180,9 @@ public class ColorReferenceThresholds {
         double A = constrain(lab[1], -128, 128);
         double B = constrain(lab[2], -128, 128);
 
-        double d
-                = Math.sqrt(Math.pow(l - initL, 2)
-                        + Math.pow(A - initA, 2)
-                        + Math.pow(B - initB, 2));
+        double d = Math.sqrt(Math.pow(l - initL, 2)
+                + Math.pow(A - initA, 2)
+                + Math.pow(B - initB, 2));
         return (float) d;
     }
 
@@ -232,7 +232,7 @@ public class ColorReferenceThresholds {
         setReferenceColor(c);
     }
 
-    public static String[] INVALID_COLOR = new String[]{""};
+    public static String[] INVALID_COLOR = new String[] { "" };
 
     public String[] createReference(int[] colorData) {
 
@@ -302,12 +302,12 @@ public class ColorReferenceThresholds {
                 averageHue += h;
             }
             averageHue /= colorData.length;
-//                if (averageHue > 255) {
-//                    averageHue = averageHue - 255;
-//                }
+            // if (averageHue > 255) {
+            // averageHue = averageHue - 255;
+            // }
         }
 
-//            int averageCol = color(averageR, averageG, averageBlue);
+        // int averageCol = color(averageR, averageG, averageBlue);
         int[] averageColTmp = converter.LABtoRGB(averageL, averageA, averageB);
 
         int averageCol = color(
@@ -315,7 +315,7 @@ public class ColorReferenceThresholds {
                 (int) constrain(averageColTmp[1], 0, 255),
                 (int) constrain(averageColTmp[2], 0, 255));
 
-//            color(averageR, averageG, averageBlue);
+        // color(averageR, averageG, averageBlue);
         for (int i = 0; i < colorData.length; i++) {
             int c = colorData[i];
 
@@ -349,7 +349,7 @@ public class ColorReferenceThresholds {
 
         // Check the stdev... when too high the value is not stored.
         if (stdevL > 40 || stdevA > 40 || stdevB > 40) {
-//            System.out.println("Could not determine color");
+            // System.out.println("Could not determine color");
             return INVALID_COLOR;
         }
 
@@ -439,10 +439,11 @@ public class ColorReferenceThresholds {
     public static ColorReferenceThresholds[] loadDefaultThresholds(int numberOfRefs) {
         ColorReferenceThresholds[] references = new ColorReferenceThresholds[numberOfRefs];
 
-        // Load all the colors. 
+        // Load all the colors.
         for (int fileId = 0; fileId < numberOfRefs; fileId++) {
             String fileName = Papart.colorThresholds + fileId + ".txt";
             String[] list = Papart.getPapart().getApplet().loadStrings(fileName);
+            System.out.println("Loading color file: " + fileName);
 
             references[fileId] = new ColorReferenceThresholds();
 

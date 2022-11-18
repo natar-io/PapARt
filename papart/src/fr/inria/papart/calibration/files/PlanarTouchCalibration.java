@@ -48,19 +48,19 @@ public class PlanarTouchCalibration extends Calibration {
     static final String TEST4_XML_NAME = "Test4";
     static final String TEST5_XML_NAME = "Test5";
 
-    // Variable parameters... going to a specific class for saving.  
-    private float maximumDistance = 10f;    // in mm
-    private float maximumDistanceInit = 50f;    // in mm
+    // Variable parameters... going to a specific class for saving.
+    private float maximumDistance = 10f; // in mm
+    private float maximumDistanceInit = 50f; // in mm
     private float minimumHeight = 1; // mm
     private float normalFilter = 1; // normalized distance to angle
 
-    private int minimumComponentSize = 3;   // in px
+    private int minimumComponentSize = 3; // in px
     private int searchDepth = 10;
     private int maximumRecursion = 500;
     private int precision = 2; // pixels
 
     // tracking
-    private int trackingForgetTime = 250; // ms 
+    private int trackingForgetTime = 250; // ms
     private float trackingMaxDistance = 30; // in mm
 
     // Testing
@@ -165,6 +165,7 @@ public class PlanarTouchCalibration extends Calibration {
 
     @Override
     public void loadFrom(PApplet parent, String fileName) {
+        System.out.println("Loading touch calibration: " + fileName);
         XML root = parent.loadXML(fileName);
         XML planarTouchCalibNode = root.getChild(PLANAR_TOUCH_CALIBRATION_XML_NAME);
         getFrom(planarTouchCalibNode);
@@ -303,7 +304,8 @@ public class PlanarTouchCalibration extends Calibration {
 
     @Override
     public void addTo(StringBuilder yaml) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
+                                                                       // Tools | Templates.
     }
 
 }

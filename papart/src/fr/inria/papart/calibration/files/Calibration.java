@@ -36,6 +36,7 @@ public abstract class Calibration {
     public abstract boolean isValid();
 
     public abstract void addTo(XML xml);
+
     public abstract void addTo(StringBuilder yaml);
 
     public abstract void replaceIn(XML xml);
@@ -46,23 +47,24 @@ public abstract class Calibration {
         this.addTo(root);
         parent.saveXML(root, fileName);
     }
+
     public void saveToYAML(PApplet parent, String fileName) {
         assert (isValid());
         StringBuilder builder = new StringBuilder("%YAML:1.0\n");
         this.addTo(builder);
-        
-        parent.saveStrings(fileName, new String[] {builder.toString()});
+
+        parent.saveStrings(fileName, new String[] { builder.toString() });
     }
 
     public void saveToXML(RedisClient client, String key) {
-      assert (isValid());
-      XML root = new XML(Calibration.CALIBRATION_XML_NAME);
-      this.addTo(root);
-      client.createConnection().set(key, root.toString());
-  }
-
+        assert (isValid());
+        XML root = new XML(Calibration.CALIBRATION_XML_NAME);
+        this.addTo(root);
+        client.createConnection().set(key, root.toString());
+    }
 
     public void saveTo(PApplet parent, String fileName) {
+        System.out.println("Saving calibration file: " + fileName);
         if (fileName.endsWith(".xml")) {
             saveToXML(parent, fileName);
         }
@@ -73,6 +75,7 @@ public abstract class Calibration {
 
     public void replaceIn(PApplet parent, String fileName) {
         assert (isValid());
+        System.out.println("Updating calibration: " + fileName);
         XML root = parent.loadXML(fileName);
         this.replaceIn(root);
         parent.saveXML(root, fileName);

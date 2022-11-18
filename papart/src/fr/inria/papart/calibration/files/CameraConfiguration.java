@@ -29,8 +29,8 @@ import processing.data.XML;
  *
  * @author Jeremy Laviole laviole@rea.lity.tech
  */
-public class CameraConfiguration  extends Calibration {
-    
+public class CameraConfiguration extends Calibration {
+
     static final String CAMERA_XML_NAME = "Camera";
     static final String CAMERA_ID_XML_NAME = "CameraID";
     static final String CAMERA_NAME_XML_NAME = "CameraName";
@@ -56,23 +56,24 @@ public class CameraConfiguration  extends Calibration {
 
     @Override
     public void replaceIn(XML xml) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
+                                                                       // Tools | Templates.
     }
-    
-    public Camera createCamera() throws CannotCreateCameraException{
-       return CameraFactory.createCamera(cameraType, cameraName, cameraFormat);
+
+    public Camera createCamera() throws CannotCreateCameraException {
+        return CameraFactory.createCamera(cameraType, cameraName, cameraFormat);
     }
 
     @Override
     public void loadFrom(PApplet parent, String fileName) {
-        // throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-
+        // throw new UnsupportedOperationException("Not supported yet."); //To change
+        // body of generated methods, choose Tools | Templates.
+        System.out.println("Loading configuration file : " + fileName);
         XML root = parent.loadXML(fileName);
 
         XML cameraNode = root.getChild(CAMERA_XML_NAME);
         loadCameraFrom(cameraNode);
     }
-
 
     private void loadCameraFrom(XML cameraNode) {
         this.cameraName = cameraNode.getString(CAMERA_NAME_XML_NAME);
@@ -103,6 +104,7 @@ public class CameraConfiguration  extends Calibration {
     public String getCameraFormat() {
         return cameraFormat;
     }
+
     public String getCaptureFormat() {
         return captureFormat;
     }
@@ -121,6 +123,7 @@ public class CameraConfiguration  extends Calibration {
 
     @Override
     public void addTo(StringBuilder yaml) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
+                                                                       // Tools | Templates.
     }
 }

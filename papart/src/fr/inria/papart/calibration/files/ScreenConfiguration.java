@@ -27,20 +27,20 @@ import processing.data.XML;
  *
  * @author Jeremy Laviole laviole@rea.lity.tech
  */
-public class ScreenConfiguration extends Calibration{
-    
+public class ScreenConfiguration extends Calibration {
+
     static final String SCREEN_XML_NAME = "Screen";
     static final String SCREEN_WIDTH_XML_NAME = "Width";
     static final String SCREEN_HEIGHT_XML_NAME = "Height";
     static final String SCREEN_OFFSET_X_XML_NAME = "OffsetX";
     static final String SCREEN_OFFSET_Y_XML_NAME = "OffsetY";
-    
+
     private int projectionScreenWidth = 0;
     private int projectionScreenHeight = 0;
     private int projectionScreenOffsetX = 0;
     private int projectionScreenOffsetY = 0;
 
-      @Override
+    @Override
     public boolean isValid() {
         // todo check ID, name & type ?
         return true;
@@ -48,26 +48,25 @@ public class ScreenConfiguration extends Calibration{
 
     @Override
     public void addTo(XML xml) {
-        xml.addChild(createScreenNode()); 
-   }
+        xml.addChild(createScreenNode());
+    }
 
     @Override
     public void replaceIn(XML xml) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
+                                                                       // Tools | Templates.
     }
-    
-
 
     @Override
     public void loadFrom(PApplet parent, String fileName) {
-        // throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        // throw new UnsupportedOperationException("Not supported yet."); //To change
+        // body of generated methods, choose Tools | Templates.
 
+        System.out.println("Loading screen configuration: " + fileName);
         XML root = parent.loadXML(fileName);
 
         XML screenNode = root.getChild(SCREEN_XML_NAME);
         loadScreenFrom(screenNode);
-
-
     }
 
     private void loadScreenFrom(XML screenNode) {
@@ -120,7 +119,8 @@ public class ScreenConfiguration extends Calibration{
 
     @Override
     public void addTo(StringBuilder yaml) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
+                                                                       // Tools | Templates.
     }
 
 }
