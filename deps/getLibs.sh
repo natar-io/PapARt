@@ -76,10 +76,12 @@ cd ../libraries
 tar xvzf reflections.tgz
 rm reflections.tgz
 
-echo "Compile JavaCV"
-cd ..
-cd javacv-build
-ruby createLibs.rb
+## Manually now
+#echo "Compile JavaCV"
+#cd ..
+#cd javacv-build
+#ruby createLibs.rb
+
 # mv javacv-*.tgz ../libraries
 # cd ../libraries
 # tar xvzf javacv-*.tgz
