@@ -206,9 +206,7 @@ public class CalibratedStickerTracker extends ColorTracker {
             for (int y = ystart; y < yend; y++) {
                 int loc = x + y * circleImage.width;
                 float v = erosion(x, y, circleImage.width, matrix3erode, 3, conv);
-                //if (v) {
-//                    System.out.println("eroded ok: " + x + " " + y );
-                //}
+
                 innerCircles[loc] = (byte) (v >= convolutionErr ? TouchDetectionInnerCircles.UNKNOWN_COLOR : TouchDetectionInnerCircles.INVALID_COLOR);
             }
         }
