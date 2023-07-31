@@ -46,7 +46,7 @@ public class PoseEstimator extends NectarApplication {
 
     static private String pathName = "";
     static private String cameraFileName = "";
-    static private String cameraName = "";
+    static private String cameraName = "camera0";
     static private String markerFileName = "";
     static private String input = "marker";
     static private String output = "pose";
@@ -144,11 +144,14 @@ public class PoseEstimator extends NectarApplication {
 
             cam.loadCalibrations(); // Load calibration from Redis.
 //            board = MarkerBoardFactory.create(path + "/" + markerFileName);
+            // ASK CAM to track markerboard i 
 
             markerboardNames = redis.smembers(cameraName + ":markerboards");
+            
             boards = new HashMap<String, MarkerBoard>();
             for (String mbName : markerboardNames) {
-
+                
+                System.out.println("Loading tracking for : " + mbName ); 
                 // Load board from file system if contains a '.' (dot) !
                 if (mbName.contains(".")) {
                     MarkerBoard board = MarkerBoardFactory.create(path + "/" + mbName);
@@ -189,9 +192,12 @@ public class PoseEstimator extends NectarApplication {
 
                 board.updateLocation(cam, cam.getIplImage(), null);
 
+                System.out.println("Tracking position of: " + output); 
+
                 PMatrix3D position = board.getPosition(cam);
                 JSONObject matrix = new JSONObject();
                 JSONArray poseJson = MathUtils.PMatrixToJSON(position);
+
 
                 matrix.setJSONArray("matrix", poseJson);
                 if (isVerbose) {

@@ -180,6 +180,8 @@ public class ConfigurationLoader extends NectarApplication {
     }
 
     private static void loadMatrix() {
+
+        System.out.println("Loading... "  + path + "/" + fileName);
         PMatrix3D mat = loadCalibration(path + "/" + fileName);
         if (mat == null) {
             die("Cannot read the matrix from: " + fileName);

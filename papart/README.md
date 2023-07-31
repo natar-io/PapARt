@@ -39,27 +39,57 @@ You will obtain a file named `PapARt.tar.gz` which unpacks like any other Proces
 mvn compile -Djavacpp.platform=linux-x86_64
 
 
-
 #### Load calibrations for Natar 
 
+``` bash 
+mvn exec:java -Dexec.mainClass="fr.inria.papart.apps.ConfigurationLoader" -Dexec.args=" -f data/calibration/camera.yaml -pd -o camera0:calibration"
 
-mvn exec:java -Dexec.mainClass="fr.inria.papart.apps.ConfigurationLoader" -Dexec.args=" -f data/calibration/camera.yaml -pd -o camera0:calibration"
-mvn exec:java -Dexec.mainClass="fr.inria.papart.apps.ConfigurationLoader" -Dexec.args=" -f data/calibration/camera.yaml -pd -o camera0:calibration"
+mvn exec:java -Dexec.mainClass="fr.inria.papart.apps.ConfigurationLoader" -Dexec.args=" -f data/calibration/camProjExtrinsics.xml -o projector0:extrinsics -m -i"
+
+#Table
+mvn exec:java -Dexec.mainClass="fr.inria.papart.apps.ConfigurationLoader" -Dexec.args=" -f data/calibration/tablePosition.xml -o camera0:table -m -i"
+
+# Markerboards 
+mvn exec:java -Dexec.mainClass="fr.inria.papart.apps.ConfigurationLoader" -Dexec.args=" -f data/markers/calib1.svg -mb -o calib1"
+mvn exec:java -Dexec.mainClass="fr.inria.papart.apps.ConfigurationLoader" -Dexec.args=" -f data/markers/A4-default-aruco.svg -mb -o a4-default"
+
+``` 
 
 
 #### Run Natar
 
 
-Video server: 
-`java -jar -Xmx64m target/papart-1.6-jar-with-dependencies.jar --driver OPENCV --device-id 0 --format rgb --output camera0 --resolution 640x480 --stream`
+
 
 Video Server:
 `mvn exec:java -Dexec.mainClass="fr.inria.papart.apps.CameraServerImpl"  -Dexec.args=" --driver OPENCV --device-id 0 --format rgb --output camera0 --resolution 640x480 --stream"`
 
 Video client: 
-`mvn exec:java -Dexec.mainClass="fr.inria.papart.app.CameraTest"  -Dexec.args="-i camera0"`
+`mvn exec:java -Dexec.mainClass="fr.inria.papart.apps.CameraTest"  -Dexec.args="-i camera0 --stream"`
 
-Previous examples **Deprecated**:
+`java  -Xmx64m  -cp target/papart-1.6.0-jar-with-dependencies.jar fr.inria.papart.apps.CameraTest -i camera0 --stream`
+
+
+Ask the camera0 to track the markerboard a4-default 
+`redis-cli sadd camera0:markerboards a4-default`
+
+Do not track it anymore
+`redis-cli srem camera0:markerboards a4-default`
+
+Pose estimation:
+`mvn exec:java -Dexec.mainClass="fr.inria.papart.apps.PoseEstimator" -Dexec.args="-i camera0 -v"`
+
+
+
+#### Using compiled jar 
+
+Video server: 
+`java  -Xmx64m  -cp target/papart-1.6.0-jar-with-dependencies.jar fr.inria.papart.apps.CameraServerImpl --driver OPENCV --device
+-id 0 --format rgb --output camera0 --resolution 640x480 --stream`
+
+
+Previous examples **Deprecated** using compiled jar with depenencies :
+
 
 ```
 ## OpenCV camera

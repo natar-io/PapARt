@@ -742,6 +742,10 @@ public class ProjectiveDeviceP implements PConstants, HasExtrinsics {
   }
 
   public void setIntrinsics(PMatrix3D intrinsics) {
+
+    if(this.intrinsics == null){
+      this.intrinsics = new PMatrix3D(); 
+    }
     this.intrinsics.set(intrinsics);
     updateFromIntrinsics();
   }
