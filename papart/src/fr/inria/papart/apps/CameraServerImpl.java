@@ -72,12 +72,22 @@ public class CameraServerImpl extends NectarApplication implements Runnable {
             camera = CameraFactory.createCamera(type, description, format);
             camera.setSize(width, height);
             camera.setFrameRate(60);
+            int nChannels = 3;
+            int bytePerPixel = 1;
 
             if(type == Camera.Type.OPENCV && format.equals("depth")){
               CameraOpenCV cam = (CameraOpenCV) camera;
               cam.setBitsPerPixel(16);
               cam.setRawImage(true);
+
+
+              nChannels = 1; 
+              bytePerPixel = 2;
             }
+
+
+       
+   
             // Use MJPG automatically for 1080p 
             if(width == 1080){
               camera.setCaptureFormat("MJPG");
@@ -116,14 +126,13 @@ public class CameraServerImpl extends NectarApplication implements Runnable {
 //            if (simpleCam) {
 //                camera.addObserver(new ImageObserver());
 //            }
-
             camera.start();
-            sendParams(camera);
+            sendParams(camera, nChannels);
 
             // Depth test here 
             // initMemory(width, height, 3, 1);
-            initMemory(width, height, 1, 2);
 
+            initMemory(width, height, nChannels, bytePerPixel);
 //            camera.setParent(applet);
 //            camera.setCalibration(cameraCalib);
         } catch (CannotCreateCameraException ex) {
@@ -209,10 +218,10 @@ public class CameraServerImpl extends NectarApplication implements Runnable {
 
     }
 
-    private void sendParams(Camera cam) {
+    private void sendParams(Camera cam, int nChannels) {
         redis.set(output + ":width", Integer.toString(cam.width()));
         redis.set(output + ":height", Integer.toString(cam.height()));
-        redis.set(output + ":channels", Integer.toString(3));
+        redis.set(output + ":channels", Integer.toString(nChannels));
         redis.set(output + ":pixelformat", cam.getPixelFormat().toString());
         redis.clientSetname("CameraServer");
     }
