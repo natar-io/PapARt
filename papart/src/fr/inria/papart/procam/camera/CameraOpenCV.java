@@ -26,6 +26,9 @@ import org.bytedeco.opencv.opencv_core.*;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.OpenCVFrameConverter;
 import org.bytedeco.javacv.OpenCVFrameGrabber;
+import org.bytedeco.javacv.FrameGrabber.ImageMode;
+import org.bytedeco.javacv.FrameGrabber.SampleMode;
+
 import processing.core.PImage;
 
 /**
@@ -36,6 +39,8 @@ public class CameraOpenCV extends Camera {
 
   private OpenCVFrameGrabber grabber;
   private final OpenCVFrameConverter.ToIplImage converter;
+  private boolean useRawImage = false;
+  private int bitsPerPixel = 8;
 
   protected CameraOpenCV(int cameraNo) {
     this.systemNumber = cameraNo;
@@ -43,12 +48,26 @@ public class CameraOpenCV extends Camera {
     converter = new OpenCVFrameConverter.ToIplImage();
   }
 
+  public void setRawImage(boolean value){
+    this.useRawImage = value;
+  }
+  public void setBitsPerPixel(int value){
+    this.bitsPerPixel = value;
+  }
+
+
   @Override
   public void start() {
     OpenCVFrameGrabber grabberCV = new OpenCVFrameGrabber(this.systemNumber);
     grabberCV.setImageWidth(width());
     grabberCV.setImageHeight(height());
     grabberCV.setFrameRate(frameRate);
+    
+    if(useRawImage){
+      grabberCV.setBitsPerPixel(this.bitsPerPixel);
+      grabberCV.setSampleMode(SampleMode.RAW);
+      grabberCV.setImageMode(ImageMode.RAW);
+    }
 
     if (this.captureFormat != null && this.captureFormat.length() > 0) {
       grabberCV.setFormat(this.captureFormat);

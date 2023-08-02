@@ -278,6 +278,8 @@ public class CameraNectar extends CameraRGBIRDepth {
             rawVideoImage = IplImage.create(colorCamera.width, colorCamera.height, IPL_DEPTH_8U, 3);
         }
         int frameSize = colorCamera.width * colorCamera.height * channels;
+
+        // TODO: Check if there is a copy here
         rawVideoImage.getByteBuffer().put(message, 0, frameSize);
         colorCamera.updateCurrentImage(rawVideoImage);
 //        colorCamera.updateCurrentImage(rawVideoImage);

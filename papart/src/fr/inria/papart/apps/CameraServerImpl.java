@@ -16,6 +16,7 @@ import org.apache.commons.cli.ParseException;
 import fr.inria.papart.procam.RedisClientImpl;
 import fr.inria.papart.procam.camera.Camera;
 import fr.inria.papart.procam.camera.CameraFactory;
+import fr.inria.papart.procam.camera.CameraOpenCV;
 import fr.inria.papart.procam.camera.CameraOpenNI2;
 import fr.inria.papart.procam.camera.CameraRGBIRDepth;
 import fr.inria.papart.procam.camera.CannotCreateCameraException;
@@ -70,8 +71,18 @@ public class CameraServerImpl extends NectarApplication implements Runnable {
 //            camera = CameraFactory.createCamera(Camera.Type.OPENCV, "0", "");
             camera = CameraFactory.createCamera(type, description, format);
             camera.setSize(width, height);
-            System.out.println("Start camera");
+            camera.setFrameRate(60);
 
+            if(type == Camera.Type.OPENCV && format.equals("depth")){
+              CameraOpenCV cam = (CameraOpenCV) camera;
+              cam.setBitsPerPixel(16);
+              cam.setRawImage(true);
+            }
+            // Use MJPG automatically for 1080p 
+            if(width == 1080){
+              camera.setCaptureFormat("MJPG");
+            }
+          
             boolean simpleCam = true;
             if (useDepth) {
                 if (camera instanceof CameraRGBIRDepth) {
@@ -108,7 +119,10 @@ public class CameraServerImpl extends NectarApplication implements Runnable {
 
             camera.start();
             sendParams(camera);
-            initMemory(width, height, 3, 1);
+
+            // Depth test here 
+            // initMemory(width, height, 3, 1);
+            initMemory(width, height, 1, 2);
 
 //            camera.setParent(applet);
 //            camera.setCalibration(cameraCalib);
